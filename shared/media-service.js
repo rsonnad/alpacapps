@@ -26,7 +26,7 @@ const CONFIG = {
   },
 
   // Categories
-  validCategories: ['mktg', 'projects', 'archive'],
+  validCategories: ['space', 'mktg', 'projects', 'archive'],
 
   // File type detection
   imageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
