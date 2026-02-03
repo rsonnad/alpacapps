@@ -73,39 +73,8 @@
       <p>Explore the beauty of the Austin Alpaca Playhouse</p>
     </div>
 
-    <div class="highlights-gallery__container hidden">
-      <!-- Main featured image -->
-      <div class="highlights-gallery__main">
-        <img id="galleryMainImage" src="" alt="Featured photo" loading="eager">
-        <button class="gallery-nav gallery-nav--prev" id="galleryPrev" aria-label="Previous image">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <button class="gallery-nav gallery-nav--next" id="galleryNext" aria-label="Next image">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-        <div class="gallery-counter" id="galleryCounter">1 / 97</div>
-      </div>
-
-      <!-- Thumbnail strip -->
-      <div class="highlights-gallery__thumbs-wrapper">
-        <button class="thumbs-nav thumbs-nav--prev" id="thumbsPrev" aria-label="Scroll thumbnails left">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <div class="highlights-gallery__thumbs" id="galleryThumbs">
-          <!-- Thumbnails populated by JS -->
-        </div>
-        <button class="thumbs-nav thumbs-nav--next" id="thumbsNext" aria-label="Scroll thumbnails right">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
+    <div class="highlights-gallery__grid" id="galleryGrid">
+      <!-- Photos populated by JS in masonry layout -->
     </div>
 
     <div class="highlights-gallery__loading" id="galleryLoading">
@@ -113,6 +82,23 @@
       <p>Loading gallery...</p>
     </div>
   </section>
+
+  <!-- Lightbox for full-size viewing -->
+  <div class="gallery-lightbox" id="galleryLightbox">
+    <button class="gallery-lightbox__close" id="lightboxClose" aria-label="Close">&times;</button>
+    <button class="gallery-lightbox__nav gallery-lightbox__nav--prev" id="lightboxPrev" aria-label="Previous">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <img id="lightboxImage" src="" alt="">
+    <button class="gallery-lightbox__nav gallery-lightbox__nav--next" id="lightboxNext" aria-label="Next">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+    <div class="gallery-lightbox__counter" id="lightboxCounter">1 / 97</div>
+  </div>
 
   <!-- Content -->
   <div class="aap-content">
@@ -480,16 +466,16 @@
   </footer>
 
   <style>
-    /* Highlights Gallery Styles */
+    /* Highlights Gallery Styles - Google Photos Style Grid */
     .highlights-gallery {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      padding: 3rem 0;
-      margin-top: -1px; /* Overlap hero slightly */
+      background: #1a1a1a;
+      padding: 2rem 0 3rem;
+      margin-top: -1px;
     }
 
     .highlights-gallery__header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       padding: 0 1rem;
     }
 
@@ -506,134 +492,44 @@
       margin: 0;
     }
 
-    .highlights-gallery__container {
-      max-width: 1400px;
+    .highlights-gallery__grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 0 4px;
+      max-width: 1600px;
       margin: 0 auto;
-      padding: 0 1rem;
     }
 
-    .highlights-gallery__main {
+    .gallery-item {
+      flex-grow: 1;
+      height: 200px;
+      cursor: pointer;
+      overflow: hidden;
       position: relative;
-      aspect-ratio: 16/9;
-      max-height: 600px;
-      background: #111;
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 1rem;
+      background: #2a2a2a;
     }
 
-    .highlights-gallery__main img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #111;
-    }
-
-    .gallery-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.6);
-      border: none;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      z-index: 10;
-    }
-
-    .gallery-nav:hover {
-      background: rgba(0,0,0,0.8);
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    .gallery-nav--prev { left: 1rem; }
-    .gallery-nav--next { right: 1rem; }
-
-    .gallery-counter {
-      position: absolute;
-      bottom: 1rem;
-      right: 1rem;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    .highlights-gallery__thumbs-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .thumbs-nav {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .thumbs-nav:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .highlights-gallery__thumbs {
-      flex: 1;
-      display: flex;
-      gap: 0.5rem;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      padding: 0.5rem 0;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .highlights-gallery__thumbs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .gallery-thumb {
-      flex-shrink: 0;
-      width: 100px;
-      height: 66px;
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s;
-      opacity: 0.6;
-    }
-
-    .gallery-thumb:hover {
-      opacity: 0.9;
-    }
-
-    .gallery-thumb.active {
-      border-color: var(--aap-accent, #c9a87c);
-      opacity: 1;
-    }
-
-    .gallery-thumb img {
+    .gallery-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
+    .gallery-item:hover img {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    /* Vary row heights for visual interest */
+    .gallery-item:nth-child(5n+1) { height: 250px; }
+    .gallery-item:nth-child(5n+2) { height: 200px; }
+    .gallery-item:nth-child(5n+3) { height: 220px; }
+    .gallery-item:nth-child(5n+4) { height: 180px; }
+    .gallery-item:nth-child(5n+5) { height: 240px; }
+
+    /* Loading state */
     .highlights-gallery__loading {
       display: flex;
       flex-direction: column;
@@ -661,10 +557,6 @@
       to { transform: rotate(360deg); }
     }
 
-    .highlights-gallery__container.hidden {
-      display: none;
-    }
-
     /* Lightbox */
     .gallery-lightbox {
       position: fixed;
@@ -679,7 +571,7 @@
       justify-content: center;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s;
+      transition: opacity 0.3s ease;
     }
 
     .gallery-lightbox.open {
@@ -688,8 +580,8 @@
     }
 
     .gallery-lightbox img {
-      max-width: 95vw;
-      max-height: 95vh;
+      max-width: 90vw;
+      max-height: 90vh;
       object-fit: contain;
     }
 
@@ -704,54 +596,87 @@
       border: none;
       color: white;
       cursor: pointer;
-      font-size: 1.5rem;
+      font-size: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: background 0.2s;
+      z-index: 10;
     }
 
     .gallery-lightbox__close:hover {
       background: rgba(255,255,255,0.2);
     }
 
-    .gallery-lightbox .gallery-nav {
-      position: fixed;
+    .gallery-lightbox__nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 10;
     }
 
-    .gallery-lightbox .gallery-nav--prev { left: 1rem; }
-    .gallery-lightbox .gallery-nav--next { right: 1rem; }
+    .gallery-lightbox__nav:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .gallery-lightbox__nav--prev { left: 1rem; }
+    .gallery-lightbox__nav--next { right: 1rem; }
+
+    .gallery-lightbox__counter {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 24px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
 
     @media (max-width: 768px) {
       .highlights-gallery {
-        padding: 2rem 0;
+        padding: 1.5rem 0 2rem;
       }
 
       .highlights-gallery__header h2 {
         font-size: 1.5rem;
       }
 
-      .highlights-gallery__main {
-        aspect-ratio: 4/3;
-        border-radius: 8px;
+      .highlights-gallery__grid {
+        gap: 2px;
+        padding: 0 2px;
       }
 
-      .gallery-nav {
-        width: 40px;
-        height: 40px;
+      .gallery-item,
+      .gallery-item:nth-child(5n+1),
+      .gallery-item:nth-child(5n+2),
+      .gallery-item:nth-child(5n+3),
+      .gallery-item:nth-child(5n+4),
+      .gallery-item:nth-child(5n+5) {
+        height: 120px;
+        min-width: calc(33.333% - 2px);
       }
 
-      .gallery-nav--prev { left: 0.5rem; }
-      .gallery-nav--next { right: 0.5rem; }
-
-      .gallery-thumb {
-        width: 80px;
-        height: 53px;
+      .gallery-lightbox__nav {
+        width: 44px;
+        height: 44px;
       }
 
-      .thumbs-nav {
-        display: none;
-      }
+      .gallery-lightbox__nav--prev { left: 0.5rem; }
+      .gallery-lightbox__nav--next { right: 0.5rem; }
     }
 
     .photo-section {
@@ -884,21 +809,20 @@
       });
     });
 
-    // Highlights Gallery
+    // Highlights Gallery - Google Photos Style Grid
     (async function initGallery() {
       const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
       const HIGHLIGHTS_TAG_ID = 'ba1b6478-21a1-4374-b4e2-96e9dce8635e';
 
       const loadingEl = document.getElementById('galleryLoading');
-      const containerEl = document.querySelector('.highlights-gallery__container');
-      const mainImageEl = document.getElementById('galleryMainImage');
-      const thumbsEl = document.getElementById('galleryThumbs');
-      const counterEl = document.getElementById('galleryCounter');
-      const prevBtn = document.getElementById('galleryPrev');
-      const nextBtn = document.getElementById('galleryNext');
-      const thumbsPrevBtn = document.getElementById('thumbsPrev');
-      const thumbsNextBtn = document.getElementById('thumbsNext');
+      const gridEl = document.getElementById('galleryGrid');
+      const lightbox = document.getElementById('galleryLightbox');
+      const lightboxImage = document.getElementById('lightboxImage');
+      const lightboxCounter = document.getElementById('lightboxCounter');
+      const lightboxClose = document.getElementById('lightboxClose');
+      const lightboxPrev = document.getElementById('lightboxPrev');
+      const lightboxNext = document.getElementById('lightboxNext');
 
       let photos = [];
       let currentIndex = 0;
@@ -948,56 +872,47 @@
         // Shuffle photos for variety each visit
         photos = photos.sort(() => Math.random() - 0.5);
 
-        // Hide loading, show gallery
+        // Hide loading, render grid
         loadingEl.classList.add('hidden');
-        containerEl.classList.remove('hidden');
 
-        // Render thumbnails
-        thumbsEl.innerHTML = photos.map((photo, index) => `
-          <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}" aria-label="View photo ${index + 1}">
+        // Render photo grid
+        gridEl.innerHTML = photos.map((photo, index) => `
+          <div class="gallery-item" data-index="${index}">
             <img src="${photo.url}" alt="${photo.title || photo.caption || 'Alpaca Playhouse photo'}" loading="lazy">
-          </button>
+          </div>
         `).join('');
 
-        // Show first image
-        showImage(0);
-
-        // Event handlers
-        prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
-        nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
-
-        thumbsEl.addEventListener('click', (e) => {
-          const thumb = e.target.closest('.gallery-thumb');
-          if (thumb) {
-            showImage(parseInt(thumb.dataset.index));
+        // Click on grid item to open lightbox
+        gridEl.addEventListener('click', (e) => {
+          const item = e.target.closest('.gallery-item');
+          if (item) {
+            currentIndex = parseInt(item.dataset.index);
+            openLightbox();
           }
         });
 
-        thumbsPrevBtn.addEventListener('click', () => {
-          thumbsEl.scrollBy({ left: -300, behavior: 'smooth' });
+        // Lightbox controls
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxPrev.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigateLightbox(-1);
+        });
+        lightboxNext.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigateLightbox(1);
         });
 
-        thumbsNextBtn.addEventListener('click', () => {
-          thumbsEl.scrollBy({ left: 300, behavior: 'smooth' });
+        // Click outside image to close
+        lightbox.addEventListener('click', (e) => {
+          if (e.target === lightbox) closeLightbox();
         });
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
-          if (e.key === 'ArrowRight') showImage(currentIndex + 1);
-        });
-
-        // Click main image to open lightbox
-        mainImageEl.style.cursor = 'pointer';
-        mainImageEl.addEventListener('click', openLightbox);
-
-        // Auto-advance every 5 seconds (paused on hover)
-        let autoAdvance = setInterval(() => showImage(currentIndex + 1), 5000);
-
-        const galleryMain = document.querySelector('.highlights-gallery__main');
-        galleryMain.addEventListener('mouseenter', () => clearInterval(autoAdvance));
-        galleryMain.addEventListener('mouseleave', () => {
-          autoAdvance = setInterval(() => showImage(currentIndex + 1), 5000);
+          if (!lightbox.classList.contains('open')) return;
+          if (e.key === 'Escape') closeLightbox();
+          if (e.key === 'ArrowLeft') navigateLightbox(-1);
+          if (e.key === 'ArrowRight') navigateLightbox(1);
         });
 
       } catch (error) {
@@ -1005,94 +920,27 @@
         loadingEl.innerHTML = '<p>Unable to load gallery. Please try again later.</p>';
       }
 
-      function showImage(index) {
-        // Wrap around
-        if (index < 0) index = photos.length - 1;
-        if (index >= photos.length) index = 0;
-
-        currentIndex = index;
-        const photo = photos[index];
-
-        mainImageEl.src = photo.url;
-        mainImageEl.alt = photo.title || photo.caption || 'Alpaca Playhouse photo';
-        counterEl.textContent = `${index + 1} / ${photos.length}`;
-
-        // Update active thumbnail
-        thumbsEl.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
-          thumb.classList.toggle('active', i === index);
-        });
-
-        // Scroll thumbnail into view
-        const activeThumb = thumbsEl.querySelector('.gallery-thumb.active');
-        if (activeThumb) {
-          activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }
-      }
-
       function openLightbox() {
-        // Create lightbox if it doesn't exist
-        let lightbox = document.querySelector('.gallery-lightbox');
-        if (!lightbox) {
-          lightbox = document.createElement('div');
-          lightbox.className = 'gallery-lightbox';
-          lightbox.innerHTML = `
-            <button class="gallery-lightbox__close" aria-label="Close lightbox">&times;</button>
-            <button class="gallery-nav gallery-nav--prev" aria-label="Previous image">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-            </button>
-            <img src="" alt="">
-            <button class="gallery-nav gallery-nav--next" aria-label="Next image">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </button>
-          `;
-          document.body.appendChild(lightbox);
-
-          lightbox.querySelector('.gallery-lightbox__close').addEventListener('click', closeLightbox);
-          lightbox.querySelector('.gallery-nav--prev').addEventListener('click', (e) => {
-            e.stopPropagation();
-            showImage(currentIndex - 1);
-            updateLightboxImage();
-          });
-          lightbox.querySelector('.gallery-nav--next').addEventListener('click', (e) => {
-            e.stopPropagation();
-            showImage(currentIndex + 1);
-            updateLightboxImage();
-          });
-          lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) closeLightbox();
-          });
-
-          document.addEventListener('keydown', (e) => {
-            if (lightbox.classList.contains('open') && e.key === 'Escape') {
-              closeLightbox();
-            }
-          });
-        }
-
-        updateLightboxImage();
+        lightboxImage.src = photos[currentIndex].url;
+        lightboxImage.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
+        lightboxCounter.textContent = `${currentIndex + 1} / ${photos.length}`;
         lightbox.classList.add('open');
         document.body.style.overflow = 'hidden';
       }
 
-      function updateLightboxImage() {
-        const lightbox = document.querySelector('.gallery-lightbox');
-        if (lightbox && photos[currentIndex]) {
-          const img = lightbox.querySelector('img');
-          img.src = photos[currentIndex].url;
-          img.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
-        }
+      function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
       }
 
-      function closeLightbox() {
-        const lightbox = document.querySelector('.gallery-lightbox');
-        if (lightbox) {
-          lightbox.classList.remove('open');
-          document.body.style.overflow = '';
-        }
+      function navigateLightbox(direction) {
+        currentIndex += direction;
+        if (currentIndex < 0) currentIndex = photos.length - 1;
+        if (currentIndex >= photos.length) currentIndex = 0;
+
+        lightboxImage.src = photos[currentIndex].url;
+        lightboxImage.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
+        lightboxCounter.textContent = `${currentIndex + 1} / ${photos.length}`;
       }
     })();
   </script>
