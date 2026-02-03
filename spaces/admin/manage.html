@@ -2622,10 +2622,10 @@
         const availFromStr = space.availableFrom && space.availableFrom > new Date()
           ? formatDate(space.availableFrom)
           : 'NOW';
-        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
 
         const fromBadgeClass = availFromStr === 'NOW' ? 'available' : 'occupied';
-        const untilBadgeClass = availUntilStr === 'The Cows Come Home' ? 'available' : 'occupied';
+        const untilBadgeClass = availUntilStr === 'Open-ended' ? 'available' : 'occupied';
 
         let badges = `<span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>`;
         badges += `<span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>`;
@@ -2753,7 +2753,7 @@
         const availFromStr = space.availableFrom && space.availableFrom > new Date()
           ? formatDate(space.availableFrom)
           : 'NOW';
-        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
 
         // Status badge
         let statusBadge = isOccupied
