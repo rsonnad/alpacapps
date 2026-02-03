@@ -727,11 +727,13 @@ async function search(options = {}) {
 
   // Filter by tags if provided (post-query for simplicity)
   let results = data || [];
+  console.log('Search: query returned', results.length, 'items before tag filter');
   if (tags.length > 0) {
     results = results.filter(media => {
       const mediaTags = media.media_tag_assignments?.map(a => a.tag?.name) || [];
       return tags.some(t => mediaTags.includes(t));
     });
+    console.log('Search: after tag filter for', tags, ':', results.length, 'items');
   }
 
   // Flatten tags
