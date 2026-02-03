@@ -746,6 +746,19 @@
           </div>
         </details>
 
+        <!-- Active & Upcoming Assignments Table -->
+        <div class="section" style="margin-top: 1.5rem;">
+          <div class="section-header">
+            <h2>Active & Upcoming Assignments</h2>
+            <span id="assignmentsCount" class="text-muted">0</span>
+          </div>
+          <div class="section-body">
+            <div id="assignmentsTableContainer">
+              <div class="calendar-loading">Loading assignments...</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Reservations Calendar Section -->
         <div class="section" style="margin-top: 1.5rem;">
           <div class="section-header">
@@ -5083,6 +5096,7 @@
 
         if (error) throw error;
         calendarAssignments = data || [];
+        renderAssignmentsTable();
         renderCalendar();
       } catch (error) {
         console.error('Error loading calendar data:', error);
@@ -5122,6 +5136,96 @@
           if (bar) hideReservationTooltip();
         }, true);
       }
+    }
+
+    function renderAssignmentsTable() {
+      const container = document.getElementById('assignmentsTableContainer');
+      const countEl = document.getElementById('assignmentsCount');
+      if (!container) return;
+
+      if (calendarAssignments.length === 0) {
+        container.innerHTML = '<div class="calendar-empty">No active or upcoming assignments</div>';
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
+
+      // Sort assignments: active first, then by start date
+      const sorted = [...calendarAssignments].sort((a, b) => {
+        // Active first
+        if (a.status === 'active' && b.status !== 'active') return -1;
+        if (b.status === 'active' && a.status !== 'active') return 1;
+        // Then by start date
+        const aStart = a.start_date ? new Date(a.start_date) : new Date(0);
+        const bStart = b.start_date ? new Date(b.start_date) : new Date(0);
+        return aStart - bStart;
+      });
+
+      if (countEl) countEl.textContent = sorted.length;
+
+      // Build table HTML
+      let html = `
+        <table class="data-table assignments-table">
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Space</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Rate</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      sorted.forEach(assignment => {
+        const person = assignment.person || {};
+        const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+
+        // Get space names
+        const spaceIds = assignment.assignment_spaces?.map(as => as.space_id) || [];
+        const spaceNames = spaceIds.map(id => {
+          const space = allSpaces.find(s => s.id === id);
+          return space ? space.name : 'Unknown';
+        }).join(', ') || 'None';
+
+        const startDate = assignment.start_date
+          ? new Date(assignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : '-';
+
+        const effectiveEndDate = assignment.desired_departure_listed && assignment.desired_departure_date
+          ? assignment.desired_departure_date
+          : assignment.end_date;
+        const endDate = effectiveEndDate
+          ? new Date(effectiveEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Ongoing';
+
+        const rate = assignment.rate_amount
+          ? `$${assignment.rate_amount}/${assignment.rate_term || 'mo'}`
+          : (assignment.monthly_rent ? `$${assignment.monthly_rent}/mo` : '-');
+
+        const statusClass = assignment.status.replace(/_/g, '-');
+        const statusLabel = assignment.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+        html += `
+          <tr>
+            <td>
+              <div class="tenant-cell">
+                <strong>${tenantName}</strong>
+                ${person.email ? `<div class="tenant-email">${person.email}</div>` : ''}
+              </div>
+            </td>
+            <td>${spaceNames}</td>
+            <td>${startDate}</td>
+            <td>${endDate}</td>
+            <td>${rate}</td>
+            <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     function renderCalendar() {
