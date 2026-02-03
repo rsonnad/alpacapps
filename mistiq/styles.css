@@ -25,11 +25,11 @@
   --mistiq-font-body: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Spacing */
-  --mistiq-space-xs: 0.5rem;
-  --mistiq-space-sm: 1rem;
-  --mistiq-space-md: 1.5rem;
-  --mistiq-space-lg: 2.5rem;
-  --mistiq-space-xl: 4rem;
+  --mistiq-space-xs: 0.25rem;
+  --mistiq-space-sm: 0.75rem;
+  --mistiq-space-md: 1rem;
+  --mistiq-space-lg: 1.5rem;
+  --mistiq-space-xl: 2.5rem;
 
   /* Sizing */
   --mistiq-max-width: 1200px;
