@@ -66,6 +66,54 @@
     </div>
   </section>
 
+  <!-- Highlights Gallery -->
+  <section class="highlights-gallery" id="highlightsGallery">
+    <div class="highlights-gallery__header">
+      <h2>Property Highlights</h2>
+      <p>Explore the beauty of the Austin Alpaca Playhouse</p>
+    </div>
+
+    <div class="highlights-gallery__container hidden">
+      <!-- Main featured image -->
+      <div class="highlights-gallery__main">
+        <img id="galleryMainImage" src="" alt="Featured photo" loading="eager">
+        <button class="gallery-nav gallery-nav--prev" id="galleryPrev" aria-label="Previous image">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="gallery-nav gallery-nav--next" id="galleryNext" aria-label="Next image">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+        <div class="gallery-counter" id="galleryCounter">1 / 97</div>
+      </div>
+
+      <!-- Thumbnail strip -->
+      <div class="highlights-gallery__thumbs-wrapper">
+        <button class="thumbs-nav thumbs-nav--prev" id="thumbsPrev" aria-label="Scroll thumbnails left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="highlights-gallery__thumbs" id="galleryThumbs">
+          <!-- Thumbnails populated by JS -->
+        </div>
+        <button class="thumbs-nav thumbs-nav--next" id="thumbsNext" aria-label="Scroll thumbnails right">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="highlights-gallery__loading" id="galleryLoading">
+      <div class="gallery-spinner"></div>
+      <p>Loading gallery...</p>
+    </div>
+  </section>
+
   <!-- Content -->
   <div class="aap-content">
 
@@ -432,6 +480,280 @@
   </footer>
 
   <style>
+    /* Highlights Gallery Styles */
+    .highlights-gallery {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 3rem 0;
+      margin-top: -1px; /* Overlap hero slightly */
+    }
+
+    .highlights-gallery__header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 0 1rem;
+    }
+
+    .highlights-gallery__header h2 {
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .highlights-gallery__header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .highlights-gallery__container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .highlights-gallery__main {
+      position: relative;
+      aspect-ratio: 16/9;
+      max-height: 600px;
+      background: #111;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .highlights-gallery__main img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #111;
+    }
+
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .gallery-nav:hover {
+      background: rgba(0,0,0,0.8);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .gallery-nav--prev { left: 1rem; }
+    .gallery-nav--next { right: 1rem; }
+
+    .gallery-counter {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .highlights-gallery__thumbs-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .thumbs-nav {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .thumbs-nav:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .highlights-gallery__thumbs {
+      flex: 1;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 0.5rem 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .highlights-gallery__thumbs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gallery-thumb {
+      flex-shrink: 0;
+      width: 100px;
+      height: 66px;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      opacity: 0.6;
+    }
+
+    .gallery-thumb:hover {
+      opacity: 0.9;
+    }
+
+    .gallery-thumb.active {
+      border-color: var(--aap-accent, #c9a87c);
+      opacity: 1;
+    }
+
+    .gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .highlights-gallery__loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .highlights-gallery__loading.hidden {
+      display: none;
+    }
+
+    .gallery-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: var(--aap-accent, #c9a87c);
+      border-radius: 50%;
+      animation: gallery-spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes gallery-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .highlights-gallery__container.hidden {
+      display: none;
+    }
+
+    /* Lightbox */
+    .gallery-lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .gallery-lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .gallery-lightbox img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+    }
+
+    .gallery-lightbox__close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .gallery-lightbox__close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .gallery-lightbox .gallery-nav {
+      position: fixed;
+    }
+
+    .gallery-lightbox .gallery-nav--prev { left: 1rem; }
+    .gallery-lightbox .gallery-nav--next { right: 1rem; }
+
+    @media (max-width: 768px) {
+      .highlights-gallery {
+        padding: 2rem 0;
+      }
+
+      .highlights-gallery__header h2 {
+        font-size: 1.5rem;
+      }
+
+      .highlights-gallery__main {
+        aspect-ratio: 4/3;
+        border-radius: 8px;
+      }
+
+      .gallery-nav {
+        width: 40px;
+        height: 40px;
+      }
+
+      .gallery-nav--prev { left: 0.5rem; }
+      .gallery-nav--next { right: 0.5rem; }
+
+      .gallery-thumb {
+        width: 80px;
+        height: 53px;
+      }
+
+      .thumbs-nav {
+        display: none;
+      }
+    }
+
     .photo-section {
       margin-bottom: 3rem;
     }
@@ -561,6 +883,227 @@
         document.body.style.overflow = '';
       });
     });
+
+    // Highlights Gallery
+    (async function initGallery() {
+      const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi0Tt-a7gM45aF8xjSD6wk';
+      const HIGHLIGHTS_TAG_ID = 'ba1b6478-21a1-4374-b4e2-96e9dce8635e';
+
+      const loadingEl = document.getElementById('galleryLoading');
+      const containerEl = document.querySelector('.highlights-gallery__container');
+      const mainImageEl = document.getElementById('galleryMainImage');
+      const thumbsEl = document.getElementById('galleryThumbs');
+      const counterEl = document.getElementById('galleryCounter');
+      const prevBtn = document.getElementById('galleryPrev');
+      const nextBtn = document.getElementById('galleryNext');
+      const thumbsPrevBtn = document.getElementById('thumbsPrev');
+      const thumbsNextBtn = document.getElementById('thumbsNext');
+
+      let photos = [];
+      let currentIndex = 0;
+
+      // Fetch highlights photos
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&media_tag_assignments.tag_id=eq.${HIGHLIGHTS_TAG_ID}&order=id`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to fetch photos');
+
+        const allMedia = await response.json();
+
+        // Fetch which ones have the highlights tag
+        const tagResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/media_tag_assignments?tag_id=eq.${HIGHLIGHTS_TAG_ID}&select=media_id`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          }
+        );
+
+        if (!tagResponse.ok) throw new Error('Failed to fetch tags');
+
+        const taggedIds = (await tagResponse.json()).map(t => t.media_id);
+
+        // Get full media data for tagged items
+        const mediaResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&id=in.(${taggedIds.map(id => `"${id}"`).join(',')})`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          }
+        );
+
+        if (!mediaResponse.ok) throw new Error('Failed to fetch media');
+
+        photos = await mediaResponse.json();
+
+        if (photos.length === 0) {
+          loadingEl.innerHTML = '<p>No photos available yet.</p>';
+          return;
+        }
+
+        // Shuffle photos for variety each visit
+        photos = photos.sort(() => Math.random() - 0.5);
+
+        // Hide loading, show gallery
+        loadingEl.classList.add('hidden');
+        containerEl.classList.remove('hidden');
+
+        // Render thumbnails
+        thumbsEl.innerHTML = photos.map((photo, index) => `
+          <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}" aria-label="View photo ${index + 1}">
+            <img src="${photo.url}" alt="${photo.title || photo.caption || 'Alpaca Playhouse photo'}" loading="lazy">
+          </button>
+        `).join('');
+
+        // Show first image
+        showImage(0);
+
+        // Event handlers
+        prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
+        nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
+
+        thumbsEl.addEventListener('click', (e) => {
+          const thumb = e.target.closest('.gallery-thumb');
+          if (thumb) {
+            showImage(parseInt(thumb.dataset.index));
+          }
+        });
+
+        thumbsPrevBtn.addEventListener('click', () => {
+          thumbsEl.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+
+        thumbsNextBtn.addEventListener('click', () => {
+          thumbsEl.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
+          if (e.key === 'ArrowRight') showImage(currentIndex + 1);
+        });
+
+        // Click main image to open lightbox
+        mainImageEl.style.cursor = 'pointer';
+        mainImageEl.addEventListener('click', openLightbox);
+
+        // Auto-advance every 5 seconds (paused on hover)
+        let autoAdvance = setInterval(() => showImage(currentIndex + 1), 5000);
+
+        const galleryMain = document.querySelector('.highlights-gallery__main');
+        galleryMain.addEventListener('mouseenter', () => clearInterval(autoAdvance));
+        galleryMain.addEventListener('mouseleave', () => {
+          autoAdvance = setInterval(() => showImage(currentIndex + 1), 5000);
+        });
+
+      } catch (error) {
+        console.error('Gallery error:', error);
+        loadingEl.innerHTML = '<p>Unable to load gallery. Please try again later.</p>';
+      }
+
+      function showImage(index) {
+        // Wrap around
+        if (index < 0) index = photos.length - 1;
+        if (index >= photos.length) index = 0;
+
+        currentIndex = index;
+        const photo = photos[index];
+
+        mainImageEl.src = photo.url;
+        mainImageEl.alt = photo.title || photo.caption || 'Alpaca Playhouse photo';
+        counterEl.textContent = `${index + 1} / ${photos.length}`;
+
+        // Update active thumbnail
+        thumbsEl.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+          thumb.classList.toggle('active', i === index);
+        });
+
+        // Scroll thumbnail into view
+        const activeThumb = thumbsEl.querySelector('.gallery-thumb.active');
+        if (activeThumb) {
+          activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+      }
+
+      function openLightbox() {
+        // Create lightbox if it doesn't exist
+        let lightbox = document.querySelector('.gallery-lightbox');
+        if (!lightbox) {
+          lightbox = document.createElement('div');
+          lightbox.className = 'gallery-lightbox';
+          lightbox.innerHTML = `
+            <button class="gallery-lightbox__close" aria-label="Close lightbox">&times;</button>
+            <button class="gallery-nav gallery-nav--prev" aria-label="Previous image">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <img src="" alt="">
+            <button class="gallery-nav gallery-nav--next" aria-label="Next image">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          `;
+          document.body.appendChild(lightbox);
+
+          lightbox.querySelector('.gallery-lightbox__close').addEventListener('click', closeLightbox);
+          lightbox.querySelector('.gallery-nav--prev').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showImage(currentIndex - 1);
+            updateLightboxImage();
+          });
+          lightbox.querySelector('.gallery-nav--next').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showImage(currentIndex + 1);
+            updateLightboxImage();
+          });
+          lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+          });
+
+          document.addEventListener('keydown', (e) => {
+            if (lightbox.classList.contains('open') && e.key === 'Escape') {
+              closeLightbox();
+            }
+          });
+        }
+
+        updateLightboxImage();
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function updateLightboxImage() {
+        const lightbox = document.querySelector('.gallery-lightbox');
+        if (lightbox && photos[currentIndex]) {
+          const img = lightbox.querySelector('img');
+          img.src = photos[currentIndex].url;
+          img.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
+        }
+      }
+
+      function closeLightbox() {
+        const lightbox = document.querySelector('.gallery-lightbox');
+        if (lightbox) {
+          lightbox.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      }
+    })();
   </script>
 </body>
 </html>
