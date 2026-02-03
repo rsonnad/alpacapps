@@ -660,7 +660,7 @@
               <thead>
                 <tr>
                   <th></th>
-                  <th data-sort="name" style="min-width: 200px;">Name</th>
+                  <th data-sort="name" style="min-width: 280px;">Name</th>
                   <th data-sort="monthly_rate">Rate</th>
                   <th data-sort="sq_footage">Size</th>
                   <th>Beds</th>
@@ -2776,7 +2776,7 @@
         return `
           <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
             <td class="td-thumbnail">${thumbnail}</td>
-            <td style="min-width: 200px;">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
+            <td style="min-width: 280px;">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
             <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
             <td>${space.sq_footage || '-'}</td>
             <td>${beds || '-'}</td>
