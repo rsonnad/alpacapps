@@ -3149,6 +3149,20 @@
         calendarCurrentDate = new Date();
         renderCalendar();
       });
+
+      // Event delegation for reservation bar tooltips
+      const calendarContainer = document.getElementById('reservationsCalendar');
+      if (calendarContainer) {
+        calendarContainer.addEventListener('mouseenter', (e) => {
+          const bar = e.target.closest('.reservation-bar');
+          if (bar) showReservationTooltip(e, bar);
+        }, true);
+
+        calendarContainer.addEventListener('mouseleave', (e) => {
+          const bar = e.target.closest('.reservation-bar');
+          if (bar) hideReservationTooltip();
+        }, true);
+      }
     }
 
     function renderCalendar() {
@@ -3272,9 +3286,7 @@
           html += `
             <div class="reservation-bar ${assignment.status}"
                  style="left: calc(200px + ${left}%); width: calc(${width}% - 4px);"
-                 data-tooltip='${tooltipData}'
-                 onmouseenter="showReservationTooltip(event, this)"
-                 onmouseleave="hideReservationTooltip()">
+                 data-tooltip='${tooltipData}'>
               <div class="bar-content">
                 <span class="tenant-name">${tenantName}</span>
                 ${rate ? `<span class="bar-details">${rate}</span>` : ''}
@@ -3323,10 +3335,6 @@
       const tooltip = document.getElementById('reservationTooltip');
       if (tooltip) tooltip.classList.remove('visible');
     }
-
-    // Expose tooltip functions globally for inline event handlers
-    window.showReservationTooltip = showReservationTooltip;
-    window.hideReservationTooltip = hideReservationTooltip;
 
     // =============================================
     // RENTAL DETAIL MODAL
@@ -4347,6 +4355,27 @@
         eventCalendarCurrentDate = new Date();
         renderEventCalendar();
       });
+
+      // Event delegation for event chip tooltips and clicks
+      const calendarContainer = document.getElementById('eventsCalendar');
+      if (calendarContainer) {
+        calendarContainer.addEventListener('mouseenter', (e) => {
+          const chip = e.target.closest('.event-chip');
+          if (chip) showEventCalendarTooltip(e, chip);
+        }, true);
+
+        calendarContainer.addEventListener('mouseleave', (e) => {
+          const chip = e.target.closest('.event-chip');
+          if (chip) hideEventCalendarTooltip();
+        }, true);
+
+        calendarContainer.addEventListener('click', (e) => {
+          const chip = e.target.closest('.event-chip');
+          if (chip && chip.dataset.id) {
+            openEventDetail(chip.dataset.id);
+          }
+        });
+      }
     }
 
     function renderEventCalendar() {
@@ -4475,10 +4504,7 @@
           html += \`
             <div class="event-chip \${status}"
                  data-id="\${event.id}"
-                 data-tooltip='\${tooltipData}'
-                 onclick="openEventDetail('\${event.id}')"
-                 onmouseenter="showEventCalendarTooltip(event, this)"
-                 onmouseleave="hideEventCalendarTooltip()">
+                 data-tooltip='\${tooltipData}'>
               \${timeDisplay ? \`<span class="chip-time">\${timeDisplay}</span> \` : ''}
               <span class="chip-name">\${event.event_name || 'Event'}</span>
             </div>
@@ -4526,10 +4552,6 @@
       const tooltip = document.getElementById('eventCalendarTooltip');
       if (tooltip) tooltip.classList.remove('visible');
     }
-
-    // Expose event calendar tooltip functions globally for inline event handlers
-    window.showEventCalendarTooltip = showEventCalendarTooltip;
-    window.hideEventCalendarTooltip = hideEventCalendarTooltip;
 
     // Make openEventDetail available globally
     window.openEventDetail = async function(requestId) {
