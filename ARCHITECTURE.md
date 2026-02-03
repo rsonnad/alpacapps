@@ -45,7 +45,7 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 
 | Component | Host | URL/Location |
 |-----------|------|--------------|
-| Admin UI | GitHub Pages | https://rsonnad.github.io/alpacapps/ |
+| Admin UI | GitHub Pages | https://alpacaplayhouse.com/ |
 | Source Code | GitHub | https://github.com/rsonnad/alpacapps |
 | Database | Supabase | https://aphrrfprbixmhissnjfn.supabase.co |
 | Photo Storage | Supabase Storage | bucket: `housephotos` |
