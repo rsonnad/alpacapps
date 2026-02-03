@@ -1034,6 +1034,7 @@
   top: 0;
   background: var(--bg-card);
   z-index: 10;
+  padding-top: 16px; /* Space for month labels */
 }
 
 .calendar-space-label {
@@ -1261,6 +1262,121 @@
   grid-column: 1 / -1;
 }
 
+/* Multi-month calendar wrapper */
+.calendar-timeline-wrapper {
+  display: flex;
+  position: relative;
+}
+
+.calendar-timeline {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Month labels in header */
+.calendar-day .month-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  position: absolute;
+  top: -14px;
+  left: 0;
+  white-space: nowrap;
+}
+
+.calendar-day {
+  position: relative;
+}
+
+.calendar-day.first-of-month {
+  border-left: 2px solid var(--accent);
+}
+
+.calendar-cell.first-of-month {
+  border-left: 2px solid var(--accent);
+}
+
+/* Load more column */
+.load-more-column {
+  width: 80px;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-left: 2px dashed var(--border);
+  padding: 1rem 0.5rem;
+}
+
+.load-more-column.no-more {
+  background: transparent;
+}
+
+.load-more-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.load-more-btn:hover {
+  background: var(--accent-dark, #4f46e5);
+  transform: scale(1.05);
+}
+
+.load-more-icon {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.load-more-text {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.no-more-message {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.load-more-header,
+.no-more-header {
+  width: 80px;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-more-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.load-more-cell,
+.no-more-cell {
+  width: 80px;
+  min-width: 80px;
+  border-left: none;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .calendar-space-label,
@@ -1282,5 +1398,18 @@
     font-size: 0.65rem;
     height: 28px;
     top: 6px;
+  }
+
+  .load-more-column {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .load-more-header,
+  .no-more-header,
+  .load-more-cell,
+  .no-more-cell {
+    width: 60px;
+    min-width: 60px;
   }
 }

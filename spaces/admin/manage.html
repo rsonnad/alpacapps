@@ -886,10 +886,8 @@
           <div class="section-header">
             <h2>Reservations Calendar</h2>
             <div class="calendar-controls">
-              <button class="btn-small" id="calendarPrevMonth">&larr;</button>
-              <span id="calendarMonthLabel" class="calendar-month-label"></span>
-              <button class="btn-small" id="calendarNextMonth">&rarr;</button>
-              <button class="btn-small" id="calendarToday" style="margin-left: 0.5rem;">Today</button>
+              <button class="btn-small" id="calendarToday">Today</button>
+              <span id="calendarMonthRange" class="calendar-month-label" style="min-width: auto;"></span>
             </div>
           </div>
           <div class="section-body">
@@ -2405,6 +2403,8 @@
     // Calendar state
     let calendarAssignments = [];
     let calendarCurrentDate = new Date();
+    let calendarMonthsDisplayed = 3; // Start with 3 months
+    let calendarHasMoreReservations = true; // Track if there are more to load
     let currentAssignmentId = null;
 
     // Events state
@@ -5375,22 +5375,16 @@
     }
 
     function initCalendarControls() {
-      document.getElementById('calendarPrevMonth')?.addEventListener('click', () => {
-        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1);
-        renderCalendar();
-      });
-
-      document.getElementById('calendarNextMonth')?.addEventListener('click', () => {
-        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1);
-        renderCalendar();
-      });
-
       document.getElementById('calendarToday')?.addEventListener('click', () => {
         calendarCurrentDate = new Date();
+        calendarMonthsDisplayed = 3;
         renderCalendar();
+        // Scroll to start
+        const container = document.getElementById('reservationsCalendar');
+        if (container) container.scrollLeft = 0;
       });
 
-      // Event delegation for reservation bar tooltips
+      // Event delegation for reservation bar tooltips and load more button
       const calendarContainer = document.getElementById('reservationsCalendar');
       if (calendarContainer) {
         calendarContainer.addEventListener('mouseenter', (e) => {
@@ -5402,6 +5396,40 @@
           const bar = e.target.closest('.reservation-bar');
           if (bar) hideReservationTooltip();
         }, true);
+
+        calendarContainer.addEventListener('click', (e) => {
+          if (e.target.closest('#loadMoreMonths')) {
+            loadMoreCalendarMonths();
+          }
+        });
+      }
+    }
+
+    function loadMoreCalendarMonths() {
+      // Check if there are any reservations extending beyond current view
+      const lastDay = new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() + calendarMonthsDisplayed, 0);
+
+      const hasReservationsBeyond = calendarAssignments.some(a => {
+        const endDate = a.desired_departure_listed && a.desired_departure_date
+          ? new Date(a.desired_departure_date)
+          : (a.end_date ? new Date(a.end_date) : null);
+        // Ongoing reservations or ones ending after our view
+        return !endDate || endDate > lastDay;
+      });
+
+      if (hasReservationsBeyond) {
+        calendarMonthsDisplayed += 3;
+        renderCalendar();
+        // Scroll to the end to see the new months
+        setTimeout(() => {
+          const container = document.getElementById('reservationsCalendar');
+          if (container) {
+            container.scrollLeft = container.scrollWidth;
+          }
+        }, 50);
+      } else {
+        calendarHasMoreReservations = false;
+        renderCalendar();
       }
     }
 
@@ -5648,19 +5676,21 @@
         return;
       }
 
-      // Get date range for current month view (show 5 weeks)
+      // Get date range for multiple months
       const year = calendarCurrentDate.getFullYear();
       const month = calendarCurrentDate.getMonth();
       const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
+      const lastDay = new Date(year, month + calendarMonthsDisplayed, 0);
 
-      // Update month label
-      const monthLabel = document.getElementById('calendarMonthLabel');
-      if (monthLabel) {
-        monthLabel.textContent = calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      // Update month range label
+      const monthRangeLabel = document.getElementById('calendarMonthRange');
+      if (monthRangeLabel) {
+        const startMonth = firstDay.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const endMonth = lastDay.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        monthRangeLabel.textContent = `${startMonth} - ${endMonth}`;
       }
 
-      // Generate array of days for the month
+      // Generate array of days for all months
       const days = [];
       for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
         days.push(new Date(d));
@@ -5669,23 +5699,48 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Build HTML
-      let html = '<div class="calendar-timeline">';
+      // Check if there are reservations extending beyond current view
+      const hasReservationsBeyond = calendarAssignments.some(a => {
+        const endDate = a.desired_departure_listed && a.desired_departure_date
+          ? new Date(a.desired_departure_date)
+          : (a.end_date ? new Date(a.end_date) : null);
+        return !endDate || endDate > lastDay;
+      });
 
-      // Header row with days
+      // Build HTML
+      let html = '<div class="calendar-timeline-wrapper">';
+      html += '<div class="calendar-timeline">';
+
+      // Header row with days - add month separators
       html += '<div class="calendar-header">';
       html += '<div class="calendar-space-label">Space</div>';
       html += '<div class="calendar-days">';
-      days.forEach(day => {
+
+      let currentMonthYear = '';
+      days.forEach((day, idx) => {
         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
         const isToday = day.toDateString() === today.toDateString();
+        const monthYear = day.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        const isFirstOfMonth = day.getDate() === 1;
+        const showMonthLabel = monthYear !== currentMonthYear;
+        if (showMonthLabel) currentMonthYear = monthYear;
+
         html += `
-          <div class="calendar-day ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}">
+          <div class="calendar-day ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}">
+            ${showMonthLabel ? `<div class="month-label">${monthYear}</div>` : ''}
             <div class="day-num">${day.getDate()}</div>
             <div class="day-name">${day.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)}</div>
           </div>
         `;
       });
+
+      // Add load more column in header
+      if (hasReservationsBeyond) {
+        html += '<div class="calendar-day load-more-header"></div>';
+      } else if (calendarMonthsDisplayed > 3) {
+        html += '<div class="calendar-day no-more-header"><span class="no-more-label">End</span></div>';
+      }
+
       html += '</div></div>';
 
       // Rows for each space
@@ -5700,11 +5755,20 @@
         html += '<div class="calendar-cells">';
 
         // Add cells for each day
+        let prevMonthYear = '';
         days.forEach(day => {
           const isWeekend = day.getDay() === 0 || day.getDay() === 6;
           const isToday = day.toDateString() === today.toDateString();
-          html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
+          const isFirstOfMonth = day.getDate() === 1;
+          html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
         });
+
+        // Add load more cell
+        if (hasReservationsBeyond) {
+          html += '<div class="calendar-cell load-more-cell"></div>';
+        } else if (calendarMonthsDisplayed > 3) {
+          html += '<div class="calendar-cell no-more-cell"></div>';
+        }
 
         html += '</div>';
 
@@ -5730,7 +5794,7 @@
           // Skip if entirely outside visible range
           if (startDate > lastDay || (endDate && endDate < firstDay)) return;
 
-          // Calculate position
+          // Calculate position using pixel width for multi-month view
           const dayWidth = 100 / days.length; // percentage
           const startOffset = Math.max(0, (visibleStart - firstDay) / (24 * 60 * 60 * 1000));
           const endOffset = (visibleEnd - firstDay) / (24 * 60 * 60 * 1000) + 1;
@@ -5768,6 +5832,26 @@
 
         html += '</div>';
       });
+
+      html += '</div>';
+
+      // Add load more button at the right edge
+      if (hasReservationsBeyond) {
+        html += `
+          <div class="load-more-column">
+            <button id="loadMoreMonths" class="load-more-btn" title="Load 3 more months">
+              <span class="load-more-icon">+3</span>
+              <span class="load-more-text">months</span>
+            </button>
+          </div>
+        `;
+      } else if (calendarMonthsDisplayed > 3) {
+        html += `
+          <div class="load-more-column no-more">
+            <span class="no-more-message">No more reservations</span>
+          </div>
+        `;
+      }
 
       html += '</div>';
 
