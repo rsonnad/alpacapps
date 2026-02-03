@@ -1713,6 +1713,7 @@
     let allEventRequests = [];
     let currentEventRequestId = null;
     let eventsLoaded = false;
+    let eventCalendarCurrentDate = new Date();
 
     // Users state
     let allUsers = [];
@@ -3870,7 +3871,9 @@
     };
 
     async function savePaymentMethod() {
+      console.log('savePaymentMethod called');
       const id = document.getElementById('paymentMethodId').value || null;
+      console.log('id:', id);
       const data = {
         id,
         name: document.getElementById('paymentMethodName').value.trim(),
@@ -3879,6 +3882,7 @@
         instructions: document.getElementById('paymentMethodInstructions').value.trim() || null,
         is_active: document.getElementById('paymentMethodActive').checked,
       };
+      console.log('data:', data);
 
       if (!data.name) {
         showToast('Name is required', 'warning');
@@ -3886,11 +3890,14 @@
       }
 
       try {
+        console.log('calling rentalService.savePaymentMethod');
         await rentalService.savePaymentMethod(data);
+        console.log('savePaymentMethod succeeded');
         await loadPaymentMethods();
         closePaymentMethodModal();
         showToast('Payment method saved', 'success');
       } catch (error) {
+        console.error('savePaymentMethod error:', error);
         showToast('Error: ' + error.message, 'error');
       }
     }
@@ -4203,6 +4210,8 @@
           allPeople.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name}</option>`).join('');
 
         renderEventPipeline();
+        initEventCalendarControls();
+        renderEventCalendar();
       } catch (error) {
         console.error('Error loading events:', error);
         showToast('Error loading events', 'error');
