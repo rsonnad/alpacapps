@@ -222,9 +222,10 @@ async function upload(file, options = {}) {
     const randomId = Math.random().toString(36).substring(2, 8);
     const storagePath = `${category}/${timestamp}-${randomId}.${ext}`;
 
-    // Upload to Supabase storage (with timeout)
+    // Upload to Supabase storage (with retry logic)
     console.log(`[upload] Uploading to Supabase: ${storagePath}`);
-    const uploadPromise = supabase.storage
+
+    const doUpload = () => supabase.storage
       .from(CONFIG.buckets.images)
       .upload(storagePath, fileToUpload, {
         cacheControl: '3600',
@@ -232,11 +233,42 @@ async function upload(file, options = {}) {
         upsert: false,
       });
 
-    const { data: uploadData, error: uploadError } = await withTimeout(
-      uploadPromise,
-      60000, // 60 second timeout for upload
-      'Upload to storage timed out'
-    );
+    // Retry up to 3 times with 120 second timeout each
+    let uploadData = null;
+    let uploadError = null;
+    const maxRetries = 3;
+    const uploadTimeout = 120000; // 2 minutes per attempt
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[upload] Attempt ${attempt}/${maxRetries}...`);
+        const result = await withTimeout(
+          doUpload(),
+          uploadTimeout,
+          `Upload timed out (attempt ${attempt})`
+        );
+        uploadData = result.data;
+        uploadError = result.error;
+
+        if (!uploadError) {
+          console.log(`[upload] Success on attempt ${attempt}`);
+          break;
+        }
+
+        console.warn(`[upload] Attempt ${attempt} failed:`, uploadError.message);
+        if (attempt < maxRetries) {
+          console.log(`[upload] Retrying in 2 seconds...`);
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      } catch (timeoutErr) {
+        console.warn(`[upload] Attempt ${attempt} timed out`);
+        uploadError = { message: timeoutErr.message };
+        if (attempt < maxRetries) {
+          console.log(`[upload] Retrying in 2 seconds...`);
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+    }
 
     if (uploadError) {
       console.error('[upload] Upload error:', uploadError);
