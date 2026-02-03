@@ -567,27 +567,32 @@ const TUS_THRESHOLD_BYTES = 6 * 1024 * 1024;
  * Get current Supabase storage usage
  */
 async function getStorageUsage() {
-  const { data, error } = await supabase.rpc('check_storage_limit');
-
-  if (error) {
-    console.error('Error checking storage:', error);
-    // Fallback: calculate from media table
-    const { data: usage } = await supabase
+  // Use direct query instead of RPC to avoid cold-start delays
+  try {
+    const query = supabase
       .from('media')
       .select('file_size_bytes')
       .eq('storage_provider', 'supabase')
       .eq('is_archived', false);
 
-    const totalBytes = usage?.reduce((sum, m) => sum + (m.file_size_bytes || 0), 0) || 0;
+    const { data, error } = await withTimeout(query, 5000, 'Storage usage check timed out');
+
+    if (error) {
+      console.error('Error checking storage:', error);
+      return null;
+    }
+
+    const totalBytes = data?.reduce((sum, m) => sum + (m.file_size_bytes || 0), 0) || 0;
     return {
       current_bytes: totalBytes,
       limit_bytes: CONFIG.supabaseMaxBytes,
       percent_used: (totalBytes / CONFIG.supabaseMaxBytes) * 100,
       bytes_remaining: CONFIG.supabaseMaxBytes - totalBytes,
     };
+  } catch (err) {
+    console.warn('[getStorageUsage] Failed:', err.message);
+    return null;
   }
-
-  return data?.[0] || null;
 }
 
 /**
@@ -1512,7 +1517,16 @@ async function search(options = {}) {
     query = query.eq('media_type', mediaType);
   }
 
-  const { data, error } = await query;
+  // Add timeout to prevent indefinite hanging on slow connections
+  let data, error;
+  try {
+    const result = await withTimeout(query, 15000, 'Media search timed out');
+    data = result.data;
+    error = result.error;
+  } catch (timeoutError) {
+    console.error('Search timeout:', timeoutError.message);
+    throw timeoutError; // Let caller handle the error
+  }
 
   if (error) {
     console.error('Search error:', error);
