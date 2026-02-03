@@ -690,28 +690,6 @@
 
       <!-- Spaces Panel -->
       <div id="spacesPanel" class="manage-panel active">
-        <!-- Add New Space (compact) -->
-        <div class="section">
-          <div class="section-header">
-            <h2>Add New Space</h2>
-          </div>
-          <div class="section-body">
-            <form id="addSpaceForm" class="add-space-form">
-              <div class="form-group">
-                <label for="newSpaceName">Name *</label>
-                <input type="text" id="newSpaceName" required placeholder="e.g., Garden Suite">
-              </div>
-              <div class="form-group">
-                <label for="newSpaceParent">Parent Space</label>
-                <select id="newSpaceParent">
-                  <option value="">None (top-level)</option>
-                </select>
-              </div>
-              <button type="submit" class="btn-primary">Add Space</button>
-            </form>
-          </div>
-        </div>
-
         <!-- All Spaces with Card/Table Views -->
         <div class="section">
           <div class="section-header">
@@ -812,6 +790,28 @@
             <div id="archivedSpacesList" class="spaces-list">
               <!-- Populated by JS -->
             </div>
+          </div>
+        </div>
+
+        <!-- Add New Space (at bottom since rarely used) -->
+        <div class="section" style="margin-top: 2rem;">
+          <div class="section-header">
+            <h2>Add New Space</h2>
+          </div>
+          <div class="section-body">
+            <form id="addSpaceForm" class="add-space-form">
+              <div class="form-group">
+                <label for="newSpaceName">Name *</label>
+                <input type="text" id="newSpaceName" required placeholder="e.g., Garden Suite">
+              </div>
+              <div class="form-group">
+                <label for="newSpaceParent">Parent Space</label>
+                <select id="newSpaceParent">
+                  <option value="">None (top-level)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary">Add Space</button>
+            </form>
           </div>
         </div>
       </div>
