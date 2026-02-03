@@ -174,8 +174,16 @@ async function upload(file, options = {}) {
     };
   }
 
-  // Check storage usage
-  const usage = await getStorageUsage();
+  // Check storage usage (with timeout to prevent hangs)
+  console.log('[upload] Checking storage usage...');
+  let usage = null;
+  try {
+    usage = await withTimeout(getStorageUsage(), 10000, 'Storage check timed out');
+  } catch (storageCheckError) {
+    console.warn('[upload] Storage check failed, continuing anyway:', storageCheckError.message);
+    // Continue without storage check - don't block upload
+  }
+
   if (usage && (usage.bytes_remaining < file.size)) {
     return {
       success: false,
@@ -192,17 +200,18 @@ async function upload(file, options = {}) {
     const compressibleTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (compressibleTypes.includes(file.type) && file.size > 500 * 1024) {
       try {
-        console.log(`Compressing image: ${file.name} (${formatBytes(file.size)})`);
+        console.log(`[upload] Compressing image: ${file.name} (${formatBytes(file.size)})`);
         const compressedBlob = await compressImage(file, {
           maxWidth: 1920,
           maxHeight: 1920,
           quality: 0.85,
+          timeout: 30000,
         });
         fileToUpload = compressedBlob;
         finalMimeType = 'image/jpeg';
-        console.log(`Compressed to: ${formatBytes(compressedBlob.size)} (${((1 - compressedBlob.size / file.size) * 100).toFixed(0)}% reduction)`);
+        console.log(`[upload] Compressed to: ${formatBytes(compressedBlob.size)} (${((1 - compressedBlob.size / file.size) * 100).toFixed(0)}% reduction)`);
       } catch (compressError) {
-        console.warn('Image compression failed, uploading original:', compressError);
+        console.warn('[upload] Image compression failed, uploading original:', compressError.message);
         // Continue with original file if compression fails
       }
     }
@@ -213,8 +222,9 @@ async function upload(file, options = {}) {
     const randomId = Math.random().toString(36).substring(2, 8);
     const storagePath = `${category}/${timestamp}-${randomId}.${ext}`;
 
-    // Upload to Supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Upload to Supabase storage (with timeout)
+    console.log(`[upload] Uploading to Supabase: ${storagePath}`);
+    const uploadPromise = supabase.storage
       .from(CONFIG.buckets.images)
       .upload(storagePath, fileToUpload, {
         cacheControl: '3600',
@@ -222,10 +232,17 @@ async function upload(file, options = {}) {
         upsert: false,
       });
 
+    const { data: uploadData, error: uploadError } = await withTimeout(
+      uploadPromise,
+      60000, // 60 second timeout for upload
+      'Upload to storage timed out'
+    );
+
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('[upload] Upload error:', uploadError);
       return { success: false, error: uploadError.message };
     }
+    console.log('[upload] Upload successful');
 
     // Get public URL
     const { data: urlData } = supabase.storage
@@ -238,19 +255,20 @@ async function upload(file, options = {}) {
       return { success: false, error: 'Failed to get public URL' };
     }
 
-    // Get image dimensions (if browser supports it)
+    // Get image dimensions (if browser supports it) - with timeout
     let width = null;
     let height = null;
     try {
-      const dimensions = await getImageDimensions(file);
+      const dimensions = await getImageDimensions(file, 10000);
       width = dimensions.width;
       height = dimensions.height;
     } catch (e) {
-      console.warn('Could not get image dimensions:', e);
+      console.warn('[upload] Could not get image dimensions:', e.message);
     }
 
-    // Insert media record (use compressed file size)
-    const { data: mediaRecord, error: mediaError } = await supabase
+    // Insert media record (use compressed file size) - with timeout
+    console.log('[upload] Creating media record...');
+    const insertPromise = supabase
       .from('media')
       .insert({
         url: publicUrl,
@@ -268,12 +286,19 @@ async function upload(file, options = {}) {
       .select()
       .single();
 
+    const { data: mediaRecord, error: mediaError } = await withTimeout(
+      insertPromise,
+      15000, // 15 second timeout for DB insert
+      'Database insert timed out'
+    );
+
     if (mediaError) {
-      console.error('Media record error:', mediaError);
+      console.error('[upload] Media record error:', mediaError);
       // Try to clean up uploaded file
       await supabase.storage.from(CONFIG.buckets.images).remove([storagePath]);
       return { success: false, error: mediaError.message };
     }
+    console.log('[upload] Media record created:', mediaRecord.id);
 
     // Assign tags
     if (tags.length > 0) {
@@ -801,17 +826,46 @@ function formatBytes(bytes) {
 }
 
 /**
- * Get image dimensions from file
+ * Wrap a promise with a timeout
  */
-function getImageDimensions(file) {
+function withTimeout(promise, ms, errorMessage = 'Operation timed out') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), ms)
+    )
+  ]);
+}
+
+/**
+ * Get image dimensions from file (with timeout)
+ */
+function getImageDimensions(file, timeout = 10000) {
   return new Promise((resolve, reject) => {
+    let timeoutId = null;
+    let objectUrl = null;
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('Getting image dimensions timed out'));
+    }, timeout);
+
     const img = new Image();
     img.onload = () => {
+      cleanup();
       resolve({ width: img.width, height: img.height });
-      URL.revokeObjectURL(img.src);
     };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      cleanup();
+      reject(new Error('Failed to load image for dimensions'));
+    };
+    objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
   });
 }
 
