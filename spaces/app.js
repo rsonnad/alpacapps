@@ -409,7 +409,6 @@ function renderTable(spacesToRender) {
 
     const availFromStr = space.isAvailable ? 'NOW' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
     const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
-    const fromBadgeClass = space.isAvailable ? 'available' : 'occupied';
 
     // Thumbnail
     const thumbnail = space.photos.length > 0
@@ -431,8 +430,8 @@ function renderTable(spacesToRender) {
         <td>${beds || '-'}</td>
         <td>${space.bath_privacy || '-'}</td>
         <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
-        <td><span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span></td>
-        <td>Until: ${availUntilStr}</td>
+        <td>${availFromStr}</td>
+        <td>${availUntilStr}</td>
       </tr>
     `;
   }).join('');
