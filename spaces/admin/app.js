@@ -1191,6 +1191,14 @@ function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 
   selectedLibraryMedia.clear();
   selectedUploadFiles = [];
 
+  // Reset upload guard and button state for fresh modal
+  isPhotoUploading = false;
+  const submitBtn = document.getElementById('submitPhotoUpload');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Upload';
+  }
+
   document.getElementById('uploadModalSpaceName').textContent = spaceName;
   document.getElementById('photoFile').value = '';
   document.getElementById('photoBulkCaption').value = '';
