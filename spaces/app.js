@@ -555,8 +555,15 @@ function displaySpaceDetail(space) {
   }
   console.log('Ancestor sections:', ancestorPhotoSections.map(s => s.name));
 
-  // Combine all photos for lightbox gallery (space photos first, then ancestors in order)
+  // Find child spaces (spaces whose parent is this space)
+  const childSpaces = spaces.filter(s => s.parent?.name === space.name && s.photos && s.photos.length > 0);
+  console.log('Child spaces with photos:', childSpaces.map(s => s.name));
+
+  // Combine all photos for lightbox gallery (space photos first, then children, then ancestors)
   const allPhotos = [...space.photos];
+  childSpaces.forEach(child => {
+    allPhotos.push(...child.photos);
+  });
   ancestorPhotoSections.forEach(section => {
     allPhotos.push(...section.photos);
   });
@@ -581,8 +588,27 @@ function displaySpaceDetail(space) {
     `;
   }
 
+  // Build child spaces photos HTML (each child gets its own section)
+  let childPhotosHtml = '';
+  childSpaces.forEach(child => {
+    childPhotosHtml += `
+      <div class="detail-section detail-photos">
+        <h3>${child.name} Photos</h3>
+        <div class="detail-photos-grid">
+          ${child.photos.map(p => `
+            <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
+              <img src="${p.url}" alt="${p.caption || child.name}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
   // Build ancestor photos HTML (each ancestor gets its own section, closest parent first)
-  let ancestorPhotosHtml = '';
+  // Add visual separator if there are space or child photos before ancestors
+  const needsSeparator = (space.photos.length > 0 || childSpaces.length > 0) && ancestorPhotoSections.length > 0;
+  let ancestorPhotosHtml = needsSeparator ? '<hr style="border: none; border-top: 1px solid var(--border); margin: 1.5rem 0;">' : '';
   ancestorPhotoSections.forEach(section => {
     ancestorPhotosHtml += `
       <div class="detail-section detail-photos">
@@ -637,6 +663,7 @@ function displaySpaceDetail(space) {
       </p>
     </div>
     ${spacePhotosHtml}
+    ${childPhotosHtml}
     ${ancestorPhotosHtml}
   `;
 

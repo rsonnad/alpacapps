@@ -922,6 +922,9 @@ function showSpaceDetail(spaceId) {
   const isOccupied = !!space.currentAssignment;
   const occupant = space.currentAssignment?.person;
 
+  // Get child spaces with photos
+  const childSpaces = spaces.filter(s => s.parent?.name === space.name && s.photos && s.photos.length > 0);
+
   // Get parent photos if parent exists
   let parentPhotos = [];
   let parentName = '';
@@ -933,8 +936,12 @@ function showSpaceDetail(spaceId) {
     }
   }
 
-  // Combine all photos for lightbox gallery
-  const allPhotos = [...space.photos, ...parentPhotos];
+  // Combine all photos for lightbox gallery (space, children, then parent)
+  const allPhotos = [...space.photos];
+  childSpaces.forEach(child => {
+    allPhotos.push(...child.photos);
+  });
+  allPhotos.push(...parentPhotos);
   if (allPhotos.length) {
     setCurrentGallery(allPhotos);
   }
@@ -1017,10 +1024,29 @@ function showSpaceDetail(spaceId) {
     `;
   }
 
-  // Build parent photos HTML (at very bottom, if parent has photos)
+  // Build child spaces photos HTML
+  let childPhotosHtml = '';
+  childSpaces.forEach(child => {
+    childPhotosHtml += `
+      <div class="detail-section detail-photos">
+        <h3>${child.name} Photos</h3>
+        <div class="detail-photos-grid">
+          ${child.photos.map(p => `
+            <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
+              <img src="${p.url}" alt="${p.caption || child.name}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  // Build parent photos HTML (at very bottom, with visual separator if there are children or space photos)
   let parentPhotosHtml = '';
   if (parentPhotos.length) {
+    const needsSeparator = space.photos.length > 0 || childSpaces.length > 0;
     parentPhotosHtml = `
+      ${needsSeparator ? '<hr style="border: none; border-top: 1px solid var(--border); margin: 1.5rem 0;">' : ''}
       <div class="detail-section detail-photos">
         <h3>${parentName} Photos</h3>
         <div class="detail-photos-grid">
@@ -1072,6 +1098,7 @@ function showSpaceDetail(spaceId) {
       </div>
     ` : ''}
     ${spacePhotosHtml}
+    ${childPhotosHtml}
     ${parentPhotosHtml}
   `;
 
