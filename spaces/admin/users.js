@@ -175,29 +175,27 @@ async function inviteUser(email, role) {
 
   try {
     // Create invitation record
-    const { error } = await supabase
+    const { data: newInvite, error } = await supabase
       .from('user_invitations')
       .insert({
         email: email,
         role: role,
         invited_by: authState.appUser?.id
-      });
+      })
+      .select()
+      .single();
 
     if (error) throw error;
 
     document.getElementById('inviteEmail').value = '';
 
     // Send invitation email automatically
-    const loginUrl = 'https://rsonnad.github.io/GenAlpacaOps/login/';
-    const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
+    const emailSent = await sendInvitationEmail(newInvite.id, email, role);
 
-    if (emailResult.success) {
+    if (emailSent) {
       showToast('Invitation sent to ' + email, 'success');
     } else {
-      console.error('Email send failed:', emailResult.error);
-      showToast('Invitation created but email failed to send. You may need to notify them manually.', 'warning');
-      // Still show the modal as fallback
-      showInvitationModal(email, role);
+      showToast('Invitation created but email failed to send. You can resend it.', 'warning');
     }
 
     await loadInvitations();
@@ -206,6 +204,73 @@ async function inviteUser(email, role) {
   } catch (error) {
     console.error('Error inviting user:', error);
     showToast('Failed to send invitation: ' + error.message, 'error');
+  }
+}
+
+/**
+ * Send or resend invitation email and update tracking
+ */
+async function sendInvitationEmail(invitationId, email, role) {
+  const loginUrl = 'https://rsonnad.github.io/GenAlpacaOps/login/';
+  const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
+
+  if (emailResult.success) {
+    // Update email tracking in database
+    await supabase
+      .from('user_invitations')
+      .update({
+        email_sent_at: new Date().toISOString(),
+        email_send_count: supabase.rpc ? undefined : 1 // Will use raw SQL increment below
+      })
+      .eq('id', invitationId);
+
+    // Increment send count
+    await supabase.rpc('increment_invitation_email_count', { invitation_id: invitationId }).catch(() => {
+      // Fallback: just set to 1 if RPC doesn't exist
+      supabase
+        .from('user_invitations')
+        .update({ email_send_count: 1 })
+        .eq('id', invitationId);
+    });
+
+    return true;
+  } else {
+    console.error('Email send failed:', emailResult.error);
+    return false;
+  }
+}
+
+/**
+ * Resend invitation email
+ */
+async function resendInvitation(invitationId) {
+  const invitation = invitations.find(i => i.id === invitationId);
+  if (!invitation) {
+    showToast('Invitation not found', 'error');
+    return;
+  }
+
+  // Check if expired
+  if (new Date(invitation.expires_at) < new Date()) {
+    // Extend expiration by 7 days
+    const newExpiry = new Date();
+    newExpiry.setDate(newExpiry.getDate() + 7);
+
+    await supabase
+      .from('user_invitations')
+      .update({ expires_at: newExpiry.toISOString() })
+      .eq('id', invitationId);
+  }
+
+  const emailSent = await sendInvitationEmail(invitationId, invitation.email, invitation.role);
+
+  if (emailSent) {
+    showToast('Invitation resent to ' + invitation.email, 'success');
+    await loadInvitations();
+    render();
+  } else {
+    showToast('Failed to send email. Try copying the invite text manually.', 'error');
+    showInvitationModal(invitation.email, invitation.role);
   }
 }
 
@@ -327,26 +392,62 @@ function renderInvitations() {
         <tr>
           <th>Email</th>
           <th>Role</th>
-          <th>Invited</th>
+          <th>Email Status</th>
           <th>Expires</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        ${invitations.map(inv => `
-          <tr>
-            <td>${inv.email}</td>
-            <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
-            <td>${new Date(inv.invited_at).toLocaleDateString()}</td>
-            <td>${new Date(inv.expires_at).toLocaleDateString()}</td>
-            <td>
-              <button class="btn-danger" onclick="revokeInvitation('${inv.id}')">Revoke</button>
-            </td>
-          </tr>
-        `).join('')}
+        ${invitations.map(inv => {
+          const isExpired = new Date(inv.expires_at) < new Date();
+          const emailStatus = getEmailStatus(inv);
+          return `
+            <tr class="${isExpired ? 'expired-row' : ''}">
+              <td>${inv.email}</td>
+              <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
+              <td>
+                <span class="email-status ${emailStatus.class}">${emailStatus.text}</span>
+                ${inv.email_send_count > 1 ? `<span class="send-count">(${inv.email_send_count}x)</span>` : ''}
+              </td>
+              <td>
+                <span class="${isExpired ? 'expired-text' : ''}">${new Date(inv.expires_at).toLocaleDateString()}</span>
+                ${isExpired ? '<span class="expired-badge">Expired</span>' : ''}
+              </td>
+              <td class="actions-cell">
+                <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">
+                  ${isExpired ? 'Resend & Extend' : 'Resend'}
+                </button>
+                <button class="btn-text" onclick="showInvitationModal('${inv.email}', '${inv.role}')" title="Copy invite text">
+                  Copy
+                </button>
+                <button class="btn-danger btn-small" onclick="revokeInvitation('${inv.id}')">Revoke</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
       </tbody>
     </table>
   `;
+}
+
+function getEmailStatus(invitation) {
+  if (!invitation.email_sent_at) {
+    return { text: 'Not sent', class: 'status-not-sent' };
+  }
+
+  const sentDate = new Date(invitation.email_sent_at);
+  const now = new Date();
+  const hoursSince = (now - sentDate) / (1000 * 60 * 60);
+
+  if (hoursSince < 1) {
+    const minsSince = Math.floor((now - sentDate) / (1000 * 60));
+    return { text: `Sent ${minsSince}m ago`, class: 'status-sent-recent' };
+  } else if (hoursSince < 24) {
+    return { text: `Sent ${Math.floor(hoursSince)}h ago`, class: 'status-sent-recent' };
+  } else {
+    const daysSince = Math.floor(hoursSince / 24);
+    return { text: `Sent ${daysSince}d ago`, class: 'status-sent' };
+  }
 }
 
 function renderUsers() {
@@ -412,6 +513,7 @@ function renderUsers() {
 
 // Make functions globally accessible
 window.revokeInvitation = revokeInvitation;
+window.resendInvitation = resendInvitation;
 window.updateUserRole = updateUserRole;
 window.removeUser = removeUser;
 window.copyInviteText = copyInviteText;

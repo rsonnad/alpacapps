@@ -166,6 +166,83 @@
       color: var(--text-muted);
       margin-top: 0.75rem;
     }
+
+    /* Email status styles */
+    .email-status {
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .status-not-sent {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-sent-recent {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-sent {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .send-count {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 0.25rem;
+    }
+
+    .expired-row {
+      opacity: 0.7;
+    }
+
+    .expired-text {
+      text-decoration: line-through;
+    }
+
+    .expired-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.4rem;
+      background: var(--occupied);
+      color: white;
+      border-radius: 3px;
+      margin-left: 0.5rem;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn-small {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-secondary.btn-small {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-text {
+      padding: 0.3rem 0.5rem;
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .btn-text:hover {
+      color: var(--accent-dark);
+    }
   </style>
 </head>
 <body>
