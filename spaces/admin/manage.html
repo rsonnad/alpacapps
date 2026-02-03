@@ -660,7 +660,7 @@
               <thead>
                 <tr>
                   <th></th>
-                  <th data-sort="name">Name</th>
+                  <th data-sort="name" style="min-width: 200px;">Name</th>
                   <th data-sort="monthly_rate">Rate</th>
                   <th data-sort="sq_footage">Size</th>
                   <th>Beds</th>
@@ -670,8 +670,8 @@
                   <th>Until</th>
                   <th>Tenant</th>
                   <th>Lease Dates</th>
-                  <th>Vis</th>
                   <th>Status</th>
+                  <th>Vis</th>
                 </tr>
               </thead>
               <tbody id="tableBody"></tbody>
@@ -2776,7 +2776,7 @@
         return `
           <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
             <td class="td-thumbnail">${thumbnail}</td>
-            <td>${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
+            <td style="min-width: 200px;">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
             <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
             <td>${space.sq_footage || '-'}</td>
             <td>${beds || '-'}</td>
@@ -2786,8 +2786,8 @@
             <td>${availUntilStr}</td>
             <td>${occupantName}${occupant?.type ? `<br><small style="color:var(--text-muted)">${occupant.type}</small>` : ''}</td>
             <td>${leaseDatesHtml}</td>
-            <td>${visBadge}</td>
             <td>${statusBadge}</td>
+            <td>${visBadge}</td>
           </tr>
         `;
       }).join('');
