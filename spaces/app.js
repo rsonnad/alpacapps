@@ -350,7 +350,7 @@ function renderCards(spacesToRender) {
     const photo = space.photos[0];
     const photoCount = space.photos.length;
     const beds = getBedSummary(space);
-    const bathText = space.bath_privacy || '';
+    const bathText = (space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '';
 
     // Availability display
     const availFromStr = space.isAvailable ? 'NOW' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
@@ -444,7 +444,7 @@ function renderTable(spacesToRender) {
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
         <td>${space.sq_footage || '-'}</td>
         <td>${beds || '-'}</td>
-        <td>${space.bath_privacy || '-'}</td>
+        <td>${(space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '-'}</td>
         <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
         <td>${availFromStr}</td>
         <td>${availUntilStr}</td>
@@ -609,7 +609,7 @@ function displaySpaceDetail(space) {
         ${space.monthly_rate ? `<p><strong>Rate:</strong> $${space.monthly_rate}/mo</p>` : ''}
         <p><strong>Size:</strong> ${space.sq_footage ? `${space.sq_footage} sq ft` : 'N/A'}</p>
         <p><strong>Beds:</strong> ${getBedSummary(space) || 'N/A'}</p>
-        <p><strong>Bathroom:</strong> ${space.bath_privacy || 'N/A'}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>
+        ${space.can_be_dwelling && ((space.bath_privacy && space.bath_privacy !== 'none') || space.bath_fixture) ? `<p><strong>Bathroom:</strong> ${(space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : ''}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>` : ''}
         <p><strong>Capacity:</strong> ${space.min_residents || 1}-${space.max_residents || '?'} residents</p>
       </div>
       <div class="detail-section">

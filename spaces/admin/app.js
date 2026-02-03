@@ -728,7 +728,7 @@ function renderCards(spacesToRender) {
     else if (!space.is_listed) badges += '<span class="badge unlisted">Unlisted</span>';
 
     const beds = getBedSummary(space);
-    const bathText = space.bath_privacy || '';
+    const bathText = (space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '';
     const locationText = space.location || (space.parent ? space.parent.name : '');
 
     // Photo count overlay (only show if more than 1 photo)
@@ -878,7 +878,7 @@ function renderTable(spacesToRender) {
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
         <td>${space.sq_footage || '-'}</td>
         <td>${beds || '-'}</td>
-        <td>${space.bath_privacy || '-'}</td>
+        <td>${(space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '-'}</td>
         <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
         <td>${availFromStr}</td>
         <td>${availUntilStr}</td>
@@ -1042,7 +1042,7 @@ function showSpaceDetail(spaceId) {
         ${space.monthly_rate ? `<p><strong>Rate:</strong> $${space.monthly_rate}/mo</p>` : ''}
         <p><strong>Size:</strong> ${space.sq_footage ? `${space.sq_footage} sq ft` : 'N/A'}</p>
         <p><strong>Beds:</strong> ${getBedSummary(space) || 'N/A'}</p>
-        <p><strong>Bathroom:</strong> ${space.bath_privacy || 'N/A'}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>
+        ${space.can_be_dwelling && ((space.bath_privacy && space.bath_privacy !== 'none') || space.bath_fixture) ? `<p><strong>Bathroom:</strong> ${(space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : ''}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>` : ''}
         <p><strong>Capacity:</strong> ${space.min_residents || 1}-${space.max_residents || '?'} residents</p>
         ${space.gender_restriction && space.gender_restriction !== 'none' ? `<p><strong>Restriction:</strong> ${space.gender_restriction} only</p>` : ''}
       </div>
