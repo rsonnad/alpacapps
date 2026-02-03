@@ -602,6 +602,28 @@ main {
   margin-top: 0.2rem;
 }
 
+.card-parent-link {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.card-parent-link:hover {
+  text-decoration: underline;
+}
+
+.table-parent-link {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.table-parent-link:hover {
+  text-decoration: underline;
+}
+
 .card-description {
   font-size: 0.75rem;
   color: var(--text-muted);
