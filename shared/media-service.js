@@ -670,10 +670,28 @@ async function upload(file, options = {}) {
   }
 
   // Check storage usage (with timeout to prevent hangs)
+  // Use a fast direct query instead of RPC to avoid cold-start delays
   console.log('[upload] Checking storage usage...');
   let usage = null;
   try {
-    usage = await withTimeout(getStorageUsage(), 10000, 'Storage check timed out');
+    const storageCheck = async () => {
+      const { data, error } = await supabase
+        .from('media')
+        .select('file_size_bytes')
+        .eq('storage_provider', 'supabase')
+        .eq('is_archived', false);
+
+      if (error) throw error;
+
+      const totalBytes = data?.reduce((sum, m) => sum + (m.file_size_bytes || 0), 0) || 0;
+      return {
+        current_bytes: totalBytes,
+        limit_bytes: CONFIG.supabaseMaxBytes,
+        percent_used: (totalBytes / CONFIG.supabaseMaxBytes) * 100,
+        bytes_remaining: CONFIG.supabaseMaxBytes - totalBytes,
+      };
+    };
+    usage = await withTimeout(storageCheck(), 5000, 'Storage check timed out');
   } catch (storageCheckError) {
     console.warn('[upload] Storage check failed, continuing anyway:', storageCheckError.message);
     // Continue without storage check - don't block upload
