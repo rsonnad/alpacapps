@@ -945,7 +945,7 @@ async function uploadInternal(file, options = {}) {
     let mediaRecord = null;
     let mediaError = null;
     const dbMaxRetries = 3;
-    const dbTimeoutMs = 15000; // 15 seconds per attempt - faster feedback on slow connections
+    const dbTimeoutMs = 22500; // 22.5 seconds per attempt (increased 50% for high-latency connections)
 
     for (let dbAttempt = 1; dbAttempt <= dbMaxRetries; dbAttempt++) {
       try {
@@ -1556,7 +1556,7 @@ async function search(options = {}) {
 
   // Add timeout to prevent indefinite hanging on slow connections
   // Use shorter timeout for minimal queries
-  const timeoutMs = minimal ? 8000 : 15000;
+  const timeoutMs = minimal ? 12000 : 22500; // Increased 50% for high-latency connections
   let data, error;
   try {
     const result = await withTimeout(query, timeoutMs, 'Media search timed out');
