@@ -4454,7 +4454,7 @@
       html += '<div class="events-calendar-header">';
       ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach((day, index) => {
         const isWeekend = index === 0 || index === 6;
-        html += \`<div class="day-header \${isWeekend ? 'weekend' : ''}">\${day}</div>\`;
+        html += `<div class="day-header ${isWeekend ? 'weekend' : ''}">${day}</div>`;
       });
       html += '</div>';
 
@@ -4471,21 +4471,21 @@
         if (isWeekend) cellClasses += ' weekend';
         if (isToday) cellClasses += ' today';
 
-        html += \`<div class="\${cellClasses}">\`;
-        html += \`<div class="cell-date">\${dayInfo.day}</div>\`;
+        html += `<div class="${cellClasses}">`;
+        html += `<div class="cell-date">${dayInfo.day}</div>`;
         html += '<div class="cell-events">';
 
         dayEvents.forEach(event => {
           const status = event.request_status || 'submitted';
           const person = event.person;
-          const clientName = person ? \`\${person.first_name || ''} \${person.last_name || ''}\`.trim() : 'Unknown';
+          const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
           const formatTime = (timeStr) => {
             if (!timeStr) return '';
             const [hours, minutes] = timeStr.split(':');
             const hour = parseInt(hours);
             const ampm = hour >= 12 ? 'PM' : 'AM';
             const hour12 = hour % 12 || 12;
-            return \`\${hour12}:\${minutes}\${ampm}\`;
+            return `${hour12}:${minutes}${ampm}`;
           };
           const timeDisplay = event.event_start_time ? formatTime(event.event_start_time) : '';
           const rentalFee = parseFloat(event.rental_fee) || eventService.DEFAULT_FEES?.RENTAL_FEE || 0;
@@ -4494,21 +4494,21 @@
             name: event.event_name || 'Unnamed Event',
             client: clientName,
             org: event.organization_name || '-',
-            time: event.event_start_time ? \`\${formatTime(event.event_start_time)} - \${formatTime(event.event_end_time)}\` : '-',
+            time: event.event_start_time ? `${formatTime(event.event_start_time)} - ${formatTime(event.event_end_time)}` : '-',
             guests: event.expected_guests || '?',
-            fee: rentalFee === 0 ? 'Complementary' : \`$\${rentalFee}\`,
-            deposit: event.security_deposit ? \`$\${event.security_deposit}\` : 'N/A',
+            fee: rentalFee === 0 ? 'Complementary' : `$${rentalFee}`,
+            deposit: event.security_deposit ? `$${event.security_deposit}` : 'N/A',
             status: status.replace('_', ' ')
           }).replace(/"/g, '&quot;');
 
-          html += \`
-            <div class="event-chip \${status}"
-                 data-id="\${event.id}"
-                 data-tooltip='\${tooltipData}'>
-              \${timeDisplay ? \`<span class="chip-time">\${timeDisplay}</span> \` : ''}
-              <span class="chip-name">\${event.event_name || 'Event'}</span>
+          html += `
+            <div class="event-chip ${status}"
+                 data-id="${event.id}"
+                 data-tooltip='${tooltipData}'>
+              ${timeDisplay ? `<span class="chip-time">${timeDisplay}</span> ` : ''}
+              <span class="chip-name">${event.event_name || 'Event'}</span>
             </div>
-          \`;
+          `;
         });
 
         html += '</div></div>';
@@ -4528,20 +4528,20 @@
 
       try {
         const data = JSON.parse(element.dataset.tooltip);
-        tooltip.innerHTML = \`
-          <div class="tooltip-header">\${data.name}</div>
-          <div class="tooltip-row"><span class="tooltip-label">Client:</span><span class="tooltip-value">\${data.client}</span></div>
-          \${data.org !== '-' ? \`<div class="tooltip-row"><span class="tooltip-label">Org:</span><span class="tooltip-value">\${data.org}</span></div>\` : ''}
-          <div class="tooltip-row"><span class="tooltip-label">Time:</span><span class="tooltip-value">\${data.time}</span></div>
-          <div class="tooltip-row"><span class="tooltip-label">Guests:</span><span class="tooltip-value">\${data.guests}</span></div>
-          <div class="tooltip-row"><span class="tooltip-label">Fee:</span><span class="tooltip-value">\${data.fee}</span></div>
-          <div class="tooltip-row"><span class="tooltip-label">Deposit:</span><span class="tooltip-value">\${data.deposit}</span></div>
-          <div class="tooltip-row"><span class="tooltip-label">Status:</span><span class="tooltip-value">\${data.status}</span></div>
-        \`;
+        tooltip.innerHTML = `
+          <div class="tooltip-header">${data.name}</div>
+          <div class="tooltip-row"><span class="tooltip-label">Client:</span><span class="tooltip-value">${data.client}</span></div>
+          ${data.org !== '-' ? `<div class="tooltip-row"><span class="tooltip-label">Org:</span><span class="tooltip-value">${data.org}</span></div>` : ''}
+          <div class="tooltip-row"><span class="tooltip-label">Time:</span><span class="tooltip-value">${data.time}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Guests:</span><span class="tooltip-value">${data.guests}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Fee:</span><span class="tooltip-value">${data.fee}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Deposit:</span><span class="tooltip-value">${data.deposit}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Status:</span><span class="tooltip-value">${data.status}</span></div>
+        `;
 
         const rect = element.getBoundingClientRect();
-        tooltip.style.left = \`\${Math.min(rect.left, window.innerWidth - 300)}px\`;
-        tooltip.style.top = \`\${rect.bottom + 8}px\`;
+        tooltip.style.left = `${Math.min(rect.left, window.innerWidth - 300)}px`;
+        tooltip.style.top = `${rect.bottom + 8}px`;
         tooltip.classList.add('visible');
       } catch (e) {
         console.error('Error parsing event tooltip data:', e);
