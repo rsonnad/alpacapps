@@ -2056,6 +2056,138 @@
     </div>
   </div>
 
+  <!-- Assignment Detail Modal -->
+  <div id="assignmentDetailModal" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 id="assignmentDetailTitle">Assignment Details</h2>
+        <span id="assignmentDetailStatus" class="status-badge"></span>
+        <button class="modal-close" id="closeAssignmentDetail">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid" style="gap: 1.5rem;">
+          <!-- Tenant Info (read-only) -->
+          <div class="form-section" style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Tenant</h3>
+            <div class="form-grid">
+              <div class="info-group">
+                <label>Name</label>
+                <p id="assignmentTenantName">-</p>
+              </div>
+              <div class="info-group">
+                <label>Email</label>
+                <p id="assignmentTenantEmail">-</p>
+              </div>
+              <div class="info-group">
+                <label>Phone</label>
+                <p id="assignmentTenantPhone">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Space Info -->
+          <div class="form-section" style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Space & Dates</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="assignmentSpace">Space</label>
+                <select id="assignmentSpace">
+                  <option value="">Select a space...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="assignmentStatus">Status</label>
+                <select id="assignmentStatus">
+                  <option value="prospect">Prospect</option>
+                  <option value="pending_contract">Pending Contract</option>
+                  <option value="contract_sent">Contract Sent</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="assignmentStartDate">Start Date</label>
+                <input type="date" id="assignmentStartDate">
+              </div>
+              <div class="form-group">
+                <label for="assignmentEndDate">End Date</label>
+                <input type="date" id="assignmentEndDate">
+                <small class="form-hint">Leave empty for open-ended</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial -->
+          <div class="form-section" style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Financial</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="assignmentRateAmount">Rate</label>
+                <div class="rate-input-group">
+                  <span class="rate-prefix">$</span>
+                  <input type="number" id="assignmentRateAmount" step="0.01" min="0">
+                  <select id="assignmentRateTerm">
+                    <option value="monthly">/ month</option>
+                    <option value="weekly">/ week</option>
+                    <option value="daily">/ day</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="assignmentDepositAmount">Deposit Amount</label>
+                <div class="rate-input-group">
+                  <span class="rate-prefix">$</span>
+                  <input type="number" id="assignmentDepositAmount" step="0.01" min="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="assignmentNoticeDays">Notice Period (days)</label>
+                <input type="number" id="assignmentNoticeDays" min="0" placeholder="e.g., 30">
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="assignmentIsFree" style="width: auto; margin-right: 0.5rem;">
+                  Free / No Rent
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Early Departure -->
+          <div class="form-section" style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Early Departure</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="assignmentDesiredDeparture">Desired Departure Date</label>
+                <input type="date" id="assignmentDesiredDeparture">
+                <small class="form-hint">If tenant wants to leave early</small>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="assignmentDepartureListed" style="width: auto; margin-right: 0.5rem;">
+                  List for availability (show to consumers)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-section" style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Notes</h3>
+            <div class="form-group">
+              <textarea id="assignmentNotes" rows="3" placeholder="Any notes about this assignment..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="closeAssignmentDetailBtn">Cancel</button>
+        <button class="btn-primary" id="saveAssignmentBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script type="module">
     import { supabase } from '../../shared/supabase.js';
@@ -2151,6 +2283,7 @@
     // Calendar state
     let calendarAssignments = [];
     let calendarCurrentDate = new Date();
+    let currentAssignmentId = null;
 
     // Events state
     let allEventRequests = [];
@@ -4886,6 +5019,7 @@
       ]);
       populateRentalDropdowns();
       initCalendarControls();
+      initAssignmentDetailModal();
     }
 
     async function loadApplications() {
@@ -5219,7 +5353,7 @@
         const statusLabel = assignment.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
         html += `
-          <tr>
+          <tr class="clickable-row" data-assignment-id="${assignment.id}">
             <td>
               <div class="tenant-cell">
                 <strong>${tenantName}</strong>
@@ -5237,6 +5371,147 @@
 
       html += '</tbody></table>';
       container.innerHTML = html;
+
+      // Add click handlers for rows
+      container.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', () => {
+          const assignmentId = row.dataset.assignmentId;
+          openAssignmentDetail(assignmentId);
+        });
+      });
+    }
+
+    async function openAssignmentDetail(assignmentId) {
+      currentAssignmentId = assignmentId;
+      const assignment = calendarAssignments.find(a => a.id === assignmentId);
+      if (!assignment) return;
+
+      const modal = document.getElementById('assignmentDetailModal');
+      const person = assignment.person || {};
+
+      // Set title
+      const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+      document.getElementById('assignmentDetailTitle').textContent = tenantName;
+
+      // Status badge
+      const statusBadge = document.getElementById('assignmentDetailStatus');
+      const statusLabel = assignment.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      statusBadge.textContent = statusLabel;
+      statusBadge.className = `status-badge ${assignment.status.replace(/_/g, '-')}`;
+
+      // Tenant info (read-only)
+      document.getElementById('assignmentTenantName').textContent = tenantName;
+      document.getElementById('assignmentTenantEmail').textContent = person.email || '-';
+      document.getElementById('assignmentTenantPhone').textContent = person.phone || '-';
+
+      // Populate space dropdown
+      const spaceSelect = document.getElementById('assignmentSpace');
+      spaceSelect.innerHTML = '<option value="">Select a space...</option>' +
+        allSpaces.filter(s => !s.is_archived).map(s =>
+          `<option value="${s.id}">${s.name}</option>`
+        ).join('');
+
+      // Set current space (first one if multiple)
+      const currentSpaceId = assignment.assignment_spaces?.[0]?.space_id || '';
+      spaceSelect.value = currentSpaceId;
+
+      // Set status
+      document.getElementById('assignmentStatus').value = assignment.status || 'active';
+
+      // Dates
+      document.getElementById('assignmentStartDate').value = assignment.start_date || '';
+      document.getElementById('assignmentEndDate').value = assignment.end_date || '';
+
+      // Financial
+      document.getElementById('assignmentRateAmount').value = assignment.rate_amount || assignment.monthly_rent || '';
+      document.getElementById('assignmentRateTerm').value = assignment.rate_term || 'monthly';
+      document.getElementById('assignmentDepositAmount').value = assignment.deposit_amount || '';
+      document.getElementById('assignmentNoticeDays').value = assignment.notice_days || '';
+      document.getElementById('assignmentIsFree').checked = assignment.is_free || false;
+
+      // Early departure
+      document.getElementById('assignmentDesiredDeparture').value = assignment.desired_departure_date || '';
+      document.getElementById('assignmentDepartureListed').checked = assignment.desired_departure_listed || false;
+
+      // Notes
+      document.getElementById('assignmentNotes').value = assignment.notes || '';
+
+      // Show modal
+      modal.classList.remove('hidden');
+    }
+
+    function closeAssignmentDetail() {
+      document.getElementById('assignmentDetailModal').classList.add('hidden');
+      currentAssignmentId = null;
+    }
+
+    async function saveAssignment() {
+      if (!currentAssignmentId) return;
+
+      const assignment = calendarAssignments.find(a => a.id === currentAssignmentId);
+      if (!assignment) return;
+
+      const updates = {
+        status: document.getElementById('assignmentStatus').value,
+        start_date: document.getElementById('assignmentStartDate').value || null,
+        end_date: document.getElementById('assignmentEndDate').value || null,
+        rate_amount: parseFloat(document.getElementById('assignmentRateAmount').value) || null,
+        rate_term: document.getElementById('assignmentRateTerm').value,
+        deposit_amount: parseFloat(document.getElementById('assignmentDepositAmount').value) || null,
+        notice_days: parseInt(document.getElementById('assignmentNoticeDays').value) || null,
+        is_free: document.getElementById('assignmentIsFree').checked,
+        desired_departure_date: document.getElementById('assignmentDesiredDeparture').value || null,
+        desired_departure_listed: document.getElementById('assignmentDepartureListed').checked,
+        notes: document.getElementById('assignmentNotes').value || null
+      };
+
+      try {
+        const { error } = await supabase
+          .from('assignments')
+          .update(updates)
+          .eq('id', currentAssignmentId);
+
+        if (error) throw error;
+
+        // Update space if changed
+        const newSpaceId = document.getElementById('assignmentSpace').value;
+        const currentSpaceId = assignment.assignment_spaces?.[0]?.space_id;
+
+        if (newSpaceId && newSpaceId !== currentSpaceId) {
+          // Delete old assignment_spaces
+          await supabase
+            .from('assignment_spaces')
+            .delete()
+            .eq('assignment_id', currentAssignmentId);
+
+          // Insert new one
+          await supabase
+            .from('assignment_spaces')
+            .insert({ assignment_id: currentAssignmentId, space_id: newSpaceId });
+        }
+
+        showToast('Assignment updated', 'success');
+        closeAssignmentDetail();
+
+        // Reload data
+        await loadCalendarData();
+      } catch (error) {
+        console.error('Error saving assignment:', error);
+        showToast('Failed to save assignment', 'error');
+      }
+    }
+
+    function initAssignmentDetailModal() {
+      document.getElementById('closeAssignmentDetail')?.addEventListener('click', closeAssignmentDetail);
+      document.getElementById('closeAssignmentDetailBtn')?.addEventListener('click', closeAssignmentDetail);
+      document.getElementById('saveAssignmentBtn')?.addEventListener('click', saveAssignment);
+
+      // Close on backdrop click
+      document.getElementById('assignmentDetailModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'assignmentDetailModal') {
+          closeAssignmentDetail();
+        }
+      });
     }
 
     function renderCalendar() {

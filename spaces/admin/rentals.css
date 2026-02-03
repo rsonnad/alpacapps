@@ -951,6 +951,15 @@
   background: var(--bg);
 }
 
+.assignments-table tbody tr.clickable-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.assignments-table tbody tr.clickable-row:hover {
+  background: var(--accent-light, #eef2ff);
+}
+
 .assignments-table .tenant-cell {
   line-height: 1.3;
 }
