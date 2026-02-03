@@ -1047,12 +1047,29 @@ async function handleUpload() {
         if (result.success) {
           successCount++;
         } else {
-          console.error(`Failed to upload ${item.file.name}:`, result.error);
+          console.error(`Failed to upload ${item.file.name}:`, result.error, result.errorDetails);
           failCount++;
+
+          // Show specific error message for this file
+          const errorCode = result.errorDetails?.code || 'UNKNOWN';
+          const errorHint = result.errorDetails?.hint || '';
+
+          if (errorCode === 'DB_TIMEOUT') {
+            showToast(`${item.file.name}: Database timeout - file may have uploaded but record creation failed`, 'warning', 8000);
+          } else if (errorCode === 'AUTH_EXPIRED') {
+            showToast(`${item.file.name}: Session expired - please refresh the page`, 'error', 8000);
+          } else if (errorCode === 'PERMISSION_DENIED') {
+            showToast(`${item.file.name}: Permission denied - contact admin`, 'error', 8000);
+          } else if (errorCode === 'FILE_TOO_LARGE') {
+            showToast(`${item.file.name}: File too large`, 'error', 6000);
+          } else if (errorCode === 'NETWORK_ERROR') {
+            showToast(`${item.file.name}: Network error - check your connection`, 'error', 6000);
+          }
         }
       } catch (err) {
         console.error(`Error uploading ${item.file.name}:`, err);
         failCount++;
+        showToast(`${item.file.name}: Unexpected error - ${err.message}`, 'error', 6000);
       }
     }
 

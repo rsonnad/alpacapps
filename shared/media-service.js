@@ -14,6 +14,12 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 // CONFIGURATION
 // =============================================
 
+// Extract project ID from URL for direct storage hostname
+const PROJECT_ID = SUPABASE_URL.match(/https:\/\/([^.]+)\./)?.[1] || '';
+const STORAGE_URL = PROJECT_ID
+  ? `https://${PROJECT_ID}.supabase.co`  // Direct storage hostname for better performance
+  : SUPABASE_URL;
+
 const CONFIG = {
   // Storage limits
   supabaseMaxBytes: 1 * 1024 * 1024 * 1024, // 1GB
@@ -31,7 +37,150 @@ const CONFIG = {
   // File type detection
   imageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
   videoTypes: ['video/mp4', 'video/webm', 'video/quicktime', 'video/avi'],
+
+  // Upload settings
+  upload: {
+    maxRetries: 3,
+    baseRetryDelayMs: 2000,
+    timeoutMs: 120000,        // 2 minutes per attempt
+    stallTimeoutMs: 30000,    // 30 seconds without progress = stalled
+    stallCheckIntervalMs: 5000, // Check for stalls every 5 seconds
+  },
+
+  // Error codes that should NOT be retried
+  nonRetriableStatusCodes: [400, 401, 403, 413, 422],
+  // Error codes that need token refresh before retry
+  tokenRefreshStatusCodes: [401],
 };
+
+// =============================================
+// ERROR CLASSIFICATION
+// =============================================
+
+/**
+ * Structured error type for upload failures
+ */
+class UploadError extends Error {
+  constructor(message, code, statusCode = null, retriable = true, details = null) {
+    super(message);
+    this.name = 'UploadError';
+    this.code = code;           // e.g., 'NETWORK_ERROR', 'TIMEOUT', 'AUTH_FAILED'
+    this.statusCode = statusCode; // HTTP status if applicable
+    this.retriable = retriable;
+    this.details = details;
+    this.timestamp = new Date().toISOString();
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      code: this.code,
+      statusCode: this.statusCode,
+      retriable: this.retriable,
+      details: this.details,
+      timestamp: this.timestamp,
+    };
+  }
+}
+
+/**
+ * Classify HTTP status code into error type
+ */
+function classifyHttpError(status, responseText = '') {
+  let parsed = {};
+  try {
+    parsed = JSON.parse(responseText);
+  } catch (e) { /* ignore */ }
+
+  const serverMessage = parsed.message || parsed.error || '';
+
+  switch (status) {
+    case 400:
+      if (serverMessage.includes('already exists') || parsed.error === 'Duplicate') {
+        return new UploadError(
+          'File already exists at this path',
+          'DUPLICATE_FILE',
+          400,
+          false,
+          { serverMessage }
+        );
+      }
+      return new UploadError(
+        serverMessage || 'Invalid request',
+        'INVALID_REQUEST',
+        400,
+        false,
+        { serverMessage }
+      );
+
+    case 401:
+      return new UploadError(
+        'Authentication expired - please refresh and try again',
+        'AUTH_EXPIRED',
+        401,
+        true, // Retriable after token refresh
+        { serverMessage, needsTokenRefresh: true }
+      );
+
+    case 403:
+      return new UploadError(
+        'Permission denied - check storage bucket policies',
+        'PERMISSION_DENIED',
+        403,
+        false,
+        { serverMessage }
+      );
+
+    case 409:
+      return new UploadError(
+        'Conflict - file is being uploaded by another process',
+        'CONFLICT',
+        409,
+        true, // Can retry after delay
+        { serverMessage }
+      );
+
+    case 413:
+      return new UploadError(
+        'File is too large for upload',
+        'FILE_TOO_LARGE',
+        413,
+        false,
+        { serverMessage }
+      );
+
+    case 429:
+      return new UploadError(
+        'Too many requests - please wait and try again',
+        'RATE_LIMITED',
+        429,
+        true,
+        { serverMessage, retryAfter: 5000 }
+      );
+
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return new UploadError(
+        'Server error - please try again',
+        'SERVER_ERROR',
+        status,
+        true,
+        { serverMessage }
+      );
+
+    default:
+      return new UploadError(
+        serverMessage || `Upload failed with status ${status}`,
+        'UNKNOWN_ERROR',
+        status,
+        status >= 500, // Server errors are retriable
+        { serverMessage }
+      );
+  }
+}
 
 // =============================================
 // STORAGE ROUTING
@@ -67,11 +216,65 @@ function isVideo(file) {
 }
 
 // =============================================
-// XHR UPLOAD WITH PROGRESS
+// AUTHENTICATION HELPERS
 // =============================================
 
 /**
- * Upload file to Supabase storage with progress tracking
+ * Get the current auth token, refreshing if needed
+ * Falls back to anon key if no session
+ */
+async function getAuthToken() {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.warn('[auth] Error getting session, using anon key:', error.message);
+      return SUPABASE_ANON_KEY;
+    }
+    if (session?.access_token) {
+      // Check if token is about to expire (within 60 seconds)
+      const expiresAt = session.expires_at * 1000; // Convert to ms
+      if (expiresAt - Date.now() < 60000) {
+        console.log('[auth] Token expiring soon, refreshing...');
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshed.session) {
+          console.warn('[auth] Token refresh failed, using anon key');
+          return SUPABASE_ANON_KEY;
+        }
+        return refreshed.session.access_token;
+      }
+      return session.access_token;
+    }
+    return SUPABASE_ANON_KEY;
+  } catch (e) {
+    console.warn('[auth] Exception getting token, using anon key:', e.message);
+    return SUPABASE_ANON_KEY;
+  }
+}
+
+/**
+ * Force refresh the auth token
+ */
+async function refreshAuthToken() {
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error || !data.session) {
+      console.warn('[auth] Force refresh failed:', error?.message);
+      return null;
+    }
+    console.log('[auth] Token refreshed successfully');
+    return data.session.access_token;
+  } catch (e) {
+    console.warn('[auth] Exception during force refresh:', e.message);
+    return null;
+  }
+}
+
+// =============================================
+// XHR UPLOAD WITH PROGRESS AND STALL DETECTION
+// =============================================
+
+/**
+ * Upload file to Supabase storage with progress tracking and stall detection
  * Uses XMLHttpRequest instead of fetch to get upload progress events
  *
  * @param {string} bucket - Storage bucket name
@@ -79,50 +282,117 @@ function isVideo(file) {
  * @param {Blob|File} file - File to upload
  * @param {string} contentType - MIME type
  * @param {Function} onProgress - Progress callback (loaded, total) => void
- * @param {number} timeout - Timeout in ms (default 120000)
- * @returns {Promise<{data: object|null, error: object|null}>}
+ * @param {Function} onStall - Stall callback () => void (called when upload stalls)
+ * @param {string} authToken - Auth token to use
+ * @param {Object} options - Additional options
+ * @returns {Promise<{data: object|null, error: UploadError|null}>}
  */
-function uploadWithProgress(bucket, storagePath, file, contentType, onProgress, timeout = 120000) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${storagePath}`;
+function uploadWithProgress(bucket, storagePath, file, contentType, onProgress, onStall, authToken, options = {}) {
+  const {
+    timeout = CONFIG.upload.timeoutMs,
+    stallTimeout = CONFIG.upload.stallTimeoutMs,
+    stallCheckInterval = CONFIG.upload.stallCheckIntervalMs,
+    allowUpsert = false,
+  } = options;
 
-    // Track progress
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    const url = `${STORAGE_URL}/storage/v1/object/${bucket}/${storagePath}`;
+
+    let lastProgressTime = Date.now();
+    let lastLoadedBytes = 0;
+    let stallCheckerId = null;
+    let isStalled = false;
+
+    // Cleanup function
+    const cleanup = () => {
+      if (stallCheckerId) {
+        clearInterval(stallCheckerId);
+        stallCheckerId = null;
+      }
+    };
+
+    // Stall detection - check periodically if progress has been made
+    stallCheckerId = setInterval(() => {
+      const timeSinceProgress = Date.now() - lastProgressTime;
+      if (timeSinceProgress > stallTimeout && !isStalled) {
+        isStalled = true;
+        console.warn(`[upload] Upload stalled - no progress for ${timeSinceProgress}ms`);
+        if (onStall) {
+          onStall();
+        }
+      }
+    }, stallCheckInterval);
+
+    // Track progress and reset stall timer
     xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable && onProgress) {
-        onProgress(e.loaded, e.total);
+      if (e.lengthComputable) {
+        // Only update if we actually made progress
+        if (e.loaded > lastLoadedBytes) {
+          lastProgressTime = Date.now();
+          lastLoadedBytes = e.loaded;
+          isStalled = false;
+        }
+        if (onProgress) {
+          onProgress(e.loaded, e.total);
+        }
       }
     });
 
     // Handle completion
     xhr.addEventListener('load', () => {
+      cleanup();
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve({ data: { path: storagePath }, error: null });
       } else {
-        let errorMessage = `Upload failed with status ${xhr.status}`;
-        try {
-          const response = JSON.parse(xhr.responseText);
-          errorMessage = response.message || response.error || errorMessage;
-        } catch (e) {
-          // Use default error message
-        }
-        resolve({ data: null, error: { message: errorMessage } });
+        const error = classifyHttpError(xhr.status, xhr.responseText);
+        console.warn(`[upload] HTTP ${xhr.status}:`, error.toJSON());
+        resolve({ data: null, error });
       }
     });
 
     xhr.addEventListener('error', () => {
-      resolve({ data: null, error: { message: 'Network error during upload' } });
+      cleanup();
+      const error = new UploadError(
+        'Network error during upload - check your connection',
+        'NETWORK_ERROR',
+        null,
+        true,
+        { hint: 'This may be due to unstable WiFi, VPN issues, or firewall blocking' }
+      );
+      console.warn('[upload] Network error:', error.toJSON());
+      resolve({ data: null, error });
     });
 
     xhr.addEventListener('timeout', () => {
-      resolve({ data: null, error: { message: 'Upload timed out' } });
+      cleanup();
+      const error = new UploadError(
+        `Upload timed out after ${timeout / 1000} seconds`,
+        'TIMEOUT',
+        null,
+        true,
+        { timeoutMs: timeout, wasStalled: isStalled }
+      );
+      console.warn('[upload] Timeout:', error.toJSON());
+      resolve({ data: null, error });
+    });
+
+    xhr.addEventListener('abort', () => {
+      cleanup();
+      const error = new UploadError(
+        'Upload was cancelled',
+        'ABORTED',
+        null,
+        false
+      );
+      resolve({ data: null, error });
     });
 
     xhr.timeout = timeout;
     xhr.open('POST', url);
     xhr.setRequestHeader('Content-Type', contentType);
-    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
-    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+    xhr.setRequestHeader('x-upsert', allowUpsert ? 'true' : 'false');
     xhr.send(file);
   });
 }
@@ -270,29 +540,43 @@ async function upload(file, options = {}) {
           quality: 0.85,
           timeout: 30000,
         });
-        fileToUpload = compressedBlob;
-        finalMimeType = 'image/jpeg';
-        console.log(`[upload] Compressed to: ${formatBytes(compressedBlob.size)} (${((1 - compressedBlob.size / file.size) * 100).toFixed(0)}% reduction)`);
+
+        // Validate compression output
+        if (!compressedBlob || compressedBlob.size === 0) {
+          console.warn('[upload] Compression produced empty output, using original');
+        } else if (compressedBlob.size >= file.size) {
+          console.log('[upload] Compression did not reduce size, using original');
+        } else {
+          fileToUpload = compressedBlob;
+          finalMimeType = 'image/jpeg';
+          console.log(`[upload] Compressed to: ${formatBytes(compressedBlob.size)} (${((1 - compressedBlob.size / file.size) * 100).toFixed(0)}% reduction)`);
+        }
       } catch (compressError) {
         console.warn('[upload] Image compression failed, uploading original:', compressError.message);
         // Continue with original file if compression fails
       }
     }
 
-    // Generate unique filename (always use .jpg for compressed images)
+    // Generate unique filename with content hash to avoid collisions
     const ext = finalMimeType === 'image/jpeg' ? 'jpg' : (file.name.split('.').pop()?.toLowerCase() || 'jpg');
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 8);
-    const storagePath = `${category}/${timestamp}-${randomId}.${ext}`;
+    // Include file size in path to reduce collision probability
+    const sizeHash = (fileToUpload.size % 10000).toString(36);
+    const storagePath = `${category}/${timestamp}-${randomId}-${sizeHash}.${ext}`;
+
+    // Get auth token (with refresh if needed)
+    let authToken = await getAuthToken();
 
     // Upload to Supabase storage using XHR for progress tracking
-    console.log(`[upload] Uploading to Supabase: ${storagePath}`);
+    console.log(`[upload] Uploading to Supabase: ${storagePath} (${formatBytes(fileToUpload.size)})`);
 
-    // Retry up to 3 times with 2 minute timeout each
+    // Retry with smart error classification
     let uploadData = null;
     let uploadError = null;
-    const maxRetries = 3;
-    const uploadTimeout = 120000; // 2 minutes per attempt
+    let lastError = null;
+    const maxRetries = CONFIG.upload.maxRetries;
+    let isStalled = false;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -302,6 +586,7 @@ async function upload(file, options = {}) {
         if (onProgress) {
           onProgress(0, fileToUpload.size || file.size);
         }
+        isStalled = false;
 
         const result = await uploadWithProgress(
           CONFIG.buckets.images,
@@ -309,7 +594,9 @@ async function upload(file, options = {}) {
           fileToUpload,
           finalMimeType,
           onProgress,
-          uploadTimeout
+          () => { isStalled = true; }, // onStall callback
+          authToken,
+          { allowUpsert: attempt > 1 } // Allow upsert on retries to handle partial uploads
         );
 
         uploadData = result.data;
@@ -320,26 +607,61 @@ async function upload(file, options = {}) {
           break;
         }
 
-        console.warn(`[upload] Attempt ${attempt} failed:`, uploadError.message);
+        lastError = uploadError;
+
+        // Check if error is retriable
+        if (!uploadError.retriable) {
+          console.error(`[upload] Non-retriable error on attempt ${attempt}:`, uploadError.toJSON());
+          break;
+        }
+
+        // Check if we need to refresh token before retrying
+        if (uploadError.details?.needsTokenRefresh) {
+          console.log('[upload] Refreshing auth token before retry...');
+          const newToken = await refreshAuthToken();
+          if (newToken) {
+            authToken = newToken;
+          } else {
+            console.warn('[upload] Token refresh failed, continuing with current token');
+          }
+        }
+
+        console.warn(`[upload] Attempt ${attempt} failed (retriable):`, uploadError.message);
+
         if (attempt < maxRetries) {
-          const backoffMs = attempt * 2000; // 2s, 4s exponential backoff
-          console.log(`[upload] Retrying in ${backoffMs / 1000} seconds...`);
-          await new Promise(r => setTimeout(r, backoffMs));
+          // Exponential backoff with jitter
+          const baseDelay = CONFIG.upload.baseRetryDelayMs * Math.pow(2, attempt - 1);
+          const jitter = Math.random() * 1000;
+          const backoffMs = Math.min(baseDelay + jitter, 30000); // Cap at 30s
+
+          // Longer delay for rate limiting
+          const finalDelay = uploadError.code === 'RATE_LIMITED'
+            ? Math.max(backoffMs, uploadError.details?.retryAfter || 5000)
+            : backoffMs;
+
+          console.log(`[upload] Retrying in ${(finalDelay / 1000).toFixed(1)} seconds...`);
+          await new Promise(r => setTimeout(r, finalDelay));
         }
       } catch (err) {
-        console.warn(`[upload] Attempt ${attempt} error:`, err.message);
-        uploadError = { message: err.message };
+        console.warn(`[upload] Attempt ${attempt} exception:`, err.message);
+        lastError = new UploadError(err.message, 'EXCEPTION', null, true, { originalError: err.name });
+
         if (attempt < maxRetries) {
-          const backoffMs = attempt * 2000;
+          const backoffMs = CONFIG.upload.baseRetryDelayMs * attempt;
           console.log(`[upload] Retrying in ${backoffMs / 1000} seconds...`);
           await new Promise(r => setTimeout(r, backoffMs));
         }
       }
     }
 
-    if (uploadError) {
-      console.error('[upload] Upload error:', uploadError);
-      return { success: false, error: uploadError.message };
+    if (uploadError || !uploadData) {
+      const finalError = uploadError || lastError;
+      console.error('[upload] Upload failed after all attempts:', finalError?.toJSON?.() || finalError);
+      return {
+        success: false,
+        error: finalError?.message || 'Upload failed',
+        errorDetails: finalError?.toJSON?.() || { code: 'UNKNOWN', message: finalError?.message },
+      };
     }
     console.log('[upload] Upload successful');
 
@@ -365,37 +687,123 @@ async function upload(file, options = {}) {
       console.warn('[upload] Could not get image dimensions:', e.message);
     }
 
-    // Insert media record (use compressed file size) - with timeout
+    // Insert media record with retry logic for DB timeouts
     console.log('[upload] Creating media record...');
-    const insertPromise = supabase
-      .from('media')
-      .insert({
-        url: publicUrl,
-        storage_provider: 'supabase',
-        storage_path: storagePath,
-        media_type: 'image',
-        mime_type: finalMimeType,
-        file_size_bytes: fileToUpload.size,
-        width,
-        height,
-        title: title || null,
-        caption: caption || null,
-        category,
-      })
-      .select()
-      .single();
 
-    const { data: mediaRecord, error: mediaError } = await withTimeout(
-      insertPromise,
-      60000, // 60 second timeout for DB insert (high latency)
-      'Database insert timed out'
-    );
+    let mediaRecord = null;
+    let mediaError = null;
+    const dbMaxRetries = 3;
+    const dbTimeoutMs = 30000; // 30 seconds per attempt (reduced from 60s)
 
-    if (mediaError) {
-      console.error('[upload] Media record error:', mediaError);
-      // Try to clean up uploaded file
-      await supabase.storage.from(CONFIG.buckets.images).remove([storagePath]);
-      return { success: false, error: mediaError.message };
+    for (let dbAttempt = 1; dbAttempt <= dbMaxRetries; dbAttempt++) {
+      try {
+        console.log(`[upload] DB insert attempt ${dbAttempt}/${dbMaxRetries}...`);
+
+        // First check if record already exists (from a previous timed-out but successful insert)
+        if (dbAttempt > 1) {
+          const { data: existing } = await withTimeout(
+            supabase.from('media').select('*').eq('storage_path', storagePath).single(),
+            10000,
+            'Check for existing record timed out'
+          ).catch(() => ({ data: null }));
+
+          if (existing) {
+            console.log('[upload] Found existing record from previous attempt');
+            mediaRecord = existing;
+            mediaError = null;
+            break;
+          }
+        }
+
+        const insertPromise = supabase
+          .from('media')
+          .insert({
+            url: publicUrl,
+            storage_provider: 'supabase',
+            storage_path: storagePath,
+            media_type: 'image',
+            mime_type: finalMimeType,
+            file_size_bytes: fileToUpload.size,
+            width,
+            height,
+            title: title || null,
+            caption: caption || null,
+            category,
+          })
+          .select()
+          .single();
+
+        const result = await withTimeout(
+          insertPromise,
+          dbTimeoutMs,
+          'Database insert timed out'
+        );
+
+        mediaRecord = result.data;
+        mediaError = result.error;
+
+        if (!mediaError && mediaRecord) {
+          console.log(`[upload] DB insert succeeded on attempt ${dbAttempt}`);
+          break;
+        }
+
+        // Check for duplicate key error (record was actually created)
+        if (mediaError?.code === '23505' || mediaError?.message?.includes('duplicate')) {
+          console.log('[upload] Duplicate key - record exists, fetching...');
+          const { data: existing } = await supabase
+            .from('media')
+            .select('*')
+            .eq('storage_path', storagePath)
+            .single();
+          if (existing) {
+            mediaRecord = existing;
+            mediaError = null;
+            break;
+          }
+        }
+
+        console.warn(`[upload] DB insert attempt ${dbAttempt} failed:`, mediaError?.message);
+
+      } catch (dbErr) {
+        console.warn(`[upload] DB insert attempt ${dbAttempt} exception:`, dbErr.message);
+        mediaError = { message: dbErr.message };
+      }
+
+      if (dbAttempt < dbMaxRetries) {
+        const dbBackoff = dbAttempt * 2000;
+        console.log(`[upload] Retrying DB insert in ${dbBackoff / 1000}s...`);
+        await new Promise(r => setTimeout(r, dbBackoff));
+      }
+    }
+
+    if (mediaError || !mediaRecord) {
+      console.error('[upload] Media record creation failed after all attempts:', mediaError);
+
+      // IMPORTANT: Don't delete the file on timeout - it may have succeeded server-side
+      // The file can be cleaned up later via orphan detection
+      const isTimeout = mediaError?.message?.includes('timed out');
+      if (!isTimeout) {
+        // Only clean up if it's a definite failure (not timeout)
+        console.log('[upload] Cleaning up orphaned file...');
+        await supabase.storage.from(CONFIG.buckets.images).remove([storagePath]).catch(() => {});
+      } else {
+        console.warn('[upload] Skipping file cleanup due to timeout - may need manual cleanup');
+        console.warn('[upload] Orphaned file path:', storagePath);
+      }
+
+      return {
+        success: false,
+        error: mediaError?.message || 'Failed to create media record',
+        errorDetails: {
+          code: isTimeout ? 'DB_TIMEOUT' : 'DB_ERROR',
+          message: mediaError?.message,
+          storagePath, // Include path for manual recovery
+          publicUrl,   // Include URL for manual recovery
+          hint: isTimeout
+            ? 'The file was uploaded but database record creation timed out. The file may exist without a database record.'
+            : 'Database error during record creation',
+        },
+      };
     }
     console.log('[upload] Media record created:', mediaRecord.id);
 
@@ -1090,6 +1498,9 @@ function sortTagGroups(groupedTags) {
 export const mediaService = {
   // Config
   CONFIG,
+
+  // Error types
+  UploadError,
 
   // Storage
   getStorageProvider,
