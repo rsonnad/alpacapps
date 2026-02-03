@@ -3,6 +3,21 @@ import { supabase } from '../../shared/supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange } from '../../shared/auth.js';
 import { emailService } from '../../shared/email-service.js';
 
+// Timeout configuration
+const DB_TIMEOUT_MS = 10000; // 10 seconds for database operations
+
+/**
+ * Wrap a promise with a timeout to prevent indefinite hangs
+ */
+function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation timed out') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), ms)
+    )
+  ]);
+}
+
 // =============================================
 // TOAST NOTIFICATIONS
 // =============================================
@@ -124,32 +139,52 @@ function setupEventListeners() {
 }
 
 async function loadUsers() {
-  const { data, error } = await supabase
-    .from('app_users')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await withTimeout(
+      supabase
+        .from('app_users')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      DB_TIMEOUT_MS,
+      'Loading users timed out'
+    );
 
-  if (error) {
-    console.error('Error loading users:', error);
-    return;
+    if (error) {
+      console.error('Error loading users:', error);
+      showToast('Failed to load users: ' + error.message, 'error');
+      return;
+    }
+
+    users = data || [];
+  } catch (timeoutError) {
+    console.error('Users load timeout:', timeoutError.message);
+    showToast('Loading users timed out. Please refresh the page.', 'error');
   }
-
-  users = data || [];
 }
 
 async function loadInvitations() {
-  const { data, error } = await supabase
-    .from('user_invitations')
-    .select('*')
-    .eq('status', 'pending')
-    .order('invited_at', { ascending: false });
+  try {
+    const { data, error } = await withTimeout(
+      supabase
+        .from('user_invitations')
+        .select('*')
+        .eq('status', 'pending')
+        .order('invited_at', { ascending: false }),
+      DB_TIMEOUT_MS,
+      'Loading invitations timed out'
+    );
 
-  if (error) {
-    console.error('Error loading invitations:', error);
-    return;
+    if (error) {
+      console.error('Error loading invitations:', error);
+      showToast('Failed to load invitations: ' + error.message, 'error');
+      return;
+    }
+
+    invitations = data || [];
+  } catch (timeoutError) {
+    console.error('Invitations load timeout:', timeoutError.message);
+    showToast('Loading invitations timed out. Please refresh the page.', 'error');
   }
-
-  invitations = data || [];
 }
 
 async function inviteUser(email, role) {

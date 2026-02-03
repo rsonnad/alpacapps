@@ -639,6 +639,29 @@ async function shouldWarnStorage() {
  * @returns {Object} - { success, media, error }
  */
 async function upload(file, options = {}) {
+  // Wrap entire upload in a global timeout to prevent infinite hangs
+  const GLOBAL_TIMEOUT_MS = 180000; // 3 minutes max for entire upload
+
+  try {
+    return await withTimeout(
+      uploadInternal(file, options),
+      GLOBAL_TIMEOUT_MS,
+      'Upload timed out - please check your connection and try again'
+    );
+  } catch (err) {
+    console.error('[upload] Global timeout or error:', err.message);
+    return {
+      success: false,
+      error: err.message || 'Upload failed',
+      errorDetails: { code: 'GLOBAL_TIMEOUT', message: err.message },
+    };
+  }
+}
+
+/**
+ * Internal upload implementation (wrapped by upload() with global timeout)
+ */
+async function uploadInternal(file, options = {}) {
   const {
     category = 'mktg',
     caption = '',
