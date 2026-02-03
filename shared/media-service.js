@@ -233,15 +233,15 @@ async function upload(file, options = {}) {
         upsert: false,
       });
 
-    // Retry up to 3 times with 120 second timeout each
+    // Retry up to 3 times with 5 minute timeout each (for high-latency connections)
     let uploadData = null;
     let uploadError = null;
     const maxRetries = 3;
-    const uploadTimeout = 120000; // 2 minutes per attempt
+    const uploadTimeout = 300000; // 5 minutes per attempt for international connections
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`[upload] Attempt ${attempt}/${maxRetries}...`);
+        console.log(`[upload] Attempt ${attempt}/${maxRetries} (${uploadTimeout/1000}s timeout)...`);
         const result = await withTimeout(
           doUpload(),
           uploadTimeout,
@@ -257,15 +257,17 @@ async function upload(file, options = {}) {
 
         console.warn(`[upload] Attempt ${attempt} failed:`, uploadError.message);
         if (attempt < maxRetries) {
-          console.log(`[upload] Retrying in 2 seconds...`);
-          await new Promise(r => setTimeout(r, 2000));
+          const backoffMs = attempt * 3000; // 3s, 6s exponential backoff
+          console.log(`[upload] Retrying in ${backoffMs/1000} seconds...`);
+          await new Promise(r => setTimeout(r, backoffMs));
         }
       } catch (timeoutErr) {
         console.warn(`[upload] Attempt ${attempt} timed out`);
         uploadError = { message: timeoutErr.message };
         if (attempt < maxRetries) {
-          console.log(`[upload] Retrying in 2 seconds...`);
-          await new Promise(r => setTimeout(r, 2000));
+          const backoffMs = attempt * 3000;
+          console.log(`[upload] Retrying in ${backoffMs/1000} seconds...`);
+          await new Promise(r => setTimeout(r, backoffMs));
         }
       }
     }
@@ -320,7 +322,7 @@ async function upload(file, options = {}) {
 
     const { data: mediaRecord, error: mediaError } = await withTimeout(
       insertPromise,
-      15000, // 15 second timeout for DB insert
+      60000, // 60 second timeout for DB insert (high latency)
       'Database insert timed out'
     );
 
