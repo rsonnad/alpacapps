@@ -240,7 +240,7 @@ async function inviteUser(email, role) {
  * Send or resend invitation email and update tracking
  */
 async function sendInvitationEmail(invitationId, email, role) {
-  const loginUrl = 'https://rsonnad.github.io/login/';
+  const loginUrl = 'https://alpacaplayhouse.com/login/';
   const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
 
   if (emailResult.success) {
@@ -322,7 +322,7 @@ You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a s
 You will have ${roleDescription}.
 
 To get started:
-1. Go to: https://rsonnad.github.io/login/
+1. Go to: https://alpacaplayhouse.com/login/
 2. Click "Sign in with Google" using this email address (${email})
 
 Your access has already been pre-approved, so you'll have immediate access once you sign in.
