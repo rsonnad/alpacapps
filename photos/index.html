@@ -829,9 +829,9 @@
 
       // Fetch highlights photos
       try {
-        // First, get all media IDs that have the highlights tag
+        // First, get all media IDs that have the highlights tag, ordered by display_order
         const tagResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/media_tag_assignments?tag_id=eq.${HIGHLIGHTS_TAG_ID}&select=media_id`,
+          `${SUPABASE_URL}/rest/v1/media_tag_assignments?tag_id=eq.${HIGHLIGHTS_TAG_ID}&select=media_id,display_order&order=display_order`,
           {
             headers: {
               'apikey': SUPABASE_ANON_KEY,
@@ -842,14 +842,15 @@
 
         if (!tagResponse.ok) throw new Error('Failed to fetch tags');
 
-        const taggedIds = (await tagResponse.json()).map(t => t.media_id);
+        const tagAssignments = await tagResponse.json();
 
-        if (taggedIds.length === 0) {
+        if (tagAssignments.length === 0) {
           loadingEl.innerHTML = '<p>No photos available yet.</p>';
           return;
         }
 
         // Then get the full media data for those IDs
+        const taggedIds = tagAssignments.map(t => t.media_id);
         const mediaResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&id=in.(${taggedIds.join(',')})`,
           {
@@ -862,15 +863,18 @@
 
         if (!mediaResponse.ok) throw new Error('Failed to fetch media');
 
-        photos = await mediaResponse.json();
+        const mediaData = await mediaResponse.json();
 
-        if (photos.length === 0) {
+        if (mediaData.length === 0) {
           loadingEl.innerHTML = '<p>No photos available yet.</p>';
           return;
         }
 
-        // Shuffle photos for variety each visit
-        photos = photos.sort(() => Math.random() - 0.5);
+        // Combine and sort by display_order
+        photos = tagAssignments.map(ta => {
+          const media = mediaData.find(m => m.id === ta.media_id);
+          return { ...media, display_order: ta.display_order };
+        }).filter(p => p.url); // Filter out any that didn't match
 
         // Hide loading, render grid
         loadingEl.classList.add('hidden');
