@@ -424,9 +424,7 @@ function renderCards(spaces) {
             ${beds ? `<span>${beds}</span>` : ''}
             ${bathText ? `<span>${bathText}</span>` : ''}
           </div>
-          <div class="card-price">
-            ${space.monthly_rate ? `$${space.monthly_rate}<span>/mo</span>` : '<span>Contact for rates</span>'}
-          </div>
+${space.monthly_rate ? `<div class="card-price">$${space.monthly_rate}<span>/mo</span></div>` : ''}
           ${space.amenities.length ? `
             <div class="card-amenities">
               ${space.amenities.slice(0, 4).map(a => `<span class="amenity-tag">${a}</span>`).join('')}
@@ -584,7 +582,7 @@ function showSpaceDetail(spaceId) {
     <div class="detail-grid">
       <div class="detail-section">
         <h3>Details</h3>
-        <p><strong>Rate:</strong> ${space.monthly_rate ? `$${space.monthly_rate}/mo` : 'Contact for rates'}</p>
+        ${space.monthly_rate ? `<p><strong>Rate:</strong> $${space.monthly_rate}/mo</p>` : ''}
         <p><strong>Size:</strong> ${space.sq_footage ? `${space.sq_footage} sq ft` : 'N/A'}</p>
         <p><strong>Beds:</strong> ${getBedSummary(space) || 'N/A'}</p>
         <p><strong>Bathroom:</strong> ${space.bath_privacy || 'N/A'}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>
