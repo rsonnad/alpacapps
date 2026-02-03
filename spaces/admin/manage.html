@@ -3886,9 +3886,7 @@
     };
 
     async function savePaymentMethod() {
-      console.log('savePaymentMethod called');
       const id = document.getElementById('paymentMethodId').value || null;
-      console.log('id:', id);
       const data = {
         id,
         name: document.getElementById('paymentMethodName').value.trim(),
@@ -3897,7 +3895,6 @@
         instructions: document.getElementById('paymentMethodInstructions').value.trim() || null,
         is_active: document.getElementById('paymentMethodActive').checked,
       };
-      console.log('data:', data);
 
       if (!data.name) {
         showToast('Name is required', 'warning');
@@ -3905,14 +3902,12 @@
       }
 
       try {
-        console.log('calling rentalService.savePaymentMethod');
         await rentalService.savePaymentMethod(data);
-        console.log('savePaymentMethod succeeded');
         await loadPaymentMethods();
         closePaymentMethodModal();
         showToast('Payment method saved', 'success');
       } catch (error) {
-        console.error('savePaymentMethod error:', error);
+        console.error('Error saving payment method:', error);
         showToast('Error: ' + error.message, 'error');
       }
     }
