@@ -1305,6 +1305,8 @@ async function linkToSpace(mediaId, spaceId, displayOrder = 0, isPrimary = false
  * Unlink media from a space
  */
 async function unlinkFromSpace(mediaId, spaceId) {
+  console.log('[unlink] Unlinking media from space:', { mediaId, spaceId });
+
   const { error } = await supabase
     .from('media_spaces')
     .delete()
@@ -1312,10 +1314,15 @@ async function unlinkFromSpace(mediaId, spaceId) {
     .eq('space_id', spaceId);
 
   if (error) {
-    console.error('Error unlinking from space:', error);
+    console.error('[unlink] Error unlinking from space:', error);
+    // Check for RLS permission issues
+    if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+      throw new Error('Permission denied - admin privileges required');
+    }
     throw new Error(error.message || 'Failed to unlink media from space');
   }
 
+  console.log('[unlink] Successfully unlinked media from space');
   return true;
 }
 
