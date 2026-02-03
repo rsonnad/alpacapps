@@ -3324,6 +3324,10 @@
       if (tooltip) tooltip.classList.remove('visible');
     }
 
+    // Expose tooltip functions globally for inline event handlers
+    window.showReservationTooltip = showReservationTooltip;
+    window.hideReservationTooltip = hideReservationTooltip;
+
     // =============================================
     // RENTAL DETAIL MODAL
     // =============================================
@@ -4522,6 +4526,10 @@
       const tooltip = document.getElementById('eventCalendarTooltip');
       if (tooltip) tooltip.classList.remove('visible');
     }
+
+    // Expose event calendar tooltip functions globally for inline event handlers
+    window.showEventCalendarTooltip = showEventCalendarTooltip;
+    window.hideEventCalendarTooltip = hideEventCalendarTooltip;
 
     // Make openEventDetail available globally
     window.openEventDetail = async function(requestId) {
