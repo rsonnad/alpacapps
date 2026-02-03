@@ -603,11 +603,9 @@ main {
 }
 
 .card-parent-link {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--accent);
   text-decoration: none;
-  display: block;
-  margin-bottom: 0.15rem;
 }
 
 .card-parent-link:hover {

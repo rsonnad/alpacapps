@@ -792,8 +792,7 @@ function renderCards(spacesToRender) {
         <div class="card-body">
           <div class="card-header">
             <div>
-              <div class="card-title">${space.name}</div>
-              ${locationText ? `<div class="card-subtitle">in ${locationText}</div>` : ''}
+              <div class="card-title">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="card-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}${space.name}</div>
               ${space.description ? `<div class="card-description">${space.description}</div>` : ''}
             </div>
           </div>
@@ -874,7 +873,7 @@ function renderTable(spacesToRender) {
     return `
       <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
         <td class="td-thumbnail">${thumbnail}</td>
-        <td><strong>${space.name}</strong>${space.location ? `<br><small style="color:var(--text-muted)">in ${space.location}</small>` : (space.parent ? `<br><small style="color:var(--text-muted)">in ${space.parent.name}</small>` : '')}${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
+        <td>${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
         <td>${space.sq_footage || '-'}</td>
         <td>${beds || '-'}</td>
