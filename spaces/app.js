@@ -534,19 +534,27 @@ function displaySpaceDetail(space) {
   url.searchParams.set('id', space.id);
   window.history.replaceState({}, '', url);
 
-  // Get parent photos if parent exists
-  let parentPhotos = [];
-  let parentName = '';
-  if (space.parent?.name) {
-    const parentSpace = spaces.find(s => s.name === space.parent.name);
-    if (parentSpace && parentSpace.photos) {
-      parentPhotos = parentSpace.photos;
-      parentName = parentSpace.name;
+  // Walk up the parent chain to collect all ancestor photos
+  // Each entry: { name, photos }
+  const ancestorPhotoSections = [];
+  let currentParentName = space.parent?.name;
+  while (currentParentName) {
+    const parentSpace = spaces.find(s => s.name === currentParentName);
+    if (parentSpace && parentSpace.photos && parentSpace.photos.length > 0) {
+      ancestorPhotoSections.push({
+        name: parentSpace.name,
+        photos: parentSpace.photos
+      });
     }
+    // Move up to the next parent
+    currentParentName = parentSpace?.parent?.name || null;
   }
 
-  // Combine all photos for lightbox gallery
-  const allPhotos = [...space.photos, ...parentPhotos];
+  // Combine all photos for lightbox gallery (space photos first, then ancestors in order)
+  const allPhotos = [...space.photos];
+  ancestorPhotoSections.forEach(section => {
+    allPhotos.push(...section.photos);
+  });
   if (allPhotos.length) {
     setCurrentGallery(allPhotos);
   }
@@ -568,22 +576,22 @@ function displaySpaceDetail(space) {
     `;
   }
 
-  // Build parent photos HTML (at very bottom, if parent has photos)
-  let parentPhotosHtml = '';
-  if (parentPhotos.length) {
-    parentPhotosHtml = `
+  // Build ancestor photos HTML (each ancestor gets its own section, closest parent first)
+  let ancestorPhotosHtml = '';
+  ancestorPhotoSections.forEach(section => {
+    ancestorPhotosHtml += `
       <div class="detail-section detail-photos">
-        <h3>${parentName} Photos</h3>
+        <h3>${section.name} Photos</h3>
         <div class="detail-photos-grid">
-          ${parentPhotos.map(p => `
+          ${section.photos.map(p => `
             <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
-              <img src="${p.url}" alt="${p.caption || parentName}">
+              <img src="${p.url}" alt="${p.caption || section.name}">
             </div>
           `).join('')}
         </div>
       </div>
     `;
-  }
+  });
 
   // Availability info
   const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
@@ -624,7 +632,7 @@ function displaySpaceDetail(space) {
       </p>
     </div>
     ${spacePhotosHtml}
-    ${parentPhotosHtml}
+    ${ancestorPhotosHtml}
   `;
 
   spaceDetailModal.classList.remove('hidden');
