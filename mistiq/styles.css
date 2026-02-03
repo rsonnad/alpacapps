@@ -27,9 +27,9 @@
   /* Spacing */
   --mistiq-space-xs: 0.5rem;
   --mistiq-space-sm: 1rem;
-  --mistiq-space-md: 2rem;
-  --mistiq-space-lg: 4rem;
-  --mistiq-space-xl: 6rem;
+  --mistiq-space-md: 1.5rem;
+  --mistiq-space-lg: 2.5rem;
+  --mistiq-space-xl: 4rem;
 
   /* Sizing */
   --mistiq-max-width: 1200px;
