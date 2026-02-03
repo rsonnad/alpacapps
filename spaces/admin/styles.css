@@ -538,25 +538,6 @@ body.is-admin .admin-only {
   color: var(--text-muted);
 }
 
-/* Edit photo item - show tags */
-.edit-photo-item .photo-tags {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  right: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  pointer-events: none;
-}
-
-.edit-photo-item .photo-tag {
-  font-size: 0.6rem;
-  padding: 0.1rem 0.3rem;
-  border-radius: 3px;
-  background: rgba(0,0,0,0.7);
-  color: white;
-}
 
 /* Media Picker Tabs */
 .media-picker-tabs {

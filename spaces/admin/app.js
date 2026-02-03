@@ -2037,11 +2037,6 @@ function renderEditPhotos(space) {
   setCurrentGallery(space.photos);
 
   container.innerHTML = space.photos.map((photo, idx) => {
-    // Show tags if available
-    const tagsHtml = photo.tags?.length
-      ? `<div class="photo-tags">${photo.tags.slice(0, 3).map(t => `<span class="photo-tag">${t.name}</span>`).join('')}</div>`
-      : '';
-
     // Show primary badge
     const primaryBadge = photo.is_primary ? '<span class="photo-tag" style="background: var(--accent);">Primary</span>' : '';
 
@@ -2049,7 +2044,6 @@ function renderEditPhotos(space) {
       <div class="edit-photo-item" draggable="true" data-photo-id="${photo.id}" data-space-id="${space.id}">
         <div class="drag-handle" title="Drag to reorder">⋮⋮</div>
         <img src="${photo.url}" alt="${photo.caption || 'Photo ' + (idx + 1)}" onclick="openLightbox('${photo.url}')" style="cursor: zoom-in;">
-        ${tagsHtml}
         <span class="photo-order">#${idx + 1} ${primaryBadge}</span>
         <button type="button" class="btn-remove-photo" onclick="event.preventDefault(); event.stopPropagation(); removePhotoFromSpace('${space.id}', '${photo.id}')" title="Remove">×</button>
       </div>
