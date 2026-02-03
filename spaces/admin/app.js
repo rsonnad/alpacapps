@@ -463,12 +463,16 @@ function setCurrentGallery(photos) {
   currentGalleryUrls = photos.map(p => p.url);
 }
 
-function openLightbox(imageUrl) {
+function openLightbox(imageUrl, galleryUrls = null) {
   const lightbox = document.getElementById('imageLightbox');
   const lightboxImage = document.getElementById('lightboxImage');
   if (lightbox && lightboxImage) {
-    // Use current gallery if available and image is in it
-    if (currentGalleryUrls.length > 0 && currentGalleryUrls.includes(imageUrl)) {
+    // Use provided gallery, fall back to current gallery, or just the single image
+    if (galleryUrls && galleryUrls.length > 0) {
+      lightboxGallery = [...galleryUrls];
+      lightboxIndex = lightboxGallery.indexOf(imageUrl);
+      if (lightboxIndex === -1) lightboxIndex = 0;
+    } else if (currentGalleryUrls.length > 0 && currentGalleryUrls.includes(imageUrl)) {
       lightboxGallery = [...currentGalleryUrls];
       lightboxIndex = lightboxGallery.indexOf(imageUrl);
     } else {
@@ -518,6 +522,17 @@ function closeLightbox() {
     document.getElementById('lightboxImage').src = '';
     lightboxGallery = [];
     lightboxIndex = 0;
+  }
+}
+
+// Helper to open lightbox with a space's full gallery
+function openLightboxForSpace(spaceId, imageUrl) {
+  const space = spaces.find(s => s.id === spaceId);
+  if (space && space.photos && space.photos.length > 0) {
+    const galleryUrls = space.photos.map(p => p.url);
+    openLightbox(imageUrl, galleryUrls);
+  } else {
+    openLightbox(imageUrl);
   }
 }
 
@@ -762,7 +777,7 @@ function renderCards(spacesToRender) {
       <div class="space-card" onclick="showSpaceDetail('${space.id}')">
         <div class="card-image">
           ${photo
-            ? `<img src="${photo.url}" alt="${space.name}" onclick="event.stopPropagation(); openLightbox('${photo.url}')" style="cursor: zoom-in;">`
+            ? `<img src="${photo.url}" alt="${space.name}" onclick="event.stopPropagation(); openLightboxForSpace('${space.id}', '${photo.url}')" style="cursor: zoom-in;">`
             : `<div class="no-photo">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
@@ -848,7 +863,7 @@ function renderTable(spacesToRender) {
     else if (!space.is_listed) statusBadge += ' <span class="badge unlisted">Unlisted</span>';
 
     const thumbnail = space.photos.length > 0
-      ? `<img src="${space.photos[0].url}" alt="" class="table-thumbnail" onclick="event.stopPropagation(); openLightbox('${space.photos[0].url}')" style="cursor: zoom-in;">`
+      ? `<img src="${space.photos[0].url}" alt="" class="table-thumbnail" onclick="event.stopPropagation(); openLightboxForSpace('${space.id}', '${space.photos[0].url}')" style="cursor: zoom-in;">`
       : `<div class="table-thumbnail-placeholder"></div>`;
 
     // Description (truncated)
@@ -2455,3 +2470,4 @@ window.showAddTagForm = showAddTagForm;
 window.hideAddTagForm = hideAddTagForm;
 window.createNewTag = createNewTag;
 window.openLightbox = openLightbox;
+window.openLightboxForSpace = openLightboxForSpace;
