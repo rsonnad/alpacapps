@@ -3767,11 +3767,12 @@
     }
 
     // Photo upload modal functions
-    function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 'library') {
+    async function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 'library') {
       if (authState?.appUser?.role !== 'admin') {
         showToast('Only admins can upload photos', 'warning');
         return;
       }
+      console.log('[openPhotoUpload] Opening for space:', spaceId, spaceName);
       currentUploadSpaceId = spaceId;
       currentUploadContext = context;
       selectedLibraryMedia.clear();
@@ -3802,12 +3803,20 @@
       const libraryCategoryFilter = document.getElementById('libraryCategoryFilter');
       if (libraryCategoryFilter) libraryCategoryFilter.value = '';
 
-      loadLibraryMedia();
+      // Show modal immediately but with loading state for library
+      const libraryGrid = document.getElementById('libraryMediaGrid');
+      if (libraryGrid) {
+        libraryGrid.innerHTML = '<div class="library-empty"><p>Loading media library...</p></div>';
+      }
+
       renderLibraryTagFilter();
       renderRequestTab();
       switchMediaPickerTab(initialTab);
-
       document.getElementById('photoUploadModal').classList.remove('hidden');
+
+      // Now load library media (modal is already visible)
+      await loadLibraryMedia();
+      console.log('[openPhotoUpload] Library loaded with', libraryMedia?.length || 0, 'items');
     }
 
     function updateModalStorageIndicator() {
@@ -3948,15 +3957,18 @@
     }
 
     async function loadLibraryMedia() {
+      console.log('[loadLibraryMedia] Starting, filters:', activeLibraryFilters);
       try {
-        libraryMedia = await mediaService.search({
+        const result = await mediaService.search({
           category: activeLibraryFilters.category || null,
           tags: activeLibraryFilters.tags,
           limit: 100,
         });
+        console.log('[loadLibraryMedia] Search returned', result?.length || 0, 'items');
+        libraryMedia = result || [];
         renderLibraryGrid();
       } catch (error) {
-        console.error('Error loading library:', error);
+        console.error('[loadLibraryMedia] Error loading library:', error);
         libraryMedia = [];
         renderLibraryGrid();
       }
@@ -3991,10 +4003,15 @@
     };
 
     function renderLibraryGrid() {
+      console.log('[renderLibraryGrid] Called with', libraryMedia?.length || 0, 'items');
       const container = document.getElementById('libraryMediaGrid');
-      if (!container) return;
+      if (!container) {
+        console.warn('[renderLibraryGrid] Container not found!');
+        return;
+      }
 
       if (!libraryMedia || libraryMedia.length === 0) {
+        console.log('[renderLibraryGrid] Showing empty state');
         container.innerHTML = `
           <div class="library-empty">
             <p>No media found${activeLibraryFilters.tags.length ? ' matching filters' : ''}.</p>
