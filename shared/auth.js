@@ -2,7 +2,7 @@
 import { supabase } from './supabase.js';
 
 // Timeout configuration
-const AUTH_TIMEOUT_MS = 10000; // 10 seconds for auth operations
+const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations (increased for high-latency connections)
 
 /**
  * Wrap a promise with a timeout to prevent indefinite hangs
