@@ -3830,9 +3830,13 @@
       switchMediaPickerTab(initialTab);
       document.getElementById('photoUploadModal').classList.remove('hidden');
 
-      // Now load library media (modal is already visible)
-      await loadLibraryMedia();
-      console.log('[openPhotoUpload] Library loaded with', libraryMedia?.length || 0, 'items');
+      // Load library media in background (non-blocking) - don't let timeout block the modal
+      loadLibraryMedia().then(() => {
+        console.log('[openPhotoUpload] Library loaded with', libraryMedia?.length || 0, 'items');
+      }).catch(err => {
+        console.warn('[openPhotoUpload] Library load failed:', err.message);
+        // Error state is already shown by loadLibraryMedia
+      });
     }
 
     function updateModalStorageIndicator() {
@@ -4274,9 +4278,14 @@
           showToast(`Uploaded ${successCount} of ${totalFiles} photos. ${failCount} failed.`, 'warning');
         }
 
-        storageUsage = await mediaService.getStorageUsage();
+        // Close modal and refresh immediately - don't wait for storage usage
         document.getElementById('photoUploadModal').classList.add('hidden');
         loadSpacesData();
+
+        // Update storage usage in background (non-blocking)
+        mediaService.getStorageUsage().then(usage => {
+          if (usage) storageUsage = usage;
+        }).catch(() => {});
 
       } catch (error) {
         console.error('Error during upload:', error);
