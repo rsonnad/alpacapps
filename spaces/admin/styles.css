@@ -1103,6 +1103,14 @@ body.is-admin .admin-only {
   border-top: 1px solid var(--border);
 }
 
+/* Upload actions at top of form */
+.modal-footer-inline.upload-actions {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-top: none;
+  padding-top: 0;
+}
+
 /* Bulk upload section */
 .bulk-tag-section {
   background: var(--accent-light);

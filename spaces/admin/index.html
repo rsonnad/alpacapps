@@ -170,6 +170,19 @@
             <p class="form-hint">Select multiple images to bulk upload. Videos require external hosting (coming soon).</p>
           </div>
 
+          <!-- Upload progress and buttons at top for visibility -->
+          <div id="uploadProgress" class="upload-progress hidden">
+            <div class="progress-bar">
+              <div class="progress-fill" id="uploadProgressFill"></div>
+            </div>
+            <p class="progress-text" id="uploadProgressText">Uploading 0 of 0...</p>
+          </div>
+
+          <div class="modal-footer-inline upload-actions">
+            <button id="cancelPhotoUpload" type="button" class="btn-secondary">Cancel</button>
+            <button id="submitPhotoUpload" type="button" class="btn-primary">Upload All</button>
+          </div>
+
           <!-- Bulk tagging section (shown when multiple files selected) -->
           <div id="bulkTagSection" class="bulk-tag-section hidden">
             <div class="bulk-tag-header">
@@ -204,19 +217,6 @@
               <!-- Tags populated by JS -->
             </div>
           </fieldset>
-
-          <!-- Upload progress -->
-          <div id="uploadProgress" class="upload-progress hidden">
-            <div class="progress-bar">
-              <div class="progress-fill" id="uploadProgressFill"></div>
-            </div>
-            <p class="progress-text" id="uploadProgressText">Uploading 0 of 0...</p>
-          </div>
-
-          <div class="modal-footer-inline">
-            <button id="cancelPhotoUpload" type="button" class="btn-secondary">Cancel</button>
-            <button id="submitPhotoUpload" type="button" class="btn-primary">Upload All</button>
-          </div>
         </div>
 
         <!-- Library Tab -->
