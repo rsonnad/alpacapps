@@ -945,7 +945,7 @@ async function uploadInternal(file, options = {}) {
     let mediaRecord = null;
     let mediaError = null;
     const dbMaxRetries = 3;
-    const dbTimeoutMs = 30000; // 30 seconds per attempt (reduced from 60s)
+    const dbTimeoutMs = 15000; // 15 seconds per attempt - faster feedback on slow connections
 
     for (let dbAttempt = 1; dbAttempt <= dbMaxRetries; dbAttempt++) {
       try {
