@@ -524,7 +524,6 @@ main {
   padding: 0.35rem 0.65rem;
   border-radius: 2px;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .badge.occupied {
