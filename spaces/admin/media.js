@@ -1078,8 +1078,18 @@ function setupEventListeners() {
   const fileInput = document.getElementById('mediaFileInput');
   const browseBtn = document.getElementById('browseFilesBtn');
 
-  browseBtn?.addEventListener('click', () => fileInput?.click());
-  fileInput?.addEventListener('change', handleFileSelect);
+  console.log('[media.js] Setting up event listeners');
+  console.log('[media.js] browseBtn found:', !!browseBtn);
+  console.log('[media.js] fileInput found:', !!fileInput);
+
+  browseBtn?.addEventListener('click', () => {
+    console.log('[media.js] Browse button clicked');
+    fileInput?.click();
+  });
+  fileInput?.addEventListener('change', (e) => {
+    console.log('[media.js] File input changed, files:', e.target.files?.length);
+    handleFileSelect(e);
+  });
 
   uploadArea?.addEventListener('dragover', handleDragOver);
   uploadArea?.addEventListener('dragleave', handleDragLeave);
