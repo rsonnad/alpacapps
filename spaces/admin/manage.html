@@ -862,6 +862,7 @@
                 <div class="form-group">
                   <label for="mediaUploadCategory">Category:</label>
                   <select id="mediaUploadCategory">
+                    <option value="space">Space</option>
                     <option value="mktg">Marketing</option>
                     <option value="projects">Projects</option>
                     <option value="archive">Archive</option>
@@ -2536,7 +2537,7 @@
       mediaUploadFiles = [];
       document.getElementById('mediaFileInput').value = '';
       document.getElementById('mediaUploadCaption').value = '';
-      document.getElementById('mediaUploadCategory').value = 'mktg';
+      document.getElementById('mediaUploadCategory').value = 'space';
       document.querySelectorAll('#mediaUploadTagsContainer input[type="checkbox"]').forEach(cb => {
         cb.checked = false;
       });
@@ -2614,7 +2615,7 @@
       }
 
       const bulkCaption = document.getElementById('mediaUploadCaption')?.value.trim() || '';
-      const category = document.getElementById('mediaUploadCategory')?.value || 'mktg';
+      const category = document.getElementById('mediaUploadCategory')?.value || 'space';
 
       const selectedTags = [];
       document.querySelectorAll('#mediaUploadTagsContainer input[type="checkbox"]:checked').forEach(cb => {

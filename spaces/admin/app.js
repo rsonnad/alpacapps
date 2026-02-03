@@ -1112,7 +1112,7 @@ function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 
   // Set default category based on context
   const categorySelect = document.getElementById('photoCategory');
   if (categorySelect) {
-    categorySelect.value = context === 'projects' ? 'projects' : 'mktg';
+    categorySelect.value = context === 'projects' ? 'projects' : 'space';
   }
 
   // Populate tags with context-aware defaults
@@ -1758,7 +1758,7 @@ async function handlePhotoUpload() {
   }
 
   const bulkCaption = document.getElementById('photoBulkCaption')?.value.trim() || '';
-  const category = document.getElementById('photoCategory')?.value || 'mktg';
+  const category = document.getElementById('photoCategory')?.value || 'space';
 
   // Get selected tags (apply to all)
   const selectedTags = [];

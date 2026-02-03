@@ -880,7 +880,7 @@ function hideUploadPreview() {
   selectedUploadFiles = [];
   document.getElementById('mediaFileInput').value = '';
   document.getElementById('uploadBulkCaption').value = '';
-  document.getElementById('uploadCategory').value = 'mktg';
+  document.getElementById('uploadCategory').value = 'space';
   // Clear tag selections
   document.querySelectorAll('#uploadTagsContainer input[type="checkbox"]').forEach(cb => {
     cb.checked = false;
@@ -961,7 +961,7 @@ async function handleUpload() {
   }
 
   const bulkCaption = document.getElementById('uploadBulkCaption')?.value.trim() || '';
-  const category = document.getElementById('uploadCategory')?.value || 'mktg';
+  const category = document.getElementById('uploadCategory')?.value || 'space';
 
   // Get selected tags
   const selectedTags = [];
