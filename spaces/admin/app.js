@@ -888,6 +888,12 @@ function getBedSummary(space) {
   return beds.join(', ');
 }
 
+// Helper to get parent space ID by name
+function getParentSpaceId(parentName) {
+  const parentSpace = spaces.find(s => s.name === parentName);
+  return parentSpace ? parentSpace.id : null;
+}
+
 // Space detail modal
 function showSpaceDetail(spaceId) {
   const space = spaces.find(s => s.id === spaceId);
@@ -895,32 +901,30 @@ function showSpaceDetail(spaceId) {
 
   const isAdmin = authState?.isAdmin;
 
-  document.getElementById('detailSpaceName').textContent = space.name;
+  // Update header with parent link if exists (breadcrumb style)
+  const headerHtml = space.parent?.name
+    ? `<a href="#" class="detail-parent-link" onclick="event.preventDefault(); showSpaceDetail('${getParentSpaceId(space.parent.name)}');">${space.parent.name}</a> / ${space.name}`
+    : space.name;
+  document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
   const isOccupied = !!space.currentAssignment;
   const occupant = space.currentAssignment?.person;
 
-  let photosHtml = '';
-  if (space.photos.length) {
-    setCurrentGallery(space.photos);
-    const photoItems = space.photos.map((p, idx) => {
-      return `
-        <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
-          <img src="${p.url}" alt="${p.caption || space.name}">
-        </div>
-      `;
-    }).join('');
+  // Get parent photos if parent exists
+  let parentPhotos = [];
+  let parentName = '';
+  if (space.parent?.name) {
+    const parentSpace = spaces.find(s => s.name === space.parent.name);
+    if (parentSpace && parentSpace.photos) {
+      parentPhotos = parentSpace.photos;
+      parentName = parentSpace.name;
+    }
+  }
 
-    const editLink = isAdmin ? `<a href="#" class="edit-photos-link" onclick="event.preventDefault(); openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit photos</a>` : '';
-
-    photosHtml = `
-      <div class="detail-section detail-photos">
-        <h3>Photos ${editLink}</h3>
-        <div class="detail-photos-grid">
-          ${photoItems}
-        </div>
-      </div>
-    `;
+  // Combine all photos for lightbox gallery
+  const allPhotos = [...space.photos, ...parentPhotos];
+  if (allPhotos.length) {
+    setCurrentGallery(allPhotos);
   }
 
   let occupantHtml = '';
@@ -983,8 +987,42 @@ function showSpaceDetail(spaceId) {
     `;
   }
 
+  // Build space photos HTML (at bottom)
+  const editLink = isAdmin ? `<a href="#" class="edit-photos-link" onclick="event.preventDefault(); openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit photos</a>` : '';
+  let spacePhotosHtml = '';
+  if (space.photos.length) {
+    spacePhotosHtml = `
+      <div class="detail-section detail-photos">
+        <h3>${space.name} Photos ${editLink}</h3>
+        <div class="detail-photos-grid">
+          ${space.photos.map(p => `
+            <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
+              <img src="${p.url}" alt="${p.caption || space.name}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Build parent photos HTML (at very bottom, if parent has photos)
+  let parentPhotosHtml = '';
+  if (parentPhotos.length) {
+    parentPhotosHtml = `
+      <div class="detail-section detail-photos">
+        <h3>${parentName} Photos</h3>
+        <div class="detail-photos-grid">
+          ${parentPhotos.map(p => `
+            <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
+              <img src="${p.url}" alt="${p.caption || parentName}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   document.getElementById('spaceDetailBody').innerHTML = `
-    ${photosHtml}
     <div class="detail-grid">
       <div class="detail-section">
         <h3>Details</h3>
@@ -1021,6 +1059,8 @@ function showSpaceDetail(spaceId) {
         </button>
       </div>
     ` : ''}
+    ${spacePhotosHtml}
+    ${parentPhotosHtml}
   `;
 
   spaceDetailModal.classList.remove('hidden');
