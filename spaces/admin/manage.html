@@ -5083,6 +5083,17 @@
 
     async function loadCalendarData() {
       try {
+        // Load spaces if not already loaded (needed for assignments table)
+        if (allSpaces.length === 0) {
+          const { data: spacesData } = await supabase
+            .from('spaces')
+            .select('id, name')
+            .eq('is_archived', false);
+          if (spacesData) {
+            allSpaces = spacesData;
+          }
+        }
+
         // Load assignments with people and spaces
         const { data, error } = await supabase
           .from('assignments')
