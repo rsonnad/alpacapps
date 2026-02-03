@@ -16,7 +16,7 @@ Property management UI for GenAlpaca Residency.
 3. Deploy to GitHub Pages:
    - Push to repo
    - Settings > Pages > Source: main branch, / (root)
-   - Your site will be at https://rsonnad.github.io/GenAlpacaOps/
+   - Your site will be at https://rsonnad.github.io/alpacapps/
 
 ## Features
 

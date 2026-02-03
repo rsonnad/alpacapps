@@ -12,41 +12,41 @@
     // Known valid paths - redirect to their index.html
     const validPaths = {
       // Main site pages
-      '/GenAlpacaOps': '/GenAlpacaOps/',
-      '/GenAlpacaOps/': '/GenAlpacaOps/index.html',
-      '/GenAlpacaOps/visiting': '/GenAlpacaOps/visiting/',
-      '/GenAlpacaOps/visiting/': '/GenAlpacaOps/visiting/index.html',
-      '/GenAlpacaOps/orientation': '/GenAlpacaOps/orientation/',
-      '/GenAlpacaOps/orientation/': '/GenAlpacaOps/orientation/index.html',
-      '/GenAlpacaOps/overnight': '/GenAlpacaOps/overnight/',
-      '/GenAlpacaOps/overnight/': '/GenAlpacaOps/overnight/index.html',
-      '/GenAlpacaOps/worktrade': '/GenAlpacaOps/worktrade/',
-      '/GenAlpacaOps/worktrade/': '/GenAlpacaOps/worktrade/index.html',
-      '/GenAlpacaOps/contact': '/GenAlpacaOps/contact/',
-      '/GenAlpacaOps/contact/': '/GenAlpacaOps/contact/index.html',
+      '/alpacapps': '/alpacapps/',
+      '/alpacapps/': '/alpacapps/index.html',
+      '/alpacapps/visiting': '/alpacapps/visiting/',
+      '/alpacapps/visiting/': '/alpacapps/visiting/index.html',
+      '/alpacapps/orientation': '/alpacapps/orientation/',
+      '/alpacapps/orientation/': '/alpacapps/orientation/index.html',
+      '/alpacapps/overnight': '/alpacapps/overnight/',
+      '/alpacapps/overnight/': '/alpacapps/overnight/index.html',
+      '/alpacapps/worktrade': '/alpacapps/worktrade/',
+      '/alpacapps/worktrade/': '/alpacapps/worktrade/index.html',
+      '/alpacapps/contact': '/alpacapps/contact/',
+      '/alpacapps/contact/': '/alpacapps/contact/index.html',
       // Hidden pages
-      '/GenAlpacaOps/welcome': '/GenAlpacaOps/welcome/',
-      '/GenAlpacaOps/welcome/': '/GenAlpacaOps/welcome/index.html',
-      '/GenAlpacaOps/photos': '/GenAlpacaOps/photos/',
-      '/GenAlpacaOps/photos/': '/GenAlpacaOps/photos/index.html',
-      '/GenAlpacaOps/sundays': '/GenAlpacaOps/sundays/',
-      '/GenAlpacaOps/sundays/': '/GenAlpacaOps/sundays/index.html',
-      '/GenAlpacaOps/visiting-1': '/GenAlpacaOps/visiting-1/',
-      '/GenAlpacaOps/visiting-1/': '/GenAlpacaOps/visiting-1/index.html',
+      '/alpacapps/welcome': '/alpacapps/welcome/',
+      '/alpacapps/welcome/': '/alpacapps/welcome/index.html',
+      '/alpacapps/photos': '/alpacapps/photos/',
+      '/alpacapps/photos/': '/alpacapps/photos/index.html',
+      '/alpacapps/sundays': '/alpacapps/sundays/',
+      '/alpacapps/sundays/': '/alpacapps/sundays/index.html',
+      '/alpacapps/visiting-1': '/alpacapps/visiting-1/',
+      '/alpacapps/visiting-1/': '/alpacapps/visiting-1/index.html',
       // Mistiq subsite
-      '/GenAlpacaOps/mistiq': '/GenAlpacaOps/mistiq/',
-      '/GenAlpacaOps/mistiq/': '/GenAlpacaOps/mistiq/index.html',
-      '/GenAlpacaOps/mistiq/apply': '/GenAlpacaOps/mistiq/apply/',
-      '/GenAlpacaOps/mistiq/apply/': '/GenAlpacaOps/mistiq/apply/index.html',
+      '/alpacapps/mistiq': '/alpacapps/mistiq/',
+      '/alpacapps/mistiq/': '/alpacapps/mistiq/index.html',
+      '/alpacapps/mistiq/apply': '/alpacapps/mistiq/apply/',
+      '/alpacapps/mistiq/apply/': '/alpacapps/mistiq/apply/index.html',
       // Spaces app
-      '/GenAlpacaOps/spaces': '/GenAlpacaOps/spaces/',
-      '/GenAlpacaOps/spaces/': '/GenAlpacaOps/spaces/index.html',
-      '/GenAlpacaOps/spaces/admin': '/GenAlpacaOps/spaces/admin/',
-      '/GenAlpacaOps/spaces/admin/': '/GenAlpacaOps/spaces/admin/index.html',
-      '/GenAlpacaOps/spaces/events': '/GenAlpacaOps/spaces/events/',
-      '/GenAlpacaOps/spaces/events/': '/GenAlpacaOps/spaces/events/index.html',
-      '/GenAlpacaOps/login': '/GenAlpacaOps/login/',
-      '/GenAlpacaOps/login/': '/GenAlpacaOps/login/index.html',
+      '/alpacapps/spaces': '/alpacapps/spaces/',
+      '/alpacapps/spaces/': '/alpacapps/spaces/index.html',
+      '/alpacapps/spaces/admin': '/alpacapps/spaces/admin/',
+      '/alpacapps/spaces/admin/': '/alpacapps/spaces/admin/index.html',
+      '/alpacapps/spaces/events': '/alpacapps/spaces/events/',
+      '/alpacapps/spaces/events/': '/alpacapps/spaces/events/index.html',
+      '/alpacapps/login': '/alpacapps/login/',
+      '/alpacapps/login/': '/alpacapps/login/index.html',
     };
 
     // Check if it's a known path
@@ -54,7 +54,7 @@
       window.location.replace(validPaths[path] + window.location.search);
     } else {
       // Unknown path - redirect to spaces
-      window.location.replace('/GenAlpacaOps/spaces/');
+      window.location.replace('/alpacapps/spaces/');
     }
   </script>
   <style>

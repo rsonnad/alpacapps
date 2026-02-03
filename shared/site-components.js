@@ -18,7 +18,7 @@ const IMAGES = {
 
 // Base path for links (for GitHub Pages deployment)
 // Change this if deploying to a different subdirectory
-const BASE_PATH = '/GenAlpacaOps';
+const BASE_PATH = '/alpacapps';
 
 // Navigation links - unified across all pages (5 main sections)
 // Logo clicks to Home, so Home is not in the nav

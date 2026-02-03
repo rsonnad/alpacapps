@@ -243,7 +243,7 @@ Content-Type: application/json
 
 ## Web UI
 
-Admin interface: https://rsonnad.github.io/GenAlpacaOps/
+Admin interface: https://rsonnad.github.io/alpacapps/
 
 Features:
 - View all spaces with availability windows

@@ -500,6 +500,6 @@ GET https://aphrrfprbixmhissnjfn.supabase.co/rest/v1/payment_sender_mappings?sel
 
 ## Web UI
 
-Admin interface: https://rsonnad.github.io/GenAlpacaOps/
+Admin interface: https://rsonnad.github.io/alpacapps/
 
 Click "Enter Admin" to access upload and management features.

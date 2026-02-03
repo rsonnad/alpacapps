@@ -45,8 +45,8 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 
 | Component | Host | URL/Location |
 |-----------|------|--------------|
-| Admin UI | GitHub Pages | https://rsonnad.github.io/GenAlpacaOps/ |
-| Source Code | GitHub | https://github.com/rsonnad/GenAlpacaOps |
+| Admin UI | GitHub Pages | https://rsonnad.github.io/alpacapps/ |
+| Source Code | GitHub | https://github.com/rsonnad/alpacapps |
 | Database | Supabase | https://aphrrfprbixmhissnjfn.supabase.co |
 | Photo Storage | Supabase Storage | bucket: `housephotos` |
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
@@ -59,7 +59,7 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 ## Repository Structure
 
 ```
-GenAlpacaOps/
+alpacapps/
 ├── index.html              # Landing page (redirects to spaces)
 ├── styles.css              # Global styling
 ├── app.js                  # Legacy (redirects)
