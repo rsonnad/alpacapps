@@ -538,8 +538,10 @@ function displaySpaceDetail(space) {
   // Each entry: { name, photos }
   const ancestorPhotoSections = [];
   let currentParentName = space.parent?.name;
+  console.log('Starting parent chain walk from:', space.name, 'first parent:', currentParentName);
   while (currentParentName) {
     const parentSpace = spaces.find(s => s.name === currentParentName);
+    console.log('Looking for:', currentParentName, 'found:', parentSpace?.name, 'photos:', parentSpace?.photos?.length);
     if (parentSpace && parentSpace.photos && parentSpace.photos.length > 0) {
       ancestorPhotoSections.push({
         name: parentSpace.name,
@@ -547,8 +549,11 @@ function displaySpaceDetail(space) {
       });
     }
     // Move up to the next parent
-    currentParentName = parentSpace?.parent?.name || null;
+    const nextParent = parentSpace?.parent?.name || null;
+    console.log('Next parent:', nextParent);
+    currentParentName = nextParent;
   }
+  console.log('Ancestor sections:', ancestorPhotoSections.map(s => s.name));
 
   // Combine all photos for lightbox gallery (space photos first, then ancestors in order)
   const allPhotos = [...space.photos];
