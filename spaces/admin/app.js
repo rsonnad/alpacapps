@@ -672,6 +672,7 @@ function renderCards(spacesToRender) {
   cardView.innerHTML = spacesToRender.map(space => {
     const occupant = space.currentAssignment?.person;
     const photo = space.photos[0];
+    const photoCount = space.photos.length;
     const isOccupied = !!space.currentAssignment;
 
     // Format availability window
@@ -694,6 +695,17 @@ function renderCards(spacesToRender) {
     const beds = getBedSummary(space);
     const bathText = space.bath_privacy || '';
     const locationText = space.location || (space.parent ? space.parent.name : '');
+
+    // Photo count overlay (only show if more than 1 photo)
+    const photoCountHtml = photoCount > 1 ? `
+      <div class="photo-count">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        ${photoCount}
+      </div>
+    ` : '';
 
     let occupantHtml = '';
     if (isOccupied && occupant) {
@@ -740,6 +752,7 @@ function renderCards(spacesToRender) {
               </div>`
           }
           <div class="card-badges">${badges}</div>
+          ${photoCountHtml}
         </div>
         <div class="card-body">
           <div class="card-header">

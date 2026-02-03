@@ -329,6 +329,7 @@ function formatDate(d) {
 function renderCards(spacesToRender) {
   cardView.innerHTML = spacesToRender.map(space => {
     const photo = space.photos[0];
+    const photoCount = space.photos.length;
     const beds = getBedSummary(space);
     const bathText = space.bath_privacy || '';
 
@@ -341,6 +342,17 @@ function renderCards(spacesToRender) {
 
     // Location/parent display
     const locationText = space.location || (space.parent ? space.parent.name : '');
+
+    // Photo count overlay (only show if more than 1 photo)
+    const photoCountHtml = photoCount > 1 ? `
+      <div class="photo-count">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        ${photoCount}
+      </div>
+    ` : '';
 
     return `
       <div class="space-card" onclick="showSpaceDetail('${space.id}')">
@@ -359,6 +371,7 @@ function renderCards(spacesToRender) {
             <span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>
             <span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>
           </div>
+          ${photoCountHtml}
         </div>
         <div class="card-body">
           <div class="card-header">
