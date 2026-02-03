@@ -624,8 +624,8 @@ body.is-admin .admin-only {
 
 .tag-filter-chips {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.375rem;
   flex: 1;
 }
 

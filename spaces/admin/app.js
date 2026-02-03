@@ -198,8 +198,8 @@ async function loadData() {
 
     if (spacesError) throw spacesError;
 
-    // Load all tags for tagging UI
-    allTags = await mediaService.getTags();
+    // Load all tags with usage counts for tagging UI
+    allTags = await mediaService.getTagsWithUsage();
 
     // Check storage usage
     storageUsage = await mediaService.getStorageUsage();
@@ -1548,10 +1548,11 @@ function renderLibraryTagFilter() {
   const container = document.getElementById('libraryTagFilter');
   if (!container) return;
 
-  // Show purpose and room tags as filter chips
-  const filterableTags = allTags.filter(t =>
-    ['purpose', 'space', 'condition'].includes(t.tag_group)
-  );
+  // Show purpose, space, and condition tags as filter chips
+  // Sort by usage count (most used first)
+  const filterableTags = allTags
+    .filter(t => ['purpose', 'space', 'condition'].includes(t.tag_group))
+    .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
 
   container.innerHTML = filterableTags.map(tag => `
     <button type="button"
