@@ -1330,15 +1330,31 @@ async function unlinkFromSpace(mediaId, spaceId) {
  * Reorder media within a space
  */
 async function reorderInSpace(spaceId, mediaIds) {
-  const updates = mediaIds.map((mediaId, index) =>
-    supabase
-      .from('media_spaces')
-      .update({ display_order: index })
-      .eq('space_id', spaceId)
-      .eq('media_id', mediaId)
+  console.log('[reorder] Reordering media in space:', { spaceId, mediaIds });
+
+  const results = await Promise.all(
+    mediaIds.map(async (mediaId, index) => {
+      const { error } = await supabase
+        .from('media_spaces')
+        .update({ display_order: index })
+        .eq('space_id', spaceId)
+        .eq('media_id', mediaId);
+
+      if (error) {
+        console.error(`[reorder] Failed to update order for media ${mediaId}:`, error);
+        return { mediaId, success: false, error };
+      }
+      return { mediaId, success: true };
+    })
   );
 
-  await Promise.all(updates);
+  const failures = results.filter(r => !r.success);
+  if (failures.length > 0) {
+    console.error('[reorder] Some updates failed:', failures);
+    throw new Error(`Failed to reorder ${failures.length} items`);
+  }
+
+  console.log('[reorder] Successfully reordered', mediaIds.length, 'items');
 }
 
 /**
