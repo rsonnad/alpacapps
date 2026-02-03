@@ -1571,23 +1571,29 @@
 
           <fieldset class="form-fieldset">
             <legend>Visibility</legend>
-            <div class="form-grid form-grid-3">
+            <div class="form-grid form-grid-4">
               <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="editIsListed">
-                  Listed (visible in public search)
+                  Listed
                 </label>
               </div>
               <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="editIsSecret">
-                  Secret (only via direct link)
+                  Secret
                 </label>
               </div>
               <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="editCanBeDwelling">
-                  Can be dwelling
+                  Dwelling
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="editCanBeEvent">
+                  Event
                 </label>
               </div>
             </div>
@@ -3266,6 +3272,7 @@
       document.getElementById('editIsListed').checked = space.is_listed || false;
       document.getElementById('editIsSecret').checked = space.is_secret || false;
       document.getElementById('editCanBeDwelling').checked = space.can_be_dwelling !== false;
+      document.getElementById('editCanBeEvent').checked = space.can_be_event || false;
 
       renderEditPhotos(space);
       document.getElementById('editSpaceModal').classList.remove('hidden');
@@ -3410,6 +3417,7 @@
           is_listed: getChecked('editIsListed'),
           is_secret: getChecked('editIsSecret'),
           can_be_dwelling: getChecked('editCanBeDwelling'),
+          can_be_event: getChecked('editCanBeEvent'),
         };
 
         const { error } = await supabase

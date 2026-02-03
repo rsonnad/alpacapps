@@ -144,6 +144,10 @@ body.is-admin .admin-only {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.form-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1381,8 +1385,9 @@ body.is-admin .admin-only {
 
 @media (max-width: 768px) {
   .form-grid,
-  .form-grid-3 {
-    grid-template-columns: 1fr;
+  .form-grid-3,
+  .form-grid-4 {
+    grid-template-columns: 1fr 1fr;
   }
 
   .edit-photos-grid {
