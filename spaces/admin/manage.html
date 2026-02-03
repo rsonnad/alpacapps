@@ -2601,8 +2601,17 @@
       if (item) item.caption = caption;
     }
 
+    // Guard against concurrent uploads
+    let isMediaUploading = false;
+
     async function handleMediaUpload() {
       console.log('handleMediaUpload called');
+
+      // Guard against double-click or multiple submissions
+      if (isMediaUploading) {
+        console.log('Upload already in progress, ignoring');
+        return;
+      }
 
       if (!authState?.isAdmin && !authState?.isStaff) {
         showToast('You do not have permission to upload', 'warning');
@@ -2613,6 +2622,9 @@
         showToast('Please select at least one image.', 'warning');
         return;
       }
+
+      // Set guard before any async work
+      isMediaUploading = true;
 
       const bulkCaption = document.getElementById('mediaUploadCaption')?.value.trim() || '';
       const category = document.getElementById('mediaUploadCategory')?.value || 'space';
@@ -2692,6 +2704,8 @@
         console.error('Error during upload:', error);
         showToast('Upload failed: ' + error.message, 'error');
       } finally {
+        // Reset guard
+        isMediaUploading = false;
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.textContent = mediaUploadFiles.length > 1 ? `Upload All (${mediaUploadFiles.length})` : 'Upload';

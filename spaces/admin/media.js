@@ -947,8 +947,17 @@ function updateFileCaption(fileId, caption) {
   if (item) item.caption = caption;
 }
 
+// Guard against concurrent uploads
+let isUploading = false;
+
 async function handleUpload() {
   console.log('handleUpload called');
+
+  // Guard against double-click or multiple submissions
+  if (isUploading) {
+    console.log('Upload already in progress, ignoring');
+    return;
+  }
 
   if (!authState?.isAdmin && !authState?.isStaff) {
     showToast('You do not have permission to upload', 'warning');
@@ -959,6 +968,9 @@ async function handleUpload() {
     showToast('Please select at least one image.', 'warning');
     return;
   }
+
+  // Set guard before any async work
+  isUploading = true;
 
   const bulkCaption = document.getElementById('uploadBulkCaption')?.value.trim() || '';
   const category = document.getElementById('uploadCategory')?.value || 'space';
@@ -1046,6 +1058,8 @@ async function handleUpload() {
     console.error('Error during upload:', error);
     showToast('Upload failed: ' + error.message, 'error');
   } finally {
+    // Reset guard
+    isUploading = false;
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = selectedUploadFiles.length > 1 ? `Upload All (${selectedUploadFiles.length})` : 'Upload';

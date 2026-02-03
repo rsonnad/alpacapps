@@ -1741,10 +1741,19 @@ function updateFileCaption(fileId, caption) {
   if (item) item.caption = caption;
 }
 
+// Guard against concurrent uploads
+let isPhotoUploading = false;
+
 async function handlePhotoUpload() {
   console.log('handlePhotoUpload called');
   console.log('isAdmin:', authState?.isAdmin);
   console.log('selectedUploadFiles:', selectedUploadFiles.length);
+
+  // Guard against double-click or multiple submissions
+  if (isPhotoUploading) {
+    console.log('Upload already in progress, ignoring');
+    return;
+  }
 
   if (!authState?.isAdmin) {
     showToast('Only admins can upload photos', 'warning');
@@ -1756,6 +1765,9 @@ async function handlePhotoUpload() {
     showToast('Please select at least one image.', 'warning');
     return;
   }
+
+  // Set guard before any async work
+  isPhotoUploading = true;
 
   const bulkCaption = document.getElementById('photoBulkCaption')?.value.trim() || '';
   const category = document.getElementById('photoCategory')?.value || 'space';
@@ -1844,6 +1856,8 @@ async function handlePhotoUpload() {
     console.error('Error during upload:', error);
     showToast('Upload failed: ' + error.message, 'error');
   } finally {
+    // Reset guard
+    isPhotoUploading = false;
     submitBtn.disabled = false;
     submitBtn.textContent = selectedUploadFiles.length > 1 ? `Upload All (${selectedUploadFiles.length})` : 'Upload';
     if (progressContainer) progressContainer.classList.add('hidden');

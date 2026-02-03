@@ -377,6 +377,32 @@ async function getTags(group = null) {
 }
 
 /**
+ * Get all tags with usage counts (how many media items use each tag)
+ */
+async function getTagsWithUsage() {
+  // Get tags with count of media_tag_assignments
+  const { data, error } = await supabase
+    .from('media_tags')
+    .select(`
+      *,
+      media_tag_assignments(count)
+    `)
+    .order('tag_group')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching tags with usage:', error);
+    return [];
+  }
+
+  // Transform to include usage_count
+  return (data || []).map(tag => ({
+    ...tag,
+    usage_count: tag.media_tag_assignments?.[0]?.count || 0
+  }));
+}
+
+/**
  * Get tags grouped by tag_group
  */
 async function getTagsGrouped() {
@@ -803,54 +829,74 @@ async function compressImage(file, options = {}) {
     maxWidth = 1920,
     maxHeight = 1920,
     quality = 0.8,
+    timeout = 30000, // 30 second timeout
   } = options;
 
   return new Promise((resolve, reject) => {
+    let timeoutId = null;
+    let objectUrl = null;
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+
+    // Set timeout to prevent indefinite hangs
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('Image compression timed out'));
+    }, timeout);
+
     const img = new Image();
     img.onload = () => {
-      URL.revokeObjectURL(img.src);
+      try {
+        // Calculate new dimensions while maintaining aspect ratio
+        let { width, height } = img;
 
-      // Calculate new dimensions while maintaining aspect ratio
-      let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
 
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+
+        // Create canvas and draw resized image
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to blob
+        canvas.toBlob(
+          (blob) => {
+            cleanup();
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to compress image'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      } catch (err) {
+        cleanup();
+        reject(new Error('Error during image compression: ' + err.message));
       }
-
-      if (height > maxHeight) {
-        width = (width * maxHeight) / height;
-        height = maxHeight;
-      }
-
-      // Create canvas and draw resized image
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Convert to blob
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to compress image'));
-          }
-        },
-        'image/jpeg',
-        quality
-      );
     };
 
     img.onerror = () => {
-      URL.revokeObjectURL(img.src);
+      cleanup();
       reject(new Error('Failed to load image for compression'));
     };
 
-    img.src = URL.createObjectURL(file);
+    objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
   });
 }
 
@@ -904,6 +950,7 @@ export const mediaService = {
 
   // Tags
   getTags,
+  getTagsWithUsage,
   getTagsGrouped,
   getTagGroups,
   assignTags,
