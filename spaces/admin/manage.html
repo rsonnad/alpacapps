@@ -3983,18 +3983,15 @@
       isLibraryLoading = true;
 
       try {
-        // Add timeout to prevent indefinite hanging
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Search timeout after 15s')), 15000)
-        );
-
-        const searchPromise = mediaService.search({
+        // Use minimal query (no joins) for much faster loading
+        // The library picker only needs basic info to display thumbnails
+        const result = await mediaService.search({
           category: activeLibraryFilters.category || null,
           tags: activeLibraryFilters.tags,
           limit: 100,
+          minimal: true,  // Skip joins for faster loading
         });
 
-        const result = await Promise.race([searchPromise, timeoutPromise]);
         console.log('[loadLibraryMedia] Search returned', result?.length || 0, 'items');
         libraryMedia = result || [];
         renderLibraryGrid();

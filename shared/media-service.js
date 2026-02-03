@@ -1488,6 +1488,13 @@ async function getForSpace(spaceId) {
 
 /**
  * Search media by tags, category, etc.
+ * @param {Object} options - Search options
+ * @param {string} options.category - Filter by category
+ * @param {string[]} options.tags - Filter by tag names
+ * @param {string} options.mediaType - Filter by media type
+ * @param {number} options.limit - Max results (default 50)
+ * @param {number} options.offset - Pagination offset
+ * @param {boolean} options.minimal - If true, skip joins for faster query (default false)
  */
 async function search(options = {}) {
   const {
@@ -1496,15 +1503,22 @@ async function search(options = {}) {
     mediaType = null,
     limit = 50,
     offset = 0,
+    minimal = false,
   } = options;
 
-  let query = supabase
-    .from('media')
-    .select(`
+  // Use minimal query for faster library loading (no joins)
+  // Full query with joins can timeout on cold Supabase connections
+  const selectClause = minimal
+    ? 'id, url, caption, title, media_type, category, uploaded_at'
+    : `
       *,
       media_tag_assignments ( tag:tag_id ( id, name, color, tag_group ) ),
       media_spaces ( space_id, display_order, is_primary )
-    `)
+    `;
+
+  let query = supabase
+    .from('media')
+    .select(selectClause)
     .eq('is_archived', false)
     .order('uploaded_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -1518,9 +1532,11 @@ async function search(options = {}) {
   }
 
   // Add timeout to prevent indefinite hanging on slow connections
+  // Use shorter timeout for minimal queries
+  const timeoutMs = minimal ? 8000 : 15000;
   let data, error;
   try {
-    const result = await withTimeout(query, 15000, 'Media search timed out');
+    const result = await withTimeout(query, timeoutMs, 'Media search timed out');
     data = result.data;
     error = result.error;
   } catch (timeoutError) {
@@ -1533,9 +1549,19 @@ async function search(options = {}) {
     return [];
   }
 
-  // Filter by tags if provided (post-query for simplicity)
   let results = data || [];
-  console.log('Search: query returned', results.length, 'items before tag filter');
+  console.log('Search: query returned', results.length, 'items', minimal ? '(minimal)' : '(full)');
+
+  // For minimal queries, skip tag filtering and return directly
+  if (minimal) {
+    return results.map(media => ({
+      ...media,
+      tags: [],
+      spaces: [],
+    }));
+  }
+
+  // Filter by tags if provided (post-query for simplicity)
   if (tags.length > 0) {
     results = results.filter(media => {
       const mediaTags = media.media_tag_assignments?.map(a => a.tag?.name) || [];
