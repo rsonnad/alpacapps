@@ -203,6 +203,37 @@ img {
   color: var(--mistiq-gold);
 }
 
+.mistiq-nav__link--cta {
+  background: var(--mistiq-gold);
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.mistiq-nav__link--cta:hover {
+  background: var(--mistiq-accent);
+  color: white !important;
+}
+
+/* Language Picker */
+.mistiq-lang-picker {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.mistiq-lang-picker__flag {
+  font-size: 1.5rem;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.mistiq-lang-picker__flag:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 /* Mobile menu toggle */
 .mistiq-menu-toggle {
   display: none;
@@ -287,6 +318,14 @@ img {
   font-family: var(--mistiq-font-heading);
   font-size: 1.75rem;
   color: var(--mistiq-text);
+}
+
+.mistiq-mobile-nav__lang {
+  margin-top: 1rem;
+}
+
+.mistiq-mobile-nav__lang a {
+  font-size: 2rem;
 }
 
 /* =============================================
