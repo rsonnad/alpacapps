@@ -20,17 +20,14 @@ const IMAGES = {
 // Change this if deploying to a different subdirectory
 const BASE_PATH = '/GenAlpacaOps';
 
-// Navigation links - unified across all pages
-// Note: Mistiq tab is only shown on Mistiq pages (controlled by showMistiq option)
+// Navigation links - unified across all pages (5 main sections)
+// Logo clicks to Home, so Home is not in the nav
 const NAV_LINKS = [
-  { text: 'Home', href: `${BASE_PATH}/` },
   { text: 'Visiting', href: `${BASE_PATH}/visiting/` },
-  { text: 'Spaces', href: `${BASE_PATH}/spaces/` },
-  { text: 'Orientation', href: `${BASE_PATH}/orientation/` },
-  { text: 'Overnighters', href: `${BASE_PATH}/overnight/` },
-  { text: 'Work Trade', href: `${BASE_PATH}/worktrade/` },
-  { text: 'Sundays', href: `${BASE_PATH}/sundays/` },
-  { text: 'Contact Us', href: `${BASE_PATH}/contact/` },
+  { text: 'Rentals', href: `${BASE_PATH}/spaces/` },
+  { text: 'Events', href: `${BASE_PATH}/events/` },
+  { text: 'Community', href: `${BASE_PATH}/community/` },
+  { text: 'Contact', href: `${BASE_PATH}/contact/` },
 ];
 
 // Mistiq link - only shown on Mistiq pages
