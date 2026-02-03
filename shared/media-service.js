@@ -9,6 +9,7 @@
  */
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { errorLogger } from './error-logger.js';
 
 // =============================================
 // CONFIGURATION
@@ -850,6 +851,18 @@ async function upload(file, options = {}) {
     if (uploadError || !uploadData) {
       const finalError = uploadError || lastError;
       console.error('[upload] Upload failed after all attempts:', finalError?.toJSON?.() || finalError);
+
+      // Log to error reporting service
+      errorLogger.error('upload', finalError?.code || 'UPLOAD_FAILED', finalError?.message || 'Upload failed', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        category,
+        storagePath,
+        attempts: maxRetries,
+        errorDetails: finalError?.toJSON?.() || {},
+      });
+
       return {
         success: false,
         error: finalError?.message || 'Upload failed',
@@ -984,11 +997,23 @@ async function upload(file, options = {}) {
         console.warn('[upload] Orphaned file path:', storagePath);
       }
 
+      // Log to error reporting service
+      const errorCode = isTimeout ? 'DB_TIMEOUT' : 'DB_ERROR';
+      errorLogger.error('upload', errorCode, mediaError?.message || 'Failed to create media record', {
+        fileName: file.name,
+        fileSize: file.size,
+        category,
+        storagePath,
+        publicUrl,
+        dbAttempts: dbMaxRetries,
+        isTimeout,
+      });
+
       return {
         success: false,
         error: mediaError?.message || 'Failed to create media record',
         errorDetails: {
-          code: isTimeout ? 'DB_TIMEOUT' : 'DB_ERROR',
+          code: errorCode,
           message: mediaError?.message,
           storagePath, // Include path for manual recovery
           publicUrl,   // Include URL for manual recovery
@@ -1023,6 +1048,16 @@ async function upload(file, options = {}) {
 
   } catch (error) {
     console.error('Upload failed:', error);
+
+    // Log to error reporting service
+    errorLogger.error('upload', 'UNEXPECTED_ERROR', error.message, {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      category,
+      stack: error.stack,
+    });
+
     return { success: false, error: error.message };
   }
 }
@@ -1315,8 +1350,17 @@ async function unlinkFromSpace(mediaId, spaceId) {
 
   if (error) {
     console.error('[unlink] Error unlinking from space:', error);
+
+    // Log to error reporting service
+    const isPermissionError = error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy');
+    errorLogger.error('media', isPermissionError ? 'PERMISSION_DENIED' : 'UNLINK_FAILED', error.message, {
+      mediaId,
+      spaceId,
+      errorCode: error.code,
+    });
+
     // Check for RLS permission issues
-    if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+    if (isPermissionError) {
       throw new Error('Permission denied - admin privileges required');
     }
     throw new Error(error.message || 'Failed to unlink media from space');
@@ -1351,6 +1395,15 @@ async function reorderInSpace(spaceId, mediaIds) {
   const failures = results.filter(r => !r.success);
   if (failures.length > 0) {
     console.error('[reorder] Some updates failed:', failures);
+
+    // Log to error reporting service
+    errorLogger.error('media', 'REORDER_FAILED', `Failed to reorder ${failures.length} items`, {
+      spaceId,
+      failedMediaIds: failures.map(f => f.mediaId),
+      totalItems: mediaIds.length,
+      errors: failures.map(f => f.error?.message),
+    });
+
     throw new Error(`Failed to reorder ${failures.length} items`);
   }
 
@@ -1544,8 +1597,17 @@ async function deleteMedia(mediaId) {
 
   if (error) {
     console.error('[delete] Database delete error:', error);
+
+    // Log to error reporting service
+    const isPermissionError = error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy');
+    errorLogger.error('media', isPermissionError ? 'PERMISSION_DENIED' : 'DELETE_FAILED', error.message, {
+      mediaId,
+      errorCode: error.code,
+      storagePath: media.storage_path,
+    });
+
     // Check for common RLS issues
-    if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+    if (isPermissionError) {
       return {
         success: false,
         error: 'Permission denied - you may need admin privileges to delete media',

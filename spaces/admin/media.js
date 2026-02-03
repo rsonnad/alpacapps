@@ -5,6 +5,10 @@
 import { supabase } from '../../shared/supabase.js';
 import { initAuth, getAuthState, signOut } from '../../shared/auth.js';
 import { mediaService } from '../../shared/media-service.js';
+import { errorLogger } from '../../shared/error-logger.js';
+
+// Set up global error handlers
+errorLogger.setupGlobalHandlers();
 
 // =============================================
 // TOAST NOTIFICATIONS

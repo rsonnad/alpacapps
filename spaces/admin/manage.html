@@ -2322,6 +2322,10 @@
     import { pdfService } from '../../shared/pdf-service.js';
     import { emailService } from '../../shared/email-service.js';
     import { signwellService } from '../../shared/signwell-service.js';
+    import { errorLogger } from '../../shared/error-logger.js';
+
+    // Set up global error handlers for uncaught errors
+    errorLogger.setupGlobalHandlers();
 
     // =============================================
     // TOAST NOTIFICATIONS
@@ -2428,6 +2432,16 @@
     // =============================================
     function handleAuthState(state) {
       authState = state;
+
+      // Set user context for error logging
+      if (state.appUser) {
+        errorLogger.setUserContext({
+          userId: state.appUser.id,
+          role: state.appUser.role,
+          email: state.appUser.email,
+        });
+      }
+
       // Allow both admin and staff to access this page
       if (state.appUser && (state.appUser.role === 'admin' || state.appUser.role === 'staff')) {
         document.getElementById('loadingOverlay').classList.add('hidden');

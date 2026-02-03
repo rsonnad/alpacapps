@@ -1,9 +1,36 @@
 // Consumer view - Public spaces listing
-import { supabase } from '../shared/supabase.js';
+import { supabase, SUPABASE_URL } from '../shared/supabase.js';
 
 // App state
 let spaces = [];
 let currentView = 'card';
+
+// Trigger daily error digest check (runs in background, doesn't block page load)
+async function triggerErrorDigest() {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/error-report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'send_digest' }),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      if (result.emailSent) {
+        console.log('[digest] Error digest email sent');
+      } else if (result.skipped) {
+        console.log('[digest] Skipped:', result.reason);
+      } else if (result.errorCount === 0) {
+        console.log('[digest] No errors to report');
+      }
+    }
+  } catch (e) {
+    // Silently ignore digest errors - this is non-critical
+    console.log('[digest] Check failed (non-critical):', e.message);
+  }
+}
+
+// Fire digest check after a short delay (don't block page load)
+setTimeout(triggerErrorDigest, 5000);
 
 // DOM elements
 const cardView = document.getElementById('cardView');
