@@ -1227,6 +1227,11 @@ function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 
   // Show storage usage
   updateStorageIndicator();
 
+  // Reset library filters for fresh modal
+  activeLibraryFilters = { tags: [], category: '' };
+  const libraryCategoryFilter = document.getElementById('libraryCategoryFilter');
+  if (libraryCategoryFilter) libraryCategoryFilter.value = '';
+
   // Load library for the library tab
   loadLibraryMedia();
 
