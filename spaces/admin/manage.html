@@ -5601,12 +5601,15 @@
       const assignment = calendarAssignments.find(a => a.id === currentAssignmentId);
       if (!assignment) return;
 
+      // Get form values
+      const rateTermValue = document.getElementById('assignmentRateTerm').value;
+      const rateAmount = parseFloat(document.getElementById('assignmentRateAmount').value);
+
       const updates = {
         status: document.getElementById('assignmentStatus').value,
         start_date: document.getElementById('assignmentStartDate').value || null,
         end_date: document.getElementById('assignmentEndDate').value || null,
-        rate_amount: parseFloat(document.getElementById('assignmentRateAmount').value) || null,
-        rate_term: document.getElementById('assignmentRateTerm').value,
+        rate_amount: isNaN(rateAmount) ? null : rateAmount,
         deposit_amount: parseFloat(document.getElementById('assignmentDepositAmount').value) || null,
         notice_days: parseInt(document.getElementById('assignmentNoticeDays').value) || null,
         is_free: document.getElementById('assignmentIsFree').checked,
@@ -5615,13 +5618,23 @@
         notes: document.getElementById('assignmentNotes').value || null
       };
 
+      // Only include rate_term if it has a valid value (not empty string)
+      if (rateTermValue && ['hourly', 'daily', 'weekly', 'monthly', 'flat'].includes(rateTermValue)) {
+        updates.rate_term = rateTermValue;
+      }
+
+      console.log('Saving assignment with updates:', updates);
+
       try {
         const { error } = await supabase
           .from('assignments')
           .update(updates)
           .eq('id', currentAssignmentId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
 
         // Update space if changed
         const newSpaceId = document.getElementById('assignmentSpace').value;
