@@ -100,7 +100,7 @@ img {
 }
 
 .mistiq-section {
-  padding: var(--mistiq-space-xl) 0;
+  padding: var(--mistiq-space-lg) 0;
 }
 
 .mistiq-section--alt {
@@ -127,7 +127,7 @@ img {
   text-align: center;
   color: var(--mistiq-text-light);
   max-width: 600px;
-  margin: 0 auto var(--mistiq-space-lg);
+  margin: 0 auto var(--mistiq-space-md);
   font-size: 1.1rem;
 }
 
@@ -201,6 +201,31 @@ img {
 
 .mistiq-nav__link:hover {
   color: var(--mistiq-gold);
+}
+
+.mistiq-btn--nav {
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+
+.mistiq-btn--nav:hover {
+  background: white;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-header--scrolled .mistiq-btn--nav {
+  color: var(--mistiq-text);
+  border-color: var(--mistiq-text);
+}
+
+.mistiq-header--scrolled .mistiq-btn--nav:hover {
+  background: var(--mistiq-accent);
+  color: white;
+  border-color: var(--mistiq-accent);
 }
 
 /* Mobile menu toggle */
@@ -294,12 +319,15 @@ img {
    ============================================= */
 
 .mistiq-hero {
-  min-height: 100vh;
+  min-height: 85vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: linear-gradient(135deg, var(--mistiq-accent) 0%, var(--mistiq-accent-dark) 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
+              url('https://mistiq.alpacaplayhouse.com/assets/Hero_Image_-_StudioShot_1768660117735-DGWSE8iJ.jpg');
+  background-size: cover;
+  background-position: center;
   color: white;
   padding: var(--mistiq-space-xl) var(--mistiq-space-md);
 }
