@@ -816,9 +816,25 @@ function renderTable(spacesToRender) {
       ? `${occupant.first_name} ${occupant.last_name || ''}`.trim()
       : '-';
 
-    const endDate = space.currentAssignment?.end_date
-      ? new Date(space.currentAssignment.end_date).toLocaleDateString()
-      : '-';
+    // Format lease dates for display
+    const assignment = space.currentAssignment;
+    let leaseDatesHtml = '-';
+    if (assignment) {
+      const startStr = assignment.start_date
+        ? new Date(assignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+        : '?';
+      const endStr = assignment.end_date
+        ? new Date(assignment.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+        : 'ongoing';
+      leaseDatesHtml = `${startStr} - ${endStr}`;
+
+      // Show early exit date if set
+      if (assignment.desired_departure_date) {
+        const earlyStr = new Date(assignment.desired_departure_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+        const listedIcon = assignment.desired_departure_listed ? '✓' : '';
+        leaseDatesHtml += `<br><small style="color:var(--accent);">Early exit: ${earlyStr} ${listedIcon}</small>`;
+      }
+    }
 
     const formatDate = (d) => d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
     const availFromStr = space.availableFrom && space.availableFrom > new Date()
@@ -853,8 +869,8 @@ function renderTable(spacesToRender) {
         <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
         <td>${availFromStr}</td>
         <td>${availUntilStr}</td>
-        <td>${occupantName}</td>
-        <td>${endDate}</td>
+        <td>${occupantName}${occupant?.type ? `<br><small style="color:var(--text-muted)">${occupant.type}</small>` : ''}</td>
+        <td>${leaseDatesHtml}</td>
         <td>${statusBadge}</td>
       </tr>
     `;
