@@ -2127,18 +2127,44 @@ async function handleEditSpaceSubmit() {
     console.log('Updating space with:', updates);
 
     // Wrap Supabase call with timeout to prevent indefinite hangs
-    const timeoutMs = 15000; // 15 second timeout
-    const updatePromise = supabase
-      .from('spaces')
-      .update(updates)
-      .eq('id', spaceId)
-      .select();
+    const timeoutMs = 30000; // 30 second timeout (increased for slow connections)
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out. Please check your connection and try again.')), timeoutMs)
-    );
+    // Retry logic for transient failures
+    let lastError = null;
+    let data = null;
+    let error = null;
 
-    const { data, error } = await Promise.race([updatePromise, timeoutPromise]);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const updatePromise = supabase
+        .from('spaces')
+        .update(updates)
+        .eq('id', spaceId)
+        .select();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out. Please check your connection and try again.')), timeoutMs)
+      );
+
+      try {
+        const result = await Promise.race([updatePromise, timeoutPromise]);
+        data = result.data;
+        error = result.error;
+        if (!error) break; // Success, exit retry loop
+        lastError = error;
+        console.log(`Attempt ${attempt} failed:`, error.message);
+      } catch (e) {
+        lastError = e;
+        console.log(`Attempt ${attempt} timed out`);
+        if (attempt < 2) {
+          console.log('Retrying...');
+          await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+        }
+      }
+    }
+
+    if (lastError && !data) {
+      throw lastError;
+    }
 
     console.log('Update result:', { data, error });
 
