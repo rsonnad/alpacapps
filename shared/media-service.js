@@ -398,6 +398,167 @@ function uploadWithProgress(bucket, storagePath, file, contentType, onProgress, 
 }
 
 // =============================================
+// TUS RESUMABLE UPLOAD (for files > 6MB)
+// =============================================
+
+/**
+ * Check if TUS client is available
+ */
+function isTusAvailable() {
+  return typeof window !== 'undefined' && window.tus && window.tus.Upload;
+}
+
+/**
+ * Upload file using TUS resumable protocol
+ * Recommended for files > 6MB for better reliability
+ *
+ * @param {string} bucket - Storage bucket name
+ * @param {string} storagePath - Path within bucket (e.g., "mktg/image.jpg")
+ * @param {Blob|File} file - File to upload
+ * @param {string} contentType - MIME type
+ * @param {Function} onProgress - Progress callback (loaded, total) => void
+ * @param {string} authToken - Auth token
+ * @param {Object} options - Additional options
+ * @returns {Promise<{data: object|null, error: UploadError|null}>}
+ */
+function uploadWithTus(bucket, storagePath, file, contentType, onProgress, authToken, options = {}) {
+  const {
+    allowUpsert = false,
+    cacheControl = '3600',
+  } = options;
+
+  return new Promise((resolve) => {
+    if (!isTusAvailable()) {
+      console.warn('[tus] TUS client not available, falling back to standard upload');
+      resolve({
+        data: null,
+        error: new UploadError(
+          'TUS client not loaded - using fallback',
+          'TUS_UNAVAILABLE',
+          null,
+          true,
+          { fallbackAvailable: true }
+        ),
+      });
+      return;
+    }
+
+    const tusEndpoint = `${STORAGE_URL}/storage/v1/upload/resumable`;
+
+    console.log(`[tus] Starting resumable upload to ${tusEndpoint}`);
+    console.log(`[tus] File: ${storagePath} (${formatBytes(file.size)})`);
+
+    const upload = new window.tus.Upload(file, {
+      endpoint: tusEndpoint,
+      retryDelays: [0, 1000, 3000, 5000, 10000, 20000], // Retry with backoff
+      chunkSize: 6 * 1024 * 1024, // 6MB chunks (Supabase requirement)
+      headers: {
+        authorization: `Bearer ${authToken}`,
+        'x-upsert': allowUpsert ? 'true' : 'false',
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true, // Allow re-upload of same file
+      metadata: {
+        bucketName: bucket,
+        objectName: storagePath,
+        contentType: contentType,
+        cacheControl: cacheControl,
+      },
+
+      onError: (error) => {
+        console.error('[tus] Upload error:', error);
+
+        // Parse TUS error
+        let uploadError;
+        const errorMessage = error.message || error.toString();
+
+        if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+          uploadError = new UploadError(
+            'Permission denied - check storage policies',
+            'PERMISSION_DENIED',
+            403,
+            false,
+            { tusError: errorMessage }
+          );
+        } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+          uploadError = new UploadError(
+            'Authentication expired',
+            'AUTH_EXPIRED',
+            401,
+            true,
+            { tusError: errorMessage, needsTokenRefresh: true }
+          );
+        } else if (errorMessage.includes('409') || errorMessage.includes('Conflict')) {
+          uploadError = new UploadError(
+            'File conflict - another upload in progress',
+            'CONFLICT',
+            409,
+            true,
+            { tusError: errorMessage }
+          );
+        } else if (errorMessage.includes('413') || errorMessage.includes('too large')) {
+          uploadError = new UploadError(
+            'File too large',
+            'FILE_TOO_LARGE',
+            413,
+            false,
+            { tusError: errorMessage }
+          );
+        } else if (errorMessage.includes('network') || errorMessage.includes('Network')) {
+          uploadError = new UploadError(
+            'Network error during upload',
+            'NETWORK_ERROR',
+            null,
+            true,
+            { tusError: errorMessage }
+          );
+        } else {
+          uploadError = new UploadError(
+            errorMessage || 'TUS upload failed',
+            'TUS_ERROR',
+            null,
+            true,
+            { tusError: errorMessage }
+          );
+        }
+
+        resolve({ data: null, error: uploadError });
+      },
+
+      onProgress: (bytesUploaded, bytesTotal) => {
+        const percent = ((bytesUploaded / bytesTotal) * 100).toFixed(1);
+        console.log(`[tus] Progress: ${formatBytes(bytesUploaded)} / ${formatBytes(bytesTotal)} (${percent}%)`);
+        if (onProgress) {
+          onProgress(bytesUploaded, bytesTotal);
+        }
+      },
+
+      onSuccess: () => {
+        console.log('[tus] Upload completed successfully');
+        resolve({ data: { path: storagePath }, error: null });
+      },
+    });
+
+    // Check for previous incomplete uploads and resume
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length > 0) {
+        console.log('[tus] Found previous upload, resuming...');
+        upload.resumeFromPreviousUpload(previousUploads[0]);
+      }
+      upload.start();
+    }).catch((err) => {
+      console.warn('[tus] Could not check for previous uploads:', err);
+      upload.start();
+    });
+  });
+}
+
+/**
+ * Threshold for using TUS vs standard upload (6MB)
+ */
+const TUS_THRESHOLD_BYTES = 6 * 1024 * 1024;
+
+// =============================================
 // STORAGE USAGE
 // =============================================
 
@@ -568,8 +729,9 @@ async function upload(file, options = {}) {
     // Get auth token (with refresh if needed)
     let authToken = await getAuthToken();
 
-    // Upload to Supabase storage using XHR for progress tracking
-    console.log(`[upload] Uploading to Supabase: ${storagePath} (${formatBytes(fileToUpload.size)})`);
+    // Determine upload method based on file size
+    const useTus = fileToUpload.size > TUS_THRESHOLD_BYTES && isTusAvailable();
+    console.log(`[upload] Uploading to Supabase: ${storagePath} (${formatBytes(fileToUpload.size)}) via ${useTus ? 'TUS resumable' : 'standard XHR'}`);
 
     // Retry with smart error classification
     let uploadData = null;
@@ -580,7 +742,7 @@ async function upload(file, options = {}) {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`[upload] Attempt ${attempt}/${maxRetries}...`);
+        console.log(`[upload] Attempt ${attempt}/${maxRetries} via ${useTus ? 'TUS' : 'XHR'}...`);
 
         // Reset progress at start of each attempt
         if (onProgress) {
@@ -588,16 +750,47 @@ async function upload(file, options = {}) {
         }
         isStalled = false;
 
-        const result = await uploadWithProgress(
-          CONFIG.buckets.images,
-          storagePath,
-          fileToUpload,
-          finalMimeType,
-          onProgress,
-          () => { isStalled = true; }, // onStall callback
-          authToken,
-          { allowUpsert: attempt > 1 } // Allow upsert on retries to handle partial uploads
-        );
+        let result;
+
+        if (useTus) {
+          // Use TUS resumable upload for large files
+          result = await uploadWithTus(
+            CONFIG.buckets.images,
+            storagePath,
+            fileToUpload,
+            finalMimeType,
+            onProgress,
+            authToken,
+            { allowUpsert: attempt > 1 }
+          );
+
+          // If TUS is unavailable, fall back to standard upload
+          if (result.error?.code === 'TUS_UNAVAILABLE') {
+            console.log('[upload] Falling back to standard XHR upload');
+            result = await uploadWithProgress(
+              CONFIG.buckets.images,
+              storagePath,
+              fileToUpload,
+              finalMimeType,
+              onProgress,
+              () => { isStalled = true; },
+              authToken,
+              { allowUpsert: attempt > 1 }
+            );
+          }
+        } else {
+          // Use standard XHR upload for smaller files
+          result = await uploadWithProgress(
+            CONFIG.buckets.images,
+            storagePath,
+            fileToUpload,
+            finalMimeType,
+            onProgress,
+            () => { isStalled = true; }, // onStall callback
+            authToken,
+            { allowUpsert: attempt > 1 } // Allow upsert on retries to handle partial uploads
+          );
+        }
 
         uploadData = result.data;
         uploadError = result.error;
@@ -1513,6 +1706,8 @@ export const mediaService = {
   // Upload
   upload,
   addExternal,
+  isTusAvailable,
+  TUS_THRESHOLD_BYTES,
 
   // Tags
   getTags,
