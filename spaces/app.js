@@ -626,7 +626,7 @@ function displaySpaceDetail(space) {
 
   // Availability info
   const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
-  const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'the cows come home';
+  const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Ongoing';
 
   document.getElementById('spaceDetailBody').innerHTML = `
     <div class="detail-grid">
