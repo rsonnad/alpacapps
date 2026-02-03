@@ -1548,10 +1548,9 @@ function renderLibraryTagFilter() {
   const container = document.getElementById('libraryTagFilter');
   if (!container) return;
 
-  // Show purpose, space, and condition tags as filter chips
-  // Sort by usage count (most used first)
+  // Show only space tags as filter chips, sorted by usage count (most used first)
   const filterableTags = allTags
-    .filter(t => ['purpose', 'space', 'condition'].includes(t.tag_group))
+    .filter(t => t.tag_group === 'space')
     .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
 
   container.innerHTML = filterableTags.map(tag => `
