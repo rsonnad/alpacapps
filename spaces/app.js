@@ -376,8 +376,7 @@ function renderCards(spacesToRender) {
         <div class="card-body">
           <div class="card-header">
             <div>
-              ${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="card-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a>` : ''}
-              <div class="card-title">${space.name}</div>
+              <div class="card-title">${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="card-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}${space.name}</div>
               ${space.description ? `<div class="card-description">${space.description}</div>` : ''}
             </div>
           </div>
@@ -423,7 +422,7 @@ function renderTable(spacesToRender) {
     return `
       <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
         <td class="td-thumbnail">${thumbnail}</td>
-        <td>${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a><br>` : ''}<strong>${space.name}</strong></td>
+        <td>${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong></td>
         <td class="td-description">${description}</td>
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
         <td>${space.sq_footage || '-'}</td>
@@ -507,23 +506,61 @@ async function fetchAndShowSpace(spaceId) {
 }
 
 function displaySpaceDetail(space) {
-  document.getElementById('detailSpaceName').textContent = space.name;
+  // Update header with parent link if exists
+  const headerHtml = space.parent?.name
+    ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="detail-parent-link">${space.parent.name} /</a> ${space.name}`
+    : space.name;
+  document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
   // Update URL with space ID for shareable links
   const url = new URL(window.location);
   url.searchParams.set('id', space.id);
   window.history.replaceState({}, '', url);
 
-  let photosHtml = '';
+  // Get parent photos if parent exists
+  let parentPhotos = [];
+  let parentName = '';
+  if (space.parent?.name) {
+    const parentSpace = spaces.find(s => s.name === space.parent.name);
+    if (parentSpace && parentSpace.photos) {
+      parentPhotos = parentSpace.photos;
+      parentName = parentSpace.name;
+    }
+  }
+
+  // Combine all photos for lightbox gallery
+  const allPhotos = [...space.photos, ...parentPhotos];
+  if (allPhotos.length) {
+    setCurrentGallery(allPhotos);
+  }
+
+  // Build space photos HTML (at bottom)
+  let spacePhotosHtml = '';
   if (space.photos.length) {
-    setCurrentGallery(space.photos);
-    photosHtml = `
+    spacePhotosHtml = `
       <div class="detail-section detail-photos">
-        <h3>Photos</h3>
+        <h3>${space.name} Photos</h3>
         <div class="detail-photos-grid">
           ${space.photos.map(p => `
             <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
               <img src="${p.url}" alt="${p.caption || space.name}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Build parent photos HTML (at very bottom, if parent has photos)
+  let parentPhotosHtml = '';
+  if (parentPhotos.length) {
+    parentPhotosHtml = `
+      <div class="detail-section detail-photos">
+        <h3>${parentName} Photos</h3>
+        <div class="detail-photos-grid">
+          ${parentPhotos.map(p => `
+            <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
+              <img src="${p.url}" alt="${p.caption || parentName}">
             </div>
           `).join('')}
         </div>
@@ -536,7 +573,6 @@ function displaySpaceDetail(space) {
   const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'the cows come home';
 
   document.getElementById('spaceDetailBody').innerHTML = `
-    ${photosHtml}
     <div class="detail-grid">
       <div class="detail-section">
         <h3>Details</h3>
@@ -570,6 +606,8 @@ function displaySpaceDetail(space) {
         Interested in this space? Contact us for availability and scheduling a tour.
       </p>
     </div>
+    ${spacePhotosHtml}
+    ${parentPhotosHtml}
   `;
 
   spaceDetailModal.classList.remove('hidden');
