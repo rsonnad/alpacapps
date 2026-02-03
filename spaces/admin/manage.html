@@ -493,6 +493,24 @@
       height: 20px;
       flex-shrink: 0;
     }
+
+    /* Template type selector */
+    .template-type-select {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: var(--bg-card);
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .template-type-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -542,7 +560,7 @@
         <button class="manage-tab" data-tab="events">Events</button>
         <button class="manage-tab" data-tab="media">Media</button>
         <button class="manage-tab" data-tab="users">Users</button>
-        <button class="manage-tab" data-tab="settings">Settings</button>
+        <button class="manage-tab" data-tab="templates">Templates</button>
       </div>
 
       <!-- Spaces Panel -->
@@ -774,6 +792,24 @@
           </div>
         </details>
 
+        <!-- Events Calendar Section -->
+        <div class="section" style="margin-top: 1.5rem;">
+          <div class="section-header">
+            <h2>Events Calendar</h2>
+            <div class="calendar-controls">
+              <button class="btn-small" id="eventCalendarPrevMonth">&larr;</button>
+              <span id="eventCalendarMonthLabel" class="calendar-month-label"></span>
+              <button class="btn-small" id="eventCalendarNextMonth">&rarr;</button>
+              <button class="btn-small" id="eventCalendarToday" style="margin-left: 0.5rem;">Today</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <div id="eventsCalendar" class="events-calendar">
+              <div class="calendar-loading">Loading events...</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Create Event Request Section -->
         <div class="section" style="margin-top: 1.5rem;">
           <div class="section-header">
@@ -1003,156 +1039,173 @@
         </div>
       </div>
 
-      <!-- Settings Panel -->
-      <div id="settingsPanel" class="manage-panel">
+      <!-- Templates Panel -->
+      <div id="templatesPanel" class="manage-panel">
+        <!-- Template Type Selector -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Template Editor</h2>
+            <div class="header-actions">
+              <select id="templateTypeSelector" class="template-type-select">
+                <option value="lease">Lease Agreement</option>
+                <option value="event">Event Agreement</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <!-- Lease Template Section -->
-        <div class="section">
-          <div class="section-header">
-            <h2>Lease Agreement Template</h2>
-            <div class="header-actions">
-              <button type="button" id="loadDefaultTemplateBtn" class="btn-small">Load Default</button>
-              <button type="button" id="saveTemplateBtn" class="btn-small btn-primary">Save Template</button>
+        <div id="leaseTemplateSection">
+          <div class="section">
+            <div class="section-header">
+              <h2>Lease Agreement Template</h2>
+              <div class="header-actions">
+                <button type="button" id="loadDefaultTemplateBtn" class="btn-small">Load Default</button>
+                <button type="button" id="saveTemplateBtn" class="btn-small btn-primary">Save Template</button>
+              </div>
+            </div>
+            <div class="section-body">
+              <p class="text-muted" style="margin-bottom: 1rem;">
+                Edit the lease agreement template below. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+                The template uses Markdown formatting: <code># Header</code>, <code>**bold**</code>, <code>- bullet list</code>, <code>---</code> for horizontal rule.
+              </p>
+
+              <div class="template-editor-container">
+                <div class="template-editor">
+                  <label for="templateName">Template Name</label>
+                  <input type="text" id="templateName" value="Standard Lease Agreement" style="margin-bottom: 1rem;">
+
+                  <label for="templateContent">Template Content</label>
+                  <textarea id="templateContent" class="template-textarea" rows="20" placeholder="Enter lease template content..."></textarea>
+                </div>
+
+                <div class="placeholder-reference">
+                  <h4>Available Placeholders</h4>
+                  <div id="placeholderList" class="placeholder-list"></div>
+                </div>
+              </div>
+
+              <div class="template-actions" style="margin-top: 1rem;">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="templateMakeActive" checked>
+                  Set as active template
+                </label>
+              </div>
+
+              <div id="templateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
             </div>
           </div>
-          <div class="section-body">
-            <p class="text-muted" style="margin-bottom: 1rem;">
-              Edit the lease agreement template below. Use <code>{{placeholder}}</code> syntax for dynamic fields.
-              The template uses Markdown formatting: <code># Header</code>, <code>**bold**</code>, <code>- bullet list</code>, <code>---</code> for horizontal rule.
-            </p>
 
-            <div class="template-editor-container">
-              <div class="template-editor">
-                <label for="templateName">Template Name</label>
-                <input type="text" id="templateName" value="Standard Lease Agreement" style="margin-bottom: 1rem;">
-
-                <label for="templateContent">Template Content</label>
-                <textarea id="templateContent" class="template-textarea" rows="20" placeholder="Enter lease template content..."></textarea>
-              </div>
-
-              <div class="placeholder-reference">
-                <h4>Available Placeholders</h4>
-                <div id="placeholderList" class="placeholder-list"></div>
-              </div>
+          <!-- Lease Template History Section -->
+          <div class="section">
+            <div class="section-header">
+              <h2>Template History</h2>
             </div>
-
-            <div class="template-actions" style="margin-top: 1rem;">
-              <label class="checkbox-label">
-                <input type="checkbox" id="templateMakeActive" checked>
-                Set as active template
-              </label>
+            <div class="section-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Created</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="templateHistoryBody">
+                  <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+                </tbody>
+              </table>
             </div>
+          </div>
 
-            <div id="templateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+          <!-- SignWell Configuration (only for lease templates) -->
+          <div class="section">
+            <div class="section-header">
+              <h2>SignWell Integration</h2>
+            </div>
+            <div class="section-body">
+              <p class="text-muted" style="margin-bottom: 1rem;">
+                Configure SignWell for electronic signature collection. Get your API key from
+                <a href="https://www.signwell.com/api/" target="_blank">signwell.com/api</a>.
+              </p>
+              <div class="form-group">
+                <label for="signwellApiKey">API Key</label>
+                <input type="password" id="signwellApiKey" placeholder="Enter SignWell API key...">
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="signwellTestMode" checked>
+                  Test Mode (documents won't be sent for real signatures)
+                </label>
+              </div>
+              <button type="button" id="saveSignwellConfigBtn" class="btn-small btn-primary">Save SignWell Config</button>
+            </div>
           </div>
         </div>
 
-        <!-- Template History Section -->
-        <div class="section">
-          <div class="section-header">
-            <h2>Template History</h2>
-          </div>
-          <div class="section-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Version</th>
-                  <th>Created</th>
-                  <th>Active</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="templateHistoryBody">
-                <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- SignWell Configuration -->
-        <div class="section">
-          <div class="section-header">
-            <h2>SignWell Integration</h2>
-          </div>
-          <div class="section-body">
-            <p class="text-muted" style="margin-bottom: 1rem;">
-              Configure SignWell for electronic signature collection. Get your API key from
-              <a href="https://www.signwell.com/api/" target="_blank">signwell.com/api</a>.
-            </p>
-            <div class="form-group">
-              <label for="signwellApiKey">API Key</label>
-              <input type="password" id="signwellApiKey" placeholder="Enter SignWell API key...">
-            </div>
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input type="checkbox" id="signwellTestMode" checked>
-                Test Mode (documents won't be sent for real signatures)
-              </label>
-            </div>
-            <button type="button" id="saveSignwellConfigBtn" class="btn-small btn-primary">Save SignWell Config</button>
-          </div>
-        </div>
-
-        <!-- Event Agreement Template Section -->
-        <div class="section" style="margin-top: 1.5rem;">
-          <div class="section-header">
-            <h2>Event Agreement Template</h2>
-            <div class="header-actions">
-              <button type="button" id="loadDefaultEventTemplateBtn" class="btn-small">Load Default</button>
-              <button type="button" id="saveEventTemplateBtn" class="btn-small btn-primary">Save Template</button>
-            </div>
-          </div>
-          <div class="section-body">
-            <p class="text-muted" style="margin-bottom: 1rem;">
-              Edit the event hosting agreement template. Use <code>{{placeholder}}</code> syntax for dynamic fields.
-            </p>
-
-            <div class="template-editor-container">
-              <div class="template-editor">
-                <label for="eventTemplateName">Template Name</label>
-                <input type="text" id="eventTemplateName" value="Standard Event Agreement" style="margin-bottom: 1rem;">
-
-                <label for="eventTemplateContent">Template Content</label>
-                <textarea id="eventTemplateContent" class="template-textarea" rows="20" placeholder="Enter event agreement template content..."></textarea>
-              </div>
-
-              <div class="placeholder-reference">
-                <h4>Available Placeholders</h4>
-                <div id="eventPlaceholderList" class="placeholder-list"></div>
+        <!-- Event Template Section -->
+        <div id="eventTemplateSection" style="display: none;">
+          <div class="section">
+            <div class="section-header">
+              <h2>Event Agreement Template</h2>
+              <div class="header-actions">
+                <button type="button" id="loadDefaultEventTemplateBtn" class="btn-small">Load Default</button>
+                <button type="button" id="saveEventTemplateBtn" class="btn-small btn-primary">Save Template</button>
               </div>
             </div>
+            <div class="section-body">
+              <p class="text-muted" style="margin-bottom: 1rem;">
+                Edit the event hosting agreement template. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+              </p>
 
-            <div class="template-actions" style="margin-top: 1rem;">
-              <label class="checkbox-label">
-                <input type="checkbox" id="eventTemplateMakeActive" checked>
-                Set as active template
-              </label>
+              <div class="template-editor-container">
+                <div class="template-editor">
+                  <label for="eventTemplateName">Template Name</label>
+                  <input type="text" id="eventTemplateName" value="Standard Event Agreement" style="margin-bottom: 1rem;">
+
+                  <label for="eventTemplateContent">Template Content</label>
+                  <textarea id="eventTemplateContent" class="template-textarea" rows="20" placeholder="Enter event agreement template content..."></textarea>
+                </div>
+
+                <div class="placeholder-reference">
+                  <h4>Available Placeholders</h4>
+                  <div id="eventPlaceholderList" class="placeholder-list"></div>
+                </div>
+              </div>
+
+              <div class="template-actions" style="margin-top: 1rem;">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="eventTemplateMakeActive" checked>
+                  Set as active template
+                </label>
+              </div>
+
+              <div id="eventTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
             </div>
-
-            <div id="eventTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
           </div>
-        </div>
 
-        <!-- Event Template History Section -->
-        <div class="section">
-          <div class="section-header">
-            <h2>Event Template History</h2>
-          </div>
-          <div class="section-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Version</th>
-                  <th>Created</th>
-                  <th>Active</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="eventTemplateHistoryBody">
-                <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
-              </tbody>
-            </table>
+          <!-- Event Template History Section -->
+          <div class="section">
+            <div class="section-header">
+              <h2>Template History</h2>
+            </div>
+            <div class="section-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Created</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="eventTemplateHistoryBody">
+                  <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -1723,9 +1776,9 @@
             loadEvents();
           }
 
-          // Load settings when switching to Settings tab
-          if (tab.dataset.tab === 'settings') {
-            loadSettingsPanel();
+          // Load templates when switching to Templates tab
+          if (tab.dataset.tab === 'templates') {
+            loadTemplatesPanel();
           }
 
           // Load users when switching to Users tab
@@ -4665,10 +4718,10 @@ Let me know if you have any questions!`;
     window.removeUser = removeUser;
 
     // =============================================
-    // SETTINGS / TEMPLATE EDITOR
+    // TEMPLATES EDITOR
     // =============================================
 
-    async function loadSettingsPanel() {
+    async function loadTemplatesPanel() {
       // Load lease placeholder reference
       const placeholders = leaseTemplateService.getAvailablePlaceholders();
       const placeholderList = document.getElementById('placeholderList');
@@ -5076,16 +5129,23 @@ Let me know if you have any questions!`;
       });
       document.getElementById('createTemplateLink')?.addEventListener('click', (e) => {
         e.preventDefault();
-        switchTab('settings'); // Switch to settings/templates tab
-        showToast('Create a lease template in the Settings tab', 'info');
+        switchTab('templates'); // Switch to templates tab
+        showToast('Create a lease template in the Templates tab', 'info');
       });
 
-      // Settings panel event listeners - Lease templates
+      // Templates panel event listeners - Template type selector
+      document.getElementById('templateTypeSelector')?.addEventListener('change', (e) => {
+        const type = e.target.value;
+        document.getElementById('leaseTemplateSection').style.display = type === 'lease' ? 'block' : 'none';
+        document.getElementById('eventTemplateSection').style.display = type === 'event' ? 'block' : 'none';
+      });
+
+      // Templates panel event listeners - Lease templates
       document.getElementById('loadDefaultTemplateBtn')?.addEventListener('click', loadDefaultTemplate);
       document.getElementById('saveTemplateBtn')?.addEventListener('click', saveTemplate);
       document.getElementById('saveSignwellConfigBtn')?.addEventListener('click', saveSignwellConfig);
 
-      // Settings panel event listeners - Event templates
+      // Templates panel event listeners - Event templates
       document.getElementById('loadDefaultEventTemplateBtn')?.addEventListener('click', loadDefaultEventTemplate);
       document.getElementById('saveEventTemplateBtn')?.addEventListener('click', saveEventTemplate);
 
