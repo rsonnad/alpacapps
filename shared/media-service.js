@@ -8,7 +8,7 @@
  * - Tagging and categorization
  */
 
-import { supabase } from './supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
 // =============================================
 // CONFIGURATION
@@ -64,6 +64,67 @@ function isSupported(file) {
  */
 function isVideo(file) {
   return CONFIG.videoTypes.includes(file.type);
+}
+
+// =============================================
+// XHR UPLOAD WITH PROGRESS
+// =============================================
+
+/**
+ * Upload file to Supabase storage with progress tracking
+ * Uses XMLHttpRequest instead of fetch to get upload progress events
+ *
+ * @param {string} bucket - Storage bucket name
+ * @param {string} storagePath - Path within bucket
+ * @param {Blob|File} file - File to upload
+ * @param {string} contentType - MIME type
+ * @param {Function} onProgress - Progress callback (loaded, total) => void
+ * @param {number} timeout - Timeout in ms (default 120000)
+ * @returns {Promise<{data: object|null, error: object|null}>}
+ */
+function uploadWithProgress(bucket, storagePath, file, contentType, onProgress, timeout = 120000) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${storagePath}`;
+
+    // Track progress
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(e.loaded, e.total);
+      }
+    });
+
+    // Handle completion
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: { path: storagePath }, error: null });
+      } else {
+        let errorMessage = `Upload failed with status ${xhr.status}`;
+        try {
+          const response = JSON.parse(xhr.responseText);
+          errorMessage = response.message || response.error || errorMessage;
+        } catch (e) {
+          // Use default error message
+        }
+        resolve({ data: null, error: { message: errorMessage } });
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      resolve({ data: null, error: { message: 'Network error during upload' } });
+    });
+
+    xhr.addEventListener('timeout', () => {
+      resolve({ data: null, error: { message: 'Upload timed out' } });
+    });
+
+    xhr.timeout = timeout;
+    xhr.open('POST', url);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.send(file);
+  });
 }
 
 // =============================================
@@ -137,6 +198,7 @@ async function shouldWarnStorage() {
  * @param {string[]} options.tags - Array of tag names to assign
  * @param {string} options.spaceId - Optional space to link to
  * @param {number} options.displayOrder - Display order if linking to space
+ * @param {Function} options.onProgress - Progress callback: (loaded, total) => void
  * @returns {Object} - { success, media, error }
  */
 async function upload(file, options = {}) {
@@ -147,6 +209,7 @@ async function upload(file, options = {}) {
     tags = [],
     spaceId = null,
     displayOrder = 0,
+    onProgress = null, // Progress callback: (loaded, total) => void
   } = options;
 
   // Validate file type
@@ -222,31 +285,33 @@ async function upload(file, options = {}) {
     const randomId = Math.random().toString(36).substring(2, 8);
     const storagePath = `${category}/${timestamp}-${randomId}.${ext}`;
 
-    // Upload to Supabase storage (with retry logic)
+    // Upload to Supabase storage using XHR for progress tracking
     console.log(`[upload] Uploading to Supabase: ${storagePath}`);
 
-    const doUpload = () => supabase.storage
-      .from(CONFIG.buckets.images)
-      .upload(storagePath, fileToUpload, {
-        cacheControl: '3600',
-        contentType: finalMimeType,
-        upsert: false,
-      });
-
-    // Retry up to 3 times with 5 minute timeout each (for high-latency connections)
+    // Retry up to 3 times with 2 minute timeout each
     let uploadData = null;
     let uploadError = null;
     const maxRetries = 3;
-    const uploadTimeout = 300000; // 5 minutes per attempt for international connections
+    const uploadTimeout = 120000; // 2 minutes per attempt
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`[upload] Attempt ${attempt}/${maxRetries} (${uploadTimeout/1000}s timeout)...`);
-        const result = await withTimeout(
-          doUpload(),
-          uploadTimeout,
-          `Upload timed out (attempt ${attempt})`
+        console.log(`[upload] Attempt ${attempt}/${maxRetries}...`);
+
+        // Reset progress at start of each attempt
+        if (onProgress) {
+          onProgress(0, fileToUpload.size || file.size);
+        }
+
+        const result = await uploadWithProgress(
+          CONFIG.buckets.images,
+          storagePath,
+          fileToUpload,
+          finalMimeType,
+          onProgress,
+          uploadTimeout
         );
+
         uploadData = result.data;
         uploadError = result.error;
 
@@ -257,16 +322,16 @@ async function upload(file, options = {}) {
 
         console.warn(`[upload] Attempt ${attempt} failed:`, uploadError.message);
         if (attempt < maxRetries) {
-          const backoffMs = attempt * 3000; // 3s, 6s exponential backoff
-          console.log(`[upload] Retrying in ${backoffMs/1000} seconds...`);
+          const backoffMs = attempt * 2000; // 2s, 4s exponential backoff
+          console.log(`[upload] Retrying in ${backoffMs / 1000} seconds...`);
           await new Promise(r => setTimeout(r, backoffMs));
         }
-      } catch (timeoutErr) {
-        console.warn(`[upload] Attempt ${attempt} timed out`);
-        uploadError = { message: timeoutErr.message };
+      } catch (err) {
+        console.warn(`[upload] Attempt ${attempt} error:`, err.message);
+        uploadError = { message: err.message };
         if (attempt < maxRetries) {
-          const backoffMs = attempt * 3000;
-          console.log(`[upload] Retrying in ${backoffMs/1000} seconds...`);
+          const backoffMs = attempt * 2000;
+          console.log(`[upload] Retrying in ${backoffMs / 1000} seconds...`);
           await new Promise(r => setTimeout(r, backoffMs));
         }
       }

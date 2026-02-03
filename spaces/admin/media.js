@@ -991,9 +991,10 @@ async function handleUpload() {
     submitBtn.textContent = 'Uploading...';
   }
 
-  // Show progress for multiple files
-  if (selectedUploadFiles.length > 1 && progressContainer) {
+  // Always show progress bar
+  if (progressContainer) {
     progressContainer.classList.remove('hidden');
+    if (progressFill) progressFill.style.width = '0%';
   }
 
   let successCount = 0;
@@ -1003,10 +1004,14 @@ async function handleUpload() {
   try {
     for (let i = 0; i < selectedUploadFiles.length; i++) {
       const item = selectedUploadFiles[i];
+      const fileSize = item.file.size;
 
-      // Update progress
-      if (progressFill) progressFill.style.width = `${((i) / totalFiles) * 100}%`;
-      if (progressText) progressText.textContent = `Uploading ${i + 1} of ${totalFiles}...`;
+      // Update progress text
+      if (progressText) {
+        progressText.textContent = totalFiles > 1
+          ? `Uploading ${i + 1} of ${totalFiles}...`
+          : 'Uploading...';
+      }
 
       // Use per-file caption if set, otherwise bulk caption
       const caption = item.caption || bulkCaption;
@@ -1016,6 +1021,27 @@ async function handleUpload() {
           category,
           caption,
           tags: selectedTags,
+          onProgress: (loaded, total) => {
+            // Calculate progress: for multiple files, show overall progress
+            // For single file, show byte-level progress
+            let percent;
+            if (totalFiles > 1) {
+              // Progress = completed files + current file progress
+              const completedProgress = (i / totalFiles) * 100;
+              const currentFileProgress = (loaded / total) * (100 / totalFiles);
+              percent = Math.round(completedProgress + currentFileProgress);
+            } else {
+              percent = Math.round((loaded / total) * 100);
+            }
+            if (progressFill) progressFill.style.width = `${percent}%`;
+            if (progressText) {
+              const loadedKB = Math.round(loaded / 1024);
+              const totalKB = Math.round(total / 1024);
+              progressText.textContent = totalFiles > 1
+                ? `Uploading ${i + 1} of ${totalFiles}: ${percent}%`
+                : `Uploading: ${loadedKB}KB / ${totalKB}KB (${percent}%)`;
+            }
+          },
         });
 
         if (result.success) {
