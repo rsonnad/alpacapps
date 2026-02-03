@@ -2172,6 +2172,7 @@
       <div class="modal-footer">
         <button class="btn-secondary" id="closeInviteModalBtn">Close</button>
         <button class="btn-primary" id="copyInviteTextBtn">Copy to Clipboard</button>
+        <button class="btn-primary" id="sendInviteEmailBtn" style="background: var(--available);">Send Email</button>
       </div>
     </div>
   </div>
@@ -7279,6 +7280,7 @@ Deposit: ${req.deposit_status}
       const closeInviteModalBtn = document.getElementById('closeInviteModalBtn');
       const closeInviteModal = document.getElementById('closeInviteModal');
       const copyInviteTextBtn = document.getElementById('copyInviteTextBtn');
+      const sendInviteEmailBtn = document.getElementById('sendInviteEmailBtn');
 
       if (closeInviteModalBtn && !closeInviteModalBtn.dataset.initialized) {
         closeInviteModalBtn.dataset.initialized = 'true';
@@ -7291,6 +7293,10 @@ Deposit: ${req.deposit_status}
       if (copyInviteTextBtn && !copyInviteTextBtn.dataset.initialized) {
         copyInviteTextBtn.dataset.initialized = 'true';
         copyInviteTextBtn.addEventListener('click', copyInviteText);
+      }
+      if (sendInviteEmailBtn && !sendInviteEmailBtn.dataset.initialized) {
+        sendInviteEmailBtn.dataset.initialized = 'true';
+        sendInviteEmailBtn.addEventListener('click', sendInviteEmail);
       }
     }
 
@@ -7489,14 +7495,21 @@ Deposit: ${req.deposit_status}
       }
     }
 
+    // Store current invitation details for sending email
+    let currentInviteEmail = null;
+    let currentInviteRole = null;
+
     function showInvitationModal(email, role) {
+      currentInviteEmail = email;
+      currentInviteRole = role;
+
       const roleDescription = role === 'admin'
         ? 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)'
         : 'staff access (view all spaces and occupant details)';
 
       const inviteText = `Hi,
 
-You've been invited to access GenAlpaca Spaces as ${role === 'admin' ? 'an admin' : 'a staff member'}.
+You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a staff member'}.
 
 You will have ${roleDescription}.
 
@@ -7506,7 +7519,7 @@ To get started:
 
 Your access has already been pre-approved, so you'll have immediate access once you sign in.
 
-Let me know if you have any questions!`;
+If there are any problems or suggestions for improvements, please email them to alpacaplayhouse@gmail.com as soon as you can and they will be rapidly addressed.`;
 
       // Show modal
       const modal = document.getElementById('inviteTextModal');
@@ -7523,6 +7536,52 @@ Let me know if you have any questions!`;
 
     function closeInviteTextModal() {
       document.getElementById('inviteTextModal').classList.add('hidden');
+      currentInviteEmail = null;
+      currentInviteRole = null;
+    }
+
+    async function sendInviteEmail() {
+      if (!currentInviteEmail || !currentInviteRole) {
+        showToast('No invitation to send', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('sendInviteEmailBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        const loginUrl = 'https://rsonnad.github.io/GenAlpacaOps/login/';
+        const emailResult = await emailService.sendStaffInvitation(currentInviteEmail, currentInviteRole, loginUrl);
+
+        if (emailResult.success) {
+          // Update email tracking in database
+          const invitation = allInvitations.find(i => i.email.toLowerCase() === currentInviteEmail.toLowerCase());
+          if (invitation) {
+            await supabase
+              .from('user_invitations')
+              .update({
+                email_sent_at: new Date().toISOString(),
+                email_send_count: (invitation.email_send_count || 0) + 1
+              })
+              .eq('id', invitation.id);
+          }
+
+          showToast('Email sent to ' + currentInviteEmail, 'success');
+          closeInviteTextModal();
+          await loadInvitationsData();
+          renderUsersPanel();
+        } else {
+          showToast('Failed to send email: ' + (emailResult.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        console.error('Error sending invitation email:', error);
+        showToast('Failed to send email: ' + error.message, 'error');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
     }
 
     async function revokeInvitation(invitationId) {

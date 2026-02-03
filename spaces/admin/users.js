@@ -189,17 +189,11 @@ async function inviteUser(email, role) {
 
     document.getElementById('inviteEmail').value = '';
 
-    // Send invitation email automatically
-    const emailSent = await sendInvitationEmail(newInvite.id, email, role);
-
-    if (emailSent) {
-      showToast('Invitation sent to ' + email, 'success');
-    } else {
-      showToast('Invitation created but email failed to send. You can resend it.', 'warning');
-    }
-
     await loadInvitations();
     render();
+
+    // Show invitation text modal (email not sent yet)
+    showInvitationModal(email, role);
 
   } catch (error) {
     console.error('Error inviting user:', error);
@@ -274,14 +268,21 @@ async function resendInvitation(invitationId) {
   }
 }
 
+// Store current invitation details for sending email
+let currentInviteEmail = null;
+let currentInviteRole = null;
+
 function showInvitationModal(email, role) {
+  currentInviteEmail = email;
+  currentInviteRole = role;
+
   const roleDescription = role === 'admin'
     ? 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)'
     : 'staff access (view all spaces and occupant details)';
 
   const inviteText = `Hi,
 
-You've been invited to access GenAlpaca Spaces as ${role === 'admin' ? 'an admin' : 'a staff member'}.
+You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a staff member'}.
 
 You will have ${roleDescription}.
 
@@ -291,7 +292,7 @@ To get started:
 
 Your access has already been pre-approved, so you'll have immediate access once you sign in.
 
-Let me know if you have any questions!`;
+If there are any problems or suggestions for improvements, please email them to alpacaplayhouse@gmail.com as soon as you can and they will be rapidly addressed.`;
 
   // Show modal
   const modal = document.getElementById('inviteTextModal');
@@ -308,6 +309,45 @@ function copyInviteText() {
 
 function closeInviteModal() {
   document.getElementById('inviteTextModal').classList.add('hidden');
+  currentInviteEmail = null;
+  currentInviteRole = null;
+}
+
+async function sendInviteEmail() {
+  if (!currentInviteEmail || !currentInviteRole) {
+    showToast('No invitation to send', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('sendInviteEmailBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const invitation = invitations.find(i => i.email.toLowerCase() === currentInviteEmail.toLowerCase());
+    if (!invitation) {
+      showToast('Invitation not found', 'error');
+      return;
+    }
+
+    const emailSent = await sendInvitationEmail(invitation.id, currentInviteEmail, currentInviteRole);
+
+    if (emailSent) {
+      showToast('Email sent to ' + currentInviteEmail, 'success');
+      closeInviteModal();
+      await loadInvitations();
+      render();
+    } else {
+      showToast('Failed to send email. Try copying the invite text manually.', 'error');
+    }
+  } catch (error) {
+    console.error('Error sending invitation email:', error);
+    showToast('Failed to send email: ' + error.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 async function revokeInvitation(invitationId) {
@@ -519,3 +559,4 @@ window.removeUser = removeUser;
 window.copyInviteText = copyInviteText;
 window.closeInviteModal = closeInviteModal;
 window.showInvitationModal = showInvitationModal;
+window.sendInviteEmail = sendInviteEmail;
