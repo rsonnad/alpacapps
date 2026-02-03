@@ -274,6 +274,7 @@ async function loadData() {
 
       space.currentAssignment = currentAssignment || null;
       space.nextAssignment = nextAssignment || null;
+      space.isAvailable = !currentAssignment;
       space.availableFrom = currentAssignment ? (effectiveEndDate ? new Date(effectiveEndDate) : null) : today;
       space.availableUntil = nextAssignment?.start_date ? new Date(nextAssignment.start_date) : null;
 
@@ -294,6 +295,25 @@ async function loadData() {
         .filter(p => p && p.url);
 
       space.photoRequests = photoRequests.filter(pr => pr.space_id === space.id);
+    });
+
+    // Second pass: propagate parent unavailability to children
+    // If a parent space is occupied, all its child spaces are also unavailable
+    spaces.forEach(space => {
+      if (space.parent_id && space.isAvailable) {
+        const parentSpace = spaces.find(s => s.id === space.parent_id);
+        if (parentSpace && !parentSpace.isAvailable) {
+          // Parent is occupied, so child is also unavailable
+          space.isAvailable = false;
+          space.availableFrom = parentSpace.availableFrom;
+          // Keep child's availableUntil if it has its own future booking,
+          // otherwise inherit from parent
+          if (!space.availableUntil && parentSpace.availableUntil) {
+            space.availableUntil = parentSpace.availableUntil;
+          }
+          // Note: currentAssignment stays null for child (it's inherited unavailability)
+        }
+      }
     });
 
   } catch (error) {

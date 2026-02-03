@@ -48,6 +48,7 @@ async function loadData(retryCount = 0) {
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
         min_residents, max_residents, is_listed, is_secret, can_be_dwelling,
+        parent_id,
         parent:parent_id(name),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))
@@ -134,6 +135,24 @@ async function loadData(retryCount = 0) {
       space.availableUntil = nextAssignment?.start_date
         ? new Date(nextAssignment.start_date)
         : null;
+    });
+
+    // Second pass: propagate parent unavailability to children
+    // If a parent space is occupied, all its child spaces are also unavailable
+    spaces.forEach(space => {
+      if (space.parent_id && space.isAvailable) {
+        const parentSpace = spaces.find(s => s.id === space.parent_id);
+        if (parentSpace && !parentSpace.isAvailable) {
+          // Parent is occupied, so child is also unavailable
+          space.isAvailable = false;
+          space.availableFrom = parentSpace.availableFrom;
+          // Keep child's availableUntil if it has its own future booking,
+          // otherwise inherit from parent
+          if (!space.availableUntil && parentSpace.availableUntil) {
+            space.availableUntil = parentSpace.availableUntil;
+          }
+        }
+      }
     });
 
   } catch (error) {
