@@ -353,11 +353,11 @@ function renderCards(spacesToRender) {
     const bathText = (space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '';
 
     // Availability display
-    const availFromStr = space.isAvailable ? 'NOW' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
-    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+    const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
+    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
 
     const fromBadgeClass = space.isAvailable ? 'available' : 'occupied';
-    const untilBadgeClass = availUntilStr === 'The Cows Come Home' ? 'available' : 'occupied';
+    const untilBadgeClass = availUntilStr === 'Open-ended' ? 'available' : 'occupied';
 
     // Location/parent display
     const locationText = space.location || (space.parent ? space.parent.name : '');
@@ -423,8 +423,8 @@ function renderTable(spacesToRender) {
   tableBody.innerHTML = spacesToRender.map(space => {
     const beds = getBedSummary(space);
 
-    const availFromStr = space.isAvailable ? 'NOW' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
-    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+    const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
+    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
 
     // Thumbnail
     const thumbnail = space.photos.length > 0
