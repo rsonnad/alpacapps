@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вакансии — Mistique Journey</title>
+  <meta name="description" content="Вакансия: Путешествующий Массажист. Присоединяйтесь к нашей команде и путешествуйте по миру, занимаясь трансформирующей работой с телом.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/mistiq/styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/assets/branding/whitehead.png">
+</head>
+<body>
+  <!-- Header -->
+  <header class="mistiq-header mistiq-header--scrolled" id="mistiq-header">
+    <div class="mistiq-header__inner">
+      <a href="/mistiq/ru/" class="mistiq-header__logo">
+        <span class="mistiq-header__logo-text">Mistique Journey</span>
+      </a>
+
+      <nav class="mistiq-nav" id="mistiq-nav">
+        <ul class="mistiq-nav__list">
+          <li><a href="/mistiq/ru/jobs/" class="mistiq-nav__link mistiq-nav__link--active">Вакансии</a></li>
+          <li><a href="https://forms.gle/FXdjKAYgnXpCRHnf8" class="mistiq-nav__link" target="_blank">Подать Заявку</a></li>
+          <li><a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-nav__link" target="_blank">Рекомендовать</a></li>
+          <li><a href="/mistiq/apply/" class="mistiq-nav__link mistiq-nav__link--cta">Начни Своё Путешествие</a></li>
+          <li class="mistiq-lang-picker">
+            <a href="/mistiq/jobs/" class="mistiq-lang-picker__flag" title="English">🇺🇸</a>
+            <a href="/mistiq/th/jobs/" class="mistiq-lang-picker__flag" title="ภาษาไทย">🇹🇭</a>
+            <a href="/mistiq/es/jobs/" class="mistiq-lang-picker__flag" title="Español">🇪🇸</a>
+            <a href="/mistiq/de/jobs/" class="mistiq-lang-picker__flag" title="Deutsch">🇩🇪</a>
+            <a href="/mistiq/pl/jobs/" class="mistiq-lang-picker__flag" title="Polski">🇵🇱</a>
+            <a href="/mistiq/zh/jobs/" class="mistiq-lang-picker__flag" title="中文">🇨🇳</a>
+            <a href="/mistiq/ja/jobs/" class="mistiq-lang-picker__flag" title="日本語">🇯🇵</a>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="mistiq-menu-toggle" id="mistiq-menu-toggle" aria-label="Toggle menu">
+        <span class="mistiq-menu-toggle__bar"></span>
+        <span class="mistiq-menu-toggle__bar"></span>
+        <span class="mistiq-menu-toggle__bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation -->
+  <div class="mistiq-mobile-nav" id="mistiq-mobile-nav">
+    <button class="mistiq-mobile-nav__close" id="mistiq-mobile-nav-close" aria-label="Close menu">×</button>
+    <ul class="mistiq-mobile-nav__list">
+      <li class="mistiq-mobile-nav__item"><a href="/mistiq/ru/jobs/" class="mistiq-mobile-nav__link">Вакансии</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="https://forms.gle/FXdjKAYgnXpCRHnf8" class="mistiq-mobile-nav__link" target="_blank">Подать Заявку</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-mobile-nav__link" target="_blank">Рекомендовать</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/mistiq/apply/" class="mistiq-mobile-nav__link">Начни Своё Путешествие</a></li>
+      <li class="mistiq-mobile-nav__item mistiq-mobile-nav__lang">
+        <a href="/mistiq/jobs/" title="English">🇺🇸</a>
+        <a href="/mistiq/th/jobs/" title="ภาษาไทย">🇹🇭</a>
+        <a href="/mistiq/es/jobs/" title="Español">🇪🇸</a>
+        <a href="/mistiq/de/jobs/" title="Deutsch">🇩🇪</a>
+        <a href="/mistiq/pl/jobs/" title="Polski">🇵🇱</a>
+        <a href="/mistiq/zh/jobs/" title="中文">🇨🇳</a>
+        <a href="/mistiq/ja/jobs/" title="日本語">🇯🇵</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="mistiq-hero mistiq-hero--short">
+    <div class="mistiq-hero__content">
+      <h1 class="mistiq-hero__title">Путешествующий Массажист</h1>
+      <p class="mistiq-hero__subtitle">Присоединяйтесь к нашей команде и путешествуйте по миру</p>
+    </div>
+  </section>
+
+  <!-- Job Description -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <div class="mistiq-job-intro">
+        <p class="mistiq-intro__text">Немедленная возможность для одного или двух массажистов, готовых к путешествиям, которые любят велнес, фитнес, технологии и личностный рост, помочь продвигать новую спа-концепцию, сочетающую массаж, дыхательные практики, фитнес, а также будущую возможность обучать роботов с ИИ человеческой работе с телом.</p>
+
+        <p class="mistiq-intro__text">Необходимы продвинутые навыки массажа и заинтересованность в их дальнейшем развитии. Работа потребует поездок по Азии, а также по Европе и США после получения виз, с базой в Остине, Техас, США.</p>
+
+        <div class="mistiq-job-highlight">
+          <strong>Компенсация:</strong> 45 000 THB базовая оплата в месяц за 35 часов/неделю плюс все командировочные и жилищные расходы, плюс бонусы — или 35 000 THB/месяц базовая оплата каждому, если два терапевта по 30 часов/неделю каждый.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Referral Reward -->
+  <section class="mistiq-section mistiq-section--alt">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Реферальное Вознаграждение</h2>
+      <p class="mistiq-section__subtitle">Знаете кого-то? Порекомендуйте кандидата, который будет принят на работу, и заработайте до 25 000 THB</p>
+
+      <div class="mistiq-reward-grid">
+        <div class="mistiq-reward-card">
+          <span class="mistiq-reward-card__amount">10 000 THB</span>
+          <span class="mistiq-reward-card__desc">После того, как кандидат отработает 1 неделю</span>
+        </div>
+        <div class="mistiq-reward-card">
+          <span class="mistiq-reward-card__amount">+15 000 THB</span>
+          <span class="mistiq-reward-card__desc">После 3 месяцев работы</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-btn mistiq-btn--primary" target="_blank">Отправить Рекомендацию</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Requirements -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Требования к Кандидату</h2>
+
+      <div class="mistiq-requirements">
+        <ul class="mistiq-requirements__list">
+          <li>Женщина, минимальный возраст 21 (предпочтительно старше с большим опытом)</li>
+          <li>Имеет паспорт или может быстро его получить</li>
+          <li>Способна и готова путешествовать за границу</li>
+          <li>Очень продвинутые навыки массажа (значительно выше среднего уровня)</li>
+          <li>Требуется высокая квалификация в тайском массаже</li>
+          <li>Предпочтительны специализированные стили массажа</li>
+          <li>Будут обучены дополнительные техники массажа и дыхательных практик</li>
+          <li>Требуется общение на английском: должна уметь вести разговоры на английском ИЛИ базовый английский + сильное стремление учиться быстро и интенсивно</li>
+          <li>Готовность учиться ~2 часа/день (учебные материалы оплачиваются работодателем)</li>
+          <li>Общительная, социальная, комфортно общается с людьми из разных культур</li>
+          <li>Увлечена путешествиями и продвижением здорового образа жизни</li>
+          <li>Не курит табак</li>
+          <li>Предпочтительно без алкоголя</li>
+          <li>В хорошей физической форме; способна легко пройти 5 км</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Travel & Experiences -->
+  <section class="mistiq-section mistiq-section--alt">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Путешествия и Опыт</h2>
+      <p class="mistiq-section__subtitle">Рабочие поездки могут включать: Таиланд, Вьетнам, Индонезию (Бали), Индию. После получения визы: США и Европу.</p>
+
+      <div class="mistiq-travel-info">
+        <p><strong>Все командировочные расходы покрываются</strong>, включая питание и проживание.</p>
+        <p>Путешествия включают участие в:</p>
+        <ul>
+          <li>Фестивалях йоги</li>
+          <li>Музыкальных фестивалях</li>
+          <li>Конференциях по велнесу, биохакингу и технологиям</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work Description -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Описание Работы</h2>
+      <p class="mistiq-section__subtitle">25–35 часов в неделю (в среднем 30 часов) — Дополнительная оплата за сверхурочные часы</p>
+
+      <div class="mistiq-work-grid">
+        <div class="mistiq-work-item">
+          <h3>Терапевтические сеансы массажа</h3>
+        </div>
+        <div class="mistiq-work-item">
+          <h3>Обучающие сессии</h3>
+        </div>
+        <div class="mistiq-work-item">
+          <h3>Демонстрационные сессии в различных локациях</h3>
+        </div>
+        <div class="mistiq-work-item">
+          <h3>Обучение Робототехнике</h3>
+        </div>
+      </div>
+
+      <div class="mistiq-work-note">
+        <p>Продукт ориентирован на женскую демографию, поэтому большинство клиентов будут женщинами.</p>
+        <p class="mistiq-work-warning">Эротические или сексуальные прикосновения запрещены.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compensation -->
+  <section class="mistiq-section mistiq-section--alt">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Компенсация</h2>
+
+      <div class="mistiq-compensation">
+        <ul>
+          <li><strong>45 000 THB</strong> в месяц</li>
+          <li>Доступны бонусы</li>
+          <li>Повышение зарплаты после 3 месяцев</li>
+          <li>Все командировочные расходы покрываются (проживание + питание)</li>
+          <li>Проживание будет комфортным и приятным (не люкс)</li>
+          <li>Возможности дополнительного заработка в отдельных локациях</li>
+          <li>Возможна долевая собственность в компании по ИИ-робототехнике по мере её формирования (Доля может иметь или не иметь будущую стоимость в зависимости от успеха компании)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- About the Project -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">О Проекте</h2>
+      <p class="mistiq-section__subtitle">Alpaca Playhouse — Mistique Journey</p>
+
+      <div class="mistiq-about-project">
+        <p>Размещается в Alpaca Playhouse, высококачественном центре здоровья и велнеса в Остине, Техас, США.</p>
+        <p>Спа-концепция и продукт постоянно совершенствуются на основе реальных отзывов клиентов.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interview Process -->
+  <section class="mistiq-section mistiq-section--alt">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Процесс Собеседования</h2>
+
+      <div class="mistiq-interview">
+        <ul>
+          <li>Собеседования проводятся в Бангкоке и Чиангмае</li>
+          <li>Вторая половина января 2026</li>
+          <li>Включает прослушивание по традиционному тайскому массажу (Оплачивается 500 THB в час)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trial & Contract -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Испытательный Срок и Структура Контракта</h2>
+
+      <div class="mistiq-contract">
+        <ul>
+          <li>1-недельный оплачиваемый испытательный срок в Таиланде</li>
+          <li>В случае успеха: контракт на 1–3 месяца, дата начала гибкая</li>
+          <li>Возможна долгосрочная роль 6–9 месяцев в году с перерывами по необходимости на неопределённый срок</li>
+          <li>Может включать переезд в США в рамках формирования компании</li>
+          <li>Все визы, проживание и командировочные расходы покрываются. Это может занять несколько месяцев.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="mistiq-section mistiq-section--cta">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Готовы Подать Заявку?</h2>
+      <p class="mistiq-section__subtitle">Заполните форму заявки, чтобы начать.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="https://forms.gle/FXdjKAYgnXpCRHnf8" class="mistiq-btn mistiq-btn--primary mistiq-btn--large" target="_blank">Подать Заявку</a>
+        <a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-btn mistiq-btn--primary mistiq-btn--large" target="_blank">Рекомендовать Друга</a>
+      </div>
+      <p class="mistiq-cta__contact">Вопросы: <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mistiq-footer">
+    <div class="mistiq-footer__content">
+      <p class="mistiq-footer__brand">Mistique Journey</p>
+      <p class="mistiq-footer__location">@ Остин, Техас, США — <a href="https://alpacaplayhouse.com" class="mistiq-footer__link">Alpaca Playhouse</a></p>
+      <p class="mistiq-footer__copyright">© 2026 Mistique Journey. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('mistiq-menu-toggle');
+    const mobileNav = document.getElementById('mistiq-mobile-nav');
+    const mobileNavClose = document.getElementById('mistiq-mobile-nav-close');
+
+    menuToggle.addEventListener('click', () => {
+      mobileNav.classList.add('mistiq-mobile-nav--open');
+      document.body.style.overflow = 'hidden';
+    });
+
+    mobileNavClose.addEventListener('click', () => {
+      mobileNav.classList.remove('mistiq-mobile-nav--open');
+      document.body.style.overflow = '';
+    });
+
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileNav.classList.remove('mistiq-mobile-nav--open');
+        document.body.style.overflow = '';
+      });
+    });
+  </script>
+
+  <style>
+    /* Jobs page specific styles */
+    .mistiq-hero--short {
+      min-height: 50vh;
+      padding-top: 80px;
+    }
+
+    .mistiq-job-intro {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .mistiq-job-highlight {
+      background: var(--mistiq-gold);
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      margin-top: 2rem;
+    }
+
+    .mistiq-reward-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .mistiq-reward-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .mistiq-reward-card__amount {
+      display: block;
+      font-family: var(--mistiq-font-heading);
+      font-size: 2rem;
+      color: var(--mistiq-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .mistiq-reward-card__desc {
+      color: var(--mistiq-text-light);
+      font-size: 0.95rem;
+    }
+
+    .mistiq-requirements__list {
+      max-width: 700px;
+      margin: 0 auto;
+      padding-left: 1.5rem;
+    }
+
+    .mistiq-requirements__list li {
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .mistiq-travel-info,
+    .mistiq-about-project,
+    .mistiq-interview,
+    .mistiq-contract,
+    .mistiq-compensation {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .mistiq-travel-info ul,
+    .mistiq-interview ul,
+    .mistiq-contract ul,
+    .mistiq-compensation ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .mistiq-travel-info li,
+    .mistiq-interview li,
+    .mistiq-contract li,
+    .mistiq-compensation li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--mistiq-warm);
+    }
+
+    .mistiq-work-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      max-width: 800px;
+      margin: 2rem auto;
+    }
+
+    .mistiq-work-item {
+      background: var(--mistiq-bg-alt);
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .mistiq-work-item h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--mistiq-text);
+    }
+
+    .mistiq-work-note {
+      max-width: 600px;
+      margin: 2rem auto 0;
+      text-align: center;
+    }
+
+    .mistiq-work-warning {
+      color: var(--mistiq-accent);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .mistiq-nav__link--active {
+      color: var(--mistiq-gold) !important;
+    }
+  </style>
+</body>
+</html>
