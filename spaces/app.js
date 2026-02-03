@@ -367,11 +367,11 @@ function renderCards(spacesToRender) {
                 No photos
               </div>`
           }
-          <div class="card-badges">
-            <span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>
-            <span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>
-          </div>
           ${photoCountHtml}
+        </div>
+        <div class="card-badges">
+          <span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>
+          <span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>
         </div>
         <div class="card-body">
           <div class="card-header">

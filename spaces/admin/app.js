@@ -751,9 +751,9 @@ function renderCards(spacesToRender) {
                 No photos
               </div>`
           }
-          <div class="card-badges">${badges}</div>
           ${photoCountHtml}
         </div>
+        <div class="card-badges">${badges}</div>
         <div class="card-body">
           <div class="card-header">
             <div>
