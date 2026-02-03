@@ -905,21 +905,7 @@
 
       // Fetch highlights photos
       try {
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&media_tag_assignments.tag_id=eq.${HIGHLIGHTS_TAG_ID}&order=id`,
-          {
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-          }
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch photos');
-
-        const allMedia = await response.json();
-
-        // Fetch which ones have the highlights tag
+        // First, get all media IDs that have the highlights tag
         const tagResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/media_tag_assignments?tag_id=eq.${HIGHLIGHTS_TAG_ID}&select=media_id`,
           {
@@ -934,9 +920,14 @@
 
         const taggedIds = (await tagResponse.json()).map(t => t.media_id);
 
-        // Get full media data for tagged items
+        if (taggedIds.length === 0) {
+          loadingEl.innerHTML = '<p>No photos available yet.</p>';
+          return;
+        }
+
+        // Then get the full media data for those IDs
         const mediaResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&id=in.(${taggedIds.map(id => `"${id}"`).join(',')})`,
+          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&id=in.(${taggedIds.join(',')})`,
           {
             headers: {
               'apikey': SUPABASE_ANON_KEY,
