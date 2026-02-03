@@ -4857,27 +4857,7 @@
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    // Lightbox functions
-    function openLightbox(url) {
-      const overlay = document.getElementById('lightboxOverlay');
-      const img = document.getElementById('lightboxImage');
-      img.src = url;
-      overlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeLightbox() {
-      const overlay = document.getElementById('lightboxOverlay');
-      overlay.classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    // Close lightbox on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeLightbox();
-      }
-    });
+    // Note: openLightbox and closeLightbox are defined earlier in the Spaces tab section
 
     // =============================================
     // RENTALS TAB
