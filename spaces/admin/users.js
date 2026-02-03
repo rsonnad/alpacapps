@@ -78,7 +78,7 @@ async function init() {
 
     // Must be authenticated
     if (!authState.isAuthenticated) {
-      window.location.href = '/alpacapps/login/?redirect=' + encodeURIComponent(window.location.pathname);
+      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
       return;
     }
 
@@ -100,7 +100,7 @@ async function init() {
     onAuthStateChange((state) => {
       authState = state;
       if (!state.isAdmin) {
-        window.location.href = '/alpacapps/spaces/admin/';
+        window.location.href = '/spaces/admin/';
       }
     });
 
@@ -116,7 +116,7 @@ async function init() {
       <div class="unauthorized-card">
         <h2>Error</h2>
         <p>${error.message}</p>
-        <a href="/alpacapps/spaces/admin/" class="btn-secondary">Back to Admin</a>
+        <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
       </div>
     `;
   }
@@ -126,7 +126,7 @@ function setupEventListeners() {
   // Sign out
   document.getElementById('signOutBtn').addEventListener('click', async () => {
     await signOut();
-    window.location.href = '/alpacapps/spaces/';
+    window.location.href = '/spaces/';
   });
 
   // Invite form
@@ -240,7 +240,7 @@ async function inviteUser(email, role) {
  * Send or resend invitation email and update tracking
  */
 async function sendInvitationEmail(invitationId, email, role) {
-  const loginUrl = 'https://rsonnad.github.io/alpacapps/login/';
+  const loginUrl = 'https://rsonnad.github.io/login/';
   const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
 
   if (emailResult.success) {
@@ -322,7 +322,7 @@ You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a s
 You will have ${roleDescription}.
 
 To get started:
-1. Go to: https://rsonnad.github.io/alpacapps/login/
+1. Go to: https://rsonnad.github.io/login/
 2. Click "Sign in with Google" using this email address (${email})
 
 Your access has already been pre-approved, so you'll have immediate access once you sign in.

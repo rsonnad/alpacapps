@@ -208,7 +208,7 @@ export async function signInWithGoogle(redirectTo) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: redirectTo || window.location.origin + '/alpacapps/spaces/admin/',
+      redirectTo: redirectTo || window.location.origin + '/spaces/admin/',
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
@@ -285,7 +285,7 @@ function notifyListeners() {
  * @param {string} redirectUrl - URL to redirect to if not authenticated
  * @returns {boolean} True if authenticated
  */
-export function requireAuth(redirectUrl = '/alpacapps/login/') {
+export function requireAuth(redirectUrl = '/login/') {
   const state = getAuthState();
 
   if (!state.isAuthenticated) {
@@ -303,12 +303,12 @@ export function requireAuth(redirectUrl = '/alpacapps/login/') {
  * @param {string} redirectUrl - URL to redirect to if unauthorized
  * @returns {boolean} True if user has required role
  */
-export function requireRole(role, redirectUrl = '/alpacapps/spaces/') {
+export function requireRole(role, redirectUrl = '/spaces/') {
   const state = getAuthState();
 
   if (!state.isAuthenticated) {
     const currentPath = window.location.pathname;
-    window.location.href = '/alpacapps/login/?redirect=' + encodeURIComponent(currentPath);
+    window.location.href = '/login/?redirect=' + encodeURIComponent(currentPath);
     return false;
   }
 

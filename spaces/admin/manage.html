@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage - AlpacAPPs Admin</title>
-  <link rel="icon" type="image/png" href="/alpacapps/assets/branding/whitehead.png">
+  <link rel="icon" type="image/png" href="/assets/branding/whitehead.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -658,7 +658,7 @@
       <p>Your account is not authorized to access admin features.</p>
       <p>Please contact an administrator to request access.</p>
       <div class="unauthorized-actions">
-        <a href="/alpacapps/spaces/" class="btn-secondary">View Public Spaces</a>
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
         <button id="signOutBtn" class="btn-secondary">Sign Out</button>
       </div>
     </div>
@@ -671,7 +671,7 @@
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
-        <a href="/alpacapps/spaces/" class="btn-small">Public View</a>
+        <a href="/spaces/" class="btn-small">Public View</a>
         <span id="userInfo" class="user-info"></span>
         <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
       </div>
@@ -2458,7 +2458,7 @@
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('unauthorizedOverlay').classList.remove('hidden');
       } else if (!state.isAuthenticated) {
-        window.location.href = '/alpacapps/login/?redirect=' + encodeURIComponent(window.location.pathname);
+        window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
       }
     }
 
@@ -7523,7 +7523,7 @@ You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a s
 You will have ${roleDescription}.
 
 To get started:
-1. Go to: https://rsonnad.github.io/alpacapps/login/
+1. Go to: https://rsonnad.github.io/login/
 2. Click "Sign in with Google" using this email address (${email})
 
 Your access has already been pre-approved, so you'll have immediate access once you sign in.
@@ -7561,7 +7561,7 @@ If there are any problems or suggestions for improvements, please email them to 
       btn.disabled = true;
 
       try {
-        const loginUrl = 'https://rsonnad.github.io/alpacapps/login/';
+        const loginUrl = 'https://rsonnad.github.io/login/';
         const emailResult = await emailService.sendStaffInvitation(currentInviteEmail, currentInviteRole, loginUrl);
 
         if (emailResult.success) {

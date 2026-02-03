@@ -12,41 +12,41 @@
     // Known valid paths - redirect to their index.html
     const validPaths = {
       // Main site pages
-      '/alpacapps': '/alpacapps/',
-      '/alpacapps/': '/alpacapps/index.html',
-      '/alpacapps/visiting': '/alpacapps/visiting/',
-      '/alpacapps/visiting/': '/alpacapps/visiting/index.html',
-      '/alpacapps/orientation': '/alpacapps/orientation/',
-      '/alpacapps/orientation/': '/alpacapps/orientation/index.html',
-      '/alpacapps/overnight': '/alpacapps/overnight/',
-      '/alpacapps/overnight/': '/alpacapps/overnight/index.html',
-      '/alpacapps/worktrade': '/alpacapps/worktrade/',
-      '/alpacapps/worktrade/': '/alpacapps/worktrade/index.html',
-      '/alpacapps/contact': '/alpacapps/contact/',
-      '/alpacapps/contact/': '/alpacapps/contact/index.html',
+      '/alpacapps': '/',
+      '/': '/index.html',
+      '/visiting': '/visiting/',
+      '/visiting/': '/visiting/index.html',
+      '/orientation': '/orientation/',
+      '/orientation/': '/orientation/index.html',
+      '/overnight': '/overnight/',
+      '/overnight/': '/overnight/index.html',
+      '/worktrade': '/worktrade/',
+      '/worktrade/': '/worktrade/index.html',
+      '/contact': '/contact/',
+      '/contact/': '/contact/index.html',
       // Hidden pages
-      '/alpacapps/welcome': '/alpacapps/welcome/',
-      '/alpacapps/welcome/': '/alpacapps/welcome/index.html',
-      '/alpacapps/photos': '/alpacapps/photos/',
-      '/alpacapps/photos/': '/alpacapps/photos/index.html',
-      '/alpacapps/sundays': '/alpacapps/sundays/',
-      '/alpacapps/sundays/': '/alpacapps/sundays/index.html',
-      '/alpacapps/visiting-1': '/alpacapps/visiting-1/',
-      '/alpacapps/visiting-1/': '/alpacapps/visiting-1/index.html',
+      '/welcome': '/welcome/',
+      '/welcome/': '/welcome/index.html',
+      '/photos': '/photos/',
+      '/photos/': '/photos/index.html',
+      '/sundays': '/sundays/',
+      '/sundays/': '/sundays/index.html',
+      '/visiting-1': '/visiting-1/',
+      '/visiting-1/': '/visiting-1/index.html',
       // Mistiq subsite
-      '/alpacapps/mistiq': '/alpacapps/mistiq/',
-      '/alpacapps/mistiq/': '/alpacapps/mistiq/index.html',
-      '/alpacapps/mistiq/apply': '/alpacapps/mistiq/apply/',
-      '/alpacapps/mistiq/apply/': '/alpacapps/mistiq/apply/index.html',
+      '/mistiq': '/mistiq/',
+      '/mistiq/': '/mistiq/index.html',
+      '/mistiq/apply': '/mistiq/apply/',
+      '/mistiq/apply/': '/mistiq/apply/index.html',
       // Spaces app
-      '/alpacapps/spaces': '/alpacapps/spaces/',
-      '/alpacapps/spaces/': '/alpacapps/spaces/index.html',
-      '/alpacapps/spaces/admin': '/alpacapps/spaces/admin/',
-      '/alpacapps/spaces/admin/': '/alpacapps/spaces/admin/index.html',
-      '/alpacapps/spaces/events': '/alpacapps/spaces/events/',
-      '/alpacapps/spaces/events/': '/alpacapps/spaces/events/index.html',
-      '/alpacapps/login': '/alpacapps/login/',
-      '/alpacapps/login/': '/alpacapps/login/index.html',
+      '/spaces': '/spaces/',
+      '/spaces/': '/spaces/index.html',
+      '/spaces/admin': '/spaces/admin/',
+      '/spaces/admin/': '/spaces/admin/index.html',
+      '/spaces/events': '/spaces/events/',
+      '/spaces/events/': '/spaces/events/index.html',
+      '/login': '/login/',
+      '/login/': '/login/index.html',
     };
 
     // Check if it's a known path
@@ -54,7 +54,7 @@
       window.location.replace(validPaths[path] + window.location.search);
     } else {
       // Unknown path - redirect to spaces
-      window.location.replace('/alpacapps/spaces/');
+      window.location.replace('/spaces/');
     }
   </script>
   <style>

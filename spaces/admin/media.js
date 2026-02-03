@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   authState = getAuthState();
 
   if (!authState.isAuthenticated) {
-    window.location.href = '/alpacapps/login/?redirect=' + encodeURIComponent(window.location.pathname);
+    window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
     return;
   }
 
@@ -1180,12 +1180,12 @@ function setupEventListeners() {
   // Sign out
   document.getElementById('headerSignOutBtn')?.addEventListener('click', async () => {
     await supabase.auth.signOut();
-    window.location.href = '/alpacapps/login/';
+    window.location.href = '/login/';
   });
 
   document.getElementById('signOutBtn')?.addEventListener('click', async () => {
     await supabase.auth.signOut();
-    window.location.href = '/alpacapps/login/';
+    window.location.href = '/login/';
   });
 
   // Close modals on backdrop click

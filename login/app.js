@@ -13,7 +13,7 @@ const retryBtn = document.getElementById('retryBtn');
 
 // Get redirect URL from query params
 const urlParams = new URLSearchParams(window.location.search);
-const redirectUrl = urlParams.get('redirect') || '/alpacapps/spaces/admin/';
+const redirectUrl = urlParams.get('redirect') || '/spaces/admin/';
 
 /**
  * Show a specific UI state
@@ -78,7 +78,7 @@ googleSignInBtn.addEventListener('click', async () => {
 
   try {
     // Redirect URL should include the original intended destination
-    const loginRedirect = window.location.origin + '/alpacapps/login/?redirect=' + encodeURIComponent(redirectUrl);
+    const loginRedirect = window.location.origin + '/login/?redirect=' + encodeURIComponent(redirectUrl);
     await signInWithGoogle(loginRedirect);
     // Note: signInWithGoogle redirects to Google, so this line won't execute
   } catch (error) {
