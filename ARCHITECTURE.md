@@ -52,6 +52,8 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
 | OpenClaw Bot | DigitalOcean | Droplet (separate system) |
 | E-Signatures | SignWell | API: signwell.com/api |
+| Email Delivery | Resend | API key stored in Supabase secrets |
+| Error Monitoring | Custom | Daily digest emails via Resend |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
 
 ## Repository Structure
@@ -70,7 +72,9 @@ GenAlpacaOps/
 │   ├── rental-service.js   # Rental application workflow
 │   ├── lease-template-service.js  # Lease template parsing
 │   ├── pdf-service.js      # PDF generation (jsPDF)
-│   └── signwell-service.js # SignWell e-signature API
+│   ├── signwell-service.js # SignWell e-signature API
+│   ├── email-service.js    # Email sending via Resend
+│   └── error-logger.js     # Client-side error capture and reporting
 │
 ├── supabase/               # Supabase Edge Functions
 │   └── functions/
@@ -81,7 +85,13 @@ GenAlpacaOps/
 │       │   ├── payment-parser.ts  # Bank string parsing
 │       │   ├── tenant-matcher.ts  # Matching logic (cache → exact → AI)
 │       │   └── gemini-client.ts   # Google Gemini API integration
-│       └── resolve-payment/   # Manual payment resolution
+│       ├── resolve-payment/   # Manual payment resolution
+│       │   └── index.ts
+│       ├── error-report/      # Error logging and daily digest emails
+│       │   └── index.ts
+│       ├── send-email/        # Generic email sending
+│       │   └── index.ts
+│       └── contact-form/      # Contact form submission handler
 │           └── index.ts
 │
 ├── login/                  # Login page
@@ -406,6 +416,40 @@ values ('New Space', 500, true, true, ...);
 - Centralized media management at `/spaces/admin/manage.html`
 - Supports tagging, filtering, and bulk operations
 - Images stored in Supabase Storage with automatic compression
+
+### Resend (Email Delivery)
+- API: `https://api.resend.com`
+- API key stored as Supabase secret: `RESEND_API_KEY`
+- Used for:
+  - Error digest emails (daily summary of client-side errors)
+  - Contact form submissions
+  - General email notifications
+- From address: `errors@genalpaca.com` (for error digests)
+
+### Error Monitoring
+- Client-side errors captured via `shared/error-logger.js`
+- Errors stored in `error_logs` table for analysis
+- Daily digest email sent via `error-report` Edge Function
+- Triggered automatically when users visit the consumer spaces page
+- Recipient: `alpacaplayhouse@gmail.com`
+
+**Error Categories Tracked:**
+- `upload`: File upload failures (timeouts, network errors, DB errors)
+- `media`: Delete, unlink, and reorder failures
+- `global`: Uncaught exceptions and unhandled promise rejections
+
+**Querying Errors:**
+```sql
+-- Recent errors
+SELECT * FROM error_logs ORDER BY created_at DESC LIMIT 50;
+
+-- Errors by category
+SELECT category, code, COUNT(*) as count
+FROM error_logs
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY category, code
+ORDER BY count DESC;
+```
 
 ## Contacts & Accounts
 
