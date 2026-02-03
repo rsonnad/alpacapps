@@ -1098,6 +1098,7 @@
   border-bottom: 1px solid var(--border);
   min-height: 48px;
   position: relative;
+  overflow: hidden; /* Prevent reservation bars from bleeding outside */
 }
 
 .calendar-row:last-child {
@@ -1266,11 +1267,14 @@
 .calendar-timeline-wrapper {
   display: flex;
   position: relative;
+  align-items: stretch;
 }
 
 .calendar-timeline {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Month labels in header */

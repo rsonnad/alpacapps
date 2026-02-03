@@ -5846,9 +5846,9 @@
         html += '</div>';
       });
 
-      html += '</div>';
+      html += '</div>'; // close calendar-timeline
 
-      // Add load more button at the right edge
+      // Add load more button at the right edge (inside wrapper)
       if (hasReservationsBeyond) {
         html += `
           <div class="load-more-column">
@@ -5866,7 +5866,7 @@
         `;
       }
 
-      html += '</div>';
+      html += '</div>'; // close calendar-timeline-wrapper
 
       // Add tooltip element
       html += '<div id="reservationTooltip" class="reservation-tooltip"></div>';
