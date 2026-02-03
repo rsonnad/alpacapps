@@ -5793,12 +5793,13 @@
           // Skip if entirely outside visible range
           if (startDate > lastDay || (endDate && endDate < firstDay)) return;
 
-          // Calculate position using pixel width for multi-month view
-          const dayWidth = 100 / days.length; // percentage
+          // Calculate position using pixel width (30px per day, 200px for space name)
+          const dayWidthPx = 30;
+          const spaceNameWidth = 200;
           const startOffset = Math.max(0, (visibleStart - firstDay) / (24 * 60 * 60 * 1000));
           const endOffset = (visibleEnd - firstDay) / (24 * 60 * 60 * 1000) + 1;
-          const width = (endOffset - startOffset) * dayWidth;
-          const left = startOffset * dayWidth;
+          const widthPx = (endOffset - startOffset) * dayWidthPx;
+          const leftPx = startOffset * dayWidthPx;
 
           const person = assignment.person || {};
           const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
@@ -5819,7 +5820,7 @@
 
           html += `
             <div class="reservation-bar ${assignment.status}"
-                 style="left: calc(200px + ${left}%); width: calc(${width}% - 4px);"
+                 style="left: ${spaceNameWidth + leftPx}px; width: ${Math.max(widthPx - 4, 20)}px;"
                  data-tooltip='${tooltipData}'>
               <div class="bar-content">
                 <span class="tenant-name">${tenantName}</span>
