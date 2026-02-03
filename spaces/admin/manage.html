@@ -2389,6 +2389,7 @@
     let activeLibraryFilters = { tags: [], category: '' };
     let selectedUploadFiles = [];
     let isPhotoUploading = false;
+    let isLibraryLoading = false;
 
     // Edit space state
     let currentEditSpaceId = null;
@@ -3971,20 +3972,46 @@
     }
 
     async function loadLibraryMedia() {
+      // Prevent concurrent calls
+      if (isLibraryLoading) {
+        console.log('[loadLibraryMedia] Already loading, skipping');
+        return;
+      }
+
       console.log('[loadLibraryMedia] Starting, filters:', activeLibraryFilters);
+      const container = document.getElementById('libraryMediaGrid');
+      isLibraryLoading = true;
+
       try {
-        const result = await mediaService.search({
+        // Add timeout to prevent indefinite hanging
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Search timeout after 15s')), 15000)
+        );
+
+        const searchPromise = mediaService.search({
           category: activeLibraryFilters.category || null,
           tags: activeLibraryFilters.tags,
           limit: 100,
         });
+
+        const result = await Promise.race([searchPromise, timeoutPromise]);
         console.log('[loadLibraryMedia] Search returned', result?.length || 0, 'items');
         libraryMedia = result || [];
         renderLibraryGrid();
       } catch (error) {
         console.error('[loadLibraryMedia] Error loading library:', error);
         libraryMedia = [];
-        renderLibraryGrid();
+        // Show error state instead of empty state
+        if (container) {
+          container.innerHTML = `
+            <div class="library-empty">
+              <p>Failed to load media library. <a href="#" onclick="loadLibraryMedia(); return false;">Try again</a></p>
+              <small style="color: #999;">${error.message || 'Unknown error'}</small>
+            </div>
+          `;
+        }
+      } finally {
+        isLibraryLoading = false;
       }
     }
 
