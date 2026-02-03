@@ -1476,39 +1476,63 @@ async function archive(mediaId) {
  * Permanently delete media
  */
 async function deleteMedia(mediaId) {
+  console.log('[delete] Starting delete for media:', mediaId);
+
   // Get media record first
-  const { data: media } = await supabase
+  const { data: media, error: fetchError } = await supabase
     .from('media')
     .select('storage_provider, storage_path')
     .eq('id', mediaId)
     .single();
 
+  if (fetchError) {
+    console.error('[delete] Error fetching media record:', fetchError);
+    return { success: false, error: `Failed to fetch media: ${fetchError.message}` };
+  }
+
   if (!media) {
+    console.warn('[delete] Media not found:', mediaId);
     return { success: false, error: 'Media not found' };
   }
 
+  console.log('[delete] Found media record:', media);
+
   // Delete from storage if Supabase
   if (media.storage_provider === 'supabase' && media.storage_path) {
+    console.log('[delete] Deleting from storage:', media.storage_path);
     const { error: storageError } = await supabase.storage
       .from(CONFIG.buckets.images)
       .remove([media.storage_path]);
 
     if (storageError) {
-      console.error('Storage delete error:', storageError);
+      console.error('[delete] Storage delete error:', storageError);
       // Continue anyway - DB record should still be deleted
+    } else {
+      console.log('[delete] Storage file deleted successfully');
     }
   }
 
   // Delete from database (cascades to assignments)
+  console.log('[delete] Deleting from database...');
   const { error } = await supabase
     .from('media')
     .delete()
     .eq('id', mediaId);
 
   if (error) {
+    console.error('[delete] Database delete error:', error);
+    // Check for common RLS issues
+    if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+      return {
+        success: false,
+        error: 'Permission denied - you may need admin privileges to delete media',
+        errorCode: 'PERMISSION_DENIED',
+      };
+    }
     return { success: false, error: error.message };
   }
 
+  console.log('[delete] Media deleted successfully');
   return { success: true };
 }
 
