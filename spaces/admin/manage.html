@@ -668,6 +668,24 @@
           </div>
         </details>
 
+        <!-- Reservations Calendar Section -->
+        <div class="section" style="margin-top: 1.5rem;">
+          <div class="section-header">
+            <h2>Reservations Calendar</h2>
+            <div class="calendar-controls">
+              <button class="btn-small" id="calendarPrevMonth">&larr;</button>
+              <span id="calendarMonthLabel" class="calendar-month-label"></span>
+              <button class="btn-small" id="calendarNextMonth">&rarr;</button>
+              <button class="btn-small" id="calendarToday" style="margin-left: 0.5rem;">Today</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <div id="reservationsCalendar" class="reservations-calendar">
+              <div class="calendar-loading">Loading reservations...</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Payment Methods Section -->
         <div class="section" style="margin-top: 1.5rem;">
           <div class="section-header">
@@ -1633,6 +1651,10 @@
     let allPaymentMethods = [];
     let currentApplicationId = null;
     let rentalsLoaded = false;
+
+    // Calendar state
+    let calendarAssignments = [];
+    let calendarCurrentDate = new Date();
 
     // Events state
     let allEventRequests = [];
@@ -2819,8 +2841,10 @@
         loadApplications(),
         loadPeople(),
         loadPaymentMethods(),
+        loadCalendarData(),
       ]);
       populateRentalDropdowns();
+      initCalendarControls();
     }
 
     async function loadApplications() {
@@ -3010,6 +3034,225 @@
           </div>
         `;
       }).join('');
+    }
+
+    // =============================================
+    // RESERVATIONS CALENDAR
+    // =============================================
+
+    async function loadCalendarData() {
+      try {
+        // Load assignments with people and spaces
+        const { data, error } = await supabase
+          .from('assignments')
+          .select(`
+            *,
+            person:person_id(id, first_name, last_name, email, phone),
+            assignment_spaces(space_id)
+          `)
+          .in('status', ['active', 'pending_contract', 'contract_sent'])
+          .order('start_date');
+
+        if (error) throw error;
+        calendarAssignments = data || [];
+        renderCalendar();
+      } catch (error) {
+        console.error('Error loading calendar data:', error);
+        const container = document.getElementById('reservationsCalendar');
+        if (container) {
+          container.innerHTML = '<div class="calendar-loading" style="color: var(--danger);">Error loading calendar data</div>';
+        }
+      }
+    }
+
+    function initCalendarControls() {
+      document.getElementById('calendarPrevMonth')?.addEventListener('click', () => {
+        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1);
+        renderCalendar();
+      });
+
+      document.getElementById('calendarNextMonth')?.addEventListener('click', () => {
+        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1);
+        renderCalendar();
+      });
+
+      document.getElementById('calendarToday')?.addEventListener('click', () => {
+        calendarCurrentDate = new Date();
+        renderCalendar();
+      });
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('reservationsCalendar');
+      if (!container) return;
+
+      // Get dwelling spaces only
+      const dwellingSpaces = allSpaces.filter(s => s.can_be_dwelling && !s.is_archived);
+
+      if (dwellingSpaces.length === 0) {
+        container.innerHTML = '<div class="calendar-empty">No dwelling spaces configured</div>';
+        return;
+      }
+
+      // Get date range for current month view (show 5 weeks)
+      const year = calendarCurrentDate.getFullYear();
+      const month = calendarCurrentDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      // Update month label
+      const monthLabel = document.getElementById('calendarMonthLabel');
+      if (monthLabel) {
+        monthLabel.textContent = calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      }
+
+      // Generate array of days for the month
+      const days = [];
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        days.push(new Date(d));
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Build HTML
+      let html = '<div class="calendar-timeline">';
+
+      // Header row with days
+      html += '<div class="calendar-header">';
+      html += '<div class="calendar-space-label">Space</div>';
+      html += '<div class="calendar-days">';
+      days.forEach(day => {
+        const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+        const isToday = day.toDateString() === today.toDateString();
+        html += `
+          <div class="calendar-day ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}">
+            <div class="day-num">${day.getDate()}</div>
+            <div class="day-name">${day.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)}</div>
+          </div>
+        `;
+      });
+      html += '</div></div>';
+
+      // Rows for each space
+      dwellingSpaces.forEach(space => {
+        html += '<div class="calendar-row">';
+        html += `
+          <div class="calendar-space-name">
+            <span>${space.name}</span>
+            ${space.monthly_rate ? `<span class="space-rate">$${space.monthly_rate}/mo</span>` : ''}
+          </div>
+        `;
+        html += '<div class="calendar-cells">';
+
+        // Add cells for each day
+        days.forEach(day => {
+          const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+          const isToday = day.toDateString() === today.toDateString();
+          html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
+        });
+
+        html += '</div>';
+
+        // Add reservation bars for this space
+        const spaceAssignments = calendarAssignments.filter(a =>
+          a.assignment_spaces?.some(as => as.space_id === space.id)
+        );
+
+        spaceAssignments.forEach(assignment => {
+          const startDate = assignment.start_date ? new Date(assignment.start_date) : null;
+          const endDate = assignment.desired_departure_listed && assignment.desired_departure_date
+            ? new Date(assignment.desired_departure_date)
+            : (assignment.end_date ? new Date(assignment.end_date) : null);
+
+          if (!startDate) return;
+
+          // Clamp dates to visible range
+          const visibleStart = new Date(Math.max(startDate.getTime(), firstDay.getTime()));
+          const visibleEnd = endDate
+            ? new Date(Math.min(endDate.getTime(), lastDay.getTime()))
+            : lastDay;
+
+          // Skip if entirely outside visible range
+          if (startDate > lastDay || (endDate && endDate < firstDay)) return;
+
+          // Calculate position
+          const dayWidth = 100 / days.length; // percentage
+          const startOffset = Math.max(0, (visibleStart - firstDay) / (24 * 60 * 60 * 1000));
+          const endOffset = (visibleEnd - firstDay) / (24 * 60 * 60 * 1000) + 1;
+          const width = (endOffset - startOffset) * dayWidth;
+          const left = startOffset * dayWidth;
+
+          const person = assignment.person || {};
+          const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+          const rate = assignment.rate_amount
+            ? `$${assignment.rate_amount}/${assignment.rate_term || 'mo'}`
+            : (assignment.monthly_rent ? `$${assignment.monthly_rent}/mo` : '');
+
+          const tooltipData = JSON.stringify({
+            tenant: tenantName,
+            email: person.email || '-',
+            phone: person.phone || '-',
+            start: startDate.toLocaleDateString(),
+            end: endDate ? endDate.toLocaleDateString() : 'Ongoing',
+            rate: rate || 'N/A',
+            deposit: assignment.deposit_amount ? `$${assignment.deposit_amount}` : 'N/A',
+            status: assignment.status
+          }).replace(/"/g, '&quot;');
+
+          html += `
+            <div class="reservation-bar ${assignment.status}"
+                 style="left: calc(200px + ${left}%); width: calc(${width}% - 4px);"
+                 data-tooltip='${tooltipData}'
+                 onmouseenter="showReservationTooltip(event, this)"
+                 onmouseleave="hideReservationTooltip()">
+              <div class="bar-content">
+                <span class="tenant-name">${tenantName}</span>
+                ${rate ? `<span class="bar-details">${rate}</span>` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+
+      // Add tooltip element
+      html += '<div id="reservationTooltip" class="reservation-tooltip"></div>';
+
+      container.innerHTML = html;
+    }
+
+    function showReservationTooltip(event, element) {
+      const tooltip = document.getElementById('reservationTooltip');
+      if (!tooltip) return;
+
+      try {
+        const data = JSON.parse(element.dataset.tooltip);
+        tooltip.innerHTML = `
+          <div class="tooltip-header">${data.tenant}</div>
+          <div class="tooltip-row"><span class="tooltip-label">Email:</span><span class="tooltip-value">${data.email}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Phone:</span><span class="tooltip-value">${data.phone}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Dates:</span><span class="tooltip-value">${data.start} - ${data.end}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Rate:</span><span class="tooltip-value">${data.rate}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Deposit:</span><span class="tooltip-value">${data.deposit}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Status:</span><span class="tooltip-value">${data.status}</span></div>
+        `;
+
+        const rect = element.getBoundingClientRect();
+        tooltip.style.left = `${Math.min(rect.left, window.innerWidth - 300)}px`;
+        tooltip.style.top = `${rect.bottom + 8}px`;
+        tooltip.classList.add('visible');
+      } catch (e) {
+        console.error('Error parsing tooltip data:', e);
+      }
+    }
+
+    function hideReservationTooltip() {
+      const tooltip = document.getElementById('reservationTooltip');
+      if (tooltip) tooltip.classList.remove('visible');
     }
 
     // =============================================
