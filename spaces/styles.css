@@ -519,32 +519,31 @@ main {
 }
 
 .badge {
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  letter-spacing: 0.04em;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.35rem 0.65rem;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .badge.occupied {
-  background: rgba(199, 91, 58, 0.95);
+  background: var(--occupied);
   color: white;
 }
 
 .badge.available {
-  background: rgba(107, 142, 90, 0.95);
+  background: var(--available);
   color: white;
 }
 
 .badge.secret {
-  background: rgba(124, 106, 154, 0.95);
+  background: var(--secret);
   color: white;
 }
 
 .badge.unlisted {
-  background: rgba(154, 144, 130, 0.95);
+  background: var(--unlisted);
   color: white;
 }
 
