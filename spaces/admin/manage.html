@@ -5747,13 +5747,6 @@
         `;
       });
 
-      // Add load more column in header
-      if (hasReservationsBeyond) {
-        html += '<div class="calendar-day load-more-header"></div>';
-      } else if (calendarMonthsDisplayed > 3) {
-        html += '<div class="calendar-day no-more-header"><span class="no-more-label">End</span></div>';
-      }
-
       html += '</div></div>';
 
       // Rows for each space
@@ -5775,13 +5768,6 @@
           const isFirstOfMonth = day.getDate() === 1;
           html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
         });
-
-        // Add load more cell
-        if (hasReservationsBeyond) {
-          html += '<div class="calendar-cell load-more-cell"></div>';
-        } else if (calendarMonthsDisplayed > 3) {
-          html += '<div class="calendar-cell no-more-cell"></div>';
-        }
 
         html += '</div>';
 
