@@ -5769,9 +5769,7 @@
           html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
         });
 
-        html += '</div>';
-
-        // Add reservation bars for this space
+        // Add reservation bars for this space (inside calendar-cells)
         const spaceAssignments = calendarAssignments.filter(a =>
           a.assignment_spaces?.some(as => as.space_id === space.id)
         );
@@ -5793,9 +5791,8 @@
           // Skip if entirely outside visible range
           if (startDate > lastDay || (endDate && endDate < firstDay)) return;
 
-          // Calculate position using pixel width (30px per day, 200px for space name)
+          // Calculate position using pixel width (30px per day)
           const dayWidthPx = 30;
-          const spaceNameWidth = 200;
           const startOffset = Math.max(0, (visibleStart - firstDay) / (24 * 60 * 60 * 1000));
           const endOffset = (visibleEnd - firstDay) / (24 * 60 * 60 * 1000) + 1;
           const widthPx = (endOffset - startOffset) * dayWidthPx;
@@ -5820,7 +5817,7 @@
 
           html += `
             <div class="reservation-bar ${assignment.status}"
-                 style="left: ${spaceNameWidth + leftPx}px; width: ${Math.max(widthPx - 4, 20)}px;"
+                 style="left: ${leftPx}px; width: ${Math.max(widthPx - 4, 20)}px;"
                  data-tooltip='${tooltipData}'>
               <div class="bar-content">
                 <span class="tenant-name">${tenantName}</span>
@@ -5830,7 +5827,8 @@
           `;
         });
 
-        html += '</div>';
+        html += '</div>'; // close calendar-cells
+        html += '</div>'; // close calendar-row
       });
 
       html += '</div>'; // close calendar-timeline

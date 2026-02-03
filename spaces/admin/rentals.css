@@ -1048,6 +1048,10 @@
   letter-spacing: 0.05em;
   color: var(--text-muted);
   border-right: 1px solid var(--border);
+  position: sticky;
+  left: 0;
+  background: var(--bg-card);
+  z-index: 5;
 }
 
 .calendar-days {
@@ -1120,6 +1124,10 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: sticky;
+  left: 0;
+  background: var(--bg-card);
+  z-index: 5;
 }
 
 .calendar-space-name .space-rate {
