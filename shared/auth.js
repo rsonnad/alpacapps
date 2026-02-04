@@ -48,23 +48,41 @@ let authHandlingInProgress = false; // Prevent concurrent auth handling
  * @returns {Promise<{user: object|null, role: string}>}
  */
 export async function initAuth() {
-  // Listen for auth changes (login, logout, token refresh)
-  // Note: INITIAL_SESSION fires when there's an existing session on page load
-  // We handle it here instead of in getSession() to avoid duplicate calls
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log('Auth state changed:', event);
+  return new Promise((resolve) => {
+    let resolved = false;
 
-    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-      await handleAuthChange(session);
-    } else if (event === 'SIGNED_OUT') {
-      currentUser = null;
-      currentAppUser = null;
-      currentRole = 'public';
-      notifyListeners();
-    }
+    // Listen for auth changes (login, logout, token refresh)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await handleAuthChange(session);
+        // Resolve on first auth event so caller knows auth state is ready
+        if (!resolved) {
+          resolved = true;
+          resolve({ user: currentUser, role: currentRole });
+        }
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        currentAppUser = null;
+        currentRole = 'public';
+        notifyListeners();
+        if (!resolved) {
+          resolved = true;
+          resolve({ user: currentUser, role: currentRole });
+        }
+      }
+    });
+
+    // Timeout fallback - if no auth event fires within 5 seconds, resolve anyway
+    setTimeout(() => {
+      if (!resolved) {
+        console.log('Auth init timeout - no session');
+        resolved = true;
+        resolve({ user: currentUser, role: currentRole });
+      }
+    }, 5000);
   });
-
-  return { user: currentUser, role: currentRole };
 }
 
 /**
