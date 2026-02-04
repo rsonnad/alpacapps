@@ -216,7 +216,6 @@ function renderMediaGrid() {
     return `
       <div class="media-grid-item ${isSelected ? 'selected' : ''}" data-id="${media.id}">
         <div class="select-checkbox" data-action="select">✓</div>
-        <span class="category-badge">${media.category || 'mktg'}</span>
         ${spacesLinked > 0 ? `<span class="spaces-count">${spacesLinked} space${spacesLinked > 1 ? 's' : ''}</span>` : ''}
         <div class="media-thumb">
           <img src="${media.url}" alt="${media.caption || 'Media'}" loading="lazy">
@@ -230,6 +229,7 @@ function renderMediaGrid() {
             <span>${formatDate(media.uploaded_at)}</span>
           </div>
           <div class="media-tags">
+            <span class="category-badge">${media.category || 'mktg'}</span>
             ${tags.slice(0, 4).map(t => `<span class="media-tag" style="${t.color ? `border-left: 2px solid ${t.color}` : ''}">${t.name}</span>`).join('')}
             ${tags.length > 4 ? `<span class="media-tag">+${tags.length - 4}</span>` : ''}
           </div>
@@ -263,6 +263,7 @@ function updateSelectionUI() {
   const count = selectedMediaIds.size;
   document.getElementById('selectedCount').textContent = count;
   document.getElementById('bulkTagBtn').disabled = count === 0;
+  document.getElementById('bulkDeleteBtn').disabled = count === 0;
 
   // Update select/deselect buttons
   const selectAllBtn = document.getElementById('selectAllBtn');
@@ -665,6 +666,61 @@ function closeBulkTagModal() {
 }
 
 // =============================================
+// BULK DELETE
+// =============================================
+
+async function bulkDeleteSelected() {
+  const count = selectedMediaIds.size;
+  if (count === 0) return;
+
+  // Check if any selected media are linked to spaces
+  const linkedMedia = allMedia.filter(m => selectedMediaIds.has(m.id) && m.spaces?.length > 0);
+  let confirmMsg = `Are you sure you want to permanently delete ${count} image${count > 1 ? 's' : ''}?`;
+
+  if (linkedMedia.length > 0) {
+    confirmMsg = `${linkedMedia.length} of these images are linked to spaces. Deleting them will remove them from those spaces.\n\n${confirmMsg}`;
+  }
+
+  if (!confirm(confirmMsg)) return;
+
+  const btn = document.getElementById('bulkDeleteBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+
+  let successCount = 0;
+  let failCount = 0;
+  const idsToDelete = Array.from(selectedMediaIds);
+
+  for (const mediaId of idsToDelete) {
+    const result = await mediaService.delete(mediaId);
+    if (result.success) {
+      successCount++;
+    } else {
+      console.error(`Failed to delete ${mediaId}:`, result.error);
+      failCount++;
+    }
+  }
+
+  // Show results
+  if (failCount === 0) {
+    showToast(`${successCount} image${successCount > 1 ? 's' : ''} deleted`, 'success');
+  } else {
+    showToast(`Deleted ${successCount}, failed ${failCount}`, failCount > 0 ? 'warning' : 'success');
+  }
+
+  // Clear selection and refresh
+  deselectAll();
+  await Promise.all([
+    loadStorageUsage(),
+    loadMedia(),
+  ]);
+
+  btn.disabled = false;
+  btn.textContent = originalText;
+}
+
+// =============================================
 // UPLOAD FUNCTIONALITY
 // =============================================
 
@@ -1051,6 +1107,10 @@ async function handleUpload() {
 
         if (result.success) {
           successCount++;
+        } else if (result.isDuplicate) {
+          console.log(`Skipping duplicate ${item.file.name}:`, result.existingMedia?.id);
+          showToast(`${item.file.name}: Already exists in library`, 'warning', 5000);
+          failCount++;
         } else {
           console.error(`Failed to upload ${item.file.name}:`, result.error, result.errorDetails);
           failCount++;
@@ -1166,6 +1226,7 @@ function setupEventListeners() {
   document.getElementById('selectAllBtn').addEventListener('click', selectAll);
   document.getElementById('deselectAllBtn').addEventListener('click', deselectAll);
   document.getElementById('bulkTagBtn').addEventListener('click', openBulkTagModal);
+  document.getElementById('bulkDeleteBtn').addEventListener('click', bulkDeleteSelected);
 
   // Media detail modal
   document.getElementById('closeMediaDetail').addEventListener('click', closeMediaDetail);

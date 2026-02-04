@@ -697,6 +697,28 @@ async function uploadInternal(file, options = {}) {
     };
   }
 
+  // Check for duplicate content by hash
+  console.log('[upload] Computing content hash for duplicate check...');
+  let contentHash = null;
+  try {
+    contentHash = await withTimeout(computeFileHash(file), 10000, 'Hash computation timed out');
+    console.log('[upload] Content hash:', contentHash.substring(0, 12) + '...');
+
+    const { exists, media: existingMedia } = await checkDuplicateByHash(contentHash);
+    if (exists) {
+      console.log('[upload] Duplicate detected, existing media:', existingMedia.id);
+      return {
+        success: false,
+        error: 'This image already exists in your library',
+        isDuplicate: true,
+        existingMedia,
+      };
+    }
+  } catch (hashError) {
+    console.warn('[upload] Hash check failed, continuing without duplicate detection:', hashError.message);
+    // Continue without duplicate detection if hash fails
+  }
+
   // Check storage usage (with timeout to prevent hangs)
   // Use a fast direct query instead of RPC to avoid cold-start delays
   console.log('[upload] Checking storage usage...');
@@ -981,6 +1003,7 @@ async function uploadInternal(file, options = {}) {
             title: title || null,
             caption: caption || null,
             category,
+            content_hash: contentHash,
           })
           .select()
           .single();
@@ -1730,6 +1753,41 @@ function withTimeout(promise, ms, errorMessage = 'Operation timed out') {
 }
 
 /**
+ * Compute SHA-256 hash of file content for duplicate detection
+ * @param {File|Blob} file - File to hash
+ * @returns {Promise<string>} - Hex string of hash
+ */
+async function computeFileHash(file) {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Check if a file with this content hash already exists
+ * @param {string} hash - Content hash to check
+ * @returns {Promise<{exists: boolean, media: object|null}>}
+ */
+async function checkDuplicateByHash(hash) {
+  const { data, error } = await supabase
+    .from('media')
+    .select('id, url, caption')
+    .eq('content_hash', hash)
+    .eq('is_archived', false)
+    .single();
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    console.warn('[duplicate] Error checking hash:', error.message);
+  }
+
+  return {
+    exists: !!data,
+    media: data || null,
+  };
+}
+
+/**
  * Get image dimensions from file (with timeout)
  */
 function getImageDimensions(file, timeout = 10000) {
@@ -1898,6 +1956,8 @@ export const mediaService = {
   addExternal,
   isTusAvailable,
   TUS_THRESHOLD_BYTES,
+  computeFileHash,
+  checkDuplicateByHash,
 
   // Tags
   getTags,
