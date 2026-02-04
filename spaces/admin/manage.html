@@ -1490,7 +1490,10 @@
   <div id="spaceDetailModal" class="modal hidden">
     <div class="modal-content modal-large">
       <div class="modal-header">
-        <h2 id="detailSpaceName">Space Name</h2>
+        <div class="detail-header-content">
+          <h2 id="detailSpaceName">Space Name</h2>
+          <div id="detailHeaderButtons" class="detail-header-buttons"></div>
+        </div>
         <button class="modal-close" id="closeDetailModal">&times;</button>
       </div>
       <div class="modal-body" id="spaceDetailBody">
@@ -3431,6 +3434,13 @@
         : space.name;
       document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
+      // Populate header buttons for admin
+      const headerButtonsHtml = isAdmin ? `
+        <button class="btn-primary" onclick="openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit Space</button>
+        <button class="btn-secondary" onclick="openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}'); spaceDetailModal.classList.add('hidden');">Add Images</button>
+      ` : '';
+      document.getElementById('detailHeaderButtons').innerHTML = headerButtonsHtml;
+
       const isOccupied = !!space.currentAssignment;
       const occupant = space.currentAssignment?.person;
 
@@ -3572,12 +3582,6 @@
           ${occupantHtml}
         </div>
         ${space.description ? `<div class="detail-section detail-description"><h3>Description</h3><p>${space.description}</p></div>` : ''}
-        ${isAdmin ? `
-          <div style="margin-top:1rem; display: flex; gap: 0.75rem;">
-            <button class="btn-primary" onclick="openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit Space</button>
-            <button class="btn-secondary" onclick="openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}'); spaceDetailModal.classList.add('hidden');">Add Images</button>
-          </div>
-        ` : ''}
         ${spacePhotosHtml}
         ${childPhotosHtml}
         ${ancestorPhotosHtml}

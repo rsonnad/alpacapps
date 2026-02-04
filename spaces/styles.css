@@ -874,6 +874,49 @@ tr:last-child td {
   font-weight: 600;
 }
 
+.detail-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-header-content h2 {
+  margin: 0;
+  min-width: 0;
+}
+
+.detail-header-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.detail-header-buttons .btn-primary,
+.detail-header-buttons .btn-secondary {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 480px) {
+  .detail-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .detail-header-buttons {
+    width: 100%;
+  }
+
+  .detail-header-buttons .btn-primary,
+  .detail-header-buttons .btn-secondary {
+    flex: 1;
+  }
+}
+
 .detail-parent-link {
   font-size: 0.85rem;
   font-weight: 400;
