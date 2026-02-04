@@ -79,7 +79,7 @@ serve(async (req) => {
     } else {
       const { data: newGuest, error: createError } = await supabase
         .from('people')
-        .insert({ first_name: 'Airbnb', last_name: 'Guest', type: 'guest' })
+        .insert({ first_name: 'Airbnb', last_name: 'Guest', type: 'airbnb_guest' })
         .select('id')
         .single();
 
