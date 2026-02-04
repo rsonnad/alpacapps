@@ -84,6 +84,8 @@ alpacapps/
 │   └── functions/
 │       ├── signwell-webhook/  # E-signature completion webhook
 │       │   └── index.ts
+│       ├── event-payment-reminder/  # Daily cron: 10-day payment reminders
+│       │   └── index.ts
 │       ├── process-square-payment/  # Square payment processing (server-side)
 │       │   └── index.ts
 │       ├── record-payment/    # Smart payment recording with AI matching
@@ -272,9 +274,10 @@ Staffing contacts:
 
 Fees:
 - `rental_fee` - Default $295, due 7 days before event
-- `reservation_fee` - Default $95, refundable
-- `cleaning_deposit` - Default $195, refundable
+- `reservation_fee` - Default $95, collected at application time via Square, refundable
+- `cleaning_deposit` - Default $195, due 7 days before event, refundable
 - `{fee}_paid`, `{fee}_paid_at`, `{fee}_method` for each
+- `payment_reminder_sent_at` - Timestamp when 10-day payment reminder email was sent
 
 Lease documents (same as rental):
 - `agreement_document_url`, `signwell_document_id`, `signed_pdf_url`, `agreement_signed_at`
@@ -729,19 +732,24 @@ When tenant signs lease, automated email sent with:
 **Event Request Submission** (`/spaces/events/`):
 1. Host fills out form with event details, staffing contacts, space requests
 2. Acknowledges all venue policies (10 checkboxes)
-3. Deposit section shows two cards:
-   - Cleaning Deposit (default from `fee_settings`, e.g., $195)
+3. Deposit section shows only the Reservation Deposit:
    - Reservation Deposit (default from `fee_settings`, e.g., $95)
-4. Optional: Enter discount codes for each deposit type
+   - Note displayed: Cleaning deposit ($195) and rental fee ($295) are due 7 days before event
+4. Optional: Enter partner code for reservation deposit
    - Codes set actual prices (code with $0 = waived)
-5. If total deposits > $0, Square card form appears
-6. On submit: Single Square payment for combined total
+5. If reservation deposit > $0, Square card form appears
+6. On submit: Square payment for reservation deposit only
 7. Event request created with deposit tracking columns:
-   - `cleaning_deposit_amount`, `cleaning_deposit_code`
    - `reservation_deposit_amount`, `reservation_deposit_code`
    - `deposit_status` ('pending', 'paid', 'waived', 'failed')
    - `square_payment_id`, `square_receipt_url`
-8. Success screen shows request summary
+8. Success screen shows request summary with note about outstanding fees
+
+**Fee Timing:**
+- **At application**: Reservation deposit ($95) collected via Square
+- **7 days before event**: Cleaning deposit ($195) + Rental fee ($295) due via Venmo/Zelle/etc.
+- **10 days before event**: Automated email reminder sent for outstanding fees
+- **After event**: Cleaning deposit and reservation deposit refunded if venue is clean
 
 **Admin Pipeline** (`/spaces/admin/manage.html` → Events tab):
 1. **Submitted**: Review event requests
@@ -754,18 +762,26 @@ When tenant signs lease, automated email sent with:
    - `{{rental_fee}}` = Full rental amount (e.g., $295)
    - `{{reservation_fee_credit}}` = Credit text if deposit paid
    - `{{rental_fee_due}}` = Rental fee - Reservation deposit
-4. **Deposit**: Track rental fee payment (due 7 days before event)
+4. **Deposit**: Track all fee payments (cleaning deposit + rental fee due 7 days before event)
    - Deposits tab shows all payment statuses
 5. **Confirmed**: All payments received, event confirmed
 
 **Post-Signature Email** (via SignWell webhook):
 When host signs event agreement, automated email sent with:
 - Congratulations message with event name
-- Rental fee amount due
-- Payment due date (calculated as 7 days before event)
+- Outstanding fees: cleaning deposit + rental fee amounts
+- Total due with payment due date (7 days before event)
+- Note about cleaning deposit refundability
 - Payment options from database
 - Event details summary
 - Reminders about setup crew, directions page, cleanup deadline
+
+**Payment Reminder Email** (via `event-payment-reminder` Edge Function):
+Automated daily cron job (2 PM UTC / 9 AM CT) checks for events 10 days out:
+- Queries `event_hosting_requests` for events with `event_date` = today + 10 days
+- Filters for approved, non-archived events with unpaid cleaning deposit or rental fee
+- Sends reminder email with outstanding fee breakdown and payment options
+- Records `payment_reminder_sent_at` timestamp on the event request
 
 ### Lease Agreement System
 Database-driven lease generation replacing manual Claude Skill workflow:
@@ -789,7 +805,7 @@ The webhook (`/functions/v1/signwell-webhook`) handles both rental and event agr
 6. Fetches payment methods from database
 7. Sends appropriate email based on document type:
    - Rental: Reservation deposit request with move-in details
-   - Event: Rental fee request with payment deadline (7 days before event)
+   - Event: Outstanding fees (cleaning deposit + rental fee) with payment deadline (7 days before event)
 
 ### Early Exit Feature
 When a tenant wants to leave before their assignment ends:
@@ -810,6 +826,7 @@ npx supabase login
 npx supabase functions deploy record-payment --project-ref aphrrfprbixmhissnjfn
 npx supabase functions deploy resolve-payment --project-ref aphrrfprbixmhissnjfn
 npx supabase functions deploy signwell-webhook --project-ref aphrrfprbixmhissnjfn
+npx supabase functions deploy event-payment-reminder --project-ref aphrrfprbixmhissnjfn
 
 # Set secrets (one-time)
 npx supabase secrets set GEMINI_API_KEY=your_key_here --project-ref aphrrfprbixmhissnjfn

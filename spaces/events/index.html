@@ -1435,30 +1435,15 @@
 
         <!-- Deposits Section -->
         <div class="form-section deposit-section">
-          <h2>Event Deposits</h2>
+          <h2>Reservation Deposit</h2>
           <p class="hint" style="margin-bottom: 1rem;">
-            Two deposits are required to secure your event booking. These are fully refundable if the venue is left in good condition.
+            A reservation deposit is required to secure your event booking. This deposit is fully refundable after your event, provided there is no damage and cleaning is completed per the agreement.
+          </p>
+          <p class="hint" style="margin-bottom: 1rem; font-style: italic;">
+            Note: The cleaning deposit ($195) and rental fee ($295) are due 7 days before your event. We'll send payment instructions and a reminder.
           </p>
 
-          <div class="deposit-grid">
-            <!-- Cleaning Deposit -->
-            <div class="deposit-card" id="cleaningDepositCard">
-              <h4>Cleaning Deposit</h4>
-              <p class="deposit-description">Refunded when venue is cleaned per guidelines</p>
-              <div class="deposit-amount">
-                <span>Amount:</span>
-                <div>
-                  <span class="original hidden" id="cleaningOriginal"></span>
-                  <span class="amount" id="cleaningAmount">Loading...</span>
-                </div>
-              </div>
-              <div class="code-row">
-                <input type="text" id="cleaningCode" placeholder="Partner code">
-                <button type="button" id="applyCleaningCode">Apply</button>
-              </div>
-              <div class="code-result hidden" id="cleaningCodeResult"></div>
-            </div>
-
+          <div class="deposit-grid" style="grid-template-columns: 1fr;">
             <!-- Reservation Deposit -->
             <div class="deposit-card" id="reservationDepositCard">
               <h4>Reservation Deposit</h4>
@@ -1479,7 +1464,7 @@
           </div>
 
           <div class="deposit-total">
-            <span>Total Deposit:</span>
+            <span>Total Due Now:</span>
             <span class="total-amount" id="totalDeposit">Loading...</span>
           </div>
           <p class="payment-note" style="margin-top: 0.75rem; font-size: 0.8rem; color: #7a7d8c; text-align: center;"><span id="secureTestTrigger" style="cursor: default;">Secure</span> payment powered by Square</p>
@@ -1487,7 +1472,7 @@
           <!-- Payment Section (shown when total > 0) -->
           <div class="payment-card-section" id="eventPaymentSection">
             <p class="hint" style="margin-bottom: 0.75rem;">
-              Enter your card details to pay the deposit.
+              Enter your card details to pay the reservation deposit.
             </p>
             <div id="event-card-container">
               <!-- Square Card Element will be inserted here -->
@@ -1531,7 +1516,7 @@
             <span class="value" id="summarySpaces"></span>
           </div>
           <div class="summary-row">
-            <span class="label">Deposits Paid</span>
+            <span class="label">Reservation Deposit Paid</span>
             <span class="value" id="summaryDeposits"></span>
           </div>
         </div>
@@ -1541,10 +1526,11 @@
           <ol>
             <li>We'll review your request with all due haste</li>
             <li>If approved, we'll send you an event agreement to sign electronically</li>
-            <li>After signing, you'll pay the rental fee at least one week before your event</li>
+            <li>7 days before your event, the cleaning deposit ($195) and rental fee ($295) are due</li>
+            <li>We'll send a reminder with payment instructions 10 days before your event</li>
             <li>Event day!</li>
           </ol>
-          <p class="payment-note">Note: The rental fee must be paid at least 7 days before your event. We'll send payment instructions with your agreement.</p>
+          <p class="payment-note">Note: The cleaning deposit and rental fee must be paid at least 7 days before your event. Payment can be made via Venmo, Zelle, or other available methods.</p>
         </div>
 
         <p class="questions-contact">Questions? Email <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
@@ -1568,10 +1554,7 @@
       RESERVATION: 'event_reservation_deposit'
     };
 
-    // Deposit state
-    let cleaningAmount = 0;
-    let cleaningOriginal = 0;
-    let cleaningCode = null;
+    // Deposit state - only reservation deposit collected at application time
     let reservationAmount = 0;
     let reservationOriginal = 0;
     let reservationCode = null;
@@ -1590,12 +1573,7 @@
     const isTicketedCheckbox = document.getElementById('is_ticketed');
     const eventDateInput = document.getElementById('event_date');
 
-    // Deposit elements
-    const cleaningAmountEl = document.getElementById('cleaningAmount');
-    const cleaningOriginalEl = document.getElementById('cleaningOriginal');
-    const cleaningCodeInput = document.getElementById('cleaningCode');
-    const applyCleaningCodeBtn = document.getElementById('applyCleaningCode');
-    const cleaningCodeResult = document.getElementById('cleaningCodeResult');
+    // Deposit elements (only reservation deposit now)
     const reservationAmountEl = document.getElementById('reservationAmount');
     const reservationOriginalEl = document.getElementById('reservationOriginal');
     const reservationCodeInput = document.getElementById('reservationCode');
@@ -1613,11 +1591,11 @@
     const today = getAustinTodayISO();
     eventDateInput.setAttribute('min', today);
 
-    // Load deposit settings
+    // Load deposit settings (only reservation deposit collected at application time)
     async function loadDepositSettings() {
       try {
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=in.(${FEE_TYPES.CLEANING},${FEE_TYPES.RESERVATION})&is_active=eq.true`,
+          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=eq.${FEE_TYPES.RESERVATION}&is_active=eq.true`,
           {
             headers: {
               'apikey': SUPABASE_KEY,
@@ -1630,10 +1608,7 @@
 
         const settings = await response.json();
         settings.forEach(s => {
-          if (s.fee_type === FEE_TYPES.CLEANING) {
-            cleaningOriginal = parseFloat(s.default_amount);
-            cleaningAmount = cleaningOriginal;
-          } else if (s.fee_type === FEE_TYPES.RESERVATION) {
+          if (s.fee_type === FEE_TYPES.RESERVATION) {
             reservationOriginal = parseFloat(s.default_amount);
             reservationAmount = reservationOriginal;
           }
@@ -1642,28 +1617,12 @@
         updateDepositDisplay();
       } catch (error) {
         console.error('Error loading deposit settings:', error);
-        cleaningAmountEl.textContent = 'Error';
         reservationAmountEl.textContent = 'Error';
       }
     }
 
-    // Update deposit display
+    // Update deposit display (only reservation deposit)
     function updateDepositDisplay() {
-      // Cleaning
-      if (cleaningAmount === 0) {
-        cleaningAmountEl.textContent = 'FREE';
-        cleaningAmountEl.classList.add('free');
-      } else {
-        cleaningAmountEl.textContent = `$${cleaningAmount.toFixed(2)}`;
-        cleaningAmountEl.classList.remove('free');
-      }
-      if (cleaningCode && cleaningOriginal !== cleaningAmount) {
-        cleaningOriginalEl.textContent = `$${cleaningOriginal.toFixed(2)}`;
-        cleaningOriginalEl.classList.remove('hidden');
-      } else {
-        cleaningOriginalEl.classList.add('hidden');
-      }
-
       // Reservation
       if (reservationAmount === 0) {
         reservationAmountEl.textContent = 'FREE';
@@ -1679,8 +1638,8 @@
         reservationOriginalEl.classList.add('hidden');
       }
 
-      // Total
-      const total = cleaningAmount + reservationAmount;
+      // Total (just reservation deposit now)
+      const total = reservationAmount;
       if (total === 0) {
         totalDepositEl.textContent = 'FREE';
         totalDepositEl.classList.add('free');
@@ -1734,40 +1693,6 @@
         return { valid: false, message: 'Error validating code' };
       }
     }
-
-    // Apply cleaning code
-    applyCleaningCodeBtn.addEventListener('click', async () => {
-      const code = cleaningCodeInput.value.trim();
-      if (!code) {
-        cleaningCodeResult.classList.add('hidden');
-        cleaningCode = null;
-        cleaningAmount = cleaningOriginal;
-        updateDepositDisplay();
-        return;
-      }
-
-      applyCleaningCodeBtn.disabled = true;
-      applyCleaningCodeBtn.textContent = '...';
-
-      const result = await validateCode(code, FEE_TYPES.CLEANING);
-
-      applyCleaningCodeBtn.disabled = false;
-      applyCleaningCodeBtn.textContent = 'Apply';
-
-      cleaningCodeResult.textContent = result.message;
-      cleaningCodeResult.classList.remove('hidden', 'success', 'error');
-      cleaningCodeResult.classList.add(result.valid ? 'success' : 'error');
-
-      if (result.valid) {
-        cleaningCode = code.toUpperCase();
-        cleaningAmount = result.price;
-      } else {
-        cleaningCode = null;
-        cleaningAmount = cleaningOriginal;
-      }
-
-      updateDepositDisplay();
-    });
 
     // Apply reservation code
     applyReservationCodeBtn.addEventListener('click', async () => {
@@ -2157,8 +2082,8 @@
         document.querySelectorAll('input[name="spaces[]"]:checked')
       ).map(cb => cb.value);
 
-      // Calculate total deposit
-      const totalDeposit = cleaningAmount + reservationAmount;
+      // Calculate total deposit (only reservation deposit at application time)
+      const totalDeposit = reservationAmount;
 
       // Disable form
       submitBtn.disabled = true;
@@ -2247,8 +2172,6 @@
           ack_linens_furniture: true,
           ack_propane_reimbursement: true,
           request_status: 'submitted',
-          cleaning_deposit_amount: cleaningAmount,
-          cleaning_deposit_code: cleaningCode,
           reservation_deposit_amount: reservationAmount,
           reservation_deposit_code: reservationCode,
           deposit_status: totalDeposit > 0 ? 'pending' : 'waived'
@@ -2284,32 +2207,6 @@
           if (tokenResult.status !== 'OK') {
             const errorMessage = tokenResult.errors?.[0]?.message || 'Card payment failed';
             throw new Error(errorMessage);
-          }
-
-          // Create payment record for cleaning deposit
-          if (cleaningAmount > 0) {
-            const cleaningPaymentResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-              },
-              body: JSON.stringify({
-                payment_type: FEE_TYPES.CLEANING,
-                reference_type: 'event_hosting_request',
-                reference_id: eventRequest.id,
-                amount: cleaningAmount,
-                fee_code_used: cleaningCode,
-                original_amount: cleaningOriginal,
-                status: 'pending'
-              })
-            });
-
-            if (!cleaningPaymentResponse.ok) {
-              console.error('Failed to create cleaning deposit payment record');
-            }
           }
 
           // Create payment record for reservation deposit
@@ -2350,7 +2247,7 @@
               amount: Math.round(totalDeposit * 100), // Convert to cents
               paymentRecordId: eventRequest.id, // Use event request ID as reference
               buyerEmail: email,
-              note: `Event Deposits - ${getValue('event_name')} (${firstName} ${lastName})`
+              note: `Event Reservation Deposit - ${getValue('event_name')} (${firstName} ${lastName})`
             })
           });
 
@@ -2405,26 +2302,7 @@
             })
           });
         } else {
-          // Record $0 deposits if codes were used to waive
-          if (cleaningCode) {
-            await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                payment_type: FEE_TYPES.CLEANING,
-                reference_type: 'event_hosting_request',
-                reference_id: eventRequest.id,
-                amount: 0,
-                fee_code_used: cleaningCode,
-                original_amount: cleaningOriginal,
-                status: 'completed'
-              })
-            });
-          }
+          // Record $0 deposit if code was used to waive reservation
           if (reservationCode) {
             await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
               method: 'POST',
@@ -2520,7 +2398,7 @@
         }
 
         // Populate success summary
-        populateEventSuccessSummary(selectedSpaceNames, cleaningAmount + reservationAmount);
+        populateEventSuccessSummary(selectedSpaceNames, reservationAmount);
 
         // Success!
         formContainer.classList.add('hidden');
@@ -2573,12 +2451,13 @@
         document.getElementById('summarySpacesRow').style.display = 'flex';
       }
 
-      // Deposits paid
+      // Reservation deposit paid
       if (totalDepositPaid > 0) {
         document.getElementById('summaryDeposits').textContent = `$${totalDepositPaid.toFixed(2)} paid`;
       } else {
         document.getElementById('summaryDeposits').textContent = 'Waived';
       }
+
     }
 
     function getValue(id) {

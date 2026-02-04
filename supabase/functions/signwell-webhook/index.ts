@@ -347,8 +347,9 @@ async function processEventAgreement(
 
   console.log(`Event document ${documentId} signed and processed successfully`);
 
-  // Calculate rental fee due (payment due 7 days before event)
+  // Calculate fees due 7 days before event (cleaning deposit + rental fee)
   const rentalFee = eventRequest.rental_fee || 295;
+  const cleaningDeposit = eventRequest.cleaning_deposit || 195;
 
   // Format event date
   let eventDateFormatted = 'TBD';
@@ -390,7 +391,7 @@ async function processEventAgreement(
   if (person?.email) {
     await sendEventSignedEmail(
       person, eventRequest.event_name, eventDateFormatted, eventTimeFormatted,
-      rentalFee, paymentDueDate, paymentMethodsHtml, paymentMethodsText
+      rentalFee, cleaningDeposit, paymentDueDate, paymentMethodsHtml, paymentMethodsText
     );
   }
 
@@ -517,6 +518,7 @@ async function sendEventSignedEmail(
   eventDate: string,
   eventTime: string,
   rentalFee: number,
+  cleaningDeposit: number,
   paymentDueDate: string,
   paymentMethodsHtml: string,
   paymentMethodsText: string
@@ -538,25 +540,34 @@ async function sendEventSignedEmail(
         from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
         to: [person.email],
         reply_to: 'alpacaplayhouse@gmail.com',
-        subject: 'Event Agreement Signed - Rental Fee Due - Alpaca Playhouse',
+        subject: 'Event Agreement Signed - Outstanding Fees Due Before Event - Alpaca Playhouse',
         html: `
           <h2>Event Agreement Signed!</h2>
           <p>Hi ${person.first_name},</p>
           <p>Congratulations! Your event agreement for <strong>${eventName}</strong> has been successfully signed by both parties.</p>
 
           <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #3d8b7a;">Rental Fee Due</h3>
-            <p>To finalize your event booking, please submit the rental fee at least <strong>7 days before your event</strong>:</p>
+            <h3 style="margin-top: 0; color: #3d8b7a;">Outstanding Fees Due 7 Days Before Event</h3>
+            <p>The following fees must be paid at least <strong>7 days before your event</strong>:</p>
             <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
               <tr>
+                <td style="padding: 8px 0;"><strong>Cleaning Deposit:</strong></td>
+                <td style="padding: 8px 0; text-align: right; font-size: 1.1em; font-weight: bold; color: #3d8b7a;">$${cleaningDeposit}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 8px 0;"><strong>Rental Fee:</strong></td>
-                <td style="padding: 8px 0; text-align: right; font-size: 1.2em; font-weight: bold; color: #3d8b7a;">$${rentalFee}</td>
+                <td style="padding: 8px 0; text-align: right; font-size: 1.1em; font-weight: bold; color: #3d8b7a;">$${rentalFee}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Total Due:</strong></td>
+                <td style="padding: 8px 0; text-align: right; font-size: 1.3em; font-weight: bold; color: #3d8b7a;">$${cleaningDeposit + rentalFee}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0;"><strong>Due By:</strong></td>
                 <td style="padding: 8px 0; text-align: right; color: #e07a5f; font-weight: bold;">${paymentDueDate}</td>
               </tr>
             </table>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px; margin-bottom: 0;">The cleaning deposit is fully refundable after your event, provided the venue is cleaned per the agreement. We'll send a reminder 10 days before your event.</p>
           </div>
 
           <h3>Payment Options</h3>
@@ -578,7 +589,7 @@ async function sendEventSignedEmail(
             <li>Cleanup must be completed by 1:01pm the day after your event</li>
           </ul>
 
-          <p>Once we receive your rental fee, your event is confirmed!</p>
+          <p>Once we receive the cleaning deposit and rental fee, your event is confirmed!</p>
           <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -588,12 +599,14 @@ Hi ${person.first_name},
 
 Congratulations! Your event agreement for ${eventName} has been successfully signed by both parties.
 
-RENTAL FEE DUE
---------------
+OUTSTANDING FEES DUE 7 DAYS BEFORE EVENT
+-----------------------------------------
+Cleaning Deposit: $${cleaningDeposit}
 Rental Fee: $${rentalFee}
+Total Due: $${cleaningDeposit + rentalFee}
 Due By: ${paymentDueDate}
 
-Payment must be received at least 7 days before your event.
+The cleaning deposit is fully refundable after your event, provided the venue is cleaned per the agreement. We'll send a reminder 10 days before your event.
 
 PAYMENT OPTIONS
 ---------------
@@ -613,7 +626,7 @@ REMINDERS
 - Direct attendees to alpacaplayhouse.com/visiting for directions (do NOT post the address publicly)
 - Cleanup must be completed by 1:01pm the day after your event
 
-Once we receive your rental fee, your event is confirmed!
+Once we receive the cleaning deposit and rental fee, your event is confirmed!
 
 Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
 
