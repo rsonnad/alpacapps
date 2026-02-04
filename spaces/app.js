@@ -330,8 +330,8 @@ function resetFilters() {
   parentFilter.value = '';
   bathFilter.value = '';
   if (showDwellings) showDwellings.checked = true;
-  if (showEventSpaces) showEventSpaces.checked = true;
-  if (showOther) showOther.checked = true;
+  if (showEventSpaces) showEventSpaces.checked = false;
+  if (showOther) showOther.checked = false;
   render();
 }
 
