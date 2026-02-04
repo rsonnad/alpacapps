@@ -1491,7 +1491,7 @@
             <div id="event-card-container">
               <!-- Square Card Element will be inserted here -->
             </div>
-            <p class="payment-note">Secure payment powered by Square</p>
+            <p class="payment-note"><span id="secureTestTrigger" style="cursor: default;">Secure</span> payment powered by Square</p>
           </div>
         </div>
 
@@ -2059,6 +2059,51 @@
 
     // Initialize - load all event spaces
     loadAllEventSpaces();
+
+    // Test data fill (click on "Secure" to trigger)
+    document.getElementById('secureTestTrigger').addEventListener('click', () => {
+      // Contact Info
+      document.getElementById('first_name').value = 'Test';
+      document.getElementById('last_name').value = 'EventHost';
+      document.getElementById('email').value = 'test@example.com';
+      document.getElementById('phone').value = '512-555-0123';
+      document.getElementById('organization_name').value = 'Test Events LLC';
+
+      // Event Details - date far in the future
+      document.getElementById('event_name').value = 'Test Event 2030';
+      document.getElementById('event_type').value = 'private_party';
+      document.getElementById('expected_guests').value = '25';
+      document.getElementById('event_date').value = '2030-06-15';
+      document.getElementById('event_start_time').value = '14:00';
+      document.getElementById('event_end_time').value = '20:00';
+      document.getElementById('event_description').value = 'This is a test event submission for testing purposes. Please ignore this application.';
+
+      // Staff Contacts
+      document.getElementById('setup_staff_name').value = 'Setup Person';
+      document.getElementById('setup_staff_phone').value = '512-555-1111';
+      document.getElementById('cleanup_staff_name').value = 'Cleanup Person';
+      document.getElementById('cleanup_staff_phone').value = '512-555-2222';
+      document.getElementById('parking_manager_name').value = 'Parking Person';
+      document.getElementById('parking_manager_phone').value = '512-555-3333';
+
+      // Optional fields
+      document.getElementById('marketing_materials_link').value = 'https://example.com/test-event';
+      document.getElementById('special_requests').value = 'Test submission - no special requests';
+
+      // Check all acknowledgment checkboxes
+      document.getElementById('ack_no_address_posting').checked = true;
+      document.getElementById('ack_parking_management').checked = true;
+      document.getElementById('ack_noise_curfew').checked = true;
+      document.getElementById('ack_no_alcohol_inside').checked = true;
+      document.getElementById('ack_no_meat_inside').checked = true;
+      document.getElementById('ack_no_rvs').checked = true;
+      document.getElementById('ack_no_animals_inside').checked = true;
+      document.getElementById('ack_cleaning_responsibility').checked = true;
+      document.getElementById('ack_linens_furniture').checked = true;
+      document.getElementById('ack_propane_reimbursement').checked = true;
+
+      console.log('Test data filled for event application');
+    });
 
     // Form submission
     form.addEventListener('submit', async (e) => {

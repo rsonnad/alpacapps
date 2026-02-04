@@ -749,7 +749,7 @@
             <!-- Square Card Element will be inserted here -->
           </div>
           <p class="payment-note">
-            Secure payment powered by Square
+            <span id="secureTestTrigger" style="cursor: default;">Secure</span> payment powered by Square
           </p>
         </div>
 
@@ -1507,6 +1507,57 @@
       errorBanner.classList.remove('hidden');
       errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // Test data fill (click on "Secure" to trigger)
+    document.getElementById('secureTestTrigger').addEventListener('click', () => {
+      // Basic Info
+      document.getElementById('first_name').value = 'Test';
+      document.getElementById('last_name').value = 'Applicant';
+      document.getElementById('email').value = 'test@example.com';
+      document.getElementById('phone').value = '512-555-0123';
+      document.getElementById('whatsapp').value = '512-555-0123';
+      document.getElementById('date_of_birth').value = '1990-01-15';
+      document.getElementById('gender').value = 'other';
+      document.getElementById('current_address').value = '123 Test Street, Austin, TX 78701';
+
+      // Desired Housing - dates far in the future
+      document.getElementById('desired_move_in').value = '2030-01-01';
+      document.getElementById('desired_term').value = '6 months';
+
+      // Financial
+      document.getElementById('employment_status').value = 'Self-employed';
+      document.getElementById('employer').value = 'Test Company LLC';
+      document.getElementById('monthly_income').value = '5000';
+      document.getElementById('deposit_return_method').value = 'zelle';
+
+      // Previous Residence
+      document.getElementById('prev_address').value = '456 Previous Ave, Austin, TX 78702';
+      document.getElementById('prev_start_date').value = '2025-01-01';
+      document.getElementById('prev_end_date').value = '2029-12-31';
+      document.getElementById('landlord_name').value = 'Jane Landlord';
+      document.getElementById('landlord_contact').value = '512-555-9999';
+      document.getElementById('reason_for_leaving').value = 'Looking for community living';
+
+      // Household
+      document.getElementById('partner_email').value = '';
+      document.getElementById('kids_ages').value = '';
+
+      // Property Details
+      document.getElementById('vehicles').value = 'Honda Civic sedan';
+      document.getElementById('pets').value = 'None';
+      document.getElementById('allergies').value = 'None';
+
+      // Social
+      document.getElementById('instagram').value = '@testuser';
+      document.getElementById('facebook').value = 'testuser';
+      document.getElementById('x_handle').value = '@testuser';
+      document.getElementById('myspace').value = '';
+
+      // Referral
+      document.getElementById('referral_source').value = 'Testing';
+
+      console.log('Test data filled for rental application');
+    });
 
     // Initialize
     loadSpaces();
