@@ -708,6 +708,65 @@
       outline: none;
       border-color: var(--accent);
     }
+
+    /* Airbnb Sync Styles */
+    .sync-status {
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .sync-status p {
+      margin: 0;
+      font-size: 0.875rem;
+    }
+
+    .sync-results {
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .sync-results h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .sync-results ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.875rem;
+    }
+
+    .sync-results li {
+      margin-bottom: 0.25rem;
+    }
+
+    .linked-spaces-grid {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .linked-space-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+    }
+
+    .linked-space-name {
+      font-weight: 500;
+    }
+
+    .linked-space-status {
+      color: var(--success);
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
@@ -1480,6 +1539,32 @@
               Configure payment methods that tenants can use for rent and deposits.
             </p>
             <div id="paymentMethodsList" class="payment-methods-grid"></div>
+          </div>
+        </div>
+
+        <!-- Airbnb Sync Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Airbnb Sync</h2>
+            <button class="btn-small btn-primary" id="syncAirbnbBtn">Sync Now</button>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Import bookings from Airbnb iCal feeds into your assignments. This runs automatically every hour, but you can trigger a manual sync here.
+            </p>
+            <div id="airbnbSyncStatus" class="sync-status">
+              <p>Last sync: <span id="lastSyncTime">Never</span></p>
+            </div>
+            <div id="airbnbSyncResults" class="sync-results hidden">
+              <h4>Sync Results</h4>
+              <div id="syncResultsContent"></div>
+            </div>
+            <div class="airbnb-spaces-list" style="margin-top: 1rem;">
+              <h4>Linked Spaces</h4>
+              <div id="linkedSpacesList" class="linked-spaces-grid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -7327,6 +7412,93 @@ Deposit: ${req.deposit_status}
     async function loadSettingsPanel() {
       settingsLoaded = true;
       await loadPaymentMethods();
+      await loadAirbnbSyncStatus();
+      setupAirbnbSyncListeners();
+    }
+
+    // Airbnb Sync functionality
+    async function loadAirbnbSyncStatus() {
+      try {
+        // Load spaces with Airbnb iCal URLs
+        const { data: linkedSpaces, error } = await supabase
+          .from('spaces')
+          .select('id, name, airbnb_ical_url')
+          .not('airbnb_ical_url', 'is', null)
+          .order('name');
+
+        if (error) throw error;
+
+        const linkedSpacesList = document.getElementById('linkedSpacesList');
+        if (linkedSpaces && linkedSpaces.length > 0) {
+          linkedSpacesList.innerHTML = linkedSpaces.map(space => `
+            <div class="linked-space-item">
+              <span class="linked-space-name">${space.name}</span>
+              <span class="linked-space-status">Connected</span>
+            </div>
+          `).join('');
+        } else {
+          linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb yet.</p>';
+        }
+      } catch (error) {
+        console.error('Error loading Airbnb sync status:', error);
+      }
+    }
+
+    function setupAirbnbSyncListeners() {
+      const syncBtn = document.getElementById('syncAirbnbBtn');
+      if (syncBtn && !syncBtn.dataset.initialized) {
+        syncBtn.dataset.initialized = 'true';
+        syncBtn.addEventListener('click', triggerAirbnbSync);
+      }
+    }
+
+    async function triggerAirbnbSync() {
+      const syncBtn = document.getElementById('syncAirbnbBtn');
+      const resultsDiv = document.getElementById('airbnbSyncResults');
+      const resultsContent = document.getElementById('syncResultsContent');
+
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Syncing...';
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/airbnb-sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update last sync time
+          document.getElementById('lastSyncTime').textContent = new Date().toLocaleString();
+
+          // Show results
+          resultsDiv.classList.remove('hidden');
+          resultsContent.innerHTML = `
+            <p><strong>Summary:</strong></p>
+            <ul>
+              <li>Spaces processed: ${result.summary.spacesProcessed}</li>
+              <li>Bookings created: ${result.summary.totalCreated}</li>
+              <li>Bookings updated: ${result.summary.totalUpdated}</li>
+              <li>Skipped (unchanged/past): ${result.summary.totalSkipped}</li>
+              ${result.summary.totalErrors > 0 ? `<li style="color: var(--error);">Errors: ${result.summary.totalErrors}</li>` : ''}
+            </ul>
+          `;
+
+          showToast(`Sync complete: ${result.summary.totalCreated} new bookings imported`, 'success');
+        } else {
+          throw new Error(result.error || 'Sync failed');
+        }
+      } catch (error) {
+        console.error('Airbnb sync error:', error);
+        showToast(`Sync failed: ${error.message}`, 'error');
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'Sync Now';
+      }
     }
 
     // =============================================
