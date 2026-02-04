@@ -3032,7 +3032,7 @@
             <div class="card-actions">
               <button class="btn-edit" onclick="event.stopPropagation(); openEditSpace('${space.id}')">Edit</button>
               <button class="btn-small" onclick="event.stopPropagation(); openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}')">
-                Images${pendingRequests ? ` (${pendingRequests} pending)` : ''}
+                Add Images${pendingRequests ? ` (${pendingRequests} pending)` : ''}
               </button>
             </div>
           `;
