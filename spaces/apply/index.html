@@ -275,6 +275,116 @@
       pointer-events: none;
     }
 
+    /* Application Fee Section */
+    .fee-section {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+    }
+
+    .fee-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .fee-label {
+      font-weight: 500;
+    }
+
+    .fee-amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .fee-amount.free {
+      color: var(--success);
+    }
+
+    .fee-original {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+
+    .discount-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .discount-row .form-group {
+      flex: 1;
+    }
+
+    .discount-row button {
+      padding: 0.625rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .discount-row button:hover {
+      background: var(--bg);
+    }
+
+    .code-message {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      padding: 0.5rem;
+      border-radius: var(--radius);
+    }
+
+    .code-message.success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .code-message.error {
+      background: var(--error-light);
+      color: var(--error);
+    }
+
+    /* Payment Card Section */
+    .payment-section {
+      display: none;
+    }
+
+    .payment-section.visible {
+      display: block;
+    }
+
+    #card-container {
+      min-height: 90px;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .payment-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    .payment-note img {
+      height: 24px;
+      vertical-align: middle;
+      margin-left: 0.5rem;
+    }
+
     @media (max-width: 600px) {
       header {
         padding: 1.25rem 1rem;
@@ -520,6 +630,43 @@
           </div>
         </div>
 
+        <!-- Section 9: Application Fee -->
+        <div class="form-section fee-section">
+          <h2>Application Fee</h2>
+          <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+            A non-refundable application fee is required to process your application.
+          </p>
+          <div class="fee-display">
+            <span class="fee-label">Application Fee</span>
+            <div>
+              <span class="fee-original hidden" id="feeOriginal"></span>
+              <span class="fee-amount" id="feeAmount">Loading...</span>
+            </div>
+          </div>
+          <div class="discount-row">
+            <div class="form-group">
+              <label for="discount_code">Have a code?</label>
+              <input type="text" id="discount_code" name="discount_code" placeholder="Enter code" style="text-transform: uppercase;">
+            </div>
+            <button type="button" id="applyCodeBtn">Apply</button>
+          </div>
+          <div id="codeMessage" class="code-message hidden"></div>
+        </div>
+
+        <!-- Payment Section (shown when fee > $0) -->
+        <div class="form-section payment-section" id="paymentSection">
+          <h2>Payment</h2>
+          <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+            Enter your card details to pay the application fee.
+          </p>
+          <div id="card-container">
+            <!-- Square Card Element will be inserted here -->
+          </div>
+          <p class="payment-note">
+            Secure payment powered by Square
+          </p>
+        </div>
+
         <div class="form-actions">
           <button type="submit" class="btn-submit" id="submitBtn">Submit Application</button>
         </div>
@@ -545,6 +692,16 @@
     import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
 
+    // Fee type constant
+    const FEE_TYPE = 'rental_application';
+
+    // State
+    let feeAmount = 0;
+    let originalAmount = 0;
+    let appliedCode = null;
+    let squareCard = null;
+    let squarePayments = null;
+
     // Elements
     const form = document.getElementById('applicationForm');
     const formContainer = document.getElementById('formContainer');
@@ -555,6 +712,205 @@
     const phoneInput = document.getElementById('phone');
     const whatsappInput = document.getElementById('whatsapp');
     const whatsappSameCheckbox = document.getElementById('whatsapp_same_as_phone');
+    const feeAmountEl = document.getElementById('feeAmount');
+    const feeOriginalEl = document.getElementById('feeOriginal');
+    const paymentSection = document.getElementById('paymentSection');
+    const discountCodeInput = document.getElementById('discount_code');
+    const applyCodeBtn = document.getElementById('applyCodeBtn');
+    const codeMessage = document.getElementById('codeMessage');
+
+    // Load application fee settings
+    async function loadFeeSettings() {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=eq.${FEE_TYPE}&is_active=eq.true&select=default_amount`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to load fee settings');
+
+        const [settings] = await response.json();
+        if (settings) {
+          originalAmount = parseFloat(settings.default_amount);
+          feeAmount = originalAmount;
+          updateFeeDisplay();
+        }
+      } catch (error) {
+        console.error('Error loading fee settings:', error);
+        feeAmountEl.textContent = 'Error loading fee';
+      }
+    }
+
+    // Update fee display and payment section visibility
+    function updateFeeDisplay() {
+      if (feeAmount === 0) {
+        feeAmountEl.textContent = 'FREE';
+        feeAmountEl.classList.add('free');
+        paymentSection.classList.remove('visible');
+      } else {
+        feeAmountEl.textContent = `$${feeAmount.toFixed(2)}`;
+        feeAmountEl.classList.remove('free');
+        paymentSection.classList.add('visible');
+        initializeSquare();
+      }
+
+      // Show original price if code applied
+      if (appliedCode && originalAmount !== feeAmount) {
+        feeOriginalEl.textContent = `$${originalAmount.toFixed(2)}`;
+        feeOriginalEl.classList.remove('hidden');
+      } else {
+        feeOriginalEl.classList.add('hidden');
+      }
+    }
+
+    // Validate discount code
+    async function validateCode(code) {
+      if (!code) return null;
+
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fee_codes?code=eq.${code.toUpperCase()}&fee_type=eq.${FEE_TYPE}&is_active=eq.true&select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to validate code');
+
+        const [codeData] = await response.json();
+
+        if (!codeData) {
+          return { valid: false, message: 'Invalid code' };
+        }
+
+        // Check expiration
+        if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
+          return { valid: false, message: 'Code has expired' };
+        }
+
+        // Check usage limit
+        if (codeData.usage_limit !== null && codeData.times_used >= codeData.usage_limit) {
+          return { valid: false, message: 'Code has reached its usage limit' };
+        }
+
+        return {
+          valid: true,
+          price: parseFloat(codeData.price),
+          message: codeData.price === 0 ? 'Application fee waived!' : `Code applied! Fee: $${codeData.price.toFixed(2)}`
+        };
+      } catch (error) {
+        console.error('Error validating code:', error);
+        return { valid: false, message: 'Error validating code' };
+      }
+    }
+
+    // Apply code button handler
+    applyCodeBtn.addEventListener('click', async () => {
+      const code = discountCodeInput.value.trim();
+
+      if (!code) {
+        codeMessage.classList.add('hidden');
+        appliedCode = null;
+        feeAmount = originalAmount;
+        updateFeeDisplay();
+        return;
+      }
+
+      applyCodeBtn.disabled = true;
+      applyCodeBtn.textContent = 'Checking...';
+
+      const result = await validateCode(code);
+
+      applyCodeBtn.disabled = false;
+      applyCodeBtn.textContent = 'Apply';
+
+      codeMessage.textContent = result.message;
+      codeMessage.classList.remove('hidden', 'success', 'error');
+      codeMessage.classList.add(result.valid ? 'success' : 'error');
+
+      if (result.valid) {
+        appliedCode = code.toUpperCase();
+        feeAmount = result.price;
+      } else {
+        appliedCode = null;
+        feeAmount = originalAmount;
+      }
+
+      updateFeeDisplay();
+    });
+
+    // Initialize Square SDK
+    async function initializeSquare() {
+      if (squarePayments) return; // Already initialized
+
+      try {
+        // Load Square config
+        const configResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/square_config?select=sandbox_app_id,production_app_id,sandbox_location_id,production_location_id,test_mode`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!configResponse.ok) throw new Error('Failed to load Square config');
+
+        const [config] = await configResponse.json();
+        const isTestMode = config.test_mode;
+        const appId = isTestMode ? config.sandbox_app_id : config.production_app_id;
+        const locationId = isTestMode ? config.sandbox_location_id : config.production_location_id;
+
+        // Load Square SDK
+        const sdkUrl = isTestMode
+          ? 'https://sandbox.web.squarecdn.com/v1/square.js'
+          : 'https://web.squarecdn.com/v1/square.js';
+
+        await loadScript(sdkUrl);
+
+        // Initialize payments
+        squarePayments = window.Square.payments(appId, locationId);
+
+        // Create card element
+        squareCard = await squarePayments.card();
+        await squareCard.attach('#card-container');
+
+      } catch (error) {
+        console.error('Error initializing Square:', error);
+        document.getElementById('card-container').innerHTML =
+          '<p style="color: var(--error); text-align: center;">Payment system unavailable. Please try again later.</p>';
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          // Check if already loaded
+          const checkInterval = setInterval(() => {
+            if (window.Square) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
 
     // Load dwelling spaces for dropdown
     async function loadSpaces() {
@@ -635,7 +991,7 @@
 
       // Disable form while submitting
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+      submitBtn.textContent = feeAmount > 0 ? 'Processing Payment...' : 'Submitting...';
       form.classList.add('loading');
 
       try {
@@ -709,10 +1065,169 @@
           body: JSON.stringify(applicationData)
         });
 
-        if (!applicationResponse.ok) {
-          const errorData = await applicationResponse.json();
-          console.error('Failed to create rental application:', errorData);
-          // Continue anyway - person was created, admin can manually create application
+        let applicationId = null;
+        if (applicationResponse.ok) {
+          const [app] = await applicationResponse.json();
+          applicationId = app.id;
+        } else {
+          console.error('Failed to create rental application');
+        }
+
+        // Process payment if fee > 0
+        if (feeAmount > 0 && applicationId) {
+          if (!squareCard) {
+            throw new Error('Payment system not ready. Please refresh and try again.');
+          }
+
+          // Tokenize the card
+          const tokenResult = await squareCard.tokenize();
+
+          if (tokenResult.status !== 'OK') {
+            const errorMessage = tokenResult.errors?.[0]?.message || 'Card payment failed';
+            throw new Error(errorMessage);
+          }
+
+          // Create pending payment record
+          const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({
+              payment_type: FEE_TYPE,
+              reference_type: 'rental_application',
+              reference_id: applicationId,
+              amount: feeAmount,
+              fee_code_used: appliedCode,
+              original_amount: originalAmount,
+              status: 'pending'
+            })
+          });
+
+          if (!paymentRecordResponse.ok) {
+            throw new Error('Failed to create payment record');
+          }
+
+          const [paymentRecord] = await paymentRecordResponse.json();
+
+          // Process payment via Edge Function
+          const processResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-square-payment`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              sourceId: tokenResult.token,
+              amount: Math.round(feeAmount * 100), // Convert to cents
+              paymentRecordId: paymentRecord.id,
+              buyerEmail: email,
+              note: `Rental Application Fee - ${firstName} ${lastName}`
+            })
+          });
+
+          const processResult = await processResponse.json();
+
+          if (!processResult.success) {
+            // Update payment record with failure
+            await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
+              method: 'PATCH',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                status: 'failed',
+                error_message: processResult.error,
+                updated_at: new Date().toISOString()
+              })
+            });
+
+            throw new Error(processResult.error || 'Payment failed');
+          }
+
+          // Update payment record with success
+          await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              status: 'completed',
+              square_payment_id: processResult.paymentId,
+              square_order_id: processResult.orderId,
+              square_receipt_url: processResult.receiptUrl,
+              updated_at: new Date().toISOString()
+            })
+          });
+
+          // Update rental application with payment info
+          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${applicationId}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              application_fee_paid: true,
+              application_fee_amount: feeAmount,
+              application_fee_code: appliedCode
+            })
+          });
+
+          // Increment code usage if applicable
+          if (appliedCode) {
+            await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_fee_code_usage`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ code_id: appliedCode })
+            });
+          }
+        } else if (feeAmount === 0 && applicationId) {
+          // Record $0 payment
+          await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              payment_type: FEE_TYPE,
+              reference_type: 'rental_application',
+              reference_id: applicationId,
+              amount: 0,
+              fee_code_used: appliedCode,
+              original_amount: originalAmount,
+              status: 'completed'
+            })
+          });
+
+          // Update rental application
+          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${applicationId}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              application_fee_paid: true,
+              application_fee_amount: 0,
+              application_fee_code: appliedCode
+            })
+          });
         }
 
         // Insert previous residence if provided
@@ -776,7 +1291,8 @@
                   getValue('pets') ? `Pets: ${getValue('pets')}` : null,
                   getValue('allergies') ? `Allergies: ${getValue('allergies')}` : null,
                   getValue('kids_ages') ? `Children's ages: ${getValue('kids_ages')}` : null,
-                  document.getElementById('prior_evictions').checked ? 'Has prior evictions' : null
+                  document.getElementById('prior_evictions').checked ? 'Has prior evictions' : null,
+                  feeAmount > 0 ? `Application fee paid: $${feeAmount.toFixed(2)}` : (appliedCode ? `Application fee waived (code: ${appliedCode})` : null)
                 ].filter(Boolean).join('\n') || null
               }
             })
@@ -812,6 +1328,7 @@
 
     // Initialize
     loadSpaces();
+    loadFeeSettings();
   </script>
 </body>
 </html>
