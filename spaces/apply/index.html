@@ -908,8 +908,8 @@
           </div>
           <div class="discount-row">
             <div class="form-group">
-              <label for="discount_code">Have a code?</label>
-              <input type="text" id="discount_code" name="discount_code" placeholder="Enter code" style="text-transform: uppercase;">
+              <label for="discount_code">Have a partner code?</label>
+              <input type="text" id="discount_code" name="discount_code" placeholder="Enter partner code" style="text-transform: uppercase;">
             </div>
             <button type="button" id="applyCodeBtn">Apply</button>
           </div>
@@ -1086,23 +1086,23 @@
         const [codeData] = await response.json();
 
         if (!codeData) {
-          return { valid: false, message: 'Invalid code' };
+          return { valid: false, message: 'Invalid partner code' };
         }
 
         // Check expiration
         if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
-          return { valid: false, message: 'Code has expired' };
+          return { valid: false, message: 'Partner code has expired' };
         }
 
         // Check usage limit
         if (codeData.usage_limit !== null && codeData.times_used >= codeData.usage_limit) {
-          return { valid: false, message: 'Code has reached its usage limit' };
+          return { valid: false, message: 'Partner code has reached its usage limit' };
         }
 
         return {
           valid: true,
           price: parseFloat(codeData.price),
-          message: codeData.price === 0 ? 'Application fee waived!' : `Code applied! Fee: $${codeData.price.toFixed(2)}`
+          message: codeData.price === 0 ? 'Application fee waived!' : `Partner code applied! Fee: $${codeData.price.toFixed(2)}`
         };
       } catch (error) {
         console.error('Error validating code:', error);

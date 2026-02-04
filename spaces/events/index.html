@@ -1453,7 +1453,7 @@
                 </div>
               </div>
               <div class="code-row">
-                <input type="text" id="cleaningCode" placeholder="Discount code">
+                <input type="text" id="cleaningCode" placeholder="Partner code">
                 <button type="button" id="applyCleaningCode">Apply</button>
               </div>
               <div class="code-result hidden" id="cleaningCodeResult"></div>
@@ -1471,7 +1471,7 @@
                 </div>
               </div>
               <div class="code-row">
-                <input type="text" id="reservationCode" placeholder="Discount code">
+                <input type="text" id="reservationCode" placeholder="Partner code">
                 <button type="button" id="applyReservationCode">Apply</button>
               </div>
               <div class="code-result hidden" id="reservationCodeResult"></div>
@@ -1713,21 +1713,21 @@
         const [codeData] = await response.json();
 
         if (!codeData) {
-          return { valid: false, message: 'Invalid code' };
+          return { valid: false, message: 'Invalid partner code' };
         }
 
         if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
-          return { valid: false, message: 'Code has expired' };
+          return { valid: false, message: 'Partner code has expired' };
         }
 
         if (codeData.usage_limit !== null && codeData.times_used >= codeData.usage_limit) {
-          return { valid: false, message: 'Code has reached its usage limit' };
+          return { valid: false, message: 'Partner code has reached its usage limit' };
         }
 
         return {
           valid: true,
           price: parseFloat(codeData.price),
-          message: codeData.price === 0 ? 'Deposit waived!' : `Code applied! Amount: $${codeData.price.toFixed(2)}`
+          message: codeData.price === 0 ? 'Deposit waived!' : `Partner code applied! Amount: $${codeData.price.toFixed(2)}`
         };
       } catch (error) {
         console.error('Error validating code:', error);
