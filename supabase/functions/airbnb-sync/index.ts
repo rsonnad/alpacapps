@@ -156,6 +156,7 @@ serve(async (req) => {
                 .from('assignments')
                 .insert({
                   person_id: airbnbGuestId,
+                  type: 'dwelling',
                   start_date: event.dtstart.toISOString().split('T')[0],
                   end_date: event.dtend.toISOString().split('T')[0],
                   status: 'active',
