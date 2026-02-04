@@ -1064,6 +1064,31 @@
             </form>
           </div>
         </div>
+
+        <!-- Airbnb Rentals Section -->
+        <div class="section" style="margin-top: 1.5rem;">
+          <div class="section-header">
+            <h2>Airbnb Rentals</h2>
+            <button class="btn-small btn-primary" id="syncAirbnbBtn">Sync Now</button>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Import bookings from Airbnb iCal feeds. Syncs automatically every hour.
+            </p>
+            <div id="airbnbSyncStatus" class="sync-status">
+              <p>Last sync: <span id="lastSyncTime">Never</span></p>
+            </div>
+            <div id="airbnbSyncResults" class="sync-results hidden">
+              <h4>Sync Results</h4>
+              <div id="syncResultsContent"></div>
+            </div>
+            <div class="airbnb-spaces-list" style="margin-top: 1rem;">
+              <div id="linkedSpacesList" class="linked-spaces-grid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Events Panel -->
@@ -1552,31 +1577,6 @@
           </div>
         </div>
 
-        <!-- Airbnb Sync Section -->
-        <div class="section">
-          <div class="section-header">
-            <h2>Airbnb Sync</h2>
-            <button class="btn-small btn-primary" id="syncAirbnbBtn">Sync Now</button>
-          </div>
-          <div class="section-body">
-            <p class="text-muted" style="margin-bottom: 1rem;">
-              Import bookings from Airbnb iCal feeds into your assignments. This runs automatically every hour, but you can trigger a manual sync here.
-            </p>
-            <div id="airbnbSyncStatus" class="sync-status">
-              <p>Last sync: <span id="lastSyncTime">Never</span></p>
-            </div>
-            <div id="airbnbSyncResults" class="sync-results hidden">
-              <h4>Sync Results</h4>
-              <div id="syncResultsContent"></div>
-            </div>
-            <div class="airbnb-spaces-list" style="margin-top: 1rem;">
-              <h4>Linked Spaces</h4>
-              <div id="linkedSpacesList" class="linked-spaces-grid">
-                <!-- Populated by JS -->
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -5382,10 +5382,12 @@
         loadPeople(),
         loadPaymentMethods(),
         loadCalendarData(),
+        loadAirbnbRentals(),
       ]);
       populateRentalDropdowns();
       initCalendarControls();
       initAssignmentDetailModal();
+      setupAirbnbSyncListeners();
     }
 
     async function loadApplications() {
@@ -7422,12 +7424,10 @@ Deposit: ${req.deposit_status}
     async function loadSettingsPanel() {
       settingsLoaded = true;
       await loadPaymentMethods();
-      await loadAirbnbSyncStatus();
-      setupAirbnbSyncListeners();
     }
 
     // Airbnb Sync functionality
-    async function loadAirbnbSyncStatus() {
+    async function loadAirbnbRentals() {
       try {
         // Load spaces with Airbnb iCal URLs
         const { data: linkedSpaces, error } = await supabase
@@ -7438,25 +7438,26 @@ Deposit: ${req.deposit_status}
 
         if (error) throw error;
 
-        // Load upcoming Airbnb assignments (with airbnb_uid) for these spaces
+        // Load upcoming assignments for these spaces (any assignment, not just Airbnb)
         const today = new Date().toISOString().split('T')[0];
         const spaceIds = linkedSpaces?.map(s => s.id) || [];
 
-        const { data: airbnbAssignments } = await supabase
+        const { data: upcomingAssignments } = await supabase
           .from('assignments')
           .select(`
-            id, start_date, end_date, airbnb_uid,
+            id, start_date, end_date,
+            person:person_id(first_name, last_name),
             assignment_spaces(space_id)
           `)
-          .not('airbnb_uid', 'is', null)
+          .in('status', ['active', 'pending_contract', 'contract_sent'])
           .gte('end_date', today)
           .order('start_date', { ascending: true });
 
         // Group next booking by space
         const nextBookingBySpace = {};
-        for (const assignment of (airbnbAssignments || [])) {
+        for (const assignment of (upcomingAssignments || [])) {
           for (const as of (assignment.assignment_spaces || [])) {
-            if (!nextBookingBySpace[as.space_id]) {
+            if (spaceIds.includes(as.space_id) && !nextBookingBySpace[as.space_id]) {
               nextBookingBySpace[as.space_id] = assignment;
             }
           }
@@ -7470,7 +7471,10 @@ Deposit: ${req.deposit_status}
             if (nextBooking) {
               const start = new Date(nextBooking.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
               const end = new Date(nextBooking.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-              bookingInfo = `${start} - ${end}`;
+              const guestName = nextBooking.person
+                ? `${nextBooking.person.first_name} ${nextBooking.person.last_name || ''}`.trim()
+                : 'Guest';
+              bookingInfo = `${guestName}: ${start} - ${end}`;
             }
             return `
               <div class="linked-space-item">
@@ -7483,7 +7487,7 @@ Deposit: ${req.deposit_status}
           linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb yet.</p>';
         }
       } catch (error) {
-        console.error('Error loading Airbnb sync status:', error);
+        console.error('Error loading Airbnb rentals:', error);
       }
     }
 
