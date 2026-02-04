@@ -8815,13 +8815,11 @@
         const linkedSpacesList = document.getElementById('linkedSpacesList');
 
         if (airbnbSpaces && airbnbSpaces.length > 0) {
-          const currentYear = new Date().getFullYear();
           const fmtDateLocal = (d) => {
-            const opts = { month: 'short', day: 'numeric' };
-            if (d.getFullYear() !== currentYear) {
-              opts.year = '2-digit';
-            }
-            return formatDateAustin(d, opts);
+            const day = d.getDate();
+            const month = d.toLocaleString('en-US', { month: 'short' });
+            const year = String(d.getFullYear()).slice(-2);
+            return `${day}-${month}-${year}`;
           };
 
           // Build table rows - one row per space
