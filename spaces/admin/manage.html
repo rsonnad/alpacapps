@@ -7658,6 +7658,9 @@ Deposit: ${req.deposit_status}
           `;
 
           showToast(`Sync complete: ${result.summary.totalCreated} new bookings imported`, 'success');
+
+          // Reload the Airbnb rentals list to show updated data
+          await loadAirbnbRentals();
         } else {
           throw new Error(result.error || 'Sync failed');
         }
