@@ -476,6 +476,8 @@ img {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--mistiq-space-md);
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .mistiq-element-card {
