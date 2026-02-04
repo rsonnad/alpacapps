@@ -1334,9 +1334,48 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  /* Hide description column on mobile */
+  /* Hide columns on mobile for better table fit */
   .td-description,
-  .th-description {
+  .th-description,
+  .td-hide-mobile,
+  .th-hide-mobile {
     display: none;
   }
+
+  /* Smaller table text on mobile */
+  table {
+    font-size: 0.8rem;
+  }
+
+  th, td {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .table-thumbnail,
+  .table-thumbnail-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.empty-state svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+}
+
+.empty-state .empty-state-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text);
 }

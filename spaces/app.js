@@ -373,6 +373,19 @@ function formatDate(d) {
 }
 
 function renderCards(spacesToRender) {
+  if (spacesToRender.length === 0) {
+    cardView.innerHTML = `
+      <div style="grid-column: 1/-1;" class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p class="empty-state-title">No spaces found</p>
+        <p>Try adjusting your filters or search terms</p>
+      </div>
+    `;
+    return;
+  }
+
   cardView.innerHTML = spacesToRender.map(space => {
     const photo = space.photos[0];
     const photoCount = space.photos.length;
@@ -447,6 +460,21 @@ function renderCards(spacesToRender) {
 }
 
 function renderTable(spacesToRender) {
+  if (spacesToRender.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="10" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p class="empty-state-title">No spaces found</p>
+          <p>Try adjusting your filters or search terms</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   tableBody.innerHTML = spacesToRender.map(space => {
     const beds = getBedSummary(space);
 
@@ -469,12 +497,12 @@ function renderTable(spacesToRender) {
         <td>${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong></td>
         <td class="td-description">${description}</td>
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
-        <td>${space.sq_footage || '-'}</td>
+        <td class="td-hide-mobile">${space.sq_footage || '-'}</td>
         <td>${beds || '-'}</td>
-        <td>${(space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '-'}</td>
-        <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
+        <td class="td-hide-mobile">${(space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '-'}</td>
+        <td class="td-hide-mobile">${space.amenities.slice(0, 3).join(', ') || '-'}</td>
         <td>${availFromStr}</td>
-        <td>${availUntilStr}</td>
+        <td class="td-hide-mobile">${availUntilStr}</td>
       </tr>
     `;
   }).join('');
