@@ -1788,12 +1788,6 @@
               </div>
               <div class="form-group checkbox-group">
                 <label>
-                  <input type="checkbox" id="editIsSecret">
-                  Secret
-                </label>
-              </div>
-              <div class="form-group checkbox-group">
-                <label>
                   <input type="checkbox" id="editCanBeDwelling">
                   Dwelling
                 </label>
@@ -1802,6 +1796,12 @@
                 <label>
                   <input type="checkbox" id="editCanBeEvent">
                   Event
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="editIsSecret">
+                  Secret
                 </label>
               </div>
             </div>
@@ -3437,21 +3437,25 @@
       // Get child spaces with photos
       const childSpaces = allSpaces.filter(s => s.parent?.name === space.name && s.photos && s.photos.length > 0);
 
-      // Get parent photos
-      let parentPhotos = [];
-      let parentName = '';
-      if (space.parent?.name) {
-        const parentSpace = allSpaces.find(s => s.name === space.parent.name);
-        if (parentSpace && parentSpace.photos) {
-          parentPhotos = parentSpace.photos;
-          parentName = parentSpace.name;
+      // Walk up the parent chain to collect all ancestor photos (same as consumer view)
+      const ancestorPhotoSections = [];
+      let currentParentName = space.parent?.name;
+      while (currentParentName) {
+        const parentSpace = allSpaces.find(s => s.name === currentParentName);
+        if (parentSpace && parentSpace.photos && parentSpace.photos.length > 0) {
+          ancestorPhotoSections.push({
+            name: parentSpace.name,
+            photos: parentSpace.photos
+          });
         }
+        // Move up to the next parent
+        currentParentName = parentSpace?.parent?.name || null;
       }
 
-      // Combine all photos for lightbox gallery
+      // Combine all photos for lightbox gallery (space photos first, then children, then ancestors)
       const allPhotos = [...space.photos];
       childSpaces.forEach(child => { allPhotos.push(...child.photos); });
-      allPhotos.push(...parentPhotos);
+      ancestorPhotoSections.forEach(section => { allPhotos.push(...section.photos); });
       if (allPhotos.length) setCurrentGallery(allPhotos);
 
       let occupantHtml = '';
@@ -3532,24 +3536,23 @@
         `;
       });
 
-      // Parent photos
-      let parentPhotosHtml = '';
-      if (parentPhotos.length) {
-        const needsSeparator = space.photos.length > 0 || childSpaces.length > 0;
-        parentPhotosHtml = `
-          ${needsSeparator ? '<hr style="border: none; border-top: 1px solid var(--border); margin: 1.5rem 0;">' : ''}
+      // Ancestor photos (each ancestor gets its own section, closest parent first)
+      const needsSeparator = (space.photos.length > 0 || childSpaces.length > 0) && ancestorPhotoSections.length > 0;
+      let ancestorPhotosHtml = needsSeparator ? '<hr style="border: none; border-top: 1px solid var(--border); margin: 1.5rem 0;">' : '';
+      ancestorPhotoSections.forEach(section => {
+        ancestorPhotosHtml += `
           <div class="detail-section detail-photos">
-            <h3>${parentName} Photos</h3>
+            <h3>${section.name} Photos</h3>
             <div class="detail-photos-grid">
-              ${parentPhotos.map(p => `
+              ${section.photos.map(p => `
                 <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
-                  <img src="${p.url}" alt="${p.caption || parentName}">
+                  <img src="${p.url}" alt="${p.caption || section.name}">
                 </div>
               `).join('')}
             </div>
           </div>
         `;
-      }
+      });
 
       document.getElementById('spaceDetailBody').innerHTML = `
         <div class="detail-grid">
@@ -3577,7 +3580,7 @@
         ` : ''}
         ${spacePhotosHtml}
         ${childPhotosHtml}
-        ${parentPhotosHtml}
+        ${ancestorPhotosHtml}
       `;
 
       spaceDetailModal.classList.remove('hidden');
