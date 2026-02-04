@@ -54,9 +54,21 @@ export async function askQuestion(question) {
  * @param {string} question - The original question
  * @param {string} userEmail - Optional user email for follow-up
  * @param {string} source - Source of the submission ('user_feedback' or 'low_confidence')
+ * @param {string} userName - Optional user name
+ * @param {string} userPhone - Optional user phone
  */
-export async function submitUnansweredQuestion(question, userEmail = null, source = 'user_feedback') {
+export async function submitUnansweredQuestion(question, userEmail = null, source = 'user_feedback', userName = null, userPhone = null) {
   try {
+    const body = {
+      question,
+      user_email: userEmail,
+      source,
+      answer: null,
+      is_published: false
+    };
+    if (userName) body.user_name = userName;
+    if (userPhone) body.user_phone = userPhone;
+
     const response = await fetch(`${SUPABASE_URL}/rest/v1/faq_entries`, {
       method: 'POST',
       headers: {
@@ -64,13 +76,7 @@ export async function submitUnansweredQuestion(question, userEmail = null, sourc
         'apikey': SUPABASE_ANON_KEY,
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({
-        question,
-        user_email: userEmail,
-        source,
-        answer: null,
-        is_published: false
-      })
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {

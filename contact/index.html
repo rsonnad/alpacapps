@@ -173,13 +173,14 @@
       font-size: 0.875rem;
     }
 
-    .followup-input-row {
+    .followup-fields {
       display: flex;
+      flex-direction: column;
       gap: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .followup-input {
-      flex: 1;
       padding: 0.5rem 0.75rem;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -196,6 +197,7 @@
       font-family: inherit;
       font-size: 0.875rem;
       cursor: pointer;
+      align-self: flex-start;
     }
 
     /* Success message */
@@ -478,11 +480,13 @@
         </div>
 
         <div id="followupForm" class="followup-form">
-          <p>Sorry about that! We've logged your question. Want us to follow up with a better answer?</p>
-          <div class="followup-input-row">
-            <input type="email" id="followupEmail" class="followup-input" placeholder="Your email (optional)">
-            <button class="followup-btn" onclick="submitFollowup()">Submit</button>
+          <p>Sorry about that! Leave your info and we'll get back to you with an answer.</p>
+          <div class="followup-fields">
+            <input type="text" id="followupName" class="followup-input" placeholder="Your name">
+            <input type="email" id="followupEmail" class="followup-input" placeholder="Email">
+            <input type="tel" id="followupPhone" class="followup-input" placeholder="Phone (optional)">
           </div>
+          <button class="followup-btn" onclick="submitFollowup()">Submit</button>
         </div>
 
         <div id="questionSubmitted" class="question-submitted">
@@ -507,18 +511,6 @@
           <div class="contact-method__info">
             <h4>Email</h4>
             <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a>
-          </div>
-        </div>
-
-        <div class="contact-method">
-          <div class="contact-method__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-            </svg>
-          </div>
-          <div class="contact-method__info">
-            <h4>Text / Call</h4>
-            <a href="tel:+14242341750">424-234-1750</a>
           </div>
         </div>
 
@@ -724,6 +716,8 @@
       lowConfidenceNotice.classList.remove('visible');
       followupForm.classList.remove('visible');
       questionSubmitted.classList.remove('visible');
+      const feedbackEl = document.querySelector('.answer-feedback');
+      if (feedbackEl) feedbackEl.style.display = '';
 
       try {
         const result = await askQuestion(question);
@@ -739,8 +733,11 @@
           await submitUnansweredQuestion(question, null, 'low_confidence');
         }
       } catch (error) {
-        answerText.textContent = 'Sorry, I had trouble getting an answer. Please try again or send us a message below.';
+        answerText.textContent = 'Sorry, I had trouble getting an answer. Please try again or leave your info below and we\'ll get back to you.';
         answerContainer.classList.add('visible');
+        // Show follow-up form on error so user can leave contact info
+        followupForm.classList.add('visible');
+        document.querySelector('.answer-feedback').style.display = 'none';
       } finally {
         askBtn.disabled = false;
         askBtn.textContent = 'Ask';
@@ -766,19 +763,24 @@
     };
 
     window.submitFollowup = async function() {
+      const name = document.getElementById('followupName').value.trim();
       const email = document.getElementById('followupEmail').value.trim();
+      const phone = document.getElementById('followupPhone').value.trim();
 
-      // Update the question with email if provided
-      if (email) {
-        try {
-          await submitUnansweredQuestion(currentQuestion, email, 'user_feedback');
-        } catch (e) {
-          console.error('Error updating question with email:', e);
-        }
+      if (!name && !email && !phone) {
+        // Need at least one way to reach them
+        document.getElementById('followupName').focus();
+        return;
+      }
+
+      try {
+        await submitUnansweredQuestion(currentQuestion, email || null, 'user_feedback', name || null, phone || null);
+      } catch (e) {
+        console.error('Error submitting question:', e);
       }
 
       followupForm.classList.remove('visible');
-      questionSubmitted.textContent = "Thanks! We'll get back to you with a better answer.";
+      questionSubmitted.textContent = "Thanks! We'll get back to you with an answer.";
       questionSubmitted.classList.add('visible');
       document.querySelector('.answer-feedback').style.display = 'none';
     };

@@ -33,7 +33,7 @@ function buildContextPrompt(contextData: ContextData): string {
   // Add general info
   parts.push(`GENERAL INFO:
 - Location: 160 Still Forest Drive, Cedar Creek, TX 78612 (30 minutes east of Austin)
-- Contact: alpacaplayhouse@gmail.com, 424-234-1750
+- Contact: alpacaplayhouse@gmail.com
 - Website: alpacaplayhouse.com`);
 
   // Add spaces info
@@ -127,7 +127,7 @@ Now answer the following question from a visitor:`;
 
     // Call Gemini API
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,9 +147,10 @@ Now answer the following question from a visitor:`;
     );
 
     if (!geminiResponse.ok) {
-      const error = await geminiResponse.json();
-      console.error("Gemini API error:", error);
-      throw new Error("Failed to get a response from AI");
+      const errorData = await geminiResponse.json();
+      console.error("Gemini API error:", JSON.stringify(errorData));
+      const errorMsg = errorData?.error?.message || "Failed to get a response from AI";
+      throw new Error(errorMsg);
     }
 
     const data = await geminiResponse.json();

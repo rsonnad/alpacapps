@@ -161,7 +161,9 @@ function renderPendingQuestions() {
           </div>
           <div class="faq-card__meta">
             <span class="faq-card__source faq-card__source--${entry.source}">${formatSource(entry.source)}</span>
-            ${entry.user_email ? `<span>From: ${escapeHtml(entry.user_email)}</span>` : ''}
+            ${entry.user_name ? `<span>${escapeHtml(entry.user_name)}</span>` : ''}
+            ${entry.user_email ? `<span>${escapeHtml(entry.user_email)}</span>` : ''}
+            ${entry.user_phone ? `<span>${escapeHtml(entry.user_phone)}</span>` : ''}
             <span>${formatDate(entry.created_at)}</span>
           </div>
         </div>
