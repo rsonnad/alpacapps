@@ -1,6 +1,7 @@
 /**
  * SignWell Webhook Handler
  * Receives webhook notifications when documents are signed
+ * Handles both rental lease agreements and event hosting agreements
  *
  * Deploy with: supabase functions deploy signwell-webhook
  * Webhook URL: https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/signwell-webhook
@@ -53,14 +54,23 @@ Deno.serve(async (req) => {
 
     const documentId = payload.document_id;
 
-    // Find the rental application with this SignWell document ID
-    const { data: application, error: findError } = await supabase
+    // Try to find a rental application with this SignWell document ID
+    const { data: rentalApp, error: rentalError } = await supabase
       .from('rental_applications')
       .select(`
         id,
         generated_pdf_url,
         approved_rate,
-        security_deposit,
+        approved_rate_term,
+        security_deposit_amount,
+        reservation_deposit_amount,
+        application_fee_paid,
+        application_fee_amount,
+        approved_move_in,
+        approved_space:approved_space_id (
+          id,
+          name
+        ),
         person:person_id (
           id,
           first_name,
@@ -71,10 +81,39 @@ Deno.serve(async (req) => {
       .eq('signwell_document_id', documentId)
       .single();
 
-    if (findError || !application) {
-      console.error('Application not found for document:', documentId);
+    // Try to find an event hosting request with this SignWell document ID
+    const { data: eventRequest, error: eventError } = await supabase
+      .from('event_hosting_requests')
+      .select(`
+        id,
+        event_name,
+        event_date,
+        event_start_time,
+        event_end_time,
+        rental_fee,
+        reservation_fee,
+        cleaning_deposit,
+        reservation_fee_paid,
+        cleaning_deposit_paid,
+        agreement_document_url,
+        person:person_id (
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `)
+      .eq('signwell_document_id', documentId)
+      .single();
+
+    // Determine which type of document this is
+    const isRental = !rentalError && rentalApp;
+    const isEvent = !eventError && eventRequest;
+
+    if (!isRental && !isEvent) {
+      console.error('No matching application/request found for document:', documentId);
       return new Response(
-        JSON.stringify({ error: 'Application not found' }),
+        JSON.stringify({ error: 'Document not found in system' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -110,110 +149,50 @@ Deno.serve(async (req) => {
     const pdfBlob = await pdfResponse.blob();
     const pdfBuffer = await pdfBlob.arrayBuffer();
 
-    // Generate smart filename: "Alpaca Rental Agreement (Signed) [Name] [Date].pdf"
-    const person = application.person as { id: string; first_name: string; last_name: string; email: string } | null;
-    const tenantName = person
-      ? `${person.first_name || ''} ${person.last_name || ''}`.trim().replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)
-      : 'Unknown';
-    const dateStr = new Date().toISOString().split('T')[0];
-    const displayFilename = `Alpaca Rental Agreement (Signed) ${tenantName} ${dateStr}.pdf`;
-    // Storage path uses application ID for uniqueness
-    const storagePath = `signed-lease-${application.id}-${Date.now()}.pdf`;
+    // Get payment methods for the email
+    const { data: paymentMethods } = await supabase
+      .from('payment_methods')
+      .select('name, method_type, account_identifier, instructions')
+      .eq('is_active', true)
+      .order('display_order');
 
-    // Upload to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from('lease-documents')
-      .upload(`signed/${storagePath}`, pdfBuffer, {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
+    // Build payment methods HTML/text
+    let paymentMethodsHtml = '';
+    let paymentMethodsText = '';
+    if (paymentMethods && paymentMethods.length > 0) {
+      paymentMethodsHtml = paymentMethods.map(pm => {
+        let line = `<li><strong>${pm.name}</strong>`;
+        if (pm.account_identifier) line += `: ${pm.account_identifier}`;
+        if (pm.instructions) line += `<br><span style="color: #666; font-size: 0.9em;">${pm.instructions}</span>`;
+        line += '</li>';
+        return line;
+      }).join('\n');
 
-    if (uploadError) {
-      console.error('Error uploading signed PDF:', uploadError);
-      throw uploadError;
+      paymentMethodsText = paymentMethods.map(pm => {
+        let line = `- ${pm.name}`;
+        if (pm.account_identifier) line += `: ${pm.account_identifier}`;
+        if (pm.instructions) line += ` (${pm.instructions})`;
+        return line;
+      }).join('\n');
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('lease-documents')
-      .getPublicUrl(`signed/${storagePath}`);
-
-    const signedPdfUrl = urlData.publicUrl;
-
-    // Update the rental application
-    const { error: updateError } = await supabase
-      .from('rental_applications')
-      .update({
-        agreement_status: 'signed',
-        agreement_signed_at: new Date().toISOString(),
-        signed_pdf_url: signedPdfUrl,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', application.id);
-
-    if (updateError) {
-      console.error('Error updating application:', updateError);
-      throw updateError;
+    // Process based on document type
+    if (isRental) {
+      return await processRentalAgreement(
+        supabase, rentalApp, pdfBuffer, paymentMethodsHtml, paymentMethodsText, documentId
+      );
+    } else if (isEvent) {
+      return await processEventAgreement(
+        supabase, eventRequest, pdfBuffer, paymentMethodsHtml, paymentMethodsText, documentId
+      );
     }
 
-    console.log(`Document ${documentId} signed and processed successfully`);
-
-    // Send email notification via send-email function
-    if (person?.email) {
-      try {
-        const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-        if (RESEND_API_KEY) {
-          const emailResponse = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${RESEND_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
-              to: [person.email],
-              reply_to: 'hello@alpacaplayhouse.com',
-              subject: 'Lease Signed Successfully - Alpaca Playhouse',
-              html: `
-                <h2>Lease Signing Complete!</h2>
-                <p>Hi ${person.first_name},</p>
-                <p>Your lease agreement has been successfully signed. A copy will be provided for your records.</p>
-                <p><strong>Next Steps:</strong></p>
-                <ul>
-                  <li>Submit your move-in deposit: <strong>$${application.approved_rate || 'TBD'}</strong></li>
-                  ${application.security_deposit ? `<li>Submit your security deposit: <strong>$${application.security_deposit}</strong></li>` : ''}
-                </ul>
-                <p>Once deposits are received, we'll confirm your move-in date.</p>
-                <p>Best regards,<br>Alpaca Playhouse</p>
-              `,
-              text: `Lease Signing Complete!\n\nHi ${person.first_name},\n\nYour lease agreement has been successfully signed. A copy will be provided for your records.\n\nNext Steps:\n- Submit your move-in deposit: $${application.approved_rate || 'TBD'}\n${application.security_deposit ? `- Submit your security deposit: $${application.security_deposit}` : ''}\n\nOnce deposits are received, we'll confirm your move-in date.\n\nBest regards,\nAlpaca Playhouse`,
-            }),
-          });
-
-          if (emailResponse.ok) {
-            console.log('Lease signed notification email sent to', person.email);
-          } else {
-            const emailError = await emailResponse.json();
-            console.error('Failed to send email:', emailError);
-          }
-        } else {
-          console.log('RESEND_API_KEY not configured, skipping email');
-        }
-      } catch (emailErr) {
-        console.error('Error sending email:', emailErr);
-        // Don't fail the webhook for email errors
-      }
-    }
-
+    // Should never reach here
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Document signed and processed',
-        applicationId: application.id,
-        signedPdfUrl,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Unknown document type' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
     console.error('Webhook processing error:', error);
     return new Response(
@@ -222,3 +201,434 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// Process rental lease agreement
+async function processRentalAgreement(
+  supabase: any,
+  application: any,
+  pdfBuffer: ArrayBuffer,
+  paymentMethodsHtml: string,
+  paymentMethodsText: string,
+  documentId: string
+) {
+  const person = application.person as { id: string; first_name: string; last_name: string; email: string } | null;
+  const tenantName = person
+    ? `${person.first_name || ''} ${person.last_name || ''}`.trim().replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)
+    : 'Unknown';
+  const dateStr = new Date().toISOString().split('T')[0];
+  const storagePath = `signed-lease-${application.id}-${Date.now()}.pdf`;
+
+  // Upload to Supabase storage
+  const { error: uploadError } = await supabase.storage
+    .from('lease-documents')
+    .upload(`signed/${storagePath}`, pdfBuffer, {
+      contentType: 'application/pdf',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('Error uploading signed PDF:', uploadError);
+    throw uploadError;
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('lease-documents')
+    .getPublicUrl(`signed/${storagePath}`);
+
+  const signedPdfUrl = urlData.publicUrl;
+
+  // Update the rental application
+  const { error: updateError } = await supabase
+    .from('rental_applications')
+    .update({
+      agreement_status: 'signed',
+      agreement_signed_at: new Date().toISOString(),
+      signed_pdf_url: signedPdfUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', application.id);
+
+  if (updateError) {
+    console.error('Error updating application:', updateError);
+    throw updateError;
+  }
+
+  console.log(`Rental document ${documentId} signed and processed successfully`);
+
+  // Calculate amounts
+  const reservationDeposit = application.reservation_deposit_amount || application.approved_rate || 0;
+  const spaceName = (application.approved_space as { id: string; name: string } | null)?.name || 'your space';
+
+  // Format move-in date
+  let moveInDateFormatted = 'TBD';
+  if (application.approved_move_in) {
+    const moveInDate = new Date(application.approved_move_in + 'T12:00:00');
+    moveInDateFormatted = moveInDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  // Send email notification
+  if (person?.email) {
+    await sendRentalSignedEmail(
+      person, spaceName, reservationDeposit, moveInDateFormatted,
+      application.approved_rate, application.approved_rate_term,
+      paymentMethodsHtml, paymentMethodsText
+    );
+  }
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      type: 'rental',
+      message: 'Rental lease signed and processed',
+      applicationId: application.id,
+      signedPdfUrl,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+// Process event hosting agreement
+async function processEventAgreement(
+  supabase: any,
+  eventRequest: any,
+  pdfBuffer: ArrayBuffer,
+  paymentMethodsHtml: string,
+  paymentMethodsText: string,
+  documentId: string
+) {
+  const person = eventRequest.person as { id: string; first_name: string; last_name: string; email: string } | null;
+  const hostName = person
+    ? `${person.first_name || ''} ${person.last_name || ''}`.trim().replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)
+    : 'Unknown';
+  const dateStr = new Date().toISOString().split('T')[0];
+  const storagePath = `signed-event-${eventRequest.id}-${Date.now()}.pdf`;
+
+  // Upload to Supabase storage
+  const { error: uploadError } = await supabase.storage
+    .from('lease-documents')
+    .upload(`signed/${storagePath}`, pdfBuffer, {
+      contentType: 'application/pdf',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('Error uploading signed event PDF:', uploadError);
+    throw uploadError;
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('lease-documents')
+    .getPublicUrl(`signed/${storagePath}`);
+
+  const signedPdfUrl = urlData.publicUrl;
+
+  // Update the event hosting request
+  const { error: updateError } = await supabase
+    .from('event_hosting_requests')
+    .update({
+      agreement_status: 'signed',
+      agreement_signed_at: new Date().toISOString(),
+      signed_pdf_url: signedPdfUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', eventRequest.id);
+
+  if (updateError) {
+    console.error('Error updating event request:', updateError);
+    throw updateError;
+  }
+
+  console.log(`Event document ${documentId} signed and processed successfully`);
+
+  // Calculate rental fee due (payment due 7 days before event)
+  const rentalFee = eventRequest.rental_fee || 295;
+
+  // Format event date
+  let eventDateFormatted = 'TBD';
+  let paymentDueDate = 'at least 7 days before your event';
+  if (eventRequest.event_date) {
+    const eventDate = new Date(eventRequest.event_date + 'T12:00:00');
+    eventDateFormatted = eventDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    // Calculate payment due date (7 days before event)
+    const dueDate = new Date(eventDate);
+    dueDate.setDate(dueDate.getDate() - 7);
+    paymentDueDate = dueDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  // Format event time
+  let eventTimeFormatted = '';
+  if (eventRequest.event_start_time && eventRequest.event_end_time) {
+    const formatTime = (t: string) => {
+      const [h, m] = t.split(':');
+      const hour = parseInt(h);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const h12 = hour % 12 || 12;
+      return `${h12}:${m} ${ampm}`;
+    };
+    eventTimeFormatted = `${formatTime(eventRequest.event_start_time)} - ${formatTime(eventRequest.event_end_time)}`;
+  }
+
+  // Send email notification
+  if (person?.email) {
+    await sendEventSignedEmail(
+      person, eventRequest.event_name, eventDateFormatted, eventTimeFormatted,
+      rentalFee, paymentDueDate, paymentMethodsHtml, paymentMethodsText
+    );
+  }
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      type: 'event',
+      message: 'Event agreement signed and processed',
+      eventRequestId: eventRequest.id,
+      signedPdfUrl,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+// Send rental lease signed email
+async function sendRentalSignedEmail(
+  person: { first_name: string; last_name: string; email: string },
+  spaceName: string,
+  reservationDeposit: number,
+  moveInDate: string,
+  monthlyRate: number,
+  rateTerm: string,
+  paymentMethodsHtml: string,
+  paymentMethodsText: string
+) {
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  if (!RESEND_API_KEY) {
+    console.log('RESEND_API_KEY not configured, skipping email');
+    return;
+  }
+
+  try {
+    const rateTermDisplay = rateTerm === 'weekly' ? 'week' : rateTerm === 'nightly' ? 'night' : 'month';
+
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
+        to: [person.email],
+        reply_to: 'alpacaplayhouse@gmail.com',
+        subject: 'Lease Signed - Reservation Deposit Due - Alpaca Playhouse',
+        html: `
+          <h2>Lease Signing Complete!</h2>
+          <p>Hi ${person.first_name},</p>
+          <p>Congratulations! Your lease agreement for <strong>${spaceName}</strong> has been successfully signed by both parties.</p>
+
+          <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #3d8b7a;">Reservation Deposit Due</h3>
+            <p>To secure your space, please submit your reservation deposit:</p>
+            <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+              <tr>
+                <td style="padding: 8px 0;"><strong>Reservation Deposit:</strong></td>
+                <td style="padding: 8px 0; text-align: right; font-size: 1.2em; font-weight: bold; color: #3d8b7a;">$${reservationDeposit}</td>
+              </tr>
+            </table>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 0;">This amount will be credited toward your first month's rent.</p>
+          </div>
+
+          <h3>Payment Options</h3>
+          <ul style="line-height: 1.8;">
+            ${paymentMethodsHtml}
+          </ul>
+          <p><strong>Important:</strong> Please include your name and "Reservation Deposit" in the payment memo.</p>
+
+          <div style="background: #e5f4f1; border-left: 4px solid #3d8b7a; padding: 15px; margin: 20px 0;">
+            <strong>Move-in Date:</strong> ${moveInDate}<br>
+            <strong>Monthly Rent:</strong> $${monthlyRate || 'TBD'}/${rateTermDisplay}
+          </div>
+
+          <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
+          <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Lease Signing Complete!
+
+Hi ${person.first_name},
+
+Congratulations! Your lease agreement for ${spaceName} has been successfully signed by both parties.
+
+RESERVATION DEPOSIT DUE
+-----------------------
+Reservation Deposit: $${reservationDeposit}
+
+This amount will be credited toward your first month's rent.
+
+PAYMENT OPTIONS
+---------------
+${paymentMethodsText}
+
+Important: Please include your name and "Reservation Deposit" in the payment memo.
+
+Move-in Date: ${moveInDate}
+Monthly Rent: $${monthlyRate || 'TBD'}/${rateTermDisplay}
+
+Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.
+
+Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
+
+Best regards,
+Alpaca Playhouse`,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      console.log('Rental signed + payment request email sent to', person.email);
+    } else {
+      const emailError = await emailResponse.json();
+      console.error('Failed to send rental email:', emailError);
+    }
+  } catch (emailErr) {
+    console.error('Error sending rental email:', emailErr);
+  }
+}
+
+// Send event agreement signed email
+async function sendEventSignedEmail(
+  person: { first_name: string; last_name: string; email: string },
+  eventName: string,
+  eventDate: string,
+  eventTime: string,
+  rentalFee: number,
+  paymentDueDate: string,
+  paymentMethodsHtml: string,
+  paymentMethodsText: string
+) {
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  if (!RESEND_API_KEY) {
+    console.log('RESEND_API_KEY not configured, skipping email');
+    return;
+  }
+
+  try {
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
+        to: [person.email],
+        reply_to: 'alpacaplayhouse@gmail.com',
+        subject: 'Event Agreement Signed - Rental Fee Due - Alpaca Playhouse',
+        html: `
+          <h2>Event Agreement Signed!</h2>
+          <p>Hi ${person.first_name},</p>
+          <p>Congratulations! Your event agreement for <strong>${eventName}</strong> has been successfully signed by both parties.</p>
+
+          <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #3d8b7a;">Rental Fee Due</h3>
+            <p>To finalize your event booking, please submit the rental fee at least <strong>7 days before your event</strong>:</p>
+            <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+              <tr>
+                <td style="padding: 8px 0;"><strong>Rental Fee:</strong></td>
+                <td style="padding: 8px 0; text-align: right; font-size: 1.2em; font-weight: bold; color: #3d8b7a;">$${rentalFee}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Due By:</strong></td>
+                <td style="padding: 8px 0; text-align: right; color: #e07a5f; font-weight: bold;">${paymentDueDate}</td>
+              </tr>
+            </table>
+          </div>
+
+          <h3>Payment Options</h3>
+          <ul style="line-height: 1.8;">
+            ${paymentMethodsHtml}
+          </ul>
+          <p><strong>Important:</strong> Please include your name and "${eventName}" in the payment memo.</p>
+
+          <div style="background: #e5f4f1; border-left: 4px solid #3d8b7a; padding: 15px; margin: 20px 0;">
+            <strong>Event:</strong> ${eventName}<br>
+            <strong>Date:</strong> ${eventDate}<br>
+            ${eventTime ? `<strong>Time:</strong> ${eventTime}` : ''}
+          </div>
+
+          <p><strong>Remember:</strong></p>
+          <ul>
+            <li>Setup crew must arrive 90 minutes before your event</li>
+            <li>Direct attendees to <a href="https://alpacaplayhouse.com/visiting">alpacaplayhouse.com/visiting</a> for directions (do NOT post the address publicly)</li>
+            <li>Cleanup must be completed by 1:01pm the day after your event</li>
+          </ul>
+
+          <p>Once we receive your rental fee, your event is confirmed!</p>
+          <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Event Agreement Signed!
+
+Hi ${person.first_name},
+
+Congratulations! Your event agreement for ${eventName} has been successfully signed by both parties.
+
+RENTAL FEE DUE
+--------------
+Rental Fee: $${rentalFee}
+Due By: ${paymentDueDate}
+
+Payment must be received at least 7 days before your event.
+
+PAYMENT OPTIONS
+---------------
+${paymentMethodsText}
+
+Important: Please include your name and "${eventName}" in the payment memo.
+
+EVENT DETAILS
+-------------
+Event: ${eventName}
+Date: ${eventDate}
+${eventTime ? `Time: ${eventTime}` : ''}
+
+REMINDERS
+---------
+- Setup crew must arrive 90 minutes before your event
+- Direct attendees to alpacaplayhouse.com/visiting for directions (do NOT post the address publicly)
+- Cleanup must be completed by 1:01pm the day after your event
+
+Once we receive your rental fee, your event is confirmed!
+
+Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
+
+Best regards,
+Alpaca Playhouse`,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      console.log('Event signed + payment request email sent to', person.email);
+    } else {
+      const emailError = await emailResponse.json();
+      console.error('Failed to send event email:', emailError);
+    }
+  } catch (emailErr) {
+    console.error('Error sending event email:', emailErr);
+  }
+}

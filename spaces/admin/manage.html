@@ -2281,7 +2281,12 @@
               <div class="form-group">
                 <label for="termSecurityDeposit">Security Deposit</label>
                 <input type="number" id="termSecurityDeposit" min="0" step="1" value="0">
-                <small class="form-hint">Can be $0. Move-in deposit is always 1 period's rent.</small>
+                <small class="form-hint">Can be $0. Due at move-in.</small>
+              </div>
+              <div class="form-group">
+                <label for="termReservationDeposit">Reservation Deposit</label>
+                <input type="number" id="termReservationDeposit" min="0" step="1" value="0">
+                <small class="form-hint">Due after signing. Defaults to 1 month's rent. Credited to first month.</small>
               </div>
             </div>
             <div class="form-group" style="margin-top: 1rem;">
@@ -6502,6 +6507,9 @@
       document.getElementById('termLeaseEnd').value = app.approved_lease_end || '';
       document.getElementById('termNoticePeriod').value = app.notice_period || '30_days';
       document.getElementById('termSecurityDeposit').value = app.security_deposit_amount || 0;
+      // Reservation deposit defaults to the approved rate if not set
+      const defaultReservationDeposit = app.approved_rate || approvedSpace?.monthly_rate || desiredSpace?.monthly_rate || 0;
+      document.getElementById('termReservationDeposit').value = app.reservation_deposit_amount ?? defaultReservationDeposit;
       document.getElementById('termAdditionalTerms').value = app.additional_terms || '';
 
       // Documents tab
@@ -6845,6 +6853,7 @@
         leaseEndDate: document.getElementById('termLeaseEnd').value || null,
         noticePeriod: document.getElementById('termNoticePeriod').value || '30_days',
         securityDepositAmount: parseFloat(document.getElementById('termSecurityDeposit').value) || 0,
+        reservationDepositAmount: parseFloat(document.getElementById('termReservationDeposit').value) || 0,
         additionalTerms: document.getElementById('termAdditionalTerms').value.trim() || null,
       };
     }
@@ -6868,7 +6877,7 @@
     function setupTermsAutoSave() {
       const formFields = [
         'termSpace', 'termRate', 'termRateTerm', 'termMoveIn',
-        'termLeaseEnd', 'termNoticePeriod', 'termSecurityDeposit', 'termAdditionalTerms'
+        'termLeaseEnd', 'termNoticePeriod', 'termSecurityDeposit', 'termReservationDeposit', 'termAdditionalTerms'
       ];
 
       formFields.forEach(fieldId => {

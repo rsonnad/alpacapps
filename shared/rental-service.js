@@ -306,12 +306,15 @@ async function approveApplication(applicationId, terms) {
     moveInDate,
     leaseEndDate = null,
     securityDepositAmount = 0,
+    reservationDepositAmount = null, // Defaults to rate if null
     noticePeriod = '30_days',
     additionalTerms = null,
   } = terms;
 
   // Move-in deposit is always 1 period's rent
   const moveInDepositAmount = rate;
+  // Reservation deposit defaults to 1 month's rent if not specified
+  const finalReservationDeposit = reservationDepositAmount ?? rate;
 
   const { data, error } = await supabase
     .from('rental_applications')
@@ -325,6 +328,7 @@ async function approveApplication(applicationId, terms) {
       notice_period: noticePeriod,
       move_in_deposit_amount: moveInDepositAmount,
       security_deposit_amount: securityDepositAmount,
+      reservation_deposit_amount: finalReservationDeposit,
       additional_terms: additionalTerms,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -362,6 +366,7 @@ async function saveTerms(applicationId, terms) {
     moveInDate,
     leaseEndDate = null,
     securityDepositAmount = 0,
+    reservationDepositAmount = null,
     noticePeriod = '30_days',
     additionalTerms = null,
   } = terms;
@@ -382,6 +387,12 @@ async function saveTerms(applicationId, terms) {
   if (noticePeriod) updateData.notice_period = noticePeriod;
   if (rate) updateData.move_in_deposit_amount = moveInDepositAmount;
   if (securityDepositAmount !== undefined) updateData.security_deposit_amount = securityDepositAmount;
+  // Reservation deposit: save explicitly set value, or default to rate if rate is set
+  if (reservationDepositAmount !== undefined) {
+    updateData.reservation_deposit_amount = reservationDepositAmount ?? (rate || 0);
+  } else if (rate) {
+    updateData.reservation_deposit_amount = rate;
+  }
   if (additionalTerms !== undefined) updateData.additional_terms = additionalTerms;
 
   const { data, error } = await supabase
@@ -691,17 +702,34 @@ async function getAgreementData(applicationId) {
     'nightly': 'night',
   }[app.approved_rate_term] || 'month';
 
-  // Calculate application fee credit
+  // Calculate credits toward first month
   const applicationFeePaid = app.application_fee_paid && app.application_fee_amount > 0
     ? app.application_fee_amount
     : 0;
+  const reservationDepositAmount = app.reservation_deposit_amount || 0;
   const moveInAmount = app.move_in_deposit_amount || 0;
-  const firstMonthDue = Math.max(0, moveInAmount - applicationFeePaid);
 
-  // Generate application fee credit text
+  // Total credits = application fee + reservation deposit
+  const totalCredits = applicationFeePaid + reservationDepositAmount;
+  const firstMonthDue = Math.max(0, moveInAmount - totalCredits);
+
+  // Generate credit text descriptions
   let applicationFeeCredit = '';
   if (applicationFeePaid > 0) {
     applicationFeeCredit = `Application fee of $${applicationFeePaid} has been received and will be credited toward the first month's rent.`;
+  }
+
+  let reservationDepositCredit = '';
+  if (reservationDepositAmount > 0) {
+    reservationDepositCredit = `Reservation deposit of $${reservationDepositAmount} will be credited toward the first month's rent.`;
+  }
+
+  let totalCreditsText = '';
+  if (totalCredits > 0) {
+    const parts = [];
+    if (applicationFeePaid > 0) parts.push(`application fee ($${applicationFeePaid})`);
+    if (reservationDepositAmount > 0) parts.push(`reservation deposit ($${reservationDepositAmount})`);
+    totalCreditsText = `Total credits of $${totalCredits} (${parts.join(' + ')}) will be applied to first month's rent.`;
   }
 
   return {
@@ -725,10 +753,14 @@ async function getAgreementData(applicationId) {
     rateDisplay: app.approved_rate ? `$${app.approved_rate}/${rateTermDisplay}` : 'TBD',
     securityDeposit: app.security_deposit_amount ? `$${app.security_deposit_amount}` : '$0',
     moveInDeposit: app.move_in_deposit_amount ? `$${app.move_in_deposit_amount}` : 'TBD',
+    reservationDeposit: reservationDepositAmount > 0 ? `$${reservationDepositAmount}` : '$0',
 
-    // Application fee credit
+    // Credits toward first month
     applicationFeePaid: applicationFeePaid > 0 ? `$${applicationFeePaid}` : '$0',
     applicationFeeCredit: applicationFeeCredit,
+    reservationDepositCredit: reservationDepositCredit,
+    totalCredits: totalCredits > 0 ? `$${totalCredits}` : '$0',
+    totalCreditsText: totalCreditsText,
     firstMonthDue: `$${firstMonthDue}`,
 
     // Notice period
@@ -744,7 +776,9 @@ async function getAgreementData(applicationId) {
       rateTerm: app.approved_rate_term,
       securityDepositAmount: app.security_deposit_amount,
       moveInDepositAmount: app.move_in_deposit_amount,
+      reservationDepositAmount: reservationDepositAmount,
       applicationFeePaid: applicationFeePaid,
+      totalCredits: totalCredits,
       firstMonthDue: firstMonthDue,
       moveInDate: app.approved_move_in,
       leaseEndDate: app.approved_lease_end,

@@ -223,12 +223,12 @@
     /* Success state */
     .success-message {
       text-align: center;
-      padding: 3rem 2rem;
+      padding: 2rem;
     }
 
     .success-message .icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      font-size: 3.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .success-message h2 {
@@ -237,15 +237,15 @@
       color: var(--success);
     }
 
-    .success-message p {
+    .success-message > p {
       color: var(--text-muted);
-      margin-bottom: 1.5rem;
-      max-width: 400px;
+      margin-bottom: 1rem;
+      max-width: 450px;
       margin-left: auto;
       margin-right: auto;
     }
 
-    .success-message a {
+    .success-message a.btn-primary {
       display: inline-block;
       padding: 0.75rem 1.5rem;
       background: var(--accent);
@@ -256,8 +256,94 @@
       transition: background 0.15s ease;
     }
 
-    .success-message a:hover {
+    .success-message a.btn-primary:hover {
       background: #327568;
+    }
+
+    /* Application Summary */
+    .application-summary {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .application-summary h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-row .label {
+      color: var(--text-muted);
+    }
+
+    .summary-row .value {
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* What's Next Section */
+    .whats-next {
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .whats-next h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .whats-next ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .whats-next li {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .whats-next li:last-child {
+      margin-bottom: 0;
+    }
+
+    .questions-contact {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 1rem 0;
+    }
+
+    .questions-contact a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .questions-contact a:hover {
+      text-decoration: underline;
     }
 
     /* Error message */
@@ -678,9 +764,45 @@
       <div class="success-message">
         <div class="icon">&#129433;</div>
         <h2>Application Submitted!</h2>
-        <p>Thank you for your interest in Alpaca Playhouse Austin. We've received your application and will be in touch soon.</p>
-        <p>In the meantime, please read about our community:</p>
-        <a href="https://alpacaplayhouse.com">Visit alpacaplayhouse.com</a>
+        <p>Thank you for your interest in Alpaca Playhouse Austin. We've received your application and will be in touch with all due haste.</p>
+
+        <div class="application-summary">
+          <h3>Your Application Summary</h3>
+          <div class="summary-row">
+            <span class="label">Space</span>
+            <span class="value" id="summarySpace">Flexible (we'll find the best fit)</span>
+          </div>
+          <div class="summary-row" id="summaryRateRow" style="display: none;">
+            <span class="label">Monthly Rate</span>
+            <span class="value" id="summaryRate"></span>
+          </div>
+          <div class="summary-row" id="summaryMoveInRow" style="display: none;">
+            <span class="label">Desired Move-in</span>
+            <span class="value" id="summaryMoveIn"></span>
+          </div>
+          <div class="summary-row" id="summaryTermRow" style="display: none;">
+            <span class="label">Desired Term</span>
+            <span class="value" id="summaryTerm"></span>
+          </div>
+          <div class="summary-row" id="summaryFeeRow" style="display: none;">
+            <span class="label">Application Fee</span>
+            <span class="value" id="summaryFee"></span>
+          </div>
+        </div>
+
+        <div class="whats-next">
+          <h3>What Happens Next</h3>
+          <ol>
+            <li>We'll review your application with all due haste</li>
+            <li>If approved, we'll send you a lease agreement to sign electronically</li>
+            <li>Upon signing, you'll pay a reservation deposit (typically one month's rent)</li>
+            <li>Move-in day!</li>
+          </ol>
+        </div>
+
+        <p class="questions-contact">Questions? Email <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+
+        <a href="https://alpacaplayhouse.com" class="btn-primary">Learn About Our Community</a>
       </div>
     </div>
   </main>
@@ -1302,6 +1424,9 @@
           // Don't fail the submission if email fails
         }
 
+        // Populate success summary
+        populateSuccessSummary(spaceName, feeAmount);
+
         // Show success
         formContainer.classList.add('hidden');
         successContainer.classList.remove('hidden');
@@ -1314,6 +1439,63 @@
         form.classList.remove('loading');
       }
     });
+
+    function populateSuccessSummary(spaceName, feePaid) {
+      // Space name
+      if (spaceName) {
+        document.getElementById('summarySpace').textContent = spaceName;
+
+        // Find the space to get the monthly rate
+        const selectedOption = spaceSelect.options[spaceSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+          // We need to fetch the rate from the space
+          fetch(`${SUPABASE_URL}/rest/v1/spaces?id=eq.${selectedOption.value}&select=monthly_rate`, {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          })
+          .then(r => r.json())
+          .then(([space]) => {
+            if (space && space.monthly_rate) {
+              document.getElementById('summaryRate').textContent = `$${parseFloat(space.monthly_rate).toLocaleString()}/month`;
+              document.getElementById('summaryRateRow').style.display = 'flex';
+            }
+          })
+          .catch(() => {});
+        }
+      } else {
+        document.getElementById('summarySpace').textContent = 'Flexible (we\'ll find the best fit)';
+      }
+
+      // Desired move-in date
+      const moveIn = getValue('desired_move_in');
+      if (moveIn) {
+        const moveInDate = new Date(moveIn + 'T12:00:00');
+        document.getElementById('summaryMoveIn').textContent = moveInDate.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        document.getElementById('summaryMoveInRow').style.display = 'flex';
+      }
+
+      // Desired term
+      const term = getValue('desired_term');
+      if (term) {
+        document.getElementById('summaryTerm').textContent = term;
+        document.getElementById('summaryTermRow').style.display = 'flex';
+      }
+
+      // Application fee
+      if (feePaid > 0) {
+        document.getElementById('summaryFee').textContent = `$${feePaid.toFixed(2)} paid`;
+        document.getElementById('summaryFeeRow').style.display = 'flex';
+      } else if (appliedCode) {
+        document.getElementById('summaryFee').textContent = 'Waived';
+        document.getElementById('summaryFeeRow').style.display = 'flex';
+      }
+    }
 
     function getValue(id) {
       const el = document.getElementById(id);

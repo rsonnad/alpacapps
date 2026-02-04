@@ -716,12 +716,12 @@
 
     .success-message {
       text-align: center;
-      padding: 3rem 2rem;
+      padding: 2rem;
     }
 
     .success-message .icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      font-size: 3.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .success-message h2 {
@@ -730,7 +730,7 @@
       color: var(--success);
     }
 
-    .success-message p {
+    .success-message > p {
       color: var(--text-muted);
       margin-bottom: 1rem;
       max-width: 500px;
@@ -738,7 +738,7 @@
       margin-right: auto;
     }
 
-    .success-message a {
+    .success-message a.btn-primary {
       display: inline-block;
       padding: 0.75rem 1.5rem;
       background: var(--accent);
@@ -749,8 +749,104 @@
       transition: background 0.15s ease;
     }
 
-    .success-message a:hover {
+    .success-message a.btn-primary:hover {
       background: #327568;
+    }
+
+    /* Event Summary */
+    .event-summary {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .event-summary h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-row .label {
+      color: var(--text-muted);
+    }
+
+    .summary-row .value {
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+      max-width: 60%;
+    }
+
+    /* What's Next Section */
+    .whats-next {
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .whats-next h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .whats-next ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .whats-next li {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .whats-next li:last-child {
+      margin-bottom: 0;
+    }
+
+    .whats-next .payment-note {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .questions-contact {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 1rem 0;
+    }
+
+    .questions-contact a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .questions-contact a:hover {
+      text-decoration: underline;
     }
 
     .error-banner {
@@ -1393,14 +1489,50 @@
       <div class="success-message">
         <div class="icon">&#129433;</div>
         <h2>Request Submitted!</h2>
-        <p>
-          Thank you for your interest in hosting an event at Alpaca Playhouse! We've received your
-          request and will review it shortly. You'll hear back from us within a few days.
-        </p>
-        <p>
-          In the meantime, learn more about our venue:
-        </p>
-        <a href="https://alpacaplayhouse.com" target="_blank">Visit alpacaplayhouse.com</a>
+        <p>Thank you for your interest in hosting an event at Alpaca Playhouse! We've received your request and will review it with all due haste.</p>
+
+        <div class="event-summary">
+          <h3>Your Event Request Summary</h3>
+          <div class="summary-row">
+            <span class="label">Event</span>
+            <span class="value" id="summaryEventName"></span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Date</span>
+            <span class="value" id="summaryEventDate"></span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Time</span>
+            <span class="value" id="summaryEventTime"></span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Expected Guests</span>
+            <span class="value" id="summaryGuests"></span>
+          </div>
+          <div class="summary-row" id="summarySpacesRow" style="display: none;">
+            <span class="label">Requested Spaces</span>
+            <span class="value" id="summarySpaces"></span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Deposits Paid</span>
+            <span class="value" id="summaryDeposits"></span>
+          </div>
+        </div>
+
+        <div class="whats-next">
+          <h3>What Happens Next</h3>
+          <ol>
+            <li>We'll review your request with all due haste</li>
+            <li>If approved, we'll send you an event agreement to sign electronically</li>
+            <li>After signing, you'll pay the rental fee at least one week before your event</li>
+            <li>Event day!</li>
+          </ol>
+          <p class="payment-note">Note: The rental fee must be paid at least 7 days before your event. We'll send payment instructions with your agreement.</p>
+        </div>
+
+        <p class="questions-contact">Questions? Email <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+
+        <a href="https://alpacaplayhouse.com" target="_blank" class="btn-primary">Learn About Our Venue</a>
       </div>
     </div>
   </main>
@@ -2325,6 +2457,9 @@
           // Don't fail the submission if email fails
         }
 
+        // Populate success summary
+        populateEventSuccessSummary(selectedSpaceNames, cleaningAmount + reservationAmount);
+
         // Success!
         formContainer.classList.add('hidden');
         successContainer.classList.remove('hidden');
@@ -2336,6 +2471,53 @@
         submitBtn.textContent = 'Submit Event Request';
       }
     });
+
+    function populateEventSuccessSummary(selectedSpaces, totalDepositPaid) {
+      // Event name
+      document.getElementById('summaryEventName').textContent = getValue('event_name');
+
+      // Event date
+      const eventDate = getValue('event_date');
+      if (eventDate) {
+        const dateObj = new Date(eventDate + 'T12:00:00');
+        document.getElementById('summaryEventDate').textContent = dateObj.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      // Event time
+      const startTime = getValue('event_start_time');
+      const endTime = getValue('event_end_time');
+      if (startTime && endTime) {
+        const formatTime = (t) => {
+          const [h, m] = t.split(':');
+          const hour = parseInt(h);
+          const ampm = hour >= 12 ? 'PM' : 'AM';
+          const h12 = hour % 12 || 12;
+          return `${h12}:${m} ${ampm}`;
+        };
+        document.getElementById('summaryEventTime').textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+      }
+
+      // Expected guests
+      document.getElementById('summaryGuests').textContent = getValue('expected_guests');
+
+      // Requested spaces
+      if (selectedSpaces && selectedSpaces.length > 0) {
+        document.getElementById('summarySpaces').textContent = selectedSpaces.join(', ');
+        document.getElementById('summarySpacesRow').style.display = 'flex';
+      }
+
+      // Deposits paid
+      if (totalDepositPaid > 0) {
+        document.getElementById('summaryDeposits').textContent = `$${totalDepositPaid.toFixed(2)} paid`;
+      } else {
+        document.getElementById('summaryDeposits').textContent = 'Waived';
+      }
+    }
 
     function getValue(id) {
       const el = document.getElementById(id);
