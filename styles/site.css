@@ -176,8 +176,8 @@ ul, ol {
   white-space: nowrap;
 }
 
-/* Hide logo text on small mobile to prevent overlap with hamburger */
-@media (max-width: 480px) {
+/* Hide logo text on mobile to prevent overlap with hamburger */
+@media (max-width: 767px) {
   .aap-header__logo-text {
     display: none;
   }
