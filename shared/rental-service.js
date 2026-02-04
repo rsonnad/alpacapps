@@ -188,6 +188,8 @@ function getPipelineStage(application) {
 
 /**
  * Create a new rental application
+ * If desired_space_id and desired_move_in are provided, creates a provisional
+ * "prospect" assignment to block the dates on Airbnb.
  */
 async function createApplication(personId, options = {}) {
   const {
@@ -218,6 +220,57 @@ async function createApplication(personId, options = {}) {
     .from('people')
     .update({ application_status: 'applicant' })
     .eq('id', personId);
+
+  // Create provisional "prospect" assignment if space and move-in date provided
+  // This blocks the dates on Airbnb while the application is being processed
+  if (desired_space_id && desired_move_in) {
+    try {
+      // Calculate provisional end date based on desired_term (default 6 months)
+      let provisionalEndDate = null;
+      if (desired_term) {
+        const moveIn = new Date(desired_move_in);
+        const termMonths = parseInt(desired_term) || 6;
+        moveIn.setMonth(moveIn.getMonth() + termMonths);
+        provisionalEndDate = moveIn.toISOString().split('T')[0];
+      }
+
+      const { data: assignment, error: assignmentError } = await supabase
+        .from('assignments')
+        .insert({
+          person_id: personId,
+          type: 'dwelling',
+          status: 'prospect',
+          start_date: desired_move_in,
+          end_date: provisionalEndDate,
+          rental_application_id: data.id,
+          notes: 'Provisional assignment - pending application review',
+        })
+        .select()
+        .single();
+
+      if (assignmentError) {
+        console.error('Error creating provisional assignment:', assignmentError);
+      } else {
+        // Link assignment to space
+        await supabase.from('assignment_spaces').insert({
+          assignment_id: assignment.id,
+          space_id: desired_space_id,
+        });
+
+        // Update application with assignment reference
+        await supabase
+          .from('rental_applications')
+          .update({ assignment_id: assignment.id })
+          .eq('id', data.id);
+
+        // Trigger iCal regeneration to block dates on Airbnb
+        triggerIcalRegeneration();
+      }
+    } catch (err) {
+      console.error('Error creating provisional assignment:', err);
+      // Don't fail the application creation if assignment fails
+    }
+  }
 
   return data;
 }
@@ -345,6 +398,9 @@ async function saveTerms(applicationId, terms) {
  * Deny application
  */
 async function denyApplication(applicationId, reason = null) {
+  // Get application first to check for prospect assignment
+  const existingApp = await getApplication(applicationId);
+
   const { data, error } = await supabase
     .from('rental_applications')
     .update({
@@ -352,6 +408,7 @@ async function denyApplication(applicationId, reason = null) {
       denial_reason: reason,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      assignment_id: null, // Clear the assignment reference
     })
     .eq('id', applicationId)
     .select()
@@ -360,12 +417,26 @@ async function denyApplication(applicationId, reason = null) {
   if (error) throw error;
 
   // Update person status
-  const app = await getApplication(applicationId);
-  if (app?.person_id) {
+  if (existingApp?.person_id) {
     await supabase
       .from('people')
       .update({ application_status: 'denied' })
-      .eq('id', app.person_id);
+      .eq('id', existingApp.person_id);
+  }
+
+  // Delete the prospect assignment if it exists (to unblock dates on Airbnb)
+  if (existingApp?.assignment_id && existingApp?.assignment?.status === 'prospect') {
+    // First delete assignment_spaces links
+    await supabase
+      .from('assignment_spaces')
+      .delete()
+      .eq('assignment_id', existingApp.assignment_id);
+
+    // Then delete the assignment
+    await supabase
+      .from('assignments')
+      .delete()
+      .eq('id', existingApp.assignment_id);
   }
 
   // Trigger iCal regeneration to unblock dates on Airbnb
@@ -378,6 +449,9 @@ async function denyApplication(applicationId, reason = null) {
  * Delay application for later review
  */
 async function delayApplication(applicationId, reason = null, revisitDate = null) {
+  // Get application first to check for prospect assignment
+  const existingApp = await getApplication(applicationId);
+
   const { data, error } = await supabase
     .from('rental_applications')
     .update({
@@ -386,12 +460,28 @@ async function delayApplication(applicationId, reason = null, revisitDate = null
       delay_revisit_date: revisitDate,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      assignment_id: null, // Clear the assignment reference
     })
     .eq('id', applicationId)
     .select()
     .single();
 
   if (error) throw error;
+
+  // Delete the prospect assignment if it exists (to unblock dates on Airbnb)
+  if (existingApp?.assignment_id && existingApp?.assignment?.status === 'prospect') {
+    // First delete assignment_spaces links
+    await supabase
+      .from('assignment_spaces')
+      .delete()
+      .eq('assignment_id', existingApp.assignment_id);
+
+    // Then delete the assignment
+    await supabase
+      .from('assignments')
+      .delete()
+      .eq('id', existingApp.assignment_id);
+  }
 
   // Trigger iCal regeneration to unblock dates on Airbnb
   triggerIcalRegeneration();
@@ -403,6 +493,9 @@ async function delayApplication(applicationId, reason = null, revisitDate = null
  * Reactivate a delayed application
  */
 async function reactivateApplication(applicationId) {
+  // Get application first to get space/date info for provisional assignment
+  const existingApp = await getApplication(applicationId);
+
   const { data, error } = await supabase
     .from('rental_applications')
     .update({
@@ -416,6 +509,58 @@ async function reactivateApplication(applicationId) {
     .single();
 
   if (error) throw error;
+
+  // Recreate provisional "prospect" assignment if space and move-in date exist
+  const spaceId = existingApp?.desired_space_id;
+  const moveInDate = existingApp?.desired_move_in;
+  const personId = existingApp?.person_id;
+
+  if (spaceId && moveInDate && personId && !existingApp?.assignment_id) {
+    try {
+      // Calculate provisional end date based on desired_term (default 6 months)
+      let provisionalEndDate = null;
+      if (existingApp.desired_term) {
+        const moveIn = new Date(moveInDate);
+        const termMonths = parseInt(existingApp.desired_term) || 6;
+        moveIn.setMonth(moveIn.getMonth() + termMonths);
+        provisionalEndDate = moveIn.toISOString().split('T')[0];
+      }
+
+      const { data: assignment, error: assignmentError } = await supabase
+        .from('assignments')
+        .insert({
+          person_id: personId,
+          type: 'dwelling',
+          status: 'prospect',
+          start_date: moveInDate,
+          end_date: provisionalEndDate,
+          rental_application_id: applicationId,
+          notes: 'Provisional assignment - pending application review',
+        })
+        .select()
+        .single();
+
+      if (!assignmentError && assignment) {
+        // Link assignment to space
+        await supabase.from('assignment_spaces').insert({
+          assignment_id: assignment.id,
+          space_id: spaceId,
+        });
+
+        // Update application with assignment reference
+        await supabase
+          .from('rental_applications')
+          .update({ assignment_id: assignment.id })
+          .eq('id', applicationId);
+
+        // Trigger iCal regeneration to block dates on Airbnb
+        triggerIcalRegeneration();
+      }
+    } catch (err) {
+      console.error('Error creating provisional assignment on reactivate:', err);
+    }
+  }
+
   return data;
 }
 
@@ -888,7 +1033,7 @@ async function getApplicationPayments(applicationId) {
 // =============================================
 
 /**
- * Confirm move-in and create assignment
+ * Confirm move-in and create/upgrade assignment
  */
 async function confirmMoveIn(applicationId) {
   // Get the application
@@ -904,31 +1049,72 @@ async function confirmMoveIn(applicationId) {
     throw new Error('Rental agreement must be signed before move-in');
   }
 
-  // Create the assignment
-  const { data: assignment, error: assignmentError } = await supabase
-    .from('assignments')
-    .insert({
-      person_id: app.person_id,
-      type: 'dwelling',
-      status: 'active',
-      start_date: app.approved_move_in,
-      end_date: app.approved_lease_end,
-      rate_amount: app.approved_rate,
-      rate_term: app.approved_rate_term,
-      deposit_amount: app.security_deposit_amount,
-      monthly_rent: app.approved_rate,
-      rental_application_id: applicationId,
-    })
-    .select()
-    .single();
+  let assignment;
 
-  if (assignmentError) throw assignmentError;
+  // Check if there's already a prospect assignment to upgrade
+  if (app.assignment_id && app.assignment?.status === 'prospect') {
+    // Upgrade existing prospect assignment to active
+    const { data: updatedAssignment, error: updateAssignmentError } = await supabase
+      .from('assignments')
+      .update({
+        status: 'active',
+        start_date: app.approved_move_in,
+        end_date: app.approved_lease_end,
+        rate_amount: app.approved_rate,
+        rate_term: app.approved_rate_term,
+        deposit_amount: app.security_deposit_amount,
+        monthly_rent: app.approved_rate,
+        notes: null, // Clear the provisional note
+      })
+      .eq('id', app.assignment_id)
+      .select()
+      .single();
 
-  // Link assignment to space
-  await supabase.from('assignment_spaces').insert({
-    assignment_id: assignment.id,
-    space_id: app.approved_space_id,
-  });
+    if (updateAssignmentError) throw updateAssignmentError;
+    assignment = updatedAssignment;
+
+    // Update assignment_spaces if space changed (approved_space might differ from desired_space)
+    if (app.approved_space_id && app.approved_space_id !== app.desired_space_id) {
+      // Delete old space link
+      await supabase
+        .from('assignment_spaces')
+        .delete()
+        .eq('assignment_id', assignment.id);
+
+      // Create new space link
+      await supabase.from('assignment_spaces').insert({
+        assignment_id: assignment.id,
+        space_id: app.approved_space_id,
+      });
+    }
+  } else {
+    // Create new assignment
+    const { data: newAssignment, error: assignmentError } = await supabase
+      .from('assignments')
+      .insert({
+        person_id: app.person_id,
+        type: 'dwelling',
+        status: 'active',
+        start_date: app.approved_move_in,
+        end_date: app.approved_lease_end,
+        rate_amount: app.approved_rate,
+        rate_term: app.approved_rate_term,
+        deposit_amount: app.security_deposit_amount,
+        monthly_rent: app.approved_rate,
+        rental_application_id: applicationId,
+      })
+      .select()
+      .single();
+
+    if (assignmentError) throw assignmentError;
+    assignment = newAssignment;
+
+    // Link assignment to space
+    await supabase.from('assignment_spaces').insert({
+      assignment_id: assignment.id,
+      space_id: app.approved_space_id,
+    });
+  }
 
   // Update the application
   const { data: updatedApp, error: updateError } = await supabase
@@ -956,7 +1142,7 @@ async function confirmMoveIn(applicationId) {
     .update({ assignment_id: assignment.id })
     .eq('rental_application_id', applicationId);
 
-  // Trigger iCal regeneration to block dates on Airbnb
+  // Trigger iCal regeneration to update Airbnb
   triggerIcalRegeneration();
 
   return { application: updatedApp, assignment };

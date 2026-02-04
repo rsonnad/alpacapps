@@ -69,7 +69,7 @@ serve(async (req) => {
     const { data: assignments } = await supabase
       .from('assignments')
       .select('id, start_date, end_date, status, assignment_spaces(space_id)')
-      .in('status', ['active', 'pending_contract', 'contract_sent']);
+      .in('status', ['prospect', 'active', 'pending_contract', 'contract_sent']);
 
     // Also fetch approved applications (not yet moved in) to block their dates
     const { data: approvedApps } = await supabase
