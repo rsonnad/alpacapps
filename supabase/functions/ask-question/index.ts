@@ -84,7 +84,10 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY not configured");
     }
 
+    console.log("GEMINI_API_KEY prefix:", GEMINI_API_KEY.substring(0, 10) + "...");
+
     const { question } = await req.json();
+    console.log("Question received:", question);
 
     if (!question?.trim()) {
       return new Response(
@@ -148,6 +151,7 @@ Now answer the following question from a visitor:`;
         body: geminiBody
       });
 
+      console.log(`Gemini attempt ${attempt + 1}: status=${geminiResponse.status}`);
       if (geminiResponse.ok || geminiResponse.status !== 429) break;
 
       // Rate limited — wait and retry
@@ -164,6 +168,7 @@ Now answer the following question from a visitor:`;
 
     const data = await geminiResponse.json();
     const rawAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    console.log("Gemini response received, confident:", rawAnswer.includes("CONFIDENCE: HIGH"));
 
     // Parse confidence from response
     const confidenceMatch = rawAnswer.match(/CONFIDENCE:\s*(HIGH|LOW)/i);
