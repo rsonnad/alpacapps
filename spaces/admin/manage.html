@@ -9161,7 +9161,7 @@
     // Fee Code Modal
     let editingFeeCodeId = null;
 
-    function openFeeCodeModal(codeId = null) {
+    window.openFeeCodeModal = function(codeId = null) {
       editingFeeCodeId = codeId;
       const modal = document.getElementById('feeCodeModal');
       const form = document.getElementById('feeCodeForm');
@@ -9177,7 +9177,7 @@
       }
 
       modal.classList.remove('hidden');
-    }
+    };
 
     async function loadFeeCodeForEdit(codeId) {
       try {
@@ -9204,12 +9204,12 @@
       }
     }
 
-    function closeFeeCodeModal() {
+    window.closeFeeCodeModal = function() {
       document.getElementById('feeCodeModal').classList.add('hidden');
       editingFeeCodeId = null;
-    }
+    };
 
-    async function saveFeeCode(e) {
+    window.saveFeeCode = async function(e) {
       e.preventDefault();
 
       const codeId = document.getElementById('feeCodeId').value;
@@ -9253,10 +9253,10 @@
           showToast('Failed to save fee code', 'error');
         }
       }
-    }
+    };
 
     window.editFeeCode = function(codeId) {
-      openFeeCodeModal(codeId);
+      window.openFeeCodeModal(codeId);
     };
 
     window.deleteFeeCode = async function(codeId, codeName) {
