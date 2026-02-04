@@ -222,16 +222,19 @@ img {
   margin-left: 0.5rem;
   display: flex;
   align-items: center;
+  align-self: center;
 }
 
 .mistiq-lang-picker__current {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   cursor: pointer;
   padding: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   line-height: 1;
+  position: relative;
+  top: 1px;
 }
 
 .mistiq-lang-picker__current::after {
