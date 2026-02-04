@@ -7558,14 +7558,29 @@ Deposit: ${req.deposit_status}
 
             // Combine assignments and blocked dates into occupied ranges
             const occupiedRanges = [
-              ...spaceAssignments.map(a => ({
-                start: new Date(a.start_date),
-                end: new Date(a.end_date),
-                type: a.airbnb_uid ? 'airbnb' : 'tenant',
-                name: a.airbnb_uid
-                  ? (a.notes?.match(/Imported from Airbnb: (.+)/)?.[1] || 'Airbnb')
-                  : `${a.person?.first_name || ''} ${a.person?.last_name || ''}`.trim()
-              })),
+              ...spaceAssignments.map(a => {
+                // Get person name if available (and not generic "Airbnb Guest")
+                const personName = a.person && a.person.first_name !== 'Airbnb'
+                  ? `${a.person.first_name} ${a.person.last_name || ''}`.trim()
+                  : null;
+
+                // For Airbnb bookings, prefer person name, then notes, then fallback
+                let displayName;
+                if (a.airbnb_uid) {
+                  displayName = personName
+                    || (a.notes?.match(/Imported from Airbnb: (.+)/)?.[1])
+                    || 'Airbnb Guest';
+                } else {
+                  displayName = personName || 'Unknown';
+                }
+
+                return {
+                  start: new Date(a.start_date),
+                  end: new Date(a.end_date),
+                  type: a.airbnb_uid ? 'airbnb' : 'tenant',
+                  name: displayName
+                };
+              }),
               ...blockedRanges.map(r => ({
                 start: new Date(r.start),
                 end: new Date(r.end),
