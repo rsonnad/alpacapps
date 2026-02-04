@@ -52,6 +52,7 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
 | OpenClaw Bot | DigitalOcean | Droplet (separate system) |
 | E-Signatures | SignWell | API: signwell.com/api |
+| Payments | Square | API: connect.squareup.com |
 | Email Delivery | Resend | API key stored in Supabase secrets |
 | Error Monitoring | Custom | Daily digest emails via Resend |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
@@ -70,15 +71,20 @@ alpacapps/
 │   ├── auth.js             # Authentication module
 │   ├── media-service.js    # Media upload/management service
 │   ├── rental-service.js   # Rental application workflow
+│   ├── event-service.js    # Event hosting request workflow
 │   ├── lease-template-service.js  # Lease template parsing
+│   ├── event-template-service.js  # Event agreement template parsing
 │   ├── pdf-service.js      # PDF generation (jsPDF)
 │   ├── signwell-service.js # SignWell e-signature API
+│   ├── square-service.js   # Square payment processing (client-side)
 │   ├── email-service.js    # Email sending via Resend
 │   └── error-logger.js     # Client-side error capture and reporting
 │
 ├── supabase/               # Supabase Edge Functions
 │   └── functions/
 │       ├── signwell-webhook/  # E-signature completion webhook
+│       │   └── index.ts
+│       ├── process-square-payment/  # Square payment processing (server-side)
 │       │   └── index.ts
 │       ├── record-payment/    # Smart payment recording with AI matching
 │       │   ├── index.ts           # Main handler
@@ -291,6 +297,48 @@ Acknowledgments (boolean flags for each policy):
 - `instructions` - Custom instructions for tenants
 - `display_order`, `is_active`
 
+### Square Payment System
+
+**square_config** - Square API configuration (single row)
+- `id` (integer, always 1)
+- `application_id` - Square application ID
+- `access_token` - Square API access token
+- `location_id` - Square business location ID
+- `environment` - 'sandbox' or 'production'
+- `is_active` - Whether Square payments are enabled
+
+**fee_settings** - Configurable default fees
+- `id` (uuid, PK)
+- `fee_type` - 'rental_application', 'event_cleaning_deposit', 'event_reservation_deposit'
+- `default_amount` - Default fee amount in dollars
+- `description` - Admin description
+- `is_active` - Whether this fee type is enabled
+
+**fee_codes** - Discount/promo codes that set specific prices
+- `id` (uuid, PK)
+- `code` - The code string (e.g., "FRIEND50")
+- `fee_type` - Which fee this code applies to (FK → fee_settings.fee_type)
+- `price` - The actual price when this code is used (0 = free)
+- `description` - Internal note for admin
+- `usage_limit` - Max uses (null = unlimited)
+- `times_used` - Current usage count
+- `expires_at` - Expiration timestamp (null = never)
+- `is_active` - Whether code can be used
+
+**square_payments** - Record of all Square transactions
+- `id` (uuid, PK)
+- `payment_type` - 'rental_application', 'event_deposit'
+- `reference_type` - 'rental_application', 'event_hosting_request'
+- `reference_id` - UUID of the related application/request
+- `square_payment_id` - Square's payment ID
+- `square_order_id` - Square's order ID
+- `amount` - Amount charged
+- `fee_code_used` - Code used (if any)
+- `original_amount` - Original fee before code
+- `status` - 'pending', 'completed', 'failed', 'refunded'
+- `receipt_url` - Square receipt URL
+- `created_at`
+
 ### Supporting Tables
 
 **amenities** - Available amenities (A/C, HiFi Sound, etc.)
@@ -480,6 +528,53 @@ When generating lease agreements, the system calculates credits toward first mon
 - Reservation deposit (paid after signing) is credited
 - `{{first_month_due}}` = Monthly rate - Application fee - Reservation deposit
 
+### Square (Payment Processing)
+- API: `https://connect.squareup.com/v2` (production) or `https://connect.squareupsandbox.com/v2` (sandbox)
+- Configuration stored in `square_config` table (not hardcoded)
+- Client-side: Uses Square Web Payments SDK for card tokenization
+- Server-side: Edge Function `process-square-payment` creates actual charges
+
+**Payment Flows:**
+
+1. **Rental Application Fee** (`/spaces/apply/`):
+   - Default fee set in `fee_settings` table (e.g., $35)
+   - Applicant can enter discount code to reduce or waive fee
+   - Fee codes set actual prices (code with $0 = free)
+   - Square card form appears if fee > $0
+   - Payment processed during form submission
+   - Fee credited toward first month's rent (shown in lease agreement)
+
+2. **Event Deposits** (`/spaces/events/`):
+   - Two deposit types: Cleaning Deposit + Reservation Deposit
+   - Each has separate default amounts and codes
+   - Combined total shown to user
+   - Single Square payment for both deposits
+   - Reservation deposit credited toward rental fee (shown in agreement)
+
+**Fee Code System:**
+- Codes are NOT discounts but actual price setters
+- Code with price $0 = completely waives the fee
+- Code with price $20 = charges $20 regardless of default
+- Admin configures codes in Settings → Fee Codes
+- Codes can have usage limits and expiration dates
+
+**Client-Side Flow:**
+1. `square-service.js` loads Square Web Payments SDK
+2. Creates card payment form element
+3. On submit, tokenizes card (never sends raw card data)
+4. Sends token to `process-square-payment` Edge Function
+5. Edge Function creates payment via Square API
+6. Returns payment ID, receipt URL on success
+
+**Server-Side Edge Function:**
+```typescript
+// process-square-payment/index.ts
+// - Reads Square config from database
+// - Validates payment request
+// - Creates payment via Square Payments API
+// - Records transaction in square_payments table
+```
+
 ### Google Drive (Legacy)
 - Rental agreements previously stored in Drive
 - Folder: `1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ`
@@ -594,20 +689,30 @@ Intelligent payment matching using Google Gemini AI:
 
 **Application Submission** (`/spaces/apply/`):
 1. Applicant fills out form with personal info, desired space, move-in date, term
-2. Pays application fee via Square (or uses discount code to waive)
-3. Success screen shows application summary:
-   - Space name and monthly rate (if selected)
-   - Desired move-in date and term
-   - Application fee paid/waived
-   - "What Happens Next" steps with "all due haste" language
-4. Admin notification email sent
+2. Application fee section shows default amount (from `fee_settings` table)
+3. Optional: Enter discount code to reduce/waive fee
+   - Code validation happens via Supabase query
+   - If code sets price to $0, Square form is hidden
+4. If fee > $0, Square card form appears
+5. On submit: Card tokenized client-side → Edge Function processes payment
+6. Application created with fee tracking columns:
+   - `application_fee_paid` (boolean)
+   - `application_fee_amount` (actual amount charged)
+   - `application_fee_code` (code used, if any)
+7. Success screen shows application summary
+8. Admin notification email sent
 
 **Admin Pipeline** (`/spaces/admin/manage.html` → Rentals tab):
 1. **Applications**: Review submitted applications
+   - Application fee status shown in Deposits tab
+   - Green banner shows fee amount and credit calculation
 2. **Approved**: Set terms (space, rate, move-in, deposits)
    - Security deposit: Optional, due at move-in
    - Reservation deposit: Defaults to one month's rent, due after signing, credited to first month
 3. **Contract**: Generate lease PDF, send for signature via SignWell
+   - Lease shows application fee credit if paid
+   - `{{application_fee_credit}}` placeholder populated with credit text
+   - `{{first_month_due}}` = Monthly rate - Application fee
 4. **Deposit**: Track reservation deposit payment
 5. **Ready**: All deposits received, ready for move-in
 
@@ -624,18 +729,33 @@ When tenant signs lease, automated email sent with:
 **Event Request Submission** (`/spaces/events/`):
 1. Host fills out form with event details, staffing contacts, space requests
 2. Acknowledges all venue policies (10 checkboxes)
-3. Pays cleaning deposit + reservation deposit via Square
-4. Success screen shows request summary:
-   - Event name, date, time, expected guests
-   - Requested spaces
-   - Deposits paid amount
-   - "What Happens Next" noting rental fee due 7 days before event
+3. Deposit section shows two cards:
+   - Cleaning Deposit (default from `fee_settings`, e.g., $195)
+   - Reservation Deposit (default from `fee_settings`, e.g., $95)
+4. Optional: Enter discount codes for each deposit type
+   - Codes set actual prices (code with $0 = waived)
+5. If total deposits > $0, Square card form appears
+6. On submit: Single Square payment for combined total
+7. Event request created with deposit tracking columns:
+   - `cleaning_deposit_amount`, `cleaning_deposit_code`
+   - `reservation_deposit_amount`, `reservation_deposit_code`
+   - `deposit_status` ('pending', 'paid', 'waived', 'failed')
+   - `square_payment_id`, `square_receipt_url`
+8. Success screen shows request summary
 
 **Admin Pipeline** (`/spaces/admin/manage.html` → Events tab):
 1. **Submitted**: Review event requests
+   - Click card to open detail modal with tabs: Event Info, Terms, Documents, Deposits
 2. **Approved**: Confirm spaces, adjust fees if needed
-3. **Contract**: Generate event agreement, send for signature
+   - Terms tab: Set rental fee, reservation fee, cleaning deposit
+3. **Contract**: Generate event agreement PDF, send for signature
+   - Documents tab: Preview Agreement → Generate PDF → Send for Signature
+   - Agreement shows reservation deposit credit if paid via Square
+   - `{{rental_fee}}` = Full rental amount (e.g., $295)
+   - `{{reservation_fee_credit}}` = Credit text if deposit paid
+   - `{{rental_fee_due}}` = Rental fee - Reservation deposit
 4. **Deposit**: Track rental fee payment (due 7 days before event)
+   - Deposits tab shows all payment statuses
 5. **Confirmed**: All payments received, event confirmed
 
 **Post-Signature Email** (via SignWell webhook):
