@@ -691,6 +691,19 @@ async function getAgreementData(applicationId) {
     'nightly': 'night',
   }[app.approved_rate_term] || 'month';
 
+  // Calculate application fee credit
+  const applicationFeePaid = app.application_fee_paid && app.application_fee_amount > 0
+    ? app.application_fee_amount
+    : 0;
+  const moveInAmount = app.move_in_deposit_amount || 0;
+  const firstMonthDue = Math.max(0, moveInAmount - applicationFeePaid);
+
+  // Generate application fee credit text
+  let applicationFeeCredit = '';
+  if (applicationFeePaid > 0) {
+    applicationFeeCredit = `Application fee of $${applicationFeePaid} has been received and will be credited toward the first month's rent.`;
+  }
+
   return {
     // Tenant info
     tenantName: `${person?.first_name || ''} ${person?.last_name || ''}`.trim() || 'Unknown',
@@ -713,6 +726,11 @@ async function getAgreementData(applicationId) {
     securityDeposit: app.security_deposit_amount ? `$${app.security_deposit_amount}` : '$0',
     moveInDeposit: app.move_in_deposit_amount ? `$${app.move_in_deposit_amount}` : 'TBD',
 
+    // Application fee credit
+    applicationFeePaid: applicationFeePaid > 0 ? `$${applicationFeePaid}` : '$0',
+    applicationFeeCredit: applicationFeeCredit,
+    firstMonthDue: `$${firstMonthDue}`,
+
     // Notice period
     noticePeriod: app.notice_period || '30_days',
     noticePeriodDisplay: noticePeriodDisplay,
@@ -726,6 +744,8 @@ async function getAgreementData(applicationId) {
       rateTerm: app.approved_rate_term,
       securityDepositAmount: app.security_deposit_amount,
       moveInDepositAmount: app.move_in_deposit_amount,
+      applicationFeePaid: applicationFeePaid,
+      firstMonthDue: firstMonthDue,
       moveInDate: app.approved_move_in,
       leaseEndDate: app.approved_lease_end,
       noticePeriod: app.notice_period,

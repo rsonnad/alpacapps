@@ -20,6 +20,9 @@ const PLACEHOLDERS = {
   rate_display: 'Combined rate display (e.g., "$1,500/month")',
   security_deposit: 'Security deposit amount',
   move_in_deposit: 'Move-in deposit amount (first month rent)',
+  application_fee_paid: 'Application fee amount paid (e.g., "$35")',
+  application_fee_credit: 'Text describing application fee credit toward first month rent',
+  first_month_due: 'Amount due for first month after application fee credit',
   notice_period: 'Notice period code (e.g., "30_days")',
   notice_period_display: 'Formatted notice period (e.g., "30 days notice required")',
   additional_terms: 'Custom additional terms',
@@ -201,6 +204,9 @@ function parseTemplate(templateContent, agreementData) {
     rate_display: agreementData.rateDisplay,
     security_deposit: agreementData.securityDeposit,
     move_in_deposit: agreementData.moveInDeposit,
+    application_fee_paid: agreementData.applicationFeePaid,
+    application_fee_credit: agreementData.applicationFeeCredit,
+    first_month_due: agreementData.firstMonthDue,
     notice_period: agreementData.noticePeriod,
     notice_period_display: agreementData.noticePeriodDisplay,
     additional_terms: agreementData.additionalTerms || '',
@@ -253,6 +259,9 @@ function getTemplatePreview(templateContent) {
     rateDisplay: '$1,500/month',
     securityDeposit: '$1,500',
     moveInDeposit: '$1,500',
+    applicationFeePaid: '$35',
+    applicationFeeCredit: 'Application fee of $35 has been received and will be credited toward the first month\'s rent.',
+    firstMonthDue: '$1,465',
     noticePeriod: '30_days',
     noticePeriodDisplay: '30 days notice required',
     additionalTerms: 'Tenant agrees to maintain the garden area.',
@@ -303,10 +312,14 @@ Tenant agrees to pay rent of **{{rate_display}}**.
 - Late payments are subject to a $50 late fee after the 5th day
 - Accepted payment methods: Venmo, Zelle, PayPal, or Bank Transfer
 
-## 4. DEPOSITS
+## 4. DEPOSITS & PAYMENTS
 
 - **Move-in Deposit:** {{move_in_deposit}} (equivalent to first month's rent)
 - **Security Deposit:** {{security_deposit}}
+
+{{application_fee_credit}}
+
+**Amount Due at Move-in:** {{first_month_due}} (first month rent minus any application fee credit)
 
 The security deposit will be returned within 30 days of move-out, less any deductions for damages beyond normal wear and tear.
 

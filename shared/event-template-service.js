@@ -23,6 +23,9 @@ const PLACEHOLDERS = {
   reservation_fee: 'Refundable reservation fee (e.g., "$95")',
   cleaning_deposit: 'Refundable cleaning/damage deposit (e.g., "$195")',
   total_due: 'Total amount due (sum of all fees)',
+  reservation_fee_paid: 'Reservation deposit already paid (e.g., "$200")',
+  reservation_fee_credit: 'Text describing reservation fee credit toward rental fee',
+  rental_fee_due: 'Amount due for rental fee after reservation credit',
 
   // Venue
   included_spaces: 'List of spaces included in the rental',
@@ -207,6 +210,9 @@ function parseTemplate(templateContent, agreementData) {
     reservation_fee: agreementData.reservationFee,
     cleaning_deposit: agreementData.cleaningDeposit,
     total_due: agreementData.totalDue,
+    reservation_fee_paid: agreementData.reservationFeePaid,
+    reservation_fee_credit: agreementData.reservationFeeCredit,
+    rental_fee_due: agreementData.rentalFeeDue,
     included_spaces: agreementData.includedSpaces,
     excluded_spaces: agreementData.excludedSpaces,
     agreement_date: agreementData.agreementDate,
@@ -253,9 +259,12 @@ function getTemplatePreview(templateContent) {
     eventEndTime: '1:30 AM',
     maxGuests: '25',
     rentalFee: '$295',
-    reservationFee: '$95',
-    cleaningDeposit: '$195',
-    totalDue: '$585',
+    reservationFee: '$200',
+    cleaningDeposit: '$100',
+    totalDue: '$395',
+    reservationFeePaid: '$200',
+    reservationFeeCredit: 'Reservation deposit of $200 has been received and will be credited toward the rental fee.',
+    rentalFeeDue: '$95',
     includedSpaces: '- Living Room (semi-common)\n- Kitchen (semi-common)\n- Dining Room (semi-common)\n- Garage & Cold plunge\n- Back Yard\n- Front Yard (clothed)\n- Sauna and deck\n- Common Bathroom near kitchen',
     excludedSpaces: '- Master Bedroom\n- Trailers\n- Dog House Cabins\n- Front Pequeno Room\n- Jon\'s Room by Common Bathroom\n- Penthouse Upstairs Level and bathroom',
     agreementDate: 'February 3, 2026',
@@ -300,9 +309,13 @@ The rental period is **{{event_date}}** from **{{event_start_time}}** to **{{eve
 
 **Rental Fee:** Company agrees the venue will be offered for a single event on **{{event_date}}** for a cost of **{{rental_fee}}**.
 
-**Reservation Fee:** A refundable **{{reservation_fee}}** reservation fee is due at time of reservation. This is not refundable if the event is canceled. If the event happens, this will be refunded along with any cleaning deposits.
+**Reservation Deposit:** A **{{reservation_fee}}** reservation deposit is due at time of reservation to secure your booking. This deposit will be credited toward the rental fee.
 
-**Cleaning & Damage Deposit:** A refundable damage waiver fee of **{{cleaning_deposit}}** is due upon booking, at least two weeks before the event.
+{{reservation_fee_credit}}
+
+**Rental Fee Due:** {{rental_fee_due}} (rental fee minus reservation deposit credit)
+
+**Cleaning & Damage Deposit:** A refundable damage waiver fee of **{{cleaning_deposit}}** is due upon booking, at least two weeks before the event. This will be refunded after the event if the venue is left in good condition.
 
 ## GUEST LIMIT
 

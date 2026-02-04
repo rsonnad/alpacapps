@@ -632,11 +632,25 @@ async function getAgreementData(requestId) {
     return spaces.map(s => `- ${s}`).join('\n');
   };
 
-  // Calculate total due
+  // Calculate total due and reservation credit
   const rentalFee = parseFloat(request.rental_fee) || 0;
   const reservationFee = parseFloat(request.reservation_fee) || 0;
   const cleaningDeposit = parseFloat(request.cleaning_deposit) || 0;
-  const totalDue = rentalFee + reservationFee + cleaningDeposit;
+
+  // Check for reservation deposit paid through Square
+  const reservationDepositPaid = request.deposit_status === 'paid' && request.reservation_deposit_amount > 0
+    ? parseFloat(request.reservation_deposit_amount)
+    : 0;
+
+  // Calculate rental fee due after credit
+  const rentalFeeDue = Math.max(0, rentalFee - reservationDepositPaid);
+  const totalDue = rentalFeeDue + cleaningDeposit;
+
+  // Generate reservation fee credit text
+  let reservationFeeCredit = '';
+  if (reservationDepositPaid > 0) {
+    reservationFeeCredit = `Reservation deposit of $${reservationDepositPaid} has been received and will be credited toward the rental fee.`;
+  }
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -668,6 +682,9 @@ async function getAgreementData(requestId) {
     reservationFee: formatCurrency(reservationFee),
     cleaningDeposit: formatCurrency(cleaningDeposit),
     totalDue: formatCurrency(totalDue),
+    reservationFeePaid: reservationDepositPaid > 0 ? formatCurrency(reservationDepositPaid) : '$0',
+    reservationFeeCredit: reservationFeeCredit,
+    rentalFeeDue: formatCurrency(rentalFeeDue),
 
     // Spaces
     includedSpaces: formatSpaceList(approvedSpaces),
@@ -683,6 +700,8 @@ async function getAgreementData(requestId) {
       reservationFee,
       cleaningDeposit,
       totalDue,
+      reservationDepositPaid,
+      rentalFeeDue,
       eventDate: request.event_date,
       maxGuests: request.approved_max_guests || request.expected_guests,
     },
