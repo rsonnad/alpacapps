@@ -356,7 +356,7 @@ h1 {
 
 .filter-checkboxes-group {
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   min-width: 0;
 }
 
@@ -372,7 +372,8 @@ h1 {
   flex-direction: row;
   align-items: center;
   gap: 1.5rem;
-  height: 36px;
+  height: 34px;
+  padding-bottom: 1px;
 }
 
 .filter-checkboxes .checkbox-row {
@@ -418,6 +419,9 @@ h1 {
   font-size: 0.875rem;
   cursor: pointer;
   transition: color 0.15s ease;
+  height: 34px;
+  display: flex;
+  align-items: center;
 }
 
 .clear-btn:hover {
