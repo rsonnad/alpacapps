@@ -25,7 +25,9 @@ type EmailType =
   | "staff_invitation"
   // Admin notifications
   | "admin_event_request"
-  | "admin_rental_application";
+  | "admin_rental_application"
+  // FAQ notifications
+  | "faq_unanswered";
 
 interface EmailRequest {
   type: EmailType;
@@ -719,6 +721,37 @@ ${data.emergency_contact_name ? `EMERGENCY CONTACT
 Name: ${data.emergency_contact_name}
 ${data.emergency_contact_phone ? `Phone: ${data.emergency_contact_phone}` : ''}
 ${data.emergency_contact_relationship ? `Relationship: ${data.emergency_contact_relationship}` : ''}` : ''}`
+      };
+
+    // ===== FAQ NOTIFICATIONS =====
+    case "faq_unanswered":
+      return {
+        subject: "New Question Needs an Answer - Alpaca Playhouse",
+        html: `
+          <h2>New Unanswered Question</h2>
+          <p>Someone asked a question that our AI assistant couldn't confidently answer:</p>
+          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-style: italic;">"${data.question}"</p>
+          </div>
+          ${data.user_email && data.user_email !== 'Not provided' ? `<p><strong>User email for follow-up:</strong> <a href="mailto:${data.user_email}">${data.user_email}</a></p>` : ''}
+          <p>Add an answer to improve our knowledge base:</p>
+          <p style="margin: 20px 0;">
+            <a href="${data.faq_admin_url}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Answer This Question</a>
+          </p>
+          <p style="color: #666; font-size: 14px;">After answering, remember to recompile the context so future visitors get better responses.</p>
+        `,
+        text: `New Unanswered Question
+
+Someone asked a question that our AI assistant couldn't confidently answer:
+
+"${data.question}"
+
+${data.user_email && data.user_email !== 'Not provided' ? `User email for follow-up: ${data.user_email}` : ''}
+
+Add an answer to improve our knowledge base:
+${data.faq_admin_url}
+
+After answering, remember to recompile the context so future visitors get better responses.`
       };
 
     default:

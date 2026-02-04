@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ Management - Alpaca Playhouse Admin</title>
+  <link rel="icon" type="image/png" href="/assets/branding/whitehead.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="faq.css?v=1">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Only administrators can manage FAQ entries.</p>
+      <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
+          <h1>&#129433; Alpaca Playhouse Admin</h1>
+        </a>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/" class="btn-small">Public View</a>
+        <a href="/spaces/admin/" class="btn-small">Spaces</a>
+        <span id="userInfo" class="user-info"></span>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="faq-container">
+      <a href="/spaces/admin/" class="back-link">
+        &larr; Back to Admin Dashboard
+      </a>
+
+      <!-- Context Compilation Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>AI Context</h2>
+          <div class="context-meta">
+            <span id="lastCompiled">Last compiled: Never</span>
+            <button id="recompileBtn" class="btn-primary">Recompile Context</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <p class="context-description">
+            The AI chat assistant uses compiled context from spaces data, FAQ entries, and external links.
+            Recompile after making changes to update the assistant's knowledge.
+          </p>
+          <div id="contextStats" class="context-stats">
+            <div class="stat">
+              <span class="stat-value" id="statSpaces">-</span>
+              <span class="stat-label">Spaces</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="statFaqs">-</span>
+              <span class="stat-label">FAQ Entries</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="statLinks">-</span>
+              <span class="stat-label">Context Links</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Questions Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Pending Questions</h2>
+          <span id="pendingCount" class="count-badge">0</span>
+        </div>
+        <div id="pendingSection" class="section-body">
+          <div class="empty-state">No pending questions</div>
+        </div>
+      </div>
+
+      <!-- Answered FAQ Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>FAQ Entries</h2>
+          <span id="faqCount" class="count-badge">0</span>
+          <button id="addFaqBtn" class="btn-secondary btn-small" style="margin-left: auto;">+ Add Entry</button>
+        </div>
+        <div id="faqSection" class="section-body">
+          <div class="empty-state">No FAQ entries yet</div>
+        </div>
+      </div>
+
+      <!-- Context Links Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Context Links</h2>
+          <span id="linksCount" class="count-badge">0</span>
+          <button id="addLinkBtn" class="btn-secondary btn-small" style="margin-left: auto;">+ Add Link</button>
+        </div>
+        <div id="linksSection" class="section-body">
+          <div class="empty-state">No context links added</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Modal -->
+  <div id="faqModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="faqModalTitle">Add FAQ Entry</h2>
+        <button class="modal-close" onclick="closeFaqModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="faqForm">
+          <input type="hidden" id="faqId">
+          <div class="form-group">
+            <label for="faqQuestion">Question</label>
+            <textarea id="faqQuestion" rows="3" placeholder="What question will this answer?" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="faqAnswer">Answer</label>
+            <textarea id="faqAnswer" rows="6" placeholder="Provide a helpful answer..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="faqPublished">
+              Include in AI context (published)
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeFaqModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveFaq()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link Modal -->
+  <div id="linkModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="linkModalTitle">Add Context Link</h2>
+        <button class="modal-close" onclick="closeLinkModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="linkForm">
+          <input type="hidden" id="linkId">
+          <div class="form-group">
+            <label for="linkUrl">URL</label>
+            <input type="url" id="linkUrl" placeholder="https://docs.google.com/document/d/..." required>
+            <p class="form-hint">Supports Google Docs, web pages, and other publicly accessible URLs</p>
+          </div>
+          <div class="form-group">
+            <label for="linkTitle">Title</label>
+            <input type="text" id="linkTitle" placeholder="House Rules Document" required>
+          </div>
+          <div class="form-group">
+            <label for="linkDescription">Description (optional)</label>
+            <input type="text" id="linkDescription" placeholder="Contains policies and guidelines for residents">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="linkActive" checked>
+              Include in context compilation
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeLinkModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveLink()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recompile Progress Modal -->
+  <div id="recompileModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Compiling Context</h2>
+      </div>
+      <div class="modal-body">
+        <div class="recompile-progress">
+          <div class="progress-item" id="progressSpaces">
+            <span class="progress-icon">&#9711;</span>
+            <span>Loading spaces data...</span>
+          </div>
+          <div class="progress-item" id="progressFaqs">
+            <span class="progress-icon">&#9711;</span>
+            <span>Loading FAQ entries...</span>
+          </div>
+          <div class="progress-item" id="progressLinks">
+            <span class="progress-icon">&#9711;</span>
+            <span>Fetching external content...</span>
+          </div>
+          <div class="progress-item" id="progressUpload">
+            <span class="progress-icon">&#9711;</span>
+            <span>Uploading context file...</span>
+          </div>
+        </div>
+        <div id="recompileError" class="error-message hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="faq.js"></script>
+</body>
+</html>

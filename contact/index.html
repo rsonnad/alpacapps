@@ -16,6 +16,392 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="/assets/branding/whitehead.png">
+
+  <style>
+    /* Ask a Question Section */
+    .ask-section {
+      background: #fdf8f3;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .ask-section h2 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .ask-section p {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-input-wrapper {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .question-input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: var(--aap-accent, #8B4513);
+      box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+    }
+
+    .ask-btn {
+      padding: 0.875rem 1.5rem;
+      background: var(--aap-accent, #8B4513);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .ask-btn:hover {
+      background: #6d3610;
+    }
+
+    .ask-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Answer Display */
+    .answer-container {
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+    }
+
+    .answer-container.visible {
+      display: block;
+    }
+
+    .answer-text {
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .answer-feedback {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e5e5;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .answer-feedback span {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .feedback-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .feedback-btn:hover {
+      border-color: var(--aap-accent, #8B4513);
+      color: var(--aap-accent, #8B4513);
+    }
+
+    .feedback-btn--negative {
+      border-color: #dc2626;
+      color: #dc2626;
+    }
+
+    .feedback-btn--negative:hover {
+      background: #fef2f2;
+    }
+
+    /* Low confidence warning */
+    .low-confidence-notice {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #fef3c7;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: #92400e;
+    }
+
+    .low-confidence-notice.visible {
+      display: block;
+    }
+
+    /* Email follow-up form */
+    .followup-form {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+
+    .followup-form.visible {
+      display: block;
+    }
+
+    .followup-form p {
+      margin: 0 0 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .followup-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .followup-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.875rem;
+    }
+
+    .followup-btn {
+      padding: 0.5rem 1rem;
+      background: var(--aap-accent, #8B4513);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Success message */
+    .question-submitted {
+      display: none;
+      padding: 1rem;
+      background: #d1fae5;
+      border-radius: 8px;
+      color: #065f46;
+      font-size: 0.9rem;
+    }
+
+    .question-submitted.visible {
+      display: block;
+    }
+
+    /* Loading state */
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Send Message Section */
+    .message-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      border: 1px solid #e5e5e5;
+    }
+
+    .message-section h2 {
+      margin-top: 0;
+    }
+
+    .contact-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .contact-method {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .contact-method__icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fdf8f3;
+      border-radius: 8px;
+      color: var(--aap-accent, #8B4513);
+      flex-shrink: 0;
+    }
+
+    .contact-method__info h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .contact-method__info a {
+      color: var(--aap-accent, #8B4513);
+      text-decoration: none;
+    }
+
+    .contact-method__info a:hover {
+      text-decoration: underline;
+    }
+
+    /* Message form */
+    .message-form {
+      border-top: 1px solid #e5e5e5;
+      padding-top: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--aap-accent, #8B4513);
+      box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--aap-accent, #8B4513);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: #6d3610;
+    }
+
+    .form-success {
+      display: none;
+      padding: 1rem;
+      background: #d1fae5;
+      border-radius: 8px;
+      color: #065f46;
+      margin-top: 1rem;
+    }
+
+    .form-success.visible {
+      display: block;
+    }
+
+    /* Social links */
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .social-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .social-links a:hover {
+      color: var(--aap-accent, #8B4513);
+    }
+
+    @media (max-width: 600px) {
+      .question-input-wrapper {
+        flex-direction: column;
+      }
+
+      .ask-btn {
+        width: 100%;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -68,62 +454,109 @@
 
   <!-- Content -->
   <div class="aap-content">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
+    <!-- Ask a Question Section -->
+    <div class="ask-section">
+      <h2>Ask a Question</h2>
+      <p>Get instant answers about rentals, events, visiting, and more.</p>
 
-      <!-- Contact Info -->
-      <div>
-        <h2>Get in Touch</h2>
-
-        <h3>Email</h3>
-        <p><a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
-
-        <h3>Text/Call</h3>
-        <p><a href="tel:+14242341750">424-234-1750</a></p>
-
-        <h3>Social Media</h3>
-        <p>
-          <a href="https://www.facebook.com/alpacaplayhouse" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-            </svg>
-            Facebook
-          </a>
-          <br>
-          <a href="https://instagram.com/alpacaplayhouseatx" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="18" cy="6" r="1" fill="currentColor"/>
-            </svg>
-            Instagram
-          </a>
-        </p>
-
+      <div class="question-input-wrapper">
+        <input type="text" id="questionInput" class="question-input" placeholder="What would you like to know?" autocomplete="off">
+        <button id="askBtn" class="ask-btn">Ask</button>
       </div>
 
-      <!-- Contact Form -->
-      <div>
-        <h2>Send a Message</h2>
-        <form id="contact-form" class="aap-form">
-          <div class="aap-form__group">
-            <label for="name" class="aap-form__label">Name *</label>
-            <input type="text" id="name" name="name" required class="aap-form__input">
-          </div>
+      <div id="answerContainer" class="answer-container">
+        <div id="answerText" class="answer-text"></div>
 
-          <div class="aap-form__group">
-            <label for="email" class="aap-form__label">Email *</label>
-            <input type="email" id="email" name="email" required class="aap-form__input">
-          </div>
+        <div id="lowConfidenceNotice" class="low-confidence-notice">
+          I'm not fully confident in this answer. If this didn't help, let us know and we'll get back to you.
+        </div>
 
-          <div class="aap-form__group">
-            <label for="phone" class="aap-form__label">Phone Number</label>
-            <input type="tel" id="phone" name="phone" class="aap-form__input">
-          </div>
+        <div class="answer-feedback">
+          <span>Was this helpful?</span>
+          <button class="feedback-btn" onclick="handleFeedback(true)">Yes, thanks!</button>
+          <button class="feedback-btn feedback-btn--negative" onclick="handleFeedback(false)">Not quite</button>
+        </div>
 
-          <div class="aap-form__group">
-            <label for="subject" class="aap-form__label">Subject *</label>
-            <select id="subject" name="subject" required class="aap-form__input">
-              <option value="">Select a topic...</option>
+        <div id="followupForm" class="followup-form">
+          <p>Sorry about that! We've logged your question. Want us to follow up with a better answer?</p>
+          <div class="followup-input-row">
+            <input type="email" id="followupEmail" class="followup-input" placeholder="Your email (optional)">
+            <button class="followup-btn" onclick="submitFollowup()">Submit</button>
+          </div>
+        </div>
+
+        <div id="questionSubmitted" class="question-submitted">
+          Thanks! We've received your question and will update our knowledge base.
+        </div>
+      </div>
+    </div>
+
+    <!-- Send a Message Section -->
+    <div class="message-section">
+      <h2>Send a Message</h2>
+      <p>Reach out directly and we'll get back to you as soon as we can.</p>
+
+      <div class="contact-methods">
+        <div class="contact-method">
+          <div class="contact-method__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="contact-method__info">
+            <h4>Email</h4>
+            <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a>
+          </div>
+        </div>
+
+        <div class="contact-method">
+          <div class="contact-method__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="contact-method__info">
+            <h4>Text / Call</h4>
+            <a href="tel:+14242341750">424-234-1750</a>
+          </div>
+        </div>
+
+        <div class="contact-method">
+          <div class="contact-method__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="contact-method__info">
+            <h4>Location</h4>
+            <span>Cedar Creek, TX (30 min east of Austin)</span>
+          </div>
+        </div>
+      </div>
+
+      <form id="messageForm" class="message-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="How should we address you?">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone (optional)</label>
+            <input type="tel" id="phone" name="phone" placeholder="Your phone number">
+          </div>
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject">
+              <option value="general">General Inquiry</option>
               <option value="rental">Rental Inquiry</option>
               <option value="event">Host an Event</option>
               <option value="sauna">Sauna/Spa Session</option>
@@ -132,34 +565,55 @@
               <option value="other">Other</option>
             </select>
           </div>
-
-          <div class="aap-form__group">
-            <label for="message" class="aap-form__label">Message *</label>
-            <textarea id="message" name="message" rows="5" required class="aap-form__input"></textarea>
-          </div>
-
-          <button type="submit" class="aap-btn aap-btn--primary" style="width: 100%;">Send Message</button>
-        </form>
-
-        <div id="form-success" style="display: none; padding: 1rem; background: #d4edda; border-radius: 8px; margin-top: 1rem;">
-          <strong>Thank you!</strong> Your message has been sent. We'll get back to you soon.
         </div>
 
-        <div id="form-error" style="display: none; padding: 1rem; background: #f8d7da; border-radius: 8px; margin-top: 1rem;">
-          <strong>Oops!</strong> Something went wrong. Please try emailing us directly at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a>.
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="What would you like to tell us?"></textarea>
         </div>
+
+        <button type="submit" class="submit-btn">Send Message</button>
+      </form>
+
+      <div id="formSuccess" class="form-success">
+        <strong>Message sent!</strong> We'll get back to you soon.
       </div>
     </div>
 
     <hr style="margin: 3rem 0;">
 
-    <h2>Quick Links</h2>
-    <ul>
-      <li><strong>Looking to rent?</strong> <a href="/spaces/">View available spaces</a></li>
-      <li><strong>Planning to visit?</strong> <a href="/visiting/">Read the visiting rules</a></li>
-      <li><strong>Interested in work trade?</strong> <a href="/worktrade/">Learn about work trade</a></li>
-      <li><strong>Ready for a <a href="/mistiq/">Journey</a>?</strong></li>
-    </ul>
+    <!-- Social & Quick Links -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+      <div>
+        <h3>Follow Us</h3>
+        <div class="social-links">
+          <a href="https://www.facebook.com/alpacaplayhouse" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+            Facebook
+          </a>
+          <a href="https://instagram.com/alpacaplayhouseatx" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="18" cy="6" r="1" fill="currentColor"/>
+            </svg>
+            Instagram
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h3>Quick Links</h3>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <li style="margin-bottom: 0.5rem;"><a href="/spaces/">View Available Rentals</a></li>
+          <li style="margin-bottom: 0.5rem;"><a href="/events/">Host an Event</a></li>
+          <li style="margin-bottom: 0.5rem;"><a href="/visiting/">Planning to Visit</a></li>
+          <li><a href="/worktrade/">Work Trade Program</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <!-- Footer -->
@@ -191,120 +645,173 @@
     </div>
   </footer>
 
-  <script>
-    // Header scroll behavior
-    const header = document.getElementById('aap-header');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        header.classList.remove('aap-header--transparent');
-        header.classList.add('aap-header--solid');
-        header.classList.remove('aap-header--light');
-        header.classList.add('aap-header--dark');
-      } else {
-        header.classList.add('aap-header--transparent');
-        header.classList.remove('aap-header--solid');
-        header.classList.add('aap-header--light');
-        header.classList.remove('aap-header--dark');
-      }
-    });
+  <script type="module">
+    import { initChatWidget, askQuestion, submitUnansweredQuestion } from '/shared/chat-widget.js';
 
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('aap-menu-toggle');
-    const mobileNav = document.getElementById('aap-mobile-nav');
-    const mobileNavClose = document.getElementById('aap-mobile-nav-close');
+    // Initialize chat widget
+    // NOTE: Replace with your actual Gemini API key
+    const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY';
 
-    menuToggle.addEventListener('click', () => {
-      mobileNav.classList.add('aap-mobile-nav--open');
-      document.body.style.overflow = 'hidden';
-    });
+    let currentQuestion = '';
+    let currentAnswer = '';
+    let isLowConfidence = false;
 
-    mobileNavClose.addEventListener('click', () => {
-      mobileNav.classList.remove('aap-mobile-nav--open');
-      document.body.style.overflow = '';
-    });
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initChatWidget(GEMINI_API_KEY);
 
-    mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
+      // Header scroll behavior
+      const header = document.getElementById('aap-header');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          header.classList.remove('aap-header--transparent');
+          header.classList.add('aap-header--solid');
+          header.classList.remove('aap-header--light');
+          header.classList.add('aap-header--dark');
+        } else {
+          header.classList.add('aap-header--transparent');
+          header.classList.remove('aap-header--solid');
+          header.classList.add('aap-header--light');
+          header.classList.remove('aap-header--dark');
+        }
+      });
+
+      // Mobile menu toggle
+      const menuToggle = document.getElementById('aap-menu-toggle');
+      const mobileNav = document.getElementById('aap-mobile-nav');
+      const mobileNavClose = document.getElementById('aap-mobile-nav-close');
+
+      menuToggle.addEventListener('click', () => {
+        mobileNav.classList.add('aap-mobile-nav--open');
+        document.body.style.overflow = 'hidden';
+      });
+
+      mobileNavClose.addEventListener('click', () => {
         mobileNav.classList.remove('aap-mobile-nav--open');
         document.body.style.overflow = '';
       });
+
+      mobileNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileNav.classList.remove('aap-mobile-nav--open');
+          document.body.style.overflow = '';
+        });
+      });
     });
 
-    // Contact form handling
-    const form = document.getElementById('contact-form');
-    const successMsg = document.getElementById('form-success');
-    const errorMsg = document.getElementById('form-error');
+    // Ask question handler
+    const questionInput = document.getElementById('questionInput');
+    const askBtn = document.getElementById('askBtn');
+    const answerContainer = document.getElementById('answerContainer');
+    const answerText = document.getElementById('answerText');
+    const lowConfidenceNotice = document.getElementById('lowConfidenceNotice');
+    const followupForm = document.getElementById('followupForm');
+    const questionSubmitted = document.getElementById('questionSubmitted');
 
-    form.addEventListener('submit', async (e) => {
+    askBtn.addEventListener('click', handleAskQuestion);
+    questionInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleAskQuestion();
+    });
+
+    async function handleAskQuestion() {
+      const question = questionInput.value.trim();
+      if (!question) return;
+
+      currentQuestion = question;
+
+      // Show loading state
+      askBtn.disabled = true;
+      askBtn.innerHTML = '<span class="loading-spinner"></span>Thinking...';
+
+      // Reset answer UI
+      answerContainer.classList.remove('visible');
+      lowConfidenceNotice.classList.remove('visible');
+      followupForm.classList.remove('visible');
+      questionSubmitted.classList.remove('visible');
+
+      try {
+        const result = await askQuestion(question);
+        currentAnswer = result.answer;
+        isLowConfidence = !result.confident;
+
+        answerText.textContent = result.answer;
+        answerContainer.classList.add('visible');
+
+        if (!result.confident) {
+          lowConfidenceNotice.classList.add('visible');
+          // Auto-submit low confidence questions for review
+          await submitUnansweredQuestion(question, null, 'low_confidence');
+        }
+      } catch (error) {
+        answerText.textContent = 'Sorry, I had trouble getting an answer. Please try again or send us a message below.';
+        answerContainer.classList.add('visible');
+      } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = 'Ask';
+      }
+    }
+
+    // Feedback handlers
+    window.handleFeedback = async function(helpful) {
+      if (helpful) {
+        // Hide feedback buttons, show thank you
+        document.querySelector('.answer-feedback').style.display = 'none';
+        questionSubmitted.textContent = 'Great! Glad we could help.';
+        questionSubmitted.classList.add('visible');
+      } else {
+        // Show follow-up form
+        followupForm.classList.add('visible');
+
+        // Submit the question if not already submitted
+        if (!isLowConfidence) {
+          await submitUnansweredQuestion(currentQuestion, null, 'user_feedback');
+        }
+      }
+    };
+
+    window.submitFollowup = async function() {
+      const email = document.getElementById('followupEmail').value.trim();
+
+      // Update the question with email if provided
+      if (email) {
+        try {
+          await submitUnansweredQuestion(currentQuestion, email, 'user_feedback');
+        } catch (e) {
+          console.error('Error updating question with email:', e);
+        }
+      }
+
+      followupForm.classList.remove('visible');
+      questionSubmitted.textContent = "Thanks! We'll get back to you with a better answer.";
+      questionSubmitted.classList.add('visible');
+      document.querySelector('.answer-feedback').style.display = 'none';
+    };
+
+    // Message form handling
+    const messageForm = document.getElementById('messageForm');
+    const formSuccess = document.getElementById('formSuccess');
+
+    messageForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(form);
+      const formData = new FormData(messageForm);
       const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone') || null,
+        name: formData.get('name') || 'Not provided',
+        email: formData.get('email') || 'Not provided',
+        phone: formData.get('phone') || 'Not provided',
         subject: formData.get('subject'),
         message: formData.get('message'),
       };
 
-      try {
-        // For now, we'll use a mailto fallback since the Edge Function isn't set up yet
-        // In the future, this will POST to a Supabase Edge Function
-        const mailtoLink = `mailto:alpacaplayhouse@gmail.com?subject=${encodeURIComponent(`[Website Contact] ${data.subject}`)}&body=${encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || 'Not provided'}\n\nMessage:\n${data.message}`)}`;
+      // Create mailto link
+      const mailtoLink = `mailto:alpacaplayhouse@gmail.com?subject=${encodeURIComponent(`[Website] ${data.subject}`)}&body=${encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\n\nMessage:\n${data.message}`)}`;
 
-        window.location.href = mailtoLink;
+      window.location.href = mailtoLink;
 
-        // Show success message
-        form.style.display = 'none';
-        successMsg.style.display = 'block';
-        errorMsg.style.display = 'none';
-      } catch (err) {
-        console.error('Form submission error:', err);
-        errorMsg.style.display = 'block';
-      }
+      // Show success
+      messageForm.style.display = 'none';
+      formSuccess.classList.add('visible');
     });
   </script>
-
-  <style>
-    .aap-form__group {
-      margin-bottom: 1.25rem;
-    }
-
-    .aap-form__label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: var(--aap-text);
-    }
-
-    .aap-form__input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 1rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .aap-form__input:focus {
-      outline: none;
-      border-color: var(--aap-accent);
-      box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
-    }
-
-    textarea.aap-form__input {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    select.aap-form__input {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      padding-right: 2.5rem;
-    }
-  </style>
 </body>
 </html>
