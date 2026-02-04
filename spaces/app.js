@@ -50,9 +50,16 @@ const spaceDetailModal = document.getElementById('spaceDetailModal');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check for direct space ID in URL (for secret space links)
+  // Check for URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const directSpaceId = urlParams.get('id');
+  const viewParam = urlParams.get('view');
+
+  // Handle ?view=events to show event spaces by default
+  if (viewParam === 'events') {
+    showDwellings.checked = false;
+    showEventSpaces.checked = true;
+  }
 
   await loadData();
   setupEventListeners();
