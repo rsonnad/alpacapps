@@ -225,10 +225,6 @@ export async function signInWithGoogle(redirectTo) {
     provider: 'google',
     options: {
       redirectTo: redirectTo || window.location.origin + '/spaces/admin/',
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
     },
   });
 
