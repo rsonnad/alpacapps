@@ -304,7 +304,7 @@ function parseIcalDate(line: string): Date {
       parseInt(second || '0')
     ));
   } else {
-    // Date only - use local date
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    // Date only - use UTC to avoid timezone shift when calling toISOString()
+    return new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
   }
 }

@@ -7688,8 +7688,8 @@ Deposit: ${req.deposit_status}
         if (airbnbSpaces && airbnbSpaces.length > 0) {
           const currentYear = new Date().getFullYear();
           const formatDate = (d) => {
-            const opts = { month: 'short', day: 'numeric' };
-            if (d.getFullYear() !== currentYear) {
+            const opts = { month: 'short', day: 'numeric', timeZone: 'UTC' };
+            if (d.getUTCFullYear() !== currentYear) {
               opts.year = '2-digit';
             }
             return d.toLocaleDateString('en-US', opts);
