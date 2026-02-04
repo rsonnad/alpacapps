@@ -2,7 +2,7 @@
 import { supabase } from './supabase.js';
 
 // Timeout configuration
-const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations (increased for high-latency connections)
+const AUTH_TIMEOUT_MS = 30000; // 30 seconds for auth operations (increased for high-latency connections)
 
 /**
  * Wrap a promise with a timeout to prevent indefinite hangs
@@ -16,11 +16,32 @@ function withTimeout(promise, ms = AUTH_TIMEOUT_MS, errorMessage = 'Auth operati
   ]);
 }
 
+/**
+ * Retry a function with exponential backoff
+ */
+async function withRetry(fn, maxRetries = 2, baseDelayMs = 1000) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+        console.log(`Retry attempt ${attempt + 1} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 // Auth state
 let currentUser = null;
 let currentAppUser = null;
 let currentRole = 'public';
 let authStateListeners = [];
+let authHandlingInProgress = false; // Prevent concurrent auth handling
 
 /**
  * Initialize authentication and check for existing session
@@ -76,25 +97,35 @@ async function handleAuthChange(session) {
     return;
   }
 
-  currentUser = session.user;
+  // Prevent concurrent auth handling (can happen with INITIAL_SESSION + SIGNED_IN events)
+  if (authHandlingInProgress) {
+    console.log('Auth handling already in progress, skipping duplicate call');
+    return;
+  }
+  authHandlingInProgress = true;
 
-  // Fetch user record from app_users table (with timeout)
+  try {
+    currentUser = session.user;
+
+  // Fetch user record from app_users table (with timeout and retry)
   let appUser = null;
   let fetchError = null;
   try {
-    const result = await withTimeout(
-      supabase
-        .from('app_users')
-        .select('id, role, display_name, email')
-        .eq('auth_user_id', session.user.id)
-        .single(),
-      AUTH_TIMEOUT_MS,
-      'Fetching user record timed out'
-    );
+    const result = await withRetry(async () => {
+      return await withTimeout(
+        supabase
+          .from('app_users')
+          .select('id, role, display_name, email')
+          .eq('auth_user_id', session.user.id)
+          .single(),
+        AUTH_TIMEOUT_MS,
+        'Fetching user record timed out'
+      );
+    }, 2, 1000);
     appUser = result.data;
     fetchError = result.error;
   } catch (timeoutError) {
-    console.warn('User record fetch timed out:', timeoutError.message);
+    console.warn('User record fetch failed after retries:', timeoutError.message);
     fetchError = timeoutError;
   }
 
@@ -198,6 +229,9 @@ async function handleAuthChange(session) {
   }
 
   notifyListeners();
+  } finally {
+    authHandlingInProgress = false;
+  }
 }
 
 /**
