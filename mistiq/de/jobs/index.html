@@ -71,10 +71,16 @@
   </div>
 
   <!-- Hero Section -->
-  <section class="mistiq-hero mistiq-hero--short">
+  <section class="mistiq-hero mistiq-hero--jobs" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/beach_work.jpg');">
+    <div class="mistiq-hero__overlay"></div>
     <div class="mistiq-hero__content">
       <h1 class="mistiq-hero__title">Reisende/r Massagetherapeut/in weltweit</h1>
       <p class="mistiq-hero__subtitle">Werde Teil unseres Teams und reise um die Welt</p>
+      <p class="mistiq-hero__location"><em>Mistique Journey @ the <a href="https://alpacaplayhouse.com" style="color: inherit;">Alpaca Playhouse</a>, Austin Texas USA</em></p>
+      <div class="mistiq-hero__buttons">
+        <a href="https://forms.gle/FXdjKAYgnXpCRHnf8" class="mistiq-btn mistiq-btn--primary" target="_blank">Bewerben</a>
+        <a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-btn mistiq-btn--outline" target="_blank">Freund empfehlen</a>
+      </div>
     </div>
   </section>
 
@@ -98,6 +104,10 @@
     <div class="mistiq-container">
       <h2 class="mistiq-section__title">Empfehlungspramie</h2>
       <p class="mistiq-section__subtitle">Kennen Sie jemanden? Empfehlen Sie einen Kandidaten, der eingestellt wird, und verdienen Sie bis zu $750 USD</p>
+
+      <div class="mistiq-image-showcase">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/referal_bonus.jpg" alt="Empfehlungspramie" class="mistiq-showcase-img">
+      </div>
 
       <div class="mistiq-reward-grid">
         <div class="mistiq-reward-card">
@@ -138,6 +148,10 @@
           <li>Kein Alkohol bevorzugt</li>
           <li>Korperlich fit; in der Lage, 5 km problemlos zu gehen</li>
         </ul>
+      </div>
+
+      <div class="mistiq-image-showcase">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg" alt="Behandlungserlebnis" class="mistiq-showcase-img">
       </div>
     </div>
   </section>
@@ -204,6 +218,10 @@
           <li>Mogliche Kapitalbeteiligung an einem KI-Robotikunternehmen bei dessen Grundung (Beteiligung kann je nach Unternehmenserfolg zukunftigen Wert haben oder nicht)</li>
         </ul>
       </div>
+
+      <div class="mistiq-image-showcase">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Saunatubs.png" alt="Sauna und Wannen Erlebnis" class="mistiq-showcase-img">
+      </div>
     </div>
   </section>
 
@@ -252,8 +270,29 @@
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="mistiq-section mistiq-section--cta">
+  <!-- Apply CTA with Image -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Bewerbungsformular</h2>
+      <p class="mistiq-section__subtitle">Interessierte Bewerber: Fullen Sie hier das Bewerbungsformular aus</p>
+
+      <div style="text-align: center; margin: 2rem 0;">
+        <a href="https://forms.gle/FXdjKAYgnXpCRHnf8" class="mistiq-btn mistiq-btn--primary mistiq-btn--large" target="_blank">Jetzt bewerben</a>
+      </div>
+
+      <div class="mistiq-image-showcase">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/windingdown.jpg" alt="Wellness-Erlebnis" class="mistiq-showcase-img">
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="https://forms.gle/2HVxMaWo2K5duALv5" class="mistiq-link">Freund empfehlen</a>
+      </div>
+      <p class="mistiq-cta__contact">Fragen: <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+    </div>
+  </section>
+
+  <!-- CTA Section - Hidden -->
+  <section class="mistiq-section mistiq-section--cta" style="display: none;">
     <div class="mistiq-container">
       <h2 class="mistiq-section__title">Bereit zur Bewerbung?</h2>
       <p class="mistiq-section__subtitle">Fullen Sie das Bewerbungsformular aus, um zu beginnen.</p>
@@ -300,6 +339,75 @@
 
   <style>
     /* Jobs page specific styles */
+    .mistiq-hero--jobs {
+      min-height: 80vh;
+      padding-top: 80px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .mistiq-hero__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+      z-index: 0;
+    }
+
+    .mistiq-hero--jobs .mistiq-hero__content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .mistiq-hero__location {
+      font-size: 1.1rem;
+      margin-top: 1rem;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .mistiq-hero__buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .mistiq-btn--outline {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .mistiq-btn--outline:hover {
+      background: white;
+      color: var(--mistiq-text);
+    }
+
+    .mistiq-image-showcase {
+      max-width: 500px;
+      margin: 2rem auto;
+      text-align: center;
+    }
+
+    .mistiq-showcase-img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .mistiq-link {
+      color: var(--mistiq-gold);
+      text-decoration: underline;
+      font-size: 1rem;
+    }
+
     .mistiq-hero--short {
       min-height: 50vh;
       padding-top: 80px;
