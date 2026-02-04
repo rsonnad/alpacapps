@@ -42,7 +42,8 @@ const searchInput = document.getElementById('searchInput');
 const parentFilter = document.getElementById('parentFilter');
 const bathFilter = document.getElementById('bathFilter');
 const showDwellings = document.getElementById('showDwellings');
-const showNonDwellings = document.getElementById('showNonDwellings');
+const showEventSpaces = document.getElementById('showEventSpaces');
+const showOther = document.getElementById('showOther');
 const clearFilters = document.getElementById('clearFilters');
 const spaceDetailModal = document.getElementById('spaceDetailModal');
 
@@ -74,7 +75,7 @@ async function loadData(retryCount = 0) {
         id, name, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, can_be_dwelling,
+        min_residents, max_residents, is_listed, is_secret, can_be_dwelling, can_be_event,
         parent_id,
         parent:parent_id(name),
         space_amenities(amenity:amenity_id(name)),
@@ -217,7 +218,8 @@ function setupEventListeners() {
   parentFilter.addEventListener('change', render);
   bathFilter.addEventListener('change', render);
   showDwellings?.addEventListener('change', render);
-  showNonDwellings?.addEventListener('change', render);
+  showEventSpaces?.addEventListener('change', render);
+  showOther?.addEventListener('change', render);
   clearFilters.addEventListener('click', resetFilters);
 
   // Populate parent filter dropdown
@@ -282,14 +284,18 @@ function getFilteredSpaces() {
     filtered = filtered.filter(s => s.bath_privacy === bath);
   }
 
-  // Dwelling filter
+  // Type filter (Dwellings, Event Spaces, Other)
   const dwellingsChecked = showDwellings?.checked ?? true;
-  const nonDwellingsChecked = showNonDwellings?.checked ?? true;
-  if (!dwellingsChecked || !nonDwellingsChecked) {
+  const eventSpacesChecked = showEventSpaces?.checked ?? true;
+  const otherChecked = showOther?.checked ?? true;
+  if (!dwellingsChecked || !eventSpacesChecked || !otherChecked) {
     filtered = filtered.filter(s => {
       const isDwelling = s.can_be_dwelling;
+      const isEventSpace = s.can_be_event;
+      const isOther = !isDwelling && !isEventSpace;
       if (dwellingsChecked && isDwelling) return true;
-      if (nonDwellingsChecked && !isDwelling) return true;
+      if (eventSpacesChecked && isEventSpace) return true;
+      if (otherChecked && isOther) return true;
       return false;
     });
   }
@@ -324,7 +330,8 @@ function resetFilters() {
   parentFilter.value = '';
   bathFilter.value = '';
   if (showDwellings) showDwellings.checked = true;
-  if (showNonDwellings) showNonDwellings.checked = true;
+  if (showEventSpaces) showEventSpaces.checked = true;
+  if (showOther) showOther.checked = true;
   render();
 }
 
@@ -544,7 +551,7 @@ async function fetchAndShowSpace(spaceId) {
         id, name, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret,
+        min_residents, max_residents, is_listed, is_secret, can_be_dwelling, can_be_event,
         parent:parent_id(name),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))

@@ -910,7 +910,8 @@
                 <label>Type</label>
                 <div class="filter-checkboxes">
                   <label class="checkbox-label"><input type="checkbox" id="showDwellings" checked> Dwelling</label>
-                  <label class="checkbox-label"><input type="checkbox" id="showNonDwellings" checked> Non-dwelling</label>
+                  <label class="checkbox-label"><input type="checkbox" id="showEventSpaces" checked> Event Space</label>
+                  <label class="checkbox-label"><input type="checkbox" id="showOther" checked> Other</label>
                 </div>
               </div>
               <button id="clearSpaceFilters" class="btn-small" style="align-self: flex-end; padding: 0.5rem 0.75rem;">Clear</button>
@@ -2746,14 +2747,16 @@
       document.getElementById('bathFilter')?.addEventListener('change', renderSpacesView);
       document.getElementById('visibilityFilter')?.addEventListener('change', renderSpacesView);
       document.getElementById('showDwellings')?.addEventListener('change', renderSpacesView);
-      document.getElementById('showNonDwellings')?.addEventListener('change', renderSpacesView);
+      document.getElementById('showEventSpaces')?.addEventListener('change', renderSpacesView);
+      document.getElementById('showOther')?.addEventListener('change', renderSpacesView);
       document.getElementById('clearSpaceFilters')?.addEventListener('click', () => {
         document.getElementById('searchFilter').value = '';
         document.getElementById('parentFilter').value = '';
         document.getElementById('bathFilter').value = '';
         document.getElementById('visibilityFilter').value = '';
         document.getElementById('showDwellings').checked = true;
-        document.getElementById('showNonDwellings').checked = true;
+        document.getElementById('showEventSpaces').checked = true;
+        document.getElementById('showOther').checked = true;
         renderSpacesView();
       });
 
@@ -2984,14 +2987,18 @@
         filtered = filtered.filter(s => s.is_secret);
       }
 
-      // Dwelling/Non-dwelling filter
+      // Type filter (Dwellings, Event Spaces, Other)
       const dwellingsChecked = document.getElementById('showDwellings')?.checked ?? true;
-      const nonDwellingsChecked = document.getElementById('showNonDwellings')?.checked ?? true;
-      if (!dwellingsChecked || !nonDwellingsChecked) {
+      const eventSpacesChecked = document.getElementById('showEventSpaces')?.checked ?? true;
+      const otherChecked = document.getElementById('showOther')?.checked ?? true;
+      if (!dwellingsChecked || !eventSpacesChecked || !otherChecked) {
         filtered = filtered.filter(s => {
           const isDwelling = s.can_be_dwelling === true;
+          const isEventSpace = s.can_be_event === true;
+          const isOther = !isDwelling && !isEventSpace;
           if (dwellingsChecked && isDwelling) return true;
-          if (nonDwellingsChecked && !isDwelling) return true;
+          if (eventSpacesChecked && isEventSpace) return true;
+          if (otherChecked && isOther) return true;
           return false;
         });
       }
