@@ -6046,7 +6046,21 @@
           const leftPx = startOffset * dayWidthPx;
 
           const person = assignment.person || {};
-          const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+          const isAirbnb = assignment.airbnb_uid != null;
+          let tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+
+          // For Airbnb bookings, show "Airbnb Guest" and extract info from notes if available
+          if (isAirbnb && tenantName === 'Airbnb Guest') {
+            // Try to extract guest info from notes (e.g., "Imported from Airbnb: Reserved - John Smith")
+            const notes = assignment.notes || '';
+            const airbnbMatch = notes.match(/Imported from Airbnb: (.+)/);
+            if (airbnbMatch && airbnbMatch[1] && airbnbMatch[1] !== 'Airbnb (Not available)') {
+              tenantName = airbnbMatch[1];
+            } else {
+              tenantName = 'Airbnb Guest';
+            }
+          }
+
           const rate = assignment.rate_amount
             ? `$${assignment.rate_amount}/${assignment.rate_term || 'mo'}`
             : (assignment.monthly_rent ? `$${assignment.monthly_rent}/mo` : '');
@@ -7435,7 +7449,7 @@ Deposit: ${req.deposit_status}
         const { data: airbnbReservations, error } = await supabase
           .from('assignments')
           .select(`
-            id, start_date, end_date, airbnb_uid,
+            id, start_date, end_date, airbnb_uid, notes,
             person:person_id(first_name, last_name),
             assignment_spaces(space:space_id(id, name))
           `)
@@ -7450,16 +7464,29 @@ Deposit: ${req.deposit_status}
         if (airbnbReservations && airbnbReservations.length > 0) {
           linkedSpacesList.innerHTML = airbnbReservations.map(reservation => {
             const spaceName = reservation.assignment_spaces?.[0]?.space?.name || 'Unknown Space';
-            const guestName = reservation.person
-              ? `${reservation.person.first_name} ${reservation.person.last_name || ''}`.trim()
-              : 'Airbnb Guest';
+
+            // Extract display name from notes or use generic Airbnb Guest
+            let displayName = 'Airbnb Guest';
+            const notes = reservation.notes || '';
+            const airbnbMatch = notes.match(/Imported from Airbnb: (.+)/);
+            if (airbnbMatch && airbnbMatch[1]) {
+              // Use the Airbnb summary (e.g., "Reserved", "Not available", or guest name)
+              displayName = airbnbMatch[1];
+            }
+
+            // Check if this is a real person (not the generic Airbnb Guest)
+            const person = reservation.person;
+            if (person && person.first_name !== 'Airbnb') {
+              displayName = `${person.first_name} ${person.last_name || ''}`.trim();
+            }
+
             const start = new Date(reservation.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const end = new Date(reservation.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
             return `
               <div class="linked-space-item">
                 <span class="linked-space-name">${spaceName}</span>
-                <span class="linked-space-booking">${guestName}: ${start} - ${end}</span>
+                <span class="linked-space-booking">${displayName}: ${start} - ${end}</span>
               </div>
             `;
           }).join('');
