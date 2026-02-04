@@ -205,6 +205,19 @@ serve(async (req) => {
             result.errors.push(`Event error: ${eventError.message}`);
           }
         }
+        // Save blocked dates to the space record for display
+        if (result.blockedRanges.length > 0) {
+          await supabase
+            .from('spaces')
+            .update({ airbnb_blocked_dates: result.blockedRanges })
+            .eq('id', space.id);
+        } else {
+          // Clear blocked dates if none found
+          await supabase
+            .from('spaces')
+            .update({ airbnb_blocked_dates: null })
+            .eq('id', space.id);
+        }
       } catch (spaceError) {
         result.errors.push(`Space error: ${spaceError.message}`);
       }

@@ -753,29 +753,53 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0.75rem;
+      padding: 0.75rem 1rem;
       background: var(--bg);
       border-radius: var(--radius);
       font-size: 0.875rem;
+      gap: 1rem;
     }
 
     .linked-space-name {
-      font-weight: 500;
+      font-weight: 600;
+      min-width: 140px;
     }
 
     .linked-space-status {
-      color: var(--success);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
       font-size: 0.8rem;
+      text-align: right;
     }
 
-    .linked-space-booking {
-      font-size: 0.8rem;
+    .current-occupant {
       color: var(--text-muted);
     }
 
-    .linked-space-booking:not(:empty):not([data-none="true"]) {
+    .current-occupant.tenant {
       color: var(--accent);
+    }
+
+    .current-occupant.airbnb {
+      color: #FF5A5F; /* Airbnb red */
+    }
+
+    .current-occupant.blocked {
+      color: var(--warning);
+    }
+
+    .availability {
       font-weight: 500;
+    }
+
+    .availability.available {
+      color: var(--success);
+    }
+
+    .availability.occupied {
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -7443,55 +7467,124 @@ Deposit: ${req.deposit_status}
     // Airbnb Sync functionality
     async function loadAirbnbRentals() {
       try {
-        // Load only Airbnb reservations (assignments with airbnb_uid)
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
 
-        const { data: airbnbReservations, error } = await supabase
+        // Load all spaces with Airbnb iCal URLs
+        const { data: airbnbSpaces, error: spacesError } = await supabase
+          .from('spaces')
+          .select('id, name, airbnb_ical_url, airbnb_blocked_dates')
+          .not('airbnb_ical_url', 'is', null)
+          .eq('is_archived', false)
+          .order('name');
+
+        if (spacesError) throw spacesError;
+
+        // Load all active/future assignments for these spaces
+        const { data: assignments, error: assignmentsError } = await supabase
           .from('assignments')
           .select(`
-            id, start_date, end_date, airbnb_uid, notes,
+            id, start_date, end_date, status, airbnb_uid, notes,
             person:person_id(first_name, last_name),
-            assignment_spaces(space:space_id(id, name))
+            assignment_spaces(space_id)
           `)
-          .not('airbnb_uid', 'is', null)
-          .gte('end_date', today)
+          .in('status', ['active', 'prospect', 'pending_contract', 'contract_sent'])
+          .gte('end_date', todayStr)
           .order('start_date', { ascending: true });
 
-        if (error) throw error;
+        if (assignmentsError) throw assignmentsError;
 
         const linkedSpacesList = document.getElementById('linkedSpacesList');
 
-        if (airbnbReservations && airbnbReservations.length > 0) {
-          linkedSpacesList.innerHTML = airbnbReservations.map(reservation => {
-            const spaceName = reservation.assignment_spaces?.[0]?.space?.name || 'Unknown Space';
+        if (airbnbSpaces && airbnbSpaces.length > 0) {
+          linkedSpacesList.innerHTML = airbnbSpaces.map(space => {
+            // Get assignments for this space
+            const spaceAssignments = (assignments || []).filter(a =>
+              a.assignment_spaces?.some(as => as.space_id === space.id)
+            );
 
-            // Extract display name from notes or use generic Airbnb Guest
-            let displayName = 'Airbnb Guest';
-            const notes = reservation.notes || '';
-            const airbnbMatch = notes.match(/Imported from Airbnb: (.+)/);
-            if (airbnbMatch && airbnbMatch[1]) {
-              // Use the Airbnb summary (e.g., "Reserved", "Not available", or guest name)
-              displayName = airbnbMatch[1];
+            // Get blocked dates from Airbnb
+            const blockedRanges = space.airbnb_blocked_dates || [];
+
+            // Combine assignments and blocked dates into occupied ranges
+            const occupiedRanges = [
+              ...spaceAssignments.map(a => ({
+                start: new Date(a.start_date),
+                end: new Date(a.end_date),
+                type: a.airbnb_uid ? 'airbnb' : 'tenant',
+                name: a.airbnb_uid
+                  ? (a.notes?.match(/Imported from Airbnb: (.+)/)?.[1] || 'Airbnb')
+                  : `${a.person?.first_name || ''} ${a.person?.last_name || ''}`.trim()
+              })),
+              ...blockedRanges.map(r => ({
+                start: new Date(r.start),
+                end: new Date(r.end),
+                type: 'blocked',
+                name: 'Blocked'
+              }))
+            ].filter(r => r.end >= today).sort((a, b) => a.start - b.start);
+
+            // Find next available window
+            let nextAvailable = today;
+            let availableUntil = null;
+
+            for (const range of occupiedRanges) {
+              if (range.start <= nextAvailable && range.end >= nextAvailable) {
+                // Currently occupied, move to day after this range ends
+                nextAvailable = new Date(range.end);
+                nextAvailable.setDate(nextAvailable.getDate() + 1);
+              } else if (range.start > nextAvailable) {
+                // Found a gap - available until this range starts
+                availableUntil = new Date(range.start);
+                availableUntil.setDate(availableUntil.getDate() - 1);
+                break;
+              }
             }
 
-            // Check if this is a real person (not the generic Airbnb Guest)
-            const person = reservation.person;
-            if (person && person.first_name !== 'Airbnb') {
-              displayName = `${person.first_name} ${person.last_name || ''}`.trim();
+            // Format availability status
+            let availabilityHtml = '';
+            const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            if (nextAvailable <= today) {
+              if (availableUntil) {
+                availabilityHtml = `<span class="availability available">Available now until ${formatDate(availableUntil)}</span>`;
+              } else {
+                availabilityHtml = `<span class="availability available">Available now</span>`;
+              }
+            } else {
+              if (availableUntil) {
+                availabilityHtml = `<span class="availability occupied">Next: ${formatDate(nextAvailable)} - ${formatDate(availableUntil)}</span>`;
+              } else {
+                availabilityHtml = `<span class="availability occupied">Next available: ${formatDate(nextAvailable)}</span>`;
+              }
             }
 
-            const start = new Date(reservation.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const end = new Date(reservation.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            // Show current occupant if any
+            const currentOccupant = occupiedRanges.find(r => r.start <= today && r.end >= today);
+            let occupantHtml = '';
+            if (currentOccupant) {
+              const endDate = formatDate(currentOccupant.end);
+              if (currentOccupant.type === 'blocked') {
+                occupantHtml = `<span class="current-occupant blocked">Blocked until ${endDate}</span>`;
+              } else if (currentOccupant.type === 'airbnb') {
+                occupantHtml = `<span class="current-occupant airbnb">${currentOccupant.name} until ${endDate}</span>`;
+              } else {
+                occupantHtml = `<span class="current-occupant tenant">${currentOccupant.name} until ${endDate}</span>`;
+              }
+            }
 
             return `
               <div class="linked-space-item">
-                <span class="linked-space-name">${spaceName}</span>
-                <span class="linked-space-booking">${displayName}: ${start} - ${end}</span>
+                <div class="linked-space-name">${space.name}</div>
+                <div class="linked-space-status">
+                  ${occupantHtml}
+                  ${availabilityHtml}
+                </div>
               </div>
             `;
           }).join('');
         } else {
-          linkedSpacesList.innerHTML = '<p class="text-muted">No upcoming Airbnb reservations.</p>';
+          linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb. Add Airbnb iCal URLs in space settings.</p>';
         }
       } catch (error) {
         console.error('Error loading Airbnb rentals:', error);
