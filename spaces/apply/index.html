@@ -6,8 +6,153 @@
   <title>Apply - Alpaca Playhouse Austin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    /* Site-wide Navigation Bar */
+    .site-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      background: #2d3024;
+      color: white;
+    }
+
+    .site-nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: white;
+    }
+
+    .site-nav__logo img {
+      height: 32px;
+      width: auto;
+    }
+
+    .site-nav__logo span {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .site-nav__links {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+    }
+
+    .site-nav__links a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .site-nav__links a:hover,
+    .site-nav__links a.active {
+      color: white;
+    }
+
+    .site-nav__toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .site-nav__toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: white;
+      margin: 5px 0;
+    }
+
+    /* Mobile Site Navigation */
+    .site-nav-mobile {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #2d3024;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .site-nav-mobile.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .site-nav-mobile__close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+    }
+
+    .site-nav-mobile__links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+    }
+
+    .site-nav-mobile__links li {
+      margin: 1.25rem 0;
+    }
+
+    .site-nav-mobile__links a {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.5rem;
+      color: white;
+      text-decoration: none;
+    }
+
+    .site-nav-mobile__links a.active {
+      color: var(--accent);
+    }
+
+    @media (max-width: 900px) {
+      .site-nav__links {
+        display: none;
+      }
+
+      .site-nav__toggle {
+        display: block;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .site-nav {
+        padding: 0.75rem 1rem;
+      }
+
+      .site-nav__logo span {
+        font-size: 0.95rem;
+      }
+
+      .site-nav__logo img {
+        height: 28px;
+      }
+    }
+
     :root {
       --bg: #faf9f7;
       --bg-card: #ffffff;
@@ -503,6 +648,38 @@
   </style>
 </head>
 <body>
+  <!-- Site-wide Navigation -->
+  <nav class="site-nav">
+    <a href="/" class="site-nav__logo">
+      <img src="/assets/branding/whitehead.png" alt="Austin Alpaca Playhouse">
+      <span>Austin Alpaca Playhouse</span>
+    </a>
+    <ul class="site-nav__links">
+      <li><a href="/visiting/">Visiting</a></li>
+      <li><a href="/spaces/" class="active">Rentals</a></li>
+      <li><a href="/spaces/events/">Events</a></li>
+      <li><a href="/community/">Community</a></li>
+      <li><a href="/photos/">Photos</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+    <button class="site-nav__toggle" id="siteNavToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Site Navigation -->
+  <div class="site-nav-mobile" id="siteNavMobile">
+    <button class="site-nav-mobile__close" id="siteNavMobileClose">&times;</button>
+    <ul class="site-nav-mobile__links">
+      <li><a href="/visiting/">Visiting</a></li>
+      <li><a href="/spaces/" class="active">Rentals</a></li>
+      <li><a href="/spaces/events/">Events</a></li>
+      <li><a href="/community/">Community</a></li>
+      <li><a href="/photos/">Photos</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+  </div>
+
   <header>
     <h1>Alpaca Playhouse Austin</h1>
     <p>Residency Application</p>
@@ -1561,6 +1738,16 @@
     // Initialize
     loadSpaces();
     loadFeeSettings();
+
+    // Mobile navigation toggle
+    const siteNavToggle = document.getElementById('siteNavToggle');
+    const siteNavMobile = document.getElementById('siteNavMobile');
+    const siteNavMobileClose = document.getElementById('siteNavMobileClose');
+
+    if (siteNavToggle && siteNavMobile) {
+      siteNavToggle.addEventListener('click', () => siteNavMobile.classList.add('open'));
+      siteNavMobileClose.addEventListener('click', () => siteNavMobile.classList.remove('open'));
+    }
   </script>
 </body>
 </html>
