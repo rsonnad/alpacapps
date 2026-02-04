@@ -258,6 +258,38 @@
   display: block;
 }
 
+/* Event detail modal tabs (same styling as rental) */
+.event-detail-tab {
+  padding: 0.625rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: -2px;
+  transition: all 0.15s ease;
+}
+
+.event-detail-tab:hover {
+  color: var(--text);
+}
+
+.event-detail-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.event-detail-tab-content {
+  display: none;
+}
+
+.event-detail-tab-content.active {
+  display: block;
+}
+
 /* =============================================
    TERMS SAVE STATUS
    ============================================= */
