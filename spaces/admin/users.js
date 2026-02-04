@@ -450,9 +450,21 @@ function render() {
 }
 
 function renderInvitations() {
-  pendingCount.textContent = invitations.length;
+  // Deduplicate invitations by email, keeping only the most recent one per email
+  // (invitations are already sorted by invited_at desc, so first occurrence is most recent)
+  const seenEmails = new Set();
+  const uniqueInvitations = invitations.filter(inv => {
+    const emailLower = inv.email.toLowerCase();
+    if (seenEmails.has(emailLower)) {
+      return false;
+    }
+    seenEmails.add(emailLower);
+    return true;
+  });
 
-  if (invitations.length === 0) {
+  pendingCount.textContent = uniqueInvitations.length;
+
+  if (uniqueInvitations.length === 0) {
     pendingSection.innerHTML = `
       <div class="empty-state">
         No pending invitations
@@ -473,7 +485,7 @@ function renderInvitations() {
         </tr>
       </thead>
       <tbody>
-        ${invitations.map(inv => {
+        ${uniqueInvitations.map(inv => {
           const isExpired = new Date(inv.expires_at) < new Date();
           const emailStatus = getEmailStatus(inv);
           return `
