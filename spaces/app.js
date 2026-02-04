@@ -190,6 +190,32 @@ async function loadData(retryCount = 0) {
       }
     });
 
+    // Third pass: propagate child unavailability to parents
+    // If any child space is occupied, the parent is also unavailable
+    spaces.forEach(space => {
+      if (!space.parent_id && space.isAvailable) {
+        // This is a parent space that's currently marked available
+        const childSpaces = spaces.filter(s => s.parent_id === space.id);
+        if (childSpaces.length > 0) {
+          const unavailableChildren = childSpaces.filter(child => !child.isAvailable);
+          if (unavailableChildren.length > 0) {
+            // At least one child is occupied, so parent becomes unavailable
+            space.isAvailable = false;
+            // Parent becomes available when ALL children are available
+            // So use the latest (max) availableFrom date among unavailable children
+            const childAvailableDates = unavailableChildren
+              .map(c => c.availableFrom)
+              .filter(d => d !== null);
+            if (childAvailableDates.length > 0) {
+              space.availableFrom = new Date(Math.max(...childAvailableDates.map(d => d.getTime())));
+            } else {
+              space.availableFrom = null; // TBD - no known end date
+            }
+          }
+        }
+      }
+    });
+
   } catch (error) {
     console.error('Error loading data:', error);
 
