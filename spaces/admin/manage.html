@@ -745,90 +745,76 @@
     }
 
     .linked-spaces-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 768px) {
-      .linked-spaces-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .occupancy-column {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0;
     }
 
-    .occupancy-column-header {
-      font-weight: 600;
+    .occupancy-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.875rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 0.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
-    .occupancy-column-header.airbnb {
+    .occupancy-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+    }
+
+    .occupancy-table th.col-airbnb {
       color: #FF5A5F;
       border-bottom-color: #FF5A5F;
     }
 
-    .occupancy-column-header.tenant {
+    .occupancy-table th.col-direct {
       color: var(--accent);
       border-bottom-color: var(--accent);
     }
 
-    .linked-space-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .occupancy-table td {
       padding: 0.75rem 1rem;
-      background: var(--bg);
-      border-radius: var(--radius);
-      font-size: 0.875rem;
-      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
     }
 
-    .linked-space-name {
+    .occupancy-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .occupancy-table .space-name {
       font-weight: 600;
-      min-width: 100px;
+      min-width: 140px;
     }
 
-    .linked-space-status {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.25rem;
+    .occupancy-cell {
       font-size: 0.8rem;
-      text-align: right;
     }
 
-    .current-occupant {
-      color: var(--text-muted);
+    .occupancy-cell .guest-name {
+      font-weight: 500;
     }
 
-    .current-occupant.tenant {
+    .occupancy-cell .guest-name.airbnb {
+      color: #FF5A5F;
+    }
+
+    .occupancy-cell .guest-name.tenant {
       color: var(--accent);
     }
 
-    .current-occupant.airbnb {
-      color: #FF5A5F; /* Airbnb red */
-    }
-
-    .current-occupant.blocked {
+    .occupancy-cell .guest-name.blocked {
       color: var(--warning);
     }
 
-    .no-occupants-message {
+    .occupancy-cell .guest-dates {
       color: var(--text-muted);
-      font-size: 0.875rem;
-      padding: 0.75rem 1rem;
-      text-align: center;
+      font-size: 0.75rem;
+    }
+
+    .occupancy-cell .empty {
+      color: var(--text-muted);
     }
 
     .availability {
@@ -7588,10 +7574,6 @@ Deposit: ${req.deposit_status}
         const linkedSpacesList = document.getElementById('linkedSpacesList');
 
         if (airbnbSpaces && airbnbSpaces.length > 0) {
-          // Process all spaces and collect occupancy data
-          const airbnbOccupied = [];
-          const tenantOccupied = [];
-
           const currentYear = new Date().getFullYear();
           const formatDate = (d) => {
             const opts = { month: 'short', day: 'numeric' };
@@ -7601,7 +7583,8 @@ Deposit: ${req.deposit_status}
             return d.toLocaleDateString('en-US', opts);
           };
 
-          airbnbSpaces.forEach(space => {
+          // Build table rows - one row per space
+          const tableRows = airbnbSpaces.map(space => {
             // Get assignments for this space
             const spaceAssignments = (assignments || []).filter(a =>
               a.assignment_spaces?.some(as => as.space_id === space.id)
@@ -7613,12 +7596,10 @@ Deposit: ${req.deposit_status}
             // Combine assignments and blocked dates into occupied ranges
             const occupiedRanges = [
               ...spaceAssignments.map(a => {
-                // Get person name if available (and not generic "Airbnb Guest")
                 const personName = a.person && a.person.first_name !== 'Airbnb'
                   ? `${a.person.first_name} ${a.person.last_name || ''}`.trim()
                   : null;
 
-                // For Airbnb bookings, prefer person name, then notes, then fallback
                 let displayName;
                 if (a.airbnb_uid) {
                   displayName = personName
@@ -7632,103 +7613,56 @@ Deposit: ${req.deposit_status}
                   start: new Date(a.start_date),
                   end: new Date(a.end_date),
                   type: a.airbnb_uid ? 'airbnb' : 'tenant',
-                  name: displayName,
-                  spaceName: space.name
+                  name: displayName
                 };
               }),
               ...blockedRanges.map(r => ({
                 start: new Date(r.start),
                 end: new Date(r.end),
                 type: 'blocked',
-                name: 'Blocked',
-                spaceName: space.name
+                name: 'Blocked'
               }))
             ].filter(r => r.end >= today).sort((a, b) => a.start - b.start);
 
-            // Find current occupant
-            const currentOccupant = occupiedRanges.find(r => r.start <= today && r.end >= today);
+            // Find current Airbnb guest
+            const currentAirbnb = occupiedRanges.find(r => r.start <= today && r.end >= today && r.type === 'airbnb');
+            // Find current direct guest (tenant or blocked)
+            const currentDirect = occupiedRanges.find(r => r.start <= today && r.end >= today && (r.type === 'tenant' || r.type === 'blocked'));
 
-            if (currentOccupant) {
-              // Find next available window
-              let nextAvailable = today;
-              let availableUntil = null;
-
-              for (const range of occupiedRanges) {
-                if (range.start <= nextAvailable && range.end >= nextAvailable) {
-                  nextAvailable = new Date(range.end);
-                  nextAvailable.setDate(nextAvailable.getDate() + 1);
-                } else if (range.start > nextAvailable) {
-                  availableUntil = new Date(range.start);
-                  availableUntil.setDate(availableUntil.getDate() - 1);
-                  break;
-                }
+            // Render cell content
+            const renderCell = (occupant) => {
+              if (!occupant) {
+                return '<span class="empty">-</span>';
               }
-
-              const occupantData = {
-                spaceName: space.name,
-                name: currentOccupant.name,
-                endDate: formatDate(currentOccupant.end),
-                type: currentOccupant.type,
-                nextAvailable: nextAvailable > today ? formatDate(nextAvailable) : null,
-                availableUntil: availableUntil ? formatDate(availableUntil) : null
-              };
-
-              if (currentOccupant.type === 'airbnb') {
-                airbnbOccupied.push(occupantData);
-              } else {
-                tenantOccupied.push(occupantData);
+              const endDate = formatDate(occupant.end);
+              if (occupant.type === 'blocked') {
+                return `<div class="guest-name blocked">Blocked</div><div class="guest-dates">until ${endDate}</div>`;
               }
-            }
-          });
-
-          // Render two columns
-          const renderOccupantItem = (item) => {
-            let availabilityHtml = '';
-            if (item.nextAvailable) {
-              availabilityHtml = item.availableUntil
-                ? `<span class="availability occupied">Next: ${item.nextAvailable} - ${item.availableUntil}</span>`
-                : `<span class="availability occupied">Next: ${item.nextAvailable}</span>`;
-            }
-
-            const occupantClass = item.type === 'airbnb' ? 'airbnb' : (item.type === 'blocked' ? 'blocked' : 'tenant');
-            const occupantLabel = item.type === 'blocked'
-              ? `Blocked until ${item.endDate}`
-              : `${item.name} until ${item.endDate}`;
+              return `<div class="guest-name ${occupant.type}">${occupant.name}</div><div class="guest-dates">until ${endDate}</div>`;
+            };
 
             return `
-              <div class="linked-space-item">
-                <div class="linked-space-name">${item.spaceName}</div>
-                <div class="linked-space-status">
-                  <span class="current-occupant ${occupantClass}">${occupantLabel}</span>
-                  ${availabilityHtml}
-                </div>
-              </div>
+              <tr>
+                <td class="space-name">${space.name}</td>
+                <td class="occupancy-cell">${renderCell(currentAirbnb)}</td>
+                <td class="occupancy-cell">${renderCell(currentDirect)}</td>
+              </tr>
             `;
-          };
-
-          const airbnbColumnHtml = airbnbOccupied.length > 0
-            ? airbnbOccupied.map(renderOccupantItem).join('')
-            : '<p class="no-occupants-message">No Airbnb guests</p>';
-
-          const tenantColumnHtml = tenantOccupied.length > 0
-            ? tenantOccupied.map(renderOccupantItem).join('')
-            : '<p class="no-occupants-message">No tenants or blocks</p>';
+          }).join('');
 
           linkedSpacesList.innerHTML = `
-            <div class="occupancy-column">
-              <div class="occupancy-column-header airbnb">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.03 2 3 6.03 3 11c0 3.19 1.66 5.99 4.17 7.59L12 22l4.83-3.41C19.34 16.99 21 14.19 21 11c0-4.97-4.03-9-9-9zm0 12.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
-                Airbnb Guests
-              </div>
-              ${airbnbColumnHtml}
-            </div>
-            <div class="occupancy-column">
-              <div class="occupancy-column-header tenant">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                Tenants / Blocked
-              </div>
-              ${tenantColumnHtml}
-            </div>
+            <table class="occupancy-table">
+              <thead>
+                <tr>
+                  <th>Space</th>
+                  <th class="col-airbnb">Airbnb</th>
+                  <th class="col-direct">Direct</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
           `;
         } else {
           linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb. Add Airbnb iCal URLs in space settings.</p>';
