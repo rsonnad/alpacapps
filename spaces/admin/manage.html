@@ -1793,6 +1793,111 @@
           </div>
         </div>
 
+        <!-- Twilio SMS Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Twilio SMS</h2>
+            <span class="badge" id="twilioModeBadge">Loading...</span>
+          </div>
+          <div class="section-body">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="twilioTestMode">
+                <span>Test Mode (log messages without sending)</span>
+              </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.25rem;">
+                <strong>Phone Number:</strong> <span id="twilioPhoneDisplay">Loading...</span>
+              </p>
+              <p class="text-muted" style="font-size: 0.8rem;">
+                When test mode is enabled, SMS messages are logged in the database but not actually sent via Twilio.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-small btn-primary" id="openComposeSmsBtn">Compose SMS</button>
+              <button class="btn-small" id="openBulkSmsBtn">Send to All Tenants</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Inbound SMS Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Inbound SMS</h2>
+            <button class="btn-small" id="refreshInboundSmsBtn">Refresh</button>
+          </div>
+          <div class="section-body">
+            <div id="inboundSmsList" style="max-height: 400px; overflow-y: auto;">
+              <p class="text-muted">Loading...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Compose SMS Modal -->
+  <div id="composeSmsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 id="composeSmsTitle">Send SMS</h2>
+        <button class="modal-close" id="closeComposeSmsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Recipient</label>
+          <select id="smsRecipientSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px;">
+            <option value="">Select a tenant...</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Message</label>
+          <textarea id="smsComposeBody" maxlength="1600" placeholder="Type your message..." rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px; resize: vertical; font-family: inherit;"></textarea>
+          <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
+            <span class="text-muted" style="font-size: 0.75rem;"><span id="smsCharCount">0</span> chars (<span id="smsSegmentCount">0</span> segments)</span>
+            <span class="text-muted" style="font-size: 0.75rem;">160 chars = 1 segment</span>
+          </div>
+        </div>
+        <!-- Conversation Thread -->
+        <div id="smsConversationSection" class="hidden" style="margin-bottom: 1rem;">
+          <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Conversation History</label>
+          <div id="smsConversationThread" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; background: #fafafa;"></div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button class="btn-small" id="cancelComposeSmsBtn">Cancel</button>
+          <button class="btn-small btn-primary" id="sendSmsBtn">Send SMS</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk SMS Modal -->
+  <div id="bulkSmsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Send SMS to All Active Tenants</h2>
+        <button class="modal-close" id="closeBulkSmsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="margin-bottom: 1rem;">
+          <span id="bulkSmsRecipientCount">0</span> active tenants with phone numbers will receive this message.
+        </p>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Message</label>
+          <textarea id="bulkSmsBody" maxlength="1600" placeholder="Type your announcement..." rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px; resize: vertical; font-family: inherit;"></textarea>
+          <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
+            <span class="text-muted" style="font-size: 0.75rem;"><span id="bulkSmsCharCount">0</span> chars</span>
+            <span class="text-muted" style="font-size: 0.75rem;">160 chars = 1 segment</span>
+          </div>
+        </div>
+        <div id="bulkSmsRecipientList" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; background: #fafafa;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button class="btn-small" id="cancelBulkSmsBtn">Cancel</button>
+          <button class="btn-small btn-primary" id="sendBulkSmsBtn">Send to All</button>
+        </div>
       </div>
     </div>
   </div>
@@ -8475,9 +8580,12 @@
         loadPaymentMethods(),
         loadFeeSettings(),
         loadFeeCodes(),
-        loadSquareConfig()
+        loadSquareConfig(),
+        loadTwilioConfig(),
+        loadInboundSms()
       ]);
       setupFeeSettingsListeners();
+      setupTwilioListeners();
     }
 
     // Fee Settings (Square Payments)
@@ -8666,6 +8774,387 @@
           e.target.checked = !testMode; // Revert
         }
       });
+    }
+
+    // =============================================
+    // TWILIO SMS
+    // =============================================
+
+    const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
+
+    function formatPhoneE164(phone) {
+      if (!phone) return null;
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length === 10) return `+1${digits}`;
+      if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+      if (phone.startsWith('+') && digits.length >= 10) return `+${digits}`;
+      return null;
+    }
+
+    async function loadTwilioConfig() {
+      try {
+        const { data: config, error } = await supabase
+          .from('twilio_config')
+          .select('phone_number, test_mode, is_active')
+          .single();
+
+        if (error) throw error;
+
+        const checkbox = document.getElementById('twilioTestMode');
+        const badge = document.getElementById('twilioModeBadge');
+        const phoneDisplay = document.getElementById('twilioPhoneDisplay');
+
+        if (checkbox) checkbox.checked = config.test_mode || false;
+        if (phoneDisplay) phoneDisplay.textContent = config.phone_number || 'Not configured';
+        if (badge) {
+          badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+          badge.classList.toggle('live', !config.test_mode);
+        }
+      } catch (error) {
+        console.error('Error loading Twilio config:', error);
+      }
+    }
+
+    async function loadInboundSms() {
+      const container = document.getElementById('inboundSmsList');
+      if (!container) return;
+
+      try {
+        const { data: messages, error } = await supabase
+          .from('sms_messages')
+          .select(`*, person:person_id(id, first_name, last_name, phone)`)
+          .eq('direction', 'inbound')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (error) throw error;
+
+        if (!messages || messages.length === 0) {
+          container.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">No inbound messages yet.</p>';
+          return;
+        }
+
+        container.innerHTML = messages.map(msg => {
+          const senderName = msg.person
+            ? `${msg.person.first_name || ''} ${msg.person.last_name || ''}`.trim()
+            : msg.from_number;
+          const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          return `
+            <div style="padding: 0.5rem; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openSmsConversation('${msg.person_id || ''}', '${msg.from_number}')">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 0.85rem;">${senderName}</strong>
+                <span class="text-muted" style="font-size: 0.75rem;">${time}</span>
+              </div>
+              <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${msg.body}</p>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading inbound SMS:', error);
+        container.innerHTML = '<p class="text-muted" style="font-size: 0.85rem; color: red;">Failed to load messages.</p>';
+      }
+    }
+
+    function setupTwilioListeners() {
+      // Test mode toggle
+      document.getElementById('twilioTestMode')?.addEventListener('change', async (e) => {
+        const testMode = e.target.checked;
+        try {
+          const { error } = await supabase
+            .from('twilio_config')
+            .update({ test_mode: testMode, updated_at: new Date().toISOString() })
+            .eq('id', 1);
+          if (error) throw error;
+
+          const badge = document.getElementById('twilioModeBadge');
+          if (badge) {
+            badge.textContent = testMode ? 'Test Mode' : 'Live';
+            badge.classList.toggle('live', !testMode);
+          }
+          showToast(`Twilio ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+        } catch (error) {
+          console.error('Error updating Twilio mode:', error);
+          showToast('Failed to update Twilio mode', 'error');
+          e.target.checked = !testMode;
+        }
+      });
+
+      // Compose SMS button
+      document.getElementById('openComposeSmsBtn')?.addEventListener('click', openComposeSmsModal);
+
+      // Bulk SMS button
+      document.getElementById('openBulkSmsBtn')?.addEventListener('click', openBulkSmsModal);
+
+      // Refresh inbound
+      document.getElementById('refreshInboundSmsBtn')?.addEventListener('click', loadInboundSms);
+
+      // Compose modal controls
+      document.getElementById('closeComposeSmsModal')?.addEventListener('click', () => {
+        document.getElementById('composeSmsModal').classList.add('hidden');
+      });
+      document.getElementById('cancelComposeSmsBtn')?.addEventListener('click', () => {
+        document.getElementById('composeSmsModal').classList.add('hidden');
+      });
+      document.getElementById('sendSmsBtn')?.addEventListener('click', handleSendSms);
+
+      // Character counter
+      document.getElementById('smsComposeBody')?.addEventListener('input', (e) => {
+        const len = e.target.value.length;
+        document.getElementById('smsCharCount').textContent = len;
+        document.getElementById('smsSegmentCount').textContent = Math.ceil(len / 160) || 0;
+      });
+
+      // Recipient change - load conversation
+      document.getElementById('smsRecipientSelect')?.addEventListener('change', async (e) => {
+        const personId = e.target.value;
+        const section = document.getElementById('smsConversationSection');
+        if (!personId) {
+          section.classList.add('hidden');
+          return;
+        }
+        await loadSmsConversation(personId);
+      });
+
+      // Bulk modal controls
+      document.getElementById('closeBulkSmsModal')?.addEventListener('click', () => {
+        document.getElementById('bulkSmsModal').classList.add('hidden');
+      });
+      document.getElementById('cancelBulkSmsBtn')?.addEventListener('click', () => {
+        document.getElementById('bulkSmsModal').classList.add('hidden');
+      });
+      document.getElementById('sendBulkSmsBtn')?.addEventListener('click', handleSendBulkSms);
+
+      document.getElementById('bulkSmsBody')?.addEventListener('input', (e) => {
+        document.getElementById('bulkSmsCharCount').textContent = e.target.value.length;
+      });
+    }
+
+    async function getActiveTenants() {
+      const { data: assignments, error } = await supabase
+        .from('assignments')
+        .select(`
+          id,
+          person:person_id(id, first_name, last_name, phone, email)
+        `)
+        .eq('status', 'active')
+        .eq('type', 'dwelling');
+
+      if (error) {
+        console.error('Error loading active tenants:', error);
+        return [];
+      }
+
+      // Deduplicate by person_id
+      const seen = new Set();
+      return (assignments || [])
+        .filter(a => a.person && !seen.has(a.person.id) && seen.add(a.person.id))
+        .map(a => a.person);
+    }
+
+    async function openComposeSmsModal(presetPersonId = null) {
+      const modal = document.getElementById('composeSmsModal');
+      const select = document.getElementById('smsRecipientSelect');
+      const bodyInput = document.getElementById('smsComposeBody');
+
+      // Reset
+      bodyInput.value = '';
+      document.getElementById('smsCharCount').textContent = '0';
+      document.getElementById('smsSegmentCount').textContent = '0';
+      document.getElementById('smsConversationSection').classList.add('hidden');
+
+      // Populate recipients
+      const tenants = await getActiveTenants();
+      select.innerHTML = '<option value="">Select a tenant...</option>' +
+        tenants.map(t => {
+          const phone = t.phone ? ` (${t.phone})` : ' (no phone)';
+          return `<option value="${t.id}" ${!t.phone ? 'disabled' : ''} ${t.id === presetPersonId ? 'selected' : ''}>${t.first_name || ''} ${t.last_name || ''}${phone}</option>`;
+        }).join('');
+
+      modal.classList.remove('hidden');
+
+      // If preset, load conversation
+      if (presetPersonId) {
+        await loadSmsConversation(presetPersonId);
+      }
+    }
+
+    async function loadSmsConversation(personId) {
+      const section = document.getElementById('smsConversationSection');
+      const thread = document.getElementById('smsConversationThread');
+
+      const { data: messages, error } = await supabase
+        .from('sms_messages')
+        .select('*')
+        .eq('person_id', personId)
+        .order('created_at', { ascending: true });
+
+      if (error || !messages || messages.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      thread.innerHTML = messages.map(msg => {
+        const isOutbound = msg.direction === 'outbound';
+        const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        const statusBadge = msg.status === 'test' ? ' <span style="color: #f59e0b; font-size: 0.7rem;">[TEST]</span>' : '';
+        return `
+          <div style="margin-bottom: 0.5rem; text-align: ${isOutbound ? 'right' : 'left'};">
+            <div style="display: inline-block; max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem; background: ${isOutbound ? '#dcf8c6' : '#f0f0f0'}; text-align: left;">
+              ${msg.body}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">${time}${statusBadge}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Scroll to bottom
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    function openSmsConversation(personId, fromNumber) {
+      if (personId) {
+        openComposeSmsModal(personId);
+      } else {
+        showToast(`Unknown sender: ${fromNumber}`, 'info');
+      }
+    }
+
+    async function handleSendSms() {
+      const select = document.getElementById('smsRecipientSelect');
+      const bodyInput = document.getElementById('smsComposeBody');
+      const sendBtn = document.getElementById('sendSmsBtn');
+      const personId = select.value;
+      const messageBody = bodyInput.value.trim();
+
+      if (!personId) return showToast('Select a recipient', 'error');
+      if (!messageBody) return showToast('Enter a message', 'error');
+
+      // Get person phone
+      const { data: person, error: personError } = await supabase
+        .from('people')
+        .select('id, first_name, last_name, phone')
+        .eq('id', personId)
+        .single();
+
+      if (personError || !person?.phone) {
+        return showToast('Recipient has no phone number', 'error');
+      }
+
+      const formattedPhone = formatPhoneE164(person.phone);
+      if (!formattedPhone) return showToast('Invalid phone number format', 'error');
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(SEND_SMS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            type: 'general',
+            to: formattedPhone,
+            data: { message: messageBody },
+            person_id: personId,
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to send SMS');
+
+        showToast(`SMS sent to ${person.first_name}${result.test_mode ? ' (test mode)' : ''}`, 'success');
+        bodyInput.value = '';
+        document.getElementById('smsCharCount').textContent = '0';
+        document.getElementById('smsSegmentCount').textContent = '0';
+
+        // Refresh conversation
+        await loadSmsConversation(personId);
+      } catch (error) {
+        console.error('Error sending SMS:', error);
+        showToast(`Failed to send SMS: ${error.message}`, 'error');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send SMS';
+      }
+    }
+
+    let bulkSmsRecipients = [];
+
+    async function openBulkSmsModal() {
+      const modal = document.getElementById('bulkSmsModal');
+      const bodyInput = document.getElementById('bulkSmsBody');
+      const countEl = document.getElementById('bulkSmsRecipientCount');
+      const listEl = document.getElementById('bulkSmsRecipientList');
+
+      bodyInput.value = '';
+      document.getElementById('bulkSmsCharCount').textContent = '0';
+
+      const tenants = await getActiveTenants();
+      bulkSmsRecipients = tenants.filter(t => t.phone && formatPhoneE164(t.phone));
+
+      countEl.textContent = bulkSmsRecipients.length;
+      listEl.innerHTML = bulkSmsRecipients.map(t =>
+        `<div style="padding: 0.25rem 0; border-bottom: 1px solid #f0f0f0;">${t.first_name || ''} ${t.last_name || ''} <span class="text-muted">${t.phone}</span></div>`
+      ).join('') || '<p class="text-muted">No tenants with phone numbers found.</p>';
+
+      modal.classList.remove('hidden');
+    }
+
+    async function handleSendBulkSms() {
+      const bodyInput = document.getElementById('bulkSmsBody');
+      const sendBtn = document.getElementById('sendBulkSmsBtn');
+      const messageBody = bodyInput.value.trim();
+
+      if (!messageBody) return showToast('Enter a message', 'error');
+      if (bulkSmsRecipients.length === 0) return showToast('No recipients with phone numbers', 'error');
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = `Sending (0/${bulkSmsRecipients.length})...`;
+
+      const { data: { session } } = await supabase.auth.getSession();
+      let sent = 0, failed = 0;
+
+      for (let i = 0; i < bulkSmsRecipients.length; i++) {
+        const tenant = bulkSmsRecipients[i];
+        const formattedPhone = formatPhoneE164(tenant.phone);
+        if (!formattedPhone) { failed++; continue; }
+
+        try {
+          const response = await fetch(SEND_SMS_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
+              'apikey': supabaseAnonKey,
+            },
+            body: JSON.stringify({
+              type: 'bulk_announcement',
+              to: formattedPhone,
+              data: { message: messageBody, first_name: tenant.first_name },
+              person_id: tenant.id,
+            }),
+          });
+
+          if (response.ok) { sent++; } else { failed++; }
+        } catch (e) { failed++; }
+
+        sendBtn.textContent = `Sending (${i + 1}/${bulkSmsRecipients.length})...`;
+
+        // Rate limit: 1 msg/sec for Twilio long codes
+        if (i < bulkSmsRecipients.length - 1) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+
+      showToast(`Sent: ${sent}, Failed: ${failed}`, sent > 0 ? 'success' : 'error');
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send to All';
+      document.getElementById('bulkSmsModal').classList.add('hidden');
     }
 
     // Fee Code Modal
