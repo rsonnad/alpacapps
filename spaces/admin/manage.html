@@ -621,50 +621,70 @@
     #tableView td {
       padding: 0.625rem 0.75rem;
       vertical-align: middle;
+    }
+
+    /* Only apply truncation to table data cells, not headers */
+    #tableView td {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Column widths - total should be 100% */
+    /* Allow headers to wrap if needed */
+    #tableView th {
+      font-size: 0.7rem;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    /* Column widths with min-widths to prevent excessive truncation */
     #tableView th:nth-child(1),
-    #tableView td:nth-child(1) { width: 54px; } /* thumbnail */
+    #tableView td:nth-child(1) { width: 54px; min-width: 54px; } /* thumbnail */
 
     #tableView th:nth-child(2),
-    #tableView td:nth-child(2) { width: 22%; white-space: normal; } /* name + description */
+    #tableView td:nth-child(2) { min-width: 200px; white-space: normal; } /* name + description */
 
     #tableView th:nth-child(3),
-    #tableView td:nth-child(3) { width: 8%; } /* rate */
+    #tableView td:nth-child(3) { min-width: 70px; } /* rate */
 
     #tableView th:nth-child(4),
-    #tableView td:nth-child(4) { width: 5%; } /* size */
+    #tableView td:nth-child(4) { min-width: 50px; } /* size */
 
     #tableView th:nth-child(5),
-    #tableView td:nth-child(5) { width: 6%; } /* beds */
+    #tableView td:nth-child(5) { min-width: 45px; } /* beds */
 
     #tableView th:nth-child(6),
-    #tableView td:nth-child(6) { width: 6%; } /* bath */
+    #tableView td:nth-child(6) { min-width: 50px; } /* bath */
 
     #tableView th:nth-child(7),
-    #tableView td:nth-child(7) { width: 10%; white-space: normal; } /* amenities */
+    #tableView td:nth-child(7) { min-width: 80px; white-space: normal; } /* amenities */
 
     #tableView th:nth-child(8),
-    #tableView td:nth-child(8) { width: 7%; } /* available */
+    #tableView td:nth-child(8) { min-width: 65px; } /* available */
 
     #tableView th:nth-child(9),
-    #tableView td:nth-child(9) { width: 7%; } /* until */
+    #tableView td:nth-child(9) { min-width: 75px; } /* until */
 
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { width: 10%; white-space: normal; } /* tenant */
+    #tableView td:nth-child(10) { min-width: 100px; white-space: normal; } /* tenant */
 
     #tableView th:nth-child(11),
-    #tableView td:nth-child(11) { width: 10%; white-space: normal; } /* lease dates */
+    #tableView td:nth-child(11) { min-width: 100px; white-space: normal; } /* lease dates */
 
     #tableView th:nth-child(12),
-    #tableView td:nth-child(12) { width: 7%; } /* status */
+    #tableView td:nth-child(12) { min-width: 60px; } /* status */
 
     #tableView th:nth-child(13),
-    #tableView td:nth-child(13) { width: 3%; text-align: center; } /* vis */
+    #tableView td:nth-child(13) { min-width: 35px; text-align: center; } /* vis */
+
+    /* Table container should scroll horizontally when needed */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    #tableView table {
+      min-width: 1000px;
+    }
 
     #tableView .table-thumbnail {
       width: 44px;
