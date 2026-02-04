@@ -2,7 +2,7 @@
 // Uses Edge Function proxy to call Gemini API (keeps API key secure)
 
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTc4OTM5MjcsImV4cCI6MjAzMzQ2OTkyN30.HOH98PqT_mCHHKqNGqIqVLdKVfmi1xZPZfFUaKsBlzE';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 const ASK_QUESTION_URL = `${SUPABASE_URL}/functions/v1/ask-question`;
 
 /**
