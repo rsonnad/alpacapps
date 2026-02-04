@@ -192,9 +192,10 @@ async function loadData(retryCount = 0) {
 
     // Third pass: propagate child unavailability to parents
     // If any child space is occupied, the parent is also unavailable
+    // Note: A space can be both a parent (has children) AND a child (has parent_id)
     spaces.forEach(space => {
-      if (!space.parent_id && space.isAvailable) {
-        // This is a parent space that's currently marked available
+      if (space.isAvailable) {
+        // Check if this space has any children
         const childSpaces = spaces.filter(s => s.parent_id === space.id);
         if (childSpaces.length > 0) {
           const unavailableChildren = childSpaces.filter(child => !child.isAvailable);
