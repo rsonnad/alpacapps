@@ -70,7 +70,8 @@ serve(async (req) => {
     const { data: existingGuest } = await supabase
       .from('people')
       .select('id')
-      .eq('name', 'Airbnb Guest')
+      .eq('first_name', 'Airbnb')
+      .eq('last_name', 'Guest')
       .single();
 
     if (existingGuest) {
@@ -78,7 +79,7 @@ serve(async (req) => {
     } else {
       const { data: newGuest, error: createError } = await supabase
         .from('people')
-        .insert({ name: 'Airbnb Guest', type: 'guest' })
+        .insert({ first_name: 'Airbnb', last_name: 'Guest', type: 'guest' })
         .select('id')
         .single();
 
