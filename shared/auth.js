@@ -48,31 +48,13 @@ let authHandlingInProgress = false; // Prevent concurrent auth handling
  * @returns {Promise<{user: object|null, role: string}>}
  */
 export async function initAuth() {
-  // Check for existing session (with timeout to prevent hangs)
-  let session = null;
-  try {
-    const { data, error } = await withTimeout(
-      supabase.auth.getSession(),
-      AUTH_TIMEOUT_MS,
-      'Session check timed out'
-    );
-    if (error) {
-      console.error('Error getting session:', error);
-    }
-    session = data?.session;
-  } catch (timeoutError) {
-    console.warn('Auth session check timed out, continuing without session:', timeoutError.message);
-  }
-
-  if (session) {
-    await handleAuthChange(session);
-  }
-
   // Listen for auth changes (login, logout, token refresh)
+  // Note: INITIAL_SESSION fires when there's an existing session on page load
+  // We handle it here instead of in getSession() to avoid duplicate calls
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth state changed:', event);
 
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
       await handleAuthChange(session);
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
