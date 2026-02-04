@@ -639,43 +639,37 @@
 
     /* Column widths with min-widths to prevent excessive truncation */
     #tableView th:nth-child(1),
-    #tableView td:nth-child(1) { width: 54px; min-width: 54px; } /* thumbnail */
+    #tableView td:nth-child(1) { width: 74px; min-width: 74px; } /* thumbnail - larger */
 
     #tableView th:nth-child(2),
-    #tableView td:nth-child(2) { min-width: 200px; white-space: normal; } /* name + description */
+    #tableView td:nth-child(2) { min-width: 280px; white-space: normal; } /* name + description - more room */
 
     #tableView th:nth-child(3),
     #tableView td:nth-child(3) { min-width: 70px; } /* rate */
 
     #tableView th:nth-child(4),
-    #tableView td:nth-child(4) { min-width: 50px; } /* size */
+    #tableView td:nth-child(4) { min-width: 90px; white-space: normal; } /* details (size/bath/beds stacked) */
 
     #tableView th:nth-child(5),
-    #tableView td:nth-child(5) { min-width: 45px; } /* beds */
+    #tableView td:nth-child(5) { min-width: 80px; white-space: normal; } /* amenities */
 
     #tableView th:nth-child(6),
-    #tableView td:nth-child(6) { min-width: 50px; } /* bath */
+    #tableView td:nth-child(6) { min-width: 65px; } /* available */
 
     #tableView th:nth-child(7),
-    #tableView td:nth-child(7) { min-width: 80px; white-space: normal; } /* amenities */
+    #tableView td:nth-child(7) { min-width: 75px; } /* until */
 
     #tableView th:nth-child(8),
-    #tableView td:nth-child(8) { min-width: 65px; } /* available */
+    #tableView td:nth-child(8) { min-width: 100px; white-space: normal; } /* tenant */
 
     #tableView th:nth-child(9),
-    #tableView td:nth-child(9) { min-width: 75px; } /* until */
+    #tableView td:nth-child(9) { min-width: 100px; white-space: normal; } /* lease dates */
 
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { min-width: 100px; white-space: normal; } /* tenant */
+    #tableView td:nth-child(10) { min-width: 60px; } /* status */
 
     #tableView th:nth-child(11),
-    #tableView td:nth-child(11) { min-width: 100px; white-space: normal; } /* lease dates */
-
-    #tableView th:nth-child(12),
-    #tableView td:nth-child(12) { min-width: 60px; } /* status */
-
-    #tableView th:nth-child(13),
-    #tableView td:nth-child(13) { min-width: 35px; text-align: center; } /* vis */
+    #tableView td:nth-child(11) { min-width: 35px; text-align: center; } /* vis */
 
     /* Table container should scroll horizontally when needed */
     .table-container {
@@ -687,16 +681,16 @@
     }
 
     #tableView .table-thumbnail {
-      width: 44px;
-      height: 44px;
+      width: 64px;
+      height: 64px;
       object-fit: cover;
       border-radius: 4px;
       display: block;
     }
 
     #tableView .table-thumbnail-placeholder {
-      width: 44px;
-      height: 44px;
+      width: 64px;
+      height: 64px;
       background: var(--bg);
       border-radius: 4px;
       border: 1px dashed var(--border);
@@ -704,7 +698,17 @@
 
     #tableView .td-thumbnail {
       padding: 0.375rem 0.5rem !important;
-      width: 54px;
+      width: 74px;
+    }
+
+    #tableView .td-details {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: var(--text-muted);
+    }
+
+    #tableView .td-name-desc {
+      min-width: 280px;
     }
 
     #tableView td small {
@@ -1066,9 +1070,7 @@
                   <th></th>
                   <th data-sort="name" style="min-width: 280px;">Name</th>
                   <th data-sort="monthly_rate">Rate</th>
-                  <th data-sort="sq_footage">Size</th>
-                  <th>Beds</th>
-                  <th data-sort="bath_privacy">Bath</th>
+                  <th data-sort="sq_footage">Details</th>
                   <th>Amenities</th>
                   <th data-sort="availability">Available</th>
                   <th>Until</th>
@@ -3778,17 +3780,22 @@
           : `<div class="table-thumbnail-placeholder"></div>`;
 
         const description = space.description
-          ? (space.description.length > 60 ? space.description.substring(0, 60) + '...' : space.description)
+          ? (space.description.length > 100 ? space.description.substring(0, 100) + '...' : space.description)
           : '';
+
+        // Build stacked details: size, bath, beds
+        const detailLines = [];
+        if (space.sq_footage) detailLines.push(`${space.sq_footage} sqft`);
+        if (space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') detailLines.push(`${space.bath_privacy} bath`);
+        if (beds) detailLines.push(beds);
+        const detailsHtml = detailLines.length > 0 ? detailLines.join('<br>') : '-';
 
         return `
           <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
             <td class="td-thumbnail">${thumbnail}</td>
-            <td style="min-width: 280px;">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
+            <td class="td-name-desc">${space.parent?.name ? `<a href="?edit=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong>${description ? `<br><small class="td-description-inline">${description}</small>` : ''}</td>
             <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
-            <td>${space.sq_footage || '-'}</td>
-            <td>${beds || '-'}</td>
-            <td>${(space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : '-'}</td>
+            <td class="td-details">${detailsHtml}</td>
             <td>${space.amenities.slice(0, 3).join(', ') || '-'}</td>
             <td>${availFromStr}</td>
             <td>${availUntilStr}</td>
