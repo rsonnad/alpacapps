@@ -74,14 +74,15 @@ export async function initAuth() {
       }
     });
 
-    // Timeout fallback - if no auth event fires within 5 seconds, resolve anyway
+    // Timeout fallback - if no auth event fires within 45 seconds, resolve anyway
+    // (increased to handle slow Supabase connections during outages)
     setTimeout(() => {
       if (!resolved) {
         console.log('Auth init timeout - no session');
         resolved = true;
         resolve({ user: currentUser, role: currentRole });
       }
-    }, 5000);
+    }, 45000);
   });
 }
 
@@ -106,6 +107,10 @@ async function handleAuthChange(session) {
 
   try {
     currentUser = session.user;
+    // Set a temporary "pending" state - user is authenticated but role not yet verified
+    // This allows the UI to proceed while we fetch the full user record
+    currentRole = 'pending';
+    console.log('User authenticated, fetching app_user record...');
 
   // Fetch user record from app_users table (with timeout and retry)
   let appUser = null;
@@ -283,8 +288,10 @@ export function getAuthState() {
     isAuthenticated: currentUser !== null,
     isAdmin: currentRole === 'admin',
     isStaff: currentRole === 'staff' || currentRole === 'admin',
-    isAuthorized: currentRole === 'admin' || currentRole === 'staff',
+    // Treat 'pending' as authorized to allow redirect while we verify in background
+    isAuthorized: currentRole === 'admin' || currentRole === 'staff' || currentRole === 'pending',
     isUnauthorized: currentRole === 'unauthorized',
+    isPending: currentRole === 'pending',
   };
 }
 
