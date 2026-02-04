@@ -1741,6 +1741,56 @@
           </div>
         </div>
 
+        <!-- Fee Settings Section (Square Payments) -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Payment Fees (Square)</h2>
+            <span class="badge" id="squareModeBadge">Test Mode</span>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Configure default fees for rental applications and event deposits. Payments are processed via Square.
+            </p>
+            <div class="fee-settings-grid" id="feeSettingsGrid">
+              <!-- Fee settings loaded by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Discount Codes Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Fee Codes</h2>
+            <button class="btn-small btn-primary" id="addFeeCodeBtn">+ Add Code</button>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Create codes that set a specific price when entered. Use $0 for a free waiver.
+            </p>
+            <div id="feeCodesGrid" class="fee-codes-grid">
+              <!-- Fee codes loaded by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Square Configuration Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Square Configuration</h2>
+          </div>
+          <div class="section-body">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="squareTestMode">
+                <span>Test Mode (use sandbox credentials)</span>
+              </label>
+            </div>
+            <p class="text-muted" style="font-size: 0.8rem;">
+              When test mode is enabled, payments go through Square's sandbox environment. Disable for live payments.
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2376,6 +2426,63 @@
       </div>
       <div class="modal-footer">
         <div id="rentalActions" class="rental-action-buttons"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fee Code Modal -->
+  <div id="feeCodeModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="feeCodeModalTitle">Add Fee Code</h2>
+        <button class="modal-close" onclick="closeFeeCodeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="feeCodeForm" class="fee-code-form" onsubmit="saveFeeCode(event)">
+          <input type="hidden" id="feeCodeId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="feeCodeCode">Code *</label>
+              <input type="text" id="feeCodeCode" required placeholder="e.g., FRIEND25" style="text-transform: uppercase;">
+            </div>
+            <div class="form-group">
+              <label for="feeCodeType">Fee Type *</label>
+              <select id="feeCodeType" required>
+                <option value="rental_application">Rental Application Fee</option>
+                <option value="event_cleaning_deposit">Event Cleaning Deposit</option>
+                <option value="event_reservation_deposit">Event Reservation Deposit</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="feeCodePrice">Price ($) *</label>
+              <input type="number" id="feeCodePrice" required min="0" step="0.01" value="0" placeholder="0 for free">
+              <p class="form-hint">The actual price when this code is used. Enter 0 to waive the fee.</p>
+            </div>
+            <div class="form-group">
+              <label for="feeCodeUsageLimit">Usage Limit</label>
+              <input type="number" id="feeCodeUsageLimit" min="1" placeholder="Leave empty for unlimited">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="feeCodeDescription">Description (internal note)</label>
+            <input type="text" id="feeCodeDescription" placeholder="e.g., For referrals from John">
+          </div>
+          <div class="form-group">
+            <label for="feeCodeExpires">Expires On</label>
+            <input type="date" id="feeCodeExpires">
+            <p class="form-hint">Leave empty for no expiration.</p>
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="feeCodeActive" checked>
+            Active (can be used)
+          </label>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeFeeCodeModal()">Cancel</button>
+        <button type="submit" form="feeCodeForm" class="btn-primary">Save Code</button>
       </div>
     </div>
   </div>
@@ -7657,8 +7764,323 @@ Deposit: ${req.deposit_status}
 
     async function loadSettingsPanel() {
       settingsLoaded = true;
-      await loadPaymentMethods();
+      await Promise.all([
+        loadPaymentMethods(),
+        loadFeeSettings(),
+        loadFeeCodes(),
+        loadSquareConfig()
+      ]);
+      setupFeeSettingsListeners();
     }
+
+    // Fee Settings (Square Payments)
+    const FEE_TYPE_LABELS = {
+      'rental_application': 'Rental Application Fee',
+      'event_cleaning_deposit': 'Event Cleaning Deposit',
+      'event_reservation_deposit': 'Event Reservation Deposit'
+    };
+
+    async function loadFeeSettings() {
+      const grid = document.getElementById('feeSettingsGrid');
+      if (!grid) return;
+
+      try {
+        const { data: settings, error } = await supabase
+          .from('fee_settings')
+          .select('*')
+          .eq('is_active', true)
+          .order('fee_type');
+
+        if (error) throw error;
+
+        if (!settings || settings.length === 0) {
+          grid.innerHTML = '<p class="text-muted">No fee settings configured.</p>';
+          return;
+        }
+
+        grid.innerHTML = settings.map(setting => `
+          <div class="fee-setting-card" data-fee-type="${setting.fee_type}">
+            <div class="fee-setting-info">
+              <h4>${FEE_TYPE_LABELS[setting.fee_type] || setting.fee_type}</h4>
+              <p>${setting.description || ''}</p>
+            </div>
+            <div class="fee-setting-amount">
+              <span>$</span>
+              <input type="number"
+                     min="0"
+                     step="0.01"
+                     value="${setting.default_amount}"
+                     data-fee-id="${setting.id}"
+                     class="fee-amount-input">
+            </div>
+          </div>
+        `).join('');
+
+        // Add change listeners
+        grid.querySelectorAll('.fee-amount-input').forEach(input => {
+          input.addEventListener('change', handleFeeAmountChange);
+        });
+
+      } catch (error) {
+        console.error('Error loading fee settings:', error);
+        grid.innerHTML = '<p class="text-muted">Error loading fee settings.</p>';
+      }
+    }
+
+    async function handleFeeAmountChange(e) {
+      const input = e.target;
+      const feeId = input.dataset.feeId;
+      const newAmount = parseFloat(input.value) || 0;
+
+      try {
+        const { error } = await supabase
+          .from('fee_settings')
+          .update({
+            default_amount: newAmount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', feeId);
+
+        if (error) throw error;
+        showToast('Fee amount updated', 'success');
+      } catch (error) {
+        console.error('Error updating fee:', error);
+        showToast('Failed to update fee amount', 'error');
+      }
+    }
+
+    async function loadFeeCodes() {
+      const grid = document.getElementById('feeCodesGrid');
+      if (!grid) return;
+
+      try {
+        const { data: codes, error } = await supabase
+          .from('fee_codes')
+          .select('*')
+          .order('fee_type')
+          .order('code');
+
+        if (error) throw error;
+
+        if (!codes || codes.length === 0) {
+          grid.innerHTML = '<div class="fee-codes-empty">No fee codes configured. Click "Add Code" to create one.</div>';
+          return;
+        }
+
+        grid.innerHTML = codes.map(code => {
+          const usageText = code.usage_limit
+            ? `${code.times_used}/${code.usage_limit} used`
+            : `${code.times_used} used`;
+          const expiredClass = code.expires_at && new Date(code.expires_at) < new Date() ? 'expired' : '';
+          const inactiveClass = !code.is_active ? 'inactive' : '';
+
+          return `
+            <div class="fee-code-card ${expiredClass} ${inactiveClass}">
+              <div>
+                <span class="code-name">${code.code}</span>
+                ${code.description ? `<div class="code-usage">${code.description}</div>` : ''}
+              </div>
+              <div>
+                <span class="code-type">${FEE_TYPE_LABELS[code.fee_type] || code.fee_type}</span>
+                <div class="code-usage">${usageText}</div>
+              </div>
+              <div>
+                <span class="code-price ${code.price === 0 ? 'free' : ''}">
+                  ${code.price === 0 ? 'FREE' : '$' + code.price.toFixed(2)}
+                </span>
+              </div>
+              <div class="code-actions">
+                <button class="btn-small btn-secondary" onclick="editFeeCode('${code.id}')">Edit</button>
+                <button class="btn-small btn-danger" onclick="deleteFeeCode('${code.id}', '${code.code}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        console.error('Error loading fee codes:', error);
+        grid.innerHTML = '<div class="fee-codes-empty">Error loading fee codes.</div>';
+      }
+    }
+
+    async function loadSquareConfig() {
+      try {
+        const { data: config, error } = await supabase
+          .from('square_config')
+          .select('test_mode')
+          .single();
+
+        if (error) throw error;
+
+        const checkbox = document.getElementById('squareTestMode');
+        const badge = document.getElementById('squareModeBadge');
+
+        if (checkbox) checkbox.checked = config.test_mode;
+        if (badge) {
+          badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+          badge.classList.toggle('live', !config.test_mode);
+        }
+
+      } catch (error) {
+        console.error('Error loading Square config:', error);
+      }
+    }
+
+    function setupFeeSettingsListeners() {
+      // Add Code button
+      document.getElementById('addFeeCodeBtn')?.addEventListener('click', () => {
+        openFeeCodeModal();
+      });
+
+      // Square test mode toggle
+      document.getElementById('squareTestMode')?.addEventListener('change', async (e) => {
+        const testMode = e.target.checked;
+        try {
+          const { error } = await supabase
+            .from('square_config')
+            .update({
+              test_mode: testMode,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', (await supabase.from('square_config').select('id').single()).data.id);
+
+          if (error) throw error;
+
+          const badge = document.getElementById('squareModeBadge');
+          if (badge) {
+            badge.textContent = testMode ? 'Test Mode' : 'Live';
+            badge.classList.toggle('live', !testMode);
+          }
+
+          showToast(`Square ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+        } catch (error) {
+          console.error('Error updating Square mode:', error);
+          showToast('Failed to update Square mode', 'error');
+          e.target.checked = !testMode; // Revert
+        }
+      });
+    }
+
+    // Fee Code Modal
+    let editingFeeCodeId = null;
+
+    function openFeeCodeModal(codeId = null) {
+      editingFeeCodeId = codeId;
+      const modal = document.getElementById('feeCodeModal');
+      const form = document.getElementById('feeCodeForm');
+      const title = document.getElementById('feeCodeModalTitle');
+
+      if (codeId) {
+        title.textContent = 'Edit Fee Code';
+        loadFeeCodeForEdit(codeId);
+      } else {
+        title.textContent = 'Add Fee Code';
+        form.reset();
+        document.getElementById('feeCodeId').value = '';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    async function loadFeeCodeForEdit(codeId) {
+      try {
+        const { data: code, error } = await supabase
+          .from('fee_codes')
+          .select('*')
+          .eq('id', codeId)
+          .single();
+
+        if (error) throw error;
+
+        document.getElementById('feeCodeId').value = code.id;
+        document.getElementById('feeCodeCode').value = code.code;
+        document.getElementById('feeCodeType').value = code.fee_type;
+        document.getElementById('feeCodePrice').value = code.price;
+        document.getElementById('feeCodeDescription').value = code.description || '';
+        document.getElementById('feeCodeUsageLimit').value = code.usage_limit || '';
+        document.getElementById('feeCodeExpires').value = code.expires_at ? code.expires_at.split('T')[0] : '';
+        document.getElementById('feeCodeActive').checked = code.is_active;
+
+      } catch (error) {
+        console.error('Error loading fee code:', error);
+        showToast('Failed to load fee code', 'error');
+      }
+    }
+
+    function closeFeeCodeModal() {
+      document.getElementById('feeCodeModal').classList.add('hidden');
+      editingFeeCodeId = null;
+    }
+
+    async function saveFeeCode(e) {
+      e.preventDefault();
+
+      const codeId = document.getElementById('feeCodeId').value;
+      const codeData = {
+        code: document.getElementById('feeCodeCode').value.toUpperCase().trim(),
+        fee_type: document.getElementById('feeCodeType').value,
+        price: parseFloat(document.getElementById('feeCodePrice').value) || 0,
+        description: document.getElementById('feeCodeDescription').value.trim() || null,
+        usage_limit: parseInt(document.getElementById('feeCodeUsageLimit').value) || null,
+        expires_at: document.getElementById('feeCodeExpires').value || null,
+        is_active: document.getElementById('feeCodeActive').checked,
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        if (codeId) {
+          // Update existing
+          const { error } = await supabase
+            .from('fee_codes')
+            .update(codeData)
+            .eq('id', codeId);
+          if (error) throw error;
+          showToast('Fee code updated', 'success');
+        } else {
+          // Create new
+          const { error } = await supabase
+            .from('fee_codes')
+            .insert(codeData);
+          if (error) throw error;
+          showToast('Fee code created', 'success');
+        }
+
+        closeFeeCodeModal();
+        await loadFeeCodes();
+
+      } catch (error) {
+        console.error('Error saving fee code:', error);
+        if (error.message?.includes('duplicate')) {
+          showToast('This code already exists for this fee type', 'error');
+        } else {
+          showToast('Failed to save fee code', 'error');
+        }
+      }
+    }
+
+    window.editFeeCode = function(codeId) {
+      openFeeCodeModal(codeId);
+    };
+
+    window.deleteFeeCode = async function(codeId, codeName) {
+      if (!confirm(`Delete code "${codeName}"? This cannot be undone.`)) return;
+
+      try {
+        const { error } = await supabase
+          .from('fee_codes')
+          .delete()
+          .eq('id', codeId);
+
+        if (error) throw error;
+
+        showToast('Fee code deleted', 'success');
+        await loadFeeCodes();
+
+      } catch (error) {
+        console.error('Error deleting fee code:', error);
+        showToast('Failed to delete fee code', 'error');
+      }
+    };
 
     // Airbnb Sync functionality
     async function loadAirbnbRentals() {

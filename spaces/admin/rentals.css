@@ -1429,3 +1429,142 @@
     font-size: 0.7rem;
   }
 }
+
+/* =============================================
+   FEE SETTINGS & CODES (Square Payments)
+   ============================================= */
+
+.fee-settings-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.fee-setting-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.fee-setting-info {
+  flex: 1;
+}
+
+.fee-setting-info h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.fee-setting-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.fee-setting-amount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fee-setting-amount input {
+  width: 100px;
+  padding: 0.5rem;
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fee-codes-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fee-code-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr 100px auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .fee-code-card {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.fee-code-card .code-name {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.fee-code-card .code-type {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.fee-code-card .code-price {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.fee-code-card .code-price.free {
+  color: #10b981;
+}
+
+.fee-code-card .code-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fee-code-card .code-usage {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.fee-codes-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+/* Fee Code Modal */
+.fee-code-form .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .fee-code-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Square mode badge */
+#squareModeBadge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+#squareModeBadge.live {
+  background: #dcfce7;
+  color: #166534;
+}
