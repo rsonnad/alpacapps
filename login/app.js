@@ -49,26 +49,32 @@ async function init() {
 
   try {
     await initAuth();
-    const state = getAuthState();
-
-    if (state.isAuthenticated) {
-      if (state.isAuthorized) {
-        // User is authenticated and authorized - redirect to intended destination
-        window.location.href = redirectUrl;
-      } else if (state.isUnauthorized) {
-        // User is authenticated but not in app_users - show unauthorized message
-        showState('unauthorized');
-      } else {
-        // Shouldn't happen, but show login form
-        showState('login');
-      }
-    } else {
-      // Not authenticated - show login form
-      showState('login');
-    }
+    checkAuthAndRedirect();
   } catch (error) {
     console.error('Auth init error:', error);
     showState('error', error.message);
+  }
+}
+
+function checkAuthAndRedirect() {
+  const state = getAuthState();
+  console.log('Checking auth state:', state.isAuthenticated, state.isAuthorized, state.role);
+
+  if (state.isAuthenticated) {
+    if (state.isAuthorized) {
+      // User is authenticated and authorized - redirect to intended destination
+      console.log('Redirecting to:', redirectUrl);
+      window.location.href = redirectUrl;
+    } else if (state.isUnauthorized) {
+      // User is authenticated but not in app_users - show unauthorized message
+      showState('unauthorized');
+    } else {
+      // Shouldn't happen, but show login form
+      showState('login');
+    }
+  } else {
+    // Not authenticated - show login form
+    showState('login');
   }
 }
 
