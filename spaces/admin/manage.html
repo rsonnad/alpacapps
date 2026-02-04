@@ -2476,7 +2476,7 @@
   <!-- TUS client for resumable uploads (files > 6MB) -->
   <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.1.0/dist/tus.min.js"></script>
   <script type="module">
-    import { supabase } from '../../shared/supabase.js';
+    import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
     import { initAuth, getAuthState, signOut, onAuthStateChange } from '../../shared/auth.js';
     import { mediaService } from '../../shared/media-service.js';
     import { rentalService } from '../../shared/rental-service.js';
