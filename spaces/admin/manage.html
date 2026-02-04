@@ -2372,6 +2372,18 @@
 
         <!-- Deposits Tab -->
         <div id="depositsTab" class="detail-tab-content">
+          <!-- Application Fee Credit (if paid) -->
+          <div id="applicationFeeSection" class="application-fee-section hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--success-light); border-radius: var(--radius); border-left: 4px solid var(--success);">
+            <h4 style="margin: 0 0 0.5rem 0; color: var(--success);">Application Fee Received</h4>
+            <p style="margin: 0; font-size: 0.9rem;">
+              <strong id="applicationFeeAmount">$0</strong> application fee paid
+              <span id="applicationFeeCode" class="hidden"> (code: <code id="applicationFeeCodeValue"></code>)</span>
+            </p>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+              This will be credited toward the first month's rent. Amount due: <strong id="firstMonthDueAmount">$0</strong>
+            </p>
+          </div>
+
           <div class="deposits-grid">
             <div class="deposit-card">
               <h4>Move-in Deposit</h4>
@@ -6500,7 +6512,33 @@
       // Update documents tab state
       await updateDocumentsTabState(app);
 
-      // Deposits tab
+      // Deposits tab - Application Fee Section
+      const appFeeSection = document.getElementById('applicationFeeSection');
+      const appFeePaid = app.application_fee_paid && app.application_fee_amount > 0;
+      if (appFeePaid) {
+        appFeeSection.classList.remove('hidden');
+        document.getElementById('applicationFeeAmount').textContent =
+          rentalService.formatCurrency(app.application_fee_amount);
+
+        // Show code if used
+        const codeSpan = document.getElementById('applicationFeeCode');
+        if (app.application_fee_code) {
+          codeSpan.classList.remove('hidden');
+          document.getElementById('applicationFeeCodeValue').textContent = app.application_fee_code;
+        } else {
+          codeSpan.classList.add('hidden');
+        }
+
+        // Calculate first month due
+        const moveInAmount = app.move_in_deposit_amount || app.approved_rate || 0;
+        const firstMonthDue = Math.max(0, moveInAmount - app.application_fee_amount);
+        document.getElementById('firstMonthDueAmount').textContent =
+          rentalService.formatCurrency(firstMonthDue);
+      } else {
+        appFeeSection.classList.add('hidden');
+      }
+
+      // Move-in and Security Deposits
       document.getElementById('moveInDepositAmount').textContent =
         rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
       document.getElementById('moveInDepositStatus').textContent =

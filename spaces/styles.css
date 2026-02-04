@@ -11,6 +11,10 @@
   --occupied-light: #fceee9;
   --available: #6b8e5a;
   --available-light: #eef5eb;
+  --success: #6b8e5a;
+  --success-light: #eef5eb;
+  --error: #c75b3a;
+  --error-light: #fceee9;
   --secret: #7c6a9a;
   --secret-light: #f3effc;
   --unlisted: #9a9082;
