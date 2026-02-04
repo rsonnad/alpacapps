@@ -1,5 +1,6 @@
 // Consumer view - Public spaces listing
 import { supabase, SUPABASE_URL } from '../shared/supabase.js';
+import { formatDateAustin, getAustinToday, parseAustinDate, isTodayOrAfterAustin } from '../shared/timezone.js';
 
 // App state
 let spaces = [];
@@ -103,8 +104,7 @@ async function loadData(retryCount = 0) {
     if (assignmentsError) throw assignmentsError;
 
     const assignments = assignmentsData || [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getAustinToday();
 
     // Process spaces
     spaces = (spacesData || []).filter(s => !s.is_archived);
@@ -131,7 +131,7 @@ async function loadData(retryCount = 0) {
         // Only use desired_departure_date if it's listed (published for consumers)
         const effectiveEndDate = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
         if (!effectiveEndDate) return true;
-        return new Date(effectiveEndDate) >= today;
+        return isTodayOrAfterAustin(effectiveEndDate);
       });
 
       // Get effective end date (only use desired_departure_date if listed)
@@ -146,7 +146,7 @@ async function loadData(retryCount = 0) {
       // Find next assignment (starts after current ends)
       const effectiveEndDate = getEffectiveEndDate(currentAssignment);
       const availableFrom = effectiveEndDate
-        ? new Date(effectiveEndDate)
+        ? parseAustinDate(effectiveEndDate)
         : today;
 
       const nextAssignment = spaceAssignments.find(a => {
@@ -158,10 +158,10 @@ async function loadData(retryCount = 0) {
 
       space.isAvailable = !currentAssignment;
       space.availableFrom = currentAssignment
-        ? (effectiveEndDate ? new Date(effectiveEndDate) : null)
+        ? (effectiveEndDate ? parseAustinDate(effectiveEndDate) : null)
         : today;
       space.availableUntil = nextAssignment?.start_date
-        ? new Date(nextAssignment.start_date)
+        ? parseAustinDate(nextAssignment.start_date)
         : null;
     });
 
@@ -301,8 +301,7 @@ function getFilteredSpaces() {
   }
 
   // Sort: available within 30 days first, then by monthly_rate descending, then by name
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getAustinToday();
   const thirtyDaysFromNow = new Date(today);
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
@@ -373,10 +372,10 @@ function render() {
   renderTable(filtered);
 }
 
-// Helper to format dates
+// Helper to format dates in Austin timezone
 function formatDate(d) {
   if (!d) return null;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return formatDateAustin(d, { month: 'short', day: 'numeric' });
 }
 
 function renderCards(spacesToRender) {
@@ -574,7 +573,7 @@ async function fetchAndShowSpace(spaceId) {
 
     // For directly fetched spaces, assume available (we don't load assignments for single fetch)
     space.isAvailable = true;
-    space.availableFrom = new Date();
+    space.availableFrom = getAustinToday();
     space.availableUntil = null;
 
     displaySpaceDetail(space);

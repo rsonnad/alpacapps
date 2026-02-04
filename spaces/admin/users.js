@@ -2,6 +2,7 @@
 import { supabase } from '../../shared/supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange } from '../../shared/auth.js';
 import { emailService } from '../../shared/email-service.js';
+import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
 
 // Timeout configuration
 const DB_TIMEOUT_MS = 10000; // 10 seconds for database operations
@@ -486,7 +487,7 @@ function renderInvitations() {
       </thead>
       <tbody>
         ${uniqueInvitations.map(inv => {
-          const isExpired = new Date(inv.expires_at) < new Date();
+          const isExpired = new Date(inv.expires_at) < getAustinToday();
           const emailStatus = getEmailStatus(inv);
           return `
             <tr class="${isExpired ? 'expired-row' : ''}">
@@ -497,7 +498,7 @@ function renderInvitations() {
                 ${inv.email_send_count > 1 ? `<span class="send-count">(${inv.email_send_count}x)</span>` : ''}
               </td>
               <td>
-                <span class="${isExpired ? 'expired-text' : ''}">${new Date(inv.expires_at).toLocaleDateString()}</span>
+                <span class="${isExpired ? 'expired-text' : ''}">${formatDateAustin(inv.expires_at, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 ${isExpired ? '<span class="expired-badge">Expired</span>' : ''}
               </td>
               <td class="actions-cell">
@@ -583,7 +584,7 @@ function renderUsers() {
                   <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                 </select>
               </td>
-              <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}</td>
+              <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
               <td>
                 ${isCurrentUser
                   ? '-'

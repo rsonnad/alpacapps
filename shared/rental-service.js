@@ -10,6 +10,7 @@
  */
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { formatDateAustin, getAustinToday, AUSTIN_TIMEZONE } from './timezone.js';
 
 // Trigger iCal regeneration to sync with Airbnb
 async function triggerIcalRegeneration() {
@@ -661,19 +662,18 @@ async function getAgreementData(applicationId) {
   const person = app.person;
   const space = app.approved_space || app.desired_space;
 
-  // Format dates
-  const formatDate = (dateStr) => {
+  // Format dates in Austin timezone
+  const formatLeaseDate = (dateStr) => {
     if (!dateStr) return null;
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const month = date.toLocaleString('en-US', { month: 'short' });
-    const year = date.getFullYear();
-    return `${month} ${day}, ${year}`;
+    return formatDateAustin(dateStr, { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Format signing date (e.g., "23 day of Oct 2025")
-  const signingDate = new Date();
-  const signingFormatted = `${signingDate.getDate()} day of ${signingDate.toLocaleString('en-US', { month: 'short' })} ${signingDate.getFullYear()}`;
+  // Format signing date (e.g., "23 day of Oct 2025") in Austin timezone
+  const signingDate = getAustinToday();
+  const signingDay = signingDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: AUSTIN_TIMEZONE });
+  const signingMonth = signingDate.toLocaleDateString('en-US', { month: 'short', timeZone: AUSTIN_TIMEZONE });
+  const signingYear = signingDate.toLocaleDateString('en-US', { year: 'numeric', timeZone: AUSTIN_TIMEZONE });
+  const signingFormatted = `${signingDay} day of ${signingMonth} ${signingYear}`;
 
   // Format notice period for display
   const noticePeriodDisplay = {
@@ -699,8 +699,8 @@ async function getAgreementData(applicationId) {
 
     // Dates
     signingDate: signingFormatted,
-    leaseStartDate: formatDate(app.approved_move_in),
-    leaseEndDate: formatDate(app.approved_lease_end) || 'Open-ended',
+    leaseStartDate: formatLeaseDate(app.approved_move_in),
+    leaseEndDate: formatLeaseDate(app.approved_lease_end) || 'Open-ended',
 
     // Space
     dwellingDescription: space?.name || 'TBD',
@@ -1290,12 +1290,11 @@ function formatCurrency(amount) {
 }
 
 /**
- * Format date for display
+ * Format date for display in Austin timezone
  */
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
+  return formatDateAustin(dateStr, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -1303,12 +1302,12 @@ function formatDate(dateStr) {
 }
 
 /**
- * Calculate days since a date
+ * Calculate days since a date (using Austin timezone for "now")
  */
 function daysSince(dateStr) {
   if (!dateStr) return 0;
   const date = new Date(dateStr);
-  const now = new Date();
+  const now = getAustinToday();
   const diffTime = Math.abs(now - date);
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }

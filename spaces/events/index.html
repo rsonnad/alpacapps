@@ -1196,6 +1196,7 @@
   <script type="module">
     // Import shared Supabase config (single source of truth)
     import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { getAustinTodayISO, formatLongDate } from '../../shared/timezone.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
 
     // Elements
@@ -1215,8 +1216,8 @@
     let bookedSpaceIds = new Set();
     let availabilityLoaded = false;
 
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
+    // Set minimum date to today in Austin timezone
+    const today = getAustinTodayISO();
     eventDateInput.setAttribute('min', today);
 
     // Toggle ticket price field visibility
@@ -1333,7 +1334,7 @@
         });
 
         availabilityLoaded = true;
-        spacesDateHint.textContent = `Showing availability for ${new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`;
+        spacesDateHint.textContent = `Showing availability for ${formatLongDate(date + 'T12:00:00')}`;
         renderSpaces();
       } catch (error) {
         console.error('Error checking availability:', error);

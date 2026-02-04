@@ -2661,6 +2661,18 @@
     import { emailService } from '../../shared/email-service.js';
     import { signwellService } from '../../shared/signwell-service.js';
     import { errorLogger } from '../../shared/error-logger.js';
+    import {
+      formatDateAustin,
+      formatDateTimeFull,
+      getAustinToday,
+      getAustinTodayISO,
+      parseAustinDate,
+      isTodayOrAfterAustin,
+      getAustinWeekday,
+      getAustinMonthYear,
+      isSameAustinDay,
+      AUSTIN_TIMEZONE
+    } from '../../shared/timezone.js';
 
     // Set up global error handlers for uncaught errors
     errorLogger.setupGlobalHandlers();
@@ -2747,7 +2759,7 @@
 
     // Calendar state
     let calendarAssignments = [];
-    let calendarCurrentDate = new Date();
+    let calendarCurrentDate = getAustinToday();
     let calendarMonthsDisplayed = 3; // Start with 3 months
     let calendarHasMoreReservations = true; // Track if there are more to load
     let currentAssignmentId = null;
@@ -2756,7 +2768,7 @@
     let allEventRequests = [];
     let currentEventRequestId = null;
     let eventsLoaded = false;
-    let eventCalendarCurrentDate = new Date();
+    let eventCalendarCurrentDate = getAustinToday();
 
     // Users state
     let allUsers = [];
@@ -2990,8 +3002,7 @@
         assignments = assignmentsData || [];
         photoRequests = requestsData || [];
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = getAustinToday();
 
         // Process each space
         const processedSpaces = allData.map(space => {
@@ -2999,8 +3010,8 @@
           const spaceAssignments = assignments
             .filter(a => a.assignment_spaces?.some(as => as.space_id === space.id))
             .sort((a, b) => {
-              const aStart = a.start_date ? new Date(a.start_date) : new Date(0);
-              const bStart = b.start_date ? new Date(b.start_date) : new Date(0);
+              const aStart = a.start_date ? parseAustinDate(a.start_date) : new Date(0);
+              const bStart = b.start_date ? parseAustinDate(b.start_date) : new Date(0);
               return aStart - bStart;
             });
 
@@ -3008,7 +3019,7 @@
             if (a.status !== 'active') return false;
             const effectiveEndDate = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
             if (!effectiveEndDate) return true;
-            return new Date(effectiveEndDate) >= today;
+            return isTodayOrAfterAustin(effectiveEndDate);
           });
 
           const getEffectiveEndDate = (assignment) => {
@@ -3021,21 +3032,21 @@
 
           const effectiveEndDate = getEffectiveEndDate(currentAssignment);
           const availableFrom = effectiveEndDate
-            ? new Date(effectiveEndDate)
+            ? parseAustinDate(effectiveEndDate)
             : today;
 
           const nextAssignment = spaceAssignments.find(a => {
             if (a === currentAssignment) return false;
             if (!a.start_date) return false;
-            const startDate = new Date(a.start_date);
+            const startDate = parseAustinDate(a.start_date);
             return startDate > availableFrom;
           });
 
           space.currentAssignment = currentAssignment || null;
           space.nextAssignment = nextAssignment || null;
           space.isAvailable = !currentAssignment;
-          space.availableFrom = currentAssignment ? (effectiveEndDate ? new Date(effectiveEndDate) : null) : today;
-          space.availableUntil = nextAssignment?.start_date ? new Date(nextAssignment.start_date) : null;
+          space.availableFrom = currentAssignment ? (effectiveEndDate ? parseAustinDate(effectiveEndDate) : null) : today;
+          space.availableUntil = nextAssignment?.start_date ? parseAustinDate(nextAssignment.start_date) : null;
 
           space.amenities = space.space_amenities?.map(sa => sa.amenity?.name).filter(Boolean) || [];
 
@@ -3258,11 +3269,11 @@
         const photoCount = space.photos.length;
         const isOccupied = !!space.currentAssignment;
 
-        const formatDate = (d) => d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
-        const availFromStr = space.availableFrom && space.availableFrom > new Date()
-          ? formatDate(space.availableFrom)
+        const fmtDate = (d) => d ? formatDateAustin(d, { month: 'short', day: 'numeric' }) : null;
+        const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
+          ? fmtDate(space.availableFrom)
           : 'NOW';
-        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
+        const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
 
         const fromBadgeClass = availFromStr === 'NOW' ? 'available' : 'occupied';
         const untilBadgeClass = availUntilStr === 'Open-ended' ? 'available' : 'occupied';
@@ -3290,7 +3301,7 @@
         if (isOccupied && occupant) {
           const name = `${occupant.first_name} ${occupant.last_name || ''}`.trim();
           const endDate = space.currentAssignment.end_date
-            ? new Date(space.currentAssignment.end_date).toLocaleDateString()
+            ? formatDateAustin(space.currentAssignment.end_date, { month: 'short', day: 'numeric', year: 'numeric' })
             : 'No end date';
           occupantHtml = `
             <div class="card-occupant">
@@ -3375,25 +3386,25 @@
         let leaseDatesHtml = '-';
         if (assignment) {
           const startStr = assignment.start_date
-            ? new Date(assignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+            ? formatDateAustin(assignment.start_date, { month: 'short', day: 'numeric', year: '2-digit' })
             : '?';
           const endStr = assignment.end_date
-            ? new Date(assignment.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+            ? formatDateAustin(assignment.end_date, { month: 'short', day: 'numeric', year: '2-digit' })
             : 'ongoing';
           leaseDatesHtml = `${startStr} - ${endStr}`;
 
           if (assignment.desired_departure_date) {
-            const earlyStr = new Date(assignment.desired_departure_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+            const earlyStr = formatDateAustin(assignment.desired_departure_date, { month: 'short', day: 'numeric', year: '2-digit' });
             const listedIcon = assignment.desired_departure_listed ? '✓' : '';
             leaseDatesHtml += `<br><small style="color:var(--accent);">Early exit: ${earlyStr} ${listedIcon}</small>`;
           }
         }
 
-        const formatDate = (d) => d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
-        const availFromStr = space.availableFrom && space.availableFrom > new Date()
-          ? formatDate(space.availableFrom)
+        const fmtDate = (d) => d ? formatDateAustin(d, { month: 'short', day: 'numeric' }) : null;
+        const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
+          ? fmtDate(space.availableFrom)
           : 'NOW';
-        const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Open-ended';
+        const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
 
         // Status badge
         let statusBadge = isOccupied
@@ -3748,7 +3759,7 @@
       if (isOccupied && occupant) {
         const a = space.currentAssignment;
         const desiredDepartureStr = a.desired_departure_date
-          ? new Date(a.desired_departure_date).toLocaleDateString()
+          ? formatDateAustin(a.desired_departure_date, { month: 'short', day: 'numeric', year: 'numeric' })
           : null;
         const earlyExitHtml = desiredDepartureStr
           ? `<p style="color: var(--accent);"><strong>Early Exit:</strong> ${desiredDepartureStr}</p>`
@@ -3760,8 +3771,8 @@
             ${occupant.email ? `<p>Email: ${occupant.email}</p>` : ''}
             ${occupant.phone ? `<p>Phone: ${occupant.phone}</p>` : ''}
             <p>Rate: $${a.rate_amount}/${a.rate_term}</p>
-            <p>Start: ${a.start_date ? new Date(a.start_date).toLocaleDateString() : 'N/A'}</p>
-            <p>End: ${a.end_date ? new Date(a.end_date).toLocaleDateString() : 'No end date'}</p>
+            <p>Start: ${a.start_date ? formatDateAustin(a.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</p>
+            <p>End: ${a.end_date ? formatDateAustin(a.end_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No end date'}</p>
             ${earlyExitHtml}
             ${isAdmin ? `
               <div style="margin-top: 0.75rem;">
@@ -4329,7 +4340,7 @@
         <div class="existing-request-item">
           <span class="request-status ${pr.status}">${pr.status}</span>
           <p>${pr.description}</p>
-          <small>Requested ${new Date(pr.created_at).toLocaleDateString()}</small>
+          <small>Requested ${formatDateAustin(pr.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</small>
         </div>
       `).join('');
     }
@@ -5541,13 +5552,10 @@
     // =============================================
     // UTILITIES
     // =============================================
+    // formatDate now uses Austin timezone for all displays
     function formatDate(dateStr, full = false) {
       if (!dateStr) return '-';
-      const date = new Date(dateStr);
-      if (full) {
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      }
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return formatDateTimeFull(dateStr, full);
     }
 
     // Note: openLightbox and closeLightbox are defined earlier in the Spaces tab section
@@ -5803,7 +5811,7 @@
 
     function initCalendarControls() {
       document.getElementById('calendarToday')?.addEventListener('click', () => {
-        calendarCurrentDate = new Date();
+        calendarCurrentDate = getAustinToday();
         calendarMonthsDisplayed = 3;
         renderCalendar();
         // Scroll to start
@@ -5838,8 +5846,8 @@
 
       const hasReservationsBeyond = calendarAssignments.some(a => {
         const endDate = a.desired_departure_listed && a.desired_departure_date
-          ? new Date(a.desired_departure_date)
-          : (a.end_date ? new Date(a.end_date) : null);
+          ? parseAustinDate(a.desired_departure_date)
+          : (a.end_date ? parseAustinDate(a.end_date) : null);
         // Ongoing reservations or ones ending after our view
         return !endDate || endDate > lastDay;
       });
@@ -5877,8 +5885,8 @@
         if (a.status === 'active' && b.status !== 'active') return -1;
         if (b.status === 'active' && a.status !== 'active') return 1;
         // Then by start date
-        const aStart = a.start_date ? new Date(a.start_date) : new Date(0);
-        const bStart = b.start_date ? new Date(b.start_date) : new Date(0);
+        const aStart = a.start_date ? parseAustinDate(a.start_date) : new Date(0);
+        const bStart = b.start_date ? parseAustinDate(b.start_date) : new Date(0);
         return aStart - bStart;
       });
 
@@ -5913,14 +5921,14 @@
         }).join(', ') || 'None';
 
         const startDate = assignment.start_date
-          ? new Date(assignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          ? formatDateAustin(assignment.start_date, { month: 'short', day: 'numeric', year: 'numeric' })
           : '-';
 
         const effectiveEndDate = assignment.desired_departure_listed && assignment.desired_departure_date
           ? assignment.desired_departure_date
           : assignment.end_date;
         const endDate = effectiveEndDate
-          ? new Date(effectiveEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          ? formatDateAustin(effectiveEndDate, { month: 'short', day: 'numeric', year: 'numeric' })
           : 'Ongoing';
 
         const rate = assignment.rate_amount
@@ -6126,8 +6134,8 @@
       // Update month range label
       const monthRangeLabel = document.getElementById('calendarMonthRange');
       if (monthRangeLabel) {
-        const startMonth = firstDay.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        const endMonth = lastDay.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const startMonth = formatDateAustin(firstDay, { month: 'short', year: 'numeric' });
+        const endMonth = formatDateAustin(lastDay, { month: 'short', year: 'numeric' });
         monthRangeLabel.textContent = `${startMonth} - ${endMonth}`;
       }
 
@@ -6137,14 +6145,13 @@
         days.push(new Date(d));
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = getAustinToday();
 
       // Check if there are reservations extending beyond current view
       const hasReservationsBeyond = calendarAssignments.some(a => {
         const endDate = a.desired_departure_listed && a.desired_departure_date
-          ? new Date(a.desired_departure_date)
-          : (a.end_date ? new Date(a.end_date) : null);
+          ? parseAustinDate(a.desired_departure_date)
+          : (a.end_date ? parseAustinDate(a.end_date) : null);
         return !endDate || endDate > lastDay;
       });
 
@@ -6160,8 +6167,8 @@
       let currentMonthYear = '';
       days.forEach((day, idx) => {
         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-        const isToday = day.toDateString() === today.toDateString();
-        const monthYear = day.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        const isToday = isSameAustinDay(day, today);
+        const monthYear = getAustinMonthYear(day);
         const isFirstOfMonth = day.getDate() === 1;
         const showMonthLabel = monthYear !== currentMonthYear;
         if (showMonthLabel) currentMonthYear = monthYear;
@@ -6170,7 +6177,7 @@
           <div class="calendar-day ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}">
             ${showMonthLabel ? `<div class="month-label">${monthYear}</div>` : ''}
             <div class="day-num">${day.getDate()}</div>
-            <div class="day-name">${day.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)}</div>
+            <div class="day-name">${getAustinWeekday(day, 'short').slice(0, 2)}</div>
           </div>
         `;
       });
@@ -6192,7 +6199,7 @@
         let prevMonthYear = '';
         days.forEach(day => {
           const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-          const isToday = day.toDateString() === today.toDateString();
+          const isToday = isSameAustinDay(day, today);
           const isFirstOfMonth = day.getDate() === 1;
           html += `<div class="calendar-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''} ${isFirstOfMonth ? 'first-of-month' : ''}" data-date="${day.toISOString().split('T')[0]}"></div>`;
         });
@@ -6203,10 +6210,10 @@
         );
 
         spaceAssignments.forEach(assignment => {
-          const startDate = assignment.start_date ? new Date(assignment.start_date) : null;
+          const startDate = assignment.start_date ? parseAustinDate(assignment.start_date) : null;
           const endDate = assignment.desired_departure_listed && assignment.desired_departure_date
-            ? new Date(assignment.desired_departure_date)
-            : (assignment.end_date ? new Date(assignment.end_date) : null);
+            ? parseAustinDate(assignment.desired_departure_date)
+            : (assignment.end_date ? parseAustinDate(assignment.end_date) : null);
 
           if (!startDate) return;
 
@@ -6250,8 +6257,8 @@
             tenant: tenantName,
             email: person.email || '-',
             phone: person.phone || '-',
-            start: startDate.toLocaleDateString(),
-            end: endDate ? endDate.toLocaleDateString() : 'Ongoing',
+            start: formatDateAustin(startDate, { month: 'short', day: 'numeric', year: 'numeric' }),
+            end: endDate ? formatDateAustin(endDate, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Ongoing',
             rate: rate || 'N/A',
             deposit: assignment.deposit_amount ? `$${assignment.deposit_amount}` : 'N/A',
             status: assignment.status
@@ -7004,9 +7011,10 @@
         : 'Unknown';
       const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30);
       const dateField = isSigned ? app.agreement_signed_at : app.agreement_generated_at;
+      // Use the date field if provided, otherwise use today in Austin timezone
       const dateStr = dateField
-        ? new Date(dateField).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0];
+        ? formatDateAustin(dateField, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+        : getAustinTodayISO();
       const prefix = isSigned ? 'Alpaca Rental Agreement (Signed)' : 'Alpaca Rental Agreement';
       return `${prefix} ${cleanName} ${dateStr}.pdf`;
     }
@@ -7051,7 +7059,7 @@
           document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
           if (app.agreement_generated_at) {
             document.getElementById('pdfGeneratedAt').textContent =
-              `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
+              `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
           }
         }
         signatureSection.style.display = 'block';
@@ -7070,7 +7078,7 @@
           document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
           if (app.agreement_generated_at) {
             document.getElementById('pdfGeneratedAt').textContent =
-              `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
+              `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
           }
         }
       } else if ((status === 'generated' || app.generated_pdf_url) && app.generated_pdf_url) {
@@ -7081,7 +7089,7 @@
         document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
         if (app.agreement_generated_at) {
           document.getElementById('pdfGeneratedAt').textContent =
-            `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
+            `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
         }
       }
       // Otherwise show generate section (default)
@@ -7322,7 +7330,7 @@
       const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
 
       const eventDate = req.event_date
-        ? new Date(req.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        ? formatDateAustin(req.event_date, { month: 'short', day: 'numeric' })
         : '';
 
       const formatTime = (timeStr) => {
@@ -7379,7 +7387,7 @@
       });
 
       document.getElementById('eventCalendarToday')?.addEventListener('click', () => {
-        eventCalendarCurrentDate = new Date();
+        eventCalendarCurrentDate = getAustinToday();
         renderEventCalendar();
       });
 
@@ -7416,7 +7424,7 @@
       // Update month label
       const monthLabel = document.getElementById('eventCalendarMonthLabel');
       if (monthLabel) {
-        monthLabel.textContent = eventCalendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        monthLabel.textContent = formatDateAustin(eventCalendarCurrentDate, { month: 'long', year: 'numeric' });
       }
 
       // Get first day of month and calculate calendar grid
@@ -7459,8 +7467,7 @@
       }
 
       const allDays = [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = getAustinToday();
 
       // Group events by date
       const eventsByDate = {};
@@ -7489,7 +7496,7 @@
       html += '<div class="events-calendar-body">';
       allDays.forEach((dayInfo, index) => {
         const isWeekend = dayInfo.date.getDay() === 0 || dayInfo.date.getDay() === 6;
-        const isToday = dayInfo.date.toDateString() === today.toDateString();
+        const isToday = isSameAustinDay(dayInfo.date, today);
         const dateKey = dayInfo.date.toISOString().split('T')[0];
         const dayEvents = eventsByDate[dateKey] || [];
 
@@ -7592,7 +7599,7 @@
       const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
 
       const eventDate = req.event_date
-        ? new Date(req.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+        ? formatDateAustin(req.event_date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
         : 'No date';
 
       const details = `
@@ -7656,8 +7663,8 @@ Deposit: ${req.deposit_status}
     // Airbnb Sync functionality
     async function loadAirbnbRentals() {
       try {
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const today = getAustinToday();
+        const todayStr = getAustinTodayISO();
 
         // Load all spaces with Airbnb iCal URLs
         const { data: airbnbSpaces, error: spacesError } = await supabase
@@ -7687,12 +7694,12 @@ Deposit: ${req.deposit_status}
 
         if (airbnbSpaces && airbnbSpaces.length > 0) {
           const currentYear = new Date().getFullYear();
-          const formatDate = (d) => {
-            const opts = { month: 'short', day: 'numeric', timeZone: 'UTC' };
-            if (d.getUTCFullYear() !== currentYear) {
+          const fmtDateLocal = (d) => {
+            const opts = { month: 'short', day: 'numeric' };
+            if (d.getFullYear() !== currentYear) {
               opts.year = '2-digit';
             }
-            return d.toLocaleDateString('en-US', opts);
+            return formatDateAustin(d, opts);
           };
 
           // Build table rows - one row per space
@@ -7722,15 +7729,15 @@ Deposit: ${req.deposit_status}
                 }
 
                 return {
-                  start: new Date(a.start_date),
-                  end: new Date(a.end_date),
+                  start: parseAustinDate(a.start_date),
+                  end: parseAustinDate(a.end_date),
                   type: a.airbnb_uid ? 'airbnb' : 'tenant',
                   name: displayName
                 };
               }),
               ...blockedRanges.map(r => ({
-                start: new Date(r.start),
-                end: new Date(r.end),
+                start: parseAustinDate(r.start),
+                end: parseAustinDate(r.end),
                 type: 'blocked',
                 name: 'Blocked'
               }))
@@ -7746,7 +7753,7 @@ Deposit: ${req.deposit_status}
               if (!occupant) {
                 return '<span class="empty">-</span>';
               }
-              const endDate = formatDate(occupant.end);
+              const endDate = fmtDateLocal(occupant.end);
               if (occupant.type === 'blocked') {
                 return `<div class="guest-name blocked">Blocked</div><div class="guest-dates">until ${endDate}</div>`;
               }
@@ -7813,7 +7820,7 @@ Deposit: ${req.deposit_status}
 
         if (result.success) {
           // Update last sync time
-          document.getElementById('lastSyncTime').textContent = new Date().toLocaleString();
+          document.getElementById('lastSyncTime').textContent = formatDateTimeFull(new Date(), true);
 
           // Build blocked dates display
           let blockedDatesHtml = '';
@@ -7825,8 +7832,8 @@ Deposit: ${req.deposit_status}
                 <div style="font-size: 0.875rem; color: var(--text-muted);">
                   ${spacesWithBlocks.map(space => {
                     const ranges = space.blockedRanges.map(r => {
-                      const start = new Date(r.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                      const end = new Date(r.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      const start = formatDateAustin(r.start, { month: 'short', day: 'numeric' });
+                      const end = formatDateAustin(r.end, { month: 'short', day: 'numeric' });
                       return `${start} - ${end}`;
                     }).join(', ');
                     return `<p><strong>${space.spaceName}:</strong> ${ranges}</p>`;
@@ -7996,8 +8003,8 @@ Deposit: ${req.deposit_status}
               <tr>
                 <td>${inv.email}</td>
                 <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
-                <td>${new Date(inv.invited_at).toLocaleDateString()}</td>
-                <td>${new Date(inv.expires_at).toLocaleDateString()}</td>
+                <td>${formatDateAustin(inv.invited_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                <td>${formatDateAustin(inv.expires_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                 ${isAdmin ? `
                   <td>
                     <button class="btn-danger" onclick="revokeInvitation('${inv.id}')">Revoke</button>
@@ -8064,7 +8071,7 @@ Deposit: ${req.deposit_status}
                       <span class="role-badge ${u.role}">${u.role}</span>
                     `}
                   </td>
-                  <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}</td>
+                  <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
                   ${isAdmin ? `
                     <td>
                       ${isCurrentUser
@@ -8362,7 +8369,7 @@ If there are any problems or suggestions for improvements, please email them to 
           <tr>
             <td>${t.name}</td>
             <td>v${t.version}</td>
-            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+            <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
             <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
             <td>
               <button class="btn-small" onclick="loadTemplate('${t.id}')">Load</button>
@@ -8479,7 +8486,7 @@ If there are any problems or suggestions for improvements, please email them to 
           <tr>
             <td>${t.name}</td>
             <td>v${t.version}</td>
-            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+            <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
             <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
             <td>
               <button class="btn-small" onclick="loadEventTemplate('${t.id}')">Load</button>

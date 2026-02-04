@@ -9,6 +9,7 @@
  */
 
 import { supabase } from './supabase.js';
+import { formatLongDate } from './timezone.js';
 
 // =============================================
 // STATUS CONSTANTS
@@ -599,14 +600,9 @@ async function getAgreementData(requestId) {
     ? `${person.first_name || ''} ${person.last_name || ''}`.trim()
     : 'Unknown';
 
-  // Format date
+  // Format date in Austin timezone
   const eventDate = request.event_date
-    ? new Date(request.event_date).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? formatLongDate(request.event_date)
     : '';
 
   // Format times

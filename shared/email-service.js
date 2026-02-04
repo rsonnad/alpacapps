@@ -1,5 +1,6 @@
 // Email service for sending notifications via Resend
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { formatDateAustin } from './timezone.js';
 
 const SEND_EMAIL_URL = `${SUPABASE_URL}/functions/v1/send-email`;
 
@@ -350,8 +351,7 @@ export const emailService = {
 // Helper functions
 function formatDate(dateStr) {
   if (!dateStr) return null;
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
+  return formatDateAustin(dateStr, {
     year: 'numeric',
     month: 'long',
     day: 'numeric'

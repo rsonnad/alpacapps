@@ -5,6 +5,45 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Initialize Supabase client
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Austin timezone helpers (all dates displayed in Austin, TX time regardless of user's timezone)
+const AUSTIN_TIMEZONE = 'America/Chicago';
+
+function getAustinToday() {
+  const now = new Date();
+  const austinDateStr = now.toLocaleDateString('en-US', {
+    timeZone: AUSTIN_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const [month, day, year] = austinDateStr.split('/');
+  const austinToday = new Date(year, month - 1, day, 12, 0, 0, 0);
+  austinToday.setHours(0, 0, 0, 0);
+  return austinToday;
+}
+
+function formatDateAustin(dateInput, options = {}) {
+  if (!dateInput) return null;
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(date.getTime())) return null;
+  const defaultOptions = { month: 'short', day: 'numeric' };
+  const formatOptions = { ...defaultOptions, ...options, timeZone: AUSTIN_TIMEZONE };
+  return date.toLocaleDateString('en-US', formatOptions);
+}
+
+function parseAustinDate(dateStr) {
+  if (!dateStr) return null;
+  const [year, month, day] = dateStr.split('-');
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
+function isTodayOrAfterAustin(dateInput) {
+  if (!dateInput) return true;
+  const date = typeof dateInput === 'string' ? parseAustinDate(dateInput) : dateInput;
+  const today = getAustinToday();
+  return date >= today;
+}
+
 // App state
 let spaces = [];
 let assignments = [];
@@ -81,43 +120,42 @@ async function loadData() {
     assignments = assignmentsData || [];
     photoRequests = requestsData || [];
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    const today = getAustinToday();
+
     // Map assignments to spaces and compute availability windows
     spaces.forEach(space => {
       // Get all assignments for this space, sorted by start date
       const spaceAssignments = assignments
         .filter(a => a.assignment_spaces?.some(as => as.space_id === space.id))
         .sort((a, b) => {
-          const aStart = a.start_date ? new Date(a.start_date) : new Date(0);
-          const bStart = b.start_date ? new Date(b.start_date) : new Date(0);
+          const aStart = a.start_date ? parseAustinDate(a.start_date) : new Date(0);
+          const bStart = b.start_date ? parseAustinDate(b.start_date) : new Date(0);
           return aStart - bStart;
         });
-      
+
       // Find current assignment (active and either no end date or end date >= today)
       const currentAssignment = spaceAssignments.find(a => {
         if (a.status !== 'active') return false;
         if (!a.end_date) return true;
-        return new Date(a.end_date) >= today;
+        return isTodayOrAfterAustin(a.end_date);
       });
-      
+
       // Find next future assignment (starts after current ends, or after today if no current)
-      const availableFrom = currentAssignment?.end_date 
-        ? new Date(currentAssignment.end_date)
+      const availableFrom = currentAssignment?.end_date
+        ? parseAustinDate(currentAssignment.end_date)
         : today;
-      
+
       const nextAssignment = spaceAssignments.find(a => {
         if (a === currentAssignment) return false;
         if (!a.start_date) return false;
-        const startDate = new Date(a.start_date);
+        const startDate = parseAustinDate(a.start_date);
         return startDate > availableFrom;
       });
-      
+
       space.currentAssignment = currentAssignment || null;
       space.nextAssignment = nextAssignment || null;
-      space.availableFrom = currentAssignment ? (currentAssignment.end_date ? new Date(currentAssignment.end_date) : null) : today;
-      space.availableUntil = nextAssignment?.start_date ? new Date(nextAssignment.start_date) : null;
+      space.availableFrom = currentAssignment ? (currentAssignment.end_date ? parseAustinDate(currentAssignment.end_date) : null) : today;
+      space.availableUntil = nextAssignment?.start_date ? parseAustinDate(nextAssignment.start_date) : null;
       
       space.amenities = space.space_amenities?.map(sa => sa.amenity?.name).filter(Boolean) || [];
       space.photos = (space.photo_spaces || [])
@@ -274,8 +312,8 @@ function getFilteredSpaces() {
   filtered.sort((a, b) => {
     // Special handling for availability sort
     if (currentSort.column === 'availability') {
-      const aEndDate = a.currentAssignment?.end_date ? new Date(a.currentAssignment.end_date) : null;
-      const bEndDate = b.currentAssignment?.end_date ? new Date(b.currentAssignment.end_date) : null;
+      const aEndDate = a.currentAssignment?.end_date ? parseAustinDate(a.currentAssignment.end_date) : null;
+      const bEndDate = b.currentAssignment?.end_date ? parseAustinDate(b.currentAssignment.end_date) : null;
       const aOccupied = !!a.currentAssignment;
       const bOccupied = !!b.currentAssignment;
       
@@ -366,12 +404,12 @@ function renderCards(spaces) {
     let badges = '';
     const isOccupied = !!space.currentAssignment;
     
-    // Format availability window
-    const formatDate = (d) => d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
-    const availFromStr = space.availableFrom && space.availableFrom > new Date()
-      ? formatDate(space.availableFrom)
+    // Format availability window in Austin timezone
+    const fmtDate = (d) => d ? formatDateAustin(d, { month: 'short', day: 'numeric' }) : null;
+    const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
+      ? fmtDate(space.availableFrom)
       : 'NOW';
-    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'The Cows Come Home';
 
     const fromBadgeClass = availFromStr === 'NOW' ? 'available' : 'occupied';
     const untilBadgeClass = availUntilStr === 'The Cows Come Home' ? 'available' : 'occupied';
@@ -388,8 +426,8 @@ function renderCards(spaces) {
     let occupantHtml = '';
     if (isAdminMode && isOccupied) {
       const name = `${occupant.first_name} ${occupant.last_name || ''}`.trim();
-      const endDate = space.currentAssignment.end_date 
-        ? new Date(space.currentAssignment.end_date).toLocaleDateString()
+      const endDate = space.currentAssignment.end_date
+        ? formatDateAustin(space.currentAssignment.end_date, { month: 'short', day: 'numeric', year: 'numeric' })
         : 'No end date';
       occupantHtml = `
         <div class="card-occupant">
@@ -452,20 +490,20 @@ function renderTable(spaces) {
     const occupant = space.currentAssignment?.person;
     const beds = getBedSummary(space);
     
-    const occupantName = occupant 
+    const occupantName = occupant
       ? `${occupant.first_name} ${occupant.last_name || ''}`.trim()
       : '-';
-    
+
     const endDate = space.currentAssignment?.end_date
-      ? new Date(space.currentAssignment.end_date).toLocaleDateString()
+      ? formatDateAustin(space.currentAssignment.end_date, { month: 'short', day: 'numeric', year: 'numeric' })
       : '-';
     
-    // Format availability window
-    const formatDate = (d) => d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
-    const availFromStr = space.availableFrom && space.availableFrom > new Date()
-      ? formatDate(space.availableFrom)
+    // Format availability window in Austin timezone
+    const fmtDate = (d) => d ? formatDateAustin(d, { month: 'short', day: 'numeric' }) : null;
+    const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
+      ? fmtDate(space.availableFrom)
       : 'NOW';
-    const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'The Cows Come Home';
+    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'The Cows Come Home';
 
     let statusBadge = isOccupied
       ? '<span class="badge occupied">Occupied</span>'
@@ -554,8 +592,8 @@ function showSpaceDetail(spaceId) {
         ${occupant.email ? `<p>Email: ${occupant.email}</p>` : ''}
         ${occupant.phone ? `<p>Phone: ${occupant.phone}</p>` : ''}
         <p>Rate: $${a.rate_amount}/${a.rate_term}</p>
-        <p>Start: ${a.start_date ? new Date(a.start_date).toLocaleDateString() : 'N/A'}</p>
-        <p>End: ${a.end_date ? new Date(a.end_date).toLocaleDateString() : 'No end date'}</p>
+        <p>Start: ${a.start_date ? formatDateAustin(a.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</p>
+        <p>End: ${a.end_date ? formatDateAustin(a.end_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No end date'}</p>
       </div>
     `;
   }

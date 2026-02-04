@@ -6,6 +6,7 @@ import { supabase } from '../../shared/supabase.js';
 import { initAuth, getAuthState, signOut } from '../../shared/auth.js';
 import { mediaService } from '../../shared/media-service.js';
 import { errorLogger } from '../../shared/error-logger.js';
+import { formatDateTimeFull } from '../../shared/timezone.js';
 
 // Set up global error handlers
 errorLogger.setupGlobalHandlers();
@@ -1212,22 +1213,7 @@ function setupEventListeners() {
 
 function formatDate(dateStr, full = false) {
   if (!dateStr) return '-';
-  const date = new Date(dateStr);
-
-  if (full) {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDateTimeFull(dateStr, full);
 }
 
 // =============================================
