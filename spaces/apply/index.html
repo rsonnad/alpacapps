@@ -689,6 +689,32 @@
 
         const [person] = await personResponse.json();
 
+        // Create rental application record
+        const applicationData = {
+          person_id: person.id,
+          desired_space_id: getValue('desired_space_id') || null,
+          desired_move_in: getValue('desired_move_in') || null,
+          desired_term: getValue('desired_term') || null,
+          application_status: 'submitted'
+        };
+
+        const applicationResponse = await fetch(`${SUPABASE_URL}/rest/v1/rental_applications`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(applicationData)
+        });
+
+        if (!applicationResponse.ok) {
+          const errorData = await applicationResponse.json();
+          console.error('Failed to create rental application:', errorData);
+          // Continue anyway - person was created, admin can manually create application
+        }
+
         // Insert previous residence if provided
         const prevAddress = getValue('prev_address');
         if (prevAddress) {
