@@ -2734,6 +2734,17 @@
         if (tab) tab.click();
       };
 
+      // Handle URL hash navigation (e.g., #rentals, #events)
+      function handleHashNavigation() {
+        const hash = window.location.hash.replace('#', '');
+        const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings'];
+        if (hash && validTabs.includes(hash)) {
+          switchTab(hash);
+        }
+      }
+      handleHashNavigation();
+      window.addEventListener('hashchange', handleHashNavigation);
+
       // Add space form
       document.getElementById('addSpaceForm').addEventListener('submit', handleAddSpace);
 

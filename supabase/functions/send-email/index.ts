@@ -568,6 +568,10 @@ GenAlpaca Team`
           <h2>New Event Hosting Request</h2>
           <p>A new event hosting request has been submitted.</p>
 
+          <p style="margin: 20px 0;">
+            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Events Pipeline</a>
+          </p>
+
           <h3>Host Information</h3>
           <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
             <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.first_name} ${data.last_name}</td></tr>
@@ -604,6 +608,8 @@ GenAlpaca Team`
         `,
         text: `New Event Hosting Request
 
+View in Events Pipeline: https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events
+
 HOST INFORMATION
 Name: ${data.first_name} ${data.last_name}
 Email: ${data.email}
@@ -639,6 +645,10 @@ All required acknowledgments have been confirmed by the applicant.`
         html: `
           <h2>New Rental Application</h2>
           <p>A new rental application has been submitted.</p>
+
+          <p style="margin: 20px 0;">
+            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Rentals Pipeline</a>
+          </p>
 
           <h3>Applicant Information</h3>
           <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
@@ -680,6 +690,8 @@ All required acknowledgments have been confirmed by the applicant.`
           ` : ''}
         `,
         text: `New Rental Application
+
+View in Rentals Pipeline: https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals
 
 APPLICANT INFORMATION
 Name: ${data.first_name} ${data.last_name}
