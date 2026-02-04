@@ -1128,17 +1128,17 @@
       <div class="fees-grid">
         <div class="fee-card">
           <div class="fee-label">Rental Fee</div>
-          <div class="fee-amount">$295</div>
+          <div class="fee-amount" id="feeRentalDisplay">...</div>
           <div class="fee-note">Starting rate*</div>
         </div>
         <div class="fee-card">
           <div class="fee-label">Reservation Fee</div>
-          <div class="fee-amount">$95</div>
+          <div class="fee-amount" id="feeReservationDisplay">...</div>
           <div class="fee-note">Refundable</div>
         </div>
         <div class="fee-card">
           <div class="fee-label">Cleaning Deposit</div>
-          <div class="fee-amount">$195</div>
+          <div class="fee-amount" id="feeCleaningDisplay">...</div>
           <div class="fee-note">Refundable</div>
         </div>
       </div>
@@ -1440,7 +1440,7 @@
             A reservation deposit is required to secure your event booking. This deposit is fully refundable after your event, provided there is no damage and cleaning is completed per the agreement.
           </p>
           <p class="hint" style="margin-bottom: 1rem; font-style: italic;">
-            Note: The cleaning deposit ($195) and rental fee ($295) are due 7 days before your event. We'll send payment instructions and a reminder.
+            Note: The cleaning deposit (<span id="feeCleaningInline">...</span>) and rental fee (<span id="feeRentalInline">...</span>) are due 7 days before your event. We'll send payment instructions and a reminder.
           </p>
 
           <div class="deposit-grid" style="grid-template-columns: 1fr;">
@@ -1526,7 +1526,7 @@
           <ol>
             <li>We'll review your request with all due haste</li>
             <li>If approved, we'll send you an event agreement to sign electronically</li>
-            <li>7 days before your event, the cleaning deposit ($195) and rental fee ($295) are due</li>
+            <li>7 days before your event, the cleaning deposit (<span id="feeCleaningNext">...</span>) and rental fee (<span id="feeRentalNext">...</span>) are due</li>
             <li>We'll send a reminder with payment instructions 10 days before your event</li>
             <li>Event day!</li>
           </ol>
@@ -1550,9 +1550,14 @@
 
     // Fee type constants
     const FEE_TYPES = {
+      RENTAL: 'event_rental_fee',
       CLEANING: 'event_cleaning_deposit',
       RESERVATION: 'event_reservation_deposit'
     };
+
+    // Fee display state
+    let rentalFeeAmount = 0;
+    let cleaningDepositAmount = 0;
 
     // Deposit state - only reservation deposit collected at application time
     let reservationAmount = 0;
@@ -1591,11 +1596,11 @@
     const today = getAustinTodayISO();
     eventDateInput.setAttribute('min', today);
 
-    // Load deposit settings (only reservation deposit collected at application time)
+    // Load all event fee settings from database
     async function loadDepositSettings() {
       try {
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=eq.${FEE_TYPES.RESERVATION}&is_active=eq.true`,
+          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=like.event_*&is_active=eq.true`,
           {
             headers: {
               'apikey': SUPABASE_KEY,
@@ -1611,14 +1616,38 @@
           if (s.fee_type === FEE_TYPES.RESERVATION) {
             reservationOriginal = parseFloat(s.default_amount);
             reservationAmount = reservationOriginal;
+          } else if (s.fee_type === FEE_TYPES.RENTAL) {
+            rentalFeeAmount = parseFloat(s.default_amount);
+          } else if (s.fee_type === FEE_TYPES.CLEANING) {
+            cleaningDepositAmount = parseFloat(s.default_amount);
           }
         });
 
+        updateFeeDisplays();
         updateDepositDisplay();
       } catch (error) {
         console.error('Error loading deposit settings:', error);
         reservationAmountEl.textContent = 'Error';
       }
+    }
+
+    // Update all fee displays across the page
+    function updateFeeDisplays() {
+      const fmt = (amt) => `$${Math.round(amt)}`;
+      // Standard Fees cards at top
+      const rentalDisplay = document.getElementById('feeRentalDisplay');
+      const reservationDisplay = document.getElementById('feeReservationDisplay');
+      const cleaningDisplay = document.getElementById('feeCleaningDisplay');
+      if (rentalDisplay) rentalDisplay.textContent = fmt(rentalFeeAmount);
+      if (reservationDisplay) reservationDisplay.textContent = fmt(reservationOriginal);
+      if (cleaningDisplay) cleaningDisplay.textContent = fmt(cleaningDepositAmount);
+      // Inline references in deposit section and "What Happens Next"
+      document.querySelectorAll('#feeCleaningInline, #feeCleaningNext').forEach(el => {
+        el.textContent = fmt(cleaningDepositAmount);
+      });
+      document.querySelectorAll('#feeRentalInline, #feeRentalNext').forEach(el => {
+        el.textContent = fmt(rentalFeeAmount);
+      });
     }
 
     // Update deposit display (only reservation deposit)
