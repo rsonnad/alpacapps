@@ -558,7 +558,7 @@ function getBedSummary(space) {
   const beds = [];
   if (space.beds_king) beds.push(`${space.beds_king} king`);
   if (space.beds_queen) beds.push(`${space.beds_queen} queen`);
-  if (space.beds_double) beds.push(`${space.beds_double} double`);
+  if (space.beds_double) beds.push(`${space.beds_double} full`);
   if (space.beds_twin) beds.push(`${space.beds_twin} twin`);
   if (space.beds_folding) beds.push(`${space.beds_folding} folding`);
   return beds.join(', ');

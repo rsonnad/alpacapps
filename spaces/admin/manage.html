@@ -2077,7 +2077,7 @@
                 <input type="number" id="editBedsQueen" min="0" value="0">
               </div>
               <div class="form-group">
-                <label for="editBedsDouble">Double</label>
+                <label for="editBedsDouble">Full</label>
                 <input type="number" id="editBedsDouble" min="0" value="0">
               </div>
               <div class="form-group">
@@ -3607,7 +3607,7 @@
       const beds = [];
       if (space.beds_king) beds.push(`${space.beds_king} king`);
       if (space.beds_queen) beds.push(`${space.beds_queen} queen`);
-      if (space.beds_double) beds.push(`${space.beds_double} double`);
+      if (space.beds_double) beds.push(`${space.beds_double} full`);
       if (space.beds_twin) beds.push(`${space.beds_twin} twin`);
       if (space.beds_folding) beds.push(`${space.beds_folding} folding`);
       return beds.join(', ');
