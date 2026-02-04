@@ -164,6 +164,12 @@
       align-items: center;
     }
 
+    /* Hide filter toggles on desktop - only show on mobile */
+    .filter-toggle,
+    .tag-filter-toggle {
+      display: none;
+    }
+
     @media (max-width: 900px) {
       .filter-row {
         flex-wrap: wrap;
@@ -401,6 +407,84 @@
       .filter-checkboxes {
         flex-wrap: wrap;
         gap: 0.75rem;
+      }
+
+      /* Collapsible filters on mobile */
+      .section-filters {
+        position: relative;
+      }
+
+      .section-filters.collapsed .filter-row {
+        display: none;
+      }
+
+      .section-filters.collapsed .filter-toggle {
+        margin-bottom: 0;
+      }
+
+      .filter-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--accent);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .filter-toggle::after {
+        content: '▼';
+        font-size: 0.6rem;
+        transition: transform 0.2s;
+      }
+
+      .section-filters.collapsed .filter-toggle::after {
+        transform: rotate(-90deg);
+      }
+
+      /* Spaces table wrapper for horizontal scroll */
+      .spaces-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+      }
+
+      .spaces-table-wrapper table {
+        min-width: 600px;
+      }
+
+      /* Tag filter bar collapsible on mobile */
+      .tag-filter-bar {
+        padding: 0.5rem 1rem;
+      }
+
+      .tag-filter-bar.collapsed .tag-filter-chips {
+        display: none;
+      }
+
+      .tag-filter-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        cursor: pointer;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--accent);
+      }
+
+      .tag-filter-toggle::after {
+        content: '▼';
+        font-size: 0.5rem;
+        transition: transform 0.2s;
+      }
+
+      .tag-filter-bar.collapsed .tag-filter-toggle::after {
+        transform: rotate(-90deg);
       }
 
       /* Users table mobile scroll */
@@ -904,7 +988,10 @@
               </button>
             </div>
           </div>
-          <div class="section-filters">
+          <div class="section-filters" id="spacesFilters">
+            <div class="filter-toggle" onclick="this.parentElement.classList.toggle('collapsed')">
+              <span>Filters</span>
+            </div>
             <div class="filter-row">
               <div class="filter-group">
                 <label for="searchFilter">Search</label>
@@ -952,6 +1039,7 @@
 
           <!-- Table View (default) -->
           <div id="tableView" class="table-container">
+            <div class="spaces-table-wrapper">
             <table>
               <thead>
                 <tr>
@@ -972,6 +1060,7 @@
               </thead>
               <tbody id="tableBody"></tbody>
             </table>
+            </div><!-- end spaces-table-wrapper -->
           </div>
         </div>
 
@@ -1373,7 +1462,10 @@
         </div>
 
         <!-- Tag filters as horizontal row -->
-        <div class="tag-filter-bar">
+        <div class="tag-filter-bar" id="tagFilterBar">
+          <div class="tag-filter-toggle" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span>Space Tags</span>
+          </div>
           <div id="tagFilterChips" class="tag-filter-chips"></div>
           <button id="clearFilters" class="btn-small">Clear Filters</button>
         </div>

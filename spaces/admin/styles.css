@@ -1604,3 +1604,18 @@ body.is-admin .admin-only {
 .toast.info .toast-icon {
   color: var(--accent);
 }
+
+/* Mobile toast positioning */
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: none;
+    width: 100%;
+  }
+}
