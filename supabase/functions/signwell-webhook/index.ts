@@ -109,12 +109,21 @@ Deno.serve(async (req) => {
 
     const pdfBlob = await pdfResponse.blob();
     const pdfBuffer = await pdfBlob.arrayBuffer();
-    const filename = `signed-lease-${application.id}-${Date.now()}.pdf`;
+
+    // Generate smart filename: "Alpaca Rental Agreement (Signed) [Name] [Date].pdf"
+    const person = application.person as { id: string; first_name: string; last_name: string; email: string } | null;
+    const tenantName = person
+      ? `${person.first_name || ''} ${person.last_name || ''}`.trim().replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)
+      : 'Unknown';
+    const dateStr = new Date().toISOString().split('T')[0];
+    const displayFilename = `Alpaca Rental Agreement (Signed) ${tenantName} ${dateStr}.pdf`;
+    // Storage path uses application ID for uniqueness
+    const storagePath = `signed-lease-${application.id}-${Date.now()}.pdf`;
 
     // Upload to Supabase storage
     const { error: uploadError } = await supabase.storage
       .from('lease-documents')
-      .upload(`signed/${filename}`, pdfBuffer, {
+      .upload(`signed/${storagePath}`, pdfBuffer, {
         contentType: 'application/pdf',
         upsert: true,
       });
@@ -127,7 +136,7 @@ Deno.serve(async (req) => {
     // Get public URL
     const { data: urlData } = supabase.storage
       .from('lease-documents')
-      .getPublicUrl(`signed/${filename}`);
+      .getPublicUrl(`signed/${storagePath}`);
 
     const signedPdfUrl = urlData.publicUrl;
 
@@ -150,7 +159,6 @@ Deno.serve(async (req) => {
     console.log(`Document ${documentId} signed and processed successfully`);
 
     // Send email notification via send-email function
-    const person = application.person as { id: string; first_name: string; last_name: string; email: string } | null;
     if (person?.email) {
       try {
         const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');

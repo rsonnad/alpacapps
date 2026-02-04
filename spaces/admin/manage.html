@@ -2153,7 +2153,7 @@
               <div id="signedPdfSection" style="display: none; margin-top: 1rem;">
                 <a id="signedPdfLink" href="#" target="_blank" class="pdf-link">
                   <span class="pdf-icon">✅</span>
-                  <span>Download Signed Agreement</span>
+                  <span id="signedPdfFilename">Download Signed Agreement</span>
                 </a>
               </div>
               <div class="signature-actions" style="margin-top: 1rem;">
@@ -6837,6 +6837,23 @@
     let currentLeaseTemplate = null;
     let currentAgreementData = null;
 
+    /**
+     * Generate a display filename for lease documents
+     * Format: "Alpaca Rental Agreement [Name] [Date].pdf"
+     */
+    function getLeaseDisplayFilename(app, isSigned = false) {
+      const name = app.person
+        ? `${app.person.first_name || ''} ${app.person.last_name || ''}`.trim()
+        : 'Unknown';
+      const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30);
+      const dateField = isSigned ? app.agreement_signed_at : app.agreement_generated_at;
+      const dateStr = dateField
+        ? new Date(dateField).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+      const prefix = isSigned ? 'Alpaca Rental Agreement (Signed)' : 'Alpaca Rental Agreement';
+      return `${prefix} ${cleanName} ${dateStr}.pdf`;
+    }
+
     async function updateDocumentsTabState(app) {
       const generateSection = document.getElementById('generateSection');
       const pdfSection = document.getElementById('pdfSection');
@@ -6870,27 +6887,41 @@
       const status = app.agreement_status || 'pending';
 
       if (status === 'signed' && app.signed_pdf_url) {
-        // Show signed document
-        pdfSection.style.display = 'none';
+        // Show signed document - also show the unsigned PDF for reference
+        if (app.generated_pdf_url) {
+          pdfSection.style.display = 'block';
+          document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
+          document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
+          if (app.agreement_generated_at) {
+            document.getElementById('pdfGeneratedAt').textContent =
+              `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
+          }
+        }
         signatureSection.style.display = 'block';
         document.getElementById('signatureStatusText').textContent = 'Agreement signed!';
         document.getElementById('signedPdfSection').style.display = 'block';
         document.getElementById('signedPdfLink').href = app.signed_pdf_url;
+        document.getElementById('signedPdfFilename').textContent = getLeaseDisplayFilename(app, true);
       } else if (status === 'sent' && app.signwell_document_id) {
-        // Show signature pending status
+        // Show signature pending status with the unsigned PDF link
         generateSection.style.display = 'none';
         pdfSection.style.display = 'block';
         signatureSection.style.display = 'block';
         document.getElementById('signatureStatusText').textContent = 'Awaiting tenant signature...';
         if (app.generated_pdf_url) {
           document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
+          document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
+          if (app.agreement_generated_at) {
+            document.getElementById('pdfGeneratedAt').textContent =
+              `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
+          }
         }
       } else if ((status === 'generated' || app.generated_pdf_url) && app.generated_pdf_url) {
         // Show generated PDF alongside generate section (so user can regenerate with new terms)
         generateSection.style.display = 'block';
         pdfSection.style.display = 'block';
         document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
-        document.getElementById('pdfFilename').textContent = 'lease-agreement.pdf';
+        document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
         if (app.agreement_generated_at) {
           document.getElementById('pdfGeneratedAt').textContent =
             `Generated ${new Date(app.agreement_generated_at).toLocaleDateString()}`;
@@ -6966,10 +6997,11 @@
           currentAgreementData
         );
 
-        // Generate and upload PDF
+        // Generate and upload PDF with smart filename
         const { url, filename } = await pdfService.generateAndUploadLeasePdf(
           parsedContent,
-          currentApplicationId
+          currentApplicationId,
+          { tenantName: currentAgreementData.tenantName }
         );
 
         // Update application with PDF URL

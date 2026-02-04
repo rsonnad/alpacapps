@@ -285,21 +285,44 @@ async function uploadPdfToStorage(pdfBlob, filename) {
 }
 
 /**
+ * Generate a smart filename for lease agreements
+ * Format: "Alpaca Rental Agreement [Name] [Date].pdf"
+ */
+function generateLeaseFilename(tenantName, date = new Date()) {
+  // Clean tenant name for filename (remove special chars, limit length)
+  const cleanName = (tenantName || 'Unknown')
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .trim()
+    .substring(0, 30);
+
+  // Format date as YYYY-MM-DD
+  const dateStr = date.toISOString().split('T')[0];
+
+  return `Alpaca Rental Agreement ${cleanName} ${dateStr}.pdf`;
+}
+
+/**
  * Generate PDF and upload to storage
  * Returns the public URL of the uploaded PDF
+ * @param {string} markdownContent - The markdown content to render
+ * @param {string} applicationId - The application ID (used for storage path)
+ * @param {Object} options - Optional metadata
+ * @param {string} options.tenantName - Tenant name for the filename
  */
-async function generateAndUploadLeasePdf(markdownContent, applicationId) {
-  const filename = `lease-${applicationId}-${Date.now()}.pdf`;
+async function generateAndUploadLeasePdf(markdownContent, applicationId, options = {}) {
+  const displayFilename = generateLeaseFilename(options.tenantName);
+  // Storage path uses applicationId for uniqueness, but we return the display filename
+  const storagePath = `lease-${applicationId}-${Date.now()}.pdf`;
 
   // Generate PDF
-  const { blob } = await generateLeasePdf(markdownContent, filename);
+  const { blob } = await generateLeasePdf(markdownContent, displayFilename);
 
   // Upload to storage
-  const url = await uploadPdfToStorage(blob, filename);
+  const url = await uploadPdfToStorage(blob, storagePath);
 
   return {
     url,
-    filename,
+    filename: displayFilename,
   };
 }
 
@@ -313,6 +336,7 @@ async function downloadLeasePdf(markdownContent, filename = 'lease-agreement.pdf
 
 export const pdfService = {
   generateLeasePdf,
+  generateLeaseFilename,
   uploadPdfToStorage,
   generateAndUploadLeasePdf,
   downloadLeasePdf,
