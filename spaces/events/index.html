@@ -1894,7 +1894,7 @@
     async function loadAllEventSpaces() {
       try {
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/spaces?can_be_event_space=eq.true&is_archived=eq.false&select=id,name,media_spaces(display_order,is_primary,media:media_id(url))&order=name`,
+          `${SUPABASE_URL}/rest/v1/spaces?can_be_event=eq.true&is_archived=eq.false&select=id,name,media_spaces(display_order,is_primary,media:media_id(url))&order=name`,
           {
             headers: {
               'apikey': SUPABASE_KEY,
