@@ -733,11 +733,13 @@
           await submitUnansweredQuestion(question, null, 'low_confidence');
         }
       } catch (error) {
-        answerText.textContent = 'Sorry, I had trouble getting an answer. Please try again or leave your info below and we\'ll get back to you.';
+        answerText.textContent = 'Sorry, I had trouble getting an answer. Leave your info below and we\'ll get back to you.';
         answerContainer.classList.add('visible');
-        // Show follow-up form on error so user can leave contact info
-        followupForm.classList.add('visible');
+        // Hide confidence notice and feedback buttons on error
+        lowConfidenceNotice.classList.remove('visible');
         document.querySelector('.answer-feedback').style.display = 'none';
+        // Show follow-up form so user can leave contact info
+        followupForm.classList.add('visible');
       } finally {
         askBtn.disabled = false;
         askBtn.textContent = 'Ask';

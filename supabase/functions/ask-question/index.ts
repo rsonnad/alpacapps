@@ -125,29 +125,38 @@ ${contextPrompt}
 
 Now answer the following question from a visitor:`;
 
-    // Call Gemini API
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
+    // Call Gemini API with retry on rate limit
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiBody = JSON.stringify({
+      contents: [{
+        parts: [
+          { text: systemPrompt },
+          { text: question }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 500,
+      }
+    });
+
+    let geminiResponse: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      geminiResponse = await fetch(GEMINI_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: systemPrompt },
-              { text: question }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 500,
-          }
-        })
-      }
-    );
+        body: geminiBody
+      });
 
-    if (!geminiResponse.ok) {
-      const errorData = await geminiResponse.json();
+      if (geminiResponse.ok || geminiResponse.status !== 429) break;
+
+      // Rate limited — wait and retry
+      console.warn(`Gemini rate limited (attempt ${attempt + 1}), retrying...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+    }
+
+    if (!geminiResponse || !geminiResponse.ok) {
+      const errorData = geminiResponse ? await geminiResponse.json() : {};
       console.error("Gemini API error:", JSON.stringify(errorData));
       const errorMsg = errorData?.error?.message || "Failed to get a response from AI";
       throw new Error(errorMsg);
