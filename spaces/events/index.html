@@ -761,6 +761,158 @@
       font-weight: 500;
     }
 
+    /* Deposit Sections */
+    .deposit-section {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+    }
+
+    .deposit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .deposit-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .deposit-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .deposit-card h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .deposit-card .deposit-description {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .deposit-amount {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .deposit-amount .amount {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .deposit-amount .amount.free {
+      color: var(--success);
+    }
+
+    .deposit-amount .original {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-right: 0.5rem;
+    }
+
+    .code-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .code-row input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .code-row button {
+      padding: 0.5rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .code-row button:hover {
+      background: var(--border);
+    }
+
+    .code-result {
+      font-size: 0.8rem;
+      padding: 0.375rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .code-result.success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .code-result.error {
+      background: var(--error-light);
+      color: var(--error);
+    }
+
+    .deposit-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .deposit-total .total-amount {
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .deposit-total .total-amount.free {
+      color: var(--success);
+    }
+
+    /* Payment Card Section */
+    .payment-card-section {
+      display: none;
+    }
+
+    .payment-card-section.visible {
+      display: block;
+    }
+
+    #event-card-container {
+      min-height: 90px;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+
+    .payment-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
     .back-link {
       display: inline-flex;
       align-items: center;
@@ -1168,6 +1320,68 @@
           </div>
         </div>
 
+        <!-- Deposits Section -->
+        <div class="form-section deposit-section">
+          <h2>Event Deposits</h2>
+          <p class="hint" style="margin-bottom: 1rem;">
+            Two deposits are required to secure your event booking. These are fully refundable if the venue is left in good condition.
+          </p>
+
+          <div class="deposit-grid">
+            <!-- Cleaning Deposit -->
+            <div class="deposit-card" id="cleaningDepositCard">
+              <h4>Cleaning Deposit</h4>
+              <p class="deposit-description">Refunded when venue is cleaned per guidelines</p>
+              <div class="deposit-amount">
+                <span>Amount:</span>
+                <div>
+                  <span class="original hidden" id="cleaningOriginal"></span>
+                  <span class="amount" id="cleaningAmount">Loading...</span>
+                </div>
+              </div>
+              <div class="code-row">
+                <input type="text" id="cleaningCode" placeholder="Discount code">
+                <button type="button" id="applyCleaningCode">Apply</button>
+              </div>
+              <div class="code-result hidden" id="cleaningCodeResult"></div>
+            </div>
+
+            <!-- Reservation Deposit -->
+            <div class="deposit-card" id="reservationDepositCard">
+              <h4>Reservation Deposit</h4>
+              <p class="deposit-description">Refunded after successful event completion</p>
+              <div class="deposit-amount">
+                <span>Amount:</span>
+                <div>
+                  <span class="original hidden" id="reservationOriginal"></span>
+                  <span class="amount" id="reservationAmount">Loading...</span>
+                </div>
+              </div>
+              <div class="code-row">
+                <input type="text" id="reservationCode" placeholder="Discount code">
+                <button type="button" id="applyReservationCode">Apply</button>
+              </div>
+              <div class="code-result hidden" id="reservationCodeResult"></div>
+            </div>
+          </div>
+
+          <div class="deposit-total">
+            <span>Total Deposit:</span>
+            <span class="total-amount" id="totalDeposit">Loading...</span>
+          </div>
+
+          <!-- Payment Section (shown when total > 0) -->
+          <div class="payment-card-section" id="eventPaymentSection">
+            <p class="hint" style="margin-bottom: 0.75rem;">
+              Enter your card details to pay the deposit.
+            </p>
+            <div id="event-card-container">
+              <!-- Square Card Element will be inserted here -->
+            </div>
+            <p class="payment-note">Secure payment powered by Square</p>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="submit" class="btn-submit" id="submitBtn">Submit Event Request</button>
         </div>
@@ -1199,6 +1413,22 @@
     import { getAustinTodayISO, formatLongDate } from '../../shared/timezone.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
 
+    // Fee type constants
+    const FEE_TYPES = {
+      CLEANING: 'event_cleaning_deposit',
+      RESERVATION: 'event_reservation_deposit'
+    };
+
+    // Deposit state
+    let cleaningAmount = 0;
+    let cleaningOriginal = 0;
+    let cleaningCode = null;
+    let reservationAmount = 0;
+    let reservationOriginal = 0;
+    let reservationCode = null;
+    let squareCard = null;
+    let squarePayments = null;
+
     // Elements
     const form = document.getElementById('eventRequestForm');
     const formContainer = document.getElementById('formContainer');
@@ -1211,6 +1441,20 @@
     const isTicketedCheckbox = document.getElementById('is_ticketed');
     const eventDateInput = document.getElementById('event_date');
 
+    // Deposit elements
+    const cleaningAmountEl = document.getElementById('cleaningAmount');
+    const cleaningOriginalEl = document.getElementById('cleaningOriginal');
+    const cleaningCodeInput = document.getElementById('cleaningCode');
+    const applyCleaningCodeBtn = document.getElementById('applyCleaningCode');
+    const cleaningCodeResult = document.getElementById('cleaningCodeResult');
+    const reservationAmountEl = document.getElementById('reservationAmount');
+    const reservationOriginalEl = document.getElementById('reservationOriginal');
+    const reservationCodeInput = document.getElementById('reservationCode');
+    const applyReservationCodeBtn = document.getElementById('applyReservationCode');
+    const reservationCodeResult = document.getElementById('reservationCodeResult');
+    const totalDepositEl = document.getElementById('totalDeposit');
+    const eventPaymentSection = document.getElementById('eventPaymentSection');
+
     // Store all event spaces and booked spaces
     let allEventSpaces = [];
     let bookedSpaceIds = new Set();
@@ -1219,6 +1463,258 @@
     // Set minimum date to today in Austin timezone
     const today = getAustinTodayISO();
     eventDateInput.setAttribute('min', today);
+
+    // Load deposit settings
+    async function loadDepositSettings() {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=in.(${FEE_TYPES.CLEANING},${FEE_TYPES.RESERVATION})&is_active=eq.true`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to load deposit settings');
+
+        const settings = await response.json();
+        settings.forEach(s => {
+          if (s.fee_type === FEE_TYPES.CLEANING) {
+            cleaningOriginal = parseFloat(s.default_amount);
+            cleaningAmount = cleaningOriginal;
+          } else if (s.fee_type === FEE_TYPES.RESERVATION) {
+            reservationOriginal = parseFloat(s.default_amount);
+            reservationAmount = reservationOriginal;
+          }
+        });
+
+        updateDepositDisplay();
+      } catch (error) {
+        console.error('Error loading deposit settings:', error);
+        cleaningAmountEl.textContent = 'Error';
+        reservationAmountEl.textContent = 'Error';
+      }
+    }
+
+    // Update deposit display
+    function updateDepositDisplay() {
+      // Cleaning
+      if (cleaningAmount === 0) {
+        cleaningAmountEl.textContent = 'FREE';
+        cleaningAmountEl.classList.add('free');
+      } else {
+        cleaningAmountEl.textContent = `$${cleaningAmount.toFixed(2)}`;
+        cleaningAmountEl.classList.remove('free');
+      }
+      if (cleaningCode && cleaningOriginal !== cleaningAmount) {
+        cleaningOriginalEl.textContent = `$${cleaningOriginal.toFixed(2)}`;
+        cleaningOriginalEl.classList.remove('hidden');
+      } else {
+        cleaningOriginalEl.classList.add('hidden');
+      }
+
+      // Reservation
+      if (reservationAmount === 0) {
+        reservationAmountEl.textContent = 'FREE';
+        reservationAmountEl.classList.add('free');
+      } else {
+        reservationAmountEl.textContent = `$${reservationAmount.toFixed(2)}`;
+        reservationAmountEl.classList.remove('free');
+      }
+      if (reservationCode && reservationOriginal !== reservationAmount) {
+        reservationOriginalEl.textContent = `$${reservationOriginal.toFixed(2)}`;
+        reservationOriginalEl.classList.remove('hidden');
+      } else {
+        reservationOriginalEl.classList.add('hidden');
+      }
+
+      // Total
+      const total = cleaningAmount + reservationAmount;
+      if (total === 0) {
+        totalDepositEl.textContent = 'FREE';
+        totalDepositEl.classList.add('free');
+        eventPaymentSection.classList.remove('visible');
+      } else {
+        totalDepositEl.textContent = `$${total.toFixed(2)}`;
+        totalDepositEl.classList.remove('free');
+        eventPaymentSection.classList.add('visible');
+        initializeSquare();
+      }
+    }
+
+    // Validate code
+    async function validateCode(code, feeType) {
+      if (!code) return null;
+
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fee_codes?code=eq.${code.toUpperCase()}&fee_type=eq.${feeType}&is_active=eq.true`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to validate code');
+
+        const [codeData] = await response.json();
+
+        if (!codeData) {
+          return { valid: false, message: 'Invalid code' };
+        }
+
+        if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
+          return { valid: false, message: 'Code has expired' };
+        }
+
+        if (codeData.usage_limit !== null && codeData.times_used >= codeData.usage_limit) {
+          return { valid: false, message: 'Code has reached its usage limit' };
+        }
+
+        return {
+          valid: true,
+          price: parseFloat(codeData.price),
+          message: codeData.price === 0 ? 'Deposit waived!' : `Code applied! Amount: $${codeData.price.toFixed(2)}`
+        };
+      } catch (error) {
+        console.error('Error validating code:', error);
+        return { valid: false, message: 'Error validating code' };
+      }
+    }
+
+    // Apply cleaning code
+    applyCleaningCodeBtn.addEventListener('click', async () => {
+      const code = cleaningCodeInput.value.trim();
+      if (!code) {
+        cleaningCodeResult.classList.add('hidden');
+        cleaningCode = null;
+        cleaningAmount = cleaningOriginal;
+        updateDepositDisplay();
+        return;
+      }
+
+      applyCleaningCodeBtn.disabled = true;
+      applyCleaningCodeBtn.textContent = '...';
+
+      const result = await validateCode(code, FEE_TYPES.CLEANING);
+
+      applyCleaningCodeBtn.disabled = false;
+      applyCleaningCodeBtn.textContent = 'Apply';
+
+      cleaningCodeResult.textContent = result.message;
+      cleaningCodeResult.classList.remove('hidden', 'success', 'error');
+      cleaningCodeResult.classList.add(result.valid ? 'success' : 'error');
+
+      if (result.valid) {
+        cleaningCode = code.toUpperCase();
+        cleaningAmount = result.price;
+      } else {
+        cleaningCode = null;
+        cleaningAmount = cleaningOriginal;
+      }
+
+      updateDepositDisplay();
+    });
+
+    // Apply reservation code
+    applyReservationCodeBtn.addEventListener('click', async () => {
+      const code = reservationCodeInput.value.trim();
+      if (!code) {
+        reservationCodeResult.classList.add('hidden');
+        reservationCode = null;
+        reservationAmount = reservationOriginal;
+        updateDepositDisplay();
+        return;
+      }
+
+      applyReservationCodeBtn.disabled = true;
+      applyReservationCodeBtn.textContent = '...';
+
+      const result = await validateCode(code, FEE_TYPES.RESERVATION);
+
+      applyReservationCodeBtn.disabled = false;
+      applyReservationCodeBtn.textContent = 'Apply';
+
+      reservationCodeResult.textContent = result.message;
+      reservationCodeResult.classList.remove('hidden', 'success', 'error');
+      reservationCodeResult.classList.add(result.valid ? 'success' : 'error');
+
+      if (result.valid) {
+        reservationCode = code.toUpperCase();
+        reservationAmount = result.price;
+      } else {
+        reservationCode = null;
+        reservationAmount = reservationOriginal;
+      }
+
+      updateDepositDisplay();
+    });
+
+    // Initialize Square SDK
+    async function initializeSquare() {
+      if (squarePayments) return;
+
+      try {
+        const configResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/square_config?select=sandbox_app_id,production_app_id,sandbox_location_id,production_location_id,test_mode`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!configResponse.ok) throw new Error('Failed to load Square config');
+
+        const [config] = await configResponse.json();
+        const isTestMode = config.test_mode;
+        const appId = isTestMode ? config.sandbox_app_id : config.production_app_id;
+        const locationId = isTestMode ? config.sandbox_location_id : config.production_location_id;
+
+        const sdkUrl = isTestMode
+          ? 'https://sandbox.web.squarecdn.com/v1/square.js'
+          : 'https://web.squarecdn.com/v1/square.js';
+
+        await loadScript(sdkUrl);
+
+        squarePayments = window.Square.payments(appId, locationId);
+        squareCard = await squarePayments.card();
+        await squareCard.attach('#event-card-container');
+
+      } catch (error) {
+        console.error('Error initializing Square:', error);
+        document.getElementById('event-card-container').innerHTML =
+          '<p style="color: var(--error); text-align: center;">Payment system unavailable.</p>';
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          const checkInterval = setInterval(() => {
+            if (window.Square) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    // Initialize deposits on page load
+    loadDepositSettings();
 
     // Toggle ticket price field visibility
     isTicketedCheckbox.addEventListener('change', () => {
@@ -1467,9 +1963,12 @@
         document.querySelectorAll('input[name="spaces[]"]:checked')
       ).map(cb => cb.value);
 
+      // Calculate total deposit
+      const totalDeposit = cleaningAmount + reservationAmount;
+
       // Disable form
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+      submitBtn.textContent = totalDeposit > 0 ? 'Processing Payment...' : 'Submitting...';
 
       try {
         // First, create or find the person
@@ -1553,7 +2052,12 @@
           ack_cleaning_responsibility: true,
           ack_linens_furniture: true,
           ack_propane_reimbursement: true,
-          request_status: 'submitted'
+          request_status: 'submitted',
+          cleaning_deposit_amount: cleaningAmount,
+          cleaning_deposit_code: cleaningCode,
+          reservation_deposit_amount: reservationAmount,
+          reservation_deposit_code: reservationCode,
+          deposit_status: totalDeposit > 0 ? 'pending' : 'waived'
         };
 
         const eventResponse = await fetch(`${SUPABASE_URL}/rest/v1/event_hosting_requests`, {
@@ -1573,6 +2077,180 @@
         }
 
         const [eventRequest] = await eventResponse.json();
+
+        // Process deposit payment if total > 0
+        if (totalDeposit > 0) {
+          if (!squareCard) {
+            throw new Error('Payment system not ready. Please refresh and try again.');
+          }
+
+          // Tokenize the card
+          const tokenResult = await squareCard.tokenize();
+
+          if (tokenResult.status !== 'OK') {
+            const errorMessage = tokenResult.errors?.[0]?.message || 'Card payment failed';
+            throw new Error(errorMessage);
+          }
+
+          // Create payment record for cleaning deposit
+          if (cleaningAmount > 0) {
+            const cleaningPaymentResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+              },
+              body: JSON.stringify({
+                payment_type: FEE_TYPES.CLEANING,
+                reference_type: 'event_hosting_request',
+                reference_id: eventRequest.id,
+                amount: cleaningAmount,
+                fee_code_used: cleaningCode,
+                original_amount: cleaningOriginal,
+                status: 'pending'
+              })
+            });
+
+            if (!cleaningPaymentResponse.ok) {
+              console.error('Failed to create cleaning deposit payment record');
+            }
+          }
+
+          // Create payment record for reservation deposit
+          if (reservationAmount > 0) {
+            const reservationPaymentResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+              },
+              body: JSON.stringify({
+                payment_type: FEE_TYPES.RESERVATION,
+                reference_type: 'event_hosting_request',
+                reference_id: eventRequest.id,
+                amount: reservationAmount,
+                fee_code_used: reservationCode,
+                original_amount: reservationOriginal,
+                status: 'pending'
+              })
+            });
+
+            if (!reservationPaymentResponse.ok) {
+              console.error('Failed to create reservation deposit payment record');
+            }
+          }
+
+          // Process combined payment via Edge Function
+          const processResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-square-payment`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              sourceId: tokenResult.token,
+              amount: Math.round(totalDeposit * 100), // Convert to cents
+              paymentRecordId: eventRequest.id, // Use event request ID as reference
+              buyerEmail: email,
+              note: `Event Deposits - ${getValue('event_name')} (${firstName} ${lastName})`
+            })
+          });
+
+          const processResult = await processResponse.json();
+
+          if (!processResult.success) {
+            // Update event request with payment failure
+            await fetch(`${SUPABASE_URL}/rest/v1/event_hosting_requests?id=eq.${eventRequest.id}`, {
+              method: 'PATCH',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                deposit_status: 'failed',
+                deposit_error: processResult.error
+              })
+            });
+
+            throw new Error(processResult.error || 'Payment failed');
+          }
+
+          // Update event request with payment success
+          await fetch(`${SUPABASE_URL}/rest/v1/event_hosting_requests?id=eq.${eventRequest.id}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              deposit_status: 'paid',
+              square_payment_id: processResult.paymentId,
+              square_receipt_url: processResult.receiptUrl
+            })
+          });
+
+          // Update payment records with success
+          await fetch(`${SUPABASE_URL}/rest/v1/square_payments?reference_id=eq.${eventRequest.id}&reference_type=eq.event_hosting_request`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              status: 'completed',
+              square_payment_id: processResult.paymentId,
+              square_receipt_url: processResult.receiptUrl,
+              updated_at: new Date().toISOString()
+            })
+          });
+        } else {
+          // Record $0 deposits if codes were used to waive
+          if (cleaningCode) {
+            await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                payment_type: FEE_TYPES.CLEANING,
+                reference_type: 'event_hosting_request',
+                reference_id: eventRequest.id,
+                amount: 0,
+                fee_code_used: cleaningCode,
+                original_amount: cleaningOriginal,
+                status: 'completed'
+              })
+            });
+          }
+          if (reservationCode) {
+            await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                payment_type: FEE_TYPES.RESERVATION,
+                reference_type: 'event_hosting_request',
+                reference_id: eventRequest.id,
+                amount: 0,
+                fee_code_used: reservationCode,
+                original_amount: reservationOriginal,
+                status: 'completed'
+              })
+            });
+          }
+        }
 
         // Save selected spaces to junction table
         if (selectedSpaceIds.length > 0) {
