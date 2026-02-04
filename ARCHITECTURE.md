@@ -100,7 +100,13 @@ alpacapps/
 │
 ├── spaces/                 # Consumer-facing spaces view
 │   ├── index.html
-│   └── app.js              # Public space listing (filtered)
+│   ├── app.js              # Public space listing (filtered)
+│   │
+│   ├── apply/              # Rental application form
+│   │   └── index.html      # Multi-section form with Square payment
+│   │
+│   └── events/             # Event hosting request form
+│       └── index.html      # Event form with policies & acknowledgments
 │
 └── spaces/admin/           # Admin dashboard
     ├── index.html          # Admin spaces view
@@ -209,10 +215,81 @@ The system has migrated from the legacy `photos` table to a unified `media` syst
 - `webhook_secret` - For webhook verification
 - `test_mode` - Boolean for test vs production
 
-**rental_applications** additions:
+**rental_applications** - Full application tracking
+- `id` (uuid, PK)
+- `person_id` (FK → people)
+- `application_status` - submitted, approved, denied, delayed, withdrawn
+- `agreement_status` - pending, generated, sent, signed
+- `deposit_status` - pending, requested, partial, received, confirmed
+
+Application details:
+- `desired_space_id`, `desired_move_in`, `desired_term`
+- `application_fee_paid`, `application_fee_amount`, `application_fee_code`
+
+Approved terms:
+- `approved_space_id`, `approved_rate`, `approved_rate_term`
+- `approved_move_in`, `approved_lease_end`
+- `notice_period` - none, 1_day, 1_week, 30_days, 60_days
+- `security_deposit_amount`
+- `reservation_deposit_amount` - Due after lease signing, credited to first month
+- `move_in_deposit_amount` - Always equal to one period's rent
+- `additional_terms`
+
+Lease documents:
 - `generated_pdf_url` - Supabase storage URL of generated lease
 - `signwell_document_id` - SignWell document tracking ID
 - `signed_pdf_url` - URL of signed lease after e-signature
+- `agreement_signed_at` - Timestamp when both parties signed
+
+Deposit tracking:
+- `reservation_deposit_paid`, `reservation_deposit_paid_at`, `reservation_deposit_method`
+- `move_in_deposit_paid`, `move_in_deposit_paid_at`, `move_in_deposit_method`
+- `security_deposit_paid`, `security_deposit_paid_at`, `security_deposit_method`
+
+**event_hosting_requests** - Event booking applications
+- `id` (uuid, PK)
+- `person_id` (FK → people)
+- `request_status` - submitted, under_review, approved, denied, delayed, withdrawn
+- `agreement_status` - pending, generated, sent, signed
+- `deposit_status` - pending, requested, partial, received, confirmed
+
+Event details:
+- `event_name`, `event_description`, `event_type`
+- `event_date`, `event_start_time`, `event_end_time`
+- `expected_guests`, `is_ticketed`, `ticket_price_range`
+- `organization_name`, `has_hosted_before`
+
+Staffing contacts:
+- `setup_staff_name`, `setup_staff_phone`
+- `cleanup_staff_name`, `cleanup_staff_phone`
+- `parking_manager_name`, `parking_manager_phone`
+
+Fees:
+- `rental_fee` - Default $295, due 7 days before event
+- `reservation_fee` - Default $95, refundable
+- `cleaning_deposit` - Default $195, refundable
+- `{fee}_paid`, `{fee}_paid_at`, `{fee}_method` for each
+
+Lease documents (same as rental):
+- `agreement_document_url`, `signwell_document_id`, `signed_pdf_url`, `agreement_signed_at`
+
+Acknowledgments (boolean flags for each policy):
+- `ack_no_address_posting`, `ack_parking_management`, `ack_noise_curfew`
+- `ack_no_alcohol_inside`, `ack_no_meat_inside`, `ack_no_rvs`
+- `ack_no_animals_inside`, `ack_cleaning_responsibility`
+- `ack_linens_furniture`, `ack_propane_reimbursement`
+
+**event_request_spaces** - Junction: event requests ↔ spaces
+- `event_request_id` (FK), `space_id` (FK)
+- `space_type` - requested, approved, excluded
+
+**payment_methods** - Available payment options
+- `id` (uuid, PK)
+- `name` - Display name (Venmo, Zelle, PayPal, Bank Transfer)
+- `method_type` - venmo, zelle, paypal, bank_ach
+- `account_identifier` - @username, email, phone
+- `instructions` - Custom instructions for tenants
+- `display_order`, `is_active`
 
 ### Supporting Tables
 
@@ -387,12 +464,21 @@ values ('New Space', 500, true, true, ...);
 5. Tenant signs in SignWell
 6. SignWell webhook → downloads signed PDF → stores in Supabase → updates status
 
-**Template Placeholders:**
-- `{{tenant_name}}`, `{{tenant_email}}`, `{{tenant_phone}}`
-- `{{signing_date}}`, `{{lease_start_date}}`, `{{lease_end_date}}`
-- `{{dwelling_description}}`, `{{dwelling_location}}`
-- `{{rate_display}}`, `{{security_deposit}}`, `{{move_in_deposit}}`
-- `{{notice_period_display}}`, `{{additional_terms}}`
+**Lease Template Placeholders:**
+- Tenant: `{{tenant_name}}`, `{{tenant_email}}`, `{{tenant_phone}}`
+- Dates: `{{signing_date}}`, `{{lease_start_date}}`, `{{lease_end_date}}`
+- Space: `{{dwelling_description}}`, `{{dwelling_location}}`
+- Rates: `{{rate}}`, `{{rate_term}}`, `{{rate_display}}`
+- Deposits: `{{security_deposit}}`, `{{move_in_deposit}}`, `{{reservation_deposit}}`
+- Credits: `{{application_fee_paid}}`, `{{application_fee_credit}}`
+- Credits: `{{reservation_deposit_credit}}`, `{{total_credits}}`, `{{first_month_due}}`
+- Terms: `{{notice_period}}`, `{{notice_period_display}}`, `{{additional_terms}}`
+
+**Credit Calculation:**
+When generating lease agreements, the system calculates credits toward first month's rent:
+- Application fee (if paid) is credited
+- Reservation deposit (paid after signing) is credited
+- `{{first_month_due}}` = Monthly rate - Application fee - Reservation deposit
 
 ### Google Drive (Legacy)
 - Rental agreements previously stored in Drive
@@ -504,6 +590,63 @@ Intelligent payment matching using Google Gemini AI:
 
 **Key benefit:** First payment from a sender may need AI/manual matching. All subsequent payments from the same sender are instant (cached lookup, no AI cost).
 
+### Rental Application Flow
+
+**Application Submission** (`/spaces/apply/`):
+1. Applicant fills out form with personal info, desired space, move-in date, term
+2. Pays application fee via Square (or uses discount code to waive)
+3. Success screen shows application summary:
+   - Space name and monthly rate (if selected)
+   - Desired move-in date and term
+   - Application fee paid/waived
+   - "What Happens Next" steps with "all due haste" language
+4. Admin notification email sent
+
+**Admin Pipeline** (`/spaces/admin/manage.html` → Rentals tab):
+1. **Applications**: Review submitted applications
+2. **Approved**: Set terms (space, rate, move-in, deposits)
+   - Security deposit: Optional, due at move-in
+   - Reservation deposit: Defaults to one month's rent, due after signing, credited to first month
+3. **Contract**: Generate lease PDF, send for signature via SignWell
+4. **Deposit**: Track reservation deposit payment
+5. **Ready**: All deposits received, ready for move-in
+
+**Post-Signature Email** (via SignWell webhook):
+When tenant signs lease, automated email sent with:
+- Congratulations message with space name
+- Reservation deposit amount due
+- Payment options (Venmo, Zelle, etc. from `payment_methods` table)
+- Move-in date and monthly rent summary
+- Instructions to include name and "Reservation Deposit" in memo
+
+### Event Hosting Flow
+
+**Event Request Submission** (`/spaces/events/`):
+1. Host fills out form with event details, staffing contacts, space requests
+2. Acknowledges all venue policies (10 checkboxes)
+3. Pays cleaning deposit + reservation deposit via Square
+4. Success screen shows request summary:
+   - Event name, date, time, expected guests
+   - Requested spaces
+   - Deposits paid amount
+   - "What Happens Next" noting rental fee due 7 days before event
+
+**Admin Pipeline** (`/spaces/admin/manage.html` → Events tab):
+1. **Submitted**: Review event requests
+2. **Approved**: Confirm spaces, adjust fees if needed
+3. **Contract**: Generate event agreement, send for signature
+4. **Deposit**: Track rental fee payment (due 7 days before event)
+5. **Confirmed**: All payments received, event confirmed
+
+**Post-Signature Email** (via SignWell webhook):
+When host signs event agreement, automated email sent with:
+- Congratulations message with event name
+- Rental fee amount due
+- Payment due date (calculated as 7 days before event)
+- Payment options from database
+- Event details summary
+- Reminders about setup crew, directions page, cleanup deadline
+
 ### Lease Agreement System
 Database-driven lease generation replacing manual Claude Skill workflow:
 1. Templates stored in `lease_templates` table (Markdown with `{{placeholders}}`)
@@ -512,6 +655,21 @@ Database-driven lease generation replacing manual Claude Skill workflow:
 4. PDFs stored in `lease-documents` Supabase storage bucket
 5. SignWell integration for e-signatures (API + webhook)
 6. Signed PDFs stored back in Supabase, linked to application
+
+### SignWell Webhook
+
+The webhook (`/functions/v1/signwell-webhook`) handles both rental and event agreements:
+
+**When document is signed:**
+1. Receives `document_completed` event from SignWell
+2. Checks both `rental_applications` and `event_hosting_requests` for matching document ID
+3. Downloads signed PDF from SignWell API
+4. Uploads to Supabase storage (`lease-documents/signed/`)
+5. Updates application status to "signed"
+6. Fetches payment methods from database
+7. Sends appropriate email based on document type:
+   - Rental: Reservation deposit request with move-in details
+   - Event: Rental fee request with payment deadline (7 days before event)
 
 ### Early Exit Feature
 When a tenant wants to leave before their assignment ends:
