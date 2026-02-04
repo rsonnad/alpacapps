@@ -48,6 +48,15 @@ async function init() {
   showState('loading');
 
   try {
+    // Check if we already have a session (faster than waiting for auth events)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      console.log('Session found, redirecting to:', redirectUrl);
+      window.location.href = redirectUrl;
+      return;
+    }
+
+    // No existing session, wait for auth init (handles OAuth callback)
     await initAuth();
     checkAuthAndRedirect();
   } catch (error) {
