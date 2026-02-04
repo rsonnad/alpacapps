@@ -56,12 +56,18 @@ export async function initAuth() {
       console.log('Auth state changed:', event);
 
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await handleAuthChange(session);
-        // Resolve on first auth event so caller knows auth state is ready
-        if (!resolved) {
-          resolved = true;
-          resolve({ user: currentUser, role: currentRole });
+        // If we have a session, set user immediately and resolve
+        // Don't wait for app_users fetch - let that happen in background
+        if (session?.user) {
+          currentUser = session.user;
+          currentRole = 'pending'; // Will be updated when app_users fetch completes
+          if (!resolved) {
+            resolved = true;
+            resolve({ user: currentUser, role: currentRole });
+          }
         }
+        // Fetch full user record in background (don't await)
+        handleAuthChange(session);
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         currentAppUser = null;
