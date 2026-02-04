@@ -767,6 +767,16 @@
       color: var(--success);
       font-size: 0.8rem;
     }
+
+    .linked-space-booking {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .linked-space-booking:not(:empty):not([data-none="true"]) {
+      color: var(--accent);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -7428,14 +7438,47 @@ Deposit: ${req.deposit_status}
 
         if (error) throw error;
 
+        // Load upcoming Airbnb assignments (with airbnb_uid) for these spaces
+        const today = new Date().toISOString().split('T')[0];
+        const spaceIds = linkedSpaces?.map(s => s.id) || [];
+
+        const { data: airbnbAssignments } = await supabase
+          .from('assignments')
+          .select(`
+            id, start_date, end_date, airbnb_uid,
+            assignment_spaces(space_id)
+          `)
+          .not('airbnb_uid', 'is', null)
+          .gte('end_date', today)
+          .order('start_date', { ascending: true });
+
+        // Group next booking by space
+        const nextBookingBySpace = {};
+        for (const assignment of (airbnbAssignments || [])) {
+          for (const as of (assignment.assignment_spaces || [])) {
+            if (!nextBookingBySpace[as.space_id]) {
+              nextBookingBySpace[as.space_id] = assignment;
+            }
+          }
+        }
+
         const linkedSpacesList = document.getElementById('linkedSpacesList');
         if (linkedSpaces && linkedSpaces.length > 0) {
-          linkedSpacesList.innerHTML = linkedSpaces.map(space => `
-            <div class="linked-space-item">
-              <span class="linked-space-name">${space.name}</span>
-              <span class="linked-space-status">Connected</span>
-            </div>
-          `).join('');
+          linkedSpacesList.innerHTML = linkedSpaces.map(space => {
+            const nextBooking = nextBookingBySpace[space.id];
+            let bookingInfo = '(none)';
+            if (nextBooking) {
+              const start = new Date(nextBooking.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              const end = new Date(nextBooking.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              bookingInfo = `${start} - ${end}`;
+            }
+            return `
+              <div class="linked-space-item">
+                <span class="linked-space-name">${space.name}</span>
+                <span class="linked-space-booking">${bookingInfo}</span>
+              </div>
+            `;
+          }).join('');
         } else {
           linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb yet.</p>';
         }
