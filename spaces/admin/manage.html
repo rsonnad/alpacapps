@@ -7529,6 +7529,27 @@ Deposit: ${req.deposit_status}
           // Update last sync time
           document.getElementById('lastSyncTime').textContent = new Date().toLocaleString();
 
+          // Build blocked dates display
+          let blockedDatesHtml = '';
+          if (result.results && result.results.length > 0) {
+            const spacesWithBlocks = result.results.filter(r => r.blockedRanges && r.blockedRanges.length > 0);
+            if (spacesWithBlocks.length > 0) {
+              blockedDatesHtml = `
+                <p style="margin-top: 1rem;"><strong>Blocked Dates (owner blocks in Airbnb):</strong></p>
+                <div style="font-size: 0.875rem; color: var(--text-muted);">
+                  ${spacesWithBlocks.map(space => {
+                    const ranges = space.blockedRanges.map(r => {
+                      const start = new Date(r.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      const end = new Date(r.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      return `${start} - ${end}`;
+                    }).join(', ');
+                    return `<p><strong>${space.spaceName}:</strong> ${ranges}</p>`;
+                  }).join('')}
+                </div>
+              `;
+            }
+          }
+
           // Show results
           resultsDiv.classList.remove('hidden');
           resultsContent.innerHTML = `
@@ -7537,9 +7558,10 @@ Deposit: ${req.deposit_status}
               <li>Spaces processed: ${result.summary.spacesProcessed}</li>
               <li>Bookings created: ${result.summary.totalCreated}</li>
               <li>Bookings updated: ${result.summary.totalUpdated}</li>
-              <li>Skipped (unchanged/past): ${result.summary.totalSkipped}</li>
+              <li>Skipped (unchanged/past/blocked): ${result.summary.totalSkipped}</li>
               ${result.summary.totalErrors > 0 ? `<li style="color: var(--error);">Errors: ${result.summary.totalErrors}</li>` : ''}
             </ul>
+            ${blockedDatesHtml}
           `;
 
           showToast(`Sync complete: ${result.summary.totalCreated} new bookings imported`, 'success');

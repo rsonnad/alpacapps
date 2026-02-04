@@ -24,6 +24,11 @@ interface ICalEvent {
   dtend: Date;
 }
 
+interface BlockedRange {
+  start: string;
+  end: string;
+}
+
 interface SyncResult {
   spaceId: string;
   spaceName: string;
@@ -31,6 +36,7 @@ interface SyncResult {
   created: number;
   updated: number;
   skipped: number;
+  blockedRanges: BlockedRange[];
   errors: string[];
 }
 
@@ -99,6 +105,7 @@ serve(async (req) => {
         created: 0,
         updated: 0,
         skipped: 0,
+        blockedRanges: [],
         errors: [],
       };
 
@@ -120,6 +127,19 @@ serve(async (req) => {
           try {
             // Skip past events
             if (event.dtend < new Date()) {
+              result.skipped++;
+              continue;
+            }
+
+            // Skip "Not available" blocks - these are owner blocks, not real reservations
+            // They show up as "Airbnb (Not available)" or just "Not available"
+            // But track them so admins can see what dates are blocked
+            const summary = (event.summary || '').toLowerCase();
+            if (summary.includes('not available') || summary === 'blocked') {
+              result.blockedRanges.push({
+                start: event.dtstart.toISOString().split('T')[0],
+                end: event.dtend.toISOString().split('T')[0],
+              });
               result.skipped++;
               continue;
             }
