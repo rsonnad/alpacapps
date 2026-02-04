@@ -1376,15 +1376,15 @@
           });
         }
 
+        // Get the selected space name if one was selected
+        let spaceName = null;
+        const selectedSpace = spaceSelect.options[spaceSelect.selectedIndex];
+        if (selectedSpace && selectedSpace.value) {
+          spaceName = selectedSpace.textContent;
+        }
+
         // Send admin notification email
         try {
-          // Get the selected space name if one was selected
-          let spaceName = null;
-          const selectedSpace = spaceSelect.options[spaceSelect.selectedIndex];
-          if (selectedSpace && selectedSpace.value) {
-            spaceName = selectedSpace.textContent;
-          }
-
           await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
             method: 'POST',
             headers: {
