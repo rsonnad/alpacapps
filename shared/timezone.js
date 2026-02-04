@@ -15,7 +15,18 @@ const AUSTIN_TIMEZONE = 'America/Chicago';
 export function formatDateAustin(dateInput, options = {}) {
   if (!dateInput) return null;
 
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  let date;
+  if (typeof dateInput === 'string') {
+    // Check if it's a date-only string (YYYY-MM-DD) - parse as local date to avoid UTC shift
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      const [year, month, day] = dateInput.split('-');
+      date = new Date(year, month - 1, day, 12, 0, 0, 0); // Noon to avoid DST issues
+    } else {
+      date = new Date(dateInput);
+    }
+  } else {
+    date = dateInput;
+  }
   if (isNaN(date.getTime())) return null;
 
   const defaultOptions = { month: 'short', day: 'numeric' };
@@ -33,7 +44,18 @@ export function formatDateAustin(dateInput, options = {}) {
 export function formatDateTimeFull(dateInput, includeTime = true) {
   if (!dateInput) return '-';
 
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  let date;
+  if (typeof dateInput === 'string') {
+    // Check if it's a date-only string (YYYY-MM-DD) - parse as local date to avoid UTC shift
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      const [year, month, day] = dateInput.split('-');
+      date = new Date(year, month - 1, day, 12, 0, 0, 0); // Noon to avoid DST issues
+    } else {
+      date = new Date(dateInput);
+    }
+  } else {
+    date = dateInput;
+  }
   if (isNaN(date.getTime())) return '-';
 
   const options = includeTime
