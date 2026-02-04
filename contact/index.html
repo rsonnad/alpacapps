@@ -653,7 +653,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module">
     import { initChatWidget, askQuestion, submitUnansweredQuestion } from '/shared/chat-widget.js';
-    import { supabase } from '/shared/supabase.js';
 
     let currentQuestion = '';
     let currentAnswer = '';
@@ -663,8 +662,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await initChatWidget();
 
-      // Load SMS number from Supabase
+      // Load SMS number from Supabase (dynamic import so it can't break the page)
       try {
+        const { supabase } = await import('/shared/supabase.js');
         const { data: config } = await supabase
           .from('twilio_config')
           .select('phone_number, is_active')
@@ -680,7 +680,7 @@
           }
         }
       } catch (e) {
-        console.log('Could not load SMS config');
+        console.log('Could not load SMS config:', e.message);
       }
 
       // Header scroll behavior
