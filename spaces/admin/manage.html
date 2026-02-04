@@ -7543,7 +7543,15 @@ Deposit: ${req.deposit_status}
 
             // Format availability status
             let availabilityHtml = '';
-            const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const currentYear = new Date().getFullYear();
+            const formatDate = (d) => {
+              const opts = { month: 'short', day: 'numeric' };
+              // Include year if it's different from current year
+              if (d.getFullYear() !== currentYear) {
+                opts.year = '2-digit';
+              }
+              return d.toLocaleDateString('en-US', opts);
+            };
 
             if (nextAvailable <= today) {
               if (availableUntil) {
