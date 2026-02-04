@@ -343,6 +343,81 @@
       .add-space-form {
         grid-template-columns: 1fr;
       }
+
+      /* Mobile container padding */
+      .manage-container {
+        padding: 1rem;
+      }
+
+      /* Mobile tabs - horizontal scroll */
+      .manage-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+      }
+
+      .manage-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* Section styles */
+      .section-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+      }
+
+      .section-header h2 {
+        font-size: 1rem;
+      }
+
+      .section-body {
+        padding: 1rem;
+      }
+
+      /* Filter row mobile */
+      .section-filters {
+        padding: 0.75rem 1rem;
+      }
+
+      .filter-row {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .filter-group {
+        width: 100%;
+        flex-shrink: 1;
+      }
+
+      .filter-group input[type="text"],
+      .filter-group select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .filter-checkboxes {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      /* Users table mobile scroll */
+      .users-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .users-table {
+        min-width: 500px;
+      }
+
+      .users-table th,
+      .users-table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
     }
 
     /* User Management Styles */
@@ -5524,8 +5599,9 @@
 
       if (countEl) countEl.textContent = sorted.length;
 
-      // Build table HTML
+      // Build table HTML with scroll wrapper for mobile
       let html = `
+        <div class="table-scroll-wrapper">
         <table class="data-table assignments-table">
           <thead>
             <tr>
@@ -5586,7 +5662,7 @@
         `;
       });
 
-      html += '</tbody></table>';
+      html += '</tbody></table></div>';
       container.innerHTML = html;
 
       // Add click handlers for rows
@@ -7360,6 +7436,7 @@ Deposit: ${req.deposit_status}
       }
 
       pendingSection.innerHTML = `
+        <div class="table-scroll-wrapper">
         <table class="users-table">
           <thead>
             <tr>
@@ -7386,6 +7463,7 @@ Deposit: ${req.deposit_status}
             `).join('')}
           </tbody>
         </table>
+        </div>
       `;
     }
 
@@ -7407,6 +7485,7 @@ Deposit: ${req.deposit_status}
       }
 
       usersSection.innerHTML = `
+        <div class="table-scroll-wrapper">
         <table class="users-table">
           <thead>
             <tr>
@@ -7455,6 +7534,7 @@ Deposit: ${req.deposit_status}
             }).join('')}
           </tbody>
         </table>
+        </div>
       `;
     }
 

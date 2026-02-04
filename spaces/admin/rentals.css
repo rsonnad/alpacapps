@@ -1367,6 +1367,12 @@
 }
 
 
+/* Table scroll wrapper for mobile */
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .calendar-space-label,
@@ -1401,5 +1407,25 @@
   .no-more-cell {
     width: 60px;
     min-width: 60px;
+  }
+
+  /* Assignments table mobile styles */
+  .assignments-table {
+    min-width: 600px;
+  }
+
+  .assignments-table th,
+  .assignments-table td {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .assignments-table .tenant-cell strong {
+    font-size: 0.85rem;
+  }
+
+  .assignments-table .tenant-email {
+    font-size: 0.7rem;
   }
 }
