@@ -9,7 +9,28 @@
  * - Payment methods management
  */
 
-import { supabase } from './supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+
+// Trigger iCal regeneration to sync with Airbnb
+async function triggerIcalRegeneration() {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/regenerate-ical`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    const result = await response.json();
+    if (result.success) {
+      console.log('[iCal] Regenerated:', result.updated?.length || 0, 'files');
+    } else {
+      console.warn('[iCal] Regeneration failed:', result.error);
+    }
+  } catch (err) {
+    console.warn('[iCal] Regeneration error:', err.message);
+  }
+}
 
 // =============================================
 // STATUS CONSTANTS
@@ -269,6 +290,9 @@ async function approveApplication(applicationId, terms) {
       .eq('id', app.person_id);
   }
 
+  // Trigger iCal regeneration to block dates on Airbnb
+  triggerIcalRegeneration();
+
   return data;
 }
 
@@ -344,6 +368,9 @@ async function denyApplication(applicationId, reason = null) {
       .eq('id', app.person_id);
   }
 
+  // Trigger iCal regeneration to unblock dates on Airbnb
+  triggerIcalRegeneration();
+
   return data;
 }
 
@@ -365,6 +392,10 @@ async function delayApplication(applicationId, reason = null, revisitDate = null
     .single();
 
   if (error) throw error;
+
+  // Trigger iCal regeneration to unblock dates on Airbnb
+  triggerIcalRegeneration();
+
   return data;
 }
 
@@ -924,6 +955,9 @@ async function confirmMoveIn(applicationId) {
     .from('rental_payments')
     .update({ assignment_id: assignment.id })
     .eq('rental_application_id', applicationId);
+
+  // Trigger iCal regeneration to block dates on Airbnb
+  triggerIcalRegeneration();
 
   return { application: updatedApp, assignment };
 }

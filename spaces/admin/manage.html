@@ -7429,62 +7429,42 @@ Deposit: ${req.deposit_status}
     // Airbnb Sync functionality
     async function loadAirbnbRentals() {
       try {
-        // Load spaces with Airbnb iCal URLs
-        const { data: linkedSpaces, error } = await supabase
-          .from('spaces')
-          .select('id, name, airbnb_ical_url')
-          .not('airbnb_ical_url', 'is', null)
-          .order('name');
-
-        if (error) throw error;
-
-        // Load upcoming assignments for these spaces (any assignment, not just Airbnb)
+        // Load only Airbnb reservations (assignments with airbnb_uid)
         const today = new Date().toISOString().split('T')[0];
-        const spaceIds = linkedSpaces?.map(s => s.id) || [];
 
-        const { data: upcomingAssignments } = await supabase
+        const { data: airbnbReservations, error } = await supabase
           .from('assignments')
           .select(`
-            id, start_date, end_date,
+            id, start_date, end_date, airbnb_uid,
             person:person_id(first_name, last_name),
-            assignment_spaces(space_id)
+            assignment_spaces(space:space_id(id, name))
           `)
-          .in('status', ['active', 'pending_contract', 'contract_sent'])
+          .not('airbnb_uid', 'is', null)
           .gte('end_date', today)
           .order('start_date', { ascending: true });
 
-        // Group next booking by space
-        const nextBookingBySpace = {};
-        for (const assignment of (upcomingAssignments || [])) {
-          for (const as of (assignment.assignment_spaces || [])) {
-            if (spaceIds.includes(as.space_id) && !nextBookingBySpace[as.space_id]) {
-              nextBookingBySpace[as.space_id] = assignment;
-            }
-          }
-        }
+        if (error) throw error;
 
         const linkedSpacesList = document.getElementById('linkedSpacesList');
-        if (linkedSpaces && linkedSpaces.length > 0) {
-          linkedSpacesList.innerHTML = linkedSpaces.map(space => {
-            const nextBooking = nextBookingBySpace[space.id];
-            let bookingInfo = '(none)';
-            if (nextBooking) {
-              const start = new Date(nextBooking.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-              const end = new Date(nextBooking.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-              const guestName = nextBooking.person
-                ? `${nextBooking.person.first_name} ${nextBooking.person.last_name || ''}`.trim()
-                : 'Guest';
-              bookingInfo = `${guestName}: ${start} - ${end}`;
-            }
+
+        if (airbnbReservations && airbnbReservations.length > 0) {
+          linkedSpacesList.innerHTML = airbnbReservations.map(reservation => {
+            const spaceName = reservation.assignment_spaces?.[0]?.space?.name || 'Unknown Space';
+            const guestName = reservation.person
+              ? `${reservation.person.first_name} ${reservation.person.last_name || ''}`.trim()
+              : 'Airbnb Guest';
+            const start = new Date(reservation.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const end = new Date(reservation.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
             return `
               <div class="linked-space-item">
-                <span class="linked-space-name">${space.name}</span>
-                <span class="linked-space-booking">${bookingInfo}</span>
+                <span class="linked-space-name">${spaceName}</span>
+                <span class="linked-space-booking">${guestName}: ${start} - ${end}</span>
               </div>
             `;
           }).join('');
         } else {
-          linkedSpacesList.innerHTML = '<p class="text-muted">No spaces linked to Airbnb yet.</p>';
+          linkedSpacesList.innerHTML = '<p class="text-muted">No upcoming Airbnb reservations.</p>';
         }
       } catch (error) {
         console.error('Error loading Airbnb rentals:', error);
