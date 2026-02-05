@@ -56,7 +56,7 @@ async function init() {
     if (raw) {
       const cached = JSON.parse(raw);
       const age = Date.now() - (cached.timestamp || 0);
-      if (age < 30 * 24 * 60 * 60 * 1000 && (cached.role === 'admin' || cached.role === 'staff')) {
+      if (age < 90 * 24 * 60 * 60 * 1000 && (cached.role === 'admin' || cached.role === 'staff')) {
         console.log('[LOGIN]', 'Cached auth found, redirecting immediately', { email: cached.email, role: cached.role });
         window.location.href = redirectUrl;
         return;

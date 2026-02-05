@@ -5,7 +5,7 @@ import { supabase } from './supabase.js';
 const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations
 const INIT_TIMEOUT_MS = 10000; // 10 seconds for initial auth check
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
-const CACHED_AUTH_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const CACHED_AUTH_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 // Structured auth logger
 const authLog = {
