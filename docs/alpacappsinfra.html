@@ -865,15 +865,16 @@
       <a href="#github"><span class="num">1</span> GitHub + Starter Template</a>
       <a href="#claude-code"><span class="num">2</span> Install Claude Code</a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
-      <a href="#resend"><span class="num">4</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">5</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">6</span> Square (Payments)</a>
-      <a href="#signwell"><span class="num">7</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">8</span> Google Gemini (AI)</a>
-      <a href="#discord"><span class="num">9</span> Discord Bot</a>
-      <a href="#domain"><span class="num">10</span> Custom Domain</a>
-      <a href="#template"><span class="num">11</span> CLAUDE.md Template</a>
-      <a href="#checklist"><span class="num">12</span> Day-One Checklist</a>
+      <a href="#google-auth"><span class="num">4</span> Google Sign-In</a>
+      <a href="#resend"><span class="num">5</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">7</span> Square (Payments)</a>
+      <a href="#signwell"><span class="num">8</span> SignWell (E-Signatures)</a>
+      <a href="#gemini"><span class="num">9</span> Google Gemini (AI)</a>
+      <a href="#discord"><span class="num">10</span> Discord Bot</a>
+      <a href="#domain"><span class="num">11</span> Custom Domain</a>
+      <a href="#template"><span class="num">12</span> CLAUDE.md Template</a>
+      <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
     </div>
   </nav>
 
@@ -1084,9 +1085,75 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
+  <!-- 4. Google Auth -->
+  <div class="section" id="google-auth">
+    <h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2>
+    <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
+
+    <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com/projectcreate" target="_blank">console.cloud.google.com &rarr; New Project</a></li>
+      <li>Name it anything (e.g., &ldquo;My Salon App&rdquo;) and click <strong>Create</strong></li>
+      <li>Make sure the new project is selected in the top-left dropdown</li>
+    </ol>
+
+    <h3><span class="step-label step-you">2. Set up the OAuth consent screen</span></h3>
+    <p>This is the screen users see when they click &ldquo;Sign in with Google.&rdquo;</p>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank">APIs &amp; Services &rarr; OAuth consent screen</a></li>
+      <li>Choose <strong>External</strong> (unless you&rsquo;re on Google Workspace and only want internal users) &rarr; click <strong>Create</strong></li>
+      <li>Fill in the required fields:
+        <ul>
+          <li><strong>App name:</strong> your app&rsquo;s name (what users see)</li>
+          <li><strong>User support email:</strong> your email</li>
+          <li><strong>Developer contact email:</strong> your email</li>
+        </ul>
+      </li>
+      <li>Click <strong>Save and Continue</strong> through the Scopes, Test Users, and Summary steps (defaults are fine)</li>
+    </ol>
+
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
+      <strong>Publishing status:</strong> Your app starts in &ldquo;Testing&rdquo; mode, which means only test users you add can sign in. To let anyone sign in, click <strong>Publish App</strong> on the consent screen page. Google may ask you to verify your app if you use sensitive scopes, but basic sign-in (email/profile) doesn&rsquo;t require verification.
+    </div>
+
+    <h3><span class="step-label step-you">3. Create OAuth credentials</span></h3>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">APIs &amp; Services &rarr; Credentials</a></li>
+      <li>Click <strong>+ Create Credentials</strong> &rarr; <strong>OAuth client ID</strong></li>
+      <li>Application type: <strong>Web application</strong></li>
+      <li>Name: anything (e.g., &ldquo;Supabase Auth&rdquo;)</li>
+      <li>Under <strong>Authorized redirect URIs</strong>, add:
+        <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/auth/v1/callback</code></pre>
+      </li>
+      <li>Click <strong>Create</strong> and copy the <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+    </ol>
+
+    <h3><span class="step-label step-you">4. Connect to Supabase</span></h3>
+    <ol>
+      <li>Go to your Supabase dashboard &rarr; <a id="supabase-auth-link" href="https://supabase.com/dashboard/project/_/auth/providers" target="_blank">Authentication &rarr; Providers</a></li>
+      <li>Find <strong>Google</strong> in the list and toggle it <strong>on</strong></li>
+      <li>Paste your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+      <li>Click <strong>Save</strong></li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### Authentication (Google OAuth via Supabase)
+- Google Client ID: `your-client-id.apps.googleusercontent.com`
+- Auth is handled by Supabase Auth (no edge function needed)
+- Redirect URI: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/auth/v1/callback`
+- Sign-in method: supabase.auth.signInWithOAuth({ provider: 'google' })</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Set up Google Sign-In. Create a login page with a 'Sign in with Google' button using Supabase Auth, and add an auth check to the admin pages so only authenticated users can access them."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will create <code>shared/auth.js</code>, add login/logout UI, set up auth guards on admin pages, commit, and push.</span>
+    </div>
+  </div>
+
   <!-- 5. Resend -->
   <div class="section" id="resend">
-    <h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">4. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1110,7 +1177,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 6. Telnyx -->
   <div class="section" id="telnyx">
-    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">5. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1152,7 +1219,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 7. Square -->
   <div class="section" id="square">
-    <h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">6. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+    <h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1188,7 +1255,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 8. SignWell -->
   <div class="section" id="signwell">
-    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">7. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">8. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1218,7 +1285,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 9. Gemini -->
   <div class="section" id="gemini">
-    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">8. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">9. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1240,7 +1307,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 10. Discord -->
   <div class="section" id="discord">
-    <h2><img src="https://cdn.simpleicons.org/discord" alt="Discord" class="service-icon">9. Discord Bot (Optional)</h2>
+    <h2><img src="https://cdn.simpleicons.org/discord" alt="Discord" class="service-icon">10. Discord Bot (Optional)</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1254,7 +1321,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 11. Custom Domain -->
   <div class="section" id="domain">
-    <h2>10. Custom Domain (Optional)</h2>
+    <h2>11. Custom Domain (Optional)</h2>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
@@ -1329,7 +1396,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 11. CLAUDE.md Template -->
   <div class="section" id="template">
-    <h2>11. CLAUDE.md Template</h2>
+    <h2>12. CLAUDE.md Template</h2>
     <p>Enter your project name and download a ready-to-use <code>CLAUDE.md</code> template. Save it in your project root and fill in the credential placeholders.</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
@@ -1353,7 +1420,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 12. Day-One Checklist -->
   <div class="section" id="checklist">
-    <h2>12. Day-One Checklist</h2>
+    <h2>13. Day-One Checklist</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
 
@@ -1363,6 +1430,16 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Enable GitHub Pages on the repo</li>
       <li>Create Supabase account and project</li>
       <li>Copy: Supabase URL, anon key, project ref, DB password, session pooler string</li>
+    </ul>
+
+    <p><strong>User Login &mdash; Free (Google OAuth):</strong></p>
+    <ul class="checklist">
+      <li>Create Google Cloud project</li>
+      <li>Set up OAuth consent screen (publish when ready)</li>
+      <li>Create OAuth client ID (Web application)</li>
+      <li>Add Supabase callback URL as authorized redirect URI</li>
+      <li>Enable Google provider in Supabase Auth settings</li>
+      <li>Copy: Client ID, Client Secret</li>
     </ul>
 
     <p><strong>Email &mdash; Free (Resend):</strong></p>
@@ -1520,12 +1597,15 @@ function updateSupabaseLinks() {
     spans[i].style.color = ref ? '#5a8a3a' : '';
     spans[i].style.fontWeight = ref ? '700' : '';
   }
+  var authLink = document.getElementById('supabase-auth-link');
   if (ref) {
     apiLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/api';
     dbLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/database';
+    if (authLink) authLink.href = 'https://supabase.com/dashboard/project/' + ref + '/auth/providers';
   } else {
     apiLink.href = 'https://supabase.com/dashboard/project/_/settings/api';
     dbLink.href = 'https://supabase.com/dashboard/project/_/settings/database';
+    if (authLink) authLink.href = 'https://supabase.com/dashboard/project/_/auth/providers';
   }
 }
 
