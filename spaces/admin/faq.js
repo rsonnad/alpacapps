@@ -1,12 +1,13 @@
 // FAQ Management Page
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAuth, getAuthState } from '../../shared/auth.js';
+import { initAuth, getAuthState, onAuthStateChange, signOut } from '../../shared/auth.js';
 
 // State
 let faqEntries = [];
 let contextLinks = [];
 let contextMeta = null;
 let contextEntries = [];
+let initialized = false;
 
 // DOM Elements
 const loadingOverlay = document.getElementById('loadingOverlay');
@@ -17,51 +18,63 @@ const toastContainer = document.getElementById('toastContainer');
 // Check if running in embed mode (inside iframe)
 const isEmbed = new URLSearchParams(window.location.search).has('embed');
 
+// Handle auth state changes (same pattern as manage.html)
+async function handleAuthState(state) {
+  if (state.appUser && (state.appUser.role === 'admin' || state.appUser.role === 'staff')) {
+    if (!initialized) {
+      initialized = true;
+
+      // Hide header in embed mode
+      if (isEmbed) {
+        const header = document.querySelector('header');
+        if (header) header.style.display = 'none';
+        const backLink = document.querySelector('.back-link');
+        if (backLink) backLink.style.display = 'none';
+      }
+
+      // Set up user info
+      document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
+      document.getElementById('signOutBtn').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = '/spaces/admin/';
+      });
+
+      // Load data
+      await loadData();
+
+      // Set up event listeners
+      setupEventListeners();
+
+      // Check URL for question_id parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const questionId = urlParams.get('question_id');
+      if (questionId) {
+        const entry = faqEntries.find(e => e.id === questionId);
+        if (entry) {
+          openFaqModal(entry);
+        }
+      }
+
+      // Show content
+      loadingOverlay.classList.add('hidden');
+      appContent.classList.remove('hidden');
+    }
+  } else if (state.appUser || state.isUnauthorized) {
+    loadingOverlay.classList.add('hidden');
+    unauthorizedOverlay.classList.remove('hidden');
+  } else if (!state.isAuthenticated) {
+    window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+  }
+  // If state.isPending, do nothing — wait for the real role to come in
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const { user, role } = await initAuth();
-
-    if (!user || (role !== 'admin' && role !== 'staff')) {
-      loadingOverlay.classList.add('hidden');
-      unauthorizedOverlay.classList.remove('hidden');
-      return;
-    }
-
-    // Hide header in embed mode
-    if (isEmbed) {
-      const header = document.querySelector('header');
-      if (header) header.style.display = 'none';
-      const backLink = document.querySelector('.back-link');
-      if (backLink) backLink.style.display = 'none';
-    }
-
-    // Set up user info
-    document.getElementById('userInfo').textContent = user.email;
-    document.getElementById('signOutBtn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = '/spaces/admin/';
-    });
-
-    // Load data
-    await loadData();
-
-    // Set up event listeners
-    setupEventListeners();
-
-    // Check URL for question_id parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const questionId = urlParams.get('question_id');
-    if (questionId) {
-      const entry = faqEntries.find(e => e.id === questionId);
-      if (entry) {
-        openFaqModal(entry);
-      }
-    }
-
-    // Show content
-    loadingOverlay.classList.add('hidden');
-    appContent.classList.remove('hidden');
+    await initAuth();
+    const state = getAuthState();
+    onAuthStateChange(handleAuthState);
+    handleAuthState(state);
   } catch (error) {
     console.error('Init error:', error);
     showToast('Failed to initialize', 'error');
