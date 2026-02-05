@@ -1037,6 +1037,7 @@ tr:last-child td {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  overflow: hidden;
 }
 
 .detail-photos {
@@ -1121,6 +1122,9 @@ tr:last-child td {
 
 .detail-section {
   margin-bottom: 1.5rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .detail-section h3 {
