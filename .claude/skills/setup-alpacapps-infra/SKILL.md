@@ -1,5 +1,5 @@
 ---
-name: setup-infra
+name: setup-alpacapps-infra
 description: Interactive infrastructure setup wizard. Walks through setting up the full stack (Supabase, Telnyx, Square, SignWell, Resend) step by step. Use when starting a new project or adding services to an existing one.
 ---
 

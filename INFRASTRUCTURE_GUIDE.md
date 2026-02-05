@@ -96,7 +96,7 @@ Claude Code is your AI developer. Install it before anything else — for every 
 This repo includes a built-in skill that walks you through the entire setup interactively. Just type:
 
 ```
-/setup-infra
+/setup-alpacapps-infra
 ```
 
 Claude will ask you for credentials one service at a time, validate each one, build everything out, and push. You don't need to read the rest of this guide — the skill covers it all.
