@@ -89,9 +89,10 @@ async function runClaudeCode(report, screenshotPath) {
 
   const args = [
     '-p', prompt,
-    '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash',
+    '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash(git:*)',
     '--max-turns', '25',
     '--output-format', 'json',
+    '--dangerously-skip-permissions',
   ];
 
   log('info', 'Running Claude Code', { prompt_length: prompt.length });
