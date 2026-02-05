@@ -8244,7 +8244,7 @@
             ${req.organization_name ? `<div class="text-muted" style="font-size: 0.75rem;">${req.organization_name}</div>` : ''}
           </div>
           <div class="card-footer">
-            <span class="guest-count">${req.expected_guests || '?'} guests</span>
+            <span class="guest-count">${req.approved_max_guests || req.expected_guests || '?'} guests</span>
             <span class="fee-display">${feeDisplay}</span>
           </div>
         </div>
