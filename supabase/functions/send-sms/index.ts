@@ -21,9 +21,9 @@ interface SmsRequest {
   person_id?: string;
 }
 
-interface TwilioConfig {
-  account_sid: string;
-  auth_token: string;
+interface TelnyxConfig {
+  api_key: string;
+  messaging_profile_id: string;
   phone_number: string;
   is_active: boolean;
   test_mode: boolean;
@@ -94,32 +94,32 @@ serve(async (req) => {
       );
     }
 
-    // Load Twilio config from database
+    // Load Telnyx config from database
     const { data: config, error: configError } = await supabase
-      .from("twilio_config")
+      .from("telnyx_config")
       .select("*")
       .single();
 
     if (configError || !config) {
-      console.error("Twilio config not found:", configError);
+      console.error("Telnyx config not found:", configError);
       return new Response(
-        JSON.stringify({ error: "Twilio not configured" }),
+        JSON.stringify({ error: "Telnyx not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const twilioConfig = config as TwilioConfig;
+    const telnyxConfig = config as TelnyxConfig;
 
-    if (!twilioConfig.is_active) {
+    if (!telnyxConfig.is_active) {
       return new Response(
-        JSON.stringify({ error: "Twilio SMS is disabled" }),
+        JSON.stringify({ error: "Telnyx SMS is disabled" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!twilioConfig.phone_number) {
+    if (!telnyxConfig.phone_number) {
       return new Response(
-        JSON.stringify({ error: "Twilio phone number not configured" }),
+        JSON.stringify({ error: "Telnyx phone number not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -135,84 +135,93 @@ serve(async (req) => {
     }
 
     // Test mode: log but don't send
-    if (twilioConfig.test_mode) {
+    if (telnyxConfig.test_mode) {
       console.log("TEST MODE - SMS not sent:", { type, to, body: messageBody });
 
       // Log to sms_messages table
       await supabase.from("sms_messages").insert({
         person_id: person_id || null,
         direction: "outbound",
-        from_number: twilioConfig.phone_number,
+        from_number: telnyxConfig.phone_number,
         to_number: to,
         body: messageBody,
         sms_type: type,
-        twilio_sid: `TEST_${Date.now()}`,
+        telnyx_id: `TEST_${Date.now()}`,
         status: "test",
       });
 
       return new Response(
-        JSON.stringify({ success: true, sid: `TEST_${Date.now()}`, test_mode: true }),
+        JSON.stringify({ success: true, id: `TEST_${Date.now()}`, test_mode: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Send via Twilio API
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioConfig.account_sid}/Messages.json`;
-    const authHeader = btoa(`${twilioConfig.account_sid}:${twilioConfig.auth_token}`);
+    // Send via Telnyx API v2
+    const telnyxUrl = "https://api.telnyx.com/v2/messages";
 
-    const twilioResponse = await fetch(twilioUrl, {
+    const telnyxPayload: Record<string, any> = {
+      from: telnyxConfig.phone_number,
+      to,
+      text: messageBody,
+      type: "SMS",
+    };
+
+    // Include messaging profile ID if configured
+    if (telnyxConfig.messaging_profile_id) {
+      telnyxPayload.messaging_profile_id = telnyxConfig.messaging_profile_id;
+    }
+
+    const telnyxResponse = await fetch(telnyxUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Basic ${authHeader}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Bearer ${telnyxConfig.api_key}`,
+        "Content-Type": "application/json",
       },
-      body: new URLSearchParams({
-        From: twilioConfig.phone_number,
-        To: to,
-        Body: messageBody,
-      }),
+      body: JSON.stringify(telnyxPayload),
     });
 
-    const twilioResult = await twilioResponse.json();
+    const telnyxResult = await telnyxResponse.json();
 
-    if (!twilioResponse.ok) {
-      console.error("Twilio API error:", twilioResult);
+    if (!telnyxResponse.ok) {
+      console.error("Telnyx API error:", telnyxResult);
 
       // Log failed message
       await supabase.from("sms_messages").insert({
         person_id: person_id || null,
         direction: "outbound",
-        from_number: twilioConfig.phone_number,
+        from_number: telnyxConfig.phone_number,
         to_number: to,
         body: messageBody,
         sms_type: type,
         status: "failed",
-        error_code: twilioResult.code?.toString() || twilioResult.status?.toString(),
-        error_message: twilioResult.message || "Twilio API error",
+        error_code: telnyxResult.errors?.[0]?.code?.toString() || "",
+        error_message: telnyxResult.errors?.[0]?.detail || telnyxResult.errors?.[0]?.title || "Telnyx API error",
       });
 
       return new Response(
-        JSON.stringify({ error: "Failed to send SMS", details: twilioResult }),
-        { status: twilioResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Failed to send SMS", details: telnyxResult }),
+        { status: telnyxResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const messageId = telnyxResult.data?.id || "";
 
     // Log successful message
     await supabase.from("sms_messages").insert({
       person_id: person_id || null,
       direction: "outbound",
-      from_number: twilioConfig.phone_number,
+      from_number: telnyxConfig.phone_number,
       to_number: to,
       body: messageBody,
       sms_type: type,
-      twilio_sid: twilioResult.sid,
-      status: twilioResult.status || "sent",
+      telnyx_id: messageId,
+      status: telnyxResult.data?.to?.[0]?.status || "queued",
     });
 
-    console.log("SMS sent successfully:", { type, to, sid: twilioResult.sid });
+    console.log("SMS sent successfully:", { type, to, id: messageId });
 
     return new Response(
-      JSON.stringify({ success: true, sid: twilioResult.sid }),
+      JSON.stringify({ success: true, id: messageId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

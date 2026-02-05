@@ -1,4 +1,4 @@
-// SMS service for sending notifications via Twilio
+// SMS service for sending notifications via Telnyx
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
 const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
@@ -61,7 +61,7 @@ export function formatPhoneE164(phone) {
  * @param {string} to - Recipient phone number (any format, will be normalized)
  * @param {object} data - Template data
  * @param {object} options - Optional overrides (person_id)
- * @returns {Promise<{success: boolean, sid?: string, error?: string}>}
+ * @returns {Promise<{success: boolean, id?: string, error?: string}>}
  */
 export async function sendSMS(type, to, data, options = {}) {
   try {
@@ -95,7 +95,7 @@ export async function sendSMS(type, to, data, options = {}) {
       return { success: false, error: result.error || 'Failed to send SMS' };
     }
 
-    return { success: true, sid: result.sid, test_mode: result.test_mode || false };
+    return { success: true, id: result.id, test_mode: result.test_mode || false };
   } catch (error) {
     console.error('SMS service error:', error);
     return { success: false, error: error.message };
@@ -282,8 +282,8 @@ export const smsService = {
         results.errors.push({ phone, error: result.error });
       }
 
-      // 1 second delay for Twilio rate limiting (long code = 1 msg/sec)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Rate limiting delay between messages
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
     return results;

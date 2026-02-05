@@ -524,7 +524,7 @@
           </div>
           <div class="contact-method__info">
             <h4>Text Us</h4>
-            <a id="smsLink" href="sms:+17372327400">(737) 232-7400</a>
+            <a id="smsLink" href="sms:+17377474737">(737) 747-4737</a>
           </div>
         </div>
 
@@ -667,7 +667,7 @@
       try {
         const { supabase } = await import('/shared/supabase.js');
         const { data: config } = await supabase
-          .from('twilio_config')
+          .from('telnyx_config')
           .select('phone_number, is_active')
           .single();
         if (config?.phone_number && config?.is_active) {

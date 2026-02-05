@@ -1794,25 +1794,25 @@
           </div>
         </div>
 
-        <!-- Twilio SMS Section -->
+        <!-- Telnyx SMS Section -->
         <div class="section">
           <div class="section-header">
-            <h2>Twilio SMS</h2>
-            <span class="badge" id="twilioModeBadge">Loading...</span>
+            <h2>Telnyx SMS</h2>
+            <span class="badge" id="telnyxModeBadge">Loading...</span>
           </div>
           <div class="section-body">
             <div class="form-group" style="margin-bottom: 1rem;">
               <label class="checkbox-label">
-                <input type="checkbox" id="twilioTestMode">
+                <input type="checkbox" id="telnyxTestMode">
                 <span>Test Mode (log messages without sending)</span>
               </label>
             </div>
             <div style="margin-bottom: 1rem;">
               <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.25rem;">
-                <strong>Phone Number:</strong> <span id="twilioPhoneDisplay">Loading...</span>
+                <strong>Phone Number:</strong> <span id="telnyxPhoneDisplay">Loading...</span>
               </p>
               <p class="text-muted" style="font-size: 0.8rem;">
-                When test mode is enabled, SMS messages are logged in the database but not actually sent via Twilio.
+                When test mode is enabled, SMS messages are logged in the database but not actually sent via Telnyx.
               </p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
@@ -8582,11 +8582,11 @@
         loadFeeSettings(),
         loadFeeCodes(),
         loadSquareConfig(),
-        loadTwilioConfig(),
+        loadTelnyxConfig(),
         loadInboundSms()
       ]);
       setupFeeSettingsListeners();
-      setupTwilioListeners();
+      setupTelnyxListeners();
     }
 
     // Fee Settings (Square Payments)
@@ -8793,18 +8793,18 @@
       return null;
     }
 
-    async function loadTwilioConfig() {
+    async function loadTelnyxConfig() {
       try {
         const { data: config, error } = await supabase
-          .from('twilio_config')
+          .from('telnyx_config')
           .select('phone_number, test_mode, is_active')
           .single();
 
         if (error) throw error;
 
-        const checkbox = document.getElementById('twilioTestMode');
-        const badge = document.getElementById('twilioModeBadge');
-        const phoneDisplay = document.getElementById('twilioPhoneDisplay');
+        const checkbox = document.getElementById('telnyxTestMode');
+        const badge = document.getElementById('telnyxModeBadge');
+        const phoneDisplay = document.getElementById('telnyxPhoneDisplay');
 
         if (checkbox) checkbox.checked = config.test_mode || false;
         if (phoneDisplay) phoneDisplay.textContent = config.phone_number || 'Not configured';
@@ -8813,7 +8813,7 @@
           badge.classList.toggle('live', !config.test_mode);
         }
       } catch (error) {
-        console.error('Error loading Twilio config:', error);
+        console.error('Error loading Telnyx config:', error);
       }
     }
 
@@ -8857,26 +8857,26 @@
       }
     }
 
-    function setupTwilioListeners() {
+    function setupTelnyxListeners() {
       // Test mode toggle
-      document.getElementById('twilioTestMode')?.addEventListener('change', async (e) => {
+      document.getElementById('telnyxTestMode')?.addEventListener('change', async (e) => {
         const testMode = e.target.checked;
         try {
           const { error } = await supabase
-            .from('twilio_config')
+            .from('telnyx_config')
             .update({ test_mode: testMode, updated_at: new Date().toISOString() })
             .eq('id', 1);
           if (error) throw error;
 
-          const badge = document.getElementById('twilioModeBadge');
+          const badge = document.getElementById('telnyxModeBadge');
           if (badge) {
             badge.textContent = testMode ? 'Test Mode' : 'Live';
             badge.classList.toggle('live', !testMode);
           }
-          showToast(`Twilio ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+          showToast(`SMS ${testMode ? 'test' : 'live'} mode enabled`, 'success');
         } catch (error) {
-          console.error('Error updating Twilio mode:', error);
-          showToast('Failed to update Twilio mode', 'error');
+          console.error('Error updating Telnyx mode:', error);
+          showToast('Failed to update SMS mode', 'error');
           e.target.checked = !testMode;
         }
       });
@@ -9147,7 +9147,7 @@
 
         sendBtn.textContent = `Sending (${i + 1}/${bulkSmsRecipients.length})...`;
 
-        // Rate limit: 1 msg/sec for Twilio long codes
+        // Rate limit between messages
         if (i < bulkSmsRecipients.length - 1) {
           await new Promise(r => setTimeout(r, 1000));
         }

@@ -54,7 +54,7 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | E-Signatures | SignWell | API: signwell.com/api |
 | Payments | Square | API: connect.squareup.com |
 | Email Delivery | Resend | API key stored in Supabase secrets |
-| SMS Notifications | Twilio | Phone: +17372327400, config in `twilio_config` table |
+| SMS Notifications | Telnyx | Phone: +17377474737, config in `telnyx_config` table |
 | Error Monitoring | Custom | Daily digest emails via Resend |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
 
@@ -79,7 +79,7 @@ alpacapps/
 │   ├── signwell-service.js # SignWell e-signature API
 │   ├── square-service.js   # Square payment processing (client-side)
 │   ├── email-service.js    # Email sending via Resend
-│   ├── sms-service.js      # SMS sending via Twilio
+│   ├── sms-service.js      # SMS sending via Telnyx
 │   └── error-logger.js     # Client-side error capture and reporting
 │
 ├── supabase/               # Supabase Edge Functions
@@ -101,9 +101,9 @@ alpacapps/
 │       │   └── index.ts
 │       ├── send-email/        # Generic email sending
 │       │   └── index.ts
-│       ├── send-sms/          # Outbound SMS via Twilio
+│       ├── send-sms/          # Outbound SMS via Telnyx
 │       │   └── index.ts
-│       ├── twilio-webhook/    # Inbound SMS receiver
+│       ├── telnyx-webhook/    # Inbound SMS receiver
 │       │   └── index.ts
 │       └── contact-form/      # Contact form submission handler
 │           └── index.ts
@@ -348,15 +348,15 @@ Acknowledgments (boolean flags for each policy):
 - `receipt_url` - Square receipt URL
 - `created_at`
 
-### Twilio SMS System
+### Telnyx SMS System
 
-**twilio_config** - Twilio API configuration (single row)
+**telnyx_config** - Telnyx API configuration (single row)
 - `id` (integer, always 1)
-- `account_sid` - Twilio Account SID
-- `auth_token` - Twilio Auth Token
-- `phone_number` - Twilio phone number in E.164 format (+17372327400)
+- `api_key` - Telnyx API Key (Bearer token)
+- `messaging_profile_id` - Telnyx Messaging Profile ID
+- `phone_number` - Telnyx phone number in E.164 format (+17377474737)
 - `is_active` - Whether SMS sending is enabled
-- `test_mode` - When true, messages are logged but not sent via Twilio
+- `test_mode` - When true, messages are logged but not sent via Telnyx
 
 **sms_messages** - Log of all SMS messages sent and received
 - `id` (uuid, PK)
@@ -365,7 +365,7 @@ Acknowledgments (boolean flags for each policy):
 - `from_number`, `to_number` - E.164 phone numbers
 - `body` - Message text content
 - `sms_type` - Template type: payment_reminder, deposit_requested, general, bulk_announcement, inbound, etc.
-- `twilio_sid` - Twilio Message SID for tracking
+- `telnyx_id` - Telnyx Message ID for tracking
 - `status` - queued, sent, delivered, failed, received, test
 - `error_code`, `error_message` - For failed messages
 - `num_media` - Number of media attachments (inbound MMS)
@@ -640,29 +640,29 @@ When generating lease agreements, the system calculates credits toward first mon
   - General email notifications
 - From address: `errors@genalpaca.com` (for error digests)
 
-### Twilio (SMS Notifications)
-- API: `https://api.twilio.com/2010-04-01`
-- Phone Number: +17372327400 (Elgin, TX)
-- Account SID: Stored in `twilio_config` table
-- Auth Token: Stored in `twilio_config` table
-- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/twilio-webhook`
+### Telnyx (SMS Notifications)
+- API: `https://api.telnyx.com/v2/messages`
+- Phone Number: +17377474737
+- Messaging Profile ID: `40019c2b-034b-4d3f-9eae-e00a13122927`
+- API Key: Stored in `telnyx_config` table
+- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
 
 **Outbound SMS Flow:**
 1. Admin triggers notification (pipeline action, manual compose, or bulk)
 2. Client-side `sms-service.js` calls `send-sms` Edge Function
-3. Edge Function reads Twilio config from `twilio_config` table
-4. If `test_mode=true`: logs message to `sms_messages` with status `test`, skips Twilio API
-5. Otherwise: calls Twilio Messages API with Basic Auth (`AccountSid:AuthToken`)
-6. Logs message to `sms_messages` table with Twilio SID and status
-7. Returns `{success, sid}` to client
+3. Edge Function reads Telnyx config from `telnyx_config` table
+4. If `test_mode=true`: logs message to `sms_messages` with status `test`, skips Telnyx API
+5. Otherwise: calls Telnyx Messages API with Bearer token auth
+6. Logs message to `sms_messages` table with Telnyx message ID and status
+7. Returns `{success, id}` to client
 
 **Inbound SMS Flow:**
-1. Tenant sends SMS to +17372327400
-2. Twilio forwards to `twilio-webhook` Edge Function (form-encoded POST)
-3. Edge Function parses `From`, `Body`, `MessageSid`, media attachments
+1. Tenant sends SMS to +17377474737
+2. Telnyx forwards to `telnyx-webhook` Edge Function (JSON POST)
+3. Edge Function parses `data.payload.from.phone_number`, `data.payload.text`, `data.payload.id`, media
 4. Looks up sender phone number in `people` table (last 10 digits comparison)
 5. Stores message in `sms_messages` with `direction='inbound'`
-6. Returns empty TwiML `<Response></Response>` (no auto-reply)
+6. Returns `200 OK` with `{ok: true}` JSON (no auto-reply)
 7. Admin sees inbound message in Settings → Inbound SMS section
 
 **SMS Types (templates in send-sms Edge Function):**
@@ -698,14 +698,15 @@ const inbound = await smsService.getRecentInbound(50);
 ```
 
 **Admin UI:**
-- Settings tab: Twilio test/live mode toggle, phone number display, compose + bulk SMS buttons
+- Settings tab: Telnyx test/live mode toggle, phone number display, compose + bulk SMS buttons
 - Compose SMS modal: Recipient dropdown (active tenants), message textarea with char counter, conversation thread
 - Bulk SMS modal: Message textarea, recipient preview list, send-to-all with progress
 - Inbound SMS section: List of recent inbound messages with sender name and timestamp
 
-**Twilio Console Configuration:**
-- Phone Number: +17372327400
-- Messaging webhook POST URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/twilio-webhook`
+**Telnyx Portal Configuration:**
+- Phone Number: +17377474737
+- Messaging Profile ID: `40019c2b-034b-4d3f-9eae-e00a13122927`
+- Inbound webhook POST URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
 
 ### Error Monitoring
 - Client-side errors captured via `shared/error-logger.js`

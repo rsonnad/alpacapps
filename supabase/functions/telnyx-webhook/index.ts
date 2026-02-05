@@ -46,30 +46,46 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Twilio sends webhooks as application/x-www-form-urlencoded
-    const formData = await req.formData();
+    // Telnyx sends webhooks as JSON
+    const webhook = await req.json();
 
-    const from = (formData.get("From") as string) || "";
-    const to = (formData.get("To") as string) || "";
-    const body = (formData.get("Body") as string) || "";
-    const messageSid = (formData.get("MessageSid") as string) || "";
-    const numMedia = parseInt((formData.get("NumMedia") as string) || "0", 10);
+    // Telnyx webhook structure: { data: { event_type, payload: { ... } } }
+    const eventType = webhook?.data?.event_type;
+    const payload = webhook?.data?.payload;
 
-    console.log("Inbound SMS received:", { from, to, body: body.substring(0, 50), messageSid });
-
-    // Collect media URLs if any
-    const mediaUrls: string[] = [];
-    for (let i = 0; i < numMedia; i++) {
-      const url = formData.get(`MediaUrl${i}`) as string;
-      if (url) mediaUrls.push(url);
+    if (!payload) {
+      console.error("Invalid webhook payload:", JSON.stringify(webhook).substring(0, 200));
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
+    // Only process inbound messages
+    if (eventType !== "message.received") {
+      console.log("Ignoring event type:", eventType);
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const from = payload.from?.phone_number || "";
+    const to = payload.to?.[0]?.phone_number || "";
+    const body = payload.text || "";
+    const messageId = payload.id || "";
+    const media = payload.media || [];
+
+    console.log("Inbound SMS received:", { from, to, body: body.substring(0, 50), messageId });
+
+    // Collect media URLs if any
+    const mediaUrls: string[] = media.map((m: any) => m.url).filter(Boolean);
+    const numMedia = mediaUrls.length;
+
     // Look up person by phone number
-    const phoneVariants = normalizePhone(from);
     let personId: string | null = null;
     let personName: string | null = null;
 
-    // Try to find a matching person
     const { data: people } = await supabase
       .from("people")
       .select("id, first_name, last_name, phone")
@@ -106,7 +122,7 @@ serve(async (req) => {
       from_number: from,
       to_number: to,
       body: body,
-      twilio_sid: messageSid,
+      telnyx_id: messageId,
       status: "received",
       sms_type: "inbound",
       num_media: numMedia,
@@ -117,29 +133,19 @@ serve(async (req) => {
       console.error("Error storing inbound SMS:", insertError);
     }
 
-    // Return empty TwiML response (no auto-reply)
-    return new Response(
-      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "text/xml",
-        },
-      }
-    );
+    // Return 200 OK (Telnyx expects JSON response)
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
     console.error("Webhook error:", error.message);
 
-    // Still return valid TwiML even on error to prevent Twilio retries
-    return new Response(
-      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "text/xml",
-        },
-      }
-    );
+    // Still return 200 to prevent Telnyx retries
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });
