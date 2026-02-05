@@ -180,6 +180,8 @@ class AccountingService {
       event_payment_id: data.eventPaymentId || data.event_payment_id || null,
       source_payment_id: data.sourcePaymentId || data.source_payment_id || null,
       refund_of_ledger_id: data.refundOfLedgerId || data.refund_of_ledger_id || null,
+      period_start: data.periodStart || data.period_start || null,
+      period_end: data.periodEnd || data.period_end || null,
     };
 
     const { data: result, error } = await supabase
@@ -302,7 +304,44 @@ class AccountingService {
   }
 
   /**
-   * Get summary aggregations for a date range
+   * Categories that represent recurring income (rent) - use accrual basis (period_start)
+   */
+  static RENT_CATEGORIES = ['rent', 'prorated_rent'];
+
+  /**
+   * Categories that represent deposits (refundable, held in trust)
+   */
+  static DEPOSIT_CATEGORIES = ['security_deposit', 'move_in_deposit', 'reservation_deposit', 'event_cleaning_deposit'];
+
+  /**
+   * Categories that represent one-time fees (earned on receipt)
+   */
+  static FEE_CATEGORIES = ['application_fee', 'event_rental_fee', 'event_reservation_fee', 'late_fee', 'damage_deduction', 'other'];
+
+  /**
+   * Get the accrual month for a transaction.
+   * - Rent/prorated rent: use period_start if available (accrual), else transaction_date
+   * - Everything else: use transaction_date (cash basis)
+   */
+  static getAccrualMonth(tx) {
+    if (AccountingService.RENT_CATEGORIES.includes(tx.category) && tx.period_start) {
+      return tx.period_start.substring(0, 7);
+    }
+    return tx.transaction_date.substring(0, 7);
+  }
+
+  /**
+   * Classify a category into a group: 'rent', 'deposits', 'fees', 'refunds'
+   */
+  static getCategoryGroup(category) {
+    if (AccountingService.RENT_CATEGORIES.includes(category)) return 'rent';
+    if (AccountingService.DEPOSIT_CATEGORIES.includes(category)) return 'deposits';
+    if (category === 'refund') return 'refunds';
+    return 'fees';
+  }
+
+  /**
+   * Get summary aggregations for a date range (accrual basis for rent)
    */
   async getSummary(dateFrom, dateTo) {
     const filters = { includeVoided: false };
@@ -311,21 +350,34 @@ class AccountingService {
 
     const { data } = await this.getTransactions({ ...filters, limit: 10000 });
 
+    // Top-level totals
     let totalIncome = 0;
     let totalExpenses = 0;
     let pendingIncome = 0;
+
+    // Separated totals by category group
+    let rentIncome = 0;
+    let depositsHeld = 0;
+    let feesIncome = 0;
+    let refundsOut = 0;
+
     const byCategory = {};
     const byMonth = {};
     const byPaymentMethod = {};
 
     for (const tx of data) {
       const amt = parseFloat(tx.amount) || 0;
+      const group = AccountingService.getCategoryGroup(tx.category);
 
       if (tx.status === 'completed') {
         if (tx.direction === 'income') {
           totalIncome += amt;
+          if (group === 'rent') rentIncome += amt;
+          else if (group === 'deposits') depositsHeld += amt;
+          else if (group === 'fees') feesIncome += amt;
         } else {
           totalExpenses += amt;
+          if (group === 'refunds' || tx.category === 'refund') refundsOut += amt;
         }
       } else if (tx.status === 'pending' && tx.direction === 'income') {
         pendingIncome += amt;
@@ -341,17 +393,23 @@ class AccountingService {
         byCategory[tx.category].expenses += amt;
       }
 
-      // By month
-      const month = tx.transaction_date.substring(0, 7);
+      // By month - use accrual month for rent, transaction_date for everything else
+      const month = AccountingService.getAccrualMonth(tx);
       if (!byMonth[month]) {
-        byMonth[month] = { month, income: 0, expenses: 0, net: 0 };
+        byMonth[month] = { month, income: 0, expenses: 0, net: 0, rent: 0, deposits: 0, fees: 0, refunds: 0 };
       }
-      if (tx.direction === 'income') {
-        byMonth[month].income += amt;
-      } else {
-        byMonth[month].expenses += amt;
+      if (tx.status === 'completed') {
+        if (tx.direction === 'income') {
+          byMonth[month].income += amt;
+          if (group === 'rent') byMonth[month].rent += amt;
+          else if (group === 'deposits') byMonth[month].deposits += amt;
+          else byMonth[month].fees += amt;
+        } else {
+          byMonth[month].expenses += amt;
+          byMonth[month].refunds += amt;
+        }
+        byMonth[month].net = byMonth[month].income - byMonth[month].expenses;
       }
-      byMonth[month].net = byMonth[month].income - byMonth[month].expenses;
 
       // By payment method
       const method = tx.payment_method || 'unknown';
@@ -364,6 +422,11 @@ class AccountingService {
       totalExpenses,
       netIncome: totalIncome - totalExpenses,
       pendingIncome,
+      // Separated income
+      rentIncome,
+      depositsHeld,
+      feesIncome,
+      refundsOut,
       byCategory,
       byMonth: Object.values(byMonth).sort((a, b) => b.month.localeCompare(a.month)),
       byPaymentMethod

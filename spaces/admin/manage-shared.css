@@ -1,0 +1,417 @@
+/* Shared styles for admin pages - extracted from manage.html inline styles */
+
+.manage-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.manage-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.manage-tab {
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.manage-tab:hover {
+  color: var(--text);
+}
+
+.manage-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.manage-panel {
+  display: none;
+}
+
+.manage-panel.active {
+  display: block;
+}
+
+.section {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.filter-checkboxes {
+  display: flex;
+  gap: 1rem;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.section-filters {
+  padding: 0.875rem 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: auto;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-group input[type="text"],
+.filter-group select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.filter-group input[type="text"] {
+  width: 160px;
+}
+
+.filter-group select {
+  min-width: 120px;
+}
+
+.filter-group input[type="text"]:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-checkboxes-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-checkboxes-group > label {
+  display: none;
+}
+
+.filter-checkboxes-group .filter-checkboxes {
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hide filter toggles on desktop - only show on mobile */
+.filter-toggle,
+.tag-filter-toggle {
+  display: none;
+}
+
+.section-body {
+  padding: 1.5rem;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  cursor: pointer;
+}
+
+.lightbox-overlay.hidden {
+  display: none;
+}
+
+.lightbox-overlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Role badge */
+.role-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.role-badge.admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.role-badge.staff {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Button danger */
+.btn-danger {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--occupied);
+  background: var(--bg-card);
+  color: var(--occupied);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-danger:hover {
+  background: var(--occupied);
+  color: white;
+}
+
+/* Admin only notice */
+.admin-only-notice {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #92400e;
+}
+
+.admin-only-notice svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Availability badges */
+.availability {
+  font-weight: 500;
+}
+
+.availability.available {
+  color: var(--success);
+}
+
+.availability.occupied {
+  color: var(--text-muted);
+}
+
+/* Mobile responsive */
+@media (max-width: 900px) {
+  .filter-row {
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    flex: 1;
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .manage-container {
+    padding: 1rem;
+  }
+
+  .manage-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  .manage-tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .section-header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .section-header h2 {
+    font-size: 1rem;
+  }
+
+  .section-body {
+    padding: 1rem;
+  }
+
+  .section-filters {
+    padding: 0.75rem 1rem;
+    position: relative;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-group {
+    width: 100%;
+    flex-shrink: 1;
+  }
+
+  .filter-group input[type="text"],
+  .filter-group select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filter-checkboxes {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Collapsible filters on mobile */
+  .section-filters.collapsed .filter-row {
+    display: none;
+  }
+
+  .section-filters.collapsed .filter-toggle {
+    margin-bottom: 0;
+  }
+
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-toggle::after {
+    content: '\25BC';
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+  }
+
+  .section-filters.collapsed .filter-toggle::after {
+    transform: rotate(-90deg);
+  }
+
+  /* Tag filter bar collapsible on mobile */
+  .tag-filter-bar {
+    padding: 0.5rem 1rem;
+  }
+
+  .tag-filter-bar.collapsed .tag-filter-chips {
+    display: none;
+  }
+
+  .tag-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .tag-filter-toggle::after {
+    content: '\25BC';
+    font-size: 0.5rem;
+    transition: transform 0.2s;
+  }
+
+  .tag-filter-bar.collapsed .tag-filter-toggle::after {
+    transform: rotate(-90deg);
+  }
+}

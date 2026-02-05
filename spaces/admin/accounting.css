@@ -65,6 +65,49 @@
   color: #f59e0b;
 }
 
+.summary-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* Net totals row */
+.accounting-summary.net-row {
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card.net-total {
+  border-left: 2px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+.summary-card.net-total .summary-label {
+  font-size: 0.7rem;
+}
+
+.summary-card.net-total .summary-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.summary-card.net-total.highlight {
+  border-left-color: #3b82f6;
+}
+
+.summary-card.net-total.highlight .summary-value {
+  color: #3b82f6;
+}
+
+.expense-color {
+  color: #ef4444 !important;
+}
+
+.pending-color {
+  color: #f59e0b !important;
+}
+
 /* Filter Rows */
 .filter-row {
   display: flex;

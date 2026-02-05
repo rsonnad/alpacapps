@@ -17,8 +17,8 @@ const ADMIN_TABS = [
   { id: 'users', label: 'Users', href: 'users.html' },
   { id: 'templates', label: 'Templates', href: 'templates.html' },
   { id: 'settings', label: 'Settings', href: 'settings.html' },
-  { id: 'faq', label: 'FAQ & AI', href: 'faq.html' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
+  { id: 'faq', label: 'FAQ & AI', href: 'faq.html' },
 ];
 
 // =============================================

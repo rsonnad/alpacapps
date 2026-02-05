@@ -168,6 +168,23 @@ async function loadData() {
 // RENDERING
 // =============================================
 function renderSummary() {
+  // Separated category cards
+  document.getElementById('rentIncome').textContent = formatCurrency(summary.rentIncome);
+  document.getElementById('depositsHeld').textContent = formatCurrency(summary.depositsHeld);
+  document.getElementById('feesIncome').textContent = formatCurrency(summary.feesIncome);
+  document.getElementById('refundsOut').textContent = formatCurrency(summary.refundsOut);
+
+  // Sub-labels showing what's included
+  const rentSub = document.getElementById('rentIncomeSub');
+  if (rentSub) rentSub.textContent = 'Rent + prorated rent (accrual basis)';
+  const depSub = document.getElementById('depositsHeldSub');
+  if (depSub) depSub.textContent = 'Security, move-in, event deposits';
+  const feeSub = document.getElementById('feesIncomeSub');
+  if (feeSub) feeSub.textContent = 'Application fees, event fees, late fees';
+  const refSub = document.getElementById('refundsOutSub');
+  if (refSub) refSub.textContent = 'Square refunds & payouts';
+
+  // Net totals row
   document.getElementById('totalIncome').textContent = formatCurrency(summary.totalIncome);
   document.getElementById('totalExpenses').textContent = formatCurrency(summary.totalExpenses);
   document.getElementById('netIncome').textContent = formatCurrency(summary.netIncome);
@@ -273,8 +290,10 @@ function renderMonthlySummary() {
       <thead>
         <tr>
           <th>Month</th>
-          <th style="text-align: right;">Income</th>
-          <th style="text-align: right;">Expenses</th>
+          <th style="text-align: right;">Rent</th>
+          <th style="text-align: right;">Deposits</th>
+          <th style="text-align: right;">Fees</th>
+          <th style="text-align: right;">Refunds</th>
           <th style="text-align: right;">Net</th>
         </tr>
       </thead>
@@ -282,8 +301,10 @@ function renderMonthlySummary() {
         ${months.map(m => `
           <tr>
             <td>${formatMonthLabel(m.month)}</td>
-            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.income)}</td>
-            <td style="text-align: right;" class="amount-negative">${formatCurrency(m.expenses)}</td>
+            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.rent)}</td>
+            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.deposits)}</td>
+            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.fees)}</td>
+            <td style="text-align: right;" class="${m.refunds > 0 ? 'amount-negative' : ''}">${m.refunds > 0 ? '-' : ''}${formatCurrency(m.refunds)}</td>
             <td style="text-align: right;" class="${m.net >= 0 ? 'amount-positive' : 'amount-negative'}">${formatCurrency(m.net)}</td>
           </tr>
         `).join('')}
@@ -334,6 +355,7 @@ function setupEventListeners() {
   });
 
   // Add Transaction
+  document.getElementById('txCategory').addEventListener('change', togglePeriodFields);
   document.getElementById('addTransactionBtn').addEventListener('click', openTransactionModal);
   document.getElementById('closeTransactionModal').addEventListener('click', closeTransactionModal);
   document.getElementById('cancelTransactionBtn').addEventListener('click', closeTransactionModal);
@@ -395,6 +417,18 @@ function applyPreset(preset) {
 // =============================================
 // RECORD TRANSACTION
 // =============================================
+const RENT_CATEGORIES = ['rent', 'prorated_rent'];
+
+function togglePeriodFields() {
+  const category = document.getElementById('txCategory').value;
+  const periodFields = document.getElementById('periodFields');
+  if (RENT_CATEGORIES.includes(category)) {
+    periodFields.style.display = '';
+  } else {
+    periodFields.style.display = 'none';
+  }
+}
+
 function openTransactionModal() {
   document.getElementById('transactionModalTitle').textContent = 'Record Payment';
   document.getElementById('txId').value = '';
@@ -404,8 +438,11 @@ function openTransactionModal() {
   document.getElementById('txMethod').value = 'zelle';
   document.getElementById('txDate').value = getToday();
   document.getElementById('txPerson').value = '';
+  document.getElementById('txPeriodStart').value = '';
+  document.getElementById('txPeriodEnd').value = '';
   document.getElementById('txDescription').value = '';
   document.getElementById('txNotes').value = '';
+  togglePeriodFields();
   document.getElementById('transactionModal').classList.remove('hidden');
 }
 
@@ -420,6 +457,8 @@ async function saveTransaction() {
   const paymentMethod = document.getElementById('txMethod').value;
   const transactionDate = document.getElementById('txDate').value;
   const personId = document.getElementById('txPerson').value || null;
+  const periodStart = document.getElementById('txPeriodStart').value || null;
+  const periodEnd = document.getElementById('txPeriodEnd').value || null;
   const description = document.getElementById('txDescription').value;
   const notes = document.getElementById('txNotes').value;
 
@@ -449,6 +488,8 @@ async function saveTransaction() {
       transactionDate,
       personId,
       personName,
+      periodStart,
+      periodEnd,
       description,
       notes,
       recordedBy: 'admin'

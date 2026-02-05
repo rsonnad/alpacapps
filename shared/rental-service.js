@@ -1102,6 +1102,8 @@ async function recordRentPayment(assignmentId, details) {
     amount: amount,
     payment_method: method || 'other',
     transaction_date: new Date().toISOString().split('T')[0],
+    period_start: periodStart || null,
+    period_end: periodEnd || null,
     person_id: assignment?.person_id || null,
     person_name: personName,
     assignment_id: assignmentId,
