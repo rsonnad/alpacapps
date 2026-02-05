@@ -2,6 +2,7 @@
  * Accounting Page - Transaction ledger, reconciliation, refunds
  */
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../../shared/supabase.js';
 import {
   accountingService,
   CATEGORY_LABELS,
@@ -29,7 +30,7 @@ initAdminPage({
     await loadPeople();
     setDefaultDateRange();
     setupEventListeners();
-    await loadData();
+    await Promise.all([loadData(), loadOccupancy()]);
   }
 });
 
@@ -524,7 +525,7 @@ async function openRefundModal(ledgerId) {
   if (tx.square_payment_id) {
     // Need to get the actual Square payment ID string (from Square API)
     try {
-      const { data: spRecord } = await (await import('../../shared/supabase.js')).supabase
+      const { data: spRecord } = await supabase
         .from('square_payments')
         .select('id, square_payment_id')
         .eq('id', tx.square_payment_id)
@@ -610,4 +611,202 @@ async function handleExportCSV() {
     console.error('Export failed:', err);
     showToast('Failed to export CSV', 'error');
   }
+}
+
+// =============================================
+// OCCUPANCY & REVENUE POTENTIAL
+// =============================================
+async function loadOccupancy() {
+  try {
+    // Load dwelling spaces
+    const { data: spaces } = await supabase
+      .from('spaces')
+      .select('id, name, monthly_rate, weekly_rate, nightly_rate, parent_id, can_be_dwelling, is_archived')
+      .eq('can_be_dwelling', true)
+      .eq('is_archived', false)
+      .order('monthly_rate', { ascending: false, nullsFirst: false });
+
+    // Load active assignments with spaces
+    const { data: assignments } = await supabase
+      .from('assignments')
+      .select('id, status, start_date, end_date, rate_amount, rate_term, is_free, desired_departure_date, desired_departure_listed, person:person_id(first_name, last_name), assignment_spaces(space_id)')
+      .in('status', ['active', 'pending_contract', 'contract_sent']);
+
+    if (!spaces || !assignments) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Determine occupancy for each space
+    const spaceData = spaces.map(space => {
+      const spaceAssignments = (assignments || []).filter(a =>
+        a.assignment_spaces?.some(as => as.space_id === space.id)
+      );
+
+      const currentAssignment = spaceAssignments.find(a => {
+        if (a.status !== 'active') return false;
+        const effectiveEnd = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
+        if (!effectiveEnd) return true; // indefinite
+        return new Date(effectiveEnd + 'T00:00:00') >= today;
+      });
+
+      // Normalize rate to monthly for comparison
+      let actualMonthly = 0;
+      if (currentAssignment) {
+        if (currentAssignment.is_free) {
+          actualMonthly = 0;
+        } else if (currentAssignment.rate_term === 'weekly') {
+          actualMonthly = (parseFloat(currentAssignment.rate_amount) || 0) * 4.33;
+        } else if (currentAssignment.rate_term === 'monthly') {
+          actualMonthly = parseFloat(currentAssignment.rate_amount) || 0;
+        } else {
+          // flat or other - use rate_amount as monthly approximation
+          actualMonthly = parseFloat(currentAssignment.rate_amount) || 0;
+        }
+      }
+
+      return {
+        id: space.id,
+        name: space.name,
+        monthlyRate: parseFloat(space.monthly_rate) || 0,
+        weeklyRate: parseFloat(space.weekly_rate) || 0,
+        parentId: space.parent_id,
+        isOccupied: !!currentAssignment,
+        isFree: currentAssignment?.is_free || false,
+        actualMonthly: Math.round(actualMonthly * 100) / 100,
+        occupantName: currentAssignment?.person
+          ? `${currentAssignment.person.first_name} ${currentAssignment.person.last_name}`
+          : null,
+        rateTerm: currentAssignment?.rate_term || null,
+      };
+    });
+
+    // Parent-child propagation (same logic as consumer view)
+    // Pass 1: Parent → child
+    for (const space of spaceData) {
+      if (space.parentId && !space.isOccupied) {
+        const parent = spaceData.find(s => s.id === space.parentId);
+        if (parent && parent.isOccupied) {
+          space.isOccupied = true;
+          space.occupantName = parent.occupantName;
+          space.actualMonthly = 0; // Revenue counted on parent
+          space.isChildOfOccupied = true;
+        }
+      }
+    }
+
+    // Pass 2: Child → parent
+    for (const space of spaceData) {
+      if (!space.isOccupied) {
+        const children = spaceData.filter(s => s.parentId === space.id);
+        const occupiedChildren = children.filter(c => c.isOccupied);
+        if (occupiedChildren.length > 0) {
+          space.isOccupied = true;
+          space.isParentOfOccupied = true;
+          space.actualMonthly = 0; // Revenue counted on children
+        }
+      }
+    }
+
+    // Filter to only "leaf" or independently rentable units for counting
+    // Exclude spaces that are only occupied because they are parents of occupied children
+    // (the children are the actual rentable units)
+    const countableSpaces = spaceData.filter(s => {
+      // If this space has children that are also dwellings, don't count this as a separate unit
+      const hasChildDwellings = spaceData.some(c => c.parentId === s.id);
+      return !hasChildDwellings;
+    });
+
+    renderOccupancy(countableSpaces, spaceData);
+  } catch (err) {
+    console.error('Failed to load occupancy:', err);
+  }
+}
+
+function renderOccupancy(countableSpaces, allSpaces) {
+  const totalUnits = countableSpaces.length;
+  const occupiedUnits = countableSpaces.filter(s => s.isOccupied).length;
+  const availableUnits = totalUnits - occupiedUnits;
+  const occupancyPct = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+
+  // Revenue calculation
+  const maxPotential = countableSpaces.reduce((sum, s) => sum + s.monthlyRate, 0);
+  const currentRevenue = countableSpaces
+    .filter(s => s.isOccupied && !s.isChildOfOccupied)
+    .reduce((sum, s) => sum + s.actualMonthly, 0);
+  const revenueGap = maxPotential - currentRevenue;
+  const revenuePct = maxPotential > 0 ? Math.round((currentRevenue / maxPotential) * 100) : 0;
+
+  // Update unit occupancy donut
+  const circumference = 2 * Math.PI * 52; // ~326.7
+  const unitArcLen = (occupancyPct / 100) * circumference;
+  const unitArc = document.getElementById('unitOccupancyArc');
+  unitArc.setAttribute('stroke-dasharray', `${unitArcLen} ${circumference}`);
+  document.getElementById('unitOccupancyPct').textContent = `${occupancyPct}%`;
+  document.getElementById('unitOccupancySub').textContent = `${occupiedUnits} / ${totalUnits}`;
+
+  // Update unit detail rows
+  document.getElementById('unitOccupied').textContent = occupiedUnits;
+  document.getElementById('unitAvailable').textContent = availableUnits;
+  document.getElementById('unitTotal').textContent = totalUnits;
+
+  // Update revenue donut
+  const revArcLen = (revenuePct / 100) * circumference;
+  const revArc = document.getElementById('revenueOccupancyArc');
+  revArc.setAttribute('stroke-dasharray', `${revArcLen} ${circumference}`);
+  document.getElementById('revenueOccupancyPct').textContent = `${revenuePct}%`;
+  document.getElementById('revenueOccupancySub').textContent = formatCurrency(currentRevenue);
+
+  // Update revenue detail rows
+  document.getElementById('revenueCurrent').textContent = formatCurrency(currentRevenue);
+  document.getElementById('revenuePotential').textContent = formatCurrency(maxPotential);
+  document.getElementById('revenueGap').textContent = formatCurrency(revenueGap);
+
+  // Render unit breakdown
+  renderUnitBreakdown(allSpaces);
+}
+
+function renderUnitBreakdown(spaces) {
+  const container = document.getElementById('unitBreakdown');
+
+  // Sort: occupied first, then by rate descending
+  const sorted = [...spaces].sort((a, b) => {
+    if (a.isOccupied !== b.isOccupied) return a.isOccupied ? -1 : 1;
+    return (b.monthlyRate || 0) - (a.monthlyRate || 0);
+  });
+
+  const maxRate = Math.max(...spaces.map(s => s.monthlyRate || 0), 1);
+
+  const rows = sorted.map(space => {
+    const barWidth = space.monthlyRate > 0 ? Math.max(5, (space.monthlyRate / maxRate) * 100) : 5;
+    const barClass = space.isOccupied ? 'occupied' : 'vacant';
+
+    let statusTag;
+    if (space.isFree) {
+      statusTag = '<span class="unit-status-tag free">Free</span>';
+    } else if (space.isOccupied) {
+      statusTag = '<span class="unit-status-tag occupied">Occupied</span>';
+    } else {
+      statusTag = '<span class="unit-status-tag vacant">Vacant</span>';
+    }
+
+    const rateDisplay = space.isOccupied && !space.isChildOfOccupied && !space.isParentOfOccupied
+      ? formatCurrency(space.actualMonthly) + '/mo'
+      : space.monthlyRate > 0
+        ? formatCurrency(space.monthlyRate) + '/mo'
+        : '—';
+
+    return `
+      <div class="unit-row">
+        <span class="unit-name" title="${escapeHtml(space.name)}">${escapeHtml(space.name)}</span>
+        <div class="unit-bar-container">
+          <div class="unit-bar ${barClass}" style="width: ${barWidth}%"></div>
+        </div>
+        <span class="unit-rate">${rateDisplay}</span>
+        ${statusTag}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = rows || '<div class="empty-state">No dwelling spaces found</div>';
 }

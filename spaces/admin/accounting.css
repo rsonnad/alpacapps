@@ -321,6 +321,197 @@
   background: #fee2e2;
 }
 
+/* =============================================
+   OCCUPANCY & REVENUE SECTION
+   ============================================= */
+
+.occupancy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.occupancy-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.occupancy-card.wide {
+  grid-column: 1 / -1;
+}
+
+.occupancy-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 1rem;
+}
+
+/* Donut Chart */
+.occupancy-donut {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.donut-svg {
+  width: 120px;
+  height: 120px;
+}
+
+.donut-pct {
+  font-size: 1.25rem;
+  font-weight: 700;
+  fill: var(--text);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.donut-sub {
+  font-size: 0.65rem;
+  font-weight: 500;
+  fill: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Occupancy Detail Rows */
+.occupancy-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.occ-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.occ-row strong {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.occ-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.occ-dot.occupied { background: #22c55e; }
+.occ-dot.available { background: var(--border); }
+.occ-dot.total { background: var(--text-muted); }
+.occ-dot.potential { background: #3b82f6; }
+.occ-dot.gap { background: #f59e0b; }
+
+/* Unit Breakdown */
+.unit-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.unit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.unit-row:last-child {
+  border-bottom: none;
+}
+
+.unit-name {
+  width: 160px;
+  flex-shrink: 0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unit-bar-container {
+  flex: 1;
+  height: 0.5rem;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.unit-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.unit-bar.occupied {
+  background: #22c55e;
+}
+
+.unit-bar.vacant {
+  background: var(--border);
+}
+
+.unit-rate {
+  width: 80px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.unit-status-tag {
+  width: 70px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.unit-status-tag.occupied {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.unit-status-tag.vacant {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.unit-status-tag.free {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+@media (max-width: 768px) {
+  .occupancy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .occupancy-card.wide {
+    grid-column: 1;
+  }
+
+  .unit-name {
+    width: 100px;
+  }
+
+  .unit-rate {
+    width: 60px;
+  }
+}
+
 /* Refund Details */
 .refund-details {
   background: var(--bg);
