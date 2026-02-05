@@ -333,21 +333,21 @@ async function takeVerificationScreenshot(pageUrl) {
     // Extra wait for any JS rendering (admin pages may need more time for data loading)
     await new Promise(resolve => setTimeout(resolve, isAdminPage ? 5000 : 3000));
 
-    // Take screenshot
+    // Take screenshot as JPEG for smaller file size
     await mkdir(TEMP_DIR, { recursive: true });
-    const screenshotPath = path.join(TEMP_DIR, `verification-${Date.now()}.png`);
-    await page.screenshot({ path: screenshotPath, fullPage: false });
+    const screenshotPath = path.join(TEMP_DIR, `verification-${Date.now()}.jpg`);
+    await page.screenshot({ path: screenshotPath, fullPage: false, type: 'jpeg', quality: 75 });
 
     log('info', 'Verification screenshot taken', { path: screenshotPath });
 
     // Upload to Supabase Storage
     const fileBuffer = await readFile(screenshotPath);
-    const storagePath = `verification-${Date.now()}.png`;
+    const storagePath = `verification-${Date.now()}.jpg`;
 
     const { data, error } = await supabase.storage
       .from('bug-screenshots')
       .upload(storagePath, fileBuffer, {
-        contentType: 'image/png',
+        contentType: 'image/jpeg',
         upsert: false,
       });
 
