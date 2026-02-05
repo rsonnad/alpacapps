@@ -1,10 +1,45 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, telnyx-signature-ed25519, telnyx-timestamp",
 };
+
+/**
+ * Verify Telnyx webhook signature using Ed25519 public key.
+ * Returns true if valid, false otherwise.
+ */
+async function verifyTelnyxSignature(
+  rawBody: string,
+  signature: string,
+  timestamp: string,
+  publicKeyBase64: string
+): Promise<boolean> {
+  try {
+    const publicKeyBytes = base64Decode(publicKeyBase64);
+    const signatureBytes = base64Decode(signature);
+
+    // Telnyx signs: timestamp + "|" + body
+    const signedPayload = `${timestamp}|${rawBody}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(signedPayload);
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      publicKeyBytes,
+      { name: "Ed25519" },
+      false,
+      ["verify"]
+    );
+
+    return await crypto.subtle.verify("Ed25519", key, signatureBytes, data);
+  } catch (error) {
+    console.error("Signature verification error:", error.message);
+    return false;
+  }
+}
 
 /**
  * Normalize a phone number for database lookup.
@@ -46,8 +81,35 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Telnyx sends webhooks as JSON
-    const webhook = await req.json();
+    // Read raw body for signature verification
+    const rawBody = await req.text();
+
+    // Verify webhook signature
+    const signature = req.headers.get("telnyx-signature-ed25519") || "";
+    const timestamp = req.headers.get("telnyx-timestamp") || "";
+
+    if (signature && timestamp) {
+      // Load public key from database
+      const { data: config } = await supabase
+        .from("telnyx_config")
+        .select("public_key")
+        .single();
+
+      if (config?.public_key) {
+        const isValid = await verifyTelnyxSignature(rawBody, signature, timestamp, config.public_key);
+        if (!isValid) {
+          console.error("Invalid webhook signature - rejecting request");
+          return new Response(JSON.stringify({ error: "Invalid signature" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        console.log("Webhook signature verified");
+      }
+    }
+
+    // Parse the JSON body
+    const webhook = JSON.parse(rawBody);
 
     // Telnyx webhook structure: { data: { event_type, payload: { ... } } }
     const eventType = webhook?.data?.event_type;
