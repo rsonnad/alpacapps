@@ -59,17 +59,15 @@ Claude Code is your AI developer. Install it before anything else — for every 
 ### You do (one time):
 
 1. Sign up for [Claude Pro](https://claude.ai) ($20/month recommended)
-2. Make sure you have Node.js installed (download from [nodejs.org](https://nodejs.org) if needed)
-3. Open your terminal and run:
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-4. Create a project folder and initialize it:
-```bash
-mkdir my-project && cd my-project
-git init
-```
-5. Create a `CLAUDE.md` file in the project root (see [Section 12](#12-claudemd-template) for the full template)
+2. Download the [Claude desktop app](https://claude.ai/download) — Claude Code is built in
+3. Open the app, click the **terminal icon** or press `Ctrl+`` to open Claude Code
+4. Point it at your project folder and create a `CLAUDE.md` file in the root (see [Section 12](#12-claudemd-template) for the full template)
+
+> **Prefer the command line?** You can also install Claude Code as a CLI tool:
+> ```bash
+> npm install -g @anthropic-ai/claude-code
+> ```
+> Then run `claude` in your project directory. Same features, same skills — just a terminal interface instead of the desktop app.
 
 ### How it works from here
 

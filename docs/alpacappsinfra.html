@@ -420,11 +420,17 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     <h3><span class="step-label step-you">You do (one time)</span></h3>
     <ol>
       <li>Sign up for <a href="https://claude.ai" target="_blank">Claude Pro</a> ($20/month recommended)</li>
-      <li>Make sure you have Node.js installed (download from <a href="https://nodejs.org" target="_blank">nodejs.org</a> if needed)</li>
-      <li>Open your terminal and run: <pre data-lang="bash"><code>npm install -g @anthropic-ai/claude-code</code></pre></li>
-      <li>Create a project folder and initialize git: <pre data-lang="bash"><code>mkdir my-project && cd my-project && git init</code></pre></li>
-      <li>Create a <code>CLAUDE.md</code> file in the project root (see <a href="#template">Section 12</a> for the full template)</li>
+      <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a> &mdash; Claude Code is built in</li>
+      <li>Open the app, click the <strong>terminal icon</strong> or press <code>Ctrl+`</code> to open Claude Code</li>
+      <li>Point it at your project folder and create a <code>CLAUDE.md</code> file in the root (see <a href="#template">Section 12</a> for the full template)</li>
     </ol>
+
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
+      <strong>Prefer the command line?</strong>
+      You can also install Claude Code as a CLI tool:
+      <pre data-lang="bash"><code>npm install -g @anthropic-ai/claude-code</code></pre>
+      Then run <code>claude</code> in your project directory. Same features, same skills &mdash; just a terminal interface instead of the desktop app.
+    </div>
 
     <h3>How it works from here</h3>
     <p>For every service below, the pattern is:</p>
