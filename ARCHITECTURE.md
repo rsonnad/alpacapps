@@ -50,7 +50,9 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Database | Supabase | https://aphrrfprbixmhissnjfn.supabase.co |
 | Photo Storage | Supabase Storage | bucket: `housephotos` |
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
+| Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | OpenClaw Bot | DigitalOcean | Droplet (separate system) |
+| Bug Fixer Worker | DigitalOcean | Same droplet as OpenClaw |
 | E-Signatures | SignWell | API: signwell.com/api |
 | Payments | Square | API: connect.squareup.com |
 | Email Delivery | Resend | API key stored in Supabase secrets |
@@ -66,6 +68,20 @@ alpacapps/
 ├── styles.css              # Global styling
 ├── app.js                  # Legacy (redirects)
 ├── 404.html                # GitHub Pages 404 handler
+│
+├── bug-reporter-extension/ # Chrome extension for bug reports
+│   ├── manifest.json       # Manifest V3 config
+│   ├── popup.html          # Extension popup UI
+│   ├── popup.js            # Screenshot capture & annotation logic
+│   ├── popup.css           # Extension styling
+│   ├── install.html        # Tester installation guide
+│   └── icons/              # Extension icons (16, 48, 128px)
+│
+├── bug-fixer/              # Server-side bug fix worker (for DO droplet)
+│   ├── worker.js           # Main polling loop & Claude Code execution
+│   ├── package.json        # Dependencies
+│   ├── install.sh          # Server setup script
+│   └── bug-fixer.service   # systemd unit file
 │
 ├── shared/                 # Shared modules
 │   ├── supabase.js         # Supabase client singleton
@@ -983,9 +999,275 @@ npx supabase functions deploy event-payment-reminder --project-ref aphrrfprbixmh
 npx supabase secrets set GEMINI_API_KEY=your_key_here --project-ref aphrrfprbixmhissnjfn
 ```
 
+## Bug Reporter Extension & Auto-Fix System
+
+An automated bug reporting and fixing pipeline. Testers use a Chrome extension to capture annotated screenshots and submit bug reports. A worker on the DigitalOcean droplet picks up reports, runs Claude Code to fix the bug, pushes to GitHub, and emails the reporter.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           BUG FIX PIPELINE                                  │
+│                                                                             │
+│  Chrome Extension → Supabase (store report + screenshot) → DO Worker       │
+│                                                              ↓              │
+│                                                         Claude Code CLI     │
+│                                                              ↓              │
+│                                                         git push main       │
+│                                                              ↓              │
+│                                                         Email reporter      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Chrome Extension (`bug-reporter-extension/`)
+
+**Files:**
+- `manifest.json` - Manifest V3, permissions: activeTab, tabs
+- `popup.html` - Main UI
+- `popup.js` - Screenshot capture, annotation canvas, submit logic
+- `popup.css` - Styling
+- `icons/` - Extension icons (16, 48, 128px)
+- `install.html` - User-facing installation guide
+
+**Features:**
+- Captures visible tab via `chrome.tabs.captureVisibleTab()`
+- Canvas-based annotation tools: freehand draw, arrow, text, rectangle
+- Color picker and undo/clear controls
+- Reporter name/email saved in localStorage
+- Submits to Supabase: screenshot → Storage bucket, report → `bug_reports` table
+
+**Installation (for testers):**
+1. Download/clone repo
+2. Go to `chrome://extensions/`
+3. Enable Developer Mode
+4. Click "Load unpacked" → select `bug-reporter-extension` folder
+5. Pin extension to toolbar
+
+**Usage:**
+1. Navigate to page with bug
+2. Click extension icon → "Capture Screenshot"
+3. Annotate screenshot to highlight the issue
+4. Click "Next" → fill in name, email, description
+5. Click "Submit Bug Report"
+6. Receive confirmation email, then fix status email when processed
+
+### Database Schema (Bug Reports)
+
+**Table: `bug_reports`**
+```sql
+CREATE TABLE bug_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  reporter_name TEXT NOT NULL,
+  reporter_email TEXT NOT NULL,
+  description TEXT NOT NULL,
+  screenshot_url TEXT NOT NULL,          -- Supabase Storage URL
+  page_url TEXT,                         -- URL where bug was found
+  status TEXT DEFAULT 'pending'          -- pending, processing, fixed, failed, skipped
+    CHECK (status IN ('pending', 'processing', 'fixed', 'failed', 'skipped')),
+  fix_summary TEXT,                      -- Claude Code's summary of what was fixed
+  fix_commit_sha TEXT,                   -- Git commit hash
+  error_message TEXT,                    -- If fix failed
+  processed_at TIMESTAMPTZ,
+  notified_at TIMESTAMPTZ                -- When email was sent
+);
+```
+
+**Storage Bucket:** `bug-screenshots` (public read, anon insert)
+
+### Worker Service (`bug-fixer/`)
+
+**Location:** DigitalOcean droplet (same as OpenClaw bot)
+
+**Files:**
+- `worker.js` - Main polling loop and Claude Code execution
+- `package.json` - Dependencies (@supabase/supabase-js)
+- `install.sh` - Server setup script
+- `bug-fixer.service` - systemd unit file
+
+**Worker Flow:**
+1. Poll Supabase every 30s for `status = 'pending'` reports (oldest first)
+2. Mark report as `processing`
+3. Send confirmation email to reporter
+4. `git pull` latest code
+5. Download screenshot from Supabase Storage
+6. Run Claude Code CLI with the bug description and screenshot path
+7. If changes were made: `git commit && git push`
+8. Update report: `status = 'fixed'`, `fix_summary`, `fix_commit_sha`
+9. Email reporter with fix details
+10. If failed: `status = 'failed'`, `error_message`, email failure notice
+
+**Claude Code Invocation:**
+```javascript
+const args = [
+  '-p', prompt,
+  '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash(git:*)',
+  '--max-turns', '25',
+  '--output-format', 'json',
+  '--dangerously-skip-permissions',
+];
+await execFileAsync('claude', args, {
+  cwd: REPO_DIR,
+  timeout: 300000, // 5 minutes
+  env: { ...process.env, CI: 'true' },
+});
+```
+
+### Server Setup Guide
+
+**Critical gotchas discovered during setup:**
+
+1. **Non-root user required:** Claude Code CLI rejects `--dangerously-skip-permissions` when run as root. Must create a dedicated user:
+   ```bash
+   useradd -m -s /bin/bash bugfixer
+   ```
+
+2. **HOME environment variable:** systemd doesn't set HOME by default. Must explicitly set in service file:
+   ```ini
+   [Service]
+   User=bugfixer
+   Environment=HOME=/home/bugfixer
+   ```
+
+3. **SSH deploy key for git push:** The bugfixer user needs SSH access to GitHub:
+   ```bash
+   # Generate deploy key
+   ssh-keygen -t ed25519 -f /home/bugfixer/.ssh/github_deploy -N ""
+
+   # Add public key to GitHub repo as deploy key (with write access)
+   cat /home/bugfixer/.ssh/github_deploy.pub
+
+   # Create SSH config
+   cat > /home/bugfixer/.ssh/config << 'EOF'
+   Host github.com
+     HostName github.com
+     User git
+     IdentityFile /home/bugfixer/.ssh/github_deploy
+     IdentitiesOnly yes
+   EOF
+
+   chown -R bugfixer:bugfixer /home/bugfixer/.ssh
+   chmod 600 /home/bugfixer/.ssh/*
+   ```
+
+4. **CLAUDE.md not in git:** The project's CLAUDE.md contains database credentials and is gitignored. Must manually copy to the server:
+   ```bash
+   scp CLAUDE.md root@your-server:/opt/bug-fixer/repo/
+   ```
+
+5. **Anthropic API key:** Must be in environment:
+   ```bash
+   echo "ANTHROPIC_API_KEY=your-key-here" >> /opt/bug-fixer/.env
+   ```
+
+**Full Setup Script (`install.sh`):**
+```bash
+#!/bin/bash
+set -e
+
+# Create user
+useradd -m -s /bin/bash bugfixer || true
+
+# Create directories
+mkdir -p /opt/bug-fixer
+chown bugfixer:bugfixer /opt/bug-fixer
+
+# Clone repo (as bugfixer user)
+su - bugfixer -c "git clone git@github.com:rsonnad/alpacapps.git /opt/bug-fixer/repo"
+
+# Install dependencies
+cd /opt/bug-fixer
+npm install @supabase/supabase-js
+
+# Create .env file (must be populated manually)
+cat > /opt/bug-fixer/.env << 'EOF'
+SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+ANTHROPIC_API_KEY=your-anthropic-key
+REPO_DIR=/opt/bug-fixer/repo
+POLL_INTERVAL_MS=30000
+MAX_FIX_TIMEOUT_MS=300000
+EOF
+chown bugfixer:bugfixer /opt/bug-fixer/.env
+
+# Install Claude Code CLI globally
+npm install -g @anthropic-ai/claude-code
+
+# Copy and enable systemd service
+cp /opt/bug-fixer/repo/bug-fixer/bug-fixer.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable bug-fixer
+systemctl start bug-fixer
+```
+
+**systemd Service File (`bug-fixer.service`):**
+```ini
+[Unit]
+Description=GenAlpaca Bug Fixer Worker
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/bug-fixer
+EnvironmentFile=/opt/bug-fixer/.env
+ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bug-fixer
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Useful Commands:**
+```bash
+# View logs
+journalctl -u bug-fixer -f
+
+# Restart service
+systemctl restart bug-fixer
+
+# Check status
+systemctl status bug-fixer
+
+# Test Claude Code manually (as bugfixer user)
+su - bugfixer -c "cd /opt/bug-fixer/repo && claude -p 'Say hello' --max-turns 1 --output-format json --dangerously-skip-permissions"
+```
+
+### Email Notifications
+
+Three email templates added to `send-email` Edge Function:
+
+1. **`bug_report_received`** - Sent when processing starts
+   - Subject: "Bug Report Received"
+   - Confirms report is being processed
+
+2. **`bug_report_fixed`** - Sent when bug is fixed
+   - Subject: "Bug Fixed: [description]"
+   - Includes fix summary and commit link
+
+3. **`bug_report_failed`** - Sent when fix fails
+   - Subject: "Bug Report Update: Could not auto-fix"
+   - Includes error message and suggestion for manual investigation
+
+All bug emails CC the admin (`alpacaplayhouse@gmail.com`).
+
+### Hosting & Infrastructure
+
+| Component | Location |
+|-----------|----------|
+| Chrome Extension | Local install (not published to Chrome Web Store) |
+| Bug Reports DB | Supabase `bug_reports` table |
+| Screenshots | Supabase Storage `bug-screenshots` bucket |
+| Worker Service | DigitalOcean droplet (same as OpenClaw) |
+| Email Delivery | Resend (via `send-email` Edge Function) |
+
 ## Related Documentation
 
 - `README.md` - Quick setup
 - `API.md` - Full REST API reference (includes Edge Function docs)
 - `SKILL.md` - OpenClaw integration
+- `bug-reporter-extension/install.html` - Tester installation guide
 - Supabase Dashboard - https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn
