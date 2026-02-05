@@ -58,6 +58,8 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Email Delivery | Resend | API key stored in Supabase secrets |
 | SMS Notifications | Telnyx | Phone: +17377474737, config in `telnyx_config` table |
 | Error Monitoring | Custom | Daily digest emails via Resend |
+| Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
+| Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
 
 ## Repository Structure
@@ -138,14 +140,26 @@ alpacapps/
 │   └── events/             # Event hosting request form
 │       └── index.html      # Event form with policies & acknowledgments
 │
-└── spaces/admin/           # Admin dashboard
-    ├── index.html          # Admin spaces view
-    ├── app.js              # Admin spaces logic
-    ├── manage.html         # Management dashboard (tabs)
-    ├── media.html          # Media library page
-    ├── media.js            # Media library logic
-    ├── users.html          # User management
-    └── users.js            # User management logic
+├── spaces/admin/           # Admin dashboard
+│   ├── index.html          # Admin spaces view
+│   ├── app.js              # Admin spaces logic
+│   ├── manage.html         # Management dashboard (tabs)
+│   ├── media.html          # Media library page
+│   ├── media.js            # Media library logic
+│   ├── users.html          # User management
+│   └── users.js            # User management logic
+│
+├── bug-reporter-extension/ # Chrome extension for bug reporting
+│   ├── manifest.json       # Manifest V3
+│   ├── popup.html/js/css   # Extension UI
+│   ├── icons/              # Extension icons
+│   └── install.html        # Tester installation guide
+│
+└── bug-fixer/              # Autonomous bug fix worker (runs on DO)
+    ├── worker.js           # Main worker: poll → Claude Code → git push
+    ├── package.json        # Dependencies
+    ├── install.sh          # Server setup script
+    └── bug-fixer.service   # systemd unit file
 ```
 
 ## Database Schema
@@ -1096,6 +1110,7 @@ CREATE TABLE bug_reports (
 10. If failed: `status = 'failed'`, `error_message`, email failure notice
 
 **Claude Code Invocation:**
+Uses `spawn` (not `exec` or `execFile`) for proper argument handling with multiline prompts:
 ```javascript
 const args = [
   '-p', prompt,
@@ -1104,12 +1119,17 @@ const args = [
   '--output-format', 'json',
   '--dangerously-skip-permissions',
 ];
-await execFileAsync('claude', args, {
+const child = spawn('claude', args, {
   cwd: REPO_DIR,
+  env: { ...process.env, CI: 'true', HOME: '/home/bugfixer' },
+  stdio: ['pipe', 'pipe', 'pipe'],
   timeout: 300000, // 5 minutes
-  env: { ...process.env, CI: 'true' },
 });
 ```
+
+**Why spawn, not execFile:** `execFile`/`execFileAsync` can fail silently with multiline prompts containing special characters. `spawn` properly separates the binary from arguments without shell interpolation, streams stdout/stderr for real-time logging, and handles long-running processes better.
+
+**Processing lock:** Only one bug report is processed at a time. If the worker is already processing a report when the poll timer fires, it skips that poll cycle.
 
 ### Server Setup Guide
 
@@ -1157,6 +1177,34 @@ await execFileAsync('claude', args, {
    ```bash
    echo "ANTHROPIC_API_KEY=your-key-here" >> /opt/bug-fixer/.env
    ```
+
+6. **File permissions:** Worker files must be owned by bugfixer:
+   ```bash
+   chown -R bugfixer:bugfixer /opt/bug-fixer
+   ```
+
+7. **Git remote must use SSH (not HTTPS):** The deploy key only works with SSH URLs:
+   ```bash
+   cd /opt/bug-fixer/repo
+   git remote set-url origin git@github.com:rsonnad/alpacapps.git
+   ```
+
+8. **Git user config for commits:** The worker commits as "Bug Fixer Bot":
+   ```bash
+   cd /opt/bug-fixer/repo
+   git config user.name "Bug Fixer Bot"
+   git config user.email "bugfixer@alpacaplayhouse.com"
+   ```
+
+9. **Claude Code needs writable home dir:** Claude Code stores config/cache in `~/.claude`. The `bugfixer` home dir must exist and be writable.
+
+10. **Supabase prerequisites:** The `bug_reports` table and `bug-screenshots` storage bucket must exist. Create them via the Supabase dashboard or SQL editor. The `send-email` Edge Function must have the `bug_report_received`, `bug_report_fixed`, and `bug_report_failed` email templates.
+
+11. **Deploying worker updates:** After editing worker.js locally, scp and restart:
+    ```bash
+    scp -i ~/.ssh/do_bugfixer bug-fixer/worker.js root@159.89.157.120:/opt/bug-fixer/worker.js
+    ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 "chown bugfixer:bugfixer /opt/bug-fixer/worker.js && systemctl restart bug-fixer"
+    ```
 
 **Full Setup Script (`install.sh`):**
 ```bash
