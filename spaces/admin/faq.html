@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css?v=4">
   <link rel="stylesheet" href="styles.css?v=4">
-  <link rel="stylesheet" href="faq.css?v=1">
+  <link rel="stylesheet" href="faq.css?v=2">
 </head>
 <body>
   <!-- Toast Container -->
@@ -52,6 +52,34 @@
       <a href="/spaces/admin/" class="back-link">
         &larr; Back to Admin Dashboard
       </a>
+
+      <!-- Test AI Assistant Section -->
+      <div class="section test-ai-section">
+        <div class="section-header">
+          <h2>Test AI Assistant</h2>
+          <span class="test-ai-label">Same as contact page</span>
+        </div>
+        <div class="section-body">
+          <p class="context-description">Ask a question to test the AI assistant exactly as visitors would experience it on the contact page.</p>
+
+          <div class="test-question-wrapper">
+            <input type="text" id="testQuestionInput" class="test-question-input" placeholder="What would you like to know?" autocomplete="off">
+            <button id="testAskBtn" class="btn-primary test-ask-btn">Ask</button>
+          </div>
+
+          <div id="testAnswerContainer" class="test-answer-container">
+            <div id="testAnswerText" class="test-answer-text"></div>
+
+            <div id="testLowConfidenceNotice" class="test-low-confidence-notice">
+              ⚠️ Low confidence — This answer would trigger the follow-up form on the contact page.
+            </div>
+
+            <div id="testConfidenceMeta" class="test-confidence-meta">
+              <span id="testConfidenceLabel"></span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Context Compilation Section -->
       <div class="section">

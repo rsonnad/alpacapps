@@ -1,6 +1,7 @@
 // FAQ Management Page
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAuth, getAuthState, onAuthStateChange, signOut } from '../../shared/auth.js';
+import { askQuestion } from '../../shared/chat-widget.js';
 
 // State
 let faqEntries = [];
@@ -150,6 +151,69 @@ function setupEventListeners() {
   document.getElementById('addLinkBtn').addEventListener('click', () => openLinkModal());
   const addContextBtn = document.getElementById('addContextEntryBtn');
   if (addContextBtn) addContextBtn.addEventListener('click', () => openContextEntryModal());
+
+  // Test AI Assistant
+  const testAskBtn = document.getElementById('testAskBtn');
+  const testQuestionInput = document.getElementById('testQuestionInput');
+  if (testAskBtn && testQuestionInput) {
+    testAskBtn.addEventListener('click', handleTestQuestion);
+    testQuestionInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleTestQuestion();
+    });
+  }
+}
+
+async function handleTestQuestion() {
+  const input = document.getElementById('testQuestionInput');
+  const btn = document.getElementById('testAskBtn');
+  const answerContainer = document.getElementById('testAnswerContainer');
+  const answerText = document.getElementById('testAnswerText');
+  const lowConfidence = document.getElementById('testLowConfidenceNotice');
+  const confidenceMeta = document.getElementById('testConfidenceMeta');
+  const confidenceLabel = document.getElementById('testConfidenceLabel');
+
+  const question = input.value.trim();
+  if (!question) return;
+
+  // Show loading state
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Thinking...';
+
+  // Reset answer UI
+  answerContainer.classList.remove('visible');
+  lowConfidence.classList.remove('visible');
+  confidenceMeta.classList.remove('visible');
+
+  try {
+    const result = await askQuestion(question);
+
+    answerText.textContent = result.answer;
+    answerContainer.classList.add('visible');
+
+    // Show confidence indicator
+    confidenceMeta.classList.add('visible');
+    if (result.confident) {
+      confidenceLabel.innerHTML = '<span class="confidence-badge confidence-badge--high">HIGH CONFIDENCE</span>';
+    } else {
+      confidenceLabel.innerHTML = '<span class="confidence-badge confidence-badge--low">LOW CONFIDENCE</span>';
+      lowConfidence.classList.add('visible');
+    }
+
+    // Refresh question log since the edge function logs the question
+    await loadFaqEntries();
+    renderQuestionLog();
+    renderPendingQuestions();
+    const countBadge = document.getElementById('questionLogCount');
+    if (countBadge) countBadge.textContent = faqEntries.filter(e => e.source === 'auto').length;
+  } catch (error) {
+    answerText.textContent = 'Error: ' + (error.message || 'Failed to get a response. Check console for details.');
+    answerContainer.classList.add('visible');
+    confidenceMeta.classList.add('visible');
+    confidenceLabel.innerHTML = '<span class="confidence-badge confidence-badge--low">ERROR</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ask';
+  }
 }
 
 function renderAll() {

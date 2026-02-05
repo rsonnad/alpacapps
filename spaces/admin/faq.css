@@ -372,6 +372,108 @@
   font-size: 0.875rem;
 }
 
+/* Test AI Assistant Section */
+.test-ai-section {
+  border: 2px solid var(--accent-light, #f0e6d6);
+}
+
+.test-ai-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--bg, #f5f5f5);
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.test-question-wrapper {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.test-question-input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--bg, #fff);
+  color: var(--text, #333);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.test-question-input:focus {
+  outline: none;
+  border-color: var(--accent, #8B4513);
+  box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+}
+
+.test-ask-btn {
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.test-ask-btn .loading-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Answer Display */
+.test-answer-container {
+  display: none;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  background: var(--bg, #f9fafb);
+  border-radius: 8px;
+  border: 1px solid var(--border, #e5e5e5);
+}
+
+.test-answer-container.visible {
+  display: block;
+}
+
+.test-answer-text {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--text, #333);
+}
+
+.test-low-confidence-notice {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fef3c7;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.test-low-confidence-notice.visible {
+  display: block;
+}
+
+.test-confidence-meta {
+  display: none;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border, #e5e5e5);
+  font-size: 0.8rem;
+}
+
+.test-confidence-meta.visible {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .faq-container {
@@ -411,5 +513,13 @@
     width: 100%;
     justify-content: flex-end;
     margin-top: 0.5rem;
+  }
+
+  .test-question-wrapper {
+    flex-direction: column;
+  }
+
+  .test-ask-btn {
+    align-self: flex-end;
   }
 }
