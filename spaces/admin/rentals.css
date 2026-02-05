@@ -1524,20 +1524,26 @@
 
 .fee-code-card {
   display: grid;
-  grid-template-columns: 1fr 1fr 100px auto;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
-  align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   background: var(--bg);
   border-radius: var(--radius);
   border: 1px solid var(--border);
 }
 
-@media (max-width: 768px) {
-  .fee-code-card {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
+.fee-code-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fee-code-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .fee-code-card .code-name {
@@ -1548,16 +1554,17 @@
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   display: inline-block;
+  width: fit-content;
 }
 
 .fee-code-card .code-type {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.875rem;
+  color: var(--text);
 }
 
 .fee-code-card .code-price {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
 }
 
 .fee-code-card .code-price.free {
@@ -1567,11 +1574,18 @@
 .fee-code-card .code-actions {
   display: flex;
   gap: 0.5rem;
+  align-items: flex-end;
 }
 
 .fee-code-card .code-usage {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .fee-code-card {
+    grid-template-columns: 1fr;
+  }
 }
 
 .fee-codes-empty {

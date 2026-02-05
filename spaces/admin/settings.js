@@ -300,18 +300,28 @@ async function loadFeeCodes() {
 
       return `
         <div class="fee-code-card ${expiredClass} ${inactiveClass}">
-          <div>
+          <div class="fee-code-field">
+            <label class="fee-code-label">Code</label>
             <span class="code-name">${code.code}</span>
-            ${code.description ? `<div class="code-usage">${code.description}</div>` : ''}
           </div>
-          <div>
+          <div class="fee-code-field">
+            <label class="fee-code-label">Fee Type</label>
             <span class="code-type">${FEE_TYPE_LABELS[code.fee_type] || code.fee_type}</span>
-            <div class="code-usage">${usageText}</div>
           </div>
-          <div>
+          <div class="fee-code-field">
+            <label class="fee-code-label">Price</label>
             <span class="code-price ${code.price === 0 ? 'free' : ''}">
               ${code.price === 0 ? 'FREE' : '$' + code.price.toFixed(2)}
             </span>
+          </div>
+          ${code.description ? `
+          <div class="fee-code-field">
+            <label class="fee-code-label">Description</label>
+            <span class="code-usage">${code.description}</span>
+          </div>` : ''}
+          <div class="fee-code-field">
+            <label class="fee-code-label">Usage</label>
+            <span class="code-usage">${usageText}</span>
           </div>
           <div class="code-actions">
             <button class="btn-small btn-secondary" data-action="edit-fee-code" data-id="${code.id}">Edit</button>
