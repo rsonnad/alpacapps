@@ -847,7 +847,7 @@ You'll receive another email when the fix is deployed or if we need to escalate 
 
     case "bug_report_fixed":
       return {
-        subject: `Bug Fixed: ${(data.description || '').substring(0, 50)}`,
+        subject: `Re: New Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
         html: `
           <h2 style="color: #27ae60;">Bug Fixed!</h2>
           <p>Hi ${data.reporter_name},</p>
@@ -895,7 +895,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
 
     case "bug_report_failed":
       return {
-        subject: `Bug Report Update: Could not auto-fix`,
+        subject: `Re: New Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
         html: `
           <h2 style="color: #e67e22;">Bug Report Update</h2>
           <p>Hi ${data.reporter_name},</p>
