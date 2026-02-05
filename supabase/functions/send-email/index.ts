@@ -141,18 +141,15 @@ Alpaca Playhouse`
         subject: "Application Update - Alpaca Playhouse",
         html: `
           <p>Hi ${data.first_name},</p>
-          <p>We're sorry but we are not able to approve your application. This may be due to the space being claimed by others, or it may be due to other reasons such as financial assessment.</p>
-          <p>Your application deposit will be refunded to your credit card.</p>
-          <p>If you have questions, please contact a community manager, or you can ask them on the <a href="https://alpacaplayhouse.com/contact/">contact page</a> which will message us.</p>
+          <p>We're sorry but we are not able to approve you to apply for housing at the Alpaca Playhouse at this time. This may be due to our gender balance goals, or it may be due to other reasons related to our assessment of community fit at this specific time.</p>
+          <p>If you have questions, please contact a community manager.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Hi ${data.first_name},
 
-We're sorry but we are not able to approve your application. This may be due to the space being claimed by others, or it may be due to other reasons such as financial assessment.
+We're sorry but we are not able to approve you to apply for housing at the Alpaca Playhouse at this time. This may be due to our gender balance goals, or it may be due to other reasons related to our assessment of community fit at this specific time.
 
-Your application deposit will be refunded to your credit card.
-
-If you have questions, please contact a community manager, or you can ask them on the contact page (https://alpacaplayhouse.com/contact/) which will message us.
+If you have questions, please contact a community manager.
 
 Best regards,
 Alpaca Playhouse`
