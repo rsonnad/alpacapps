@@ -1,6 +1,6 @@
 // User Management - Admin only
 import { supabase } from '../../shared/supabase.js';
-import { initAuth, getAuthState, signOut, onAuthStateChange } from '../../shared/auth.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { emailService } from '../../shared/email-service.js';
 import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
 
@@ -19,117 +19,37 @@ function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation time
   ]);
 }
 
-// =============================================
-// TOAST NOTIFICATIONS
-// =============================================
-
-function showToast(message, type = 'info', duration = 4000) {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-
-  const icons = {
-    success: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>',
-    error: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>',
-    warning: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>',
-    info: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>'
-  };
-
-  toast.innerHTML = `
-    <span class="toast-icon">${icons[type] || icons.info}</span>
-    <span class="toast-message">${message}</span>
-    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-  `;
-
-  container.appendChild(toast);
-
-  if (duration > 0) {
-    setTimeout(() => {
-      toast.classList.add('toast-exit');
-      setTimeout(() => toast.remove(), 200);
-    }, duration);
-  }
-}
-
 let authState = null;
 let users = [];
 let invitations = [];
 
-// DOM elements
-const loadingOverlay = document.getElementById('loadingOverlay');
-const unauthorizedOverlay = document.getElementById('unauthorizedOverlay');
-const appContent = document.getElementById('appContent');
-const userInfo = document.getElementById('userInfo');
-const pendingSection = document.getElementById('pendingSection');
-const usersSection = document.getElementById('usersSection');
-const pendingCount = document.getElementById('pendingCount');
-const usersCount = document.getElementById('usersCount');
+// DOM elements (set after DOM ready)
+let pendingSection, usersSection, pendingCount, usersCount;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  await init();
+  // Initialize auth and admin page (requires admin role)
+  authState = await initAdminPage({
+    activeTab: 'users',
+    onReady: async (state) => {
+      authState = state;
+
+      // Set DOM element references
+      pendingSection = document.getElementById('pendingSection');
+      usersSection = document.getElementById('usersSection');
+      pendingCount = document.getElementById('pendingCount');
+      usersCount = document.getElementById('usersCount');
+
+      // Load data
+      await loadUsers();
+      await loadInvitations();
+      render();
+      setupEventListeners();
+    }
+  });
 });
 
-async function init() {
-  try {
-    await initAuth();
-    authState = getAuthState();
-
-    // Must be authenticated
-    if (!authState.isAuthenticated) {
-      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
-      return;
-    }
-
-    // Must be admin
-    if (!authState.isAdmin) {
-      loadingOverlay.classList.add('hidden');
-      unauthorizedOverlay.classList.remove('hidden');
-      return;
-    }
-
-    // Show the app
-    loadingOverlay.classList.add('hidden');
-    appContent.classList.remove('hidden');
-
-    // Update user info
-    userInfo.textContent = authState.user?.displayName || authState.user?.email || '';
-
-    // Listen for auth changes
-    onAuthStateChange((state) => {
-      authState = state;
-      if (!state.isAdmin) {
-        window.location.href = '/spaces/admin/';
-      }
-    });
-
-    // Load data
-    await loadUsers();
-    await loadInvitations();
-    render();
-    setupEventListeners();
-
-  } catch (error) {
-    console.error('Init error:', error);
-    loadingOverlay.innerHTML = `
-      <div class="unauthorized-card">
-        <h2>Error</h2>
-        <p>${error.message}</p>
-        <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
-      </div>
-    `;
-  }
-}
-
 function setupEventListeners() {
-  // Sign out
-  document.getElementById('signOutBtn').addEventListener('click', async () => {
-    await signOut();
-    window.location.href = '/spaces/';
-  });
-
   // Invite form
   document.getElementById('inviteForm').addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 // FAQ Management Page
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAuth, getAuthState, onAuthStateChange, signOut } from '../../shared/auth.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { askQuestion } from '../../shared/chat-widget.js';
 
 // State
@@ -8,37 +8,22 @@ let faqEntries = [];
 let contextLinks = [];
 let contextMeta = null;
 let contextEntries = [];
-let initialized = false;
-
-// DOM Elements
-const loadingOverlay = document.getElementById('loadingOverlay');
-const unauthorizedOverlay = document.getElementById('unauthorizedOverlay');
-const appContent = document.getElementById('appContent');
-const toastContainer = document.getElementById('toastContainer');
 
 // Check if running in embed mode (inside iframe)
 const isEmbed = new URLSearchParams(window.location.search).has('embed');
 
-// Handle auth state changes (same pattern as manage.html)
-async function handleAuthState(state) {
-  if (state.appUser && (state.appUser.role === 'admin' || state.appUser.role === 'staff')) {
-    if (!initialized) {
-      initialized = true;
-
-      // Hide header in embed mode
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAdminPage({
+    activeTab: 'faq',
+    onReady: async (state) => {
+      // Hide header and tabs in embed mode
       if (isEmbed) {
         const header = document.querySelector('header');
         if (header) header.style.display = 'none';
-        const backLink = document.querySelector('.back-link');
-        if (backLink) backLink.style.display = 'none';
+        const tabs = document.querySelector('.manage-tabs');
+        if (tabs) tabs.style.display = 'none';
       }
-
-      // Set up user info
-      document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
-      document.getElementById('signOutBtn').addEventListener('click', async () => {
-        await signOut();
-        window.location.href = '/spaces/admin/';
-      });
 
       // Load data
       await loadData();
@@ -55,33 +40,8 @@ async function handleAuthState(state) {
           openFaqModal(entry);
         }
       }
-
-      // Show content
-      loadingOverlay.classList.add('hidden');
-      appContent.classList.remove('hidden');
     }
-  } else if (state.appUser || state.isUnauthorized) {
-    loadingOverlay.classList.add('hidden');
-    unauthorizedOverlay.classList.remove('hidden');
-  } else if (!state.isAuthenticated && !initialized) {
-    // Only redirect if page content hasn't been shown yet — prevents
-    // disruptive redirects when Supabase session expires mid-use
-    window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
-  }
-  // If state.isPending, do nothing — wait for the real role to come in
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await initAuth();
-    const state = getAuthState();
-    onAuthStateChange(handleAuthState);
-    handleAuthState(state);
-  } catch (error) {
-    console.error('Init error:', error);
-    showToast('Failed to initialize', 'error');
-  }
+  });
 });
 
 async function loadData() {
@@ -917,28 +877,4 @@ function truncateUrl(url) {
   return url.substring(0, 57) + '...';
 }
 
-function showToast(message, type = 'info', duration = 4000) {
-  const icons = {
-    success: '&#10003;',
-    error: '&#10007;',
-    warning: '&#9888;',
-    info: '&#8505;'
-  };
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <span class="toast-icon">${icons[type]}</span>
-    <span class="toast-message">${message}</span>
-    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-  `;
-
-  toastContainer.appendChild(toast);
-
-  if (duration > 0) {
-    setTimeout(() => {
-      toast.classList.add('toast-exit');
-      setTimeout(() => toast.remove(), 200);
-    }, duration);
-  }
-}
+// showToast is now imported from admin-shell.js

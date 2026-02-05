@@ -6,8 +6,9 @@
   <link rel="icon" type="image/png" href="../../favicon.png">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <title>User Management - AlpacAPPs</title>
-  <link rel="stylesheet" href="../styles.css?v=4">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
   <style>
     .users-container {
       max-width: 900px;
@@ -270,20 +271,20 @@
         <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; AlpacAPPs Admin</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260205.07</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260205.03</span>
+        <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
-        <a href="/spaces/admin/" class="btn-small">Spaces</a>
         <span id="userInfo" class="user-info"></span>
-        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
       </div>
     </header>
 
+    <!-- Tab Navigation -->
+    <div class="manage-tabs"></div>
+
     <div class="users-container">
-      <a href="/spaces/admin/" class="back-link">
-        &larr; Back to Admin Dashboard
-      </a>
 
       <!-- Invite Section -->
       <div class="section">
