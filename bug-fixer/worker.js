@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-import { execFile, exec } from 'child_process';
+import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-const execFileAsync = promisify(execFile);
 const execAsync = promisify(exec);
 
 // ============================================
@@ -87,6 +86,11 @@ async function runClaudeCode(report, screenshotPath) {
     '- Do NOT update the version number (the worker handles that)',
   ].filter(Boolean).join('\n');
 
+  // Write prompt to temp file to avoid shell escaping issues
+  await mkdir(TEMP_DIR, { recursive: true });
+  const promptFile = path.join(TEMP_DIR, `prompt-${Date.now()}.txt`);
+  await writeFile(promptFile, prompt, 'utf-8');
+
   const args = [
     '-p', prompt,
     '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash(git:*)',
@@ -95,34 +99,91 @@ async function runClaudeCode(report, screenshotPath) {
     '--dangerously-skip-permissions',
   ];
 
-  log('info', 'Running Claude Code', { prompt_length: prompt.length });
-
-  const result = await execFileAsync('claude', args, {
+  log('info', 'Running Claude Code', {
+    prompt_length: prompt.length,
+    args_count: args.length,
     cwd: REPO_DIR,
-    timeout: MAX_FIX_TIMEOUT_MS,
-    env: {
-      ...process.env,
-      // Ensure Claude Code doesn't try to use interactive features
-      CI: 'true',
-    },
-    maxBuffer: 10 * 1024 * 1024, // 10MB
   });
 
-  // Try to parse JSON output for summary
-  let summary = 'Fix applied.';
-  try {
-    const output = JSON.parse(result.stdout);
-    if (output.result) {
-      summary = output.result;
-    }
-  } catch {
-    // If not JSON, use raw stdout (truncated)
-    if (result.stdout) {
-      summary = result.stdout.substring(0, 500);
-    }
-  }
+  // Use spawn for better control over long-running processes
+  return new Promise((resolve, reject) => {
+    const child = spawn('claude', args, {
+      cwd: REPO_DIR,
+      env: {
+        ...process.env,
+        CI: 'true',
+        HOME: process.env.HOME || '/home/bugfixer',
+      },
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: MAX_FIX_TIMEOUT_MS,
+    });
 
-  return summary;
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      const chunk = data.toString();
+      stderr += chunk;
+      // Log stderr in real-time for debugging
+      if (chunk.trim()) {
+        log('debug', 'Claude stderr', { text: chunk.trim().substring(0, 200) });
+      }
+    });
+
+    // Close stdin immediately since we're using -p flag
+    child.stdin.end();
+
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error(`Claude Code timed out after ${MAX_FIX_TIMEOUT_MS / 1000}s`));
+    }, MAX_FIX_TIMEOUT_MS);
+
+    child.on('close', async (code) => {
+      clearTimeout(timeout);
+
+      // Clean up prompt file
+      try { await unlink(promptFile); } catch { /* ignore */ }
+
+      log('info', 'Claude Code exited', {
+        code,
+        stdout_length: stdout.length,
+        stderr_length: stderr.length,
+        stderr_preview: stderr.substring(0, 500),
+      });
+
+      if (code !== 0) {
+        const errMsg = stderr || stdout || `Claude Code exited with code ${code}`;
+        reject(new Error(`Claude Code failed (exit ${code}): ${errMsg.substring(0, 1000)}`));
+        return;
+      }
+
+      // Try to parse JSON output for summary
+      let summary = 'Fix applied.';
+      try {
+        const output = JSON.parse(stdout);
+        if (output.result) {
+          summary = output.result;
+        }
+      } catch {
+        if (stdout) {
+          summary = stdout.substring(0, 500);
+        }
+      }
+
+      resolve(summary);
+    });
+
+    child.on('error', async (err) => {
+      clearTimeout(timeout);
+      try { await unlink(promptFile); } catch { /* ignore */ }
+      log('error', 'Claude Code spawn error', { error: err.message });
+      reject(new Error(`Failed to spawn Claude Code: ${err.message}`));
+    });
+  });
 }
 
 // ============================================
@@ -271,20 +332,26 @@ async function processBugReport(report) {
     }
 
   } catch (err) {
-    log('error', 'Bug fix failed', { id: report.id, error: err.message });
+    // Extract a clean error message (truncate long Claude output)
+    const errorMsg = err.message.substring(0, 2000);
+    log('error', 'Bug fix failed', {
+      id: report.id,
+      error: errorMsg,
+      stderr: err.stderr ? err.stderr.substring(0, 500) : undefined,
+    });
 
     // Update report as failed
     await supabase
       .from('bug_reports')
       .update({
         status: 'failed',
-        error_message: err.message,
+        error_message: errorMsg,
         processed_at: new Date().toISOString(),
       })
       .eq('id', report.id);
 
     // Email reporter about failure
-    await sendEmail('bug_report_failed', report, { error_message: err.message });
+    await sendEmail('bug_report_failed', report, { error_message: errorMsg });
 
     // Clean up any dirty git state
     try {
@@ -304,7 +371,14 @@ async function processBugReport(report) {
 // ============================================
 // Main poll loop
 // ============================================
+let isProcessing = false;
+
 async function pollForReports() {
+  if (isProcessing) {
+    log('debug', 'Skipping poll - already processing a report');
+    return;
+  }
+
   try {
     const { data: reports, error } = await supabase
       .from('bug_reports')
@@ -319,10 +393,16 @@ async function pollForReports() {
     }
 
     if (reports && reports.length > 0) {
-      await processBugReport(reports[0]);
+      isProcessing = true;
+      try {
+        await processBugReport(reports[0]);
+      } finally {
+        isProcessing = false;
+      }
     }
   } catch (err) {
     log('error', 'Poll loop error', { error: err.message });
+    isProcessing = false;
   }
 }
 
@@ -345,8 +425,14 @@ async function main() {
 
   // Verify Claude Code is installed
   try {
-    await execAsync('which claude');
-    log('info', 'Claude Code CLI found');
+    const { stdout: claudePath } = await execAsync('which claude');
+    const { stdout: claudeVer } = await execAsync('claude --version 2>/dev/null || echo unknown');
+    log('info', 'Claude Code CLI found', {
+      path: claudePath.trim(),
+      version: claudeVer.trim(),
+      home: process.env.HOME,
+      user: process.env.USER || process.env.LOGNAME || 'unknown',
+    });
   } catch {
     log('error', 'Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code');
     process.exit(1);

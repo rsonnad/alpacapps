@@ -91,7 +91,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=bugfixer
+Environment=HOME=/home/bugfixer
 WorkingDirectory=/opt/bug-fixer
 EnvironmentFile=/opt/bug-fixer/.env
 ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
