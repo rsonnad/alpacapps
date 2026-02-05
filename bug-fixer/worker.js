@@ -289,17 +289,33 @@ async function takeVerificationScreenshot(pageUrl) {
     if (isAdminPage) {
       const botSession = await getBotSession();
       if (botSession) {
-        // Navigate to the site origin first to set localStorage on the correct domain
-        const origin = new URL(pageUrl).origin;
-        await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        // Build session data for Supabase client localStorage ('genalpaca-auth')
+        const supabaseStorageValue = {
+          access_token: botSession.access_token,
+          refresh_token: botSession.refresh_token,
+          expires_at: botSession.expires_at,
+          expires_in: botSession.expires_in,
+          token_type: botSession.token_type || 'bearer',
+          user: botSession.user,
+        };
 
-        // Inject the Supabase auth session into localStorage
-        // Must match the storageKey used in shared/supabase.js ('genalpaca-auth')
-        await page.evaluate((sessionJson) => {
+        // Build cached auth for shared/auth.js ('genalpaca-cached-auth')
+        const cachedAuth = {
+          email: botSession.user.email,
+          userId: botSession.user.id,
+          appUser: { id: 'bot', role: 'admin', display_name: 'Bug Fixer Bot', email: botSession.user.email },
+          role: 'admin',
+          timestamp: Date.now(),
+        };
+
+        // Use evaluateOnNewDocument to inject localStorage BEFORE any page JS runs
+        // This is critical - the Supabase client reads session on initialization
+        await page.evaluateOnNewDocument((sessionJson, cachedJson) => {
           localStorage.setItem('genalpaca-auth', sessionJson);
-        }, JSON.stringify(botSession));
+          localStorage.setItem('genalpaca-cached-auth', cachedJson);
+        }, JSON.stringify(supabaseStorageValue), JSON.stringify(cachedAuth));
 
-        log('info', 'Bot auth session injected for admin page');
+        log('info', 'Bot auth session will be injected via evaluateOnNewDocument');
       } else {
         log('warn', 'No bot session available - admin screenshot may show login page');
       }
@@ -365,7 +381,7 @@ async function takeVerificationScreenshot(pageUrl) {
 // ============================================
 // Send notification email
 // ============================================
-const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
+const ADMIN_EMAIL = 'alpacaautomation@gmail.com';
 
 async function sendEmail(type, report, extraData = {}) {
   // Send to both the reporter and admin
