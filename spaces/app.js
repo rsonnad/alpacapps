@@ -523,7 +523,7 @@ function renderTable(spacesToRender) {
 
     // Thumbnail
     const thumbnail = space.photos.length > 0
-      ? `<img src="${space.photos[0].url}" alt="" class="table-thumbnail" onclick="event.stopPropagation(); openLightbox('${space.photos[0].url}')" style="cursor: zoom-in;">`
+      ? `<img src="${space.photos[0].url}" alt="" class="table-thumbnail" onclick="event.stopPropagation(); openLightboxForSpace('${space.photos[0].url}', '${space.id}')" style="cursor: zoom-in;">`
       : `<div class="table-thumbnail-placeholder"></div>`;
 
     // Description (truncated)
@@ -774,12 +774,22 @@ function setCurrentGallery(photos) {
   currentGalleryUrls = photos.map(p => p.url);
 }
 
-function openLightbox(imageUrl) {
+function openLightboxForSpace(imageUrl, spaceId) {
+  const space = spaces.find(s => s.id === spaceId);
+  const gallery = space ? space.photos.map(p => p.url) : [];
+  openLightbox(imageUrl, gallery);
+}
+
+function openLightbox(imageUrl, galleryUrls) {
   const lightbox = document.getElementById('imageLightbox');
   const lightboxImage = document.getElementById('lightboxImage');
   if (lightbox && lightboxImage) {
-    // Use current gallery if available and image is in it
-    if (currentGalleryUrls.length > 0 && currentGalleryUrls.includes(imageUrl)) {
+    // Use explicit gallery if provided, then current gallery, then single image
+    if (galleryUrls && galleryUrls.length > 0) {
+      lightboxGallery = [...galleryUrls];
+      lightboxIndex = lightboxGallery.indexOf(imageUrl);
+      if (lightboxIndex < 0) lightboxIndex = 0;
+    } else if (currentGalleryUrls.length > 0 && currentGalleryUrls.includes(imageUrl)) {
       lightboxGallery = [...currentGalleryUrls];
       lightboxIndex = lightboxGallery.indexOf(imageUrl);
     } else {
