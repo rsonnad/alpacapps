@@ -608,7 +608,7 @@ When generating lease agreements, the system calculates credits toward first mon
    - Payment processed during form submission
    - Fee credited toward first month's rent (shown in lease agreement)
 
-2. **Event Deposits** (`/spaces/events/`):
+2. **Event Deposits** (`/spaces/hostevent/`):
    - Two deposit types: Cleaning Deposit + Reservation Deposit
    - Each has separate default amounts and codes
    - Combined total shown to user
@@ -910,7 +910,7 @@ When tenant signs lease, automated email sent with:
 
 ### Event Hosting Flow
 
-**Event Request Submission** (`/spaces/events/`):
+**Event Request Submission** (`/spaces/hostevent/`):
 1. Host fills out form with event details, staffing contacts, space requests
 2. Acknowledges all venue policies (10 checkboxes)
 3. Deposit section shows only the Reservation Deposit:
