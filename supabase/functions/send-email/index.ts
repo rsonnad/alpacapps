@@ -135,20 +135,18 @@ Alpaca Playhouse`
         subject: "Application Update - Alpaca Playhouse",
         html: `
           <p>Hi ${data.first_name},</p>
-          <p>Thank you for your interest in Alpaca Playhouse.</p>
-          <p>After careful review, we're unable to approve your application at this time.</p>
-          ${data.reason ? `<p><strong>Reason:</strong> ${data.reason}</p>` : ''}
-          <p>We appreciate your understanding and wish you the best in your housing search.</p>
+          <p>We're sorry but we are not able to approve your application. This may be due to the space being claimed by others, or it may be due to other reasons such as financial assessment.</p>
+          <p>Your application deposit will be refunded to your credit card.</p>
+          <p>If you have questions, please contact a community manager, or you can ask them on the <a href="https://alpacaplayhouse.com/contact/">contact page</a> which will message us.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Hi ${data.first_name},
 
-Thank you for your interest in Alpaca Playhouse.
+We're sorry but we are not able to approve your application. This may be due to the space being claimed by others, or it may be due to other reasons such as financial assessment.
 
-After careful review, we're unable to approve your application at this time.
-${data.reason ? `\nReason: ${data.reason}` : ''}
+Your application deposit will be refunded to your credit card.
 
-We appreciate your understanding and wish you the best in your housing search.
+If you have questions, please contact a community manager, or you can ask them on the contact page (https://alpacaplayhouse.com/contact/) which will message us.
 
 Best regards,
 Alpaca Playhouse`

@@ -42,7 +42,6 @@ const APPLICATION_STATUS = {
   UNDER_REVIEW: 'under_review',
   APPROVED: 'approved',
   DENIED: 'denied',
-  DELAYED: 'delayed',
   WITHDRAWN: 'withdrawn',
 };
 
@@ -181,9 +180,8 @@ function getPipelineStage(application) {
   // Approved - ready for contract
   if (application.application_status === APPLICATION_STATUS.APPROVED) return 'approved';
 
-  // Denied or delayed (separate handling)
+  // Denied (separate handling)
   if (application.application_status === APPLICATION_STATUS.DENIED) return 'denied';
-  if (application.application_status === APPLICATION_STATUS.DELAYED) return 'delayed';
 
   // Default - in applications column
   return 'applications';
@@ -459,124 +457,6 @@ async function denyApplication(applicationId, reason = null) {
   return data;
 }
 
-/**
- * Delay application for later review
- */
-async function delayApplication(applicationId, reason = null, revisitDate = null) {
-  // Get application first to check for prospect assignment
-  const existingApp = await getApplication(applicationId);
-
-  const { data, error } = await supabase
-    .from('rental_applications')
-    .update({
-      application_status: APPLICATION_STATUS.DELAYED,
-      delay_reason: reason,
-      delay_revisit_date: revisitDate,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      assignment_id: null, // Clear the assignment reference
-    })
-    .eq('id', applicationId)
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // Delete the prospect assignment if it exists (to unblock dates on Airbnb)
-  if (existingApp?.assignment_id && existingApp?.assignment?.status === 'prospect') {
-    // First delete assignment_spaces links
-    await supabase
-      .from('assignment_spaces')
-      .delete()
-      .eq('assignment_id', existingApp.assignment_id);
-
-    // Then delete the assignment
-    await supabase
-      .from('assignments')
-      .delete()
-      .eq('id', existingApp.assignment_id);
-  }
-
-  // Trigger iCal regeneration to unblock dates on Airbnb
-  triggerIcalRegeneration();
-
-  return data;
-}
-
-/**
- * Reactivate a delayed application
- */
-async function reactivateApplication(applicationId) {
-  // Get application first to get space/date info for provisional assignment
-  const existingApp = await getApplication(applicationId);
-
-  const { data, error } = await supabase
-    .from('rental_applications')
-    .update({
-      application_status: APPLICATION_STATUS.SUBMITTED,
-      delay_reason: null,
-      delay_revisit_date: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', applicationId)
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // Recreate provisional "prospect" assignment if space and move-in date exist
-  const spaceId = existingApp?.desired_space_id;
-  const moveInDate = existingApp?.desired_move_in;
-  const personId = existingApp?.person_id;
-
-  if (spaceId && moveInDate && personId && !existingApp?.assignment_id) {
-    try {
-      // Calculate provisional end date based on desired_term (default 6 months)
-      let provisionalEndDate = null;
-      if (existingApp.desired_term) {
-        const moveIn = new Date(moveInDate);
-        const termMonths = parseInt(existingApp.desired_term) || 6;
-        moveIn.setMonth(moveIn.getMonth() + termMonths);
-        provisionalEndDate = moveIn.toISOString().split('T')[0];
-      }
-
-      const { data: assignment, error: assignmentError } = await supabase
-        .from('assignments')
-        .insert({
-          person_id: personId,
-          type: 'dwelling',
-          status: 'prospect',
-          start_date: moveInDate,
-          end_date: provisionalEndDate,
-          rental_application_id: applicationId,
-          notes: 'Provisional assignment - pending application review',
-        })
-        .select()
-        .single();
-
-      if (!assignmentError && assignment) {
-        // Link assignment to space
-        await supabase.from('assignment_spaces').insert({
-          assignment_id: assignment.id,
-          space_id: spaceId,
-        });
-
-        // Update application with assignment reference
-        await supabase
-          .from('rental_applications')
-          .update({ assignment_id: assignment.id })
-          .eq('id', applicationId);
-
-        // Trigger iCal regeneration to block dates on Airbnb
-        triggerIcalRegeneration();
-      }
-    } catch (err) {
-      console.error('Error creating provisional assignment on reactivate:', err);
-    }
-  }
-
-  return data;
-}
 
 /**
  * Archive an application (soft delete)
@@ -1451,8 +1331,6 @@ export const rentalService = {
   approveApplication,
   saveTerms,
   denyApplication,
-  delayApplication,
-  reactivateApplication,
   archiveApplication,
   unarchiveApplication,
   toggleTestFlag,

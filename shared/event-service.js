@@ -20,7 +20,6 @@ const REQUEST_STATUS = {
   UNDER_REVIEW: 'under_review',
   APPROVED: 'approved',
   DENIED: 'denied',
-  DELAYED: 'delayed',
   WITHDRAWN: 'withdrawn',
 };
 
@@ -182,9 +181,8 @@ function getPipelineStage(request) {
   // Approved - ready for contract
   if (request.request_status === REQUEST_STATUS.APPROVED) return 'approved';
 
-  // Denied or delayed (separate handling)
+  // Denied (separate handling)
   if (request.request_status === REQUEST_STATUS.DENIED) return 'denied';
-  if (request.request_status === REQUEST_STATUS.DELAYED) return 'delayed';
 
   // Default - in requests column
   return 'requests';
@@ -458,45 +456,6 @@ async function denyRequest(requestId, reason) {
   return data;
 }
 
-/**
- * Delay event request for later review
- */
-async function delayRequest(requestId, reason, revisitDate = null) {
-  const { data, error } = await supabase
-    .from('event_hosting_requests')
-    .update({
-      request_status: REQUEST_STATUS.DELAYED,
-      delay_reason: reason,
-      delay_revisit_date: revisitDate,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', requestId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-/**
- * Reactivate a delayed request
- */
-async function reactivateRequest(requestId) {
-  const { data, error } = await supabase
-    .from('event_hosting_requests')
-    .update({
-      request_status: REQUEST_STATUS.SUBMITTED,
-      delay_reason: null,
-      delay_revisit_date: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', requestId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
 
 /**
  * Archive an event request
@@ -1144,8 +1103,6 @@ export const eventService = {
   approveRequest,
   saveTerms,
   denyRequest,
-  delayRequest,
-  reactivateRequest,
   archiveRequest,
   unarchiveRequest,
   toggleTestFlag,

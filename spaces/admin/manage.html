@@ -7242,18 +7242,6 @@
       }
     };
 
-    window.delayApplication = async function() {
-      if (!currentApplicationId) return;
-      const reason = prompt('Reason for delay (optional):');
-      try {
-        await rentalService.delayApplication(currentApplicationId, reason);
-        await loadApplications();
-        closeRentalDetail();
-        showToast('Application delayed', 'success');
-      } catch (error) {
-        showToast('Error: ' + error.message, 'error');
-      }
-    };
 
     window.generateAgreement = async function() {
       switchDetailTab('documents');
@@ -7894,7 +7882,6 @@
         deposit: [],
         ready: [],
         denied: [],
-        delayed: [],
         complete: [],
       };
 
@@ -7920,18 +7907,17 @@
         }
       });
 
-      // Render denied/delayed section
-      const deniedDelayed = [...stages.denied, ...stages.delayed];
-      const deniedDelayedList = document.getElementById('eventDeniedDelayedList');
-      const deniedDelayedCount = document.getElementById('eventDeniedDelayedCount');
+      // Render denied section
+      const deniedList = document.getElementById('eventDeniedList');
+      const deniedCountEl = document.getElementById('eventDeniedCount');
 
-      if (deniedDelayedList) {
-        deniedDelayedList.innerHTML = deniedDelayed.length === 0
-          ? '<p class="text-muted">No denied or delayed requests</p>'
-          : deniedDelayed.map(req => renderEventCard(req, true)).join('');
+      if (deniedList) {
+        deniedList.innerHTML = stages.denied.length === 0
+          ? '<p class="text-muted">No denied requests</p>'
+          : stages.denied.map(req => renderEventCard(req, true)).join('');
       }
-      if (deniedDelayedCount) {
-        deniedDelayedCount.textContent = deniedDelayed.length;
+      if (deniedCountEl) {
+        deniedCountEl.textContent = stages.denied.length;
       }
     }
 
@@ -8401,9 +8387,6 @@
           buttons.push('<button class="btn-primary" onclick="markEventCompleted()">Mark Complete</button>');
           break;
 
-        case 'delayed':
-          buttons.push('<button class="btn-primary" onclick="reactivateEventRequest()">Reactivate</button>');
-          break;
       }
 
       // Archive button for all
@@ -8580,32 +8563,6 @@
       }
     }
 
-    async function delayEventRequest() {
-      const reason = prompt('Enter delay reason:');
-      if (!reason) return;
-
-      try {
-        await eventService.delayRequest(currentEventRequestId, reason);
-        allEventRequests = await eventService.getRequests();
-        renderEventPipeline();
-        closeEventDetail();
-        showToast('Event request delayed', 'success');
-      } catch (e) {
-        showToast('Error: ' + e.message, 'error');
-      }
-    }
-
-    async function reactivateEventRequest() {
-      try {
-        await eventService.reactivateRequest(currentEventRequestId);
-        allEventRequests = await eventService.getRequests();
-        renderEventPipeline();
-        closeEventDetail();
-        showToast('Event request reactivated', 'success');
-      } catch (e) {
-        showToast('Error: ' + e.message, 'error');
-      }
-    }
 
     async function archiveEventRequest() {
       if (!confirm('Archive this event request?')) return;
