@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260206.06</span>
+        <span class="app-version">v260206.07</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -1310,6 +1310,462 @@
               <span class="pipeline-count" id="readyCount">0</span>
             </div>
             <div class="pipeline-cards" id="readyCards"></div>
+          </div>
+        </div>
+
+        <!-- Applicant Detail Page (standalone, replaces modal) -->
+        <div id="applicantDetailPage" class="applicant-detail-page hidden">
+          <!-- Back button + header -->
+          <div class="applicant-detail-header">
+            <button class="btn-back" id="backToPipeline">&larr; Back to Pipeline</button>
+            <div class="applicant-header-info">
+              <div class="applicant-header-left">
+                <div id="detailPhotoGroup" class="applicant-photo-group" style="display: none;">
+                  <img id="detailPhoto" src="" alt="" class="applicant-photo-large">
+                </div>
+                <div>
+                  <h2 id="detailTitle" class="applicant-name"></h2>
+                  <div class="applicant-header-meta">
+                    <span id="detailStatus" class="status-badge"></span>
+                    <span id="detailTestBadge" class="status-badge test" style="display: none; background: #f59e0b; color: white;">TEST</span>
+                    <span id="detailEmail" class="meta-item"></span>
+                    <span id="detailPhone" class="meta-item"></span>
+                    <span id="detailSubmittedAt" class="meta-item text-muted"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Tracker -->
+          <div id="detailStatusTracker" class="status-tracker">
+            <div class="tracker-step" id="detailTrackerTerms">
+              <div class="tracker-icon">📋</div>
+              <div class="tracker-label">Terms</div>
+              <div class="tracker-detail" id="detailTrackerTermsDetail">—</div>
+            </div>
+            <div class="tracker-connector"></div>
+            <div class="tracker-step" id="detailTrackerAgreement">
+              <div class="tracker-icon">📄</div>
+              <div class="tracker-label">Agreement</div>
+              <div class="tracker-detail" id="detailTrackerAgreementDetail">—</div>
+            </div>
+            <div class="tracker-connector"></div>
+            <div class="tracker-step" id="detailTrackerDeposit">
+              <div class="tracker-icon">💰</div>
+              <div class="tracker-label">Deposit</div>
+              <div class="tracker-detail" id="detailTrackerDepositDetail">—</div>
+            </div>
+            <div class="tracker-connector"></div>
+            <div class="tracker-step" id="detailTrackerMoveIn">
+              <div class="tracker-icon">🏠</div>
+              <div class="tracker-label">Move-in</div>
+              <div class="tracker-detail" id="detailTrackerMoveInDetail">—</div>
+            </div>
+          </div>
+
+          <!-- Detail tabs -->
+          <div class="detail-tabs">
+            <button class="detail-tab active" data-detail-tab="applicant">Applicant</button>
+            <button class="detail-tab" data-detail-tab="terms">Terms</button>
+            <button class="detail-tab" data-detail-tab="documents">Documents</button>
+            <button class="detail-tab" data-detail-tab="deposits">Deposits</button>
+            <button class="detail-tab" data-detail-tab="rent">Rent</button>
+            <button class="detail-tab" data-detail-tab="history">History</button>
+          </div>
+
+          <!-- ========== APPLICANT TAB (Expanded) ========== -->
+          <div id="applicantTab" class="detail-tab-content active">
+            <!-- Contact Info -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Contact Information</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Name</label>
+                  <p id="detailApplicantName">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Email</label>
+                  <p id="detailApplicantEmail">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Phone</label>
+                  <p id="detailApplicantPhone">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Date of Birth</label>
+                  <p id="detailApplicantDOB">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Community Fit Responses -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Community Fit Responses</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Preferred Accommodation</label>
+                  <p id="detailPreferredAccomm">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Desired Timeframe</label>
+                  <p id="detailDesiredTimeframe">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Volunteer Interest</label>
+                  <p id="detailVolunteerInterest">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Referral Source</label>
+                  <p id="detailReferralSource">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Co-living Experience</label>
+                  <p id="detailColivingExp" class="detail-longtext">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Life Focus / Goals / Dreams</label>
+                  <p id="detailLifeFocus" class="detail-longtext">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Visiting Guide Response</label>
+                  <p id="detailVisitingGuide" class="detail-longtext">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desired Housing -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Desired Housing</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Preferred Space</label>
+                  <p id="detailDesiredSpace">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Desired Move-in</label>
+                  <p id="detailDesiredMoveIn">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Desired Term</label>
+                  <p id="detailDesiredTerm">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Financial Information -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Financial Information</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Employment Status</label>
+                  <p id="detailEmploymentStatus">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Employer</label>
+                  <p id="detailEmployer">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Monthly Income</label>
+                  <p id="detailMonthlyIncome">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Deposit Return Method</label>
+                  <p id="detailDepositReturnMethod">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Previous Residence -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Previous Residence</h3>
+              <div class="detail-grid" id="detailPrevResidence">
+                <div class="detail-field full-width">
+                  <label>Address</label>
+                  <p id="detailPrevAddress">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Move-in Date</label>
+                  <p id="detailPrevStartDate">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Move-out Date</label>
+                  <p id="detailPrevEndDate">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Landlord Name</label>
+                  <p id="detailLandlordName">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Landlord Contact</label>
+                  <p id="detailLandlordContact">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Reason for Leaving</label>
+                  <p id="detailReasonForLeaving">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Prior Evictions</label>
+                  <p id="detailPriorEvictions">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Household -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Household</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Partner Email</label>
+                  <p id="detailPartnerEmail">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Children's Ages</label>
+                  <p id="detailKidsAges">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Property Details -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Property Details</h3>
+              <div class="detail-grid">
+                <div class="detail-field full-width">
+                  <label>Vehicles</label>
+                  <p id="detailVehicles">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Pets</label>
+                  <p id="detailPets">-</p>
+                </div>
+                <div class="detail-field full-width">
+                  <label>Allergies</label>
+                  <p id="detailAllergies">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Social Profiles -->
+            <div class="detail-section">
+              <h3 class="detail-section-title">Social Profiles</h3>
+              <div class="detail-grid">
+                <div class="detail-field">
+                  <label>Instagram</label>
+                  <p id="detailInstagram">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>Facebook</label>
+                  <p id="detailFacebook">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>X (Twitter)</label>
+                  <p id="detailXHandle">-</p>
+                </div>
+                <div class="detail-field">
+                  <label>MySpace</label>
+                  <p id="detailMyspace">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== TERMS TAB ========== -->
+          <div id="termsTab" class="detail-tab-content">
+            <form id="termsForm" class="terms-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="termSpace">Space <span class="required">*</span></label>
+                  <select id="termSpace" required>
+                    <option value="">Select space...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="termRate">Rate <span class="required">*</span></label>
+                  <div class="rate-input-group">
+                    <span class="rate-prefix">$</span>
+                    <input type="number" id="termRate" min="0" step="1" required>
+                    <select id="termRateTerm">
+                      <option value="monthly">/ month</option>
+                      <option value="weekly">/ week</option>
+                      <option value="nightly">/ night</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="termMoveIn">Move-in Date <span class="required">*</span></label>
+                  <input type="date" id="termMoveIn" required>
+                </div>
+                <div class="form-group">
+                  <label for="termLeaseEnd">Lease End Date</label>
+                  <input type="date" id="termLeaseEnd">
+                  <small class="form-hint">Leave blank for open-ended</small>
+                </div>
+                <div class="form-group">
+                  <label for="termNoticePeriod">Termination Notice</label>
+                  <select id="termNoticePeriod">
+                    <option value="none">None (fixed-length lease)</option>
+                    <option value="1_day">1 day notice</option>
+                    <option value="1_week">1 week notice</option>
+                    <option value="30_days" selected>30 days notice</option>
+                    <option value="60_days">60 days notice</option>
+                  </select>
+                  <small class="form-hint">Required notice to terminate. Select "None" for fixed-length leases.</small>
+                </div>
+                <div class="form-group">
+                  <label for="termSecurityDeposit">Security Deposit</label>
+                  <input type="number" id="termSecurityDeposit" min="0" step="1" value="0">
+                  <small class="form-hint">Can be $0. Due at move-in.</small>
+                </div>
+                <div class="form-group">
+                  <label for="termReservationDeposit">Reservation Deposit</label>
+                  <input type="number" id="termReservationDeposit" min="0" step="1" value="0">
+                  <small class="form-hint">Due after signing. Defaults to 1 month's rent. Credited to first month.</small>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 1rem;">
+                <label for="termAdditionalTerms">Additional Terms</label>
+                <textarea id="termAdditionalTerms" rows="4" placeholder="Any additional terms or conditions to include in the rental agreement..."></textarea>
+                <small class="form-hint">Will appear in the "Additional Terms" section of the rental agreement.</small>
+              </div>
+              <div class="terms-save-row" style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <button type="button" id="saveTermsBtn" class="btn-small btn-primary">Save Terms</button>
+                <span id="termsSaveStatus" class="save-status"></span>
+              </div>
+            </form>
+          </div>
+
+          <!-- ========== DOCUMENTS TAB ========== -->
+          <div id="documentsTab" class="detail-tab-content">
+            <div class="documents-section">
+              <div class="document-status">
+                <h4>Rental Agreement Status</h4>
+                <p id="agreementStatusDisplay" class="status-badge">Pending</p>
+              </div>
+              <div id="generateSection" class="generate-section">
+                <h4>Generate Lease Agreement</h4>
+                <p class="text-muted" style="margin-bottom: 1rem;">Preview the lease agreement and generate a PDF for signing.</p>
+                <div id="leasePreviewContainer" class="lease-preview-container">
+                  <div id="leasePreview" class="lease-preview"></div>
+                </div>
+                <div class="generate-actions" style="margin-top: 1rem;">
+                  <button type="button" id="previewLeaseBtn" class="btn-small">Preview Agreement</button>
+                  <button type="button" id="generatePdfBtn" class="btn-small btn-primary">Generate PDF</button>
+                </div>
+                <p id="noTemplateWarning" class="warning-text" style="display: none; margin-top: 0.5rem;">
+                  No active lease template found. <a href="#" id="createTemplateLink">Create one</a> in the Templates section.
+                </p>
+              </div>
+              <div id="pdfSection" class="pdf-section" style="display: none;">
+                <h4>Current Document</h4>
+                <div class="pdf-info">
+                  <a id="pdfDownloadLink" href="#" target="_blank" class="pdf-link">
+                    <span class="pdf-icon">📄</span>
+                    <span id="pdfFilename">lease-agreement.pdf</span>
+                  </a>
+                  <span id="pdfGeneratedAt" class="text-muted"></span>
+                </div>
+                <div class="pdf-actions" style="margin-top: 1rem;">
+                  <button type="button" id="sendForSignatureBtn" class="btn-small btn-primary">Send for Signature</button>
+                </div>
+              </div>
+              <div id="signatureSection" class="signature-section" style="display: none;">
+                <h4>Signature Status</h4>
+                <p id="signatureStatusText">Awaiting signature...</p>
+                <div id="signedPdfSection" style="display: none; margin-top: 1rem;">
+                  <a id="signedPdfLink" href="#" target="_blank" class="pdf-link">
+                    <span class="pdf-icon">✅</span>
+                    <span id="signedPdfFilename">Download Signed Agreement</span>
+                  </a>
+                </div>
+                <div class="signature-actions" style="margin-top: 1rem;">
+                  <button type="button" id="checkSignatureStatusBtn" class="btn-small">Check Status</button>
+                  <button type="button" id="resendSignatureBtn" class="btn-small">Resend Request</button>
+                </div>
+              </div>
+              <details class="legacy-section" style="margin-top: 1.5rem;">
+                <summary class="text-muted" style="cursor: pointer;">Manual Document Entry</summary>
+                <div style="padding-top: 1rem;">
+                  <div class="form-group">
+                    <label for="agreementDocUrl">Document URL</label>
+                    <input type="text" id="agreementDocUrl" placeholder="Paste document URL manually...">
+                  </div>
+                  <div class="document-actions" style="margin-top: 1rem;">
+                    <button type="button" id="markAgreementGenerated" class="btn-small">Mark as Generated</button>
+                    <button type="button" id="markAgreementSent" class="btn-small">Mark as Sent</button>
+                    <button type="button" id="markAgreementSigned" class="btn-small btn-primary">Mark as Signed</button>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- ========== DEPOSITS TAB ========== -->
+          <div id="depositsTab" class="detail-tab-content">
+            <div id="applicationFeeSection" class="application-fee-section hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--success-light); border-radius: var(--radius); border-left: 4px solid var(--success);">
+              <h4 style="margin: 0 0 0.5rem 0; color: var(--success);">Application Fee Received</h4>
+              <p style="margin: 0; font-size: 0.9rem;">
+                <strong id="applicationFeeAmount">$0</strong> application fee paid
+                <span id="applicationFeeCode" class="hidden"> (code: <code id="applicationFeeCodeValue"></code>)</span>
+              </p>
+              <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                This will be credited toward the first month's rent. Amount due: <strong id="firstMonthDueAmount">$0</strong>
+              </p>
+            </div>
+            <div class="deposits-grid">
+              <div class="deposit-card">
+                <h4>Move-in Deposit</h4>
+                <p class="deposit-amount" id="moveInDepositAmount">$0</p>
+                <p class="deposit-status" id="moveInDepositStatus">Pending</p>
+                <button type="button" id="recordMoveInDepositBtn" class="btn-small btn-primary">Record Payment</button>
+              </div>
+              <div class="deposit-card">
+                <h4>Security Deposit</h4>
+                <p class="deposit-amount" id="securityDepositAmount">$0</p>
+                <p class="deposit-status" id="securityDepositStatus">Pending</p>
+                <button type="button" id="recordSecurityDepositBtn" class="btn-small btn-primary">Record Payment</button>
+              </div>
+            </div>
+            <div class="proration-section" style="margin-top: 1.5rem;">
+              <h4>Proration Calculator</h4>
+              <div id="prorationDetails" class="proration-details"></div>
+            </div>
+            <div class="deposit-request-section" style="margin-top: 1.5rem;">
+              <h4>Request Deposit</h4>
+              <button type="button" id="copyDepositRequestBtn" class="btn-small">Copy Payment Instructions</button>
+              <button type="button" id="markDepositRequestedBtn" class="btn-small">Mark as Requested</button>
+              <button type="button" id="confirmDepositBtn" class="btn-small btn-primary">Confirm Deposit</button>
+            </div>
+          </div>
+
+          <!-- ========== RENT TAB ========== -->
+          <div id="rentTab" class="detail-tab-content">
+            <div class="rent-summary">
+              <p><strong>Monthly Rent:</strong> <span id="rentMonthlyAmount">$0</span></p>
+            </div>
+            <div class="rent-history" style="margin-top: 1rem;">
+              <h4>Payment History</h4>
+              <table id="rentHistoryTable" class="data-table">
+                <thead>
+                  <tr><th>Period</th><th>Amount</th><th>Paid</th><th>Method</th></tr>
+                </thead>
+                <tbody id="rentHistoryBody">
+                  <tr><td colspan="4" class="text-muted">No payments recorded</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" id="recordRentPaymentBtn" class="btn-small btn-primary" style="margin-top: 1rem;">Record Rent Payment</button>
+          </div>
+
+          <!-- ========== HISTORY TAB ========== -->
+          <div id="historyTab" class="detail-tab-content">
+            <div id="applicationHistory" class="application-history">
+              <p class="text-muted">Application timeline will appear here.</p>
+            </div>
+          </div>
+
+          <!-- Action buttons footer -->
+          <div class="applicant-detail-footer">
+            <div id="rentalActions" class="rental-action-buttons"></div>
           </div>
         </div>
 
@@ -2453,327 +2909,7 @@
   </div>
 
   <!-- Rental Application Detail Modal -->
-  <div id="rentalDetailModal" class="modal hidden">
-    <div class="modal-content modal-large">
-      <div class="modal-header">
-        <h2 id="rentalDetailTitle">Application Details</h2>
-        <span id="rentalDetailStatus" class="status-badge"></span>
-        <span id="rentalDetailTestBadge" class="status-badge test" style="display: none; background: #f59e0b; color: white;">TEST</span>
-        <button class="modal-close" id="closeRentalDetail">&times;</button>
-      </div>
-      <div class="modal-body">
-        <!-- Modal tabs -->
-        <div class="detail-tabs">
-          <button class="detail-tab active" data-detail-tab="applicant">Applicant</button>
-          <button class="detail-tab" data-detail-tab="terms">Terms</button>
-          <button class="detail-tab" data-detail-tab="documents">Documents</button>
-          <button class="detail-tab" data-detail-tab="deposits">Deposits</button>
-          <button class="detail-tab" data-detail-tab="rent">Rent</button>
-          <button class="detail-tab" data-detail-tab="history">History</button>
-        </div>
-
-        <!-- Status Tracker -->
-        <div id="rentalStatusTracker" class="status-tracker">
-          <div class="tracker-step" id="trackerTerms">
-            <div class="tracker-icon">📋</div>
-            <div class="tracker-label">Terms</div>
-            <div class="tracker-detail" id="trackerTermsDetail">—</div>
-          </div>
-          <div class="tracker-connector"></div>
-          <div class="tracker-step" id="trackerAgreement">
-            <div class="tracker-icon">📄</div>
-            <div class="tracker-label">Agreement</div>
-            <div class="tracker-detail" id="trackerAgreementDetail">—</div>
-          </div>
-          <div class="tracker-connector"></div>
-          <div class="tracker-step" id="trackerDeposit">
-            <div class="tracker-icon">💰</div>
-            <div class="tracker-label">Deposit</div>
-            <div class="tracker-detail" id="trackerDepositDetail">—</div>
-          </div>
-          <div class="tracker-connector"></div>
-          <div class="tracker-step" id="trackerMoveIn">
-            <div class="tracker-icon">🏠</div>
-            <div class="tracker-label">Move-in</div>
-            <div class="tracker-detail" id="trackerMoveInDetail">—</div>
-          </div>
-        </div>
-
-        <!-- Applicant Tab -->
-        <div id="applicantTab" class="detail-tab-content active">
-          <div class="applicant-info">
-            <div class="form-grid">
-              <div class="info-group" id="applicantPhotoGroup" style="display: none; grid-column: 1 / -1;">
-                <img id="applicantPhoto" src="" alt="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-              </div>
-              <div class="info-group">
-                <label>Name</label>
-                <p id="applicantName">-</p>
-              </div>
-              <div class="info-group">
-                <label>Email</label>
-                <p id="applicantEmail">-</p>
-              </div>
-              <div class="info-group">
-                <label>Phone</label>
-                <p id="applicantPhone">-</p>
-              </div>
-              <div class="info-group">
-                <label>Desired Space</label>
-                <p id="applicantDesiredSpace">-</p>
-              </div>
-              <div class="info-group">
-                <label>Desired Move-in</label>
-                <p id="applicantDesiredMoveIn">-</p>
-              </div>
-              <div class="info-group">
-                <label>Submitted</label>
-                <p id="applicantSubmittedAt">-</p>
-              </div>
-            </div>
-            <!-- Community Fit fields (shown for inquiries) -->
-            <div id="communityFitFields" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-              <h3 style="font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 0.75rem;">Community Fit Responses</h3>
-              <div class="form-grid">
-                <div class="info-group">
-                  <label>Preferred Accommodation</label>
-                  <p id="applicantPreferredAccomm">-</p>
-                </div>
-                <div class="info-group">
-                  <label>Desired Timeframe</label>
-                  <p id="applicantDesiredTimeframe">-</p>
-                </div>
-                <div class="info-group">
-                  <label>Volunteer Interest</label>
-                  <p id="applicantVolunteerInterest">-</p>
-                </div>
-                <div class="info-group full-width">
-                  <label>Co-living Experience</label>
-                  <p id="applicantColivingExp" style="white-space: pre-wrap;">-</p>
-                </div>
-                <div class="info-group full-width">
-                  <label>Life Focus / Goals / Dreams</label>
-                  <p id="applicantLifeFocus" style="white-space: pre-wrap;">-</p>
-                </div>
-                <div class="info-group full-width">
-                  <label>Visiting Guide Response</label>
-                  <p id="applicantVisitingGuide" style="white-space: pre-wrap;">-</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Terms Tab -->
-        <div id="termsTab" class="detail-tab-content">
-          <form id="termsForm" class="terms-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="termSpace">Space <span class="required">*</span></label>
-                <select id="termSpace" required>
-                  <option value="">Select space...</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="termRate">Rate <span class="required">*</span></label>
-                <div class="rate-input-group">
-                  <span class="rate-prefix">$</span>
-                  <input type="number" id="termRate" min="0" step="1" required>
-                  <select id="termRateTerm">
-                    <option value="monthly">/ month</option>
-                    <option value="weekly">/ week</option>
-                    <option value="nightly">/ night</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="termMoveIn">Move-in Date <span class="required">*</span></label>
-                <input type="date" id="termMoveIn" required>
-              </div>
-              <div class="form-group">
-                <label for="termLeaseEnd">Lease End Date</label>
-                <input type="date" id="termLeaseEnd">
-                <small class="form-hint">Leave blank for open-ended</small>
-              </div>
-              <div class="form-group">
-                <label for="termNoticePeriod">Termination Notice</label>
-                <select id="termNoticePeriod">
-                  <option value="none">None (fixed-length lease)</option>
-                  <option value="1_day">1 day notice</option>
-                  <option value="1_week">1 week notice</option>
-                  <option value="30_days" selected>30 days notice</option>
-                  <option value="60_days">60 days notice</option>
-                </select>
-                <small class="form-hint">Required notice to terminate. Select "None" for fixed-length leases.</small>
-              </div>
-              <div class="form-group">
-                <label for="termSecurityDeposit">Security Deposit</label>
-                <input type="number" id="termSecurityDeposit" min="0" step="1" value="0">
-                <small class="form-hint">Can be $0. Due at move-in.</small>
-              </div>
-              <div class="form-group">
-                <label for="termReservationDeposit">Reservation Deposit</label>
-                <input type="number" id="termReservationDeposit" min="0" step="1" value="0">
-                <small class="form-hint">Due after signing. Defaults to 1 month's rent. Credited to first month.</small>
-              </div>
-            </div>
-            <div class="form-group" style="margin-top: 1rem;">
-              <label for="termAdditionalTerms">Additional Terms</label>
-              <textarea id="termAdditionalTerms" rows="4" placeholder="Any additional terms or conditions to include in the rental agreement..."></textarea>
-              <small class="form-hint">Will appear in the "Additional Terms" section of the rental agreement.</small>
-            </div>
-            <div class="terms-save-row" style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem;">
-              <button type="button" id="saveTermsBtn" class="btn-small btn-primary">Save Terms</button>
-              <span id="termsSaveStatus" class="save-status"></span>
-            </div>
-          </form>
-        </div>
-
-        <!-- Documents Tab -->
-        <div id="documentsTab" class="detail-tab-content">
-          <div class="documents-section">
-            <!-- Agreement Status -->
-            <div class="document-status">
-              <h4>Rental Agreement Status</h4>
-              <p id="agreementStatusDisplay" class="status-badge">Pending</p>
-            </div>
-
-            <!-- Generate Section (always shown) -->
-            <div id="generateSection" class="generate-section">
-              <h4>Generate Lease Agreement</h4>
-              <p class="text-muted" style="margin-bottom: 1rem;">Preview the lease agreement and generate a PDF for signing.</p>
-              <div id="leasePreviewContainer" class="lease-preview-container">
-                <div id="leasePreview" class="lease-preview"></div>
-              </div>
-              <div class="generate-actions" style="margin-top: 1rem;">
-                <button type="button" id="previewLeaseBtn" class="btn-small">Preview Agreement</button>
-                <button type="button" id="generatePdfBtn" class="btn-small btn-primary">Generate PDF</button>
-              </div>
-              <p id="noTemplateWarning" class="warning-text" style="display: none; margin-top: 0.5rem;">
-                No active lease template found. <a href="#" id="createTemplateLink">Create one</a> in the Templates section.
-              </p>
-            </div>
-
-            <!-- Generated PDF Section (shown after PDF is generated) -->
-            <div id="pdfSection" class="pdf-section" style="display: none;">
-              <h4>Current Document</h4>
-              <div class="pdf-info">
-                <a id="pdfDownloadLink" href="#" target="_blank" class="pdf-link">
-                  <span class="pdf-icon">📄</span>
-                  <span id="pdfFilename">lease-agreement.pdf</span>
-                </a>
-                <span id="pdfGeneratedAt" class="text-muted"></span>
-              </div>
-              <div class="pdf-actions" style="margin-top: 1rem;">
-                <button type="button" id="sendForSignatureBtn" class="btn-small btn-primary">Send for Signature</button>
-              </div>
-            </div>
-
-            <!-- Signature Section (shown after sent for signature) -->
-            <div id="signatureSection" class="signature-section" style="display: none;">
-              <h4>Signature Status</h4>
-              <p id="signatureStatusText">Awaiting signature...</p>
-              <div id="signedPdfSection" style="display: none; margin-top: 1rem;">
-                <a id="signedPdfLink" href="#" target="_blank" class="pdf-link">
-                  <span class="pdf-icon">✅</span>
-                  <span id="signedPdfFilename">Download Signed Agreement</span>
-                </a>
-              </div>
-              <div class="signature-actions" style="margin-top: 1rem;">
-                <button type="button" id="checkSignatureStatusBtn" class="btn-small">Check Status</button>
-                <button type="button" id="resendSignatureBtn" class="btn-small">Resend Request</button>
-              </div>
-            </div>
-
-            <!-- Legacy Manual Section (collapsible, for backwards compatibility) -->
-            <details class="legacy-section" style="margin-top: 1.5rem;">
-              <summary class="text-muted" style="cursor: pointer;">Manual Document Entry</summary>
-              <div style="padding-top: 1rem;">
-                <div class="form-group">
-                  <label for="agreementDocUrl">Document URL</label>
-                  <input type="text" id="agreementDocUrl" placeholder="Paste document URL manually...">
-                </div>
-                <div class="document-actions" style="margin-top: 1rem;">
-                  <button type="button" id="markAgreementGenerated" class="btn-small">Mark as Generated</button>
-                  <button type="button" id="markAgreementSent" class="btn-small">Mark as Sent</button>
-                  <button type="button" id="markAgreementSigned" class="btn-small btn-primary">Mark as Signed</button>
-                </div>
-              </div>
-            </details>
-          </div>
-        </div>
-
-        <!-- Deposits Tab -->
-        <div id="depositsTab" class="detail-tab-content">
-          <!-- Application Fee Credit (if paid) -->
-          <div id="applicationFeeSection" class="application-fee-section hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--success-light); border-radius: var(--radius); border-left: 4px solid var(--success);">
-            <h4 style="margin: 0 0 0.5rem 0; color: var(--success);">Application Fee Received</h4>
-            <p style="margin: 0; font-size: 0.9rem;">
-              <strong id="applicationFeeAmount">$0</strong> application fee paid
-              <span id="applicationFeeCode" class="hidden"> (code: <code id="applicationFeeCodeValue"></code>)</span>
-            </p>
-            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
-              This will be credited toward the first month's rent. Amount due: <strong id="firstMonthDueAmount">$0</strong>
-            </p>
-          </div>
-
-          <div class="deposits-grid">
-            <div class="deposit-card">
-              <h4>Move-in Deposit</h4>
-              <p class="deposit-amount" id="moveInDepositAmount">$0</p>
-              <p class="deposit-status" id="moveInDepositStatus">Pending</p>
-              <button type="button" id="recordMoveInDepositBtn" class="btn-small btn-primary">Record Payment</button>
-            </div>
-            <div class="deposit-card">
-              <h4>Security Deposit</h4>
-              <p class="deposit-amount" id="securityDepositAmount">$0</p>
-              <p class="deposit-status" id="securityDepositStatus">Pending</p>
-              <button type="button" id="recordSecurityDepositBtn" class="btn-small btn-primary">Record Payment</button>
-            </div>
-          </div>
-          <div class="proration-section" style="margin-top: 1.5rem;">
-            <h4>Proration Calculator</h4>
-            <div id="prorationDetails" class="proration-details"></div>
-          </div>
-          <div class="deposit-request-section" style="margin-top: 1.5rem;">
-            <h4>Request Deposit</h4>
-            <button type="button" id="copyDepositRequestBtn" class="btn-small">Copy Payment Instructions</button>
-            <button type="button" id="markDepositRequestedBtn" class="btn-small">Mark as Requested</button>
-            <button type="button" id="confirmDepositBtn" class="btn-small btn-primary">Confirm Deposit</button>
-          </div>
-        </div>
-
-        <!-- Rent Tab -->
-        <div id="rentTab" class="detail-tab-content">
-          <div class="rent-summary">
-            <p><strong>Monthly Rent:</strong> <span id="rentMonthlyAmount">$0</span></p>
-          </div>
-          <div class="rent-history" style="margin-top: 1rem;">
-            <h4>Payment History</h4>
-            <table id="rentHistoryTable" class="data-table">
-              <thead>
-                <tr><th>Period</th><th>Amount</th><th>Paid</th><th>Method</th></tr>
-              </thead>
-              <tbody id="rentHistoryBody">
-                <tr><td colspan="4" class="text-muted">No payments recorded</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <button type="button" id="recordRentPaymentBtn" class="btn-small btn-primary" style="margin-top: 1rem;">Record Rent Payment</button>
-        </div>
-
-        <!-- History Tab -->
-        <div id="historyTab" class="detail-tab-content">
-          <div id="applicationHistory" class="application-history">
-            <p class="text-muted">Application timeline will appear here.</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div id="rentalActions" class="rental-action-buttons"></div>
-      </div>
-    </div>
-  </div>
+  <!-- Rental Detail Modal removed - replaced by inline #applicantDetailPage in rentals panel -->
 
   <!-- Fee Code Modal -->
   <div id="feeCodeModal" class="modal hidden">
@@ -3634,9 +3770,26 @@
         if (tab) tab.click();
       };
 
-      // Handle URL hash navigation (e.g., #rentals, #events)
+      // Handle URL hash navigation (e.g., #rentals, #events, #applicant=<id>)
       function handleHashNavigation() {
         const hash = window.location.hash.replace('#', '');
+        // Check for applicant detail page (e.g., #applicant=<uuid>)
+        if (hash.startsWith('applicant=')) {
+          const appId = hash.split('=')[1];
+          if (appId) {
+            switchTab('rentals');
+            // Wait for rentals to load, then open the detail
+            const tryOpen = () => {
+              if (allApplications.length > 0) {
+                openRentalDetail(appId);
+              } else {
+                setTimeout(tryOpen, 200);
+              }
+            };
+            tryOpen();
+            return;
+          }
+        }
         const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings', 'faq', 'accounting'];
         if (hash && validTabs.includes(hash)) {
           switchTab(hash);
@@ -7245,8 +7398,47 @@
     }
 
     // =============================================
-    // RENTAL DETAIL MODAL
+    // RENTAL DETAIL PAGE (standalone, replaces modal)
     // =============================================
+
+    const VOLUNTEER_LABELS = {
+      'yes_actively': 'Yes, actively',
+      'yes_sometimes': 'Yes, sometimes',
+      'maybe': 'Maybe',
+      'no': 'Not at this time',
+    };
+
+    function showApplicantDetailPage() {
+      // Hide all sibling sections in the rentals panel
+      const panel = document.getElementById('rentalsPanel');
+      if (panel) {
+        Array.from(panel.children).forEach(child => {
+          if (child.id !== 'applicantDetailPage') {
+            child.dataset.wasHidden = child.classList.contains('hidden') ? '1' : '';
+            child.classList.add('hidden');
+          }
+        });
+      }
+      document.getElementById('applicantDetailPage').classList.remove('hidden');
+    }
+
+    function hideApplicantDetailPage() {
+      document.getElementById('applicantDetailPage').classList.add('hidden');
+      // Restore all sibling sections
+      const panel = document.getElementById('rentalsPanel');
+      if (panel) {
+        Array.from(panel.children).forEach(child => {
+          if (child.id !== 'applicantDetailPage') {
+            if (child.dataset.wasHidden !== '1') {
+              child.classList.remove('hidden');
+            }
+            delete child.dataset.wasHidden;
+          }
+        });
+      }
+      currentApplicationId = null;
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 
     async function openRentalDetail(applicationId, activeTab = 'applicant') {
       currentApplicationId = applicationId;
@@ -7257,53 +7449,102 @@
       const desiredSpace = app.desired_space;
       const approvedSpace = app.approved_space;
 
-      // Update modal header
-      document.getElementById('rentalDetailTitle').textContent =
-        `${person.first_name || ''} ${person.last_name || ''}`;
-      const statusBadge = document.getElementById('rentalDetailStatus');
+      // Update header
+      const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || '-';
+      document.getElementById('detailTitle').textContent = fullName;
+      const statusBadge = document.getElementById('detailStatus');
       statusBadge.textContent = app.application_status;
       statusBadge.className = `status-badge ${app.application_status}`;
 
-      // Show test badge if applicable
-      const testBadge = document.getElementById('rentalDetailTestBadge');
-      if (testBadge) {
-        testBadge.style.display = app.is_test ? 'inline-block' : 'none';
-      }
+      // Test badge
+      const testBadge = document.getElementById('detailTestBadge');
+      if (testBadge) testBadge.style.display = app.is_test ? 'inline-block' : 'none';
 
-      // Applicant tab
-      document.getElementById('applicantName').textContent =
-        `${person.first_name || ''} ${person.last_name || ''}`.trim() || '-';
-      document.getElementById('applicantEmail').textContent = person.email || '-';
-      document.getElementById('applicantPhone').textContent = person.phone || '-';
-      document.getElementById('applicantDesiredSpace').textContent = desiredSpace?.name || 'Flexible';
-      document.getElementById('applicantDesiredMoveIn').textContent =
-        app.desired_move_in ? rentalService.formatDate(app.desired_move_in) : '-';
-      document.getElementById('applicantSubmittedAt').textContent =
-        rentalService.formatDate(app.submitted_at || app.created_at);
+      // Header meta
+      document.getElementById('detailEmail').textContent = person.email || '-';
+      document.getElementById('detailPhone').textContent = person.phone || '-';
+      document.getElementById('detailSubmittedAt').textContent =
+        'Submitted: ' + rentalService.formatDate(app.submitted_at || app.created_at);
 
-      // Community Fit fields
-      const communityFitSection = document.getElementById('communityFitFields');
-      const photoGroup = document.getElementById('applicantPhotoGroup');
-      if (person.coliving_experience || person.life_focus || app.application_status === 'inquiry') {
-        communityFitSection.style.display = '';
-        document.getElementById('applicantColivingExp').textContent = person.coliving_experience || '-';
-        document.getElementById('applicantLifeFocus').textContent = person.life_focus || '-';
-        document.getElementById('applicantVisitingGuide').textContent = person.visiting_guide_response || '-';
-        document.getElementById('applicantDesiredTimeframe').textContent = person.desired_timeframe || '-';
-        document.getElementById('applicantPreferredAccomm').textContent =
-          ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || '-';
-        document.getElementById('applicantVolunteerInterest').textContent = person.volunteer_interest || '-';
-      } else {
-        communityFitSection.style.display = 'none';
-      }
+      // Photo
+      const photoGroup = document.getElementById('detailPhotoGroup');
       if (person.photo_url) {
         photoGroup.style.display = '';
-        document.getElementById('applicantPhoto').src = person.photo_url;
+        document.getElementById('detailPhoto').src = person.photo_url;
       } else {
         photoGroup.style.display = 'none';
       }
 
-      // Terms tab
+      // ===== APPLICANT TAB =====
+      // Contact Info
+      document.getElementById('detailApplicantName').textContent = fullName;
+      document.getElementById('detailApplicantEmail').textContent = person.email || '-';
+      document.getElementById('detailApplicantPhone').textContent = person.phone || '-';
+      document.getElementById('detailApplicantDOB').textContent =
+        person.date_of_birth ? rentalService.formatDate(person.date_of_birth) : '-';
+
+      // Community Fit
+      document.getElementById('detailPreferredAccomm').textContent =
+        ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || '-';
+      document.getElementById('detailDesiredTimeframe').textContent = person.desired_timeframe || '-';
+      document.getElementById('detailVolunteerInterest').textContent =
+        VOLUNTEER_LABELS[person.volunteer_interest] || person.volunteer_interest || '-';
+      document.getElementById('detailReferralSource').textContent = person.referral_source || '-';
+      document.getElementById('detailColivingExp').textContent = person.coliving_experience || '-';
+      document.getElementById('detailLifeFocus').textContent = person.life_focus || '-';
+      document.getElementById('detailVisitingGuide').textContent = person.visiting_guide_response || '-';
+
+      // Desired Housing
+      document.getElementById('detailDesiredSpace').textContent = desiredSpace?.name || 'Flexible';
+      document.getElementById('detailDesiredMoveIn').textContent =
+        app.desired_move_in ? rentalService.formatDate(app.desired_move_in) : '-';
+      document.getElementById('detailDesiredTerm').textContent = app.desired_term || '-';
+
+      // Financial
+      document.getElementById('detailEmploymentStatus').textContent = person.employment_status || '-';
+      document.getElementById('detailEmployer').textContent = person.employer || '-';
+      document.getElementById('detailMonthlyIncome').textContent =
+        person.monthly_income ? rentalService.formatCurrency(person.monthly_income) : '-';
+      document.getElementById('detailDepositReturnMethod').textContent = person.deposit_return_method || '-';
+
+      // Household
+      document.getElementById('detailPartnerEmail').textContent = person.partner_email || '-';
+      document.getElementById('detailKidsAges').textContent = person.kids_ages || '-';
+
+      // Property Details
+      document.getElementById('detailVehicles').textContent = person.vehicles || '-';
+      document.getElementById('detailPets').textContent = person.pets || '-';
+      document.getElementById('detailAllergies').textContent = person.allergies || '-';
+
+      // Social Profiles
+      document.getElementById('detailInstagram').textContent = person.instagram || '-';
+      document.getElementById('detailFacebook').textContent = person.facebook || '-';
+      document.getElementById('detailXHandle').textContent = person.x_handle || '-';
+      document.getElementById('detailMyspace').textContent = person.myspace || '-';
+
+      // Previous Residence (fetch from DB)
+      try {
+        const { data: prevResidences } = await supabase
+          .from('previous_residences')
+          .select('*')
+          .eq('person_id', person.id)
+          .limit(1);
+        const prev = prevResidences?.[0];
+        document.getElementById('detailPrevAddress').textContent = prev?.address || '-';
+        document.getElementById('detailPrevStartDate').textContent =
+          prev?.start_date ? rentalService.formatDate(prev.start_date) : '-';
+        document.getElementById('detailPrevEndDate').textContent =
+          prev?.end_date ? rentalService.formatDate(prev.end_date) : '-';
+        document.getElementById('detailLandlordName').textContent = prev?.landlord_name || '-';
+        document.getElementById('detailLandlordContact').textContent = prev?.landlord_contact || '-';
+        document.getElementById('detailReasonForLeaving').textContent = prev?.reason_for_leaving || '-';
+        document.getElementById('detailPriorEvictions').textContent =
+          prev ? (person.prior_evictions ? 'Yes' : 'No') : '-';
+      } catch (e) {
+        console.error('Error loading previous residence:', e);
+      }
+
+      // ===== TERMS TAB =====
       document.getElementById('termSpace').value = app.approved_space_id || app.desired_space_id || '';
       document.getElementById('termRate').value = app.approved_rate || approvedSpace?.monthly_rate || desiredSpace?.monthly_rate || '';
       document.getElementById('termRateTerm').value = app.approved_rate_term || 'monthly';
@@ -7311,28 +7552,23 @@
       document.getElementById('termLeaseEnd').value = app.approved_lease_end || '';
       document.getElementById('termNoticePeriod').value = app.notice_period || '30_days';
       document.getElementById('termSecurityDeposit').value = app.security_deposit_amount || 0;
-      // Reservation deposit defaults to the approved rate if not set
       const defaultReservationDeposit = app.approved_rate || approvedSpace?.monthly_rate || desiredSpace?.monthly_rate || 0;
       document.getElementById('termReservationDeposit').value = app.reservation_deposit_amount ?? defaultReservationDeposit;
       document.getElementById('termAdditionalTerms').value = app.additional_terms || '';
 
-      // Documents tab
+      // ===== DOCUMENTS TAB =====
       document.getElementById('agreementStatusDisplay').textContent =
         app.agreement_status || 'Pending';
       document.getElementById('agreementDocUrl').value = app.agreement_document_url || '';
-
-      // Update documents tab state
       await updateDocumentsTabState(app);
 
-      // Deposits tab - Application Fee Section
+      // ===== DEPOSITS TAB =====
       const appFeeSection = document.getElementById('applicationFeeSection');
       const appFeePaid = app.application_fee_paid && app.application_fee_amount > 0;
       if (appFeePaid) {
         appFeeSection.classList.remove('hidden');
         document.getElementById('applicationFeeAmount').textContent =
           rentalService.formatCurrency(app.application_fee_amount);
-
-        // Show code if used
         const codeSpan = document.getElementById('applicationFeeCode');
         if (app.application_fee_code) {
           codeSpan.classList.remove('hidden');
@@ -7340,8 +7576,6 @@
         } else {
           codeSpan.classList.add('hidden');
         }
-
-        // Calculate first month due
         const moveInAmount = app.move_in_deposit_amount || app.approved_rate || 0;
         const firstMonthDue = Math.max(0, moveInAmount - app.application_fee_amount);
         document.getElementById('firstMonthDueAmount').textContent =
@@ -7350,7 +7584,6 @@
         appFeeSection.classList.add('hidden');
       }
 
-      // Move-in and Security Deposits
       document.getElementById('moveInDepositAmount').textContent =
         rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
       document.getElementById('moveInDepositStatus').textContent =
@@ -7365,13 +7598,11 @@
       document.getElementById('securityDepositStatus').className =
         `deposit-status ${app.security_deposit_paid ? 'paid' : ''}`;
 
-      // Proration
       if (app.approved_move_in && app.approved_rate) {
         const proration = rentalService.calculateProration(app.approved_move_in, app.approved_rate);
         const application = rentalService.calculateDepositApplication(
           app.approved_move_in, app.approved_rate, app.security_deposit_amount || 0
         );
-
         document.getElementById('prorationDetails').innerHTML = `
           <p>Move-in: <strong>${rentalService.formatDate(app.approved_move_in)}</strong> (day ${proration.dayOfMonth} of ${proration.daysInMonth})</p>
           <p>Days remaining: <strong>${proration.daysRemaining}</strong></p>
@@ -7384,14 +7615,12 @@
         document.getElementById('prorationDetails').innerHTML = '<p class="text-muted">Set move-in date and rate to calculate proration.</p>';
       }
 
-      // Rent tab
+      // ===== RENT TAB =====
       document.getElementById('rentMonthlyAmount').textContent =
         rentalService.formatCurrency(app.approved_rate);
-
-      // Load rent payment history
       loadRentHistory(app.assignment_id);
 
-      // Update status tracker and action buttons
+      // Status tracker and action buttons
       updateRentalStatusTracker(app);
       updateRentalActions(app);
 
@@ -7403,57 +7632,61 @@
         }
       });
 
-      // Show modal
-      document.getElementById('rentalDetailModal').classList.remove('hidden');
+      // Show the detail page (hide pipeline)
+      showApplicantDetailPage();
+      history.replaceState(null, '', window.location.pathname + window.location.search + '#applicant=' + applicationId);
 
-      // Set active tab (preserves current tab when refreshing after actions)
+      // Set active tab
       switchDetailTab(activeTab);
+
+      // Scroll to top of page
+      window.scrollTo(0, 0);
     }
 
     function getActiveDetailTab() {
-      const active = document.querySelector('.detail-tab.active');
+      const active = document.querySelector('#applicantDetailPage .detail-tab.active');
       return active ? active.dataset.detailTab : 'applicant';
     }
 
     function switchDetailTab(tabName) {
-      document.querySelectorAll('.detail-tab').forEach(t => {
+      const page = document.getElementById('applicantDetailPage');
+      if (!page) return;
+      page.querySelectorAll('.detail-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.detailTab === tabName);
       });
-      document.querySelectorAll('.detail-tab-content').forEach(c => {
+      page.querySelectorAll('.detail-tab-content').forEach(c => {
         c.classList.toggle('active', c.id === tabName + 'Tab');
       });
     }
 
     function updateRentalStatusTracker(app) {
-      const tracker = document.getElementById('rentalStatusTracker');
-      if (!tracker) return;
-
       // Terms step
-      const termsStep = document.getElementById('trackerTerms');
-      const termsDetail = document.getElementById('trackerTermsDetail');
+      const termsStep = document.getElementById('detailTrackerTerms');
+      const termsDetail = document.getElementById('detailTrackerTermsDetail');
+      if (!termsStep) return;
       const hasTerms = app.approved_space_id && app.approved_rate && app.approved_move_in;
       termsStep.className = 'tracker-step ' + (hasTerms ? 'complete' : (app.application_status === 'approved' || app.application_status === 'under_review' ? 'active' : 'pending'));
       termsDetail.textContent = hasTerms ? 'Filled' : 'Incomplete';
 
       // Agreement step
-      const agreementStep = document.getElementById('trackerAgreement');
-      const agreementDetail = document.getElementById('trackerAgreementDetail');
+      const agreementStep = document.getElementById('detailTrackerAgreement');
+      const agreementDetail = document.getElementById('detailTrackerAgreementDetail');
       const agStatus = app.agreement_status || 'pending';
       const agLabels = { pending: 'Not started', generated: 'PDF generated', sent: 'Sent for signature', signed: 'Signed ✓' };
       agreementStep.className = 'tracker-step ' + (agStatus === 'signed' ? 'complete' : (agStatus !== 'pending' ? 'active' : 'pending'));
       agreementDetail.textContent = agLabels[agStatus] || agStatus;
 
       // Deposit step
-      const depositStep = document.getElementById('trackerDeposit');
-      const depositDetail = document.getElementById('trackerDepositDetail');
+      const depositStep = document.getElementById('detailTrackerDeposit');
+      const depositDetail = document.getElementById('detailTrackerDepositDetail');
       const depStatus = app.deposit_status || 'pending';
       const depLabels = { pending: 'Not started', requested: 'Requested', partial: 'Partial', received: 'Received', confirmed: 'Confirmed ✓' };
       depositStep.className = 'tracker-step ' + (depStatus === 'confirmed' ? 'complete' : (depStatus !== 'pending' ? 'active' : 'pending'));
       depositDetail.textContent = depLabels[depStatus] || depStatus;
 
       // Move-in step
-      const moveInStep = document.getElementById('trackerMoveIn');
-      const moveInDetail = document.getElementById('trackerMoveInDetail');
+      const moveInStep = document.getElementById('detailTrackerMoveIn');
+      const moveInDetail = document.getElementById('detailTrackerMoveInDetail');
       if (app.move_in_confirmed_at) {
         moveInStep.className = 'tracker-step complete';
         moveInDetail.textContent = 'Confirmed ✓';
@@ -7462,7 +7695,6 @@
         moveInDetail.textContent = 'Ready';
       } else {
         moveInStep.className = 'tracker-step pending';
-        // Show what's blocking
         const blockers = [];
         if (agStatus !== 'signed') blockers.push('agreement');
         if (depStatus !== 'confirmed') blockers.push('deposit');
@@ -7470,8 +7702,9 @@
       }
 
       // Update tab badges
-      const docsTab = document.querySelector('.detail-tab[data-detail-tab="documents"]');
-      const depsTab = document.querySelector('.detail-tab[data-detail-tab="deposits"]');
+      const page = document.getElementById('applicantDetailPage');
+      const docsTab = page?.querySelector('.detail-tab[data-detail-tab="documents"]');
+      const depsTab = page?.querySelector('.detail-tab[data-detail-tab="deposits"]');
       if (docsTab) {
         if (agStatus === 'signed') {
           docsTab.innerHTML = 'Documents <span class="tab-badge complete">✓</span>';
@@ -7577,8 +7810,7 @@
     }
 
     function closeRentalDetail() {
-      document.getElementById('rentalDetailModal').classList.add('hidden');
-      currentApplicationId = null;
+      hideApplicantDetailPage();
     }
 
     // =============================================
@@ -7591,8 +7823,13 @@
       if (!currentApplicationId) return;
       try {
         const result = await rentalService.inviteToApply(currentApplicationId);
+        // Send invite email
+        const app = allApplications.find(a => a.id === currentApplicationId);
+        if (app) {
+          await emailService.sendInviteToApply(app, result.continueUrl);
+        }
         await navigator.clipboard.writeText(result.continueUrl);
-        showToast('Application link copied to clipboard!', 'success');
+        showToast('Invitation email sent and link copied to clipboard!', 'success');
         await loadApplications();
         openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
@@ -11010,11 +11247,11 @@ If there are any problems or suggestions for improvements, please email them to 
       document.getElementById('savePaymentMethodBtn')?.addEventListener('click', savePaymentMethod);
       document.getElementById('deletePaymentMethodBtn')?.addEventListener('click', deletePaymentMethod);
 
-      // Rental detail modal
-      document.getElementById('closeRentalDetail')?.addEventListener('click', closeRentalDetail);
+      // Applicant detail page - back button
+      document.getElementById('backToPipeline')?.addEventListener('click', closeRentalDetail);
 
-      // Detail tabs
-      document.querySelectorAll('.detail-tab').forEach(tab => {
+      // Detail tabs (scoped to applicant detail page)
+      document.querySelectorAll('#applicantDetailPage .detail-tab').forEach(tab => {
         tab.addEventListener('click', () => switchDetailTab(tab.dataset.detailTab));
       });
 
@@ -11116,9 +11353,6 @@ If there are any problems or suggestions for improvements, please email them to 
       });
 
       // Close modals on backdrop click
-      document.getElementById('rentalDetailModal')?.addEventListener('click', (e) => {
-        if (e.target.id === 'rentalDetailModal') closeRentalDetail();
-      });
       document.getElementById('paymentMethodModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'paymentMethodModal') closePaymentMethodModal();
       });

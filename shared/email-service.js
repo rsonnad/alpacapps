@@ -27,6 +27,8 @@ export const EMAIL_TYPES = {
   EVENT_INVITATION: 'event_invitation',
   GENERAL_INVITATION: 'general_invitation',
   STAFF_INVITATION: 'staff_invitation',
+  // Rental invite
+  INVITE_TO_APPLY: 'invite_to_apply',
 };
 
 /**
@@ -313,6 +315,19 @@ export const emailService = {
       email,
       role,
       login_url: loginUrl,
+    });
+  },
+
+  /**
+   * Send invite-to-apply email with link to complete application
+   * @param {object} application - Rental application with person data
+   * @param {string} continueUrl - URL for the applicant to continue their application
+   */
+  async sendInviteToApply(application, continueUrl) {
+    const person = application.person || application;
+    return sendEmail(EMAIL_TYPES.INVITE_TO_APPLY, person.email, {
+      first_name: person.first_name,
+      continue_url: continueUrl,
     });
   },
 

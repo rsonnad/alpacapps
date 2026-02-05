@@ -33,7 +33,9 @@ type EmailType =
   // Bug reports
   | "bug_report_received"
   | "bug_report_fixed"
-  | "bug_report_failed";
+  | "bug_report_failed"
+  // Rental invite
+  | "invite_to_apply";
 
 interface EmailRequest {
   type: EmailType;
@@ -564,6 +566,37 @@ If you have any questions, reply to this email.
 
 Best regards,
 GenAlpaca Team`
+      };
+
+    // ===== RENTAL INVITE =====
+    case "invite_to_apply":
+      return {
+        subject: "You're Invited to Apply - Alpaca Playhouse",
+        html: `
+          <h2>Great news, ${data.first_name}!</h2>
+          <p>Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and would love for you to take the next step.</p>
+          <p>Please click the button below to complete your full application. The form will have your basic info already filled in.</p>
+          <p style="margin: 30px 0; text-align: center;">
+            <a href="${data.continue_url}" style="background: #3b8132; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
+          </p>
+          <p style="color: #666; font-size: 14px;">If you have any questions, feel free to reply to this email or reach out to us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a>.</p>
+          <p>Looking forward to hearing from you!</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Great news, ${data.first_name}!
+
+Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and would love for you to take the next step.
+
+Complete your application here: ${data.continue_url}
+
+The form will have your basic info already filled in.
+
+If you have any questions, feel free to reply to this email or reach out to us at alpacaplayhouse@gmail.com.
+
+Looking forward to hearing from you!
+
+Best regards,
+Alpaca Playhouse`
       };
 
     // ===== ADMIN NOTIFICATIONS =====
