@@ -990,6 +990,7 @@
         <button class="manage-tab" data-tab="users">Users</button>
         <button class="manage-tab" data-tab="templates">Templates</button>
         <button class="manage-tab" data-tab="settings">Settings</button>
+        <button class="manage-tab" data-tab="faq">FAQ & AI</button>
       </div>
 
       <!-- Spaces Panel -->
@@ -1836,6 +1837,12 @@
         </div>
 
       </div>
+
+      <!-- FAQ & AI Panel -->
+      <div id="faqPanel" class="manage-panel">
+        <iframe id="faqIframe" src="" style="width: 100%; border: none; min-height: 85vh;"></iframe>
+      </div>
+
     </div>
   </div>
 
@@ -3314,6 +3321,14 @@
           if (tab.dataset.tab === 'settings' && !settingsLoaded) {
             loadSettingsPanel();
           }
+
+          // Load FAQ iframe when switching to FAQ tab
+          if (tab.dataset.tab === 'faq') {
+            const iframe = document.getElementById('faqIframe');
+            if (!iframe.src || iframe.src === window.location.href) {
+              iframe.src = 'faq.html?embed=1';
+            }
+          }
         });
       });
 
@@ -3326,7 +3341,7 @@
       // Handle URL hash navigation (e.g., #rentals, #events)
       function handleHashNavigation() {
         const hash = window.location.hash.replace('#', '');
-        const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings'];
+        const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings', 'faq'];
         if (hash && validTabs.includes(hash)) {
           switchTab(hash);
         }

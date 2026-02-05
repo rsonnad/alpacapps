@@ -1,6 +1,6 @@
 // FAQ Management Page
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
-import { initAuth, getCurrentUser, getCurrentRole } from '../shared/auth.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+import { initAuth, getAuthState } from '../../shared/auth.js';
 
 // State
 let faqEntries = [];
@@ -14,6 +14,9 @@ const unauthorizedOverlay = document.getElementById('unauthorizedOverlay');
 const appContent = document.getElementById('appContent');
 const toastContainer = document.getElementById('toastContainer');
 
+// Check if running in embed mode (inside iframe)
+const isEmbed = new URLSearchParams(window.location.search).has('embed');
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -23,6 +26,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadingOverlay.classList.add('hidden');
       unauthorizedOverlay.classList.remove('hidden');
       return;
+    }
+
+    // Hide header in embed mode
+    if (isEmbed) {
+      const header = document.querySelector('header');
+      if (header) header.style.display = 'none';
+      const backLink = document.querySelector('.back-link');
+      if (backLink) backLink.style.display = 'none';
     }
 
     // Set up user info
@@ -709,7 +720,7 @@ async function recompileContext() {
       .upsert({
         id: 1,
         last_compiled_at: new Date().toISOString(),
-        compiled_by: getCurrentUser()?.email,
+        compiled_by: getAuthState()?.user?.email,
         entry_count: context.spaces.length,
         link_count: context.external_content.length
       });
