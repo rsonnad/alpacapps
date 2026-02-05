@@ -90,9 +90,17 @@ Claude Code is your AI developer. Set it up before anything else — for every s
 > ```
 > Then run `claude` in your project directory. Same features, same skills — just a terminal interface instead of the desktop app.
 
-### Step 2: Clone the starter template
+### Step 2: Create a GitHub account
 
-Clone the [alpacapps-infra](https://github.com/rsonnad/alpacapps-infra) starter repo. Replace `my-project` with your project name — this will also become your GitHub repo name, so choose something unique (lowercase, hyphens, no spaces):
+You'll need a free GitHub account to host your site and store your code. If you already have one, skip to Step 3.
+
+1. Go to [https://github.com/signup](https://github.com/signup) and sign up with your email
+2. Verify your email address (GitHub will send you a confirmation link)
+3. That's it — a free account is all you need. GitHub Pages hosting is free for public repositories.
+
+### Step 3: Clone the starter template
+
+Clone the [alpacapps-infra](https://github.com/rsonnad/alpacapps-infra) starter repo. Replace `my-project` with your project name — this will also become your GitHub repo name, so choose something unique on your account (lowercase, hyphens, no spaces):
 
 ```bash
 git clone https://github.com/rsonnad/alpacapps-infra.git my-project
@@ -101,7 +109,7 @@ cd my-project
 
 This gives you the setup skill and CLAUDE.md template — everything Claude Code needs to build out your infrastructure. The setup skill will create your own GitHub repo under your account and disconnect from the starter template automatically (or see [Section 3](#3-github--github-pages-hosting) if doing it manually).
 
-### Step 3: Run the setup skill
+### Step 4: Run the setup skill
 
 Open the cloned folder in Claude Code and type:
 
