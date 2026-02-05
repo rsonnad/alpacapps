@@ -365,6 +365,73 @@
       td, thead th { padding: 0.5rem 0.6rem; }
     }
 
+    .capabilities {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .capabilities h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+    }
+    .capabilities > p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1.25rem;
+    }
+    .cap-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .cap-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.15rem;
+      transition: border-color 0.2s;
+    }
+    .cap-card:hover { border-color: var(--accent); }
+    .cap-card.core { border-left: 3px solid var(--success); }
+    .cap-card .cap-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+    }
+    .cap-card .cap-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .cap-card .cap-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+    }
+    .cap-tag.core-tag { background: var(--success-light); color: var(--success); }
+    .cap-tag.optional-tag { background: var(--accent-light); color: #8a6f3e; }
+    .cap-card .cap-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+    .cap-card .cap-service {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    @media (max-width: 640px) {
+      .cap-grid { grid-template-columns: 1fr; }
+    }
+
     @media print {
       body { background: white; }
       .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -389,6 +456,85 @@
 
   <div class="philosophy">
     <strong>The philosophy:</strong> You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want &mdash; it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
+  </div>
+
+  <div class="capabilities">
+    <h2>What can you build with this?</h2>
+    <p>Pick the capabilities you need. The core platform is always included &mdash; everything else is optional.</p>
+
+    <div class="cap-grid">
+      <div class="cap-card core">
+        <div class="cap-header">
+          <span class="cap-name">Website + Admin Dashboard</span>
+          <span class="cap-tag core-tag">Core</span>
+        </div>
+        <div class="cap-desc">Public-facing site and private admin panel. Static hosting, no server needed.</div>
+        <div class="cap-service">GitHub Pages &bull; Free</div>
+      </div>
+
+      <div class="cap-card core">
+        <div class="cap-header">
+          <span class="cap-name">Database + Storage + Auth</span>
+          <span class="cap-tag core-tag">Core</span>
+        </div>
+        <div class="cap-desc">PostgreSQL database, file storage, user authentication, and serverless functions.</div>
+        <div class="cap-service">Supabase &bull; Free</div>
+      </div>
+
+      <div class="cap-card core">
+        <div class="cap-header">
+          <span class="cap-name">AI Developer</span>
+          <span class="cap-tag core-tag">Core</span>
+        </div>
+        <div class="cap-desc">Claude Code builds your app, deploys changes, manages the database. Your entire dev team.</div>
+        <div class="cap-service">Claude Code &bull; Free&ndash;$200/mo</div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-header">
+          <span class="cap-name">Email Notifications</span>
+          <span class="cap-tag optional-tag">Optional</span>
+        </div>
+        <div class="cap-desc">Transactional emails: reminders, confirmations, receipts, announcements.</div>
+        <div class="cap-service">Resend &bull; Free (3,000/mo)</div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-header">
+          <span class="cap-name">SMS Messaging</span>
+          <span class="cap-tag optional-tag">Optional</span>
+        </div>
+        <div class="cap-desc">Outbound and inbound SMS. Notifications, reminders, two-way conversations.</div>
+        <div class="cap-service">Telnyx &bull; ~$0.004/msg</div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-header">
+          <span class="cap-name">Payment Processing</span>
+          <span class="cap-tag optional-tag">Optional</span>
+        </div>
+        <div class="cap-desc">Accept credit card payments online. Invoicing, receipts, refunds.</div>
+        <div class="cap-service">Square &bull; 2.9% + 30&cent;</div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-header">
+          <span class="cap-name">E-Signatures</span>
+          <span class="cap-tag optional-tag">Optional</span>
+        </div>
+        <div class="cap-desc">Generate contracts from templates and send for digital signature.</div>
+        <div class="cap-service">SignWell &bull; Free (3&ndash;25 docs/mo)</div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-header">
+          <span class="cap-name">AI-Powered Features</span>
+          <span class="cap-tag optional-tag">Optional</span>
+        </div>
+        <div class="cap-desc">Fuzzy matching, smart categorization, natural language search within your app.</div>
+        <div class="cap-service">Google Gemini &bull; Free</div>
+      </div>
+    </div>
   </div>
 
   <nav class="toc">

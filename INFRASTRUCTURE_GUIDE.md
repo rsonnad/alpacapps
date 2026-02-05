@@ -8,6 +8,28 @@ How to set up a super low cost do-it-all system from scratch — messaging, mark
 
 ---
 
+## What can you build with this?
+
+Pick the capabilities you need. The core platform is always included — everything else is optional.
+
+### Core (always included)
+| Capability | What it does | Service | Cost |
+|-----------|-------------|---------|------|
+| **Website + Admin Dashboard** | Public-facing site and private admin panel | GitHub Pages | Free |
+| **Database + Storage + Auth** | PostgreSQL, file storage, user auth, serverless functions | Supabase | Free |
+| **AI Developer** | Claude Code builds your app, deploys changes, manages the database | Claude Code | Free–$200/mo |
+
+### Optional (add what you need)
+| Capability | What it does | Service | Cost |
+|-----------|-------------|---------|------|
+| **Email Notifications** | Reminders, confirmations, receipts, announcements | Resend | Free (3,000/mo) |
+| **SMS Messaging** | Outbound/inbound SMS, notifications, two-way conversations | Telnyx | ~$0.004/msg |
+| **Payment Processing** | Accept credit cards online, invoicing, receipts, refunds | Square | 2.9% + 30¢ |
+| **E-Signatures** | Generate contracts from templates, send for digital signature | SignWell | Free (3–25 docs/mo) |
+| **AI-Powered Features** | Fuzzy matching, smart categorization, natural language search | Google Gemini | Free |
+
+---
+
 ## Table of Contents
 
 1. [Architecture Overview](#1-architecture-overview)
