@@ -644,6 +644,225 @@
         width: 100%;
       }
     }
+
+    /* Ask a Question (Gemini-powered) */
+    .ask-section {
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .ask-section h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 0 0 0.5rem;
+      text-align: center;
+    }
+
+    .ask-section p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0 0 0.75rem;
+      text-align: center;
+    }
+
+    .question-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .question-input {
+      flex: 1;
+      padding: 0.625rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(61, 139, 122, 0.1);
+    }
+
+    .ask-btn {
+      padding: 0.625rem 1.25rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .ask-btn:hover {
+      background: #327a6a;
+    }
+
+    .ask-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .answer-container {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .answer-container.visible {
+      display: block;
+    }
+
+    .answer-text {
+      line-height: 1.6;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .answer-feedback {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .answer-feedback span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .feedback-btn {
+      padding: 0.375rem 0.75rem;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .feedback-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .feedback-btn--negative {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .feedback-btn--negative:hover {
+      background: var(--error-light);
+    }
+
+    .low-confidence-notice {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: #fef3c7;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #92400e;
+    }
+
+    .low-confidence-notice.visible {
+      display: block;
+    }
+
+    .followup-form {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #f9fafb;
+      border-radius: var(--radius);
+    }
+
+    .followup-form.visible {
+      display: block;
+    }
+
+    .followup-form p {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .followup-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .followup-input {
+      padding: 0.375rem 0.625rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .followup-btn {
+      padding: 0.375rem 0.75rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .question-submitted {
+      display: none;
+      padding: 0.75rem;
+      background: var(--success-light);
+      border-radius: var(--radius);
+      color: var(--success);
+      font-size: 0.85rem;
+    }
+
+    .question-submitted.visible {
+      display: block;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.375rem;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 480px) {
+      .question-input-wrapper {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1003,15 +1222,42 @@
           </ol>
         </div>
 
-        <!-- Ask Box -->
-        <div style="margin: 1.5rem 0; text-align: left;">
-          <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; text-align: center;">Have a question?</h3>
-          <div id="askBox" style="display: flex; gap: 0.5rem;">
-            <textarea id="askMessage" rows="2" style="flex: 1; padding: 0.625rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ask us anything..."></textarea>
-            <button type="button" id="askSendBtn" onclick="sendAskQuestion()" style="align-self: flex-end; padding: 0.625rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer;">Send</button>
+        <!-- Ask a Question (Gemini-powered) -->
+        <div class="ask-section">
+          <h3>Have a question?</h3>
+          <p>Get instant answers about rentals, the community, and more.</p>
+
+          <div class="question-input-wrapper">
+            <input type="text" id="questionInput" class="question-input" placeholder="What would you like to know?" autocomplete="off">
+            <button id="askBtn" class="ask-btn">Ask</button>
           </div>
-          <div id="askSuccess" class="hidden" style="margin-top: 0.5rem; padding: 0.5rem; background: var(--success-light); color: var(--success); border-radius: var(--radius); font-size: 0.85rem; text-align: center;">
-            Message sent! We'll get back to you soon.
+
+          <div id="answerContainer" class="answer-container">
+            <div id="answerText" class="answer-text"></div>
+
+            <div id="lowConfidenceNotice" class="low-confidence-notice">
+              I'm not fully confident in this answer. If this didn't help, let us know and we'll get back to you.
+            </div>
+
+            <div class="answer-feedback">
+              <span>Was this helpful?</span>
+              <button class="feedback-btn" onclick="handleFeedback(true)">Yes, thanks!</button>
+              <button class="feedback-btn feedback-btn--negative" onclick="handleFeedback(false)">Not quite</button>
+            </div>
+
+            <div id="followupForm" class="followup-form">
+              <p>Sorry about that! Leave your info and we'll get back to you with an answer.</p>
+              <div class="followup-fields">
+                <input type="text" id="followupName" class="followup-input" placeholder="Your name">
+                <input type="email" id="followupEmail" class="followup-input" placeholder="Email">
+                <input type="tel" id="followupPhone" class="followup-input" placeholder="Phone (optional)">
+              </div>
+              <button class="followup-btn" onclick="submitFollowup()">Submit</button>
+            </div>
+
+            <div id="questionSubmitted" class="question-submitted">
+              Thanks! We've received your question and will get back to you.
+            </div>
           </div>
         </div>
 
@@ -1072,6 +1318,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module">
     import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { askQuestion, submitUnansweredQuestion } from '../../shared/chat-widget.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
     const FEE_TYPE = 'rental_application';
 
@@ -1514,11 +1761,11 @@
         document.getElementById('inquirySummaryTimeframe').textContent = getValue('desired_timeframe') || '-';
         document.getElementById('inquirySummaryReferral').textContent = getValue('referral_source') || '-';
 
-        // Pre-populate ask box
-        const askMsg = document.getElementById('askMessage');
-        if (askMsg) {
-          askMsg.placeholder = `Hi, I'm ${firstName}. I have a question about...`;
-        }
+        // Pre-populate followup form with submitted info
+        const followupNameEl = document.getElementById('followupName');
+        const followupEmailEl = document.getElementById('followupEmail');
+        if (followupNameEl) followupNameEl.value = firstName;
+        if (followupEmailEl) followupEmailEl.value = email;
 
         // Show inquiry success
         formContainer.classList.add('hidden');
@@ -1534,42 +1781,106 @@
     }
 
     // =============================================
-    // ASK BOX (on inquiry success page)
+    // ASK A QUESTION (Gemini-powered, same as contact page)
     // =============================================
-    window.sendAskQuestion = async function() {
-      const message = document.getElementById('askMessage').value.trim();
-      if (!message) return;
+    let currentQuestion = '';
+    let currentAnswer = '';
+    let isLowConfidence = false;
 
-      const btn = document.getElementById('askSendBtn');
-      btn.disabled = true;
-      btn.textContent = 'Sending...';
+    const questionInput = document.getElementById('questionInput');
+    const askBtn = document.getElementById('askBtn');
+    const answerContainer = document.getElementById('answerContainer');
+    const answerTextEl = document.getElementById('answerText');
+    const lowConfidenceNotice = document.getElementById('lowConfidenceNotice');
+    const followupForm = document.getElementById('followupForm');
+    const questionSubmitted = document.getElementById('questionSubmitted');
+
+    if (askBtn) {
+      askBtn.addEventListener('click', handleAskQuestion);
+    }
+    if (questionInput) {
+      questionInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAskQuestion();
+      });
+    }
+
+    async function handleAskQuestion() {
+      const question = questionInput.value.trim();
+      if (!question) return;
+
+      currentQuestion = question;
+
+      // Show loading state
+      askBtn.disabled = true;
+      askBtn.innerHTML = '<span class="loading-spinner"></span>Thinking...';
+
+      // Reset answer UI
+      answerContainer.classList.remove('visible');
+      lowConfidenceNotice.classList.remove('visible');
+      followupForm.classList.remove('visible');
+      questionSubmitted.classList.remove('visible');
+      const feedbackEl = document.querySelector('.answer-feedback');
+      if (feedbackEl) feedbackEl.style.display = '';
 
       try {
-        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            type: 'contact_form',
-            to: 'alpacaplayhouse@gmail.com',
-            data: {
-              name: submittedFirstName,
-              email: submittedEmail,
-              phone: '',
-              subject: 'Question from Community Fit Inquiry',
-              message: message
-            }
-          })
-        });
-        document.getElementById('askBox').classList.add('hidden');
-        document.getElementById('askSuccess').classList.remove('hidden');
+        const result = await askQuestion(question);
+        currentAnswer = result.answer;
+        isLowConfidence = !result.confident;
+
+        answerTextEl.textContent = result.answer;
+        answerContainer.classList.add('visible');
+
+        if (!result.confident) {
+          lowConfidenceNotice.classList.add('visible');
+          // Auto-submit low confidence questions for review
+          await submitUnansweredQuestion(question, submittedEmail || null, 'low_confidence', submittedFirstName || null);
+        }
       } catch (error) {
-        console.error('Failed to send question:', error);
-        btn.disabled = false;
-        btn.textContent = 'Send';
+        answerTextEl.textContent = "Sorry, I had trouble getting an answer. Leave your info below and we'll get back to you.";
+        answerContainer.classList.add('visible');
+        lowConfidenceNotice.classList.remove('visible');
+        document.querySelector('.answer-feedback').style.display = 'none';
+        followupForm.classList.add('visible');
+      } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = 'Ask';
       }
+    }
+
+    // Feedback handlers
+    window.handleFeedback = function(helpful) {
+      if (helpful) {
+        document.querySelector('.answer-feedback').style.display = 'none';
+        questionSubmitted.textContent = 'Great! Glad we could help.';
+        questionSubmitted.classList.add('visible');
+      } else {
+        followupForm.classList.add('visible');
+        if (!isLowConfidence) {
+          submitUnansweredQuestion(currentQuestion, submittedEmail || null, 'user_feedback', submittedFirstName || null);
+        }
+      }
+    };
+
+    window.submitFollowup = async function() {
+      const name = document.getElementById('followupName').value.trim();
+      const email = document.getElementById('followupEmail').value.trim();
+      const phone = document.getElementById('followupPhone').value.trim();
+
+      if (!name && !email && !phone) {
+        document.getElementById('followupName').focus();
+        return;
+      }
+
+      try {
+        await submitUnansweredQuestion(currentQuestion, email || null, 'user_feedback', name || null, phone || null);
+      } catch (e) {
+        console.error('Error submitting question:', e);
+      }
+
+      followupForm.classList.remove('visible');
+      questionSubmitted.textContent = "Thanks! We'll get back to you with an answer.";
+      questionSubmitted.classList.add('visible');
+      document.querySelector('.answer-feedback').style.display = 'none';
     };
 
     // =============================================
