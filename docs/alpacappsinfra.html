@@ -1006,14 +1006,23 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <li>Create a new project at <a href="https://supabase.com/dashboard/new/_" target="_blank">supabase.com/dashboard/new</a></li>
       <li>Set a <strong>database password</strong> &mdash; save this securely</li>
       <li>Choose a region close to your users, click <strong>Create new project</strong></li>
-      <li>Go to <strong>API settings</strong>: <code>supabase.com/dashboard/project/<strong>YOUR_REF</strong>/settings/api</code> and copy:
+    </ol>
+
+    <p>Once your project is created, you&rsquo;ll see a <strong>Project URL</strong> like <code>https://abcdefghijk.supabase.co</code>. The <code>abcdefghijk</code> part is your <strong>project ref</strong>. Enter it here to get clickable links to your settings pages:</p>
+
+    <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1rem 0 1.5rem 0; flex-wrap: wrap;">
+      <input type="text" id="supabase-ref" placeholder="your-project-ref" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
+    </div>
+
+    <ol start="5">
+      <li>Go to <strong>API settings</strong>: <a id="supabase-api-link" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">supabase.com/dashboard/project/<strong id="supabase-api-ref">___</strong>/settings/api</a> and copy:
         <ul>
           <li><strong>Project URL</strong> (e.g., <code>https://abcdefghijk.supabase.co</code>)</li>
           <li><strong>Anon public key</strong> (safe to embed in frontend &mdash; RLS protects your data)</li>
           <li><strong>Project ref</strong> (the <code>abcdefghijk</code> part of the URL)</li>
         </ul>
       </li>
-      <li>Go to <strong>Database settings</strong>: <code>supabase.com/dashboard/project/<strong>YOUR_REF</strong>/settings/database</code> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> tab and copy it</li>
+      <li>Go to <strong>Database settings</strong>: <a id="supabase-db-link" href="https://supabase.com/dashboard/project/_/settings/database" target="_blank">supabase.com/dashboard/project/<strong id="supabase-db-ref">___</strong>/settings/database</a> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> tab and copy it</li>
     </ol>
 
     <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
@@ -1437,6 +1446,22 @@ function checkRepoName() {
     .catch(function() {
       result.innerHTML = '<span style="color:var(--text-muted);">Network error \u2014 verify manually at github.com/' + username + '</span>';
     });
+}
+
+// Supabase project ref — updates settings links
+function updateSupabaseLinks() {
+  var ref = document.getElementById('supabase-ref').value.trim() || '___';
+  var apiLink = document.getElementById('supabase-api-link');
+  var dbLink = document.getElementById('supabase-db-link');
+  document.getElementById('supabase-api-ref').textContent = ref;
+  document.getElementById('supabase-db-ref').textContent = ref;
+  if (ref && ref !== '___') {
+    apiLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/api';
+    dbLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/database';
+  } else {
+    apiLink.href = 'https://supabase.com/dashboard/project/_/settings/api';
+    dbLink.href = 'https://supabase.com/dashboard/project/_/settings/database';
+  }
 }
 
 // Download CLAUDE.md template with project name substituted
