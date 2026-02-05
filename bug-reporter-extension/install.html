@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install GenAlpaca Bug Reporter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #faf8f5;
+      color: #333;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #5c4033;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 16px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      color: #5c4033;
+      font-size: 20px;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+    .step {
+      background: #fff;
+      border: 1px solid #e0dcd6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .step-number {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      background: #b8860b;
+      color: #fff;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    .step h3 {
+      display: inline;
+      font-size: 16px;
+      color: #333;
+    }
+    .step p {
+      margin-top: 10px;
+      color: #555;
+    }
+    .step img {
+      margin-top: 12px;
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    code {
+      background: #f0ece6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+    .download-btn {
+      display: inline-block;
+      background: #b8860b;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 16px;
+    }
+    .download-btn:hover {
+      background: #9a7209;
+    }
+    .how-it-works {
+      background: #fff;
+      border: 1px solid #e0dcd6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+    .how-it-works ul {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+    .how-it-works li {
+      margin-bottom: 6px;
+      color: #555;
+    }
+    .note {
+      background: #fef9e7;
+      border: 1px solid #f5d76e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+    .note strong {
+      color: #b8860b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GenAlpaca Bug Reporter</h1>
+    <p class="subtitle">Chrome extension for reporting bugs with annotated screenshots</p>
+
+    <h2>Installation</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Download the extension</h3>
+      <p>Download and unzip the extension folder to your computer.</p>
+      <a href="https://github.com/rsonnad/alpacapps/archive/refs/heads/main.zip" class="download-btn">Download from GitHub</a>
+      <p style="margin-top: 8px; font-size: 13px; color: #888;">After unzipping, the extension is in the <code>bug-reporter-extension</code> folder.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Open Chrome Extensions page</h3>
+      <p>Type <code>chrome://extensions/</code> in your Chrome address bar and press Enter.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Enable Developer Mode</h3>
+      <p>Toggle the <strong>Developer mode</strong> switch in the top-right corner of the page.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">4</span>
+      <h3>Load the extension</h3>
+      <p>Click <strong>Load unpacked</strong> (top-left), then navigate to and select the <code>bug-reporter-extension</code> folder from the download.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">5</span>
+      <h3>Pin the extension</h3>
+      <p>Click the puzzle piece icon in Chrome's toolbar, then click the pin icon next to <strong>GenAlpaca Bug Reporter</strong> so it's always visible.</p>
+    </div>
+
+    <h2>How to Use</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Navigate to the page with the bug</h3>
+      <p>Go to the page where you see the issue.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Click the extension icon</h3>
+      <p>Click the GenAlpaca Bug Reporter icon in your toolbar, then click <strong>Capture Screenshot</strong>.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Annotate the screenshot</h3>
+      <p>Use the tools to highlight the problem:</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><strong>Draw</strong> &mdash; freehand drawing to circle/underline issues</li>
+        <li><strong>Arrow</strong> &mdash; point at specific elements</li>
+        <li><strong>Text</strong> &mdash; add labels or notes</li>
+        <li><strong>Rectangle</strong> &mdash; box around an area</li>
+      </ul>
+      <p>You can change the color, undo, or clear annotations.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">4</span>
+      <h3>Describe the bug and submit</h3>
+      <p>Click <strong>Next</strong>, fill in your name, email, and describe what's wrong. Then click <strong>Submit Bug Report</strong>.</p>
+    </div>
+
+    <div class="how-it-works">
+      <h3>What happens after you submit?</h3>
+      <ul>
+        <li>You'll get a <strong>confirmation email</strong> that your report was received</li>
+        <li>Our automated system analyzes your screenshot and description</li>
+        <li>It attempts to fix the bug and deploy the fix automatically</li>
+        <li>You'll get a <strong>follow-up email</strong> with what was fixed (or if it needs human attention)</li>
+        <li>The whole process usually takes <strong>2-5 minutes</strong></li>
+      </ul>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> This extension only works on Chrome (or Chromium-based browsers like Edge, Brave, Arc). Your name and email are saved locally so you don't have to re-enter them each time.
+    </div>
+  </div>
+</body>
+</html>
