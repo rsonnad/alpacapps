@@ -70,14 +70,11 @@ export async function sendSMS(type, to, data, options = {}) {
       return { success: false, error: `Invalid phone number: ${to}` };
     }
 
-    // Get current session for auth header
-    const { data: { session } } = await supabase.auth.getSession();
-
     const response = await fetch(SEND_SMS_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({

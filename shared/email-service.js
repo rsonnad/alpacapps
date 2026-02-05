@@ -1,5 +1,5 @@
 // Email service for sending notifications via Resend
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 import { formatDateAustin } from './timezone.js';
 
 const SEND_EMAIL_URL = `${SUPABASE_URL}/functions/v1/send-email`;
@@ -39,14 +39,11 @@ export const EMAIL_TYPES = {
  */
 export async function sendEmail(type, to, data, options = {}) {
   try {
-    // Get current session for auth header
-    const { data: { session } } = await supabase.auth.getSession();
-
     const response = await fetch(SEND_EMAIL_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({
