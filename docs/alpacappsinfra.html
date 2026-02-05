@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra &mdash; Infrastructure Replication Guide</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #ffffff;
@@ -835,27 +832,27 @@
   </div>
 
   <nav class="toc">
-    <h2>Table of Contents</h2>
+    <h2>Easy Setup Instructions</h2>
     <div class="toc-grid">
-      <a href="#architecture"><span class="num">1</span> Architecture Overview</a>
-      <a href="#claude-code"><span class="num">2</span> Install Claude Code First</a>
-      <a href="#github"><span class="num">3</span> GitHub + GitHub Pages</a>
-      <a href="#supabase"><span class="num">4</span> Supabase</a>
-      <a href="#resend"><span class="num">5</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">7</span> Square (Payments)</a>
-      <a href="#signwell"><span class="num">8</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">9</span> Google Gemini (AI)</a>
-      <a href="#discord"><span class="num">10</span> Discord Bot</a>
-      <a href="#domain"><span class="num">11</span> Custom Domain</a>
-      <a href="#template"><span class="num">12</span> CLAUDE.md Template</a>
-      <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
+      <a href="#architecture"><span class="num" style="background:var(--bg-warm);color:var(--text-muted);">&mdash;</span> Architecture Overview</a>
+      <a href="#claude-code"><span class="num">1</span> Install Claude Code First</a>
+      <a href="#github"><span class="num">2</span> GitHub + GitHub Pages</a>
+      <a href="#supabase"><span class="num">3</span> Supabase</a>
+      <a href="#resend"><span class="num">4</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">5</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">6</span> Square (Payments)</a>
+      <a href="#signwell"><span class="num">7</span> SignWell (E-Signatures)</a>
+      <a href="#gemini"><span class="num">8</span> Google Gemini (AI)</a>
+      <a href="#discord"><span class="num">9</span> Discord Bot</a>
+      <a href="#domain"><span class="num">10</span> Custom Domain</a>
+      <a href="#template"><span class="num">11</span> CLAUDE.md Template</a>
+      <a href="#checklist"><span class="num">12</span> Day-One Checklist</a>
     </div>
   </nav>
 
-  <!-- 1. Architecture -->
+  <!-- Architecture (unnumbered) -->
   <div class="section" id="architecture">
-    <h2>1. Architecture Overview</h2>
+    <h2>Architecture Overview</h2>
     <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Storage + Auth)
                                              &nearr;
 Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
@@ -876,7 +873,7 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
 
   <!-- 2. Claude Code -->
   <div class="section" id="claude-code">
-    <h2>2. Install Claude Code First</h2>
+    <h2>1. Install Claude Code First</h2>
     <p>Claude Code is your AI developer. Install it before anything else &mdash; for every service in this guide, you create accounts and copy credentials, then Claude handles all terminal work.</p>
 
     <div class="callout">
@@ -888,8 +885,8 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     <ol>
       <li>Sign up for <a href="https://claude.ai" target="_blank">Claude Pro</a> ($20/month recommended)</li>
       <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a> &mdash; Claude Code is built in</li>
-      <li>Open the app, click the <strong>terminal icon</strong> or press <code>Ctrl+`</code> to open Claude Code</li>
-      <li>Point it at your project folder and create a <code>CLAUDE.md</code> file in the root (see <a href="#template">Section 12</a> for the full template)</li>
+      <li>Open the app and click the <strong>Code</strong> tab in the top right to open Claude Code</li>
+      <li>Point it at your project folder and create a <code>CLAUDE.md</code> file in the root (see <a href="#template">Section 11</a> for the full template)</li>
     </ol>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
@@ -942,7 +939,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 
   <!-- 3. GitHub -->
   <div class="section" id="github">
-    <h2>3. GitHub + GitHub Pages <span class="cost-badge cost-free">Free</span></h2>
+    <h2>2. GitHub + GitHub Pages <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -987,7 +984,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 
   <!-- 4. Supabase -->
   <div class="section" id="supabase">
-    <h2>4. Supabase <span class="cost-badge cost-free">Free</span></h2>
+    <h2>3. Supabase <span class="cost-badge cost-free">Free</span></h2>
     <p>Database, storage, auth, and serverless edge functions &mdash; all in one.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1033,7 +1030,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 5. Resend -->
   <div class="section" id="resend">
-    <h2>5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
+    <h2>4. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1056,7 +1053,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 6. Telnyx -->
   <div class="section" id="telnyx">
-    <h2>6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+    <h2>5. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1097,7 +1094,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 7. Square -->
   <div class="section" id="square">
-    <h2>7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+    <h2>6. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1132,7 +1129,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 8. SignWell -->
   <div class="section" id="signwell">
-    <h2>8. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
+    <h2>7. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1161,7 +1158,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 9. Gemini -->
   <div class="section" id="gemini">
-    <h2>9. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+    <h2>8. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1182,7 +1179,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 10. Discord -->
   <div class="section" id="discord">
-    <h2>10. Discord Bot (Optional)</h2>
+    <h2>9. Discord Bot (Optional)</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1196,7 +1193,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 11. Custom Domain -->
   <div class="section" id="domain">
-    <h2>11. Custom Domain (Optional)</h2>
+    <h2>10. Custom Domain (Optional)</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1217,9 +1214,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ol>
   </div>
 
-  <!-- 12. CLAUDE.md Template -->
+  <!-- 11. CLAUDE.md Template -->
   <div class="section" id="template">
-    <h2>12. CLAUDE.md Template</h2>
+    <h2>11. CLAUDE.md Template</h2>
     <p>Enter your project name and download a ready-to-use <code>CLAUDE.md</code> template. Save it in your project root and fill in the credential placeholders.</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
@@ -1241,9 +1238,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 13. Day-One Checklist -->
+  <!-- 12. Day-One Checklist -->
   <div class="section" id="checklist">
-    <h2>13. Day-One Checklist</h2>
+    <h2>12. Day-One Checklist</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
 
