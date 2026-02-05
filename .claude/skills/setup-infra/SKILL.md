@@ -11,6 +11,7 @@ You are helping the user set up a complete do-it-all system from scratch — mes
 
 - **You handle all terminal work.** The user should never need to run commands themselves.
 - **Ask for credentials one service at a time.** Don't overwhelm them with everything at once.
+- **Give direct URLs for every step.** Never say "go to Settings → API" — give the exact clickable URL.
 - **Validate each credential before moving on** (e.g., test a Supabase connection before setting up tables).
 - **Commit and push after each major step** so progress is saved.
 - **Store API keys as Supabase secrets**, never hardcode them.
@@ -21,8 +22,8 @@ You are helping the user set up a complete do-it-all system from scratch — mes
 ### Step 1: Prerequisites Check
 
 Ask the user:
-- Do you already have a GitHub account? If not, guide them to github.com to create one.
-- Do you already have a Supabase account? If not, guide them to supabase.com.
+- Do you already have a GitHub account? If not: **https://github.com/join**
+- Do you already have a Supabase account? If not: **https://supabase.com/dashboard** (sign up with GitHub)
 
 Check locally:
 - Is git installed? (`git --version`)
@@ -32,7 +33,7 @@ Check locally:
 ### Step 2: GitHub + GitHub Pages
 
 Ask the user to:
-1. Create a new GitHub repository (public, for free GitHub Pages)
+1. Create a new repo at **https://github.com/new** (public, for free GitHub Pages)
 2. Give you the repo URL (e.g., `https://github.com/username/repo`)
 
 Then you:
@@ -51,19 +52,24 @@ Then you:
    spaces/admin/manage.html
    supabase/functions/
    ```
-4. Enable GitHub Pages: tell the user to go to Settings → Pages → Deploy from branch → main → / (root) → Save
+4. Tell the user to enable GitHub Pages at: **https://github.com/{USERNAME}/{REPO}/settings/pages**
+   - Select "Deploy from a branch" → main → / (root) → Save
 5. Commit and push
 
 ### Step 3: Supabase
 
 Ask the user to:
-1. Create a new Supabase project at supabase.com
-2. Copy and paste to you:
-   - **Project URL** (e.g., `https://abcdefghijk.supabase.co`)
-   - **Anon public key**
-   - **Project ref** (the `abcdefghijk` part)
-   - **Database password**
-   - **Session pooler connection string** (Settings → Database → Connection string → Session pooler)
+1. Create a new project at **https://supabase.com/dashboard/new/_**
+2. Set a **database password** — tell them to save this securely
+3. Choose a region close to their users, click Create
+4. Once the project is ready, tell them to go to these pages and copy the values:
+   - **API page** → `https://supabase.com/dashboard/project/{PROJECT_REF}/settings/api`
+     - Copy: **Project URL** and **anon public key**
+     - The project ref is the subdomain part of the URL (e.g., `abcdefghijk`)
+   - **Database page** → `https://supabase.com/dashboard/project/{PROJECT_REF}/settings/database`
+     - Copy: **Session pooler connection string** (under Connection string → Session pooler tab)
+
+Note: Once you have the project ref, construct the direct URLs for the user so they can click straight to the right page.
 
 Then you:
 1. Login and link the Supabase CLI (`supabase login && supabase link --project-ref <ref>`)
@@ -82,9 +88,9 @@ Then you:
 ### Step 4: Resend (Email)
 
 Ask the user to:
-1. Sign up at resend.com
-2. Optionally verify their domain (Domains → Add Domain)
-3. Create an API key and paste it
+1. Sign up at **https://resend.com/signup**
+2. Optionally add their domain at **https://resend.com/domains** (without this, they can only send from `onboarding@resend.dev`)
+3. Create an API key at **https://resend.com/api-keys** and paste it
 
 Then you:
 1. Store the API key: `supabase secrets set RESEND_API_KEY=<key>`
@@ -98,13 +104,17 @@ Then you:
 Ask the user if they want SMS. If yes:
 
 Ask them to:
-1. Sign up at telnyx.com, add payment method
-2. Buy a phone number with SMS capability
-3. Create a Messaging Profile, set inbound webhook URL:
-   `https://<PROJECT_REF>.supabase.co/functions/v1/telnyx-webhook`
-4. Assign the phone number to the profile
-5. Start 10DLC registration (Messaging → Compliance) — warn them this takes days/weeks
-6. Copy and paste: API key, Messaging Profile ID, phone number, public key
+1. Sign up at **https://telnyx.com/sign-up** and add a payment method
+2. Buy an SMS-capable number at **https://portal.telnyx.com/#/app/numbers/search-numbers** (~$1/month)
+3. Note the phone number in E.164 format (e.g., `+12125551234`)
+4. Create a Messaging Profile at **https://portal.telnyx.com/#/app/messaging**
+   - Set inbound webhook URL: `https://{PROJECT_REF}.supabase.co/functions/v1/telnyx-webhook`
+   - Assign the phone number to this profile
+   - Note the **Messaging Profile ID**
+5. Get API key at **https://portal.telnyx.com/#/app/api-keys** — copy the key + **Public Key**
+6. Start 10DLC registration at **https://portal.telnyx.com/#/app/messaging/compliance**
+   - Create a Brand (Sole Proprietor), then a Campaign (business notifications)
+   - Assign the number — warn them this takes days/weeks for approval
 
 Then you:
 1. Create `telnyx_config` and `sms_messages` tables via psql
@@ -121,9 +131,13 @@ Then you:
 Ask the user if they want payment processing. If yes:
 
 Ask them to:
-1. Create a developer account at developer.squareup.com
-2. Create an Application
-3. Copy: Application ID, Sandbox Access Token, Location ID
+1. Sign up at **https://squareup.com/signup**
+2. Go to the developer console at **https://developer.squareup.com/console/en/apps**
+3. Click **+** or **New Application** to create an app
+4. Copy from the app's credentials page:
+   - **Application ID** (starts with `sq0idp-`)
+   - **Sandbox Access Token**
+   - **Location ID** — find in the Square Dashboard under Locations
 
 Then you:
 1. Create `square_config` and `square_payments` tables via psql
@@ -138,11 +152,11 @@ Then you:
 Ask the user if they want e-signatures. If yes:
 
 Ask them to:
-1. Sign up at signwell.com
-2. Copy their API key from Settings → API
-3. Add webhook URL in Settings → Webhooks:
-   `https://<PROJECT_REF>.supabase.co/functions/v1/signwell-webhook`
-4. Subscribe to `document_completed` event
+1. Sign up at **https://www.signwell.com/sign_up/**
+2. Copy their API key from **https://www.signwell.com/app/settings/api**
+3. Add webhook at **https://www.signwell.com/app/settings/webhooks**:
+   - URL: `https://{PROJECT_REF}.supabase.co/functions/v1/signwell-webhook`
+   - Subscribe to the `document_completed` event
 
 Then you:
 1. Create `signwell_config` table via psql
@@ -157,7 +171,7 @@ Then you:
 Ask the user if they want AI-powered features. If yes:
 
 Ask them to:
-1. Get a free API key at aistudio.google.com
+1. Get a free API key at **https://aistudio.google.com/apikey**
 
 Then you:
 1. Store it: `supabase secrets set GEMINI_API_KEY=<key>`

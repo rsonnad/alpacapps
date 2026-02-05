@@ -357,14 +357,14 @@
 
 <div class="hero">
   <h1><span>AlpacApps</span> Infra</h1>
-  <p>Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, customer management, and finance. You create accounts. Claude Code builds everything else.</p>
-  <span class="badge">Total cost: $0/month for the core stack</span>
+  <p>Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, customer management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
+  <span class="badge">$0/month infrastructure &bull; $0&ndash;$200/month for Claude Code development</span>
 </div>
 
 <div class="container">
 
   <div class="philosophy">
-    <strong>The philosophy:</strong> You create accounts and gather credentials in your browser. Claude Code handles all the terminal work &mdash; database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
+    <strong>The philosophy:</strong> You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want &mdash; it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
   </div>
 
   <nav class="toc">
@@ -413,8 +413,8 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     <p>Claude Code is your AI developer. Install it before anything else &mdash; for every service in this guide, you create accounts and copy credentials, then Claude handles all terminal work.</p>
 
     <div class="callout">
-      <strong>Recommended: Claude Pro ($20/month)</strong>
-      The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The <a href="https://claude.ai/upgrade" target="_blank">Pro plan</a> gives you significantly more usage &mdash; worth it when Claude is building your entire system.
+      <strong>Recommended: Claude Pro ($20/month) or higher</strong>
+      The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The <a href="https://claude.ai/upgrade" target="_blank">Pro plan ($20/month)</a> gives you significantly more usage. For intensive development, consider Max ($100) or Max+ ($200).
     </div>
 
     <h3><span class="step-label step-you">You do (one time)</span></h3>
@@ -457,12 +457,11 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://github.com" target="_blank">github.com</a> and create a free account</li>
-      <li>Create a new repository (public repos get free GitHub Pages)</li>
+      <li>Create a free account at <a href="https://github.com/join" target="_blank">github.com/join</a></li>
+      <li>Create a new repository at <a href="https://github.com/new" target="_blank">github.com/new</a> (public repos get free GitHub Pages)</li>
       <li>Name it whatever you want (e.g., <code>my-app</code>)</li>
-      <li>Go to repo <strong>Settings</strong> &rarr; <strong>Pages</strong></li>
-      <li>Under "Source," select <strong>Deploy from a branch</strong></li>
-      <li>Select <strong>main</strong> branch, <strong>/ (root)</strong> folder, click <strong>Save</strong></li>
+      <li>Go to Pages settings: <code>https://github.com/USERNAME/REPO/settings/pages</code></li>
+      <li>Under "Source," select <strong>Deploy from a branch</strong> &rarr; <strong>main</strong> &rarr; <strong>/ (root)</strong> &rarr; <strong>Save</strong></li>
       <li>Your site is live at <code>https://&lt;username&gt;.github.io/&lt;repo-name&gt;/</code></li>
     </ol>
 
@@ -504,19 +503,18 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> and sign up (GitHub login works)</li>
-      <li>Click <strong>New Project</strong></li>
-      <li>Choose an organization (create one if needed)</li>
+      <li>Sign up at <a href="https://supabase.com/dashboard" target="_blank">supabase.com/dashboard</a> (GitHub login works)</li>
+      <li>Create a new project at <a href="https://supabase.com/dashboard/new/_" target="_blank">supabase.com/dashboard/new</a></li>
       <li>Set a <strong>database password</strong> &mdash; save this securely</li>
       <li>Choose a region close to your users, click <strong>Create new project</strong></li>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong> and copy:
+      <li>Go to <strong>API settings</strong>: <code>supabase.com/dashboard/project/<strong>YOUR_REF</strong>/settings/api</code> and copy:
         <ul>
           <li><strong>Project URL</strong> (e.g., <code>https://abcdefghijk.supabase.co</code>)</li>
           <li><strong>Anon public key</strong> (safe to embed in frontend &mdash; RLS protects your data)</li>
           <li><strong>Project ref</strong> (the <code>abcdefghijk</code> part of the URL)</li>
         </ul>
       </li>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>Database</strong> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> and copy it</li>
+      <li>Go to <strong>Database settings</strong>: <code>supabase.com/dashboard/project/<strong>YOUR_REF</strong>/settings/database</code> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> tab and copy it</li>
     </ol>
 
     <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
@@ -550,10 +548,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://resend.com" target="_blank">resend.com</a> and sign up</li>
-      <li>Free tier: 3,000 emails/month, 100 emails/day</li>
-      <li><strong>Recommended:</strong> Go to <strong>Domains</strong> &rarr; <strong>Add Domain</strong>, add your domain, set up DNS records. Without this, you can only send from <code>onboarding@resend.dev</code>.</li>
-      <li>Go to <strong>API Keys</strong> &rarr; <strong>Create API Key</strong> and copy it</li>
+      <li>Sign up at <a href="https://resend.com/signup" target="_blank">resend.com/signup</a> (free: 3,000 emails/month)</li>
+      <li><strong>Recommended:</strong> Add your domain at <a href="https://resend.com/domains" target="_blank">resend.com/domains</a> and set up DNS records. Without this, you can only send from <code>onboarding@resend.dev</code>.</li>
+      <li>Create an API key at <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a> and copy it</li>
     </ol>
 
     <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
@@ -574,21 +571,20 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://telnyx.com" target="_blank">telnyx.com</a> and sign up</li>
-      <li>Add a payment method (~$0.004/outbound SMS)</li>
-      <li>Go to <strong>Numbers</strong> &rarr; <strong>Search &amp; Buy</strong>, buy an SMS-capable number (~$1/month)</li>
+      <li>Sign up at <a href="https://telnyx.com/sign-up" target="_blank">telnyx.com/sign-up</a> and add a payment method</li>
+      <li>Buy an SMS-capable number at <a href="https://portal.telnyx.com/#/app/numbers/search-numbers" target="_blank">portal.telnyx.com &rarr; Numbers</a> (~$1/month)</li>
       <li>Note the phone number in E.164 format (e.g., <code>+12125551234</code>)</li>
-      <li>Go to <strong>Messaging</strong> &rarr; <strong>Messaging Profiles</strong> &rarr; <strong>Add New Profile</strong></li>
-      <li>Name it, set inbound webhook URL:
+      <li>Create a Messaging Profile at <a href="https://portal.telnyx.com/#/app/messaging" target="_blank">portal.telnyx.com &rarr; Messaging</a></li>
+      <li>Set inbound webhook URL:
         <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook</code></pre>
       </li>
       <li>Assign your phone number to this profile, note the <strong>Messaging Profile ID</strong></li>
-      <li>Go to <strong>Auth</strong> &rarr; <strong>API Keys</strong>, create a key and copy it + the <strong>Public Key</strong></li>
+      <li>Get your API key at <a href="https://portal.telnyx.com/#/app/api-keys" target="_blank">portal.telnyx.com &rarr; API Keys</a>, copy it + the <strong>Public Key</strong></li>
     </ol>
 
     <div class="callout warning">
       <strong>10DLC Registration (Required for US) &mdash; do this now, it takes time.</strong>
-      Go to Messaging &rarr; Compliance. Create a Brand (Sole Proprietor), then a Campaign (use case: business notifications). Assign your number. Approval can take days to weeks &mdash; SMS won't work without it.
+      Go to <a href="https://portal.telnyx.com/#/app/messaging/compliance" target="_blank">Messaging &rarr; Compliance</a>. Create a Brand (Sole Proprietor), then a Campaign (use case: business notifications). Assign your number. Approval can take days to weeks &mdash; SMS won't work without it.
     </div>
 
     <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
@@ -616,8 +612,8 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://squareup.com/signup" target="_blank">squareup.com/signup</a> and create a developer account</li>
-      <li>Go to <a href="https://developer.squareup.com" target="_blank">developer.squareup.com</a>, create an <strong>Application</strong></li>
+      <li>Sign up at <a href="https://squareup.com/signup" target="_blank">squareup.com/signup</a></li>
+      <li>Create an app at <a href="https://developer.squareup.com/console/en/apps" target="_blank">developer.squareup.com/console &rarr; Apps</a></li>
       <li>Copy from the Developer Dashboard:
         <ul>
           <li><strong>Application ID</strong> (starts with <code>sq0idp-</code>)</li>
@@ -651,10 +647,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://signwell.com" target="_blank">signwell.com</a> and sign up</li>
-      <li>Free tier: 3 docs/month (25/month with credit card on file)</li>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong>, copy your API key</li>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>Webhooks</strong>, add:
+      <li>Sign up at <a href="https://www.signwell.com/sign_up/" target="_blank">signwell.com/sign_up</a> (free: 3 docs/month, 25 with credit card)</li>
+      <li>Copy your API key at <a href="https://www.signwell.com/app/settings/api" target="_blank">signwell.com &rarr; Settings &rarr; API</a></li>
+      <li>Add a webhook at <a href="https://www.signwell.com/app/settings/webhooks" target="_blank">signwell.com &rarr; Settings &rarr; Webhooks</a>:
         <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook</code></pre>
       </li>
       <li>Subscribe to the <code>document_completed</code> event</li>
@@ -682,8 +677,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Go to <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></li>
-      <li>Get a free API key</li>
+      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
     </ol>
 
     <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
@@ -903,11 +897,11 @@ Run these directly. If CLI not installed, install and link first.
         <tr><td>SignWell</td><td><span class="cost-badge cost-free">$0</span></td><td>3&ndash;25 docs/month free</td></tr>
         <tr><td>Google Gemini</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier available</td></tr>
         <tr><td>Custom domain</td><td><span class="cost-badge cost-payg">~$1</span></td><td>~$10/year, optional</td></tr>
-        <tr><td><strong>Claude Pro</strong></td><td><span class="cost-badge cost-payg">$20</span></td><td>Recommended &mdash; your AI developer</td></tr>
+        <tr><td><strong>Claude Code</strong></td><td><span class="cost-badge cost-payg">$0&ndash;$200</span></td><td>Free tier available. Pro $20, Max $100, Max+ $200 for intensive development</td></tr>
       </tbody>
     </table>
     <div class="callout success">
-      <strong>Total for core stack: $0/month.</strong> Add $20/month for Claude Pro (recommended) to get the most out of the setup. SMS and payments are pay-as-you-go with no minimums.
+      <strong>$0/month for the infrastructure.</strong> Claude Code is free to start, or $20/month (Pro) for more usage. For intensive development, the $100 or $200 plans are available. SMS and payments are pay-as-you-go with no minimums.
     </div>
   </div>
 

@@ -2,9 +2,9 @@
 
 How to set up a super low cost do-it-all system from scratch — messaging, marketing, customer management, and finance. This guide covers every vendor account, configuration step, and how to wire it all together with Claude Code as your AI developer.
 
-**Total cost: $0/month** for the core stack (hosting, database, email). Optional paid add-ons for SMS, e-signatures, and payment processing are pay-as-you-go.
+**$0/month for the infrastructure.** Claude Code is free to start, or $20/month (Pro) for more usage — $100/$200 plans available for intensive development. SMS and payments are pay-as-you-go.
 
-**The philosophy:** You create accounts and gather credentials in your browser. Claude Code handles all the terminal work — database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
+**The philosophy:** You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want — it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
 
 ---
 
@@ -54,7 +54,7 @@ Optional: Discord Bot (DigitalOcean) ───────┘
 
 Claude Code is your AI developer. Install it before anything else — for every service in this guide, you'll create accounts and copy credentials in your browser, then Claude Code handles all the terminal work.
 
-> **Recommended: Claude Pro ($20/month).** The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The [Pro plan](https://claude.ai/upgrade) gives you significantly more usage — worth it when Claude is building your entire system.
+> **Recommended: Claude Pro ($20/month) or higher.** The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The [Pro plan ($20/month)](https://claude.ai/upgrade) gives you significantly more usage. For intensive development, consider Max ($100) or Max+ ($200).
 
 ### You do (one time):
 
@@ -102,14 +102,12 @@ Claude: *installs Supabase CLI, links project, creates tables with RLS,
 
 ### You do (in your browser):
 
-1. Go to [github.com](https://github.com) and create a free account
-2. Create a new repository (public repos get free GitHub Pages)
+1. Create a free account at [github.com/join](https://github.com/join)
+2. Create a new repository at [github.com/new](https://github.com/new) (public repos get free GitHub Pages)
 3. Name it whatever you want (e.g., `my-app`)
-4. Go to repo **Settings** → **Pages**
-5. Under "Source," select **Deploy from a branch**
-6. Select **main** branch, **/ (root)** folder
-7. Click **Save**
-8. Your site is live at `https://<username>.github.io/<repo-name>/`
+4. Go to Pages settings: `https://github.com/USERNAME/REPO/settings/pages`
+5. Under "Source," select **Deploy from a branch** → **main** → **/ (root)** → **Save**
+6. Your site is live at `https://<username>.github.io/<repo-name>/`
 
 ### Paste into CLAUDE.md:
 
@@ -153,17 +151,15 @@ your-repo/
 
 ### You do (in your browser):
 
-1. Go to [supabase.com](https://supabase.com) and sign up (GitHub login works)
-2. Click **New Project**
-3. Choose an organization (create one if needed)
-4. Set a **database password** — save this securely
-5. Choose a region close to your users
-6. Click **Create new project**
-7. Once created, go to **Settings** → **API** and copy:
+1. Sign up at [supabase.com/dashboard](https://supabase.com/dashboard) (GitHub login works)
+2. Create a new project at [supabase.com/dashboard/new](https://supabase.com/dashboard/new/_)
+3. Set a **database password** — save this securely
+4. Choose a region close to your users, click **Create new project**
+5. Go to **API settings**: `supabase.com/dashboard/project/YOUR_REF/settings/api` and copy:
    - **Project URL** (e.g., `https://abcdefghijk.supabase.co`)
    - **Anon public key** (safe to embed in frontend — RLS protects your data)
    - **Project ref** (the `abcdefghijk` part of the URL)
-8. Go to **Settings** → **Database** → **Connection string** → **Session pooler** and copy the connection string
+6. Go to **Database settings**: `supabase.com/dashboard/project/YOUR_REF/settings/database` → **Connection string** → **Session pooler** tab and copy it
 
 ### Paste into CLAUDE.md:
 
@@ -226,10 +222,9 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 
 ### You do (in your browser):
 
-1. Go to [resend.com](https://resend.com) and sign up
-2. Free tier: 3,000 emails/month, 100 emails/day
-3. **Optional but recommended:** Go to **Domains** → **Add Domain**, add your domain, and add the DNS records Resend provides (MX, TXT, DKIM). Without this, you can only send from `onboarding@resend.dev`.
-4. Go to **API Keys** → **Create API Key** and copy it
+1. Sign up at [resend.com/signup](https://resend.com/signup) (free: 3,000 emails/month)
+2. **Recommended:** Add your domain at [resend.com/domains](https://resend.com/domains) and set up DNS records. Without this, you can only send from `onboarding@resend.dev`.
+3. Create an API key at [resend.com/api-keys](https://resend.com/api-keys) and copy it
 
 ### Paste into CLAUDE.md:
 
@@ -255,23 +250,19 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 
 ### You do (in your browser):
 
-1. Go to [telnyx.com](https://telnyx.com) and sign up
-2. Add a payment method (pay-as-you-go, ~$0.004/outbound SMS)
-3. Go to **Numbers** → **Search & Buy** and buy a number with SMS capability (~$1/month)
-4. Note the phone number in E.164 format (e.g., `+12125551234`)
-5. Go to **Messaging** → **Messaging Profiles** → **Add New Profile**
-6. Name it (e.g., "My App")
-7. Under **Inbound** tab, set webhook URL:
+1. Sign up at [telnyx.com/sign-up](https://telnyx.com/sign-up) and add a payment method
+2. Buy an SMS-capable number at [portal.telnyx.com → Numbers](https://portal.telnyx.com/#/app/numbers/search-numbers) (~$1/month)
+3. Note the phone number in E.164 format (e.g., `+12125551234`)
+4. Create a Messaging Profile at [portal.telnyx.com → Messaging](https://portal.telnyx.com/#/app/messaging)
+5. Set inbound webhook URL:
    ```
    https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook
    ```
-8. Under **Numbers**, assign your phone number to this profile
-9. Note the **Messaging Profile ID**
-10. Go to **Auth** → **API Keys**, create a new key and copy it
-11. Also copy the **Public Key** (for webhook signature verification)
+6. Assign your phone number to this profile, note the **Messaging Profile ID**
+7. Get your API key at [portal.telnyx.com → API Keys](https://portal.telnyx.com/#/app/api-keys), copy it + the **Public Key**
 
 **⚠️ 10DLC Registration (Required for US) — Do this now, it takes time:**
-1. Go to **Messaging** → **Compliance**
+1. Go to [portal.telnyx.com → Compliance](https://portal.telnyx.com/#/app/messaging/compliance)
 2. Create a **Brand** (Sole Proprietor is simplest)
 3. Create a **Campaign** (use case: business notifications)
 4. Assign your phone number to the campaign
@@ -316,10 +307,9 @@ Key Telnyx API details:
 
 ### You do (in your browser):
 
-1. Go to [squareup.com/signup](https://squareup.com/signup) and create a developer account
-2. Go to [developer.squareup.com](https://developer.squareup.com)
-3. Create an **Application**
-4. From the Developer Dashboard, copy:
+1. Sign up at [squareup.com/signup](https://squareup.com/signup)
+2. Create an app at [developer.squareup.com/console → Apps](https://developer.squareup.com/console/en/apps)
+3. From the app's credentials page, copy:
    - **Application ID** (starts with `sq0idp-`)
    - **Access Token** — use Sandbox for testing, Production for real charges
    - **Location ID** — go to Square Dashboard → **Locations**
@@ -360,11 +350,9 @@ Key Telnyx API details:
 
 ### You do (in your browser):
 
-1. Go to [signwell.com](https://signwell.com) and sign up
-2. Free tier: 3 documents/month (25/month with a credit card on file)
-3. Go to **Settings** → **API** and copy your API key
-4. Go to **Settings** → **Webhooks**
-5. Add your webhook URL:
+1. Sign up at [signwell.com/sign_up](https://www.signwell.com/sign_up/) (free: 3 docs/month, 25 with credit card)
+2. Copy your API key at [signwell.com → Settings → API](https://www.signwell.com/app/settings/api)
+3. Add a webhook at [signwell.com → Settings → Webhooks](https://www.signwell.com/app/settings/webhooks):
    ```
    https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook
    ```
@@ -402,8 +390,7 @@ Useful for fuzzy matching (e.g., matching bank transaction sender names to tenan
 
 ### You do (in your browser):
 
-1. Go to [aistudio.google.com](https://aistudio.google.com)
-2. Get a free API key
+1. Get a free API key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 
 ### Paste into CLAUDE.md:
 
@@ -656,6 +643,6 @@ Claude will handle everything from there — creating tables, writing edge funct
 | SignWell | $0 | 3–25 docs/month free |
 | Google Gemini | $0 | Free tier available |
 | Custom domain | ~$10/year | Optional |
-| **Claude Pro** | $20 | Recommended — your AI developer |
+| **Claude Code** | $0–$200 | Free tier available. Pro $20, Max $100, Max+ $200 for intensive development |
 
-**Total for core stack: $0/month.** Add $20/month for Claude Pro (recommended) to get the most out of the setup. SMS and payments are pay-as-you-go with no minimums.
+**$0/month for the infrastructure.** Claude Code is free to start, or $20/month (Pro) for more usage. For intensive development, the $100 or $200 plans are available. SMS and payments are pay-as-you-go with no minimums.
