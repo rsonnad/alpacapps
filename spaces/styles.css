@@ -56,8 +56,13 @@ body {
   color: white;
 }
 
-.site-nav__logo img {
+.site-nav__icon {
   height: 32px;
+  width: auto;
+}
+
+.site-nav__wordmark {
+  height: 18px;
   width: auto;
 }
 
@@ -192,8 +197,12 @@ body {
     font-size: 0.95rem;
   }
 
-  .site-nav__logo img {
+  .site-nav__icon {
     height: 28px;
+  }
+
+  .site-nav__wordmark {
+    display: none;
   }
 }
 

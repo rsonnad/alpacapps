@@ -25,8 +25,13 @@
       color: white;
     }
 
-    .site-nav__logo img {
+    .site-nav__icon {
       height: 32px;
+      width: auto;
+    }
+
+    .site-nav__wordmark {
+      height: 18px;
       width: auto;
     }
 
@@ -154,8 +159,12 @@
         font-size: 0.95rem;
       }
 
-      .site-nav__logo img {
+      .site-nav__icon {
         height: 28px;
+      }
+
+      .site-nav__wordmark {
+        display: none;
       }
     }
 
@@ -1474,9 +1483,9 @@
   <!-- Site-wide Navigation -->
   <nav class="site-nav">
     <a href="/" class="site-nav__logo">
-      <img src="/assets/branding/whitehead.png" alt="Austin Alpaca Playhouse">
-      <span>Austin Alpaca Playhouse</span>
-      <span class="site-nav__version">v260205.09</span>
+      <img src="/assets/branding/alpaca-head-inverted.jpg" alt="Alpaca Playhouse Austin" class="site-nav__icon">
+      <img src="/assets/branding/wordmark-inverted.jpeg" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
+      <span class="site-nav__version">v260205.10</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>

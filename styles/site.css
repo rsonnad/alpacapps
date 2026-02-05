@@ -177,18 +177,14 @@ ul, ol {
   gap: var(--aap-space-sm);
 }
 
-.aap-header__logo img {
+.aap-header__icon {
   height: 40px;
   width: auto;
 }
 
-.aap-header__logo-text {
-  font-family: var(--aap-font-heading);
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: inherit;
-  white-space: nowrap;
+.aap-header__wordmark {
+  height: 24px;
+  width: auto;
 }
 
 .aap-header__version {
@@ -198,9 +194,9 @@ ul, ol {
   margin-left: -0.5rem;
 }
 
-/* Hide logo text on mobile to prevent overlap with hamburger */
+/* Hide wordmark on mobile to prevent overlap with hamburger */
 @media (max-width: 767px) {
-  .aap-header__logo-text {
+  .aap-header__wordmark {
     display: none;
   }
 }
@@ -579,12 +575,21 @@ ul, ol {
 }
 
 .aap-footer__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--aap-space-sm);
   margin-bottom: var(--aap-space-md);
 }
 
-.aap-footer__logo img {
-  height: 60px;
-  margin: 0 auto;
+.aap-footer__icon {
+  height: 50px;
+  width: auto;
+}
+
+.aap-footer__wordmark {
+  height: 28px;
+  width: auto;
 }
 
 .aap-footer__social {

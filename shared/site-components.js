@@ -9,10 +9,17 @@
 // CONFIGURATION
 // =============================================
 
-// Image URLs - currently using original sources, will be updated to Supabase URLs
+// Image URLs - local branding assets
 const IMAGES = {
-  logo: 'https://images.squarespace-cdn.com/content/v1/6213d804273001551ffe5b8c/24787244-a26f-4ae0-8425-a9d8ccff06e6/playhouselogo_inverted.png?format=500w',
-  logoLight: 'https://images.squarespace-cdn.com/content/v1/6213d804273001551ffe5b8c/24787244-a26f-4ae0-8425-a9d8ccff06e6/playhouselogo_inverted.png?format=500w',
+  // Alpaca head icon
+  icon: '/assets/branding/alpaca-head.jpg',             // green on white - for light backgrounds
+  iconInverted: '/assets/branding/alpaca-head-inverted.jpg', // white on black - for dark backgrounds
+  // Wordmark
+  wordmark: '/assets/branding/wordmark.jpeg',            // dark text on white - for light backgrounds
+  wordmarkInverted: '/assets/branding/wordmark-inverted.jpeg', // light text on black - for dark backgrounds
+  // Legacy aliases
+  logo: '/assets/branding/alpaca-head-inverted.jpg',
+  logoLight: '/assets/branding/alpaca-head.jpg',
   heroAlpacas: 'https://images.squarespace-cdn.com/content/v1/6213d804273001551ffe5b8c/4e23696e-623b-4621-8f3a-c223a521131b/P1020387.jpeg',
 };
 
@@ -64,8 +71,8 @@ function renderHeader(options = {}) {
     <header class="aap-header ${headerClass} ${colorClass}" id="aap-header">
       <div class="aap-header__inner">
         <a href="${BASE_PATH}/" class="aap-header__logo">
-          <img src="${IMAGES.logo}" alt="Austin Alpaca Playhouse">
-          <span class="aap-header__logo-text">Austin Alpaca Playhouse</span>
+          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
+          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
         </a>
 
         <nav class="aap-nav" id="aap-nav">
@@ -129,7 +136,8 @@ function renderFooter() {
     <footer class="aap-footer">
       <div class="aap-footer__content">
         <div class="aap-footer__logo">
-          <img src="${IMAGES.logo}" alt="Austin Alpaca Playhouse">
+          <img src="${IMAGES.iconInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__icon">
+          <img src="${IMAGES.wordmarkInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__wordmark">
         </div>
 
         <div class="aap-footer__social">
@@ -210,17 +218,24 @@ function initSiteComponents() {
   // Header scroll behavior
   const header = document.getElementById('aap-header');
   if (header && header.classList.contains('aap-header--transparent')) {
+    const swapLogos = (useDark) => {
+      header.querySelectorAll('[data-light-src][data-dark-src]').forEach(img => {
+        img.src = useDark ? img.dataset.darkSrc : img.dataset.lightSrc;
+      });
+    };
     window.addEventListener('scroll', () => {
       if (window.scrollY > 50) {
         header.classList.remove('aap-header--transparent');
         header.classList.add('aap-header--solid');
         header.classList.remove('aap-header--light');
         header.classList.add('aap-header--dark');
+        swapLogos(true); // solid white bg → dark/green logos
       } else {
         header.classList.add('aap-header--transparent');
         header.classList.remove('aap-header--solid');
         header.classList.add('aap-header--light');
         header.classList.remove('aap-header--dark');
+        swapLogos(false); // transparent over hero → inverted/white logos
       }
     });
   }
