@@ -1600,3 +1600,180 @@
   background: #dcfce7;
   color: #166534;
 }
+
+/* =============================================
+   STATUS TRACKER (stepper in rental modal)
+   ============================================= */
+
+.status-tracker {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 0.75rem 0.5rem;
+  margin-bottom: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+  flex: 1;
+  position: relative;
+}
+
+.tracker-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.tracker-step.active .tracker-icon {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.tracker-step.complete .tracker-icon {
+  background: #d1fae5;
+  border-color: #10b981;
+}
+
+.tracker-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.tracker-step.active .tracker-label {
+  color: #3b82f6;
+}
+
+.tracker-step.complete .tracker-label {
+  color: #10b981;
+}
+
+.tracker-detail {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+  text-align: center;
+  max-width: 90px;
+  line-height: 1.2;
+}
+
+.tracker-step.active .tracker-detail {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.tracker-step.complete .tracker-detail {
+  color: #059669;
+  font-weight: 500;
+}
+
+.tracker-connector {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 2px;
+  background: #d1d5db;
+  margin-top: 16px;
+}
+
+.tracker-step.complete + .tracker-connector,
+.tracker-step.active + .tracker-connector {
+  background: #10b981;
+}
+
+/* Let connector between active and next stay grey */
+.tracker-step.active + .tracker-connector {
+  background: linear-gradient(90deg, #3b82f6, #d1d5db);
+}
+
+/* Inline status for footer buttons */
+.tracker-inline-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius);
+  background: #f3f4f6;
+  color: var(--text-muted);
+}
+
+.tracker-inline-status.complete {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Tab status badges */
+.tab-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 50%;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+.tab-badge.complete {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tab-badge.active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.tab-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@media (max-width: 500px) {
+  .status-tracker {
+    gap: 0;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .tracker-step {
+    min-width: 55px;
+  }
+
+  .tracker-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .tracker-label {
+    font-size: 0.6rem;
+  }
+
+  .tracker-detail {
+    font-size: 0.55rem;
+  }
+
+  .tracker-connector {
+    width: 16px;
+    margin-top: 13px;
+  }
+}
