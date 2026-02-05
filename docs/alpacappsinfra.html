@@ -1199,86 +1199,26 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
   <!-- 12. CLAUDE.md Template -->
   <div class="section" id="template">
     <h2>12. CLAUDE.md Template</h2>
-    <p>Copy this starter template into a file called <code>CLAUDE.md</code> in your project root. Fill in the placeholders with your actual credentials.</p>
+    <p>Download the starter template below and save it as <code>CLAUDE.md</code> in your project root. Fill in the placeholders with your actual credentials.</p>
 
-    <pre data-lang="markdown"><code># CLAUDE.md - [Your Project Name]
+    <p style="margin: 1.5rem 0;">
+      <a href="/docs/CLAUDE-TEMPLATE.md" download="CLAUDE.md" style="display: inline-flex; align-items: center; gap: 0.6rem; background: var(--text); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: background 0.2s;">
+        &darr;&ensp;Download CLAUDE.md Template
+      </a>
+    </p>
 
-This file provides context for Claude (AI assistant) when working on this codebase.
+    <p>The template includes sections for:</p>
+    <ul>
+      <li>Project overview and tech stack</li>
+      <li>Deployment instructions (push to main = live)</li>
+      <li>Supabase details: project ref, URL, anon key, psql connection string, CLI commands</li>
+      <li>External service configs: Resend, Telnyx, Square, SignWell</li>
+      <li>Coding conventions</li>
+    </ul>
 
-&gt; **IMPORTANT: You have direct database access!**
-&gt; Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.
-
-&gt; **IMPORTANT: Push changes immediately!**
-&gt; This is a GitHub Pages site - changes only go live after pushing.
-&gt; Always `git push` as soon as changes are ready.
-
-&gt; **IMPORTANT: First-time setup!**
-&gt; If the Supabase CLI is not installed or linked, run:
-&gt; `npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref YOUR_REF`
-
-## Project Overview
-
-[Your project] is a [type of system] for [purpose]. It manages [core entities].
-
-**Tech Stack:**
-- Frontend: Vanilla HTML/CSS/JavaScript (no framework)
-- Backend: Supabase (PostgreSQL + Storage + Auth)
-- Hosting: GitHub Pages (static site)
-
-**Live URLs:**
-- Public view: https://USERNAME.github.io/REPO/
-- Admin view: https://USERNAME.github.io/REPO/admin/
-
-## Deployment
-
-Push to main and it's live. No build step, no PR process.
-**For Claude:** Always push changes immediately.
-
-## Supabase Details
-
-- Project ID: `YOUR_PROJECT_REF`
-- URL: `https://YOUR_PROJECT_REF.supabase.co`
-- Anon key is in `shared/supabase.js`
-
-### Direct Database Access (for Claude)
-
-```bash
-psql "postgres://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
-```
-
-### Supabase CLI Access (for Claude)
-
-```bash
-supabase functions deploy &lt;function-name&gt;
-supabase functions logs &lt;function-name&gt;
-supabase secrets set KEY=value
-```
-
-Run these directly. If CLI not installed, install and link first.
-
-## External Services
-
-### Email (Resend)
-- API key stored as Supabase secret: `RESEND_API_KEY`
-
-### SMS (Telnyx)
-- Config in `telnyx_config` table
-- Edge functions: `send-sms`, `telnyx-webhook` (deploy with `--no-verify-jwt`)
-
-### Payments (Square)
-- Config in `square_config` table
-- Edge function: `process-square-payment`
-
-### E-Signatures (SignWell)
-- Config in `signwell_config` table
-- Edge function: `signwell-webhook` (deploy with `--no-verify-jwt`)
-
-## Conventions
-
-1. Use toast notifications, not alert()
-2. Filter archived items client-side
-3. Don't expose personal info in public views
-4. Client-side image compression for files &gt; 500KB</code></pre>
+    <div class="callout">
+      <strong>Tip:</strong> If you use the <code>/setup-infra</code> skill, Claude will build this file for you automatically as it sets up each service.
+    </div>
   </div>
 
   <!-- 13. Day-One Checklist -->
