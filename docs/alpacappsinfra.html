@@ -432,6 +432,151 @@
       .cap-grid { grid-template-columns: 1fr; }
     }
 
+    /* Stack diagram */
+    .stack-wrapper {
+      display: flex;
+      gap: 1rem;
+      align-items: stretch;
+    }
+    .stack-layers {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .stack-layer {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .stack-layer + .stack-layer { border-top: none; }
+    .stack-layer:first-child { border-radius: 8px 8px 0 0; }
+    .stack-layer:last-child { border-radius: 0 0 8px 8px; }
+    .layer-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+    .layer-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .layer-items span {
+      font-size: 0.82rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .layer-services {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+    .layer-desc {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .layer-external {
+      background: var(--bg-warm);
+      border-style: dashed;
+      border-color: var(--border);
+    }
+    .layer-external + .stack-layer { border-top: 1px solid var(--border); }
+    .layer-external .layer-label { color: var(--text-muted); }
+    .layer-external .layer-items span {
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+    }
+
+    .layer-capabilities { background: var(--bg); }
+    .layer-capabilities .layer-label { color: #8a6f3e; }
+    .layer-capabilities .layer-items span {
+      background: var(--accent-light);
+      color: #6b5230;
+    }
+
+    .layer-crm {
+      background: var(--success-light);
+      border-color: var(--success);
+    }
+    .layer-crm + .stack-layer { border-top: 1px solid var(--success); }
+    .layer-crm .layer-label { color: var(--success); }
+    .layer-crm .layer-desc { color: #4a6b3a; }
+
+    .layer-foundation {
+      background: var(--text);
+      border-color: var(--text);
+    }
+    .layer-foundation .layer-label { color: var(--accent); }
+    .layer-foundation .layer-items span {
+      background: rgba(201,168,124,0.15);
+      color: var(--accent);
+    }
+    .layer-foundation .layer-services { color: rgba(255,255,255,0.5); }
+
+    .stack-sidebar {
+      width: 140px;
+      flex-shrink: 0;
+      background: var(--claude-bg);
+      border: 2px solid var(--claude-border);
+      border-radius: 8px;
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+    .stack-sidebar::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 20%;
+      bottom: 20%;
+      width: 0;
+      border-left: 2px dashed var(--claude-border);
+      opacity: 0.4;
+    }
+    .sidebar-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #5a4a7a;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-desc {
+      font-size: 0.75rem;
+      color: #7c6a9a;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+    .sidebar-cost {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #5a4a7a;
+      background: rgba(124,106,154,0.12);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    @media (max-width: 640px) {
+      .stack-wrapper { flex-direction: column; }
+      .stack-sidebar {
+        width: 100%;
+        flex-direction: row;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .stack-sidebar::before { display: none; }
+      .sidebar-label { margin-bottom: 0; }
+      .sidebar-desc { margin-bottom: 0; }
+    }
+
     /* ---- AAP Header & Navigation ---- */
     .aap-header {
       position: fixed;
@@ -640,79 +785,52 @@
 
   <div class="capabilities">
     <h2>What can you build with this?</h2>
-    <p>Pick the capabilities you need. The core platform is always included &mdash; everything else is optional.</p>
+    <p>A full-stack business platform. The layers build on each other &mdash; pick what you need.</p>
 
-    <div class="cap-grid">
-      <div class="cap-card core">
-        <div class="cap-header">
-          <span class="cap-name">Website + Admin Dashboard</span>
-          <span class="cap-tag core-tag">Core</span>
+    <div class="stack-wrapper">
+      <div class="stack-layers">
+
+        <div class="stack-layer layer-external">
+          <div class="layer-label">Your Customers &amp; Partners</div>
+          <div class="layer-items">
+            <span>Consumers</span>
+            <span>Banks</span>
+            <span>External Services</span>
+          </div>
         </div>
-        <div class="cap-desc">Public-facing site and private admin panel. Static hosting, no server needed.</div>
-        <div class="cap-service">GitHub Pages &bull; Free</div>
+
+        <div class="stack-layer layer-capabilities">
+          <div class="layer-label">Capabilities</div>
+          <div class="layer-items">
+            <span>Email</span>
+            <span>SMS</span>
+            <span>Payments</span>
+            <span>E-Signatures</span>
+            <span>AI Features</span>
+          </div>
+          <div class="layer-services">Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini</div>
+        </div>
+
+        <div class="stack-layer layer-crm">
+          <div class="layer-label">Your Business</div>
+          <div class="layer-desc">CRM &amp; customer management &mdash; contacts, relationships, communications, documents, payments</div>
+        </div>
+
+        <div class="stack-layer layer-foundation">
+          <div class="layer-label">Foundation</div>
+          <div class="layer-items">
+            <span>Database + Auth + Storage</span>
+            <span>Website + Hosting</span>
+          </div>
+          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Free</div>
+        </div>
+
       </div>
 
-      <div class="cap-card core">
-        <div class="cap-header">
-          <span class="cap-name">Database + Storage + Auth</span>
-          <span class="cap-tag core-tag">Core</span>
-        </div>
-        <div class="cap-desc">PostgreSQL database, file storage, user authentication, and serverless functions.</div>
-        <div class="cap-service">Supabase &bull; Free</div>
-      </div>
-
-      <div class="cap-card core">
-        <div class="cap-header">
-          <span class="cap-name">AI Developer</span>
-          <span class="cap-tag core-tag">Core</span>
-        </div>
-        <div class="cap-desc">Claude Code builds your app, deploys changes, manages the database. Your entire dev team.</div>
-        <div class="cap-service">Claude Code &bull; Free&ndash;$200/mo</div>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-header">
-          <span class="cap-name">Email Notifications</span>
-          <span class="cap-tag optional-tag">Optional</span>
-        </div>
-        <div class="cap-desc">Transactional emails: reminders, confirmations, receipts, announcements.</div>
-        <div class="cap-service">Resend &bull; Free (3,000/mo)</div>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-header">
-          <span class="cap-name">SMS Messaging</span>
-          <span class="cap-tag optional-tag">Optional</span>
-        </div>
-        <div class="cap-desc">Outbound and inbound SMS. Notifications, reminders, two-way conversations.</div>
-        <div class="cap-service">Telnyx &bull; ~$0.004/msg</div>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-header">
-          <span class="cap-name">Payment Processing</span>
-          <span class="cap-tag optional-tag">Optional</span>
-        </div>
-        <div class="cap-desc">Accept credit card payments online. Invoicing, receipts, refunds.</div>
-        <div class="cap-service">Square &bull; 2.9% + 30&cent;</div>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-header">
-          <span class="cap-name">E-Signatures</span>
-          <span class="cap-tag optional-tag">Optional</span>
-        </div>
-        <div class="cap-desc">Generate contracts from templates and send for digital signature.</div>
-        <div class="cap-service">SignWell &bull; Free (3&ndash;25 docs/mo)</div>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-header">
-          <span class="cap-name">AI-Powered Features</span>
-          <span class="cap-tag optional-tag">Optional</span>
-        </div>
-        <div class="cap-desc">Fuzzy matching, smart categorization, natural language search within your app.</div>
-        <div class="cap-service">Google Gemini &bull; Free</div>
+      <div class="stack-sidebar">
+        <div class="sidebar-label">Claude Code</div>
+        <div class="sidebar-desc">AI Developer &mdash; builds and manages every layer</div>
+        <div class="sidebar-cost">Free&ndash;$200/mo</div>
       </div>
     </div>
   </div>
