@@ -901,11 +901,16 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     </div>
 
     <h3>Get the starter template</h3>
-    <p>Enter your project name, then copy-paste the commands below to clone the starter repo and open it in Claude Code:</p>
+    <p>Enter your GitHub username and choose a project name. The project name will become your GitHub repo name &mdash; lowercase with hyphens, no spaces (e.g., <code>my-salon-app</code>).</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
-      <input type="text" id="clone-project-name" placeholder="my-salon-app" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCloneCommands()">
+      <input type="text" id="github-username" placeholder="GitHub username" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 180px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCloneCommands()">
+      <input type="text" id="clone-project-name" placeholder="my-salon-app" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 220px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCloneCommands()">
+      <button onclick="checkRepoName()" style="background: var(--bg-warm); color: var(--text); padding: 0.7rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid var(--border); cursor: pointer; font-family: inherit; white-space: nowrap;">Check availability</button>
     </div>
+    <div id="repo-check-result" style="font-size: 0.85rem; margin: -0.5rem 0 1rem 0; min-height: 1.4em;"></div>
+
+    <p>Copy-paste these commands to clone the starter template into your project folder:</p>
 
     <pre data-lang="bash" style="position: relative;"><code id="clone-commands">git clone https://github.com/rsonnad/alpacapps-infra.git my-salon-app
 cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Copy</button></pre>
@@ -1330,6 +1335,8 @@ function updateCloneCommands() {
   var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   document.getElementById('clone-commands').textContent =
     'git clone https://github.com/rsonnad/alpacapps-infra.git ' + slug + '\ncd ' + slug;
+  // Clear previous check result when name changes
+  document.getElementById('repo-check-result').textContent = '';
 }
 function copyCloneCommands() {
   var text = document.getElementById('clone-commands').textContent;
@@ -1338,6 +1345,28 @@ function copyCloneCommands() {
     btn.textContent = 'Copied!';
     setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
   });
+}
+function checkRepoName() {
+  var username = document.getElementById('github-username').value.trim();
+  var name = document.getElementById('clone-project-name').value.trim();
+  var result = document.getElementById('repo-check-result');
+  if (!username) { result.innerHTML = '<span style="color:var(--text-muted);">Enter your GitHub username first.</span>'; return; }
+  if (!name) { result.innerHTML = '<span style="color:var(--text-muted);">Enter a project name first.</span>'; return; }
+  var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  result.innerHTML = '<span style="color:var(--text-muted);">Checking...</span>';
+  fetch('https://api.github.com/repos/' + username + '/' + slug)
+    .then(function(r) {
+      if (r.status === 404) {
+        result.innerHTML = '<span style="color:var(--success); font-weight:600;">\u2713 "' + slug + '" is available for ' + username + '</span>';
+      } else if (r.ok) {
+        result.innerHTML = '<span style="color:#c0392b; font-weight:600;">\u2717 "' + slug + '" is already taken \u2014 choose a different name</span>';
+      } else {
+        result.innerHTML = '<span style="color:var(--text-muted);">Could not check \u2014 verify manually at github.com/' + username + '/' + slug + '</span>';
+      }
+    })
+    .catch(function() {
+      result.innerHTML = '<span style="color:var(--text-muted);">Network error \u2014 verify manually at github.com/' + username + '</span>';
+    });
 }
 
 // Download CLAUDE.md template with project name substituted

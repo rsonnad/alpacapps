@@ -33,7 +33,7 @@ Pick the capabilities you need. The core platform is always included — everyth
 ## Table of Contents
 
 1. [Architecture Overview](#1-architecture-overview)
-2. [Install Claude Code First](#2-install-claude-code-first)
+2. [Get Started with Claude Code](#2-get-started-with-claude-code)
 3. [GitHub + GitHub Pages (Hosting)](#3-github--github-pages-hosting)
 4. [Supabase (Database + Storage + Edge Functions)](#4-supabase-database--storage--edge-functions)
 5. [Resend (Email)](#5-resend-email)
@@ -72,18 +72,17 @@ Optional: Discord Bot (DigitalOcean) ───────┘
 
 ---
 
-## 2. Install Claude Code First
+## 2. Get Started with Claude Code
 
-Claude Code is your AI developer. Install it before anything else — for every service in this guide, you'll create accounts and copy credentials in your browser, then Claude Code handles all the terminal work.
+Claude Code is your AI developer. Set it up before anything else — for every service in this guide, you create accounts and copy credentials in your browser, then Claude Code handles all the terminal work.
 
 > **Recommended: Claude Pro ($20/month) or higher.** The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The [Pro plan ($20/month)](https://claude.ai/upgrade) gives you significantly more usage. For intensive development, consider Max ($100) or Max+ ($200).
 
-### You do (one time):
+### Step 1: Install Claude Code
 
 1. Sign up for [Claude Pro](https://claude.ai) ($20/month recommended)
 2. Download the [Claude desktop app](https://claude.ai/download) — Claude Code is built in
 3. Open the app, click the **terminal icon** or press `Ctrl+`` to open Claude Code
-4. Point it at your project folder and create a `CLAUDE.md` file in the root (see [Section 12](#12-claudemd-template) for the full template)
 
 > **Prefer the command line?** You can also install Claude Code as a CLI tool:
 > ```bash
@@ -91,15 +90,26 @@ Claude Code is your AI developer. Install it before anything else — for every 
 > ```
 > Then run `claude` in your project directory. Same features, same skills — just a terminal interface instead of the desktop app.
 
-### The easy way: use the setup skill
+### Step 2: Clone the starter template
 
-This repo includes a built-in skill that walks you through the entire setup interactively. Just type:
+Clone the [alpacapps-infra](https://github.com/rsonnad/alpacapps-infra) starter repo. Replace `my-project` with your project name — this will also become your GitHub repo name, so choose something unique (lowercase, hyphens, no spaces):
+
+```bash
+git clone https://github.com/rsonnad/alpacapps-infra.git my-project
+cd my-project
+```
+
+This gives you the setup skill and CLAUDE.md template — everything Claude Code needs to build out your infrastructure. The setup skill will create your own GitHub repo under your account and disconnect from the starter template automatically (or see [Section 3](#3-github--github-pages-hosting) if doing it manually).
+
+### Step 3: Run the setup skill
+
+Open the cloned folder in Claude Code and type:
 
 ```
 /setup-alpacapps-infra
 ```
 
-Claude will ask you for credentials one service at a time, validate each one, build everything out, and push. You don't need to read the rest of this guide — the skill covers it all.
+Claude will ask you what you're building, which services you need, then walk you through the entire setup — creating your database, deploying edge functions, configuring webhooks, and building your CLAUDE.md. You don't need to read the rest of this guide unless you want to understand what's happening under the hood.
 
 ### How it works (if doing it manually)
 
@@ -122,11 +132,20 @@ Claude: *installs Supabase CLI, links project, creates tables with RLS,
 
 ## 3. GitHub + GitHub Pages (Hosting)
 
+> **Note:** This guide uses GitHub Pages for free static hosting. If you prefer GitLab, Codeberg, or another host, the Supabase/service setup works the same — you'd just need to handle hosting and deployment differently. The `/setup-alpacapps-infra` skill is built for GitHub.
+
+If you used the setup skill, it already created your repo and enabled Pages. If doing it manually:
+
 ### You do (in your browser):
 
-1. Create a free account at [github.com/join](https://github.com/join)
-2. Create a new repository at [github.com/new](https://github.com/new) (public repos get free GitHub Pages)
-3. Name it whatever you want (e.g., `my-app`)
+1. Create a free account at [github.com/join](https://github.com/join) (if you don't have one)
+2. Create a new repository at [github.com/new](https://github.com/new) — use the same name you chose when cloning the starter template (public repos get free GitHub Pages)
+3. In your cloned project folder, switch the remote to your new repo:
+   ```bash
+   git remote remove origin
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+   git push -u origin main
+   ```
 4. Go to Pages settings: `https://github.com/USERNAME/REPO/settings/pages`
 5. Under "Source," select **Deploy from a branch** → **main** → **/ (root)** → **Save**
 6. Your site is live at `https://<username>.github.io/<repo-name>/`
@@ -465,137 +484,16 @@ If you want a Discord bot that queries your database:
 
 ## 12. CLAUDE.md Template
 
-Copy this starter template into a file called `CLAUDE.md` in your project root. Fill in the placeholders with your actual credentials from the steps above.
+If you used the `/setup-alpacapps-infra` skill, Claude built your `CLAUDE.md` automatically during setup. No manual steps needed.
 
-```markdown
-# CLAUDE.md - [Your Project Name]
+If you're doing it manually, download the template from the [infra guide](https://rsonnad.github.io/alpacapps/docs/alpacappsinfra.html#template) — enter your project name and click Download. Alternatively, the starter repo includes `CLAUDE-TEMPLATE.md` which you can rename to `CLAUDE.md` and fill in with your credentials.
 
-This file provides context for Claude (AI assistant) when working on this codebase.
-
-> **IMPORTANT: You have direct database access!**
-> See "Direct Database Access" section below.
-> Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.
-
-> **IMPORTANT: Push changes immediately!**
-> This is a GitHub Pages site - changes only go live after pushing.
-> Always `git push` as soon as changes are ready.
-
-> **IMPORTANT: First-time setup!**
-> If the Supabase CLI is not installed or linked, run:
-> `npm install -g supabase && supabase login && supabase link --project-ref YOUR_PROJECT_REF`
-
-## Project Overview
-
-[Your project] is a [type of system] for [purpose]. It manages [core entities].
-
-**Tech Stack:**
-- Frontend: Vanilla HTML/CSS/JavaScript (no framework)
-- Backend: Supabase (PostgreSQL + Storage + Auth)
-- Hosting: GitHub Pages (static site)
-
-**Live URLs:**
-- Public view: https://USERNAME.github.io/REPO/
-- Admin view: https://USERNAME.github.io/REPO/admin/
-- Repository: https://github.com/USERNAME/REPO
-
-## Architecture
-
-\```
-Browser → GitHub Pages (static HTML/JS) → Supabase (database + storage)
-\```
-
-No server-side code - all logic runs client-side. Supabase handles data persistence.
-
-## Database Schema (Supabase)
-
-### Core Tables
-[List all your tables, columns, and relationships]
-
-## Common Patterns
-
-### Fetching Data
-\```javascript
-const { data } = await supabase
-  .from('your_table')
-  .select('*')
-  .order('created_at', { ascending: false });
-\```
-
-## Deployment
-
-This site deploys directly to GitHub Pages from the `main` branch. No build step, no PR process — just push to main and it's live.
-
-\```bash
-git add <files>
-git commit -m "Description"
-git push
-# Changes are live in 1-2 minutes
-\```
-
-**For Claude:** Always push changes immediately after making them. Don't wait for user confirmation.
-
-## Supabase Details
-
-- Project ID: `YOUR_PROJECT_REF`
-- URL: `https://YOUR_PROJECT_REF.supabase.co`
-- Anon key is in `shared/supabase.js` (safe to expose, RLS protects data)
-
-### Direct Database Access (for Claude)
-
-\```bash
-psql "postgres://postgres.YOUR_REF:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
-\```
-
-- URL-encode special characters in the password (e.g., `!` → `%21`)
-- Always use this for database migrations — don't ask the user to run SQL manually
-
-### Supabase CLI Access (for Claude)
-
-\```bash
-# Deploy edge functions
-supabase functions deploy <function-name>
-
-# View function logs
-supabase functions logs <function-name>
-
-# Set secrets
-supabase secrets set KEY=value
-\```
-
-**For Claude:** Run these commands directly — don't ask the user to run them manually.
-If the CLI is not yet installed/linked, install and link it first.
-
-## External Services
-
-### Email (Resend)
-- API key stored as Supabase secret: `RESEND_API_KEY`
-- From address: notifications@yourdomain.com
-- Edge function: `send-email`
-
-### SMS (Telnyx)
-- Config in `telnyx_config` table (api_key, messaging_profile_id, phone_number, test_mode)
-- Edge functions: `send-sms` (outbound), `telnyx-webhook` (inbound)
-- Deploy webhooks with `--no-verify-jwt`
-- Auth: Bearer token (NOT Basic auth)
-- API endpoint: https://api.telnyx.com/v2/messages
-
-### Payments (Square)
-- Config in `square_config` table (application_id, access_token, location_id, environment)
-- Edge function: `process-square-payment`
-- Client SDK: square-service.js (card tokenization)
-
-### E-Signatures (SignWell)
-- Config in `signwell_config` table (api_key, webhook_secret, test_mode)
-- Edge function: `signwell-webhook` (deploy with `--no-verify-jwt`)
-- API base: https://www.signwell.com/api/v1
-
-## Conventions
-
-1. Use toast notifications, not `alert()`
-2. Filter archived/deleted items client-side
-3. Don't expose personal info in public views
-4. Client-side image compression for files > 500KB
-```
+The template includes sections for:
+- Project overview and tech stack
+- Deployment instructions (push to main = live)
+- Supabase details: project ref, URL, anon key, psql connection string, CLI commands
+- External service configs: Resend, Telnyx, Square, SignWell
+- Coding conventions
 
 ---
 

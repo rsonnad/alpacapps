@@ -45,18 +45,24 @@ Remember their choices and skip everything they don't need.
 
 ### Step 2: GitHub + GitHub Pages
 
+The user likely cloned the `alpacapps-infra` starter repo. You need to disconnect from that origin and create their own repo.
+
+**First, ask the user what they want to name their repo.** The name must be unique on their GitHub account (no spaces, use hyphens). Example: `my-salon-app`.
+
 **Try `gh` first.** Run `gh auth status` to check if GitHub CLI is available and authenticated.
 
 **If `gh` is available:**
-1. Ask the user what they want to name the repo
-2. Run `gh repo create {name} --public --clone` (or `--source .` if already in a directory)
-3. Run `gh api repos/{OWNER}/{REPO}/pages -X POST -f build_type=workflow` or enable Pages via the API
-4. Tell the user: "Repo created and Pages enabled. Your site will be live at https://{USERNAME}.github.io/{REPO}/"
+1. Check if the name is taken: `gh repo view {USERNAME}/{name} 2>&1` — if it exists, tell the user and ask for a different name
+2. Remove the starter origin: `git remote remove origin`
+3. Create their repo: `gh repo create {name} --public --source . --push`
+4. Enable Pages: `gh api repos/{OWNER}/{REPO}/pages -X POST -f build_type=workflow` (or via API)
+5. Tell the user: "Repo created and Pages enabled. Your site will be live at https://{USERNAME}.github.io/{REPO}/"
 
 **If `gh` is NOT available:**
-1. Tell the user: "Create a repo at https://github.com/new (public, for free GitHub Pages) and paste the URL here."
-2. After getting the URL, `git init`, set remote, push
-3. Tell the user: "Enable GitHub Pages at https://github.com/{USERNAME}/{REPO}/settings/pages — select Deploy from branch → main → / (root) → Save."
+1. Remove the starter origin: `git remote remove origin`
+2. Tell the user: "Create a repo named `{name}` at https://github.com/new (public, for free GitHub Pages) and paste the URL here."
+3. After getting the URL, set remote and push: `git remote add origin {URL} && git push -u origin main`
+4. Tell the user: "Enable GitHub Pages at https://github.com/{USERNAME}/{REPO}/settings/pages — select Deploy from branch → main → / (root) → Save."
 
 **Then** create the project folder structure adapted to their domain, scaffold CLAUDE.md, commit, and push.
 
