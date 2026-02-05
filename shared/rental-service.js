@@ -136,6 +136,8 @@ async function getApplications(filters = {}) {
  * Get a single application by ID
  */
 async function getApplication(applicationId) {
+  if (!applicationId) throw new Error('Application ID is required');
+
   const { data, error } = await supabase
     .from('rental_applications')
     .select(`

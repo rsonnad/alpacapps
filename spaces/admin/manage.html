@@ -7612,6 +7612,7 @@
     }
 
     async function previewLease() {
+      if (!currentApplicationId) return;
       const leasePreviewContainer = document.getElementById('leasePreviewContainer');
       const leasePreview = document.getElementById('leasePreview');
 
@@ -7657,6 +7658,7 @@
     }
 
     async function generateLeasePdf() {
+      if (!currentApplicationId) return;
       const btn = document.getElementById('generatePdfBtn');
       const originalText = btn.textContent;
       btn.textContent = 'Generating...';
