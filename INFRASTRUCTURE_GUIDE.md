@@ -54,19 +54,22 @@ Optional: Discord Bot (DigitalOcean) ───────┘
 
 Claude Code is your AI developer. Install it before anything else — for every service in this guide, you'll create accounts and copy credentials in your browser, then Claude Code handles all the terminal work.
 
+> **Recommended: Claude Pro ($20/month).** The free tier works, but you'll hit usage limits quickly when setting up infrastructure. The [Pro plan](https://claude.ai/upgrade) gives you significantly more usage — worth it when Claude is building your entire system.
+
 ### You do (one time):
 
-1. Make sure you have Node.js installed (download from [nodejs.org](https://nodejs.org) if needed)
-2. Open your terminal and run:
+1. Sign up for [Claude Pro](https://claude.ai) ($20/month recommended)
+2. Make sure you have Node.js installed (download from [nodejs.org](https://nodejs.org) if needed)
+3. Open your terminal and run:
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
-3. Create a project folder and initialize it:
+4. Create a project folder and initialize it:
 ```bash
 mkdir my-project && cd my-project
 git init
 ```
-4. Create a `CLAUDE.md` file in the project root (see [Section 12](#12-claudemd-template) for the full template)
+5. Create a `CLAUDE.md` file in the project root (see [Section 12](#12-claudemd-template) for the full template)
 
 ### How it works from here
 
@@ -645,5 +648,6 @@ Claude will handle everything from there — creating tables, writing edge funct
 | SignWell | $0 | 3–25 docs/month free |
 | Google Gemini | $0 | Free tier available |
 | Custom domain | ~$10/year | Optional |
+| **Claude Pro** | $20 | Recommended — your AI developer |
 
-**Total for core stack: $0/month.** SMS and payments are pay-as-you-go with no minimums.
+**Total for core stack: $0/month.** Add $20/month for Claude Pro (recommended) to get the most out of the setup. SMS and payments are pay-as-you-go with no minimums.
