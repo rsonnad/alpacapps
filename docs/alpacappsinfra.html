@@ -1199,13 +1199,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
   <!-- 12. CLAUDE.md Template -->
   <div class="section" id="template">
     <h2>12. CLAUDE.md Template</h2>
-    <p>Download the starter template below and save it as <code>CLAUDE.md</code> in your project root. Fill in the placeholders with your actual credentials.</p>
+    <p>Enter your project name and download a ready-to-use <code>CLAUDE.md</code> template. Save it in your project root and fill in the credential placeholders.</p>
 
-    <p style="margin: 1.5rem 0;">
-      <a href="/docs/CLAUDE-TEMPLATE.md" download="CLAUDE.md" style="display: inline-flex; align-items: center; gap: 0.6rem; background: var(--text); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: background 0.2s;">
-        &darr;&ensp;Download CLAUDE.md Template
-      </a>
-    </p>
+    <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
+      <input type="text" id="project-name-input" placeholder="My Project Name" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      <button onclick="downloadTemplate()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--text); color: #ffffff; padding: 0.7rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='var(--text)'">&darr;&ensp;Download CLAUDE.md</button>
+    </div>
 
     <p>The template includes sections for:</p>
     <ul>
@@ -1316,6 +1315,75 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 </div>
 
 <script>
+// Download CLAUDE.md template with project name substituted
+function downloadTemplate() {
+  var name = document.getElementById('project-name-input').value.trim() || 'My Project';
+  var template = '# CLAUDE.md - ' + name + '\n\n' +
+    'This file provides context for Claude (AI assistant) when working on this codebase.\n\n' +
+    '> **IMPORTANT: You have direct database access!**\n' +
+    '> Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.\n\n' +
+    '> **IMPORTANT: Push changes immediately!**\n' +
+    '> This is a GitHub Pages site - changes only go live after pushing.\n' +
+    '> Always `git push` as soon as changes are ready.\n\n' +
+    '> **IMPORTANT: First-time setup!**\n' +
+    '> If the Supabase CLI is not installed or linked, run:\n' +
+    '> `npm install -g supabase && supabase login && supabase link --project-ref YOUR_REF`\n\n' +
+    '## Project Overview\n\n' +
+    name + ' is a [type of system] for [purpose]. It manages [core entities].\n\n' +
+    '**Tech Stack:**\n' +
+    '- Frontend: Vanilla HTML/CSS/JavaScript (no framework)\n' +
+    '- Backend: Supabase (PostgreSQL + Storage + Auth)\n' +
+    '- Hosting: GitHub Pages (static site)\n\n' +
+    '**Live URLs:**\n' +
+    '- Public view: https://USERNAME.github.io/REPO/\n' +
+    '- Admin view: https://USERNAME.github.io/REPO/admin/\n\n' +
+    '## Deployment\n\n' +
+    'Push to main and it\'s live. No build step, no PR process.\n' +
+    '**For Claude:** Always push changes immediately.\n\n' +
+    '## Supabase Details\n\n' +
+    '- Project ID: `YOUR_PROJECT_REF`\n' +
+    '- URL: `https://YOUR_PROJECT_REF.supabase.co`\n' +
+    '- Anon key is in `shared/supabase.js`\n\n' +
+    '### Direct Database Access (for Claude)\n\n' +
+    '```bash\n' +
+    'psql "postgres://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"\n' +
+    '```\n\n' +
+    '### Supabase CLI Access (for Claude)\n\n' +
+    '```bash\n' +
+    'supabase functions deploy <function-name>\n' +
+    'supabase functions logs <function-name>\n' +
+    'supabase secrets set KEY=value\n' +
+    '```\n\n' +
+    'Run these directly. If CLI not installed, install and link first.\n\n' +
+    '## External Services\n\n' +
+    '### Email (Resend)\n' +
+    '- API key stored as Supabase secret: `RESEND_API_KEY`\n\n' +
+    '### SMS (Telnyx)\n' +
+    '- Config in `telnyx_config` table\n' +
+    '- Edge functions: `send-sms`, `telnyx-webhook` (deploy with `--no-verify-jwt`)\n\n' +
+    '### Payments (Square)\n' +
+    '- Config in `square_config` table\n' +
+    '- Edge function: `process-square-payment`\n\n' +
+    '### E-Signatures (SignWell)\n' +
+    '- Config in `signwell_config` table\n' +
+    '- Edge function: `signwell-webhook` (deploy with `--no-verify-jwt`)\n\n' +
+    '## Conventions\n\n' +
+    '1. Use toast notifications, not alert()\n' +
+    '2. Filter archived items client-side\n' +
+    '3. Don\'t expose personal info in public views\n' +
+    '4. Client-side image compression for files > 500KB\n';
+
+  var blob = new Blob([template], { type: 'text/markdown' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'CLAUDE.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 (function() {
   // Header scroll behavior
   const header = document.getElementById('aap-header');
