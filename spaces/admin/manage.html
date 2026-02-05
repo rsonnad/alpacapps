@@ -2353,6 +2353,33 @@
           <button class="detail-tab" data-detail-tab="history">History</button>
         </div>
 
+        <!-- Status Tracker -->
+        <div id="rentalStatusTracker" class="status-tracker">
+          <div class="tracker-step" id="trackerTerms">
+            <div class="tracker-icon">📋</div>
+            <div class="tracker-label">Terms</div>
+            <div class="tracker-detail" id="trackerTermsDetail">—</div>
+          </div>
+          <div class="tracker-connector"></div>
+          <div class="tracker-step" id="trackerAgreement">
+            <div class="tracker-icon">📄</div>
+            <div class="tracker-label">Agreement</div>
+            <div class="tracker-detail" id="trackerAgreementDetail">—</div>
+          </div>
+          <div class="tracker-connector"></div>
+          <div class="tracker-step" id="trackerDeposit">
+            <div class="tracker-icon">💰</div>
+            <div class="tracker-label">Deposit</div>
+            <div class="tracker-detail" id="trackerDepositDetail">—</div>
+          </div>
+          <div class="tracker-connector"></div>
+          <div class="tracker-step" id="trackerMoveIn">
+            <div class="tracker-icon">🏠</div>
+            <div class="tracker-label">Move-in</div>
+            <div class="tracker-detail" id="trackerMoveInDetail">—</div>
+          </div>
+        </div>
+
         <!-- Applicant Tab -->
         <div id="applicantTab" class="detail-tab-content active">
           <div class="applicant-info">
@@ -2787,7 +2814,7 @@
                 <input type="number" id="eventTermRentalFee" min="0" step="1" value="295">
               </div>
               <div class="form-group">
-                <label for="eventTermReservationFee">Reservation Fee ($)</label>
+                <label for="eventTermReservationFee">Reservation Deposit ($)</label>
                 <input type="number" id="eventTermReservationFee" min="0" step="1" value="95">
                 <small class="form-hint">Credits toward rental fee</small>
               </div>
@@ -2879,7 +2906,7 @@
 
           <div class="deposits-grid">
             <div class="deposit-card">
-              <h4>Reservation Fee</h4>
+              <h4>Reservation Deposit</h4>
               <p class="deposit-amount" id="eventReservationDepositAmount">$95</p>
               <p class="deposit-status" id="eventReservationDepositStatus">Pending</p>
               <button type="button" id="recordEventReservationBtn" class="btn-small btn-primary">Record Payment</button>
@@ -7039,7 +7066,8 @@
       document.getElementById('rentMonthlyAmount').textContent =
         rentalService.formatCurrency(app.approved_rate);
 
-      // Update action buttons
+      // Update status tracker and action buttons
+      updateRentalStatusTracker(app);
       updateRentalActions(app);
 
       // Re-evaluate action buttons when terms fields change
@@ -7064,6 +7092,76 @@
       document.querySelectorAll('.detail-tab-content').forEach(c => {
         c.classList.toggle('active', c.id === tabName + 'Tab');
       });
+    }
+
+    function updateRentalStatusTracker(app) {
+      const tracker = document.getElementById('rentalStatusTracker');
+      if (!tracker) return;
+
+      // Terms step
+      const termsStep = document.getElementById('trackerTerms');
+      const termsDetail = document.getElementById('trackerTermsDetail');
+      const hasTerms = app.approved_space_id && app.approved_rate && app.approved_move_in;
+      termsStep.className = 'tracker-step ' + (hasTerms ? 'complete' : (app.application_status === 'approved' || app.application_status === 'under_review' ? 'active' : 'pending'));
+      termsDetail.textContent = hasTerms ? 'Filled' : 'Incomplete';
+
+      // Agreement step
+      const agreementStep = document.getElementById('trackerAgreement');
+      const agreementDetail = document.getElementById('trackerAgreementDetail');
+      const agStatus = app.agreement_status || 'pending';
+      const agLabels = { pending: 'Not started', generated: 'PDF generated', sent: 'Sent for signature', signed: 'Signed ✓' };
+      agreementStep.className = 'tracker-step ' + (agStatus === 'signed' ? 'complete' : (agStatus !== 'pending' ? 'active' : 'pending'));
+      agreementDetail.textContent = agLabels[agStatus] || agStatus;
+
+      // Deposit step
+      const depositStep = document.getElementById('trackerDeposit');
+      const depositDetail = document.getElementById('trackerDepositDetail');
+      const depStatus = app.deposit_status || 'pending';
+      const depLabels = { pending: 'Not started', requested: 'Requested', partial: 'Partial', received: 'Received', confirmed: 'Confirmed ✓' };
+      depositStep.className = 'tracker-step ' + (depStatus === 'confirmed' ? 'complete' : (depStatus !== 'pending' ? 'active' : 'pending'));
+      depositDetail.textContent = depLabels[depStatus] || depStatus;
+
+      // Move-in step
+      const moveInStep = document.getElementById('trackerMoveIn');
+      const moveInDetail = document.getElementById('trackerMoveInDetail');
+      if (app.move_in_confirmed_at) {
+        moveInStep.className = 'tracker-step complete';
+        moveInDetail.textContent = 'Confirmed ✓';
+      } else if (depStatus === 'confirmed' && agStatus === 'signed') {
+        moveInStep.className = 'tracker-step active';
+        moveInDetail.textContent = 'Ready';
+      } else {
+        moveInStep.className = 'tracker-step pending';
+        // Show what's blocking
+        const blockers = [];
+        if (agStatus !== 'signed') blockers.push('agreement');
+        if (depStatus !== 'confirmed') blockers.push('deposit');
+        moveInDetail.textContent = blockers.length ? 'Needs ' + blockers.join(' & ') : '—';
+      }
+
+      // Update tab badges
+      const docsTab = document.querySelector('.detail-tab[data-detail-tab="documents"]');
+      const depsTab = document.querySelector('.detail-tab[data-detail-tab="deposits"]');
+      if (docsTab) {
+        if (agStatus === 'signed') {
+          docsTab.innerHTML = 'Documents <span class="tab-badge complete">✓</span>';
+        } else if (agStatus === 'sent') {
+          docsTab.innerHTML = 'Documents <span class="tab-badge active">⏳</span>';
+        } else if (agStatus === 'generated') {
+          docsTab.innerHTML = 'Documents <span class="tab-badge warning">!</span>';
+        } else {
+          docsTab.innerHTML = 'Documents';
+        }
+      }
+      if (depsTab) {
+        if (depStatus === 'confirmed') {
+          depsTab.innerHTML = 'Deposits <span class="tab-badge complete">✓</span>';
+        } else if (depStatus !== 'pending') {
+          depsTab.innerHTML = 'Deposits <span class="tab-badge active">⏳</span>';
+        } else {
+          depsTab.innerHTML = 'Deposits';
+        }
+      }
     }
 
     function rentalTermsFilled() {
@@ -7098,6 +7196,8 @@
             buttons.push('<button class="btn-primary" onclick="markAgreementSent()">Mark as Sent</button>');
           } else if (app.agreement_status === 'sent') {
             buttons.push('<button class="btn-primary" onclick="markAgreementSigned()">Mark as Signed</button>');
+          } else if (app.agreement_status === 'signed') {
+            buttons.push('<span class="tracker-inline-status complete">✓ Agreement Signed</span>');
           }
           break;
 
@@ -7108,7 +7208,12 @@
           break;
 
         case 'ready':
-          buttons.push('<button class="btn-primary" onclick="confirmMoveIn()">Confirm Move-in</button>');
+          if (app.agreement_status !== 'signed') {
+            buttons.push('<button class="btn-secondary" onclick="switchDetailTab(\'documents\')"><span style="color:var(--danger-color);">&#9679;</span> Agreement not signed</button>');
+            buttons.push('<button class="btn-primary" disabled title="Agreement must be signed first" style="opacity:0.5;cursor:not-allowed;">Confirm Move-in</button>');
+          } else {
+            buttons.push('<button class="btn-primary" onclick="confirmMoveIn()">Confirm Move-in</button>');
+          }
           break;
       }
 

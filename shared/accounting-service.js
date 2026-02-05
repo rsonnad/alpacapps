@@ -19,7 +19,7 @@ export const CATEGORY = {
   MOVE_IN_DEPOSIT: 'move_in_deposit',
   RESERVATION_DEPOSIT: 'reservation_deposit',
   EVENT_RENTAL_FEE: 'event_rental_fee',
-  EVENT_RESERVATION_FEE: 'event_reservation_fee',
+  EVENT_RESERVATION_DEPOSIT: 'event_reservation_deposit',
   EVENT_CLEANING_DEPOSIT: 'event_cleaning_deposit',
   REFUND: 'refund',
   DAMAGE_DEDUCTION: 'damage_deduction',
@@ -35,7 +35,7 @@ export const CATEGORY_LABELS = {
   move_in_deposit: 'Move-in Deposit',
   reservation_deposit: 'Reservation Deposit',
   event_rental_fee: 'Event Rental Fee',
-  event_reservation_fee: 'Event Reservation Fee',
+  event_reservation_deposit: 'Event Reservation Deposit',
   event_cleaning_deposit: 'Event Cleaning Deposit',
   refund: 'Refund',
   damage_deduction: 'Damage Deduction',
@@ -119,6 +119,11 @@ class AccountingService {
     // Exclude voided by default unless explicitly included
     if (!filters.includeVoided) {
       query = query.neq('status', 'voided');
+    }
+
+    // Exclude test/sandbox transactions by default
+    if (!filters.includeTest) {
+      query = query.eq('is_test', false);
     }
 
     query = query.order('transaction_date', { ascending: false })
@@ -311,12 +316,12 @@ class AccountingService {
   /**
    * Categories that represent deposits (refundable, held in trust)
    */
-  static DEPOSIT_CATEGORIES = ['security_deposit', 'move_in_deposit', 'reservation_deposit', 'event_cleaning_deposit'];
+  static DEPOSIT_CATEGORIES = ['security_deposit', 'move_in_deposit', 'reservation_deposit', 'event_cleaning_deposit', 'event_reservation_deposit'];
 
   /**
    * Categories that represent one-time fees (earned on receipt)
    */
-  static FEE_CATEGORIES = ['application_fee', 'event_rental_fee', 'event_reservation_fee', 'late_fee', 'damage_deduction', 'other'];
+  static FEE_CATEGORIES = ['application_fee', 'event_rental_fee', 'late_fee', 'damage_deduction', 'other'];
 
   /**
    * Get the accrual month for a transaction.

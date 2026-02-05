@@ -274,7 +274,7 @@ class SquareService {
         const categoryMap = {
           rental_application: 'application_fee',
           event_cleaning_deposit: 'event_cleaning_deposit',
-          event_reservation_deposit: 'event_reservation_fee',
+          event_reservation_deposit: 'event_reservation_deposit',
         };
         await supabase.from('ledger').insert({
           direction: 'income',
@@ -376,7 +376,7 @@ class SquareService {
       const categoryMap = {
         rental_application: 'application_fee',
         event_cleaning_deposit: 'event_cleaning_deposit',
-        event_reservation_deposit: 'event_reservation_fee',
+        event_reservation_deposit: 'event_reservation_deposit',
       };
       await supabase.from('ledger').insert({
         direction: 'income',

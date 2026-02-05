@@ -280,7 +280,7 @@ Staffing contacts:
 
 Fees:
 - `rental_fee` - Default $295, due 7 days before event
-- `reservation_fee` - Default $95, collected at application time via Square, refundable
+- `reservation_fee` - Default $95, collected at application time via Square, refundable (reservation deposit)
 - `cleaning_deposit` - Default $195, due 7 days before event, refundable
 - `{fee}_paid`, `{fee}_paid_at`, `{fee}_method` for each
 - `payment_reminder_sent_at` - Timestamp when 10-day payment reminder email was sent
@@ -906,7 +906,7 @@ When tenant signs lease, automated email sent with:
 1. **Submitted**: Review event requests
    - Click card to open detail modal with tabs: Event Info, Terms, Documents, Deposits
 2. **Approved**: Confirm spaces, adjust fees if needed
-   - Terms tab: Set rental fee, reservation fee, cleaning deposit
+   - Terms tab: Set rental fee, reservation deposit, cleaning deposit
 3. **Contract**: Generate event agreement PDF, send for signature
    - Documents tab: Preview Agreement → Generate PDF → Send for Signature
    - Agreement shows reservation deposit credit if paid via Square

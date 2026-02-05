@@ -4,7 +4,7 @@
  * Handles:
  * - Event request lifecycle (submit, review, approve, deny, delay)
  * - Event agreement generation and tracking
- * - Deposit tracking (reservation fee, cleaning deposit, rental fee)
+ * - Deposit tracking (reservation deposit, cleaning deposit, rental fee)
  * - Payment tracking
  */
 
@@ -40,7 +40,7 @@ const DEPOSIT_STATUS = {
 };
 
 const PAYMENT_TYPE = {
-  RESERVATION_FEE: 'reservation_fee',
+  RESERVATION_DEPOSIT: 'reservation_deposit',
   CLEANING_DEPOSIT: 'cleaning_deposit',
   RENTAL_FEE: 'rental_fee',
   DAMAGE_DEDUCTION: 'damage_deduction',
@@ -69,7 +69,7 @@ const EVENT_TYPE = {
 // Default fee amounts
 const DEFAULT_FEES = {
   RENTAL_FEE: 295,
-  RESERVATION_FEE: 95,
+  RESERVATION_DEPOSIT: 95,
   CLEANING_DEPOSIT: 195,
 };
 
@@ -314,7 +314,7 @@ async function approveRequest(requestId, terms) {
   const {
     approved_max_guests,
     rental_fee = DEFAULT_FEES.RENTAL_FEE,
-    reservation_fee = DEFAULT_FEES.RESERVATION_FEE,
+    reservation_fee = DEFAULT_FEES.RESERVATION_DEPOSIT,
     cleaning_deposit = DEFAULT_FEES.CLEANING_DEPOSIT,
     additional_terms = null,
     approved_space_ids = [],
@@ -605,7 +605,7 @@ async function getAgreementData(requestId) {
   const rentalFeeDue = Math.max(0, rentalFee - reservationDepositPaid);
   const totalDue = rentalFeeDue + cleaningDeposit;
 
-  // Generate reservation fee credit text
+  // Generate reservation deposit credit text
   let reservationFeeCredit = '';
   if (reservationDepositPaid > 0) {
     reservationFeeCredit = `Reservation deposit of $${reservationDepositPaid} has been received and will be credited toward the rental fee.`;
@@ -691,7 +691,7 @@ async function requestDeposit(requestId) {
 }
 
 /**
- * Record reservation fee payment
+ * Record reservation deposit payment
  */
 async function recordReservationFee(requestId, details = {}) {
   const { method = null, transaction_id = null, notes = null } = details;
@@ -716,9 +716,9 @@ async function recordReservationFee(requestId, details = {}) {
   // Create payment record
   const { data: epData } = await supabase.from('event_payments').insert({
     event_request_id: requestId,
-    payment_type: PAYMENT_TYPE.RESERVATION_FEE,
-    amount_due: request.reservation_fee || DEFAULT_FEES.RESERVATION_FEE,
-    amount_paid: request.reservation_fee || DEFAULT_FEES.RESERVATION_FEE,
+    payment_type: PAYMENT_TYPE.RESERVATION_DEPOSIT,
+    amount_due: request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT,
+    amount_paid: request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT,
     paid_date: new Date().toISOString().split('T')[0],
     payment_method: method,
     transaction_id,
@@ -726,11 +726,11 @@ async function recordReservationFee(requestId, details = {}) {
   }).select().single();
 
   // Dual-write to ledger
-  const resAmt = request.reservation_fee || DEFAULT_FEES.RESERVATION_FEE;
+  const resAmt = request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT;
   const personName = request.person ? `${request.person.first_name} ${request.person.last_name}` : null;
   await supabase.from('ledger').insert({
     direction: 'income',
-    category: 'event_reservation_fee',
+    category: 'event_reservation_deposit',
     amount: resAmt,
     payment_method: method || 'other',
     transaction_date: new Date().toISOString().split('T')[0],
@@ -739,7 +739,7 @@ async function recordReservationFee(requestId, details = {}) {
     event_request_id: requestId,
     event_payment_id: epData?.id || null,
     status: 'completed',
-    description: 'Event reservation fee',
+    description: 'Event reservation deposit',
     recorded_by: 'system:event-service',
   });
 
@@ -1066,11 +1066,11 @@ Your event hosting request for ${eventDate} has been approved!
 
 Payment Details:
 - Rental Fee: $${rentalFee}
-- Reservation Fee (refundable): $${reservationFee}
+- Reservation Deposit (refundable): $${reservationFee}
 - Cleaning/Damage Deposit (refundable): $${cleaningDeposit}
 - Total Due: $${totalDue}
 
-The reservation fee and cleaning deposit are refundable after your event, provided there is no damage and cleaning is completed per the agreement.
+The reservation deposit and cleaning deposit are refundable after your event, provided there is no damage and cleaning is completed per the agreement.
 
 Please send payment via Venmo, Zelle, or PayPal. Include your name and "Event ${request.event_date}" in the memo.
 

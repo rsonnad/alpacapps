@@ -29,7 +29,7 @@ The rental period is **{{event_date}}** from **{{event_start_time}}** to **{{eve
 
 **Rental Fee:** Company agrees the venue will be offered for a single event on **{{event_date}}** for a cost of **{{rental_fee}}**.
 
-**Reservation Fee:** A refundable **{{reservation_fee}}** reservation fee is due at time of reservation. This is not refundable if the event is canceled. If the event happens, this will be refunded along with any cleaning deposits.
+**Reservation Deposit:** A refundable **{{reservation_fee}}** reservation deposit is due at time of reservation. This is not refundable if the event is canceled. If the event happens, this will be refunded along with any cleaning deposits.
 
 **Cleaning & Damage Deposit:** A refundable damage waiver fee of **{{cleaning_deposit}}** is due upon booking, at least two weeks before the event. This fee is used to cover cleaning and maintenance of the rentals after the rental period. If any damage occurs, Company will first use the Cleaning and Maintenance Fee to repair. If the repair costs exceed the Damage Waiver fee, Client will be responsible for the amount in excess of the Cleaning and Maintenance Fee they already paid.
 
@@ -141,7 +141,7 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 | Fee | Amount |
 |-----|--------|
 | **Rental Fee** | {{rental_fee}} |
-| **Reservation Fee** (refundable) | {{reservation_fee}} |
+| **Reservation Deposit** (refundable) | {{reservation_fee}} |
 | **Cleaning & Damage Deposit** (refundable) | {{cleaning_deposit}} |
 | **Total Due** | {{total_due}} |
 

@@ -20,11 +20,11 @@ const PLACEHOLDERS = {
 
   // Financial
   rental_fee: 'Venue rental fee (e.g., "$295")',
-  reservation_fee: 'Refundable reservation fee (e.g., "$95")',
+  reservation_fee: 'Refundable reservation deposit (e.g., "$95")',
   cleaning_deposit: 'Refundable cleaning/damage deposit (e.g., "$195")',
   total_due: 'Total amount due (sum of all fees)',
   reservation_fee_paid: 'Reservation deposit already paid (e.g., "$200")',
-  reservation_fee_credit: 'Text describing reservation fee credit toward rental fee',
+  reservation_fee_credit: 'Text describing reservation deposit credit toward rental fee',
   rental_fee_due: 'Amount due for rental fee after reservation credit',
 
   // Venue
@@ -314,6 +314,7 @@ The rental period is **{{event_date}}** from **{{event_start_time}}** to **{{eve
 {{reservation_fee_credit}}
 
 **Rental Fee Due:** {{rental_fee_due}} (rental fee minus reservation deposit credit)
+
 
 **Cleaning & Damage Deposit:** A refundable damage waiver fee of **{{cleaning_deposit}}** is due upon booking, at least two weeks before the event. This will be refunded after the event if the venue is left in good condition.
 
