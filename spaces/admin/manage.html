@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.13</span>
+        <span class="app-version">v260205.14</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -1269,6 +1269,13 @@
       <div id="rentalsPanel" class="manage-panel">
         <!-- Pipeline View -->
         <div class="rental-pipeline" id="rentalPipeline">
+          <div class="pipeline-column" data-stage="community_fit">
+            <div class="pipeline-header">
+              <h3>Community Fit</h3>
+              <span class="pipeline-count" id="community_fitCount">0</span>
+            </div>
+            <div class="pipeline-cards" id="community_fitCards"></div>
+          </div>
           <div class="pipeline-column" data-stage="applications">
             <div class="pipeline-header">
               <h3>Applications</h3>
@@ -2496,6 +2503,9 @@
         <div id="applicantTab" class="detail-tab-content active">
           <div class="applicant-info">
             <div class="form-grid">
+              <div class="info-group" id="applicantPhotoGroup" style="display: none; grid-column: 1 / -1;">
+                <img id="applicantPhoto" src="" alt="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+              </div>
               <div class="info-group">
                 <label>Name</label>
                 <p id="applicantName">-</p>
@@ -2519,6 +2529,36 @@
               <div class="info-group">
                 <label>Submitted</label>
                 <p id="applicantSubmittedAt">-</p>
+              </div>
+            </div>
+            <!-- Community Fit fields (shown for inquiries) -->
+            <div id="communityFitFields" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+              <h3 style="font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 0.75rem;">Community Fit Responses</h3>
+              <div class="form-grid">
+                <div class="info-group">
+                  <label>Preferred Accommodation</label>
+                  <p id="applicantPreferredAccomm">-</p>
+                </div>
+                <div class="info-group">
+                  <label>Desired Timeframe</label>
+                  <p id="applicantDesiredTimeframe">-</p>
+                </div>
+                <div class="info-group">
+                  <label>Volunteer Interest</label>
+                  <p id="applicantVolunteerInterest">-</p>
+                </div>
+                <div class="info-group full-width">
+                  <label>Co-living Experience</label>
+                  <p id="applicantColivingExp" style="white-space: pre-wrap;">-</p>
+                </div>
+                <div class="info-group full-width">
+                  <label>Life Focus / Goals / Dreams</label>
+                  <p id="applicantLifeFocus" style="white-space: pre-wrap;">-</p>
+                </div>
+                <div class="info-group full-width">
+                  <label>Visiting Guide Response</label>
+                  <p id="applicantVisitingGuide" style="white-space: pre-wrap;">-</p>
+                </div>
               </div>
             </div>
           </div>
@@ -6487,7 +6527,7 @@
     }
 
     function renderPipeline() {
-      const stages = ['applications', 'approved', 'contract', 'deposit', 'ready'];
+      const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready'];
 
       // Group applications by pipeline stage
       const grouped = {};
@@ -6523,19 +6563,35 @@
       });
     }
 
+    const ACCOMMODATION_LABELS = {
+      'bed_shared_room': 'Shared Room',
+      'private_room': 'Private Room',
+      'private_suite': 'Private Suite',
+      'rv_van': 'RV/Van',
+      'tent_camping': 'Tent/Camping',
+      'flexible': 'Flexible',
+    };
+
     function renderPipelineCard(app) {
       const person = app.person || {};
       const space = app.approved_space || app.desired_space;
-      const days = rentalService.daysSince(app.submitted_at);
+      const days = rentalService.daysSince(app.created_at || app.submitted_at);
+      const isInquiry = app.application_status === 'inquiry';
 
       let subStatus = '';
-      if (app.deposit_status && app.deposit_status !== 'pending') {
+      if (isInquiry && app.invited_to_apply_at) {
+        subStatus = 'invited';
+      } else if (app.deposit_status && app.deposit_status !== 'pending') {
         subStatus = app.deposit_status;
       } else if (app.agreement_status && app.agreement_status !== 'pending') {
         subStatus = app.agreement_status;
       }
 
       const testBadge = app.is_test ? '<span class="test-badge">TEST</span>' : '';
+
+      const displayName = isInquiry
+        ? (ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || 'Flexible')
+        : (space?.name || 'Flexible');
 
       return `
         <div class="pipeline-card" data-id="${app.id}">
@@ -6545,7 +6601,7 @@
             <span class="days-ago">${days}d</span>
           </div>
           <div class="card-body">
-            <div class="space-name">${space?.name || 'Flexible'}</div>
+            <div class="space-name">${displayName}</div>
             ${app.approved_rate ? `<div class="rate">$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}</div>` : ''}
           </div>
           ${subStatus ? `
@@ -7223,7 +7279,29 @@
       document.getElementById('applicantDesiredMoveIn').textContent =
         app.desired_move_in ? rentalService.formatDate(app.desired_move_in) : '-';
       document.getElementById('applicantSubmittedAt').textContent =
-        rentalService.formatDate(app.submitted_at);
+        rentalService.formatDate(app.submitted_at || app.created_at);
+
+      // Community Fit fields
+      const communityFitSection = document.getElementById('communityFitFields');
+      const photoGroup = document.getElementById('applicantPhotoGroup');
+      if (person.coliving_experience || person.life_focus || app.application_status === 'inquiry') {
+        communityFitSection.style.display = '';
+        document.getElementById('applicantColivingExp').textContent = person.coliving_experience || '-';
+        document.getElementById('applicantLifeFocus').textContent = person.life_focus || '-';
+        document.getElementById('applicantVisitingGuide').textContent = person.visiting_guide_response || '-';
+        document.getElementById('applicantDesiredTimeframe').textContent = person.desired_timeframe || '-';
+        document.getElementById('applicantPreferredAccomm').textContent =
+          ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || '-';
+        document.getElementById('applicantVolunteerInterest').textContent = person.volunteer_interest || '-';
+      } else {
+        communityFitSection.style.display = 'none';
+      }
+      if (person.photo_url) {
+        photoGroup.style.display = '';
+        document.getElementById('applicantPhoto').src = person.photo_url;
+      } else {
+        photoGroup.style.display = 'none';
+      }
 
       // Terms tab
       document.getElementById('termSpace').value = app.approved_space_id || app.desired_space_id || '';
@@ -7431,6 +7509,16 @@
       const stage = rentalService.getPipelineStage(app);
 
       switch (stage) {
+        case 'community_fit':
+          if (app.invited_to_apply_at) {
+            buttons.push('<span class="tracker-inline-status" style="font-size: 0.75rem;">Invited ' + rentalService.formatDate(app.invited_to_apply_at) + '</span>');
+            buttons.push('<button class="btn-secondary" onclick="inviteToApplyAction()">Re-send Link</button>');
+          } else {
+            buttons.push('<button class="btn-primary" onclick="inviteToApplyAction()">Invite to Apply</button>');
+          }
+          buttons.push('<button class="btn-secondary" onclick="denyApplication()">Deny</button>');
+          break;
+
         case 'applications':
           if (app.application_status === 'submitted') {
             buttons.push('<button class="btn-primary" onclick="startReviewApplication()">Start Review</button>');
@@ -7498,6 +7586,19 @@
     // =============================================
 
     window.openRentalDetail = openRentalDetail;
+
+    window.inviteToApplyAction = async function() {
+      if (!currentApplicationId) return;
+      try {
+        const result = await rentalService.inviteToApply(currentApplicationId);
+        await navigator.clipboard.writeText(result.continueUrl);
+        showToast('Application link copied to clipboard!', 'success');
+        await loadApplications();
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
+      } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+      }
+    };
 
     window.archiveApplication = async function() {
       if (!currentApplicationId) return;

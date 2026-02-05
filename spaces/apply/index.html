@@ -681,7 +681,7 @@
 
   <header>
     <h1>Alpaca Playhouse Austin</h1>
-    <p>Residency Application</p>
+    <p id="headerSubtitle">Community Fit Inquiry</p>
   </header>
 
   <main>
@@ -689,258 +689,344 @@
       <form id="applicationForm">
         <div id="errorBanner" class="error-banner hidden"></div>
 
-        <!-- Section 1: Basic Info -->
-        <div class="form-section">
-          <h2>Basic Information</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="first_name">First Name <span class="required">*</span></label>
-              <input type="text" id="first_name" name="first_name" required>
-            </div>
-            <div class="form-group">
-              <label for="last_name">Last Name <span class="required">*</span></label>
-              <input type="text" id="last_name" name="last_name" required>
-            </div>
-            <div class="form-group">
-              <label for="email">Email <span class="required">*</span></label>
-              <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-              <label for="phone">Phone</label>
-              <input type="tel" id="phone" name="phone">
-            </div>
-            <div class="form-group">
-              <label for="whatsapp">WhatsApp</label>
-              <input type="text" id="whatsapp" name="whatsapp" placeholder="Phone number">
-              <div class="checkbox-inline">
-                <input type="checkbox" id="whatsapp_same_as_phone">
-                <label for="whatsapp_same_as_phone">Same as phone</label>
+        <!-- ============================== -->
+        <!-- STEP 1: Community Fit Inquiry  -->
+        <!-- ============================== -->
+        <div id="step1Sections">
+          <div class="form-section">
+            <p style="margin-bottom: 1.25rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+              Hello, happy you're here. We're building a lasting community and actively seeking long-term residents who want to call this place home. Please answer the questions below as best as you can. We will get back to you to schedule an intro call. See you soon.
+            </p>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="first_name">First Name <span class="required">*</span></label>
+                <input type="text" id="first_name" name="first_name" required>
+              </div>
+              <div class="form-group">
+                <label for="last_name">Last Name <span class="required">*</span></label>
+                <input type="text" id="last_name" name="last_name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone / WhatsApp <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="With + country code" required>
+              </div>
+              <div class="form-group">
+                <label for="date_of_birth">How old are you?</label>
+                <input type="date" id="date_of_birth" name="date_of_birth">
+              </div>
+              <div class="form-group full-width">
+                <label for="coliving_experience">Do you have experience with co-living? <span class="required">*</span></label>
+                <textarea id="coliving_experience" name="coliving_experience" rows="3" placeholder="If yes, describe it." required></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="life_focus">What do you focus on now in your life? <span class="required">*</span></label>
+                <textarea id="life_focus" name="life_focus" rows="3" placeholder="Describe your current projects, goals, dreams." required></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="visiting_guide_response">Did you read our <a href="https://www.alpacaplayhouse.com/visiting" target="_blank" style="color: var(--accent);">visiting guide</a>? <span class="required">*</span></label>
+                <textarea id="visiting_guide_response" name="visiting_guide_response" rows="3" placeholder="Read Alpaca Co.living community culture and tell us what stood out to you." required></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="desired_timeframe">When &amp; for how long would you like to join? <span class="required">*</span></label>
+                <textarea id="desired_timeframe" name="desired_timeframe" rows="2" placeholder="Describe the time window you want to join Alpaca for. If open ended then include that information." required></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="preferred_accommodation">Preferred accommodation type <span class="required">*</span></label>
+                <select id="preferred_accommodation" name="preferred_accommodation" required>
+                  <option value="">Select an option</option>
+                  <option value="bed_shared_room">Bed in a shared room (Skyloft/Spartan Trailer)</option>
+                  <option value="private_room">Private room</option>
+                  <option value="private_suite">Private suite / studio</option>
+                  <option value="rv_van">RV / Van spot</option>
+                  <option value="tent_camping">Tent / Camping</option>
+                  <option value="flexible">Flexible / Open to anything</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="volunteer_interest">Would you like to contribute your time and skills to support Alpaca operations?</label>
+                <select id="volunteer_interest" name="volunteer_interest">
+                  <option value="">Select an option</option>
+                  <option value="yes_actively">Yes, I'd love to actively contribute</option>
+                  <option value="yes_sometimes">Yes, sometimes when I can</option>
+                  <option value="maybe">Maybe, I'd like to learn more</option>
+                  <option value="no">Not at this time</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="photo_upload">Include your photo if you'd like</label>
+                <input type="file" id="photo_upload" name="photo_upload" accept="image/*" style="font-size: 0.9rem;">
+                <div class="hint">A casual photo helps us put a face to the name</div>
+              </div>
+              <div class="form-group full-width">
+                <label for="referral_source">How did you find this form? <span class="required">*</span></label>
+                <input type="text" id="referral_source" name="referral_source" placeholder="e.g. Friend, Google, Social Media" required>
               </div>
             </div>
-            <div class="form-group">
-              <label for="date_of_birth">Date of Birth</label>
-              <input type="date" id="date_of_birth" name="date_of_birth">
-            </div>
-            <div class="form-group">
-              <label for="gender">Gender</label>
-              <select id="gender" name="gender">
-                <option value="">Select...</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="form-group full-width">
-              <label for="current_address">Current Address</label>
-              <textarea id="current_address" name="current_address" rows="2"></textarea>
-            </div>
           </div>
         </div>
 
-        <!-- Section 2: Desired Housing -->
-        <div class="form-section">
-          <h2>Desired Housing</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="desired_space_id">Preferred Space</label>
-              <select id="desired_space_id" name="desired_space_id">
-                <option value="">Flexible / Unknown</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="desired_move_in">Desired Move-in Date</label>
-              <input type="date" id="desired_move_in" name="desired_move_in">
-            </div>
-            <div class="form-group full-width">
-              <label for="desired_term">Desired Term</label>
-              <input type="text" id="desired_term" name="desired_term" placeholder="e.g. 6 months, 1 year, flexible">
-            </div>
+        <!-- ============================== -->
+        <!-- STEP 2: Full Application       -->
+        <!-- (shown via ?continue=<app_id>) -->
+        <!-- ============================== -->
+        <div id="step2Sections" class="hidden">
+          <!-- Welcome banner -->
+          <div class="form-section">
+            <h2>Complete Your Application</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+              Welcome back, <strong id="step2Name"></strong>! We're excited to move forward.
+              Please fill in the remaining details to complete your full application.
+            </p>
           </div>
-        </div>
 
-        <!-- Section 3: Financial -->
-        <div class="form-section">
-          <h2>Financial Information</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="employment_status">Employment Status</label>
-              <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed">
-            </div>
-            <div class="form-group">
-              <label for="employer">Employer</label>
-              <input type="text" id="employer" name="employer" placeholder="Company or business name">
-            </div>
-            <div class="form-group">
-              <label for="monthly_income">Monthly Income ($)</label>
-              <input type="number" id="monthly_income" name="monthly_income" min="0" step="1">
-            </div>
-            <div class="form-group">
-              <label for="deposit_return_method">Preferred Deposit Return Method</label>
-              <select id="deposit_return_method" name="deposit_return_method">
-                <option value="">Select...</option>
-                <option value="zelle">Zelle</option>
-                <option value="venmo">Venmo</option>
-                <option value="paypal">PayPal</option>
-                <option value="check">Check</option>
-                <option value="cash">Cash</option>
-                <option value="other">Other</option>
-              </select>
+          <!-- Desired Housing -->
+          <div class="form-section">
+            <h2>Desired Housing</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="desired_space_id">Preferred Space</label>
+                <select id="desired_space_id" name="desired_space_id">
+                  <option value="">Flexible / Unknown</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="desired_move_in">Desired Move-in Date</label>
+                <input type="date" id="desired_move_in" name="desired_move_in">
+              </div>
+              <div class="form-group full-width">
+                <label for="desired_term">Desired Term</label>
+                <input type="text" id="desired_term" name="desired_term" placeholder="e.g. 6 months, 1 year, flexible">
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 4: Previous Residence -->
-        <div class="form-section">
-          <h2>Previous Residence</h2>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="prev_address">Address</label>
-              <textarea id="prev_address" name="prev_address" rows="2"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="prev_start_date">Move-in Date</label>
-              <input type="date" id="prev_start_date" name="prev_start_date">
-            </div>
-            <div class="form-group">
-              <label for="prev_end_date">Move-out Date</label>
-              <input type="date" id="prev_end_date" name="prev_end_date">
-            </div>
-            <div class="form-group">
-              <label for="landlord_name">Landlord Name</label>
-              <input type="text" id="landlord_name" name="landlord_name">
-            </div>
-            <div class="form-group">
-              <label for="landlord_contact">Landlord Contact</label>
-              <input type="text" id="landlord_contact" name="landlord_contact" placeholder="Phone or email">
-            </div>
-            <div class="form-group full-width">
-              <label for="reason_for_leaving">Reason for Leaving</label>
-              <textarea id="reason_for_leaving" name="reason_for_leaving" rows="2"></textarea>
-            </div>
-            <div class="form-group full-width checkbox-group">
-              <input type="checkbox" id="prior_evictions" name="prior_evictions">
-              <label for="prior_evictions">I have had a prior eviction</label>
+          <!-- Financial -->
+          <div class="form-section">
+            <h2>Financial Information</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="employment_status">Employment Status</label>
+                <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed">
+              </div>
+              <div class="form-group">
+                <label for="employer">Employer</label>
+                <input type="text" id="employer" name="employer" placeholder="Company or business name">
+              </div>
+              <div class="form-group">
+                <label for="monthly_income">Monthly Income ($)</label>
+                <input type="number" id="monthly_income" name="monthly_income" min="0" step="1">
+              </div>
+              <div class="form-group">
+                <label for="deposit_return_method">Preferred Deposit Return Method</label>
+                <select id="deposit_return_method" name="deposit_return_method">
+                  <option value="">Select...</option>
+                  <option value="zelle">Zelle</option>
+                  <option value="venmo">Venmo</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="check">Check</option>
+                  <option value="cash">Cash</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 5: Household -->
-        <div class="form-section">
-          <h2>Household</h2>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="partner_email">Email of partner if applying together</label>
-              <input type="email" id="partner_email" name="partner_email" placeholder="Leave blank if not applicable">
-            </div>
-            <div class="form-group full-width">
-              <label for="kids_ages">Children's Ages</label>
-              <input type="text" id="kids_ages" name="kids_ages" placeholder="e.g. 4, 7, 12 (leave blank if none)">
+          <!-- Previous Residence -->
+          <div class="form-section">
+            <h2>Previous Residence</h2>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="prev_address">Address</label>
+                <textarea id="prev_address" name="prev_address" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="prev_start_date">Move-in Date</label>
+                <input type="date" id="prev_start_date" name="prev_start_date">
+              </div>
+              <div class="form-group">
+                <label for="prev_end_date">Move-out Date</label>
+                <input type="date" id="prev_end_date" name="prev_end_date">
+              </div>
+              <div class="form-group">
+                <label for="landlord_name">Landlord Name</label>
+                <input type="text" id="landlord_name" name="landlord_name">
+              </div>
+              <div class="form-group">
+                <label for="landlord_contact">Landlord Contact</label>
+                <input type="text" id="landlord_contact" name="landlord_contact" placeholder="Phone or email">
+              </div>
+              <div class="form-group full-width">
+                <label for="reason_for_leaving">Reason for Leaving</label>
+                <textarea id="reason_for_leaving" name="reason_for_leaving" rows="2"></textarea>
+              </div>
+              <div class="form-group full-width checkbox-group">
+                <input type="checkbox" id="prior_evictions" name="prior_evictions">
+                <label for="prior_evictions">I have had a prior eviction</label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 6: Property Details -->
-        <div class="form-section">
-          <h2>Property Details</h2>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="vehicles">Vehicles</label>
-              <textarea id="vehicles" name="vehicles" rows="2" placeholder="Describe type and size (e.g. Honda Civic sedan, Ford F-150 truck)"></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label for="pets">Pets</label>
-              <textarea id="pets" name="pets" rows="2" placeholder="Type and details (e.g. 2 cats, 1 medium dog - golden retriever)"></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label for="allergies">Allergies</label>
-              <input type="text" id="allergies" name="allergies" placeholder="Any allergies we should know about">
+          <!-- Household -->
+          <div class="form-section">
+            <h2>Household</h2>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="partner_email">Email of partner if applying together</label>
+                <input type="email" id="partner_email" name="partner_email" placeholder="Leave blank if not applicable">
+              </div>
+              <div class="form-group full-width">
+                <label for="kids_ages">Children's Ages</label>
+                <input type="text" id="kids_ages" name="kids_ages" placeholder="e.g. 4, 7, 12 (leave blank if none)">
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 7: Social Profiles -->
-        <div class="form-section">
-          <h2>Social Profiles <span style="font-weight: 400; color: var(--text-muted);">(Optional)</span></h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="instagram">Instagram</label>
-              <input type="text" id="instagram" name="instagram" placeholder="@username">
-            </div>
-            <div class="form-group">
-              <label for="facebook">Facebook</label>
-              <input type="text" id="facebook" name="facebook" placeholder="Profile URL or name">
-            </div>
-            <div class="form-group">
-              <label for="x_handle">X (Twitter)</label>
-              <input type="text" id="x_handle" name="x_handle" placeholder="@handle">
-            </div>
-            <div class="form-group">
-              <label for="myspace">MySpace</label>
-              <input type="text" id="myspace" name="myspace" placeholder="Profile URL">
+          <!-- Property Details -->
+          <div class="form-section">
+            <h2>Property Details</h2>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="vehicles">Vehicles</label>
+                <textarea id="vehicles" name="vehicles" rows="2" placeholder="Describe type and size (e.g. Honda Civic sedan, Ford F-150 truck)"></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="pets">Pets</label>
+                <textarea id="pets" name="pets" rows="2" placeholder="Type and details (e.g. 2 cats, 1 medium dog - golden retriever)"></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="allergies">Allergies</label>
+                <input type="text" id="allergies" name="allergies" placeholder="Any allergies we should know about">
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 8: Referral -->
-        <div class="form-section">
-          <h2>Referral</h2>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="referral_source">How did you hear about us?</label>
-              <input type="text" id="referral_source" name="referral_source" placeholder="e.g. Friend, Google, Social Media">
+          <!-- Social Profiles -->
+          <div class="form-section">
+            <h2>Social Profiles <span style="font-weight: 400; color: var(--text-muted);">(Optional)</span></h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="instagram">Instagram</label>
+                <input type="text" id="instagram" name="instagram" placeholder="@username">
+              </div>
+              <div class="form-group">
+                <label for="facebook">Facebook</label>
+                <input type="text" id="facebook" name="facebook" placeholder="Profile URL or name">
+              </div>
+              <div class="form-group">
+                <label for="x_handle">X (Twitter)</label>
+                <input type="text" id="x_handle" name="x_handle" placeholder="@handle">
+              </div>
+              <div class="form-group">
+                <label for="myspace">MySpace</label>
+                <input type="text" id="myspace" name="myspace" placeholder="Profile URL">
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section 9: Application Fee -->
-        <div class="form-section fee-section">
-          <h2>Application Fee</h2>
-          <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-            A non-refundable application fee is required to process your application.
-          </p>
-          <div class="fee-display">
-            <span class="fee-label">Application Fee</span>
-            <div>
-              <span class="fee-original hidden" id="feeOriginal"></span>
-              <span class="fee-amount" id="feeAmount">Loading...</span>
+          <!-- Application Fee -->
+          <div class="form-section fee-section">
+            <h2>Application Fee</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+              A non-refundable application fee is required to process your application.
+            </p>
+            <div class="fee-display">
+              <span class="fee-label">Application Fee</span>
+              <div>
+                <span class="fee-original hidden" id="feeOriginal"></span>
+                <span class="fee-amount" id="feeAmount">Loading...</span>
+              </div>
             </div>
-          </div>
-          <div class="discount-row">
-            <div class="form-group">
-              <label for="discount_code">Have a partner code?</label>
-              <input type="text" id="discount_code" name="discount_code" placeholder="Enter partner code" style="text-transform: uppercase;">
+            <div class="discount-row">
+              <div class="form-group">
+                <label for="discount_code">Have a partner code?</label>
+                <input type="text" id="discount_code" name="discount_code" placeholder="Enter partner code" style="text-transform: uppercase;">
+              </div>
+              <button type="button" id="applyCodeBtn">Apply</button>
             </div>
-            <button type="button" id="applyCodeBtn">Apply</button>
+            <div id="codeMessage" class="code-message hidden"></div>
+            <p class="payment-note" style="margin-top: 1rem;">
+              <span id="secureTestTrigger" style="cursor: default;">Secure</span> payment powered by Square
+            </p>
           </div>
-          <div id="codeMessage" class="code-message hidden"></div>
-          <p class="payment-note" style="margin-top: 1rem;">
-            <span id="secureTestTrigger" style="cursor: default;">Secure</span> payment powered by Square
-          </p>
-        </div>
 
-        <!-- Payment Section (shown when fee > $0) -->
-        <div class="form-section payment-section" id="paymentSection">
-          <h2>Payment</h2>
-          <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-            Enter your card details to pay the application fee.
-          </p>
-          <div id="card-container">
-            <!-- Square Card Element will be inserted here -->
+          <!-- Payment Section (shown when fee > $0) -->
+          <div class="form-section payment-section" id="paymentSection">
+            <h2>Payment</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+              Enter your card details to pay the application fee.
+            </p>
+            <div id="card-container">
+              <!-- Square Card Element will be inserted here -->
+            </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn-submit" id="submitBtn">Submit Application</button>
+          <button type="submit" class="btn-submit" id="submitBtn">Submit Inquiry</button>
         </div>
       </form>
     </div>
 
-    <!-- Success Message (hidden by default) -->
+    <!-- Inquiry Success Message (hidden by default) -->
+    <div class="form-container hidden" id="inquirySuccessContainer">
+      <div class="success-message">
+        <div class="icon">&#129433;</div>
+        <h2>Inquiry Received!</h2>
+        <p>Thank you for your interest in the Alpaca community. We'll review your inquiry and be in touch soon to schedule an intro call.</p>
+
+        <div class="application-summary">
+          <h3>Your Inquiry Summary</h3>
+          <div class="summary-row">
+            <span class="label">Accommodation</span>
+            <span class="value" id="inquirySummaryAccomm">Flexible</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Timeframe</span>
+            <span class="value" id="inquirySummaryTimeframe">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Referral</span>
+            <span class="value" id="inquirySummaryReferral">-</span>
+          </div>
+        </div>
+
+        <div class="whats-next">
+          <h3>What Happens Next</h3>
+          <ol>
+            <li>We'll review your community fit inquiry</li>
+            <li>If it looks like a good match, we'll send you a link to complete a full application</li>
+            <li>After application review, we'll arrange a visit or move-in</li>
+          </ol>
+        </div>
+
+        <!-- Ask Box -->
+        <div style="margin: 1.5rem 0; text-align: left;">
+          <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; text-align: center;">Have a question?</h3>
+          <div id="askBox" style="display: flex; gap: 0.5rem;">
+            <textarea id="askMessage" rows="2" style="flex: 1; padding: 0.625rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ask us anything..."></textarea>
+            <button type="button" id="askSendBtn" onclick="sendAskQuestion()" style="align-self: flex-end; padding: 0.625rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer;">Send</button>
+          </div>
+          <div id="askSuccess" class="hidden" style="margin-top: 0.5rem; padding: 0.5rem; background: var(--success-light); color: var(--success); border-radius: var(--radius); font-size: 0.85rem; text-align: center;">
+            Message sent! We'll get back to you soon.
+          </div>
+        </div>
+
+        <p class="questions-contact">Or email us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+
+        <a href="https://alpacaplayhouse.com/community/" class="btn-primary">Learn About Our Community</a>
+      </div>
+    </div>
+
+    <!-- Full Application Success Message (hidden by default) -->
     <div class="form-container hidden" id="successContainer">
       <div class="success-message">
         <div class="icon">&#129433;</div>
         <h2>Application Submitted!</h2>
-        <p>Thank you for your interest in Alpaca Playhouse Austin. We've received your application and will be in touch with all due haste.</p>
+        <p>Thank you for completing your application for Alpaca Playhouse Austin. We've received it and will be in touch with all due haste.</p>
 
         <div class="application-summary">
           <h3>Your Application Summary</h3>
@@ -985,12 +1071,14 @@
   <!-- Load Supabase library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module">
-    // Import shared Supabase config (single source of truth)
     import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
-
-    // Fee type constant
     const FEE_TYPE = 'rental_application';
+
+    // Determine if this is Step 2 (returning applicant)
+    const urlParams = new URLSearchParams(window.location.search);
+    const continueAppId = urlParams.get('continue');
+    const isStep2 = !!continueAppId;
 
     // State
     let feeAmount = 0;
@@ -998,39 +1086,75 @@
     let appliedCode = null;
     let squareCard = null;
     let squarePayments = null;
+    let continuePersonId = null;
+    let submittedFirstName = '';
+    let submittedEmail = '';
 
     // Elements
     const form = document.getElementById('applicationForm');
     const formContainer = document.getElementById('formContainer');
     const successContainer = document.getElementById('successContainer');
+    const inquirySuccessContainer = document.getElementById('inquirySuccessContainer');
     const errorBanner = document.getElementById('errorBanner');
     const submitBtn = document.getElementById('submitBtn');
     const spaceSelect = document.getElementById('desired_space_id');
-    const phoneInput = document.getElementById('phone');
-    const whatsappInput = document.getElementById('whatsapp');
-    const whatsappSameCheckbox = document.getElementById('whatsapp_same_as_phone');
-    const feeAmountEl = document.getElementById('feeAmount');
-    const feeOriginalEl = document.getElementById('feeOriginal');
-    const paymentSection = document.getElementById('paymentSection');
-    const discountCodeInput = document.getElementById('discount_code');
-    const applyCodeBtn = document.getElementById('applyCodeBtn');
-    const codeMessage = document.getElementById('codeMessage');
 
-    // Load application fee settings
+    // =============================================
+    // STEP 2 INITIALIZATION
+    // =============================================
+    async function initStep2() {
+      if (!isStep2) return;
+
+      try {
+        // Fetch the application + person data
+        const appResp = await fetch(
+          `${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}&select=*,person:person_id(*)`,
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+        );
+        if (!appResp.ok) throw new Error('Failed to load application');
+        const apps = await appResp.json();
+        const appData = apps[0];
+
+        if (!appData || appData.application_status !== 'inquiry') {
+          showError('This application link is no longer valid or has already been completed.');
+          submitBtn.style.display = 'none';
+          return;
+        }
+
+        continuePersonId = appData.person_id;
+        const person = appData.person;
+
+        // Update UI for Step 2
+        document.getElementById('headerSubtitle').textContent = 'Complete Your Application';
+        document.getElementById('step2Name').textContent =
+          `${person.first_name || ''} ${person.last_name || ''}`.trim();
+        document.getElementById('step1Sections').classList.add('hidden');
+        document.getElementById('step2Sections').classList.remove('hidden');
+        submitBtn.textContent = 'Submit Application';
+
+        // Load spaces and fee settings for Step 2
+        await loadSpaces();
+        await loadFeeSettings();
+
+      } catch (error) {
+        console.error('Error loading application for Step 2:', error);
+        showError('Could not load your application. Please check your link or contact us.');
+        submitBtn.style.display = 'none';
+      }
+    }
+
+    // =============================================
+    // FEE & PAYMENT (Step 2 only)
+    // =============================================
     async function loadFeeSettings() {
+      const feeAmountEl = document.getElementById('feeAmount');
+      if (!feeAmountEl) return;
       try {
         const response = await fetch(
           `${SUPABASE_URL}/rest/v1/fee_settings?fee_type=eq.${FEE_TYPE}&is_active=eq.true&select=default_amount`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
         );
-
         if (!response.ok) throw new Error('Failed to load fee settings');
-
         const [settings] = await response.json();
         if (settings) {
           originalAmount = parseFloat(settings.default_amount);
@@ -1039,24 +1163,26 @@
         }
       } catch (error) {
         console.error('Error loading fee settings:', error);
-        feeAmountEl.textContent = 'Error loading fee';
+        if (feeAmountEl) feeAmountEl.textContent = 'Error loading fee';
       }
     }
 
-    // Update fee display and payment section visibility
     function updateFeeDisplay() {
+      const feeAmountEl = document.getElementById('feeAmount');
+      const feeOriginalEl = document.getElementById('feeOriginal');
+      const paymentSection = document.getElementById('paymentSection');
+      if (!feeAmountEl) return;
+
       if (feeAmount === 0) {
         feeAmountEl.textContent = 'FREE';
         feeAmountEl.classList.add('free');
-        paymentSection.classList.remove('visible');
+        if (paymentSection) paymentSection.classList.remove('visible');
       } else {
         feeAmountEl.textContent = `$${feeAmount.toFixed(2)}`;
         feeAmountEl.classList.remove('free');
-        paymentSection.classList.add('visible');
+        if (paymentSection) paymentSection.classList.add('visible');
         initializeSquare();
       }
-
-      // Show original price if code applied
       if (appliedCode && originalAmount !== feeAmount) {
         feeOriginalEl.textContent = `$${originalAmount.toFixed(2)}`;
         feeOriginalEl.classList.remove('hidden');
@@ -1065,39 +1191,22 @@
       }
     }
 
-    // Validate discount code
     async function validateCode(code) {
       if (!code) return null;
-
       try {
         const response = await fetch(
           `${SUPABASE_URL}/rest/v1/fee_codes?code=eq.${code.toUpperCase()}&fee_type=eq.${FEE_TYPE}&is_active=eq.true&select=*`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
         );
-
         if (!response.ok) throw new Error('Failed to validate code');
-
         const [codeData] = await response.json();
-
-        if (!codeData) {
-          return { valid: false, message: 'Invalid partner code' };
-        }
-
-        // Check expiration
+        if (!codeData) return { valid: false, message: 'Invalid partner code' };
         if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
           return { valid: false, message: 'Partner code has expired' };
         }
-
-        // Check usage limit
         if (codeData.usage_limit !== null && codeData.times_used >= codeData.usage_limit) {
           return { valid: false, message: 'Partner code has reached its usage limit' };
         }
-
         return {
           valid: true,
           price: parseFloat(codeData.price),
@@ -1109,98 +1218,75 @@
       }
     }
 
-    // Apply code button handler
-    applyCodeBtn.addEventListener('click', async () => {
-      const code = discountCodeInput.value.trim();
-
-      if (!code) {
-        codeMessage.classList.add('hidden');
-        appliedCode = null;
-        feeAmount = originalAmount;
+    // Apply code button handler (Step 2)
+    const applyCodeBtn = document.getElementById('applyCodeBtn');
+    if (applyCodeBtn) {
+      applyCodeBtn.addEventListener('click', async () => {
+        const discountCodeInput = document.getElementById('discount_code');
+        const codeMessage = document.getElementById('codeMessage');
+        const code = discountCodeInput.value.trim();
+        if (!code) {
+          codeMessage.classList.add('hidden');
+          appliedCode = null;
+          feeAmount = originalAmount;
+          updateFeeDisplay();
+          return;
+        }
+        applyCodeBtn.disabled = true;
+        applyCodeBtn.textContent = 'Checking...';
+        const result = await validateCode(code);
+        applyCodeBtn.disabled = false;
+        applyCodeBtn.textContent = 'Apply';
+        codeMessage.textContent = result.message;
+        codeMessage.classList.remove('hidden', 'success', 'error');
+        codeMessage.classList.add(result.valid ? 'success' : 'error');
+        if (result.valid) {
+          appliedCode = code.toUpperCase();
+          feeAmount = result.price;
+        } else {
+          appliedCode = null;
+          feeAmount = originalAmount;
+        }
         updateFeeDisplay();
-        return;
-      }
+      });
+    }
 
-      applyCodeBtn.disabled = true;
-      applyCodeBtn.textContent = 'Checking...';
-
-      const result = await validateCode(code);
-
-      applyCodeBtn.disabled = false;
-      applyCodeBtn.textContent = 'Apply';
-
-      codeMessage.textContent = result.message;
-      codeMessage.classList.remove('hidden', 'success', 'error');
-      codeMessage.classList.add(result.valid ? 'success' : 'error');
-
-      if (result.valid) {
-        appliedCode = code.toUpperCase();
-        feeAmount = result.price;
-      } else {
-        appliedCode = null;
-        feeAmount = originalAmount;
-      }
-
-      updateFeeDisplay();
-    });
-
-    // Initialize Square SDK
     async function initializeSquare() {
-      if (squarePayments) return; // Already initialized
-
+      if (squarePayments) return;
       try {
-        // Load Square config
         const configResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/square_config?select=sandbox_app_id,production_app_id,sandbox_location_id,production_location_id,test_mode`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
         );
-
         if (!configResponse.ok) throw new Error('Failed to load Square config');
-
         const [config] = await configResponse.json();
         const isTestMode = config.test_mode;
         const appId = isTestMode ? config.sandbox_app_id : config.production_app_id;
         const locationId = isTestMode ? config.sandbox_location_id : config.production_location_id;
-
-        // Load Square SDK
         const sdkUrl = isTestMode
           ? 'https://sandbox.web.squarecdn.com/v1/square.js'
           : 'https://web.squarecdn.com/v1/square.js';
-
         await loadScript(sdkUrl);
-
-        // Initialize payments
         squarePayments = window.Square.payments(appId, locationId);
-
-        // Create card element
         squareCard = await squarePayments.card();
         await squareCard.attach('#card-container');
-
       } catch (error) {
         console.error('Error initializing Square:', error);
-        document.getElementById('card-container').innerHTML =
-          '<p style="color: var(--error); text-align: center;">Payment system unavailable. Please try again later.</p>';
+        const cardContainer = document.getElementById('card-container');
+        if (cardContainer) {
+          cardContainer.innerHTML = '<p style="color: var(--error); text-align: center;">Payment system unavailable. Please try again later.</p>';
+        }
       }
     }
 
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) {
-          // Check if already loaded
           const checkInterval = setInterval(() => {
-            if (window.Square) {
-              clearInterval(checkInterval);
-              resolve();
-            }
+            if (window.Square) { clearInterval(checkInterval); resolve(); }
           }, 100);
           return;
         }
-
         const script = document.createElement('script');
         script.src = src;
         script.onload = resolve;
@@ -1209,76 +1295,64 @@
       });
     }
 
-    // Load dwelling spaces for dropdown
     async function loadSpaces() {
       try {
         const response = await fetch(
           `${SUPABASE_URL}/rest/v1/spaces?can_be_dwelling=eq.true&is_archived=eq.false&is_listed=eq.true&select=id,name&order=name`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
         );
-
         if (!response.ok) throw new Error('Failed to load spaces');
-
         const spaces = await response.json();
-        spaces.forEach(space => {
-          const option = document.createElement('option');
-          option.value = space.id;
-          option.textContent = space.name;
-          spaceSelect.appendChild(option);
-        });
+        if (spaceSelect) {
+          spaces.forEach(space => {
+            const option = document.createElement('option');
+            option.value = space.id;
+            option.textContent = space.name;
+            spaceSelect.appendChild(option);
+          });
+        }
       } catch (error) {
         console.error('Error loading spaces:', error);
       }
     }
 
-    // WhatsApp same as phone checkbox
-    whatsappSameCheckbox.addEventListener('change', () => {
-      if (whatsappSameCheckbox.checked) {
-        whatsappInput.value = phoneInput.value;
-        whatsappInput.disabled = true;
-      } else {
-        whatsappInput.disabled = false;
-      }
-    });
-
-    // Update WhatsApp when phone changes (if checkbox is checked)
-    phoneInput.addEventListener('input', () => {
-      if (whatsappSameCheckbox.checked) {
-        whatsappInput.value = phoneInput.value;
-      }
-    });
-
-    // Form submission
+    // =============================================
+    // FORM SUBMISSION
+    // =============================================
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Clear previous errors
       errorBanner.classList.add('hidden');
       document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
 
-      // Validate required fields
-      const firstName = document.getElementById('first_name').value.trim();
-      const lastName = document.getElementById('last_name').value.trim();
-      const email = document.getElementById('email').value.trim();
+      if (isStep2) {
+        await submitFullApplication();
+      } else {
+        await submitInquiry();
+      }
+    });
+
+    // =============================================
+    // STEP 1: Community Fit Inquiry Submission
+    // =============================================
+    async function submitInquiry() {
+      const firstName = getValue('first_name');
+      const lastName = getValue('last_name');
+      const email = getValue('email');
+      const phone = getValue('phone');
 
       let hasError = false;
+      if (!firstName) { document.getElementById('first_name').classList.add('error'); hasError = true; }
+      if (!lastName) { document.getElementById('last_name').classList.add('error'); hasError = true; }
+      if (!email) { document.getElementById('email').classList.add('error'); hasError = true; }
+      if (!phone) { document.getElementById('phone').classList.add('error'); hasError = true; }
 
-      if (!firstName) {
-        document.getElementById('first_name').classList.add('error');
-        hasError = true;
-      }
-      if (!lastName) {
-        document.getElementById('last_name').classList.add('error');
-        hasError = true;
-      }
-      if (!email) {
-        document.getElementById('email').classList.add('error');
-        hasError = true;
+      // Validate required community fit fields
+      const requiredFields = ['coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'referral_source'];
+      for (const field of requiredFields) {
+        if (!getValue(field)) {
+          document.getElementById(field).classList.add('error');
+          hasError = true;
+        }
       }
 
       if (hasError) {
@@ -1286,39 +1360,53 @@
         return;
       }
 
-      // Disable form while submitting
       submitBtn.disabled = true;
-      submitBtn.textContent = feeAmount > 0 ? 'Processing Payment...' : 'Submitting...';
+      submitBtn.textContent = 'Submitting...';
       form.classList.add('loading');
 
       try {
-        // Build person data
+        // Upload photo if provided
+        let photoUrl = null;
+        const photoFile = document.getElementById('photo_upload')?.files[0];
+        if (photoFile) {
+          try {
+            const fileName = `applicant-photos/${Date.now()}-${photoFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            const uploadResp = await fetch(
+              `${SUPABASE_URL}/storage/v1/object/housephotos/${fileName}`,
+              {
+                method: 'POST',
+                headers: {
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                  'Content-Type': photoFile.type,
+                },
+                body: photoFile
+              }
+            );
+            if (uploadResp.ok) {
+              photoUrl = `${SUPABASE_URL}/storage/v1/object/public/housephotos/${fileName}`;
+            }
+          } catch (photoError) {
+            console.error('Photo upload failed:', photoError);
+            // Don't fail the submission if photo upload fails
+          }
+        }
+
+        // Build person data (Step 1 fields only)
         const personData = {
           first_name: firstName,
           last_name: lastName,
           email: email,
-          phone: getValue('phone'),
-          whatsapp: getValue('whatsapp'),
+          phone: phone,
+          whatsapp: phone,
           date_of_birth: getValue('date_of_birth') || null,
-          gender: getValue('gender') || null,
-          current_address: getValue('current_address'),
-          desired_space_id: getValue('desired_space_id') || null,
-          desired_move_in: getValue('desired_move_in') || null,
-          desired_term: getValue('desired_term'),
-          employment_status: getValue('employment_status'),
-          employer: getValue('employer'),
-          monthly_income: getValue('monthly_income') ? parseFloat(getValue('monthly_income')) : null,
-          deposit_return_method: getValue('deposit_return_method') || null,
-          partner_email: getValue('partner_email'),
-          kids_ages: getValue('kids_ages'),
-          vehicles: getValue('vehicles'),
-          pets: getValue('pets'),
-          allergies: getValue('allergies'),
-          prior_evictions: document.getElementById('prior_evictions').checked,
-          instagram: getValue('instagram'),
-          facebook: getValue('facebook'),
-          x_handle: getValue('x_handle'),
-          myspace: getValue('myspace'),
+          coliving_experience: getValue('coliving_experience'),
+          life_focus: getValue('life_focus'),
+          visiting_guide_response: getValue('visiting_guide_response'),
+          desired_timeframe: getValue('desired_timeframe'),
+          preferred_accommodation: getValue('preferred_accommodation'),
+          volunteer_interest: getValue('volunteer_interest') || null,
+          photo_url: photoUrl,
           referral_source: getValue('referral_source'),
           status: 'candidate'
         };
@@ -1337,18 +1425,15 @@
 
         if (!personResponse.ok) {
           const errorData = await personResponse.json();
-          throw new Error(errorData.message || 'Failed to submit application');
+          throw new Error(errorData.message || 'Failed to submit inquiry');
         }
 
         const [person] = await personResponse.json();
 
-        // Create rental application record
+        // Create rental application with status='inquiry'
         const applicationData = {
           person_id: person.id,
-          desired_space_id: getValue('desired_space_id') || null,
-          desired_move_in: getValue('desired_move_in') || null,
-          desired_term: getValue('desired_term') || null,
-          application_status: 'submitted'
+          application_status: 'inquiry'
         };
 
         const applicationResponse = await fetch(`${SUPABASE_URL}/rest/v1/rental_applications`, {
@@ -1362,29 +1447,207 @@
           body: JSON.stringify(applicationData)
         });
 
-        let applicationId = null;
-        if (applicationResponse.ok) {
-          const [app] = await applicationResponse.json();
-          applicationId = app.id;
-        } else {
+        if (!applicationResponse.ok) {
           console.error('Failed to create rental application');
         }
 
+        // Send admin notification email
+        const accommLabels = {
+          'bed_shared_room': 'Bed in a shared room',
+          'private_room': 'Private room',
+          'private_suite': 'Private suite / studio',
+          'rv_van': 'RV / Van spot',
+          'tent_camping': 'Tent / Camping',
+          'flexible': 'Flexible / Open to anything',
+        };
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              type: 'contact_form',
+              to: 'alpacaplayhouse@gmail.com',
+              data: {
+                name: `${firstName} ${lastName}`,
+                email: email,
+                phone: phone,
+                subject: 'Community Fit Inquiry',
+                message: [
+                  `New Community Fit Inquiry from ${firstName} ${lastName}`,
+                  '',
+                  `Email: ${email}`,
+                  `Phone: ${phone}`,
+                  `DOB: ${getValue('date_of_birth') || 'Not provided'}`,
+                  '',
+                  `Preferred Accommodation: ${accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation')}`,
+                  `Desired Timeframe: ${getValue('desired_timeframe')}`,
+                  `Volunteer Interest: ${getValue('volunteer_interest') || 'Not specified'}`,
+                  `Referral: ${getValue('referral_source')}`,
+                  '',
+                  `Co-living Experience:`,
+                  getValue('coliving_experience'),
+                  '',
+                  `Life Focus / Goals:`,
+                  getValue('life_focus'),
+                  '',
+                  `Visiting Guide Response:`,
+                  getValue('visiting_guide_response'),
+                  photoUrl ? `\nPhoto: ${photoUrl}` : '',
+                ].join('\n')
+              }
+            })
+          });
+        } catch (emailError) {
+          console.error('Failed to send admin notification email:', emailError);
+        }
+
+        // Save for ask box
+        submittedFirstName = firstName;
+        submittedEmail = email;
+
+        // Populate inquiry success summary
+        document.getElementById('inquirySummaryAccomm').textContent =
+          accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation') || 'Flexible';
+        document.getElementById('inquirySummaryTimeframe').textContent = getValue('desired_timeframe') || '-';
+        document.getElementById('inquirySummaryReferral').textContent = getValue('referral_source') || '-';
+
+        // Pre-populate ask box
+        const askMsg = document.getElementById('askMessage');
+        if (askMsg) {
+          askMsg.placeholder = `Hi, I'm ${firstName}. I have a question about...`;
+        }
+
+        // Show inquiry success
+        formContainer.classList.add('hidden');
+        inquirySuccessContainer.classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Submission error:', error);
+        showError(error.message || 'Something went wrong. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Inquiry';
+        form.classList.remove('loading');
+      }
+    }
+
+    // =============================================
+    // ASK BOX (on inquiry success page)
+    // =============================================
+    window.sendAskQuestion = async function() {
+      const message = document.getElementById('askMessage').value.trim();
+      if (!message) return;
+
+      const btn = document.getElementById('askSendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'contact_form',
+            to: 'alpacaplayhouse@gmail.com',
+            data: {
+              name: submittedFirstName,
+              email: submittedEmail,
+              phone: '',
+              subject: 'Question from Community Fit Inquiry',
+              message: message
+            }
+          })
+        });
+        document.getElementById('askBox').classList.add('hidden');
+        document.getElementById('askSuccess').classList.remove('hidden');
+      } catch (error) {
+        console.error('Failed to send question:', error);
+        btn.disabled = false;
+        btn.textContent = 'Send';
+      }
+    };
+
+    // =============================================
+    // STEP 2: Full Application Submission
+    // =============================================
+    async function submitFullApplication() {
+      submitBtn.disabled = true;
+      submitBtn.textContent = feeAmount > 0 ? 'Processing Payment...' : 'Submitting...';
+      form.classList.add('loading');
+
+      try {
+        // Build person update data
+        const personUpdate = {
+          gender: getValue('gender') || null,
+          current_address: getValue('current_address'),
+          employment_status: getValue('employment_status'),
+          employer: getValue('employer'),
+          monthly_income: getValue('monthly_income') ? parseFloat(getValue('monthly_income')) : null,
+          deposit_return_method: getValue('deposit_return_method') || null,
+          partner_email: getValue('partner_email'),
+          kids_ages: getValue('kids_ages'),
+          vehicles: getValue('vehicles'),
+          pets: getValue('pets'),
+          allergies: getValue('allergies'),
+          prior_evictions: document.getElementById('prior_evictions')?.checked || false,
+          instagram: getValue('instagram'),
+          facebook: getValue('facebook'),
+          x_handle: getValue('x_handle'),
+          myspace: getValue('myspace'),
+        };
+
+        // PATCH existing person record
+        await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(personUpdate)
+        });
+
+        // PATCH rental application to 'submitted'
+        const appUpdate = {
+          application_status: 'submitted',
+          desired_space_id: getValue('desired_space_id') || null,
+          desired_move_in: getValue('desired_move_in') || null,
+          desired_term: getValue('desired_term') || null,
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(appUpdate)
+        });
+
         // Process payment if fee > 0
-        if (feeAmount > 0 && applicationId) {
-          if (!squareCard) {
-            throw new Error('Payment system not ready. Please refresh and try again.');
-          }
-
-          // Tokenize the card
+        if (feeAmount > 0) {
+          if (!squareCard) throw new Error('Payment system not ready. Please refresh and try again.');
           const tokenResult = await squareCard.tokenize();
-
           if (tokenResult.status !== 'OK') {
-            const errorMessage = tokenResult.errors?.[0]?.message || 'Card payment failed';
-            throw new Error(errorMessage);
+            throw new Error(tokenResult.errors?.[0]?.message || 'Card payment failed');
           }
 
-          // Create pending payment record
+          // Get person email for receipt
+          const personResp = await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}&select=email,first_name,last_name`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          const [personInfo] = await personResp.json();
+          const buyerEmail = personInfo?.email || '';
+          const buyerName = `${personInfo?.first_name || ''} ${personInfo?.last_name || ''}`.trim();
+
           const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
             method: 'POST',
             headers: {
@@ -1396,213 +1659,97 @@
             body: JSON.stringify({
               payment_type: FEE_TYPE,
               reference_type: 'rental_application',
-              reference_id: applicationId,
+              reference_id: continueAppId,
               amount: feeAmount,
               fee_code_used: appliedCode,
               original_amount: originalAmount,
               status: 'pending'
             })
           });
-
-          if (!paymentRecordResponse.ok) {
-            throw new Error('Failed to create payment record');
-          }
-
+          if (!paymentRecordResponse.ok) throw new Error('Failed to create payment record');
           const [paymentRecord] = await paymentRecordResponse.json();
 
-          // Process payment via Edge Function
           const processResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-square-payment`, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               sourceId: tokenResult.token,
-              amount: Math.round(feeAmount * 100), // Convert to cents
+              amount: Math.round(feeAmount * 100),
               paymentRecordId: paymentRecord.id,
-              buyerEmail: email,
-              note: `Rental Application Fee - ${firstName} ${lastName}`
+              buyerEmail: buyerEmail,
+              note: `Rental Application Fee - ${buyerName}`
             })
           });
-
           const processResult = await processResponse.json();
 
           if (!processResult.success) {
-            // Update payment record with failure
             await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
               method: 'PATCH',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                status: 'failed',
-                error_message: processResult.error,
-                updated_at: new Date().toISOString()
-              })
+              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'failed', error_message: processResult.error, updated_at: new Date().toISOString() })
             });
-
             throw new Error(processResult.error || 'Payment failed');
           }
 
-          // Update payment record with success
           await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
             method: 'PATCH',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              status: 'completed',
-              square_payment_id: processResult.paymentId,
-              square_order_id: processResult.orderId,
-              square_receipt_url: processResult.receiptUrl,
-              updated_at: new Date().toISOString()
-            })
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed', square_payment_id: processResult.paymentId, square_order_id: processResult.orderId, square_receipt_url: processResult.receiptUrl, updated_at: new Date().toISOString() })
           });
 
-          // Update rental application with payment info
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${applicationId}`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
             method: 'PATCH',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              application_fee_paid: true,
-              application_fee_amount: feeAmount,
-              application_fee_code: appliedCode
-            })
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: feeAmount, application_fee_code: appliedCode })
           });
 
-          // Increment code usage if applicable
           if (appliedCode) {
             await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_fee_code_usage`, {
               method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json'
-              },
+              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({ code_id: appliedCode })
             });
           }
-        } else if (feeAmount === 0 && applicationId) {
-          // Record $0 payment
+        } else if (feeAmount === 0) {
           await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
             method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              payment_type: FEE_TYPE,
-              reference_type: 'rental_application',
-              reference_id: applicationId,
-              amount: 0,
-              fee_code_used: appliedCode,
-              original_amount: originalAmount,
-              status: 'completed'
-            })
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payment_type: FEE_TYPE, reference_type: 'rental_application', reference_id: continueAppId, amount: 0, fee_code_used: appliedCode, original_amount: originalAmount, status: 'completed' })
           });
 
-          // Update rental application
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${applicationId}`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
             method: 'PATCH',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              application_fee_paid: true,
-              application_fee_amount: 0,
-              application_fee_code: appliedCode
-            })
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: 0, application_fee_code: appliedCode })
           });
         }
 
         // Insert previous residence if provided
         const prevAddress = getValue('prev_address');
         if (prevAddress) {
-          const residenceData = {
-            person_id: person.id,
-            address: prevAddress,
-            start_date: getValue('prev_start_date') || null,
-            end_date: getValue('prev_end_date') || null,
-            landlord_name: getValue('landlord_name'),
-            landlord_contact: getValue('landlord_contact'),
-            reason_for_leaving: getValue('reason_for_leaving')
-          };
-
           await fetch(`${SUPABASE_URL}/rest/v1/previous_residences`, {
             method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(residenceData)
-          });
-        }
-
-        // Get the selected space name if one was selected
-        let spaceName = null;
-        const selectedSpace = spaceSelect.options[spaceSelect.selectedIndex];
-        if (selectedSpace && selectedSpace.value) {
-          spaceName = selectedSpace.textContent;
-        }
-
-        // Send admin notification email
-        try {
-          await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              type: 'admin_rental_application',
-              to: 'alpacaplayhouse@gmail.com',
-              data: {
-                first_name: firstName,
-                last_name: lastName,
-                email: email,
-                phone: getValue('phone'),
-                current_location: getValue('current_address'),
-                space_name: spaceName,
-                desired_move_in: getValue('desired_move_in'),
-                desired_lease_length: getValue('desired_term'),
-                employment_status: getValue('employment_status'),
-                employer: getValue('employer'),
-                monthly_income: getValue('monthly_income'),
-                about_yourself: null,
-                why_interested: getValue('referral_source') ? `Referral: ${getValue('referral_source')}` : null,
-                additional_notes: [
-                  getValue('vehicles') ? `Vehicles: ${getValue('vehicles')}` : null,
-                  getValue('pets') ? `Pets: ${getValue('pets')}` : null,
-                  getValue('allergies') ? `Allergies: ${getValue('allergies')}` : null,
-                  getValue('kids_ages') ? `Children's ages: ${getValue('kids_ages')}` : null,
-                  document.getElementById('prior_evictions').checked ? 'Has prior evictions' : null,
-                  feeAmount > 0 ? `Application fee paid: $${feeAmount.toFixed(2)}` : (appliedCode ? `Application fee waived (code: ${appliedCode})` : null)
-                ].filter(Boolean).join('\n') || null
-              }
+              person_id: continuePersonId,
+              address: prevAddress,
+              start_date: getValue('prev_start_date') || null,
+              end_date: getValue('prev_end_date') || null,
+              landlord_name: getValue('landlord_name'),
+              landlord_contact: getValue('landlord_contact'),
+              reason_for_leaving: getValue('reason_for_leaving')
             })
           });
-        } catch (emailError) {
-          console.error('Failed to send admin notification email:', emailError);
-          // Don't fail the submission if email fails
         }
 
         // Populate success summary
+        let spaceName = null;
+        if (spaceSelect) {
+          const selectedSpace = spaceSelect.options[spaceSelect.selectedIndex];
+          if (selectedSpace && selectedSpace.value) spaceName = selectedSpace.textContent;
+        }
         populateSuccessSummary(spaceName, feeAmount);
 
-        // Show success
         formContainer.classList.add('hidden');
         successContainer.classList.remove('hidden');
 
@@ -1613,56 +1760,25 @@
         submitBtn.textContent = 'Submit Application';
         form.classList.remove('loading');
       }
-    });
+    }
 
     function populateSuccessSummary(spaceName, feePaid) {
-      // Space name
       if (spaceName) {
         document.getElementById('summarySpace').textContent = spaceName;
-
-        // Find the space to get the monthly rate
-        const selectedOption = spaceSelect.options[spaceSelect.selectedIndex];
-        if (selectedOption && selectedOption.value) {
-          // We need to fetch the rate from the space
-          fetch(`${SUPABASE_URL}/rest/v1/spaces?id=eq.${selectedOption.value}&select=monthly_rate`, {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          })
-          .then(r => r.json())
-          .then(([space]) => {
-            if (space && space.monthly_rate) {
-              document.getElementById('summaryRate').textContent = `$${parseFloat(space.monthly_rate).toLocaleString()}/month`;
-              document.getElementById('summaryRateRow').style.display = 'flex';
-            }
-          })
-          .catch(() => {});
-        }
       } else {
         document.getElementById('summarySpace').textContent = 'Flexible (we\'ll find the best fit)';
       }
-
-      // Desired move-in date
       const moveIn = getValue('desired_move_in');
       if (moveIn) {
         const moveInDate = new Date(moveIn + 'T12:00:00');
-        document.getElementById('summaryMoveIn').textContent = moveInDate.toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric'
-        });
+        document.getElementById('summaryMoveIn').textContent = moveInDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         document.getElementById('summaryMoveInRow').style.display = 'flex';
       }
-
-      // Desired term
       const term = getValue('desired_term');
       if (term) {
         document.getElementById('summaryTerm').textContent = term;
         document.getElementById('summaryTermRow').style.display = 'flex';
       }
-
-      // Application fee
       if (feePaid > 0) {
         document.getElementById('summaryFee').textContent = `$${feePaid.toFixed(2)} paid`;
         document.getElementById('summaryFeeRow').style.display = 'flex';
@@ -1683,66 +1799,62 @@
       errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Test data fill (click on "Secure" to trigger)
-    document.getElementById('secureTestTrigger').addEventListener('click', () => {
-      // Basic Info
-      document.getElementById('first_name').value = 'Test';
-      document.getElementById('last_name').value = 'Applicant';
-      document.getElementById('email').value = 'test@example.com';
-      document.getElementById('phone').value = '512-555-0123';
-      document.getElementById('whatsapp').value = '512-555-0123';
-      document.getElementById('date_of_birth').value = '1990-01-15';
-      document.getElementById('gender').value = 'other';
-      document.getElementById('current_address').value = '160 Still Forest Drive, Cedar Creek, TX 78612';
+    // =============================================
+    // TEST DATA FILL
+    // =============================================
+    const secureTestTrigger = document.getElementById('secureTestTrigger');
+    if (secureTestTrigger) {
+      secureTestTrigger.addEventListener('click', () => {
+        if (isStep2) {
+          // Step 2 test data
+          document.getElementById('desired_move_in').value = '2030-01-01';
+          document.getElementById('desired_term').value = '6 months';
+          document.getElementById('employment_status').value = 'Self-employed';
+          document.getElementById('employer').value = 'Test Company LLC';
+          document.getElementById('monthly_income').value = '5000';
+          document.getElementById('deposit_return_method').value = 'zelle';
+          document.getElementById('prev_address').value = '1100 Congress Ave, Austin, TX 78701';
+          document.getElementById('prev_start_date').value = '2025-01-01';
+          document.getElementById('prev_end_date').value = '2029-12-31';
+          document.getElementById('landlord_name').value = 'Jane Landlord';
+          document.getElementById('landlord_contact').value = '512-555-9999';
+          document.getElementById('reason_for_leaving').value = 'Looking for community living';
+          document.getElementById('vehicles').value = 'Honda Civic sedan';
+          document.getElementById('pets').value = 'None';
+          document.getElementById('allergies').value = 'None';
+          document.getElementById('instagram').value = '@testuser';
+          document.getElementById('referral_source').value = 'Testing';
+          console.log('Test data filled for Step 2');
+        } else {
+          // Step 1 test data
+          document.getElementById('first_name').value = 'Test';
+          document.getElementById('last_name').value = 'Inquirer';
+          document.getElementById('email').value = 'test@example.com';
+          document.getElementById('phone').value = '+1-512-555-0123';
+          document.getElementById('date_of_birth').value = '1990-01-15';
+          document.getElementById('coliving_experience').value = 'I lived in a co-living house in Portland for 2 years.';
+          document.getElementById('life_focus').value = 'Building a sustainable tech startup and practicing meditation.';
+          document.getElementById('visiting_guide_response').value = 'Yes, I loved the community values section.';
+          document.getElementById('desired_timeframe').value = 'Starting March 2030, for 6+ months';
+          document.getElementById('preferred_accommodation').value = 'private_room';
+          document.getElementById('volunteer_interest').value = 'yes_sometimes';
+          document.getElementById('referral_source').value = 'Testing';
+          console.log('Test data filled for Step 1');
+        }
+      });
+    }
 
-      // Desired Housing - dates far in the future
-      document.getElementById('desired_move_in').value = '2030-01-01';
-      document.getElementById('desired_term').value = '6 months';
-
-      // Financial
-      document.getElementById('employment_status').value = 'Self-employed';
-      document.getElementById('employer').value = 'Test Company LLC';
-      document.getElementById('monthly_income').value = '5000';
-      document.getElementById('deposit_return_method').value = 'zelle';
-
-      // Previous Residence
-      document.getElementById('prev_address').value = '1100 Congress Ave, Austin, TX 78701';
-      document.getElementById('prev_start_date').value = '2025-01-01';
-      document.getElementById('prev_end_date').value = '2029-12-31';
-      document.getElementById('landlord_name').value = 'Jane Landlord';
-      document.getElementById('landlord_contact').value = '512-555-9999';
-      document.getElementById('reason_for_leaving').value = 'Looking for community living';
-
-      // Household
-      document.getElementById('partner_email').value = '';
-      document.getElementById('kids_ages').value = '';
-
-      // Property Details
-      document.getElementById('vehicles').value = 'Honda Civic sedan';
-      document.getElementById('pets').value = 'None';
-      document.getElementById('allergies').value = 'None';
-
-      // Social
-      document.getElementById('instagram').value = '@testuser';
-      document.getElementById('facebook').value = 'testuser';
-      document.getElementById('x_handle').value = '@testuser';
-      document.getElementById('myspace').value = '';
-
-      // Referral
-      document.getElementById('referral_source').value = 'Testing';
-
-      console.log('Test data filled for rental application');
-    });
-
-    // Initialize
-    loadSpaces();
-    loadFeeSettings();
+    // =============================================
+    // INITIALIZE
+    // =============================================
+    if (isStep2) {
+      initStep2();
+    }
 
     // Mobile navigation toggle
     const siteNavToggle = document.getElementById('siteNavToggle');
     const siteNavMobile = document.getElementById('siteNavMobile');
     const siteNavMobileClose = document.getElementById('siteNavMobileClose');
-
     if (siteNavToggle && siteNavMobile) {
       siteNavToggle.addEventListener('click', () => siteNavMobile.classList.add('open'));
       siteNavMobileClose.addEventListener('click', () => siteNavMobile.classList.remove('open'));

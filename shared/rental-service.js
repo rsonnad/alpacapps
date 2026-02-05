@@ -38,6 +38,7 @@ async function triggerIcalRegeneration() {
 // =============================================
 
 const APPLICATION_STATUS = {
+  INQUIRY: 'inquiry',
   SUBMITTED: 'submitted',
   UNDER_REVIEW: 'under_review',
   APPROVED: 'approved',
@@ -88,12 +89,12 @@ async function getApplications(filters = {}) {
     .from('rental_applications')
     .select(`
       *,
-      person:person_id(id, first_name, last_name, email, phone, type),
+      person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate),
       approved_space:approved_space_id(id, name, monthly_rate),
       assignment:assignment_id(id, status)
     `)
-    .order('submitted_at', { ascending: false });
+    .order('created_at', { ascending: false });
 
   // Filter archived applications (default: exclude archived)
   if (filters.includeArchived !== true) {
@@ -141,7 +142,7 @@ async function getApplication(applicationId) {
     .from('rental_applications')
     .select(`
       *,
-      person:person_id(id, first_name, last_name, email, phone, type),
+      person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate, location),
       approved_space:approved_space_id(id, name, monthly_rate, location),
       assignment:assignment_id(id, status, start_date, end_date)
@@ -182,6 +183,9 @@ function getPipelineStage(application) {
 
   // Denied (separate handling)
   if (application.application_status === APPLICATION_STATUS.DENIED) return 'denied';
+
+  // Inquiry - community fit stage (before applications)
+  if (application.application_status === APPLICATION_STATUS.INQUIRY) return 'community_fit';
 
   // Default - in applications column
   return 'applications';
@@ -1311,6 +1315,38 @@ function daysSince(dateStr) {
 }
 
 // =============================================
+// COMMUNITY FIT / INQUIRY
+// =============================================
+
+/**
+ * Invite an inquiry applicant to complete the full application.
+ * Sets invited_to_apply_at timestamp and returns the continue URL.
+ */
+async function inviteToApply(applicationId) {
+  const app = await getApplication(applicationId);
+  if (!app) throw new Error('Application not found');
+
+  const { data, error } = await supabase
+    .from('rental_applications')
+    .update({
+      invited_to_apply_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', applicationId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const continueUrl = `https://rsonnad.github.io/alpacapps/spaces/apply/?continue=${applicationId}`;
+
+  return {
+    application: data,
+    continueUrl,
+  };
+}
+
+// =============================================
 // EXPORTS
 // =============================================
 
@@ -1334,6 +1370,7 @@ export const rentalService = {
   archiveApplication,
   unarchiveApplication,
   toggleTestFlag,
+  inviteToApply,
 
   // Rental agreement
   updateAgreementStatus,
