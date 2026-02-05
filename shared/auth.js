@@ -65,9 +65,16 @@ export async function initAuth() {
             resolved = true;
             resolve({ user: currentUser, role: currentRole });
           }
+          // Fetch full user record in background (don't await)
+          handleAuthChange(session);
+        } else if (event === 'INITIAL_SESSION') {
+          // No session exists - user is not logged in, resolve immediately
+          console.log('No existing session found');
+          if (!resolved) {
+            resolved = true;
+            resolve({ user: null, role: 'public' });
+          }
         }
-        // Fetch full user record in background (don't await)
-        handleAuthChange(session);
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         currentAppUser = null;
