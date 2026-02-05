@@ -796,7 +796,7 @@ const inbound = await smsService.getRecentInbound(50);
 - Errors stored in `error_logs` table for analysis
 - Daily digest email sent via `error-report` Edge Function
 - Triggered automatically when users visit the consumer spaces page
-- Recipient: `alpacaplayhouse@gmail.com`
+- Recipient: `alpacaautomation@gmail.com`
 
 **Error Categories Tracked:**
 - `upload`: File upload failures (timeouts, network errors, DB errors)
@@ -1300,7 +1300,7 @@ Three email templates added to `send-email` Edge Function:
    - Subject: "Bug Report Update: Could not auto-fix"
    - Includes error message and suggestion for manual investigation
 
-All bug emails CC the admin (`alpacaplayhouse@gmail.com`).
+All bug emails CC the admin (`alpacaautomation@gmail.com`).
 
 ### Hosting & Infrastructure
 
