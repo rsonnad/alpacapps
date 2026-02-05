@@ -691,10 +691,10 @@
     #tableView td:nth-child(9) { min-width: 80px; white-space: normal; } /* lease dates */
 
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { width: 28px; text-align: center; } /* status */
+    #tableView td:nth-child(10) { width: 36px; text-align: center; } /* status */
 
     #tableView th:nth-child(11),
-    #tableView td:nth-child(11) { min-width: 30px; text-align: center; overflow: visible; } /* vis */
+    #tableView td:nth-child(11) { width: 36px; text-align: center; overflow: visible; } /* vis */
 
     /* Table container should scroll horizontally when needed */
     .table-container {
@@ -745,8 +745,15 @@
 
     #tableView .badge {
       font-size: 0.65rem;
-      padding: 0.2rem 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border-radius: 4px;
       white-space: nowrap;
+      line-height: 1;
     }
 
     /* Improve description text */
@@ -1091,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.08</span>
+        <span class="app-version">v260205.09</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -8815,6 +8822,7 @@
       noTemplateWarning.style.display = 'none';
 
       // Clear preview
+      document.getElementById('eventLeasePreviewContainer').style.display = 'none';
       document.getElementById('eventLeasePreview').innerHTML = '';
 
       const status = req.agreement_status || 'pending';
@@ -8974,6 +8982,7 @@
           .replace(/\n\n/g, '</p><p>')
           .replace(/\n/g, '<br>');
 
+        document.getElementById('eventLeasePreviewContainer').style.display = 'block';
         document.getElementById('eventLeasePreview').innerHTML = `<div class="markdown-preview"><p>${htmlContent}</p></div>`;
         showToast('Preview loaded', 'success');
       } catch (e) {
@@ -9003,29 +9012,14 @@
         showToast('Generating PDF...', 'info');
 
         // Generate PDF
-        const pdfBlob = await pdfService.generatePdf(parsedContent, {
-          title: `Event Agreement - ${req.event_name}`,
-          subject: 'Event Hosting Agreement'
-        });
+        const filename = `event-agreement-${req.id}-${Date.now()}.pdf`;
+        const { blob } = await pdfService.generateLeasePdf(parsedContent, filename);
 
         // Upload to Supabase storage
-        const filename = `event-agreement-${req.id}-${Date.now()}.pdf`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('lease-documents')
-          .upload(`generated/${filename}`, pdfBlob, {
-            contentType: 'application/pdf',
-            upsert: true
-          });
-
-        if (uploadError) throw uploadError;
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from('lease-documents')
-          .getPublicUrl(`generated/${filename}`);
+        const url = await pdfService.uploadPdfToStorage(blob, filename);
 
         // Update event request
-        await eventService.updateAgreementStatus(currentEventRequestId, 'generated', urlData.publicUrl);
+        await eventService.updateAgreementStatus(currentEventRequestId, 'generated', url);
 
         // Reload events
         allEventRequests = await eventService.getRequests();
