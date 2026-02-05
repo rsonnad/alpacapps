@@ -266,51 +266,50 @@ function buildOccupancySection() {
 
   return `
     <div class="month-row separator"></div>
-    <div class="month-col-occ-block">
-      <div class="month-col-occ-header">Occupancy</div>
-      <div class="month-col-donut-row">
-        <svg viewBox="0 0 52 52" class="month-donut-svg">
-          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
-          <circle cx="26" cy="26" r="22" fill="none" stroke="#22c55e" stroke-width="5"
-            stroke-dasharray="${unitArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
-          <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.occupancyPct}%</text>
-        </svg>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot occupied"></span>Occupied</span>
-        <span class="month-row-value">${o.occupiedUnits}</span>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot available"></span>Available</span>
-        <span class="month-row-value">${o.availableUnits}</span>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot total"></span>Total</span>
-        <span class="month-row-value">${o.totalUnits}</span>
-      </div>
+    <div class="month-col-section-label">
+      <span>Occupancy</span>
+      <svg viewBox="0 0 52 52" class="month-donut-svg">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
+        <circle cx="26" cy="26" r="22" fill="none" stroke="#22c55e" stroke-width="5"
+          stroke-dasharray="${unitArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
+        <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.occupancyPct}%</text>
+      </svg>
     </div>
-    <div class="month-col-occ-block">
-      <div class="month-col-occ-header">Revenue</div>
-      <div class="month-col-donut-row">
-        <svg viewBox="0 0 52 52" class="month-donut-svg">
-          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
-          <circle cx="26" cy="26" r="22" fill="none" stroke="#3b82f6" stroke-width="5"
-            stroke-dasharray="${revArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
-          <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.revenuePct}%</text>
-        </svg>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot occupied"></span>Current</span>
-        <span class="month-row-value">${formatCurrency(o.currentRevenue)}</span>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot potential"></span>Potential</span>
-        <span class="month-row-value">${formatCurrency(o.maxPotential)}</span>
-      </div>
-      <div class="month-row occ-detail">
-        <span class="month-row-label"><span class="occ-dot gap"></span>Gap</span>
-        <span class="month-row-value">${formatCurrency(o.revenueGap)}</span>
-      </div>
+    <div class="month-row occ-row-total">
+      <span class="month-row-label"><span class="month-row-dot occ-total"></span>Total Units</span>
+      <span class="month-row-value">${o.totalUnits}</span>
+    </div>
+    <div class="month-row occ-row-occupied">
+      <span class="month-row-label"><span class="month-row-dot occ-occupied"></span>Occupied</span>
+      <span class="month-row-value">${o.occupiedUnits}</span>
+    </div>
+    <div class="month-row separator"></div>
+    <div class="month-row occ-result">
+      <span class="month-row-label">Available</span>
+      <span class="month-row-value">${o.availableUnits}</span>
+    </div>
+    <div class="month-row separator"></div>
+    <div class="month-col-section-label">
+      <span>Revenue</span>
+      <svg viewBox="0 0 52 52" class="month-donut-svg">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
+        <circle cx="26" cy="26" r="22" fill="none" stroke="#3b82f6" stroke-width="5"
+          stroke-dasharray="${revArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
+        <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.revenuePct}%</text>
+      </svg>
+    </div>
+    <div class="month-row rev-potential">
+      <span class="month-row-label"><span class="month-row-dot rev-pot"></span>Potential</span>
+      <span class="month-row-value">${formatCurrency(o.maxPotential)}</span>
+    </div>
+    <div class="month-row rev-current">
+      <span class="month-row-label"><span class="month-row-dot rev-cur"></span>Current</span>
+      <span class="month-row-value">${formatCurrency(o.currentRevenue)}</span>
+    </div>
+    <div class="month-row separator"></div>
+    <div class="month-row rev-result">
+      <span class="month-row-label">Gap</span>
+      <span class="month-row-value">${formatCurrency(o.revenueGap)}</span>
     </div>
   `;
 }

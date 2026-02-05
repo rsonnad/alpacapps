@@ -149,71 +149,67 @@
 }
 
 /* =============================================
-   OCCUPANCY BLOCKS INSIDE MONTH COLUMNS
+   OCCUPANCY & REVENUE IN MONTH COLUMNS
    ============================================= */
-.month-col-occ-block {
-  padding: 0.5rem 1rem 0.25rem;
-}
 
-.month-col-occ-header {
+/* Section label with inline donut */
+.month-col-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem 0.25rem;
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 0.35rem;
-  text-align: center;
-}
-
-.month-col-donut-row {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.25rem;
 }
 
 .month-donut-svg {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
 }
 
 .month-donut-pct {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 700;
   fill: var(--text);
   font-family: 'DM Sans', sans-serif;
 }
 
-.month-row.occ-detail {
-  padding: 0.25rem 0;
-  border-bottom: none;
-  font-size: 0.75rem;
+/* Occupancy row colors */
+.month-row-dot.occ-total { background: var(--text-muted); }
+.month-row-dot.occ-occupied { background: #22c55e; }
+
+.month-row.occ-result {
+  background: rgba(34, 197, 94, 0.04);
+}
+.month-row.occ-result .month-row-label {
+  font-weight: 700;
+  color: var(--text);
+}
+.month-row.occ-result .month-row-value {
+  font-weight: 700;
+  color: #22c55e;
 }
 
-.month-row.occ-detail .month-row-label {
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-}
+/* Revenue row colors */
+.month-row-dot.rev-pot { background: #3b82f6; }
+.month-row-dot.rev-cur { background: #22c55e; }
 
-.month-row.occ-detail .month-row-value {
-  font-size: 0.75rem;
-  font-weight: 600;
+.month-row.rev-result {
+  background: rgba(245, 158, 11, 0.04);
 }
-
-.month-row.occ-detail .occ-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  margin-right: 0.3rem;
-  flex-shrink: 0;
-  display: inline-block;
+.month-row.rev-result .month-row-label {
+  font-weight: 700;
+  color: var(--text);
 }
-
-.month-row.occ-detail .occ-dot.occupied { background: #22c55e; }
-.month-row.occ-detail .occ-dot.available { background: var(--border); }
-.month-row.occ-detail .occ-dot.total { background: var(--text-muted); }
-.month-row.occ-detail .occ-dot.potential { background: #3b82f6; }
-.month-row.occ-detail .occ-dot.gap { background: #f59e0b; }
+.month-row.rev-result .month-row-value {
+  font-weight: 700;
+  color: #f59e0b;
+}
 
 /* Filter Rows */
 .filter-row {
