@@ -142,6 +142,9 @@ function getFilters() {
   if (reconciled !== '') filters.isReconciled = reconciled === 'true';
   if (search) filters.search = search;
 
+  const showTest = document.getElementById('filterShowTest')?.checked;
+  if (showTest) filters.includeTest = true;
+
   return filters;
 }
 
@@ -413,13 +416,14 @@ function renderTransactionRow(tx) {
   // Determine if refund is possible (Square + completed + income)
   const canRefund = tx.direction === 'income' && tx.payment_method === 'square' && tx.status === 'completed' && tx.square_payment_id;
 
-  const rowClass = tx.status === 'voided' ? 'voided' : '';
+  const rowClass = tx.status === 'voided' ? 'voided' : (tx.is_test ? 'test-row' : '');
+  const testBadge = tx.is_test ? ' <span class="test-badge">sandbox</span>' : '';
 
   return `
     <tr class="${rowClass}">
       <td style="white-space: nowrap;">${formatDate(tx.transaction_date)}</td>
       <td><span class="direction-badge ${tx.direction}">${dirIcon}</span></td>
-      <td><span class="category-badge">${CATEGORY_LABELS[tx.category] || tx.category}</span></td>
+      <td><span class="category-badge">${CATEGORY_LABELS[tx.category] || tx.category}</span>${testBadge}</td>
       <td>${escapeHtml(displayDesc)}</td>
       <td style="text-align: right;" class="${amountClass}">${prefix}${formatCurrency(tx.amount)}</td>
       <td class="col-method"><span class="method-badge">${PAYMENT_METHOD_LABELS[tx.payment_method] || tx.payment_method || '—'}</span></td>
@@ -456,6 +460,7 @@ function setupEventListeners() {
   document.getElementById('filterCategory').addEventListener('change', loadData);
   document.getElementById('filterMethod').addEventListener('change', loadData);
   document.getElementById('filterReconciled').addEventListener('change', loadData);
+  document.getElementById('filterShowTest').addEventListener('change', loadData);
 
   let searchTimeout;
   document.getElementById('filterSearch').addEventListener('input', () => {

@@ -288,6 +288,7 @@ class SquareService {
           status: 'completed',
           description: `${feeType.replace(/_/g, ' ')} (fee waived)`,
           recorded_by: 'system:square-service',
+          is_test: !!this.config?.test_mode,
         });
       }
 
@@ -390,6 +391,7 @@ class SquareService {
         status: 'completed',
         description: `Square payment: ${feeType.replace(/_/g, ' ')}`,
         recorded_by: 'system:square-service',
+        is_test: !!this.config?.test_mode,
       });
 
       // Increment code usage if applicable
