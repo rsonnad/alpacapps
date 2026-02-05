@@ -155,9 +155,8 @@ async function loadData() {
     transactions = txResult.data;
     summary = summaryResult;
 
-    renderSummary();
+    renderMonthColumns();
     renderTransactions();
-    renderMonthlySummary();
   } catch (err) {
     console.error('Failed to load data:', err);
     showToast('Failed to load accounting data', 'error');
@@ -167,28 +166,96 @@ async function loadData() {
 // =============================================
 // RENDERING
 // =============================================
-function renderSummary() {
-  // Separated category cards
-  document.getElementById('rentIncome').textContent = formatCurrency(summary.rentIncome);
-  document.getElementById('depositsHeld').textContent = formatCurrency(summary.depositsHeld);
-  document.getElementById('feesIncome').textContent = formatCurrency(summary.feesIncome);
-  document.getElementById('refundsOut').textContent = formatCurrency(summary.refundsOut);
+function renderMonthColumns() {
+  const container = document.getElementById('monthColumnsContainer');
+  const months = summary.byMonth || [];
 
-  // Sub-labels showing what's included
-  const rentSub = document.getElementById('rentIncomeSub');
-  if (rentSub) rentSub.textContent = 'Rent + prorated rent (accrual basis)';
-  const depSub = document.getElementById('depositsHeldSub');
-  if (depSub) depSub.textContent = 'Security, move-in, event deposits';
-  const feeSub = document.getElementById('feesIncomeSub');
-  if (feeSub) feeSub.textContent = 'Application fees, event fees, late fees';
-  const refSub = document.getElementById('refundsOutSub');
-  if (refSub) refSub.textContent = 'Square refunds & payouts';
+  if (months.length === 0) {
+    container.innerHTML = '<div class="empty-state">No data for the selected period.</div>';
+    return;
+  }
 
-  // Net totals row
-  document.getElementById('totalIncome').textContent = formatCurrency(summary.totalIncome);
-  document.getElementById('totalExpenses').textContent = formatCurrency(summary.totalExpenses);
-  document.getElementById('netIncome').textContent = formatCurrency(summary.netIncome);
-  document.getElementById('pendingAmount').textContent = formatCurrency(summary.pendingIncome);
+  // Current month string for highlighting
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // Build a "Totals" column from overall summary
+  const totalsCol = buildMonthColumn({
+    month: 'TOTAL',
+    rent: summary.rentIncome,
+    deposits: summary.depositsHeld,
+    fees: summary.feesIncome,
+    refunds: summary.refundsOut,
+    income: summary.totalIncome,
+    expenses: summary.totalExpenses,
+    net: summary.netIncome,
+    pending: summary.pendingIncome,
+  }, false, true);
+
+  // Build each month column
+  const monthCols = months.map(m => buildMonthColumn(m, m.month === currentMonth, false)).join('');
+
+  container.innerHTML = `
+    <div class="month-columns-grid">
+      ${totalsCol}
+      ${monthCols}
+    </div>
+  `;
+}
+
+function buildMonthColumn(m, isCurrent, isTotals) {
+  const headerLabel = isTotals ? 'All Time' : formatMonthLabelShort(m.month);
+  const colClass = isTotals ? 'month-column totals-col' : (isCurrent ? 'month-column current' : 'month-column');
+
+  const netClass = (m.net >= 0) ? 'positive' : 'negative';
+
+  return `
+    <div class="${colClass}">
+      <div class="month-col-header">${headerLabel}</div>
+      <div class="month-col-body">
+        <div class="month-row rent">
+          <span class="month-row-label"><span class="month-row-dot rent"></span>Rent</span>
+          <span class="month-row-value">${formatCurrency(m.rent)}</span>
+        </div>
+        <div class="month-row deposits">
+          <span class="month-row-label"><span class="month-row-dot deposits"></span>Deposits</span>
+          <span class="month-row-value">${formatCurrency(m.deposits)}</span>
+        </div>
+        <div class="month-row fees">
+          <span class="month-row-label"><span class="month-row-dot fees"></span>Fees</span>
+          <span class="month-row-value">${formatCurrency(m.fees)}</span>
+        </div>
+        <div class="month-row refunds">
+          <span class="month-row-label"><span class="month-row-dot refunds"></span>Refunds</span>
+          <span class="month-row-value">${m.refunds > 0 ? '-' : ''}${formatCurrency(m.refunds)}</span>
+        </div>
+        <div class="month-row separator"></div>
+        <div class="month-row total-received">
+          <span class="month-row-label">Total In</span>
+          <span class="month-row-value">${formatCurrency(m.income)}</span>
+        </div>
+        <div class="month-row total-refunded">
+          <span class="month-row-label">Total Out</span>
+          <span class="month-row-value">${m.expenses > 0 ? '-' : ''}${formatCurrency(m.expenses)}</span>
+        </div>
+        <div class="month-row separator"></div>
+        <div class="month-row net">
+          <span class="month-row-label">Net</span>
+          <span class="month-row-value ${netClass}">${formatCurrency(m.net)}</span>
+        </div>
+        <div class="month-row pending">
+          <span class="month-row-label"><span class="month-row-dot pending"></span>Pending</span>
+          <span class="month-row-value">${formatCurrency(m.pending || 0)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function formatMonthLabelShort(monthStr) {
+  const [year, month] = monthStr.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
 function renderTransactions() {
@@ -276,50 +343,6 @@ function renderTransactionRow(tx) {
   `;
 }
 
-function renderMonthlySummary() {
-  const container = document.getElementById('monthlySummaryContainer');
-  const months = summary.byMonth || [];
-
-  if (months.length === 0) {
-    container.innerHTML = '<div class="empty-state">No data for monthly summary.</div>';
-    return;
-  }
-
-  const html = `
-    <table class="monthly-table">
-      <thead>
-        <tr>
-          <th>Month</th>
-          <th style="text-align: right;">Rent</th>
-          <th style="text-align: right;">Deposits</th>
-          <th style="text-align: right;">Fees</th>
-          <th style="text-align: right;">Refunds</th>
-          <th style="text-align: right;">Net</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${months.map(m => `
-          <tr>
-            <td>${formatMonthLabel(m.month)}</td>
-            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.rent)}</td>
-            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.deposits)}</td>
-            <td style="text-align: right;" class="amount-positive">${formatCurrency(m.fees)}</td>
-            <td style="text-align: right;" class="${m.refunds > 0 ? 'amount-negative' : ''}">${m.refunds > 0 ? '-' : ''}${formatCurrency(m.refunds)}</td>
-            <td style="text-align: right;" class="${m.net >= 0 ? 'amount-positive' : 'amount-negative'}">${formatCurrency(m.net)}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-
-  container.innerHTML = html;
-}
-
-function formatMonthLabel(monthStr) {
-  const [year, month] = monthStr.split('-');
-  const date = new Date(parseInt(year), parseInt(month) - 1, 1);
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-}
 
 function escapeHtml(str) {
   const div = document.createElement('div');

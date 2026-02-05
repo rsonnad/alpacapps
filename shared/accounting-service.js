@@ -396,7 +396,7 @@ class AccountingService {
       // By month - use accrual month for rent, transaction_date for everything else
       const month = AccountingService.getAccrualMonth(tx);
       if (!byMonth[month]) {
-        byMonth[month] = { month, income: 0, expenses: 0, net: 0, rent: 0, deposits: 0, fees: 0, refunds: 0 };
+        byMonth[month] = { month, income: 0, expenses: 0, net: 0, rent: 0, deposits: 0, fees: 0, refunds: 0, pending: 0 };
       }
       if (tx.status === 'completed') {
         if (tx.direction === 'income') {
@@ -409,6 +409,8 @@ class AccountingService {
           byMonth[month].refunds += amt;
         }
         byMonth[month].net = byMonth[month].income - byMonth[month].expenses;
+      } else if (tx.status === 'pending' && tx.direction === 'income') {
+        byMonth[month].pending += amt;
       }
 
       // By payment method

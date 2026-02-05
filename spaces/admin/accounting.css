@@ -1,111 +1,151 @@
 /* Accounting Page Styles */
 
-/* Summary Cards */
-.accounting-summary {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+/* =============================================
+   MONTH COLUMNS VIEW
+   ============================================= */
+.month-columns-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
 }
 
-.summary-card {
-  background: var(--bg-card);
+.month-columns-grid {
+  display: flex;
+  gap: 1rem;
+  min-width: min-content;
+}
+
+.month-column {
+  min-width: 200px;
+  max-width: 240px;
+  flex-shrink: 0;
+  background: var(--bg);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.25rem 1.5rem;
+  overflow: hidden;
+}
+
+.month-column.current {
+  border: 2px solid var(--accent);
+}
+
+.month-col-header {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.month-column.current .month-col-header {
+  background: var(--accent);
+  color: white;
+  border-bottom-color: var(--accent);
+}
+
+.month-col-body {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  border-left: 4px solid var(--border);
 }
 
-.summary-card.income {
-  border-left-color: #22c55e;
-}
-
-.summary-card.expense {
-  border-left-color: #ef4444;
-}
-
-.summary-card.net {
-  border-left-color: #3b82f6;
-}
-
-.summary-card.pending {
-  border-left-color: #f59e0b;
-}
-
-.summary-label {
+.month-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
   font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
-.summary-value {
-  font-size: 1.5rem;
+.month-row:last-child {
+  border-bottom: none;
+}
+
+.month-row-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.month-row-value {
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+/* Color coding for row types */
+.month-row.rent .month-row-value { color: #22c55e; }
+.month-row.deposits .month-row-value { color: #f59e0b; }
+.month-row.fees .month-row-value { color: #3b82f6; }
+.month-row.refunds .month-row-value { color: #ef4444; }
+
+.month-row.separator {
+  height: 0;
+  padding: 0;
+  border-bottom: 2px solid var(--border);
+}
+
+.month-row.total-received .month-row-value {
+  color: #22c55e;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.month-row.total-refunded .month-row-value {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.month-row.net {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.month-row.net .month-row-label {
   font-weight: 700;
   color: var(--text);
 }
 
-.summary-card.income .summary-value {
-  color: #22c55e;
+.month-row.net .month-row-value {
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
-.summary-card.expense .summary-value {
-  color: #ef4444;
+.month-row.net .month-row-value.positive { color: #22c55e; }
+.month-row.net .month-row-value.negative { color: #ef4444; }
+
+.month-row.pending .month-row-value { color: #f59e0b; }
+
+/* Color dots next to labels */
+.month-row-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+  flex-shrink: 0;
 }
 
-.summary-card.net .summary-value {
-  color: #3b82f6;
+.month-row-dot.rent { background: #22c55e; }
+.month-row-dot.deposits { background: #f59e0b; }
+.month-row-dot.fees { background: #3b82f6; }
+.month-row-dot.refunds { background: #ef4444; }
+.month-row-dot.pending { background: #f59e0b; }
+
+/* "All Time" or totals column */
+.month-column.totals-col {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
-.summary-card.pending .summary-value {
-  color: #f59e0b;
-}
-
-.summary-sub {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 0.15rem;
-}
-
-/* Net totals row */
-.accounting-summary.net-row {
-  margin-top: -0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.summary-card.net-total {
-  border-left: 2px solid var(--border);
-  padding: 0.75rem 1rem;
-}
-
-.summary-card.net-total .summary-label {
-  font-size: 0.7rem;
-}
-
-.summary-card.net-total .summary-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.summary-card.net-total.highlight {
-  border-left-color: #3b82f6;
-}
-
-.summary-card.net-total.highlight .summary-value {
-  color: #3b82f6;
-}
-
-.expense-color {
-  color: #ef4444 !important;
-}
-
-.pending-color {
-  color: #f59e0b !important;
+.month-column.totals-col .month-col-header {
+  background: var(--text);
+  color: var(--bg-card);
+  font-weight: 700;
 }
 
 /* Filter Rows */
@@ -277,6 +317,16 @@
 }
 
 .amount-expense {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.amount-positive {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.amount-negative {
   color: #dc2626;
   font-weight: 600;
 }
@@ -568,39 +618,6 @@
   font-size: 0.875rem;
 }
 
-/* Monthly Summary Table */
-.monthly-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.monthly-table th {
-  text-align: left;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-bottom: 2px solid var(--border);
-}
-
-.monthly-table td {
-  padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.monthly-table .amount-positive {
-  color: #16a34a;
-  font-weight: 600;
-}
-
-.monthly-table .amount-negative {
-  color: #dc2626;
-  font-weight: 600;
-}
-
 /* Form Grid */
 .form-grid {
   display: grid;
@@ -651,10 +668,6 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-  .accounting-summary {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .filter-row {
     flex-direction: column;
     gap: 0.75rem;
@@ -677,17 +690,13 @@
     width: 100%;
     flex: 1;
   }
+
+  .month-column {
+    min-width: 170px;
+  }
 }
 
 @media (max-width: 768px) {
-  .accounting-summary {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .summary-value {
-    font-size: 1.25rem;
-  }
-
   .transactions-table {
     font-size: 0.8rem;
   }
@@ -706,13 +715,13 @@
   .preset-buttons {
     flex-wrap: wrap;
   }
+
+  .month-column {
+    min-width: 150px;
+  }
 }
 
 @media (max-width: 480px) {
-  .accounting-summary {
-    grid-template-columns: 1fr;
-  }
-
   .col-reconciled {
     display: none;
   }

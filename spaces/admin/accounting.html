@@ -54,47 +54,14 @@
       <!-- Tab Navigation -->
       <div class="manage-tabs"></div>
 
-      <!-- Summary Cards -->
-      <div class="accounting-summary">
-        <div class="summary-card income">
-          <span class="summary-label">Rent Income</span>
-          <span class="summary-value" id="rentIncome">$0.00</span>
-          <span class="summary-sub" id="rentIncomeSub"></span>
+      <!-- Monthly Columns View -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Monthly Overview</h2>
+          <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Accrual basis &mdash; rent applied to service period</span>
         </div>
-        <div class="summary-card pending">
-          <span class="summary-label">Deposits Held</span>
-          <span class="summary-value" id="depositsHeld">$0.00</span>
-          <span class="summary-sub" id="depositsHeldSub"></span>
-        </div>
-        <div class="summary-card net">
-          <span class="summary-label">Fees & Other</span>
-          <span class="summary-value" id="feesIncome">$0.00</span>
-          <span class="summary-sub" id="feesIncomeSub"></span>
-        </div>
-        <div class="summary-card expense">
-          <span class="summary-label">Refunds Out</span>
-          <span class="summary-value" id="refundsOut">$0.00</span>
-          <span class="summary-sub" id="refundsOutSub"></span>
-        </div>
-      </div>
-
-      <!-- Net totals row -->
-      <div class="accounting-summary net-row">
-        <div class="summary-card net-total">
-          <span class="summary-label">Total Received</span>
-          <span class="summary-value" id="totalIncome">$0.00</span>
-        </div>
-        <div class="summary-card net-total">
-          <span class="summary-label">Total Refunded</span>
-          <span class="summary-value expense-color" id="totalExpenses">$0.00</span>
-        </div>
-        <div class="summary-card net-total highlight">
-          <span class="summary-label">Net</span>
-          <span class="summary-value" id="netIncome">$0.00</span>
-        </div>
-        <div class="summary-card net-total">
-          <span class="summary-label">Pending</span>
-          <span class="summary-value pending-color" id="pendingAmount">$0.00</span>
+        <div class="section-body month-columns-scroll" id="monthColumnsContainer">
+          <div class="empty-state">Loading monthly data...</div>
         </div>
       </div>
 
@@ -102,6 +69,7 @@
       <div class="section">
         <div class="section-header">
           <h2>Occupancy & Revenue</h2>
+          <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Current snapshot</span>
         </div>
         <div class="section-body">
           <div class="occupancy-grid">
@@ -251,16 +219,6 @@
         </div>
       </div>
 
-      <!-- Monthly Summary Section (Accrual Basis) -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Monthly Summary</h2>
-          <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Accrual basis - rent applied to service period</span>
-        </div>
-        <div class="section-body" id="monthlySummaryContainer">
-          <div class="empty-state">Loading summary...</div>
-        </div>
-      </div>
     </div>
   </div>
 
