@@ -910,6 +910,27 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       <li>Wait 1&ndash;2 minutes. Your site is live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code></li>
     </ol>
 
+    <h3><span class="step-label step-you">Download the project to your computer</span></h3>
+    <p>Now you need a copy of your project on your computer. Open a terminal and paste the command below:</p>
+
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
+      <strong>How to open a terminal:</strong>
+      <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem;">
+        <li><strong>Mac:</strong> Press <code>Cmd + Space</code>, type <strong>Terminal</strong>, press Enter</li>
+        <li><strong>Windows:</strong> Press <code>Win + R</code>, type <strong>cmd</strong>, press Enter</li>
+      </ul>
+    </div>
+
+    <pre data-lang="bash" style="position: relative;"><code id="clone-commands">git clone https://github.com/USERNAME/my-salon-app.git
+cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Copy</button></pre>
+
+    <p>This downloads your project files into a folder on your computer. You'll point Claude Code at this folder in the next step.</p>
+
+    <div class="callout warning" style="font-size: 0.85rem;">
+      <strong>Windows: Git not installed?</strong>
+      If you see "git is not recognized," download Git from <a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a>, install it (use all defaults), then close and reopen your terminal and try again. Mac already has Git built in.
+    </div>
+
     <p><strong>Project structure included in the template:</strong></p>
     <pre data-lang="folder structure"><code>your-repo/
 ├── index.html              # Landing page
@@ -932,7 +953,7 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
   <!-- 2. Claude Code -->
   <div class="section" id="claude-code">
     <h2>2. Install Claude Code</h2>
-    <p>Claude Code is your AI developer. It handles all the technical work &mdash; you never need to use the terminal yourself.</p>
+    <p>Claude Code is your AI developer. Once it's set up, you won't need to use the terminal again &mdash; Claude handles everything from here.</p>
 
     <div class="callout">
       <strong>Recommended: Claude Pro ($20/month) or higher</strong>
@@ -944,20 +965,13 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       <li>Sign up for <a href="https://claude.ai" target="_blank">Claude Pro</a> ($20/month recommended)</li>
       <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a> &mdash; Claude Code is built in</li>
       <li>Open the app and click the <strong>Code</strong> tab in the top right to open Claude Code</li>
+      <li>Point it at the project folder you cloned in Step 1</li>
     </ol>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>Already comfortable with the terminal?</strong>
-      You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>. Then <code>git clone</code> your repo, <code>cd</code> into it, and run <code>claude</code>. Same features, same skills &mdash; these instructions just assume the desktop app.
+      You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>, then run <code>claude</code> from your project directory. Same features, same skills &mdash; these instructions just assume the desktop app.
     </div>
-
-    <h3><span class="step-label step-claude">Tell Claude to grab your project</span></h3>
-    <p>In Claude Code, type something like:</p>
-    <div class="conversation">
-      <div class="you">"Clone my GitHub repo https://github.com/USERNAME/my-salon-app and open it"</div>
-      <div class="ai">clones the repository to your computer and opens the project folder</div>
-    </div>
-    <p>Claude will download your project files from GitHub and set everything up. You don't need to know how to use the terminal &mdash; Claude does it for you.</p>
 
     <h3>The easy way: use the setup skill</h3>
     <p>Once Claude has your project open, type:</p>
@@ -1331,10 +1345,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 <script>
 // Clone commands with dynamic project name
 function updateCloneCommands() {
+  var username = document.getElementById('github-username').value.trim() || 'USERNAME';
   var name = document.getElementById('clone-project-name').value.trim() || 'my-salon-app';
   var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   document.getElementById('clone-commands').textContent =
-    'git clone https://github.com/rsonnad/alpacapps-infra.git ' + slug + '\ncd ' + slug;
+    'git clone https://github.com/' + username + '/' + slug + '.git\ncd ' + slug;
   // Clear previous check result when name changes
   document.getElementById('repo-check-result').textContent = '';
 }
