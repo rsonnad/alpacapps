@@ -275,10 +275,10 @@ function renderEventCalendar() {
   const allDays = [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
   const today = getAustinToday();
 
-  // Group events by date
+  // Group events by date (exclude test events)
   const eventsByDate = {};
   allEventRequests.forEach(req => {
-    if (req.event_date) {
+    if (req.event_date && !req.is_test) {
       const dateKey = req.event_date.split('T')[0];
       if (!eventsByDate[dateKey]) {
         eventsByDate[dateKey] = [];
@@ -626,8 +626,10 @@ function updateEventDetailActions(req) {
       break;
   }
 
-  // Archive button for all
-  buttons.push('<button class="btn-secondary" onclick="archiveEventRequest()">Archive</button>');
+  // Add test toggle and archive buttons (always available)
+  const testLabel = req.is_test ? 'Remove Test Flag' : 'Mark as Test';
+  buttons.push(`<button class="btn-secondary btn-small" onclick="toggleEventTestFlag()" style="margin-left: auto;">${testLabel}</button>`);
+  buttons.push('<button class="btn-secondary btn-small" onclick="archiveEventRequest()">Archive</button>');
 
   container.innerHTML = buttons.join('');
 }
@@ -1026,3 +1028,24 @@ function setupEventListeners() {
 }
 
 window.sendEventForSignature = sendEventForSignature;
+
+window.toggleEventTestFlag = async function() {
+  if (!currentEventRequestId) return;
+  try {
+    const req = allEventRequests.find(r => r.id === currentEventRequestId);
+    const newTestValue = !req?.is_test;
+    await eventService.toggleTestFlag(currentEventRequestId, newTestValue);
+    allEventRequests = await eventService.getRequests();
+    renderEventPipeline();
+    renderEventCalendar();
+    // Refresh the modal
+    const updatedReq = allEventRequests.find(r => r.id === currentEventRequestId);
+    if (updatedReq) {
+      document.getElementById('eventDetailTestBadge').style.display = updatedReq.is_test ? 'inline-block' : 'none';
+      updateEventDetailActions(updatedReq);
+    }
+    showToast(newTestValue ? 'Marked as test' : 'Unmarked as test', 'success');
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+};

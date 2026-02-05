@@ -741,6 +741,7 @@ async function recordReservationFee(requestId, details = {}) {
     status: 'completed',
     description: 'Event reservation deposit',
     recorded_by: 'system:event-service',
+    is_test: !!request.is_test,
   });
 
   // Update overall deposit status
@@ -799,6 +800,7 @@ async function recordCleaningDeposit(requestId, details = {}) {
     status: 'completed',
     description: 'Event cleaning deposit',
     recorded_by: 'system:event-service',
+    is_test: !!request.is_test,
   });
 
   await updateOverallDepositStatus(requestId);
@@ -856,6 +858,7 @@ async function recordRentalFee(requestId, details = {}) {
     status: 'completed',
     description: 'Event rental fee',
     recorded_by: 'system:event-service',
+    is_test: !!request.is_test,
   });
 
   await updateOverallDepositStatus(requestId);
