@@ -388,6 +388,8 @@
   /* Tag filter bar collapsible on mobile */
   .tag-filter-bar {
     padding: 0.5rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .tag-filter-bar.collapsed .tag-filter-chips {
@@ -398,7 +400,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0;
+    padding: 0.25rem 0;
     cursor: pointer;
     font-size: 0.75rem;
     font-weight: 500;
@@ -413,5 +415,30 @@
 
   .tag-filter-bar.collapsed .tag-filter-toggle::after {
     transform: rotate(-90deg);
+  }
+
+  /* Compact tag groups on mobile */
+  .tag-filter-group {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .tag-filter-group-label {
+    font-size: 0.6rem;
+    min-width: unset;
+    padding-top: 0;
+  }
+
+  .tag-filter-chips {
+    gap: 0.25rem;
+  }
+
+  .tag-filter-group-chips {
+    gap: 0.2rem;
+  }
+
+  .tag-filter-chip {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.6rem;
   }
 }

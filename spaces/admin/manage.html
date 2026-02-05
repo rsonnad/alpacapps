@@ -461,6 +461,8 @@
       /* Tag filter bar collapsible on mobile */
       .tag-filter-bar {
         padding: 0.5rem 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .tag-filter-bar.collapsed .tag-filter-chips {
@@ -471,7 +473,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.5rem 0;
+        padding: 0.25rem 0;
         cursor: pointer;
         font-size: 0.75rem;
         font-weight: 500;
@@ -486,6 +488,31 @@
 
       .tag-filter-bar.collapsed .tag-filter-toggle::after {
         transform: rotate(-90deg);
+      }
+
+      /* Compact tag groups on mobile */
+      .tag-filter-group {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .tag-filter-group-label {
+        font-size: 0.6rem;
+        min-width: unset;
+        padding-top: 0;
+      }
+
+      .tag-filter-chips {
+        gap: 0.25rem;
+      }
+
+      .tag-filter-group-chips {
+        gap: 0.2rem;
+      }
+
+      .tag-filter-chip {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.6rem;
       }
 
       /* Users table mobile scroll */
@@ -1167,14 +1194,14 @@
           </div>
         </div>
 
-        <!-- Denied/Delayed Section (collapsible) -->
-        <details class="section" id="deniedDelayedSection" style="margin-top: 1.5rem;">
+        <!-- Denied Section (collapsible) -->
+        <details class="section" id="deniedSection" style="margin-top: 1.5rem;">
           <summary class="section-header" style="cursor: pointer;">
-            <h2>Denied & Delayed</h2>
-            <span id="deniedDelayedCount" class="text-muted">0</span>
+            <h2>Denied</h2>
+            <span id="deniedCount" class="text-muted">0</span>
           </summary>
           <div class="section-body">
-            <div id="deniedDelayedList" class="spaces-list"></div>
+            <div id="deniedList" class="spaces-list"></div>
           </div>
         </details>
 
@@ -1298,14 +1325,14 @@
           </div>
         </div>
 
-        <!-- Denied/Delayed Section (collapsible) -->
-        <details class="section" id="eventDeniedDelayedSection" style="margin-top: 1.5rem;">
+        <!-- Denied Section (collapsible) -->
+        <details class="section" id="eventDeniedSection" style="margin-top: 1.5rem;">
           <summary class="section-header" style="cursor: pointer;">
-            <h2>Denied & Delayed</h2>
-            <span id="eventDeniedDelayedCount" class="text-muted">0</span>
+            <h2>Denied</h2>
+            <span id="eventDeniedCount" class="text-muted">0</span>
           </summary>
           <div class="section-body">
-            <div id="eventDeniedDelayedList" class="spaces-list"></div>
+            <div id="eventDeniedList" class="spaces-list"></div>
           </div>
         </details>
 
@@ -1481,13 +1508,14 @@
           <div class="toolbar-right">
             <span id="mediaCount" class="media-count">0 items</span>
             <button id="bulkTagBtn" class="btn-small" disabled>Edit Tags (<span id="selectedCount">0</span>)</button>
+            <button id="bulkDeleteBtn" class="btn-danger-outline" disabled>Delete</button>
             <button id="selectAllBtn" class="btn-small">Select All</button>
             <button id="deselectAllBtn" class="btn-small hidden">Deselect All</button>
           </div>
         </div>
 
         <!-- Tag filters as horizontal row -->
-        <div class="tag-filter-bar" id="tagFilterBar">
+        <div class="tag-filter-bar collapsed" id="tagFilterBar">
           <div class="tag-filter-toggle" onclick="this.parentElement.classList.toggle('collapsed')">
             <span>Space Tags</span>
           </div>
@@ -5420,11 +5448,13 @@
       const count = selectedMediaIds.size;
       const countEl = document.getElementById('selectedCount');
       const bulkBtn = document.getElementById('bulkTagBtn');
+      const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
       const selectAllBtn = document.getElementById('selectAllBtn');
       const deselectAllBtn = document.getElementById('deselectAllBtn');
 
       if (countEl) countEl.textContent = count;
       if (bulkBtn) bulkBtn.disabled = count === 0;
+      if (bulkDeleteBtn) bulkDeleteBtn.disabled = count === 0;
 
       if (count > 0) {
         selectAllBtn?.classList.add('hidden');
@@ -5602,6 +5632,54 @@
 
     function closeBulkTagModal() {
       document.getElementById('bulkTagModal').classList.add('hidden');
+    }
+
+    // =============================================
+    // BULK DELETE
+    // =============================================
+    async function bulkDeleteSelected() {
+      const count = selectedMediaIds.size;
+      if (count === 0) return;
+
+      const linkedMedia = allMedia.filter(m => selectedMediaIds.has(m.id) && m.spaces?.length > 0);
+      let confirmMsg = `Are you sure you want to permanently delete ${count} image${count > 1 ? 's' : ''}?`;
+
+      if (linkedMedia.length > 0) {
+        confirmMsg = `${linkedMedia.length} of these images are linked to spaces. Deleting them will remove them from those spaces.\n\n${confirmMsg}`;
+      }
+
+      if (!confirm(confirmMsg)) return;
+
+      const btn = document.getElementById('bulkDeleteBtn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+
+      let successCount = 0;
+      let failCount = 0;
+      const idsToDelete = Array.from(selectedMediaIds);
+
+      for (const mediaId of idsToDelete) {
+        const result = await mediaService.delete(mediaId);
+        if (result.success) {
+          successCount++;
+        } else {
+          console.error(`Failed to delete ${mediaId}:`, result.error);
+          failCount++;
+        }
+      }
+
+      if (failCount === 0) {
+        showToast(`${successCount} image${successCount > 1 ? 's' : ''} deleted`, 'success');
+      } else {
+        showToast(`Deleted ${successCount}, failed ${failCount}`, failCount > 0 ? 'warning' : 'success');
+      }
+
+      deselectAll();
+      await Promise.all([loadStorageUsage(), loadMedia()]);
+
+      btn.disabled = false;
+      btn.textContent = originalText;
     }
 
     // =============================================
@@ -6992,7 +7070,6 @@
             buttons.push('<button class="btn-primary" onclick="startReviewApplication()">Start Review</button>');
           }
           buttons.push('<button class="btn-secondary" onclick="denyApplication()">Deny</button>');
-          buttons.push('<button class="btn-secondary" onclick="delayApplication()">Delay</button>');
           break;
 
         case 'approved':
@@ -8303,7 +8380,6 @@
         case 'requests':
           buttons.push('<button class="btn-primary" onclick="approveEventRequest()">Approve</button>');
           buttons.push('<button class="btn-secondary" onclick="denyEventRequest()">Deny</button>');
-          buttons.push('<button class="btn-secondary" onclick="delayEventRequest()">Delay</button>');
           break;
 
         case 'approved':
