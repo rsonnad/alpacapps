@@ -12,7 +12,10 @@ const execAsync = promisify(exec);
 // Configuration
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const BOT_EMAIL = 'bot@alpacaplayhouse.com';
+const BOT_PASSWORD = process.env.BOT_USER_PASSWORD;
 const REPO_DIR = process.env.REPO_DIR || '/opt/bug-fixer/repo';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '30000');
 const MAX_FIX_TIMEOUT_MS = parseInt(process.env.MAX_FIX_TIMEOUT_MS || '300000'); // 5 minutes
@@ -205,6 +208,48 @@ async function downloadScreenshot(url) {
 }
 
 // ============================================
+// Bot authentication for admin page screenshots
+// ============================================
+let cachedBotSession = null;
+let botSessionExpiresAt = 0;
+
+async function getBotSession() {
+  // Return cached session if still valid (with 5 min buffer)
+  if (cachedBotSession && Date.now() < botSessionExpiresAt - 300000) {
+    return cachedBotSession;
+  }
+
+  if (!BOT_PASSWORD) {
+    log('warn', 'BOT_USER_PASSWORD not set - admin page screenshots will show login page');
+    return null;
+  }
+
+  try {
+    // Create a separate client with anon key for auth (service key can't sign in as a user)
+    const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await anonClient.auth.signInWithPassword({
+      email: BOT_EMAIL,
+      password: BOT_PASSWORD,
+    });
+
+    if (error) {
+      log('error', 'Bot sign-in failed', { error: error.message });
+      return null;
+    }
+
+    cachedBotSession = data.session;
+    botSessionExpiresAt = data.session.expires_at * 1000; // convert to ms
+    log('info', 'Bot session obtained', {
+      expires: new Date(botSessionExpiresAt).toISOString(),
+    });
+    return cachedBotSession;
+  } catch (err) {
+    log('error', 'Bot auth error', { error: err.message });
+    return null;
+  }
+}
+
+// ============================================
 // Verification screenshot via Puppeteer
 // ============================================
 const DEPLOY_WAIT_MS = parseInt(process.env.DEPLOY_WAIT_MS || '90000'); // 90 seconds for GitHub Pages
@@ -239,6 +284,27 @@ async function takeVerificationScreenshot(pageUrl) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
+    // For admin pages, inject bot auth session before navigating
+    const isAdminPage = pageUrl.includes('/admin/');
+    if (isAdminPage) {
+      const botSession = await getBotSession();
+      if (botSession) {
+        // Navigate to the site origin first to set localStorage on the correct domain
+        const origin = new URL(pageUrl).origin;
+        await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 15000 });
+
+        // Inject the Supabase auth session into localStorage
+        // Must match the storageKey used in shared/supabase.js ('genalpaca-auth')
+        await page.evaluate((sessionJson) => {
+          localStorage.setItem('genalpaca-auth', sessionJson);
+        }, JSON.stringify(botSession));
+
+        log('info', 'Bot auth session injected for admin page');
+      } else {
+        log('warn', 'No bot session available - admin screenshot may show login page');
+      }
+    }
+
     // Add cache-busting to force fresh load
     const bustUrl = pageUrl + (pageUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
     log('info', 'Loading page for screenshot', { url: bustUrl });
@@ -248,8 +314,8 @@ async function takeVerificationScreenshot(pageUrl) {
       timeout: 30000,
     });
 
-    // Extra wait for any JS rendering
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Extra wait for any JS rendering (admin pages may need more time for data loading)
+    await new Promise(resolve => setTimeout(resolve, isAdminPage ? 5000 : 3000));
 
     // Take screenshot
     await mkdir(TEMP_DIR, { recursive: true });

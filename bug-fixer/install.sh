@@ -91,6 +91,7 @@ if [ ! -f "$ENV_FILE" ]; then
 ANTHROPIC_API_KEY=your-anthropic-api-key
 SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+BOT_USER_PASSWORD=your-bot-user-password
 REPO_DIR=/opt/bug-fixer/repo
 POLL_INTERVAL_MS=30000
 MAX_FIX_TIMEOUT_MS=300000
@@ -144,6 +145,7 @@ echo "Next steps:"
 echo "  1. Edit /opt/bug-fixer/.env with your API keys:"
 echo "     - ANTHROPIC_API_KEY"
 echo "     - SUPABASE_SERVICE_ROLE_KEY"
+echo "     - BOT_USER_PASSWORD (for admin page screenshots)"
 echo ""
 echo "  2. Configure git push credentials (choose one):"
 echo "     a) SSH key: Add deploy key to GitHub repo"
