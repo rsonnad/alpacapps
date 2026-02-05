@@ -180,39 +180,69 @@ function renderMonthColumns() {
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  // Build a "Totals" column from overall summary
-  const totalsCol = buildMonthColumn({
-    month: 'TOTAL',
-    rent: summary.rentIncome,
-    deposits: summary.depositsHeld,
-    fees: summary.feesIncome,
-    refunds: summary.refundsOut,
-    income: summary.totalIncome,
-    expenses: summary.totalExpenses,
-    net: summary.netIncome,
-    pending: summary.pendingIncome,
-  }, false, true);
+  // Read rolling window size from dropdown (default 3)
+  const windowSelect = document.getElementById('monthWindowSelect');
+  const windowSize = windowSelect ? parseInt(windowSelect.value, 10) : 3;
+
+  // Compute rolling window (current month + (windowSize-1) prior months)
+  const windowStart = new Date(now.getFullYear(), now.getMonth() - (windowSize - 1), 1);
+  const windowStartStr = `${windowStart.getFullYear()}-${String(windowStart.getMonth() + 1).padStart(2, '0')}`;
+
+  const windowMonths = months.filter(m => m.month >= windowStartStr);
+  const windowMonthCount = windowMonths.length || 1;
+
+  const windowData = {
+    month: `${windowSize}MO`,
+    rent: windowMonths.reduce((s, m) => s + m.rent, 0),
+    deposits: windowMonths.reduce((s, m) => s + m.deposits, 0),
+    fees: windowMonths.reduce((s, m) => s + m.fees, 0),
+    refunds: windowMonths.reduce((s, m) => s + m.refunds, 0),
+    income: windowMonths.reduce((s, m) => s + m.income, 0),
+    expenses: windowMonths.reduce((s, m) => s + m.expenses, 0),
+    net: windowMonths.reduce((s, m) => s + m.net, 0),
+    pending: windowMonths.reduce((s, m) => s + (m.pending || 0), 0),
+  };
+
+  // Average occupancy across months in the window
+  // For now we only have a current snapshot, so average = current
+  // As we accumulate history this will become a real average
+  const windowOccupancy = occupancyData ? {
+    occupancyPct: occupancyData.occupancyPct,
+    occupiedUnits: occupancyData.occupiedUnits,
+    availableUnits: occupancyData.availableUnits,
+    totalUnits: occupancyData.totalUnits,
+    revenuePct: occupancyData.revenuePct,
+    currentRevenue: occupancyData.currentRevenue,
+    maxPotential: occupancyData.maxPotential,
+    revenueGap: occupancyData.revenueGap,
+    monthCount: windowMonthCount,
+  } : null;
+
+  // Build the summary column with the selected window label
+  const summaryCol = buildMonthColumn(windowData, false, true, windowOccupancy, windowSize);
 
   // Build each month column
-  const monthCols = months.map(m => buildMonthColumn(m, m.month === currentMonth, false)).join('');
+  const monthCols = months.map(m => buildMonthColumn(m, m.month === currentMonth, false, null, 0)).join('');
 
   container.innerHTML = `
     <div class="month-columns-grid">
-      ${totalsCol}
+      ${summaryCol}
       ${monthCols}
     </div>
   `;
 }
 
-function buildMonthColumn(m, isCurrent, isTotals) {
-  const headerLabel = isTotals ? 'All Time' : formatMonthLabelShort(m.month);
-  const colClass = isTotals ? 'month-column totals-col' : (isCurrent ? 'month-column current' : 'month-column');
+function buildMonthColumn(m, isCurrent, isSummary, occOverride, windowSize) {
+  const headerLabel = isSummary ? `${windowSize} Months` : formatMonthLabelShort(m.month);
+  const colClass = isSummary ? 'month-column totals-col' : (isCurrent ? 'month-column current' : 'month-column');
 
   const netClass = (m.net >= 0) ? 'positive' : 'negative';
 
-  // Occupancy: only show on current month (it's a point-in-time snapshot, not summable)
-  const showOccupancy = isCurrent && occupancyData;
-  const occSection = showOccupancy ? buildOccupancySection() : '';
+  // Occupancy: show on current month (snapshot) and summary column (avg)
+  const showOccupancy = (isCurrent && occupancyData) || (isSummary && occOverride);
+  const occData = isSummary ? occOverride : occupancyData;
+  const occLabel = isSummary ? 'Avg' : null;
+  const occSection = showOccupancy ? buildOccupancySection(occData, occLabel) : '';
 
   return `
     <div class="${colClass}">
@@ -258,16 +288,19 @@ function buildMonthColumn(m, isCurrent, isTotals) {
   `;
 }
 
-function buildOccupancySection() {
-  const o = occupancyData;
+function buildOccupancySection(o, label) {
+  if (!o) return '';
   const circumference = 2 * Math.PI * 22; // ~138.2 for r=22 (smaller donut)
   const unitArcLen = (o.occupancyPct / 100) * circumference;
   const revArcLen = (o.revenuePct / 100) * circumference;
 
+  const occTitle = label ? `Occupancy (${label})` : 'Occupancy';
+  const revTitle = label ? `Revenue (${label})` : 'Revenue';
+
   return `
     <div class="month-row separator"></div>
     <div class="month-col-section-label">
-      <span>Occupancy</span>
+      <span>${occTitle}</span>
       <svg viewBox="0 0 52 52" class="month-donut-svg">
         <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
         <circle cx="26" cy="26" r="22" fill="none" stroke="#22c55e" stroke-width="5"
@@ -290,7 +323,7 @@ function buildOccupancySection() {
     </div>
     <div class="month-row separator"></div>
     <div class="month-col-section-label">
-      <span>Revenue</span>
+      <span>${revTitle}</span>
       <svg viewBox="0 0 52 52" class="month-donut-svg">
         <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
         <circle cx="26" cy="26" r="22" fill="none" stroke="#3b82f6" stroke-width="5"
@@ -429,6 +462,9 @@ function setupEventListeners() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(loadData, 300);
   });
+
+  // Month window dropdown for summary column
+  document.getElementById('monthWindowSelect').addEventListener('change', renderMonthColumns);
 
   // Preset buttons
   document.querySelectorAll('.preset-btn').forEach(btn => {

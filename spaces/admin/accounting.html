@@ -59,6 +59,22 @@
         <div class="section-header">
           <h2>Monthly Overview</h2>
           <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Accrual basis &mdash; rent applied to service period</span>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 0.4rem;">
+            <label for="monthWindowSelect" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">Summary window:</label>
+            <select id="monthWindowSelect" class="filter-input" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: auto;">
+              <option value="2">2 months</option>
+              <option value="3" selected>3 months</option>
+              <option value="4">4 months</option>
+              <option value="5">5 months</option>
+              <option value="6">6 months</option>
+              <option value="7">7 months</option>
+              <option value="8">8 months</option>
+              <option value="9">9 months</option>
+              <option value="10">10 months</option>
+              <option value="11">11 months</option>
+              <option value="12">12 months</option>
+            </select>
+          </div>
         </div>
         <div class="section-body month-columns-scroll" id="monthColumnsContainer">
           <div class="empty-state">Loading monthly data...</div>
