@@ -273,6 +273,7 @@ async function takeVerificationScreenshot(pageUrl) {
   try {
     browser = await puppeteer.launch({
       headless: 'new',
+      executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium-browser',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
