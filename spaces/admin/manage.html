@@ -1091,7 +1091,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.05</span>
+        <span class="app-version">v260205.06</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -4533,6 +4533,53 @@
         `;
       }
 
+      // Related occupancy: parent and child space occupancy
+      let relatedOccupancyHtml = '';
+      if (isAdmin) {
+        const relatedItems = [];
+
+        // If this space has a parent, show parent occupancy
+        if (space.parent_id) {
+          const parentSpace = allSpaces.find(s => s.id === space.parent_id);
+          if (parentSpace && parentSpace.currentAssignment?.person) {
+            const pa = parentSpace.currentAssignment;
+            const pp = pa.person;
+            const parentEnd = pa.end_date ? formatDateAustin(pa.end_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No end date';
+            relatedItems.push(`
+              <div style="margin-bottom: 0.5rem;">
+                <span style="display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 3px; margin-right: 0.35rem; vertical-align: middle;">PARENT</span>
+                <a href="#" onclick="event.preventDefault(); showSpaceDetail('${parentSpace.id}');" style="color: var(--accent); font-weight: 500;">${parentSpace.name}</a>
+                — <strong>${pp.first_name} ${pp.last_name || ''}</strong> (${pp.type}), until ${parentEnd}
+              </div>
+            `);
+          }
+        }
+
+        // If this space has children, show each occupied child
+        const occupiedChildren = allSpaces.filter(s => s.parent_id === space.id && s.currentAssignment?.person);
+        occupiedChildren.forEach(child => {
+          const ca = child.currentAssignment;
+          const cp = ca.person;
+          const childEnd = ca.end_date ? formatDateAustin(ca.end_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No end date';
+          relatedItems.push(`
+            <div style="margin-bottom: 0.5rem;">
+              <span style="display: inline-block; background: #e8f4fd; color: #1a73e8; font-size: 0.7rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 3px; margin-right: 0.35rem; vertical-align: middle;">CHILD</span>
+              <a href="#" onclick="event.preventDefault(); showSpaceDetail('${child.id}');" style="color: var(--accent); font-weight: 500;">${child.name}</a>
+              — <strong>${cp.first_name} ${cp.last_name || ''}</strong> (${cp.type}), until ${childEnd}
+            </div>
+          `);
+        });
+
+        if (relatedItems.length > 0) {
+          relatedOccupancyHtml = `
+            <div class="detail-section">
+              <h3>Related Occupancy</h3>
+              ${relatedItems.join('')}
+            </div>
+          `;
+        }
+      }
+
       // Space photos
       const editLink = isAdmin ? `<a href="#" class="edit-photos-link" onclick="event.preventDefault(); openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit photos</a>` : '';
       let spacePhotosHtml = '';
@@ -4602,6 +4649,7 @@
             ${space.amenities.length ? `<p>${space.amenities.join(', ')}</p>` : '<p>No amenities listed</p>'}
           </div>
           ${occupantHtml}
+          ${relatedOccupancyHtml}
         </div>
         ${space.description ? `<div class="detail-section detail-description"><h3>Description</h3><p>${space.description}</p></div>` : ''}
         ${spacePhotosHtml}
