@@ -571,29 +571,26 @@ GenAlpaca Team`
         subject: "You're Invited to Apply - Alpaca Playhouse",
         html: `
           <h2>Great news, ${data.first_name}!</h2>
-          <p>Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and would love for you to take the next step.</p>
-          <p>Please click the button below to complete your full application. The form will have your basic info already filled in.</p>
+          <p>Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and feel you would be a great fit for the Alpaca Playhouse community. We would love to invite you to apply for a rental space when you are ready and have clarity on your dates.</p>
+          <p>Please review the <a href="https://rsonnad.github.io/alpacapps/spaces/">available spaces here</a> or click the button below to finish your application.</p>
           <p style="margin: 30px 0; text-align: center;">
             <a href="${data.continue_url}" style="background: #3b8132; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
           </p>
-          <p style="color: #666; font-size: 14px;">If you have any questions, feel free to reply to this email or reach out to us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a>.</p>
-          <p>Looking forward to hearing from you!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
+          <p>We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
+          <p>Yours,<br>The Alpaca Playhouse Community Team</p>
         `,
         text: `Great news, ${data.first_name}!
 
-Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and would love for you to take the next step.
+Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and feel you would be a great fit for the Alpaca Playhouse community. We would love to invite you to apply for a rental space when you are ready and have clarity on your dates.
 
-Complete your application here: ${data.continue_url}
+Please review the available spaces here: https://rsonnad.github.io/alpacapps/spaces/
 
-The form will have your basic info already filled in.
+Or complete your application here: ${data.continue_url}
 
-If you have any questions, feel free to reply to this email or reach out to us at alpacaplayhouse@gmail.com.
+We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.
 
-Looking forward to hearing from you!
-
-Best regards,
-Alpaca Playhouse`
+Yours,
+The Alpaca Playhouse Community Team`
       };
 
     // ===== ADMIN NOTIFICATIONS =====
