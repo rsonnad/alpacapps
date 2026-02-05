@@ -640,37 +640,37 @@
 
     /* Column widths with min-widths to prevent excessive truncation */
     #tableView th:nth-child(1),
-    #tableView td:nth-child(1) { width: 74px; min-width: 74px; } /* thumbnail - larger */
+    #tableView td:nth-child(1) { width: 148px; min-width: 148px; } /* thumbnail - 2x wider */
 
     #tableView th:nth-child(2),
-    #tableView td:nth-child(2) { min-width: 280px; white-space: normal; } /* name + description - more room */
+    #tableView td:nth-child(2) { min-width: 560px; white-space: normal; } /* name + description - 2x wider */
 
     #tableView th:nth-child(3),
-    #tableView td:nth-child(3) { min-width: 70px; } /* rate */
+    #tableView td:nth-child(3) { min-width: 55px; } /* rate */
 
     #tableView th:nth-child(4),
-    #tableView td:nth-child(4) { min-width: 90px; white-space: normal; } /* details (size/bath/beds stacked) */
+    #tableView td:nth-child(4) { min-width: 70px; white-space: normal; } /* details (size/bath/beds stacked) */
 
     #tableView th:nth-child(5),
-    #tableView td:nth-child(5) { min-width: 80px; white-space: normal; } /* amenities */
+    #tableView td:nth-child(5) { min-width: 60px; white-space: normal; } /* amenities */
 
     #tableView th:nth-child(6),
-    #tableView td:nth-child(6) { min-width: 65px; } /* available */
+    #tableView td:nth-child(6) { min-width: 55px; } /* available */
 
     #tableView th:nth-child(7),
-    #tableView td:nth-child(7) { min-width: 75px; } /* until */
+    #tableView td:nth-child(7) { min-width: 60px; } /* until */
 
     #tableView th:nth-child(8),
-    #tableView td:nth-child(8) { min-width: 100px; white-space: normal; } /* tenant */
+    #tableView td:nth-child(8) { min-width: 80px; white-space: normal; } /* tenant */
 
     #tableView th:nth-child(9),
-    #tableView td:nth-child(9) { min-width: 100px; white-space: normal; } /* lease dates */
+    #tableView td:nth-child(9) { min-width: 80px; white-space: normal; } /* lease dates */
 
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { min-width: 60px; } /* status */
+    #tableView td:nth-child(10) { min-width: 50px; } /* status */
 
     #tableView th:nth-child(11),
-    #tableView td:nth-child(11) { min-width: 35px; text-align: center; } /* vis */
+    #tableView td:nth-child(11) { min-width: 30px; text-align: center; } /* vis */
 
     /* Table container should scroll horizontally when needed */
     .table-container {
@@ -678,20 +678,20 @@
     }
 
     #tableView table {
-      min-width: 1000px;
+      min-width: 1300px;
     }
 
     #tableView .table-thumbnail {
-      width: 64px;
-      height: 64px;
+      width: 128px;
+      height: 86px;
       object-fit: cover;
       border-radius: 4px;
       display: block;
     }
 
     #tableView .table-thumbnail-placeholder {
-      width: 64px;
-      height: 64px;
+      width: 128px;
+      height: 86px;
       background: var(--bg);
       border-radius: 4px;
       border: 1px dashed var(--border);
@@ -709,7 +709,7 @@
     }
 
     #tableView .td-name-desc {
-      min-width: 280px;
+      min-width: 560px;
     }
 
     #tableView td small {
@@ -1069,7 +1069,7 @@
               <thead>
                 <tr>
                   <th></th>
-                  <th data-sort="name" style="min-width: 280px;">Name</th>
+                  <th data-sort="name" style="min-width: 560px;">Name</th>
                   <th data-sort="monthly_rate">Rate</th>
                   <th data-sort="sq_footage">Details</th>
                   <th>Amenities</th>
