@@ -796,6 +796,93 @@
       margin-left: -0.25rem;
     }
 
+    /* Profile dropdown */
+    .profile-dropdown {
+      position: relative;
+    }
+
+    .profile-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.625rem;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.8rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .profile-toggle:hover {
+      background: var(--bg);
+    }
+
+    .profile-name {
+      font-weight: 500;
+    }
+
+    .profile-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 180px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .profile-menu.hidden {
+      display: none;
+    }
+
+    .profile-menu-header {
+      padding: 0.75rem 0.875rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .profile-menu-name {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .profile-menu-role {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .profile-menu-divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    .profile-menu-item {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.875rem;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: 0.8rem;
+      color: var(--text);
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .profile-menu-item:hover {
+      background: var(--bg);
+    }
+
     .role-badge {
       font-size: 0.7rem;
       font-weight: 600;
@@ -1004,13 +1091,25 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.03</span>
-        <span id="roleBadge" class="role-badge">Staff</span>
+        <span class="app-version">v260205.04</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
-        <span id="userInfo" class="user-info"></span>
-        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
+        <div class="profile-dropdown">
+          <button id="profileToggle" class="profile-toggle">
+            <span id="userInfo" class="profile-name"></span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div id="profileMenu" class="profile-menu hidden">
+            <div class="profile-menu-header">
+              <span id="profileDisplayName" class="profile-menu-name"></span>
+              <span id="profileRole" class="profile-menu-role"></span>
+            </div>
+            <div class="profile-menu-divider"></div>
+            <a href="/spaces/admin/profile.html" class="profile-menu-item">Profile</a>
+            <button id="signOutMenuItem" class="profile-menu-item">Sign Out</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -3362,7 +3461,10 @@
       if (state.appUser && (state.appUser.role === 'admin' || state.appUser.role === 'staff')) {
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('appContent').classList.remove('hidden');
-        document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
+        const displayName = state.appUser.display_name || state.appUser.email;
+        document.getElementById('userInfo').textContent = displayName;
+        document.getElementById('profileDisplayName').textContent = displayName;
+        document.getElementById('profileRole').textContent = state.appUser.role || 'staff';
         updateRoleUI();
         if (!spacesDataLoaded) {
           spacesDataLoaded = true;
@@ -3385,11 +3487,6 @@
 
     function updateRoleUI() {
       if (!authState) return;
-      const roleBadge = document.getElementById('roleBadge');
-      if (roleBadge) {
-        roleBadge.textContent = authState.appUser?.role || 'Staff';
-        roleBadge.className = 'role-badge ' + (authState.appUser?.role || 'staff');
-      }
       // Show/hide admin-only features
       if (authState.appUser?.role === 'admin') {
         document.body.classList.add('is-admin');
@@ -3409,7 +3506,24 @@
 
       // Sign out handlers
       document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
-      document.getElementById('headerSignOutBtn').addEventListener('click', () => signOut());
+      document.getElementById('signOutMenuItem').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+      });
+
+      // Profile dropdown toggle
+      const profileToggle = document.getElementById('profileToggle');
+      const profileMenu = document.getElementById('profileMenu');
+      profileToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', () => {
+        profileMenu.classList.add('hidden');
+      });
+      profileMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
 
       // Tab switching
       document.querySelectorAll('.manage-tab').forEach(tab => {
