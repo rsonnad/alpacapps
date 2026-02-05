@@ -18,6 +18,9 @@ let people = [];
 let currentFilters = {};
 let initialized = false;
 
+// Check if running in embed mode (inside iframe on manage.html)
+const isEmbed = new URLSearchParams(window.location.search).has('embed');
+
 // =============================================
 // INITIALIZATION
 // =============================================
@@ -26,6 +29,17 @@ initAdminPage({
   onReady: async () => {
     if (initialized) return;
     initialized = true;
+
+    // Hide header and tab nav in embed mode
+    if (isEmbed) {
+      const header = document.querySelector('header');
+      if (header) header.style.display = 'none';
+      const tabs = document.querySelector('.manage-tabs');
+      if (tabs) tabs.style.display = 'none';
+      // Reduce padding in embed mode
+      const container = document.querySelector('.manage-container');
+      if (container) container.style.padding = '1rem';
+    }
 
     await loadPeople();
     setDefaultDateRange();

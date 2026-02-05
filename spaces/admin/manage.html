@@ -991,6 +991,7 @@
         <button class="manage-tab" data-tab="templates">Templates</button>
         <button class="manage-tab" data-tab="settings">Settings</button>
         <button class="manage-tab" data-tab="faq">FAQ & AI</button>
+        <button class="manage-tab" data-tab="accounting">Accounting</button>
       </div>
 
       <!-- Spaces Panel -->
@@ -1841,6 +1842,11 @@
       <!-- FAQ & AI Panel -->
       <div id="faqPanel" class="manage-panel">
         <iframe id="faqIframe" src="" style="width: 100%; border: none; min-height: 85vh;"></iframe>
+      </div>
+
+      <!-- Accounting Panel -->
+      <div id="accountingPanel" class="manage-panel">
+        <iframe id="accountingIframe" src="" style="width: 100%; border: none; min-height: 85vh;"></iframe>
       </div>
 
     </div>
@@ -3329,6 +3335,14 @@
               iframe.src = 'faq.html?embed=1';
             }
           }
+
+          // Load Accounting iframe when switching to Accounting tab
+          if (tab.dataset.tab === 'accounting') {
+            const iframe = document.getElementById('accountingIframe');
+            if (!iframe.src || iframe.src === window.location.href) {
+              iframe.src = 'accounting.html?embed=1';
+            }
+          }
         });
       });
 
@@ -3341,7 +3355,7 @@
       // Handle URL hash navigation (e.g., #rentals, #events)
       function handleHashNavigation() {
         const hash = window.location.hash.replace('#', '');
-        const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings', 'faq'];
+        const validTabs = ['spaces', 'rentals', 'events', 'media', 'users', 'templates', 'settings', 'faq', 'accounting'];
         if (hash && validTabs.includes(hash)) {
           switchTab(hash);
         }
