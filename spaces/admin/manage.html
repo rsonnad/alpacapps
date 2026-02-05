@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.09</span>
+        <span class="app-version">v260205.10</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -4163,7 +4163,7 @@
 
         // Build stacked details: size, bath, beds
         const detailLines = [];
-        if (space.sq_footage) detailLines.push(`${space.sq_footage} sqft`);
+        // sq_footage intentionally omitted from admin table (still shown in public views)
         if (space.can_be_dwelling && space.bath_privacy && space.bath_privacy !== 'none') detailLines.push(`${space.bath_privacy} bath`);
         if (beds) detailLines.push(beds);
         const detailsHtml = detailLines.length > 0 ? detailLines.join('<br>') : '-';
@@ -9063,6 +9063,7 @@
       }
     }
 
+    window.switchToEventTab = switchToEventTab;
     window.approveEventRequest = approveEventRequest;
     window.denyEventRequest = denyEventRequest;
     window.archiveEventRequest = archiveEventRequest;
