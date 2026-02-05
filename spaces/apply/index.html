@@ -1319,6 +1319,7 @@
   <script type="module">
     import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
     import { askQuestion, submitUnansweredQuestion } from '../../shared/chat-widget.js';
+    import { saveVisitor, getVisitor } from '../../shared/visitor-identity.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
     const FEE_TYPE = 'rental_application';
 
@@ -1751,9 +1752,10 @@
           console.error('Failed to send admin notification email:', emailError);
         }
 
-        // Save for ask box
+        // Save for ask box and persist for future visits
         submittedFirstName = firstName;
         submittedEmail = email;
+        saveVisitor({ name: firstName, email, phone });
 
         // Populate inquiry success summary
         document.getElementById('inquirySummaryAccomm').textContent =
@@ -1764,8 +1766,10 @@
         // Pre-populate followup form with submitted info
         const followupNameEl = document.getElementById('followupName');
         const followupEmailEl = document.getElementById('followupEmail');
+        const followupPhoneEl = document.getElementById('followupPhone');
         if (followupNameEl) followupNameEl.value = firstName;
         if (followupEmailEl) followupEmailEl.value = email;
+        if (followupPhoneEl) followupPhoneEl.value = phone;
 
         // Show inquiry success
         formContainer.classList.add('hidden');

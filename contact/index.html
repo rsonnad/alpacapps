@@ -638,6 +638,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module">
     import { initChatWidget, askQuestion, submitUnansweredQuestion } from '/shared/chat-widget.js';
+    import { saveVisitor, getVisitor } from '/shared/visitor-identity.js';
 
     let currentQuestion = '';
     let currentAnswer = '';
@@ -715,6 +716,12 @@
     const lowConfidenceNotice = document.getElementById('lowConfidenceNotice');
     const followupForm = document.getElementById('followupForm');
     const questionSubmitted = document.getElementById('questionSubmitted');
+
+    // Auto-fill followup form from saved visitor identity
+    const visitor = getVisitor();
+    if (visitor.name) document.getElementById('followupName').value = visitor.name;
+    if (visitor.email) document.getElementById('followupEmail').value = visitor.email;
+    if (visitor.phone) document.getElementById('followupPhone').value = visitor.phone;
 
     askBtn.addEventListener('click', handleAskQuestion);
     questionInput.addEventListener('keypress', (e) => {
@@ -795,6 +802,9 @@
         return;
       }
 
+      // Persist visitor identity for future visits
+      saveVisitor({ name, email, phone });
+
       try {
         await submitUnansweredQuestion(currentQuestion, email || null, 'user_feedback', name || null, phone || null);
       } catch (e) {
@@ -811,6 +821,14 @@
     const messageForm = document.getElementById('messageForm');
     const formSuccess = document.getElementById('formSuccess');
 
+    // Auto-fill message form from saved visitor identity
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    if (visitor.name && nameInput && !nameInput.value) nameInput.value = visitor.name;
+    if (visitor.email && emailInput && !emailInput.value) emailInput.value = visitor.email;
+    if (visitor.phone && phoneInput && !phoneInput.value) phoneInput.value = visitor.phone;
+
     messageForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -826,6 +844,9 @@
         subject: formData.get('subject'),
         message: formData.get('message'),
       };
+
+      // Persist visitor identity for future visits
+      saveVisitor({ name: data.name, email: data.email, phone: data.phone });
 
       try {
         const response = await fetch('https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/send-email', {
