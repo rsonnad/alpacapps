@@ -381,7 +381,7 @@ async function takeVerificationScreenshot(pageUrl) {
 // ============================================
 // Send notification email
 // ============================================
-const ADMIN_EMAIL = 'alpacaautomation@gmail.com';
+const ADMIN_EMAIL = 'alpacaautomatic@gmail.com';
 
 async function sendEmail(type, report, extraData = {}) {
   // Send to both the reporter and admin
