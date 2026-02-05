@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
+          <h1>&#129433; AlpacAPPs Admin</h1>
+        </a>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260205.03</span>
+        <span id="roleBadge" class="role-badge">Admin</span>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/" class="btn-small">Public View</a>
+        <span id="userInfo" class="user-info"></span>
+        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content">
+      <!-- Payment Methods Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Payment Methods</h2>
+          <button class="btn-small btn-primary" id="addPaymentMethodBtn">+ Add Method</button>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="margin-bottom: 1rem;">
+            Configure payment methods that tenants can use for rent and deposits.
+          </p>
+          <div id="paymentMethodsList" class="payment-methods-grid"></div>
+        </div>
+      </div>
+
+      <!-- Fee Settings Section (Square Payments) -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Payment Fees (Square)</h2>
+          <span class="badge" id="squareModeBadge">Test Mode</span>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="margin-bottom: 1rem;">
+            Configure default fees for rental applications and event deposits. Payments are processed via Square.
+          </p>
+          <div class="fee-settings-grid" id="feeSettingsGrid">
+            <!-- Fee settings loaded by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Discount Codes Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Fee Codes</h2>
+          <button class="btn-small btn-primary" id="addFeeCodeBtn">+ Add Code</button>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="margin-bottom: 1rem;">
+            Create codes that set a specific price when entered. Use $0 for a free waiver.
+          </p>
+          <div id="feeCodesGrid" class="fee-codes-grid">
+            <!-- Fee codes loaded by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Square Configuration Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Square Configuration</h2>
+        </div>
+        <div class="section-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="squareTestMode">
+              <span>Test Mode (use sandbox credentials)</span>
+            </label>
+          </div>
+          <p class="text-muted" style="font-size: 0.8rem;">
+            When test mode is enabled, payments go through Square's sandbox environment. Disable for live payments.
+          </p>
+        </div>
+      </div>
+
+      <!-- Telnyx SMS Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Telnyx SMS</h2>
+          <span class="badge" id="telnyxModeBadge">Loading...</span>
+        </div>
+        <div class="section-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="telnyxTestMode">
+              <span>Test Mode (log messages without sending)</span>
+            </label>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.25rem;">
+              <strong>Phone Number:</strong> <span id="telnyxPhoneDisplay">Loading...</span>
+            </p>
+            <p class="text-muted" style="font-size: 0.8rem;">
+              When test mode is enabled, SMS messages are logged in the database but not actually sent via Telnyx.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-small btn-primary" id="openComposeSmsBtn">Compose SMS</button>
+            <button class="btn-small" id="openBulkSmsBtn">Send to All Tenants</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Inbound SMS Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Inbound SMS</h2>
+          <button class="btn-small" id="refreshInboundSmsBtn">Refresh</button>
+        </div>
+        <div class="section-body">
+          <div id="inboundSmsList" style="max-height: 400px; overflow-y: auto;">
+            <p class="text-muted">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Fee Code Modal -->
+  <div id="feeCodeModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="feeCodeModalTitle">Add Fee Code</h2>
+        <button class="modal-close" id="closeFeeCodeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="feeCodeForm" onsubmit="return false;">
+          <input type="hidden" id="feeCodeId">
+          <div class="form-group">
+            <label for="feeCodeCode">Code</label>
+            <input type="text" id="feeCodeCode" placeholder="e.g., FRIEND50" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label for="feeCodeType">Fee Type</label>
+            <select id="feeCodeType" required>
+              <option value="rental_application">Rental Application Fee</option>
+              <option value="event_rental_fee">Event Rental Fee</option>
+              <option value="event_cleaning_deposit">Event Cleaning Deposit</option>
+              <option value="event_reservation_deposit">Event Reservation Deposit</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="feeCodePrice">Price ($)</label>
+            <input type="number" id="feeCodePrice" min="0" step="0.01" value="0" required>
+            <p class="form-hint">Set to 0 for a free waiver</p>
+          </div>
+          <div class="form-group">
+            <label for="feeCodeDescription">Description (optional)</label>
+            <input type="text" id="feeCodeDescription" placeholder="e.g., Friends and family discount">
+          </div>
+          <div class="form-group">
+            <label for="feeCodeUsageLimit">Usage Limit (optional)</label>
+            <input type="number" id="feeCodeUsageLimit" min="1" placeholder="Unlimited">
+          </div>
+          <div class="form-group">
+            <label for="feeCodeExpires">Expires (optional)</label>
+            <input type="date" id="feeCodeExpires">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="feeCodeActive" checked>
+              Active
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelFeeCodeBtn">Cancel</button>
+        <button class="btn-primary" id="saveFeeCodeBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Method Modal -->
+  <div id="paymentMethodModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="paymentMethodModalTitle">Add Payment Method</h2>
+        <button class="modal-close" id="closePaymentMethodModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="paymentMethodForm">
+          <input type="hidden" id="paymentMethodId">
+          <div class="form-group">
+            <label for="paymentMethodName">Name</label>
+            <input type="text" id="paymentMethodName" placeholder="e.g., Zelle" required>
+          </div>
+          <div class="form-group">
+            <label for="paymentMethodInstructions">Payment Instructions</label>
+            <textarea id="paymentMethodInstructions" rows="4" placeholder="e.g., Send to payments@example.com"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="paymentMethodActive" checked>
+              Active (visible to tenants)
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="deletePaymentMethodBtn" style="margin-right: auto;">Delete</button>
+        <button class="btn-secondary" id="cancelPaymentMethodBtn">Cancel</button>
+        <button class="btn-primary" id="savePaymentMethodBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compose SMS Modal -->
+  <div id="composeSmsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 id="composeSmsTitle">Send SMS</h2>
+        <button class="modal-close" id="closeComposeSmsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="smsRecipientSelect">Recipient</label>
+          <select id="smsRecipientSelect">
+            <option value="">Select a tenant...</option>
+          </select>
+        </div>
+
+        <div id="smsConversationSection" class="hidden" style="margin-bottom: 1rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Conversation History</label>
+          <div id="smsConversationThread" style="max-height: 200px; overflow-y: auto; background: #fafafa; border-radius: 8px; padding: 0.5rem; margin-top: 0.25rem;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="smsComposeBody">Message</label>
+          <textarea id="smsComposeBody" rows="4" placeholder="Type your message..."></textarea>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <span><span id="smsCharCount">0</span> characters</span>
+            <span><span id="smsSegmentCount">0</span> segment(s)</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelComposeSmsBtn">Cancel</button>
+        <button class="btn-primary" id="sendSmsBtn">Send SMS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk SMS Modal -->
+  <div id="bulkSmsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Send SMS to All Tenants</h2>
+        <button class="modal-close" id="closeBulkSmsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="margin-bottom: 1rem;">
+          This will send an SMS to <strong><span id="bulkSmsRecipientCount">0</span></strong> active tenants with valid phone numbers.
+        </p>
+
+        <div class="form-group">
+          <label>Recipients</label>
+          <div id="bulkSmsRecipientList" style="max-height: 150px; overflow-y: auto; background: #fafafa; border-radius: 8px; padding: 0.5rem; font-size: 0.85rem;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="bulkSmsBody">Message</label>
+          <textarea id="bulkSmsBody" rows="4" placeholder="Type your message..."></textarea>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <span id="bulkSmsCharCount">0</span> characters
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelBulkSmsBtn">Cancel</button>
+        <button class="btn-primary" id="sendBulkSmsBtn">Send to All</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>
