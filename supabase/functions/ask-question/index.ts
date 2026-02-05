@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CONTEXT_URL = `${SUPABASE_URL}/storage/v1/object/public/site-content/context.json`;
 
 const corsHeaders = {
@@ -176,6 +177,29 @@ Now answer the following question from a visitor:`;
 
     // Remove the confidence line from the displayed answer
     const answer = rawAnswer.replace(/\n?CONFIDENCE:\s*(HIGH|LOW)/i, "").trim();
+
+    // Log question + answer to faq_entries for admin visibility
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/faq_entries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_SERVICE_KEY,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          question: question.trim(),
+          ai_answer: answer,
+          confidence: confident ? "HIGH" : "LOW",
+          source: "auto",
+          is_published: false
+        })
+      });
+    } catch (logError) {
+      console.warn("Failed to log question:", logError);
+      // Don't fail the response if logging fails
+    }
 
     return new Response(
       JSON.stringify({ answer, confident }),

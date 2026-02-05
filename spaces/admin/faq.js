@@ -6,6 +6,7 @@ import { initAuth, getCurrentUser, getCurrentRole } from '../shared/auth.js';
 let faqEntries = [];
 let contextLinks = [];
 let contextMeta = null;
+let contextEntries = [];
 
 // DOM Elements
 const loadingOverlay = document.getElementById('loadingOverlay');
@@ -60,7 +61,8 @@ async function loadData() {
   await Promise.all([
     loadFaqEntries(),
     loadContextLinks(),
-    loadContextMeta()
+    loadContextMeta(),
+    loadContextEntries()
   ]);
   renderAll();
 }
@@ -105,16 +107,33 @@ async function loadContextMeta() {
   contextMeta = data;
 }
 
+async function loadContextEntries() {
+  const { data, error } = await supabase
+    .from('faq_context_entries')
+    .select('*')
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error loading context entries:', error);
+    return;
+  }
+  contextEntries = data || [];
+}
+
 function setupEventListeners() {
   document.getElementById('recompileBtn').addEventListener('click', recompileContext);
   document.getElementById('addFaqBtn').addEventListener('click', () => openFaqModal());
   document.getElementById('addLinkBtn').addEventListener('click', () => openLinkModal());
+  const addContextBtn = document.getElementById('addContextEntryBtn');
+  if (addContextBtn) addContextBtn.addEventListener('click', () => openContextEntryModal());
 }
 
 function renderAll() {
   renderContextMeta();
+  renderQuestionLog();
   renderPendingQuestions();
   renderFaqEntries();
+  renderContextEntries();
   renderContextLinks();
 }
 
@@ -134,6 +153,40 @@ function renderContextMeta() {
   statSpaces.textContent = contextMeta?.entry_count || '-';
   statFaqs.textContent = faqEntries.filter(e => e.answer && e.is_published).length;
   statLinks.textContent = contextLinks.filter(l => l.is_active).length;
+}
+
+function renderQuestionLog() {
+  const container = document.getElementById('questionLogSection');
+  if (!container) return; // Not on page yet
+
+  const autoEntries = faqEntries.filter(e => e.source === 'auto');
+  const countBadge = document.getElementById('questionLogCount');
+  if (countBadge) countBadge.textContent = autoEntries.length;
+
+  if (autoEntries.length === 0) {
+    container.innerHTML = '<div class="empty-state">No questions asked yet</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="faq-list">
+      ${autoEntries.map(entry => `
+        <div class="faq-card">
+          <div class="faq-card__header">
+            <div class="faq-card__question">${escapeHtml(entry.question)}</div>
+            <div class="faq-card__actions">
+              <span class="confidence-badge confidence-badge--${(entry.confidence || 'LOW').toLowerCase()}">${entry.confidence || '?'}</span>
+              <button class="btn-danger btn-small" onclick="deleteFaq('${entry.id}')">×</button>
+            </div>
+          </div>
+          ${entry.ai_answer ? `<div class="faq-card__answer" style="color: #555; font-style: italic;">${escapeHtml(entry.ai_answer)}</div>` : ''}
+          <div class="faq-card__meta">
+            <span>${formatDate(entry.created_at)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderPendingQuestions() {
@@ -200,6 +253,40 @@ function renderFaqEntries() {
             ${entry.is_published ? '<span class="published-badge">Published</span>' : ''}
             <span class="faq-card__source faq-card__source--${entry.source}">${formatSource(entry.source)}</span>
             <span>${formatDate(entry.answered_at || entry.created_at)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderContextEntries() {
+  const container = document.getElementById('contextEntriesSection');
+  if (!container) return;
+
+  const countBadge = document.getElementById('contextEntriesCount');
+  if (countBadge) countBadge.textContent = contextEntries.length;
+
+  if (contextEntries.length === 0) {
+    container.innerHTML = '<div class="empty-state">No context entries. Add knowledge about your property for the AI to use.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="faq-list">
+      ${contextEntries.map(entry => `
+        <div class="faq-card ${entry.is_active ? '' : 'faq-card--inactive'}">
+          <div class="faq-card__header">
+            <div class="faq-card__question">${escapeHtml(entry.title)}</div>
+            <div class="faq-card__actions">
+              <button class="btn-secondary btn-small" onclick='openContextEntryModal(${JSON.stringify(entry).replace(/'/g, "\\'").replace(/"/g, "&quot;")})'>Edit</button>
+              <button class="btn-danger btn-small" onclick="deleteContextEntry('${entry.id}')">Delete</button>
+            </div>
+          </div>
+          <div class="faq-card__answer">${escapeHtml(entry.content)}</div>
+          <div class="faq-card__meta">
+            ${entry.is_active ? '<span class="published-badge">Active</span>' : '<span style="color:#999;">Inactive</span>'}
+            <span>Order: ${entry.display_order}</span>
           </div>
         </div>
       `).join('')}
@@ -420,6 +507,94 @@ window.deleteLink = async function(id) {
   }
 };
 
+// Context Entry Modal
+window.openContextEntryModal = function(entry = null) {
+  const modal = document.getElementById('contextEntryModal');
+  if (!modal) return;
+
+  const title = document.getElementById('contextEntryModalTitle');
+  const form = document.getElementById('contextEntryForm');
+
+  form.reset();
+
+  if (entry) {
+    title.textContent = 'Edit Context Entry';
+    document.getElementById('contextEntryId').value = entry.id;
+    document.getElementById('contextEntryTitle').value = entry.title;
+    document.getElementById('contextEntryContent').value = entry.content;
+    document.getElementById('contextEntryOrder').value = entry.display_order || 0;
+    document.getElementById('contextEntryActive').checked = entry.is_active !== false;
+  } else {
+    title.textContent = 'Add Context Entry';
+    document.getElementById('contextEntryId').value = '';
+    document.getElementById('contextEntryOrder').value = contextEntries.length + 1;
+    document.getElementById('contextEntryActive').checked = true;
+  }
+
+  modal.classList.remove('hidden');
+};
+
+window.closeContextEntryModal = function() {
+  document.getElementById('contextEntryModal').classList.add('hidden');
+};
+
+window.saveContextEntry = async function() {
+  const id = document.getElementById('contextEntryId').value;
+  const title = document.getElementById('contextEntryTitle').value.trim();
+  const content = document.getElementById('contextEntryContent').value.trim();
+  const display_order = parseInt(document.getElementById('contextEntryOrder').value) || 0;
+  const is_active = document.getElementById('contextEntryActive').checked;
+
+  if (!title || !content) {
+    showToast('Please fill in both title and content', 'error');
+    return;
+  }
+
+  const data = { title, content, display_order, is_active, updated_at: new Date().toISOString() };
+
+  try {
+    if (id) {
+      const { error } = await supabase
+        .from('faq_context_entries')
+        .update(data)
+        .eq('id', id);
+      if (error) throw error;
+      showToast('Context entry updated', 'success');
+    } else {
+      const { error } = await supabase
+        .from('faq_context_entries')
+        .insert(data);
+      if (error) throw error;
+      showToast('Context entry created', 'success');
+    }
+
+    closeContextEntryModal();
+    await loadContextEntries();
+    renderAll();
+  } catch (error) {
+    console.error('Error saving context entry:', error);
+    showToast('Failed to save context entry', 'error');
+  }
+};
+
+window.deleteContextEntry = async function(id) {
+  if (!confirm('Delete this context entry? You\'ll need to recompile for changes to take effect.')) return;
+
+  try {
+    const { error } = await supabase
+      .from('faq_context_entries')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    showToast('Context entry deleted', 'success');
+    await loadContextEntries();
+    renderAll();
+  } catch (error) {
+    console.error('Error deleting context entry:', error);
+    showToast('Failed to delete context entry', 'error');
+  }
+};
+
 // Context Compilation
 async function recompileContext() {
   const modal = document.getElementById('recompileModal');
@@ -448,7 +623,7 @@ async function recompileContext() {
     progressSpaces.classList.add('active');
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('name, description, type, monthly_rate, beds, baths')
+      .select('name, description, type, monthly_rate')
       .eq('is_archived', false)
       .eq('is_listed', true);
 
@@ -458,14 +633,12 @@ async function recompileContext() {
       name: s.name,
       description: s.description,
       type: s.type,
-      monthly_rate: s.monthly_rate,
-      beds: s.beds,
-      baths: s.baths
+      monthly_rate: s.monthly_rate
     }));
     progressSpaces.classList.remove('active');
     progressSpaces.classList.add('complete');
 
-    // Step 2: Load FAQ entries
+    // Step 2: Load FAQ entries (published Q&A pairs)
     progressFaqs.classList.add('active');
     const publishedFaqs = faqEntries.filter(e => e.answer && e.is_published);
     context.faq = publishedFaqs.map(f => ({
@@ -475,8 +648,24 @@ async function recompileContext() {
     progressFaqs.classList.remove('active');
     progressFaqs.classList.add('complete');
 
-    // Step 3: Fetch external content
+    // Step 3: Load context entries from database + fetch external links
     progressLinks.classList.add('active');
+
+    // Load context entries (key-value pairs from faq_context_entries table)
+    const { data: contextEntries, error: entriesError } = await supabase
+      .from('faq_context_entries')
+      .select('title, content')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (entriesError) throw new Error('Failed to load context entries: ' + entriesError.message);
+
+    context.external_content = (contextEntries || []).map(e => ({
+      title: e.title,
+      content: e.content
+    }));
+
+    // Also fetch external links
     const activeLinks = contextLinks.filter(l => l.is_active);
 
     for (const link of activeLinks) {
@@ -485,11 +674,9 @@ async function recompileContext() {
         if (content) {
           context.external_content.push({
             title: link.title,
-            url: link.url,
             content: content
           });
 
-          // Update last_fetched_at
           await supabase
             .from('faq_context_links')
             .update({ last_fetched_at: new Date().toISOString() })
@@ -497,7 +684,6 @@ async function recompileContext() {
         }
       } catch (err) {
         console.warn(`Failed to fetch ${link.url}:`, err);
-        // Continue with other links
       }
     }
     progressLinks.classList.remove('active');

@@ -84,7 +84,18 @@
         </div>
       </div>
 
-      <!-- Pending Questions Section -->
+      <!-- Question Log (all auto-logged questions with AI answers) -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Question Log</h2>
+          <span id="questionLogCount" class="count-badge">0</span>
+        </div>
+        <div id="questionLogSection" class="section-body">
+          <div class="empty-state">No questions asked yet</div>
+        </div>
+      </div>
+
+      <!-- Pending Questions (user feedback / low confidence needing answers) -->
       <div class="section">
         <div class="section-header">
           <h2>Pending Questions</h2>
@@ -104,6 +115,18 @@
         </div>
         <div id="faqSection" class="section-body">
           <div class="empty-state">No FAQ entries yet</div>
+        </div>
+      </div>
+
+      <!-- Context Entries (key-value knowledge base) -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Context Entries</h2>
+          <span id="contextEntriesCount" class="count-badge">0</span>
+          <button id="addContextEntryBtn" class="btn-secondary btn-small" style="margin-left: auto;">+ Add Entry</button>
+        </div>
+        <div id="contextEntriesSection" class="section-body">
+          <div class="empty-state">No context entries</div>
         </div>
       </div>
 
@@ -188,6 +211,43 @@
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeLinkModal()">Cancel</button>
         <button class="btn-primary" onclick="saveLink()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Entry Modal -->
+  <div id="contextEntryModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="contextEntryModalTitle">Add Context Entry</h2>
+        <button class="modal-close" onclick="closeContextEntryModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="contextEntryForm">
+          <input type="hidden" id="contextEntryId">
+          <div class="form-group">
+            <label for="contextEntryTitle">Title</label>
+            <input type="text" id="contextEntryTitle" placeholder="e.g. Wifi & Internet, Parking Rules, etc." required>
+          </div>
+          <div class="form-group">
+            <label for="contextEntryContent">Content</label>
+            <textarea id="contextEntryContent" rows="6" placeholder="Write the factual information the AI should know about this topic..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="contextEntryOrder">Display Order</label>
+            <input type="number" id="contextEntryOrder" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="contextEntryActive" checked>
+              Active (include in AI context)
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeContextEntryModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveContextEntry()">Save</button>
       </div>
     </div>
   </div>

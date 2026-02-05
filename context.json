@@ -1,0 +1,134 @@
+{
+  "spaces": [
+    {
+      "name": "Skyloft",
+      "monthly_rate": 1595,
+      "description": "Penthouse suite on top floor with Nepalese theme. 5 beds, half bathroom, high-end sound system, wet bar, towel warmer, carpet flooring, dedicated A/C, computer-controlled lighting. Views overlooking Alpaca Pasture from balcony. Open for rent of whole room or individual beds. Balcony accessible by all guests 10am-10pm."
+    },
+    {
+      "name": "Master Pasture Suite",
+      "monthly_rate": 1395,
+      "description": "Private bedroom on ground floor with direct alpaca interaction. Full private ensuite bath with large jacuzzi tub and stand-up shower. High-end sound system, gas fireplace, A/C, mini fridge, computer-controlled lighting. Alpacas graze just outside."
+    },
+    {
+      "name": "Spartan Trailer",
+      "monthly_rate": 1195,
+      "description": "Larger trailer with 2 separate bedrooms and common area. 400 sq ft with A/C, fridge, and living room. Currently hosts community Tea Lounge."
+    },
+    {
+      "name": "Pequneo Largo Suite",
+      "monthly_rate": 1095,
+      "description": "Bright, spacious room with ensuite full bathroom, big closet, quality mattress, high-quality audio system, private fridge, east-facing windows."
+    },
+    {
+      "name": "Fuego Trailer",
+      "monthly_rate": 875,
+      "description": "Compact 180 sq ft living space with climate control and personal refrigeration at an affordable rate."
+    },
+    {
+      "name": "Cedar Chamber",
+      "monthly_rate": 795,
+      "description": "Large private bedroom within the Spartan Trailer. Shares common area with A/C, fridge access, and living room."
+    },
+    {
+      "name": "Spartan Fishbowl",
+      "monthly_rate": 595,
+      "description": "Smaller private bedroom within the Spartan Trailer. Shares common area with A/C, fridge access, and living room."
+    },
+    {
+      "name": "Cabinearo",
+      "monthly_rate": 498,
+      "description": "Rustic cabin with AC and heat, double bed, private room. Access to garage fridge and shared bathroom. Closest cabin to the house."
+    },
+    {
+      "name": "CabinFever",
+      "monthly_rate": 495,
+      "description": "Rustic cabin with AC and heat, double bed, private room. Access to garage fridge and shared bathroom. Closest to back forest."
+    },
+    {
+      "name": "Odyssey of Static Van Life (Crash Capsule)",
+      "monthly_rate": 350,
+      "description": "Minimalist compact retreat with twin bed. A/C still being added. Access to shared amenities and garage fridge."
+    },
+    {
+      "name": "Skyloft Bed (Individual)",
+      "monthly_rate": 300,
+      "description": "Single bed in the Skyloft penthouse (female dorm). Access to half bathroom, sound system, wet bar, balcony views."
+    }
+  ],
+  "faq": [],
+  "external_content": [
+    {
+      "title": "Wifi & Internet",
+      "content": "WiFi Network Name: Black Rock City. WiFi Password: popopopo. This is the only wifi network that works with the Sonos music system. There are other wifi networks available but Black Rock City is the main one."
+    },
+    {
+      "title": "Location & Directions",
+      "content": "Address: 160 Still Forest Drive, Cedar Creek, TX 78612. Located 30 minutes east of Austin and 13 minutes east of Austin Airport, just off Highway 71. IMPORTANT: Never give the address publicly. Always direct people to alpacaplayhouse.com/visiting for directions."
+    },
+    {
+      "title": "Contact Information",
+      "content": "Text us: (737) 747-4737. You can also use the contact form on the website at alpacaplayhouse.com/contact. Social media: Instagram @alpacaplayhouseatx, Facebook /alpacaplayhouse."
+    },
+    {
+      "title": "Parking",
+      "content": "First choice: Gravel lot on the right when entering the gate (if not full). Second choice: Across the street, past two houses to the left, facing highway (NOT in front of neighbors' houses). Overflow parking: Frontage road (turn left before highway), park right of 'no parking' signs (5 min walk). DO NOT park on grass (sprinklers + mud = $200 tow), on the circle or by the garage (blocks deliveries), or in front of sauna or garage."
+    },
+    {
+      "title": "Food & Drink Policies",
+      "content": "NO MEAT INSIDE the house. Meat can be stored in the doghouse refrigerator and cooked outside. NO ALCOHOL (exception: weddings only). Bring healthy food to share and include vegetarian options. Bring a water bottle - 3 filtered water dispensers available. No plastic bottles. Water bottles available to borrow above the oven."
+    },
+    {
+      "title": "House Rules",
+      "content": "Don't leave bags or items on Living Room or Kitchen counters - use the dining room. Clean up immediately after yourself. Items left out may end up in the 'Scolding Mess Box' out back. Only toilet paper goes in toilets - nothing else."
+    },
+    {
+      "title": "Spa & Amenities",
+      "content": "Sauna: Takes 20-40 minutes to heat up. Has infrared heater on ceiling. Features an amazing sound system. Swim Spa: Shower first before use (shower behind swim spa or in Outhouse). Don't adjust temperature. Close cover when not using. Cold Plunge: Always ready to go. Shower first if sweaty. Close cover when finished. Outhouse: Full bathroom with hot water shower in the front yard. Phone charging stations throughout house and outside."
+    },
+    {
+      "title": "Music System",
+      "content": "Use Spotify Connect or the 'Sonos S1' app while connected to the Black Rock City wifi network. Be careful to select the right 'room' in Sonos - don't blast music into rooms where someone is sleeping. Make sure only your room is connected."
+    },
+    {
+      "title": "Alpaca & Pet Rules",
+      "content": "ALWAYS keep back fence gates closed - alpacas will wander off if gates are left open. Do NOT call them 'Llamas.' Don't stare at them while eating meat outside. Pet rules: Don't let dogs enter the Alpaca domain in the back. Tie dogs in front. Don't leave pets unattended if not tied. Don't bring animals into the house."
+    },
+    {
+      "title": "Visiting Policy",
+      "content": "Visiting is by invitation only. Do not invite guests without asking a resident first. All guests must read alpacaplayhouse.com/visiting. NEVER give or post the address publicly - only share the link alpacaplayhouse.com/visiting. Do not plan overnight stays without an email-confirmed agreement with a resident. Do not sleep in common areas."
+    },
+    {
+      "title": "Laundry",
+      "content": "Washer and dryer are in the garage. Remove clothes promptly when done. Clean the lint trap after every dryer use."
+    },
+    {
+      "title": "Nearby Shopping",
+      "content": "H-E-B grocery store: 15 minutes away in Bastrop. Walmart: 15 minutes away in Bastrop."
+    },
+    {
+      "title": "Events & Venue",
+      "content": "The venue offers friendly alpacas, sauna & cold plunge, indoor & outdoor spaces, and a great sound system. Types of events: private parties, music events, workshops, retreats, team gatherings, ceremonies (weddings), photoshoots. Standard fees: Rental fee starting at $295 (may be waived for unpaid community events), Reservation deposit $95 (refundable), Cleaning deposit $195 (refundable). Apply to host an event at alpacaplayhouse.com/events."
+    },
+    {
+      "title": "Sundays at Playhouse",
+      "content": "Weekly community gatherings with live music and alpacas. Currently on hold until spring."
+    },
+    {
+      "title": "Work Trade Program",
+      "content": "Short-term work trade (1-4 weeks) can subsidize rental costs. Requires deposit and rent paid upfront, refunded based on work completed. 4-5 hours of work per day. Tasks include property maintenance, grounds & landscaping, alpaca care, and event support. Must be flexible, self-motivated, and reliable. Apply or ask about work trade opportunities."
+    },
+    {
+      "title": "Rental Application",
+      "content": "To apply for a rental space, visit alpacaplayhouse.com/spaces/apply. View all available spaces and pricing at alpacaplayhouse.com/spaces."
+    },
+    {
+      "title": "Community Spaces & Amenities",
+      "content": "Garage Mahal: Yoga and dance studio space with shock-absorbing cork floors and DJ quality sound. Spartan Tea Lounge: Expansive room with cedar aromas and high fidelity sound. Sparadise: Outdoor spa and relaxation area with sauna and swim spa. Skyloft Balcony: Accessible by all guests 10am-10pm with views of the Alpaca Pasture."
+    },
+    {
+      "title": "Checkout & Departure",
+      "content": "Strip bed and leave linens in laundry area. Clean your space (leave it better than you found it). Remove all personal items (check drawers, bathroom, fridge). Take out trash from your room. Return borrowed items. Close and lock doors and windows."
+    }
+  ]
+}

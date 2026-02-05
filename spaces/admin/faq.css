@@ -265,6 +265,37 @@
   flex-shrink: 0;
 }
 
+/* Confidence badges */
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.confidence-badge--high {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.confidence-badge--low {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.faq-card--inactive {
+  opacity: 0.5;
+}
+
+.faq-card__source--auto {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
