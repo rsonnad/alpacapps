@@ -900,10 +900,19 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       Then run <code>claude</code> in your project directory. Same features, same skills &mdash; just a terminal interface instead of the desktop app.
     </div>
 
-    <h3>The easy way: use the setup skill</h3>
-    <p>This repo includes a built-in skill that walks you through the entire setup interactively. Just type:</p>
+    <h3>Get the starter template</h3>
+    <p>Enter your project name, then copy-paste the commands below to clone the starter repo and open it in Claude Code:</p>
+
+    <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
+      <input type="text" id="clone-project-name" placeholder="my-salon-app" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCloneCommands()">
+    </div>
+
+    <pre data-lang="bash" style="position: relative;"><code id="clone-commands">git clone https://github.com/rsonnad/alpacapps-infra.git my-salon-app
+cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Copy</button></pre>
+
+    <p>Then open the folder in the Claude desktop app (or run <code>claude</code> in the terminal) and type:</p>
     <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
-    <p>Claude will ask you for credentials one service at a time, validate each one, build everything out, and push. You don't need to read the rest of this guide &mdash; the skill covers it all.</p>
+    <p>Claude will ask you what you're building, which services you need, then walk you through the entire setup &mdash; creating your database, deploying edge functions, configuring webhooks, and building your CLAUDE.md. You don't need to read the rest of this guide unless you want to understand what's happening under the hood.</p>
 
     <h3>How it works (if doing it manually)</h3>
     <p>For every service below, the pattern is:</p>
@@ -1315,6 +1324,22 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 </div>
 
 <script>
+// Clone commands with dynamic project name
+function updateCloneCommands() {
+  var name = document.getElementById('clone-project-name').value.trim() || 'my-salon-app';
+  var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  document.getElementById('clone-commands').textContent =
+    'git clone https://github.com/rsonnad/alpacapps-infra.git ' + slug + '\ncd ' + slug;
+}
+function copyCloneCommands() {
+  var text = document.getElementById('clone-commands').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('#clone-commands + button');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
 // Download CLAUDE.md template with project name substituted
 function downloadTemplate() {
   var name = document.getElementById('project-name-input').value.trim() || 'My Project';
