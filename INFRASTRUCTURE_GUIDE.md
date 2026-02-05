@@ -1,6 +1,6 @@
 # Infrastructure Replication Guide
 
-How to set up a zero-cost (or near-zero) do-it-all system from scratch — messaging, marketing, customer management, and finance. This guide covers every vendor account, configuration step, and how to wire it all together with Claude Code as your AI developer.
+How to set up a super low cost do-it-all system from scratch — messaging, marketing, customer management, and finance. This guide covers every vendor account, configuration step, and how to wire it all together with Claude Code as your AI developer.
 
 **Total cost: $0/month** for the core stack (hosting, database, email). Optional paid add-ons for SMS, e-signatures, and payment processing are pay-as-you-go.
 
