@@ -27,7 +27,9 @@ type EmailType =
   | "admin_event_request"
   | "admin_rental_application"
   // FAQ notifications
-  | "faq_unanswered";
+  | "faq_unanswered"
+  // Contact form
+  | "contact_form";
 
 interface EmailRequest {
   type: EmailType;
@@ -752,6 +754,33 @@ Add an answer to improve our knowledge base:
 ${data.faq_admin_url}
 
 After answering, remember to recompile the context so future visitors get better responses.`
+      };
+
+    // ===== CONTACT FORM =====
+    case "contact_form":
+      return {
+        subject: `[Website Contact] ${data.subject || 'General Inquiry'}`,
+        html: `
+          <h2>New Website Contact Form Submission</h2>
+          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 120px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : 'Not provided'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : 'Not provided'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Subject:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.subject || 'General Inquiry'}</td></tr>
+          </table>
+          <h3>Message</h3>
+          <p style="background: #f5f5f5; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${data.message || 'No message'}</p>
+          ${data.email ? `<p><a href="mailto:${data.email}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Reply to ${data.name || data.email}</a></p>` : ''}
+        `,
+        text: `New Website Contact Form Submission
+
+Name: ${data.name || 'Not provided'}
+Email: ${data.email || 'Not provided'}
+Phone: ${data.phone || 'Not provided'}
+Subject: ${data.subject || 'General Inquiry'}
+
+Message:
+${data.message || 'No message'}`
       };
 
     default:
