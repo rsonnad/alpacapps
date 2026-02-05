@@ -2390,13 +2390,13 @@
           <form id="termsForm" class="terms-form">
             <div class="form-grid">
               <div class="form-group">
-                <label for="termSpace">Space *</label>
+                <label for="termSpace">Space <span class="required">*</span></label>
                 <select id="termSpace" required>
                   <option value="">Select space...</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="termRate">Rate *</label>
+                <label for="termRate">Rate <span class="required">*</span></label>
                 <div class="rate-input-group">
                   <span class="rate-prefix">$</span>
                   <input type="number" id="termRate" min="0" step="1" required>
@@ -2408,7 +2408,7 @@
                 </div>
               </div>
               <div class="form-group">
-                <label for="termMoveIn">Move-in Date *</label>
+                <label for="termMoveIn">Move-in Date <span class="required">*</span></label>
                 <input type="date" id="termMoveIn" required>
               </div>
               <div class="form-group">
@@ -2779,11 +2779,11 @@
           <form id="eventTermsForm" class="terms-form">
             <div class="form-grid">
               <div class="form-group">
-                <label for="eventTermMaxGuests">Approved Max Guests *</label>
+                <label for="eventTermMaxGuests">Approved Max Guests <span class="required">*</span></label>
                 <input type="number" id="eventTermMaxGuests" min="1" required>
               </div>
               <div class="form-group">
-                <label for="eventTermRentalFee">Rental Fee ($)</label>
+                <label for="eventTermRentalFee">Rental Fee ($) <span class="required">*</span></label>
                 <input type="number" id="eventTermRentalFee" min="0" step="1" value="295">
               </div>
               <div class="form-group">
@@ -7042,6 +7042,14 @@
       // Update action buttons
       updateRentalActions(app);
 
+      // Re-evaluate action buttons when terms fields change
+      ['termSpace', 'termRate', 'termMoveIn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.onchange = el.oninput = () => updateRentalActions(app);
+        }
+      });
+
       // Show modal
       document.getElementById('rentalDetailModal').classList.remove('hidden');
 
@@ -7056,6 +7064,13 @@
       document.querySelectorAll('.detail-tab-content').forEach(c => {
         c.classList.toggle('active', c.id === tabName + 'Tab');
       });
+    }
+
+    function rentalTermsFilled() {
+      const spaceId = document.getElementById('termSpace')?.value;
+      const rate = document.getElementById('termRate')?.value;
+      const moveIn = document.getElementById('termMoveIn')?.value;
+      return !!(spaceId && rate && parseFloat(rate) > 0 && moveIn);
     }
 
     function updateRentalActions(app) {
@@ -7099,7 +7114,13 @@
 
       // Add approve button if under review
       if (app.application_status === 'under_review') {
-        buttons.unshift('<button class="btn-primary" onclick="approveApplication()">Approve</button>');
+        const termsFilled = rentalTermsFilled();
+        if (termsFilled) {
+          buttons.unshift('<button class="btn-primary" onclick="approveApplication()">Approve</button>');
+        } else {
+          buttons.unshift('<button class="btn-primary" disabled title="Fill in required terms first" style="opacity:0.5;cursor:not-allowed;">Approve</button>');
+          buttons.unshift('<button class="btn-secondary" onclick="switchDetailTab(\'terms\')"><span style="color:var(--danger-color);">&#9679;</span> Fill Details</button>');
+        }
       }
 
       // Add test toggle and archive buttons (always available)
@@ -8250,6 +8271,14 @@
       // Action buttons
       updateEventDetailActions(req);
 
+      // Re-evaluate action buttons when terms fields change
+      ['eventTermMaxGuests', 'eventTermRentalFee'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.onchange = el.oninput = () => updateEventDetailActions(req);
+        }
+      });
+
       // Reset to first tab
       document.querySelectorAll('.event-detail-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.event-detail-tab-content').forEach(c => c.classList.remove('active'));
@@ -8358,16 +8387,29 @@
       }
     }
 
+    function eventTermsFilled() {
+      const maxGuests = document.getElementById('eventTermMaxGuests')?.value;
+      const rentalFee = document.getElementById('eventTermRentalFee')?.value;
+      return !!(maxGuests && parseInt(maxGuests) > 0 && rentalFee && parseFloat(rentalFee) >= 0);
+    }
+
     function updateEventDetailActions(req) {
       const container = document.getElementById('eventDetailActions');
       const buttons = [];
       const stage = eventService.getPipelineStage(req);
 
       switch (stage) {
-        case 'requests':
-          buttons.push('<button class="btn-primary" onclick="approveEventRequest()">Approve</button>');
+        case 'requests': {
+          const termsFilled = eventTermsFilled();
+          if (termsFilled) {
+            buttons.push('<button class="btn-primary" onclick="approveEventRequest()">Approve</button>');
+          } else {
+            buttons.push('<button class="btn-secondary" onclick="switchToEventTab(\'eventTerms\')"><span style="color:var(--danger-color);">&#9679;</span> Fill Details</button>');
+            buttons.push('<button class="btn-primary" disabled title="Fill in required terms first" style="opacity:0.5;cursor:not-allowed;">Approve</button>');
+          }
           buttons.push('<button class="btn-secondary" onclick="denyEventRequest()">Deny</button>');
           break;
+        }
 
         case 'approved':
           buttons.push('<button class="btn-primary" onclick="switchToEventTab(\'eventDocuments\')">Generate Agreement</button>');
@@ -8525,6 +8567,12 @@
         showToast('Error saving terms: ' + e.message, 'error');
       }
     }
+
+    window.approveEventRequest = approveEventRequest;
+    window.denyEventRequest = denyEventRequest;
+    window.archiveEventRequest = archiveEventRequest;
+    window.confirmEventDeposit = confirmEventDeposit;
+    window.markEventCompleted = markEventCompleted;
 
     async function approveEventRequest() {
       const req = allEventRequests.find(r => r.id === currentEventRequestId);

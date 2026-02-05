@@ -160,6 +160,11 @@ body.is-admin .admin-only {
   color: var(--text-muted);
 }
 
+.form-group label .required {
+  color: var(--danger-color, #dc3545);
+  font-weight: 700;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
