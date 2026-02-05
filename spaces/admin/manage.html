@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260206.12</span>
+        <span class="app-version">v260205.01</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -4946,6 +4946,7 @@
         const { data, error } = await supabase
           .from('amenities')
           .select('id, name, category')
+          .order('category')
           .order('name');
         if (error) {
           console.error('Error loading amenities:', error);
