@@ -2,7 +2,26 @@
 import { supabase } from './supabase.js';
 
 // Timeout configuration
-const AUTH_TIMEOUT_MS = 30000; // 30 seconds for auth operations (increased for high-latency connections)
+const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations
+const INIT_TIMEOUT_MS = 10000; // 10 seconds for initial auth check
+const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
+const CACHED_AUTH_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// Structured auth logger
+const authLog = {
+  _fmt(level, msg, data) {
+    const ts = new Date().toISOString().slice(11, 23);
+    const prefix = `[AUTH ${ts}]`;
+    if (data !== undefined) {
+      console[level](prefix, msg, data);
+    } else {
+      console[level](prefix, msg);
+    }
+  },
+  info(msg, data) { this._fmt('log', msg, data); },
+  warn(msg, data) { this._fmt('warn', msg, data); },
+  error(msg, data) { this._fmt('error', msg, data); },
+};
 
 /**
  * Wrap a promise with a timeout to prevent indefinite hangs
@@ -28,7 +47,7 @@ async function withRetry(fn, maxRetries = 2, baseDelayMs = 1000) {
       lastError = error;
       if (attempt < maxRetries) {
         const delay = baseDelayMs * Math.pow(2, attempt);
-        console.log(`Retry attempt ${attempt + 1} after ${delay}ms...`);
+        authLog.info(`Retry attempt ${attempt + 1} after ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -44,58 +63,145 @@ let authStateListeners = [];
 let authHandlingInProgress = false; // Prevent concurrent auth handling
 
 /**
+ * Save verified auth state to localStorage for instant restore on next visit
+ */
+function cacheAuthState(user, appUser, role) {
+  try {
+    const cached = {
+      email: user?.email,
+      userId: user?.id,
+      appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email } : null,
+      role,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(CACHED_AUTH_KEY, JSON.stringify(cached));
+    authLog.info('Cached auth state', { email: cached.email, role });
+  } catch (e) {
+    authLog.warn('Failed to cache auth state', e.message);
+  }
+}
+
+/**
+ * Load cached auth state from localStorage (returns null if expired or missing)
+ */
+function loadCachedAuthState() {
+  try {
+    const raw = localStorage.getItem(CACHED_AUTH_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    const age = Date.now() - (cached.timestamp || 0);
+    if (age > CACHED_AUTH_MAX_AGE_MS) {
+      authLog.info('Cached auth expired', { ageMs: age });
+      localStorage.removeItem(CACHED_AUTH_KEY);
+      return null;
+    }
+    authLog.info('Loaded cached auth', { email: cached.email, role: cached.role, ageMinutes: Math.round(age / 60000) });
+    return cached;
+  } catch (e) {
+    authLog.warn('Failed to load cached auth', e.message);
+    return null;
+  }
+}
+
+/**
+ * Clear cached auth state (called on sign out)
+ */
+function clearCachedAuthState() {
+  try {
+    localStorage.removeItem(CACHED_AUTH_KEY);
+    authLog.info('Cleared cached auth state');
+  } catch (e) {
+    // ignore
+  }
+}
+
+/**
  * Initialize authentication and check for existing session
+ * Uses cached auth state for instant access when available, verifies in background.
  * @returns {Promise<{user: object|null, role: string}>}
  */
 export async function initAuth() {
+  const initStart = performance.now();
+  authLog.info('initAuth() started');
+
+  // Check for cached auth state first - provides instant access
+  const cached = loadCachedAuthState();
+
   return new Promise((resolve) => {
     let resolved = false;
 
+    function doResolve(user, role, source) {
+      if (resolved) return;
+      resolved = true;
+      const elapsed = Math.round(performance.now() - initStart);
+      authLog.info(`initAuth() resolved via ${source} in ${elapsed}ms`, { hasUser: !!user, role });
+      resolve({ user, role });
+    }
+
+    // If we have cached auth, use it to pre-populate state immediately
+    // This lets the UI show content instantly while Supabase verifies in background
+    if (cached?.appUser && (cached.role === 'admin' || cached.role === 'staff')) {
+      authLog.info('Using cached auth for instant access');
+      currentRole = cached.role;
+      currentAppUser = cached.appUser;
+      // We still need the actual Supabase user object, so we don't set currentUser yet
+      // but we resolve with a minimal user so the UI can proceed
+      const minimalUser = { id: cached.userId, email: cached.email, displayName: cached.appUser.display_name };
+      currentUser = minimalUser;
+      doResolve(minimalUser, cached.role, 'cache');
+    }
+
     // Listen for auth changes (login, logout, token refresh)
     supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
+      authLog.info(`onAuthStateChange fired: ${event}`, {
+        hasSession: !!session,
+        userEmail: session?.user?.email,
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
+      });
 
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // If we have a session, set user immediately and resolve
-        // Don't wait for app_users fetch - let that happen in background
         if (session?.user) {
           currentUser = session.user;
-          currentRole = 'pending'; // Will be updated when app_users fetch completes
+          authLog.info('Session user found', { email: session.user.email, id: session.user.id });
+
+          // If we already resolved from cache, just update in background
           if (!resolved) {
-            resolved = true;
-            resolve({ user: currentUser, role: currentRole });
+            currentRole = 'pending';
+            doResolve(currentUser, currentRole, `supabase:${event}`);
           }
-          // Fetch full user record in background (don't await)
+          // Fetch full user record (updates cached state when complete)
           handleAuthChange(session);
         } else if (event === 'INITIAL_SESSION') {
-          // No session exists - user is not logged in, resolve immediately
-          console.log('No existing session found');
-          if (!resolved) {
-            resolved = true;
-            resolve({ user: null, role: 'public' });
+          authLog.info('INITIAL_SESSION with no session - user not logged in');
+          if (cached) {
+            // Cache exists but Supabase says no session — session expired
+            authLog.warn('Cached auth exists but Supabase session gone — clearing cache');
+            clearCachedAuthState();
+            currentUser = null;
+            currentAppUser = null;
+            currentRole = 'public';
+            notifyListeners();
           }
+          doResolve(null, 'public', 'supabase:no-session');
         }
       } else if (event === 'SIGNED_OUT') {
+        authLog.info('User signed out');
         currentUser = null;
         currentAppUser = null;
         currentRole = 'public';
+        clearCachedAuthState();
         notifyListeners();
-        if (!resolved) {
-          resolved = true;
-          resolve({ user: currentUser, role: currentRole });
-        }
+        doResolve(null, 'public', 'supabase:signed-out');
       }
     });
 
-    // Timeout fallback - if no auth event fires within 45 seconds, resolve anyway
-    // (increased to handle slow Supabase connections during outages)
+    // Timeout fallback
     setTimeout(() => {
       if (!resolved) {
-        console.log('Auth init timeout - no session');
-        resolved = true;
-        resolve({ user: currentUser, role: currentRole });
+        authLog.warn(`initAuth() timed out after ${INIT_TIMEOUT_MS}ms`);
+        doResolve(currentUser, currentRole, 'timeout');
       }
-    }, 45000);
+    }, INIT_TIMEOUT_MS);
   });
 }
 
@@ -103,32 +209,36 @@ export async function initAuth() {
  * Handle auth state changes - fetch user role from app_users
  */
 async function handleAuthChange(session) {
+  const start = performance.now();
+  authLog.info('handleAuthChange() started', { email: session?.user?.email });
+
   if (!session?.user) {
+    authLog.info('handleAuthChange() - no user in session, clearing state');
     currentUser = null;
     currentAppUser = null;
     currentRole = 'public';
+    clearCachedAuthState();
     notifyListeners();
     return;
   }
 
   // Prevent concurrent auth handling (can happen with INITIAL_SESSION + SIGNED_IN events)
   if (authHandlingInProgress) {
-    console.log('Auth handling already in progress, skipping duplicate call');
+    authLog.info('handleAuthChange() skipped - already in progress');
     return;
   }
   authHandlingInProgress = true;
 
   try {
     currentUser = session.user;
-    // Set a temporary "pending" state - user is authenticated but role not yet verified
-    // This allows the UI to proceed while we fetch the full user record
     currentRole = 'pending';
-    console.log('User authenticated, fetching app_user record...');
+    authLog.info('Fetching app_user record...', { authUserId: session.user.id });
 
   // Fetch user record from app_users table (with timeout and retry)
   let appUser = null;
   let fetchError = null;
   try {
+    const fetchStart = performance.now();
     const result = await withRetry(async () => {
       return await withTimeout(
         supabase
@@ -142,19 +252,25 @@ async function handleAuthChange(session) {
     }, 2, 1000);
     appUser = result.data;
     fetchError = result.error;
+    const fetchElapsed = Math.round(performance.now() - fetchStart);
+    authLog.info(`app_users fetch completed in ${fetchElapsed}ms`, { found: !!appUser, error: fetchError?.message });
   } catch (timeoutError) {
-    console.warn('User record fetch failed after retries:', timeoutError.message);
+    authLog.error('app_users fetch failed after retries', timeoutError.message);
     fetchError = timeoutError;
   }
 
   if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
-    console.error('Error fetching app_user:', fetchError);
+    authLog.error('Error fetching app_user', { code: fetchError.code, message: fetchError.message });
   }
 
   if (appUser) {
     currentAppUser = appUser;
     currentRole = appUser.role;
     currentUser.displayName = appUser.display_name || currentUser.user_metadata?.full_name || currentUser.email;
+    authLog.info('User role resolved', { role: appUser.role, displayName: currentUser.displayName });
+
+    // Cache the verified auth state for instant restore on next visit
+    cacheAuthState(currentUser, appUser, appUser.role);
 
     // Update last login timestamp (fire and forget with timeout - don't block auth)
     withTimeout(
@@ -164,10 +280,11 @@ async function handleAuthChange(session) {
         .eq('auth_user_id', session.user.id),
       5000,
       'Last login update timed out'
-    ).catch(err => console.warn('Failed to update last login:', err.message));
+    ).catch(err => authLog.warn('Failed to update last login', err.message));
   } else {
     // User not in app_users - check for pending invitation (with timeout)
     const userEmail = session.user.email?.toLowerCase();
+    authLog.info('User not in app_users, checking invitations', { email: userEmail });
     let invitation = null;
     let invError = null;
 
@@ -184,13 +301,14 @@ async function handleAuthChange(session) {
       );
       invitation = result.data;
       invError = result.error;
+      authLog.info('Invitation check result', { found: !!invitation, error: invError?.message });
     } catch (timeoutError) {
-      console.warn('Invitation check timed out:', timeoutError.message);
+      authLog.warn('Invitation check timed out', timeoutError.message);
       invError = timeoutError;
     }
 
     if (invitation && !invError) {
-      // Found a pending invitation - automatically create app_users record
+      authLog.info('Found pending invitation, creating app_user', { role: invitation.role });
       const displayName = session.user.user_metadata?.full_name || userEmail.split('@')[0];
 
       let newAppUser = null;
@@ -214,11 +332,12 @@ async function handleAuthChange(session) {
         newAppUser = result.data;
         createError = result.error;
       } catch (timeoutError) {
-        console.warn('User creation timed out:', timeoutError.message);
+        authLog.warn('User creation timed out', timeoutError.message);
         createError = timeoutError;
       }
 
       if (!createError && newAppUser) {
+        authLog.info('Created app_user from invitation', { role: newAppUser.role });
         // Mark invitation as accepted (fire and forget - don't block auth)
         withTimeout(
           supabase
@@ -227,25 +346,30 @@ async function handleAuthChange(session) {
             .eq('id', invitation.id),
           5000,
           'Invitation update timed out'
-        ).catch(err => console.warn('Failed to mark invitation accepted:', err.message));
+        ).catch(err => authLog.warn('Failed to mark invitation accepted', err.message));
 
         currentAppUser = newAppUser;
         currentRole = newAppUser.role;
         currentUser.displayName = displayName;
+
+        // Cache the new auth state
+        cacheAuthState(currentUser, newAppUser, newAppUser.role);
       } else {
-        console.error('Error creating app_user from invitation:', createError);
+        authLog.error('Error creating app_user from invitation', createError);
         currentAppUser = null;
         currentRole = 'unauthorized';
         currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
       }
     } else {
-      // No invitation - unauthorized
+      authLog.info('No invitation found - user unauthorized', { email: userEmail });
       currentAppUser = null;
       currentRole = 'unauthorized';
       currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
     }
   }
 
+  const elapsed = Math.round(performance.now() - start);
+  authLog.info(`handleAuthChange() completed in ${elapsed}ms`, { role: currentRole });
   notifyListeners();
   } finally {
     authHandlingInProgress = false;
@@ -257,6 +381,7 @@ async function handleAuthChange(session) {
  * @param {string} redirectTo - URL to redirect to after sign in
  */
 export async function signInWithGoogle(redirectTo) {
+  authLog.info('signInWithGoogle() called', { redirectTo });
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -265,10 +390,11 @@ export async function signInWithGoogle(redirectTo) {
   });
 
   if (error) {
-    console.error('Sign in error:', error);
+    authLog.error('signInWithGoogle() error', error);
     throw error;
   }
 
+  authLog.info('signInWithGoogle() redirecting to Google');
   return data;
 }
 
@@ -276,16 +402,20 @@ export async function signInWithGoogle(redirectTo) {
  * Sign out the current user
  */
 export async function signOut() {
+  authLog.info('signOut() called');
+  clearCachedAuthState();
+
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    console.error('Sign out error:', error);
+    authLog.error('signOut() error', error);
     throw error;
   }
 
   currentUser = null;
   currentAppUser = null;
   currentRole = 'public';
+  authLog.info('signOut() completed');
   notifyListeners();
 }
 
@@ -327,6 +457,7 @@ export function onAuthStateChange(callback) {
  */
 function notifyListeners() {
   const state = getAuthState();
+  authLog.info('Notifying listeners', { role: state.role, isAuthenticated: state.isAuthenticated, listenerCount: authStateListeners.length });
   authStateListeners.forEach(cb => cb(state));
 }
 
