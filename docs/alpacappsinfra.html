@@ -3,336 +3,352 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infrastructure Replication Guide</title>
+  <title>AlpacApps Infra &mdash; Infrastructure Replication Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #ffffff;
-      --text: #1a1a2e;
-      --text-secondary: #4a4a6a;
-      --accent: #6366f1;
-      --accent-light: #eef2ff;
-      --border: #e2e8f0;
-      --code-bg: #f8fafc;
-      --code-border: #e2e8f0;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --info: #3b82f6;
-      --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-      --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text);
-      background: #f8fafc;
+      background: var(--bg-warm);
       line-height: 1.7;
       font-size: 16px;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Hero */
     .hero {
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
-      color: white;
-      padding: 4rem 2rem 3rem;
+      background: var(--text);
+      color: #ffffff;
+      padding: 5rem 2rem 4rem;
       text-align: center;
     }
     .hero h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      letter-spacing: -0.02em;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      margin-bottom: 1.25rem;
+      line-height: 1.2;
     }
+    .hero h1 span { color: var(--accent); }
     .hero p {
-      font-size: 1.15rem;
-      opacity: 0.9;
-      max-width: 640px;
-      margin: 0 auto 1.5rem;
+      font-size: 1.1rem;
+      color: #b0b0b0;
+      max-width: 620px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
     }
     .hero .badge {
       display: inline-block;
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(8px);
-      padding: 0.5rem 1.25rem;
+      background: rgba(201,168,124,0.15);
+      color: var(--accent);
+      padding: 0.5rem 1.5rem;
       border-radius: 999px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
     }
 
-    /* Layout */
     .container {
       max-width: 860px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: 2.5rem 1.5rem 4rem;
     }
 
-    /* Table of Contents */
+    .philosophy {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2.5rem;
+      font-size: 0.95rem;
+    }
+    .philosophy strong { color: var(--accent); }
+
     .toc {
       background: var(--bg);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 2rem;
       margin-bottom: 2.5rem;
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
     .toc h2 {
-      font-size: 1.1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
       margin-bottom: 1rem;
     }
     .toc-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.4rem 2rem;
+      gap: 0.35rem 2rem;
     }
     .toc a {
-      color: var(--accent);
+      color: var(--text);
       text-decoration: none;
-      font-size: 0.95rem;
-      padding: 0.25rem 0;
+      font-size: 0.92rem;
+      padding: 0.2rem 0;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: color 0.15s;
+      gap: 0.6rem;
+      transition: color 0.2s;
     }
-    .toc a:hover { color: #4338ca; text-decoration: underline; }
+    .toc a:hover { color: var(--accent); }
     .toc .num {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       background: var(--accent-light);
       color: var(--accent);
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      font-weight: 600;
       flex-shrink: 0;
     }
 
-    /* Sections */
     .section {
       background: var(--bg);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 2.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
     .section h2 {
+      font-family: 'Playfair Display', Georgia, serif;
       font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
       color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      letter-spacing: -0.01em;
+      line-height: 1.3;
     }
-    .section h2 .icon {
-      font-size: 1.5rem;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--accent-light);
-      border-radius: 10px;
-      flex-shrink: 0;
-    }
+    .section h2 .cost-badge { margin-left: 0.75rem; vertical-align: middle; }
     .section h3 {
-      font-size: 1.15rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
       font-weight: 600;
-      margin: 1.75rem 0 0.75rem;
-      color: var(--text);
-      padding-bottom: 0.35rem;
-      border-bottom: 2px solid var(--accent-light);
+      margin: 2rem 0 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
     .section h3:first-of-type { margin-top: 1.25rem; }
+
+    .step-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .step-you { background: #eef5eb; color: #4a6b3a; }
+    .step-paste { background: var(--accent-light); color: #8a6f3e; }
+    .step-claude { background: var(--claude-bg); color: #5a4a7a; }
 
     p { margin-bottom: 0.85rem; }
     strong { font-weight: 600; }
 
-    /* Architecture diagram */
     .arch-diagram {
-      background: #1e1b4b;
-      color: #c4b5fd;
+      background: var(--text);
+      color: var(--accent);
       padding: 1.25rem 1.5rem;
-      border-radius: 8px;
-      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.82rem;
       line-height: 1.6;
       overflow-x: auto;
       margin: 1rem 0;
       white-space: pre;
     }
 
-    /* Code blocks */
     pre {
       background: var(--code-bg);
-      border: 1px solid var(--code-border);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 1rem 1.25rem;
       overflow-x: auto;
       margin: 0.75rem 0 1rem;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       line-height: 1.6;
     }
     pre code {
-      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-family: 'SF Mono', 'Fira Code', monospace;
       color: var(--text);
     }
     code {
-      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-family: 'SF Mono', 'Fira Code', monospace;
       background: var(--accent-light);
-      color: #4338ca;
+      color: #6b5230;
       padding: 0.15em 0.4em;
-      border-radius: 4px;
-      font-size: 0.88em;
+      border-radius: 3px;
+      font-size: 0.86em;
     }
-    pre code {
-      background: none;
-      color: inherit;
-      padding: 0;
-      border-radius: 0;
-    }
-
-    /* Language label */
+    pre code { background: none; color: inherit; padding: 0; }
     pre[data-lang]::before {
       content: attr(data-lang);
       display: block;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-bottom: 0.5rem;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-weight: 600;
     }
 
-    /* Tables */
     table {
       width: 100%;
       border-collapse: collapse;
       margin: 1rem 0;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
     thead th {
       background: var(--accent-light);
-      color: var(--accent);
+      color: var(--text);
       text-align: left;
-      padding: 0.75rem 1rem;
+      padding: 0.7rem 1rem;
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-    thead th:first-child { border-radius: 8px 0 0 0; }
-    thead th:last-child { border-radius: 0 8px 0 0; }
+    thead th:first-child { border-radius: 6px 0 0 0; }
+    thead th:last-child { border-radius: 0 6px 0 0; }
     td {
-      padding: 0.65rem 1rem;
+      padding: 0.6rem 1rem;
       border-bottom: 1px solid var(--border);
     }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: #fafbff; }
+    tbody tr:hover { background: var(--bg-warm); }
 
-    /* Lists */
-    ol, ul {
-      padding-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    li {
-      margin-bottom: 0.4rem;
-    }
-    li::marker {
-      color: var(--accent);
-      font-weight: 600;
-    }
+    ol, ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    li::marker { color: var(--accent); font-weight: 600; }
 
-    /* Checklist */
-    .checklist {
-      list-style: none;
-      padding-left: 0;
-    }
+    .checklist { list-style: none; padding-left: 0; }
     .checklist li {
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      border-radius: 5px;
       display: flex;
       align-items: flex-start;
-      gap: 0.65rem;
-      margin-bottom: 0.25rem;
+      gap: 0.6rem;
+      margin-bottom: 0.2rem;
       transition: background 0.15s;
     }
     .checklist li:hover { background: var(--accent-light); }
     .checklist li::before {
       content: '';
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid var(--border);
-      border-radius: 4px;
+      border-radius: 3px;
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
-    /* Callout boxes */
     .callout {
-      border-left: 4px solid var(--accent);
+      border-left: 3px solid var(--accent);
       background: var(--accent-light);
       padding: 1rem 1.25rem;
-      border-radius: 0 8px 8px 0;
+      border-radius: 0 6px 6px 0;
       margin: 1rem 0;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
     .callout.warning {
-      border-color: var(--warning);
-      background: #fffbeb;
+      border-color: var(--warning-border);
+      background: var(--warning-bg);
     }
     .callout.success {
       border-color: var(--success);
-      background: #ecfdf5;
+      background: var(--success-light);
+    }
+    .callout.claude {
+      border-color: var(--claude-border);
+      background: var(--claude-bg);
     }
     .callout strong { display: block; margin-bottom: 0.25rem; }
 
-    /* Links */
-    a { color: var(--accent); transition: color 0.15s; }
-    a:hover { color: #4338ca; }
-
-    /* Cost badge */
     .cost-badge {
       display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
       padding: 0.2rem 0.6rem;
       border-radius: 999px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
-    .cost-free {
-      background: #ecfdf5;
-      color: #059669;
-    }
-    .cost-payg {
-      background: #fffbeb;
-      color: #d97706;
-    }
+    .cost-free { background: var(--success-light); color: var(--success); }
+    .cost-payg { background: var(--accent-light); color: #8a6f3e; }
 
-    /* Responsive */
+    a { color: var(--accent); transition: color 0.2s; }
+    a:hover { color: #a08050; }
+
+    .conversation {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+    }
+    .conversation .you, .conversation .ai { margin-bottom: 0.75rem; }
+    .conversation .you::before {
+      content: 'You:';
+      font-weight: 600;
+      color: var(--success);
+      margin-right: 0.4rem;
+    }
+    .conversation .ai::before {
+      content: 'Claude:';
+      font-weight: 600;
+      color: #7c6a9a;
+      margin-right: 0.4rem;
+    }
+    .conversation .ai { font-style: italic; color: var(--text-muted); }
+
     @media (max-width: 640px) {
-      .hero h1 { font-size: 1.75rem; }
-      .hero p { font-size: 1rem; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
       .section { padding: 1.5rem; }
       .toc-grid { grid-template-columns: 1fr; }
       table { font-size: 0.8rem; }
       td, thead th { padding: 0.5rem 0.6rem; }
     }
 
-    /* Print */
     @media print {
       body { background: white; }
-      .hero { background: #4f46e5; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
     }
   </style>
@@ -340,28 +356,31 @@
 <body>
 
 <div class="hero">
-  <h1>Infrastructure Replication Guide</h1>
-  <p>How to set up a zero-cost property management system from scratch &mdash; hosting, database, email, SMS, payments, e-signatures, and an AI developer.</p>
+  <h1><span>AlpacApps</span> Infra</h1>
+  <p>Set up a zero-cost property management system from scratch. You create accounts. Claude Code builds everything else.</p>
   <span class="badge">Total cost: $0/month for the core stack</span>
 </div>
 
 <div class="container">
 
-  <!-- Table of Contents -->
+  <div class="philosophy">
+    <strong>The philosophy:</strong> You create accounts and gather credentials in your browser. Claude Code handles all the terminal work &mdash; database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
+  </div>
+
   <nav class="toc">
     <h2>Table of Contents</h2>
     <div class="toc-grid">
       <a href="#architecture"><span class="num">1</span> Architecture Overview</a>
-      <a href="#github"><span class="num">2</span> GitHub + GitHub Pages</a>
-      <a href="#supabase"><span class="num">3</span> Supabase</a>
-      <a href="#resend"><span class="num">4</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">5</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">6</span> Square (Payments)</a>
-      <a href="#signwell"><span class="num">7</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">8</span> Google Gemini (AI)</a>
-      <a href="#discord"><span class="num">9</span> Discord Bot</a>
-      <a href="#domain"><span class="num">10</span> Custom Domain</a>
-      <a href="#claude"><span class="num">11</span> Claude Code Setup</a>
+      <a href="#claude-code"><span class="num">2</span> Install Claude Code First</a>
+      <a href="#github"><span class="num">3</span> GitHub + GitHub Pages</a>
+      <a href="#supabase"><span class="num">4</span> Supabase</a>
+      <a href="#resend"><span class="num">5</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">7</span> Square (Payments)</a>
+      <a href="#signwell"><span class="num">8</span> SignWell (E-Signatures)</a>
+      <a href="#gemini"><span class="num">9</span> Google Gemini (AI)</a>
+      <a href="#discord"><span class="num">10</span> Discord Bot</a>
+      <a href="#domain"><span class="num">11</span> Custom Domain</a>
       <a href="#template"><span class="num">12</span> CLAUDE.md Template</a>
       <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
     </div>
@@ -369,16 +388,13 @@
 
   <!-- 1. Architecture -->
   <div class="section" id="architecture">
-    <h2><span class="icon">&#9881;</span> 1. Architecture Overview</h2>
+    <h2>1. Architecture Overview</h2>
     <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Storage + Auth)
                                              &nearr;
-Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rarr;&rsquo;</div>
-    <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, file storage, authentication, and serverless functions (Edge Functions). GitHub Pages serves the static files for free.</p>
-
+Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
+    <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, file storage, authentication, and serverless functions. GitHub Pages serves static files for free.</p>
     <table>
-      <thead>
-        <tr><th>Service</th><th>Purpose</th><th>Free Tier</th></tr>
-      </thead>
+      <thead><tr><th>Service</th><th>Purpose</th><th>Free Tier</th></tr></thead>
       <tbody>
         <tr><td>GitHub Pages</td><td>Static site hosting</td><td><span class="cost-badge cost-free">Free</span> Unlimited</td></tr>
         <tr><td>Supabase</td><td>Database, storage, auth, edge functions</td><td><span class="cost-badge cost-free">Free</span> 500 MB DB, 1 GB storage</td></tr>
@@ -386,32 +402,66 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rarr;&rsquo;</div>
         <tr><td>Telnyx</td><td>SMS notifications</td><td><span class="cost-badge cost-payg">Pay-as-you-go</span> ~$0.004/SMS</td></tr>
         <tr><td>Square</td><td>Payment processing</td><td><span class="cost-badge cost-payg">Pay-as-you-go</span> 2.9% + 30&cent;/txn</td></tr>
         <tr><td>SignWell</td><td>E-signatures</td><td><span class="cost-badge cost-free">Free</span> 3&ndash;25 docs/month</td></tr>
-        <tr><td>Google Gemini</td><td>AI-powered matching</td><td><span class="cost-badge cost-free">Free</span> Free tier available</td></tr>
+        <tr><td>Google Gemini</td><td>AI-powered matching</td><td><span class="cost-badge cost-free">Free</span> Free tier</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- 2. GitHub -->
-  <div class="section" id="github">
-    <h2><span class="icon">&#128193;</span> 2. GitHub + GitHub Pages (Hosting) <span class="cost-badge cost-free">Free</span></h2>
+  <!-- 2. Claude Code -->
+  <div class="section" id="claude-code">
+    <h2>2. Install Claude Code First</h2>
+    <p>Claude Code is your AI developer. Install it before anything else &mdash; for every service in this guide, you create accounts and copy credentials, then Claude handles all terminal work.</p>
 
-    <h3>Account Setup</h3>
+    <h3><span class="step-label step-you">You do (one time)</span></h3>
+    <ol>
+      <li>Make sure you have Node.js installed (download from <a href="https://nodejs.org" target="_blank">nodejs.org</a> if needed)</li>
+      <li>Open your terminal and run: <pre data-lang="bash"><code>npm install -g @anthropic-ai/claude-code</code></pre></li>
+      <li>Create a project folder and initialize git: <pre data-lang="bash"><code>mkdir my-project && cd my-project && git init</code></pre></li>
+      <li>Create a <code>CLAUDE.md</code> file in the project root (see <a href="#template">Section 12</a> for the full template)</li>
+    </ol>
+
+    <h3>How it works from here</h3>
+    <p>For every service below, the pattern is:</p>
+    <ol>
+      <li><strong>You</strong> create the account and copy credentials (browser)</li>
+      <li><strong>You</strong> paste credentials into your <code>CLAUDE.md</code> file</li>
+      <li><strong>You</strong> tell Claude what to do in plain English</li>
+      <li><strong>Claude</strong> handles the rest &mdash; installs CLIs, creates tables, writes edge functions, deploys, pushes code</li>
+    </ol>
+    <div class="conversation">
+      <div class="you">"Set up the Supabase database with tables for spaces, people, and bookings. My credentials are in CLAUDE.md."</div>
+      <div class="ai">installs Supabase CLI, links project, creates tables with RLS, creates storage buckets, commits and pushes</div>
+    </div>
+  </div>
+
+  <!-- 3. GitHub -->
+  <div class="section" id="github">
+    <h2>3. GitHub + GitHub Pages <span class="cost-badge cost-free">Free</span></h2>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Go to <a href="https://github.com" target="_blank">github.com</a> and create a free account</li>
       <li>Create a new repository (public repos get free GitHub Pages)</li>
       <li>Name it whatever you want (e.g., <code>my-property-app</code>)</li>
-    </ol>
-
-    <h3>Enable GitHub Pages</h3>
-    <ol>
       <li>Go to repo <strong>Settings</strong> &rarr; <strong>Pages</strong></li>
       <li>Under "Source," select <strong>Deploy from a branch</strong></li>
-      <li>Select <strong>main</strong> branch, <strong>/ (root)</strong> folder</li>
-      <li>Click <strong>Save</strong></li>
+      <li>Select <strong>main</strong> branch, <strong>/ (root)</strong> folder, click <strong>Save</strong></li>
       <li>Your site is live at <code>https://&lt;username&gt;.github.io/&lt;repo-name&gt;/</code></li>
     </ol>
 
-    <h3>Project Structure</h3>
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>**Live URLs:**
+- Public view: https://USERNAME.github.io/REPO/
+- Admin view: https://USERNAME.github.io/REPO/admin/
+- Repository: https://github.com/USERNAME/REPO</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up the project folder structure with index.html, styles.css, shared modules folder, and admin pages."</strong>
+      Claude will create the folder structure, scaffold initial files, commit, and push &mdash; your site goes live automatically.
+    </div>
+
+    <p><strong>Project structure Claude will create:</strong></p>
     <pre data-lang="folder structure"><code>your-repo/
 ├── index.html              # Landing page
 ├── styles.css              # Global styles
@@ -426,403 +476,229 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rarr;&rsquo;</div>
 │       ├── index.html
 │       ├── app.js
 │       └── manage.html
-└── supabase/               # Edge functions (deployed via CLI, not served by Pages)
-    └── functions/
-        └── ...</code></pre>
-
-    <h3>Deployment Workflow</h3>
-    <pre data-lang="bash"><code>git add &lt;files&gt;
-git commit -m "Description of change"
-git push
-# Live in 1-2 minutes. Hard refresh (Cmd+Shift+R) to see changes.</code></pre>
-    <p>No build step, no CI/CD, no PR process needed. Push to main = live.</p>
+└── supabase/               # Edge functions (deployed via CLI)
+    └── functions/</code></pre>
   </div>
 
-  <!-- 3. Supabase -->
+  <!-- 4. Supabase -->
   <div class="section" id="supabase">
-    <h2><span class="icon">&#9879;</span> 3. Supabase (Database + Storage + Edge Functions) <span class="cost-badge cost-free">Free</span></h2>
+    <h2>4. Supabase <span class="cost-badge cost-free">Free</span></h2>
+    <p>Database, storage, auth, and serverless edge functions &mdash; all in one.</p>
 
-    <h3>Account Setup</h3>
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> and sign up (GitHub login works)</li>
       <li>Click <strong>New Project</strong></li>
       <li>Choose an organization (create one if needed)</li>
-      <li>Set a <strong>database password</strong> &mdash; save this securely, you'll need it for direct <code>psql</code> access</li>
-      <li>Choose a region close to your users</li>
-      <li>Click <strong>Create new project</strong></li>
-    </ol>
-
-    <h3>Get Your Keys</h3>
-    <p>Once the project is created:</p>
-    <ol>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong></li>
-      <li>Copy your:
+      <li>Set a <strong>database password</strong> &mdash; save this securely</li>
+      <li>Choose a region close to your users, click <strong>Create new project</strong></li>
+      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong> and copy:
         <ul>
           <li><strong>Project URL</strong> (e.g., <code>https://abcdefghijk.supabase.co</code>)</li>
-          <li><strong>Anon public key</strong> (safe to embed in frontend code &mdash; RLS protects your data)</li>
+          <li><strong>Anon public key</strong> (safe to embed in frontend &mdash; RLS protects your data)</li>
           <li><strong>Project ref</strong> (the <code>abcdefghijk</code> part of the URL)</li>
+        </ul>
+      </li>
+      <li>Go to <strong>Settings</strong> &rarr; <strong>Database</strong> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> and copy it</li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>## Supabase Details
+- Project ID: `YOUR_PROJECT_REF`
+- URL: `https://YOUR_PROJECT_REF.supabase.co`
+- Anon key: `your-anon-key-here`
+
+### Direct Database Access (for Claude)
+psql "postgres://postgres.YOUR_REF:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
+
+URL-encode special characters in password (! = %21, @ = %40).
+
+### Supabase CLI Access (for Claude)
+If CLI not installed: npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref YOUR_REF
+supabase functions deploy &lt;function-name&gt;
+supabase secrets set KEY=value
+
+For Claude: Run these directly. Don't ask the user.</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up my Supabase project. Install the CLI, link it, create the core database tables for [your domain], enable RLS on all tables, and create storage buckets for photos and documents."</strong>
+      Claude will install the CLI, login, link, create <code>shared/supabase.js</code>, run SQL for tables + RLS + storage policies, commit, and push.
+    </div>
+  </div>
+
+  <!-- 5. Resend -->
+  <div class="section" id="resend">
+    <h2>5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Go to <a href="https://resend.com" target="_blank">resend.com</a> and sign up</li>
+      <li>Free tier: 3,000 emails/month, 100 emails/day</li>
+      <li><strong>Recommended:</strong> Go to <strong>Domains</strong> &rarr; <strong>Add Domain</strong>, add your domain, set up DNS records. Without this, you can only send from <code>onboarding@resend.dev</code>.</li>
+      <li>Go to <strong>API Keys</strong> &rarr; <strong>Create API Key</strong> and copy it</li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>### Email (Resend)
+- API key: `re_your_key_here` (store as Supabase secret: RESEND_API_KEY)
+- From address: notifications@yourdomain.com (or onboarding@resend.dev)</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up email sending with Resend. Store the API key as a Supabase secret and create a send-email edge function."</strong>
+      Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.
+    </div>
+  </div>
+
+  <!-- 6. Telnyx -->
+  <div class="section" id="telnyx">
+    <h2>6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Go to <a href="https://telnyx.com" target="_blank">telnyx.com</a> and sign up</li>
+      <li>Add a payment method (~$0.004/outbound SMS)</li>
+      <li>Go to <strong>Numbers</strong> &rarr; <strong>Search &amp; Buy</strong>, buy an SMS-capable number (~$1/month)</li>
+      <li>Note the phone number in E.164 format (e.g., <code>+12125551234</code>)</li>
+      <li>Go to <strong>Messaging</strong> &rarr; <strong>Messaging Profiles</strong> &rarr; <strong>Add New Profile</strong></li>
+      <li>Name it, set inbound webhook URL:
+        <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook</code></pre>
+      </li>
+      <li>Assign your phone number to this profile, note the <strong>Messaging Profile ID</strong></li>
+      <li>Go to <strong>Auth</strong> &rarr; <strong>API Keys</strong>, create a key and copy it + the <strong>Public Key</strong></li>
+    </ol>
+
+    <div class="callout warning">
+      <strong>10DLC Registration (Required for US) &mdash; do this now, it takes time.</strong>
+      Go to Messaging &rarr; Compliance. Create a Brand (Sole Proprietor), then a Campaign (property management notifications). Assign your number. Approval can take days to weeks &mdash; SMS won't work without it.
+    </div>
+
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>### SMS (Telnyx)
+- API key: `KEY_your_key_here`
+- Messaging Profile ID: `your-profile-id`
+- Phone number: `+12125551234`
+- Public key: `your-public-key-here`
+- Config stored in `telnyx_config` table
+- Edge functions: `send-sms` (outbound), `telnyx-webhook` (inbound)
+- Deploy webhook with `--no-verify-jwt`
+- Auth: Bearer token (NOT Basic auth like Twilio)
+- API: https://api.telnyx.com/v2/messages</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up Telnyx SMS. Create the telnyx_config and sms_messages tables, write the send-sms and telnyx-webhook edge functions, and deploy with --no-verify-jwt."</strong>
+      Claude will create tables, insert config, write both edge functions, deploy, create <code>shared/sms-service.js</code>, commit, and push.
+    </div>
+  </div>
+
+  <!-- 7. Square -->
+  <div class="section" id="square">
+    <h2>7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Go to <a href="https://squareup.com/signup" target="_blank">squareup.com/signup</a> and create a developer account</li>
+      <li>Go to <a href="https://developer.squareup.com" target="_blank">developer.squareup.com</a>, create an <strong>Application</strong></li>
+      <li>Copy from the Developer Dashboard:
+        <ul>
+          <li><strong>Application ID</strong> (starts with <code>sq0idp-</code>)</li>
+          <li><strong>Access Token</strong> &mdash; Sandbox for testing, Production for real charges</li>
+          <li><strong>Location ID</strong> &mdash; Square Dashboard &rarr; Locations</li>
         </ul>
       </li>
     </ol>
 
-    <h3>Create Your Supabase Client Module</h3>
-    <p>Create <code>shared/supabase.js</code>:</p>
-    <pre data-lang="javascript"><code>import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>### Payments (Square)
+- Application ID: `sq0idp-your-app-id`
+- Sandbox Access Token: `your-sandbox-token`
+- Location ID: `your-location-id`
+- Environment: sandbox (switch to production when ready)
+- Config stored in `square_config` table
+- Edge function: `process-square-payment`
+- Sandbox SDK: https://sandbox.web.squarecdn.com/v1/square.js
+- Production SDK: https://web.squarecdn.com/v1/square.js</code></pre>
 
-const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</code></pre>
-
-    <h3>Set Up Database Tables</h3>
-    <p>Go to <strong>SQL Editor</strong> in Supabase Dashboard and run your schema creation SQL. At minimum you'll want core tables for your domain (spaces, people, bookings, etc.).</p>
-
-    <h3>Enable Row Level Security (RLS)</h3>
-    <p>Every table should have RLS enabled. For a simple setup:</p>
-    <pre data-lang="sql"><code>-- Enable RLS on a table
-ALTER TABLE your_table ENABLE ROW LEVEL SECURITY;
-
--- Allow public read access (anon key can read)
-CREATE POLICY "Public read access" ON your_table FOR SELECT USING (true);
-
--- For write access, you'll want auth-based policies</code></pre>
-
-    <h3>Storage Buckets</h3>
-    <ol>
-      <li>Go to <strong>Storage</strong> in Supabase Dashboard</li>
-      <li>Click <strong>New Bucket</strong></li>
-      <li>Create buckets for your needs (e.g., <code>photos</code>, <code>documents</code>)</li>
-      <li>Set policies for public read access:</li>
-    </ol>
-    <pre data-lang="sql"><code>CREATE POLICY "Allow public reads" ON storage.objects
-  FOR SELECT USING (bucket_id = 'photos');
-CREATE POLICY "Allow public uploads" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'photos');</code></pre>
-
-    <h3>Edge Functions (Serverless)</h3>
-    <p>Supabase Edge Functions run Deno/TypeScript. They're used for webhooks and server-side API calls.</p>
-    <ol>
-      <li>Install the Supabase CLI:
-        <pre data-lang="bash"><code>npm install -g supabase</code></pre>
-      </li>
-      <li>Login and link:
-        <pre data-lang="bash"><code>supabase login
-supabase link --project-ref YOUR_PROJECT_REF</code></pre>
-      </li>
-      <li>Create a function:
-        <pre data-lang="bash"><code>supabase functions new my-function</code></pre>
-      </li>
-      <li>Deploy:
-        <pre data-lang="bash"><code>supabase functions deploy my-function</code></pre>
-      </li>
-      <li>Set secrets (for API keys that shouldn't be in code):
-        <pre data-lang="bash"><code>supabase secrets set MY_API_KEY=your_key_here</code></pre>
-      </li>
-    </ol>
-    <p>Your functions are available at: <code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/my-function</code></p>
-
-    <h3>Direct Database Access (for Claude Code)</h3>
-    <p>Get your database connection string from <strong>Settings</strong> &rarr; <strong>Database</strong> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong>.</p>
-    <pre><code>postgres://postgres.YOUR_PROJECT_REF:YOUR_DB_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres</code></pre>
-    <div class="callout warning">
-      <strong>Important:</strong> URL-encode special characters in your password (e.g., <code>!</code> &rarr; <code>%21</code>, <code>@</code> &rarr; <code>%40</code>). You'll put this in your CLAUDE.md so Claude can run migrations directly.
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up Square payment processing. Create the config and payments tables, a process-square-payment edge function, and a client-side square-service.js module."</strong>
+      Claude will create tables, insert config, write the edge function + client module, deploy, commit, and push.
     </div>
   </div>
 
-  <!-- 4. Resend -->
-  <div class="section" id="resend">
-    <h2><span class="icon">&#9993;</span> 4. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
-
-    <h3>Account Setup</h3>
-    <ol>
-      <li>Go to <a href="https://resend.com" target="_blank">resend.com</a> and sign up</li>
-      <li>Free tier: 3,000 emails/month, 100 emails/day</li>
-    </ol>
-
-    <h3>Domain Verification (Recommended)</h3>
-    <ol>
-      <li>Go to <strong>Domains</strong> &rarr; <strong>Add Domain</strong></li>
-      <li>Add your custom domain (e.g., <code>yourdomain.com</code>)</li>
-      <li>Add the DNS records Resend provides (MX, TXT, DKIM)</li>
-      <li>Wait for verification (usually 5&ndash;30 minutes)</li>
-      <li>Now you can send from <code>anything@yourdomain.com</code></li>
-    </ol>
-    <p>Without a custom domain, you can only send from <code>onboarding@resend.dev</code>.</p>
-
-    <h3>Get Your API Key</h3>
-    <ol>
-      <li>Go to <strong>API Keys</strong> &rarr; <strong>Create API Key</strong></li>
-      <li>Copy it and store as a Supabase secret:</li>
-    </ol>
-    <pre data-lang="bash"><code>supabase secrets set RESEND_API_KEY=re_your_key_here</code></pre>
-
-    <h3>Edge Function for Sending Email</h3>
-    <p>Create a <code>send-email</code> edge function:</p>
-    <pre data-lang="typescript"><code>// supabase/functions/send-email/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-serve(async (req) => {
-  const { to, subject, html } = await req.json();
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Your App &lt;notifications@yourdomain.com&gt;",
-      to,
-      subject,
-      html,
-    }),
-  });
-
-  const data = await res.json();
-  return new Response(JSON.stringify(data), {
-    headers: { "Content-Type": "application/json" },
-  });
-});</code></pre>
-  </div>
-
-  <!-- 5. Telnyx -->
-  <div class="section" id="telnyx">
-    <h2><span class="icon">&#128172;</span> 5. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
-
-    <h3>Account Setup</h3>
-    <ol>
-      <li>Go to <a href="https://telnyx.com" target="_blank">telnyx.com</a> and sign up</li>
-      <li>Add a payment method (pay-as-you-go, ~$0.004/outbound SMS)</li>
-    </ol>
-
-    <h3>Get a Phone Number</h3>
-    <ol>
-      <li>Go to <strong>Numbers</strong> &rarr; <strong>Search &amp; Buy</strong></li>
-      <li>Buy a number with SMS capability (~$1/month)</li>
-      <li>Note the phone number in E.164 format (e.g., <code>+12125551234</code>)</li>
-    </ol>
-
-    <h3>Create a Messaging Profile</h3>
-    <ol>
-      <li>Go to <strong>Messaging</strong> &rarr; <strong>Messaging Profiles</strong></li>
-      <li>Click <strong>Add New Profile</strong></li>
-      <li>Name it (e.g., "My Property App")</li>
-      <li>Under <strong>Inbound</strong> tab, set webhook URL:
-        <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook</code></pre>
-      </li>
-      <li>Under <strong>Numbers</strong>, assign your phone number to this profile</li>
-      <li>Note the <strong>Messaging Profile ID</strong></li>
-    </ol>
-
-    <h3>10DLC Registration (Required for US)</h3>
-    <div class="callout warning">
-      <strong>This is mandatory &mdash; SMS won't work without it.</strong>
-    </div>
-    <ol>
-      <li>Go to <strong>Messaging</strong> &rarr; <strong>Compliance</strong></li>
-      <li>Create a <strong>Brand</strong> (Sole Proprietor is simplest)</li>
-      <li>Create a <strong>Campaign</strong> (use case: property management notifications)</li>
-      <li>Assign your phone number to the campaign</li>
-      <li>Wait for approval (can take days to weeks)</li>
-    </ol>
-
-    <h3>Get Your API Key</h3>
-    <ol>
-      <li>Go to <strong>Auth</strong> &rarr; <strong>API Keys</strong></li>
-      <li>Create a new API key</li>
-      <li>Also copy the <strong>Public Key</strong> (for webhook signature verification)</li>
-    </ol>
-
-    <h3>Store Config in Database</h3>
-    <pre data-lang="sql"><code>CREATE TABLE telnyx_config (
-  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  api_key TEXT NOT NULL,
-  messaging_profile_id TEXT NOT NULL,
-  phone_number TEXT NOT NULL,
-  public_key TEXT,
-  is_active BOOLEAN DEFAULT true,
-  test_mode BOOLEAN DEFAULT true
-);</code></pre>
-
-    <h3>Edge Functions</h3>
-    <p>You'll need two edge functions:</p>
-    <ul>
-      <li><strong><code>send-sms</code></strong> &mdash; Outbound: reads config from DB, calls Telnyx API</li>
-      <li><strong><code>telnyx-webhook</code></strong> &mdash; Inbound: receives SMS from Telnyx, stores in DB</li>
-    </ul>
-    <p>Deploy webhooks with <code>--no-verify-jwt</code> since Telnyx can't send a Supabase JWT:</p>
-    <pre data-lang="bash"><code>supabase functions deploy telnyx-webhook --no-verify-jwt</code></pre>
-
-    <h3>Key Telnyx API Details</h3>
-    <ul>
-      <li><strong>Auth</strong>: Bearer token (<code>Authorization: Bearer &lt;api_key&gt;</code>) &mdash; NOT Basic auth like Twilio</li>
-      <li><strong>Outbound format</strong>: JSON body (not form-encoded)</li>
-      <li><strong>Inbound webhook</strong>: JSON (not form-encoded like Twilio), no TwiML response needed</li>
-      <li><strong>API endpoint</strong>: <code>https://api.telnyx.com/v2/messages</code></li>
-    </ul>
-  </div>
-
-  <!-- 6. Square -->
-  <div class="section" id="square">
-    <h2><span class="icon">&#128179;</span> 6. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
-
-    <h3>Account Setup</h3>
-    <ol>
-      <li>Go to <a href="https://squareup.com/signup" target="_blank">squareup.com/signup</a> and create a developer account</li>
-      <li>Go to <a href="https://developer.squareup.com" target="_blank">developer.squareup.com</a></li>
-      <li>Create an <strong>Application</strong></li>
-    </ol>
-
-    <h3>Get Your Credentials</h3>
-    <p>From the Developer Dashboard:</p>
-    <ul>
-      <li><strong>Application ID</strong> (starts with <code>sq0idp-</code>)</li>
-      <li><strong>Access Token</strong> &mdash; use Sandbox for testing, Production for real charges</li>
-      <li><strong>Location ID</strong> &mdash; go to the Square Dashboard &rarr; <strong>Locations</strong></li>
-    </ul>
-
-    <h3>Sandbox vs Production</h3>
-    <ul>
-      <li><strong>Sandbox URL</strong>: <code>https://connect.squareupsandbox.com/v2</code></li>
-      <li><strong>Production URL</strong>: <code>https://connect.squareup.com/v2</code></li>
-    </ul>
-    <p>Use sandbox credentials for development. Switch to production when ready to take real payments.</p>
-
-    <h3>Store Config in Database</h3>
-    <pre data-lang="sql"><code>CREATE TABLE square_config (
-  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  application_id TEXT NOT NULL,
-  access_token TEXT NOT NULL,
-  location_id TEXT NOT NULL,
-  environment TEXT DEFAULT 'sandbox'
-    CHECK (environment IN ('sandbox', 'production')),
-  is_active BOOLEAN DEFAULT true
-);</code></pre>
-
-    <h3>Client-Side Integration</h3>
-    <p>The Square Web Payments SDK handles card tokenization client-side (PCI compliant &mdash; raw card data never hits your server):</p>
-    <p>1. Load the SDK in your HTML:</p>
-    <pre data-lang="html"><code>&lt;script src="https://sandbox.web.squarecdn.com/v1/square.js"&gt;&lt;/script&gt;
-&lt;!-- For production: https://web.squarecdn.com/v1/square.js --&gt;</code></pre>
-    <p>2. Initialize the payment form in JS:</p>
-    <pre data-lang="javascript"><code>const payments = Square.payments(applicationId, locationId);
-const card = await payments.card();
-await card.attach('#card-container');
-
-// On submit:
-const result = await card.tokenize();
-if (result.status === 'OK') {
-  // Send result.token to your edge function
-}</code></pre>
-
-    <h3>Server-Side Edge Function</h3>
-    <p>Create a <code>process-square-payment</code> edge function that:</p>
-    <ol>
-      <li>Reads Square config from the database</li>
-      <li>Receives the card token from the client</li>
-      <li>Calls the Square Payments API to create the charge</li>
-      <li>Records the transaction in your database</li>
-    </ol>
-  </div>
-
-  <!-- 7. SignWell -->
+  <!-- 8. SignWell -->
   <div class="section" id="signwell">
-    <h2><span class="icon">&#9997;</span> 7. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
+    <h2>8. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
 
-    <h3>Account Setup</h3>
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Go to <a href="https://signwell.com" target="_blank">signwell.com</a> and sign up</li>
-      <li>Free tier: 3 documents/month (25/month with a credit card on file)</li>
-    </ol>
-
-    <h3>Get Your API Key</h3>
-    <ol>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong></li>
-      <li>Copy your API key</li>
-    </ol>
-
-    <h3>Set Up Webhook</h3>
-    <ol>
-      <li>Go to <strong>Settings</strong> &rarr; <strong>Webhooks</strong></li>
-      <li>Add your webhook URL:
+      <li>Free tier: 3 docs/month (25/month with credit card on file)</li>
+      <li>Go to <strong>Settings</strong> &rarr; <strong>API</strong>, copy your API key</li>
+      <li>Go to <strong>Settings</strong> &rarr; <strong>Webhooks</strong>, add:
         <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook</code></pre>
       </li>
       <li>Subscribe to the <code>document_completed</code> event</li>
     </ol>
 
-    <h3>Store Config in Database</h3>
-    <pre data-lang="sql"><code>CREATE TABLE signwell_config (
-  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  api_key TEXT NOT NULL,
-  webhook_secret TEXT,
-  test_mode BOOLEAN DEFAULT true
-);</code></pre>
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>### E-Signatures (SignWell)
+- API key: `your-signwell-api-key`
+- API base: https://www.signwell.com/api/v1
+- Auth: X-Api-Key header
+- Config stored in `signwell_config` table
+- Deploy webhook with `--no-verify-jwt`</code></pre>
 
-    <h3>Workflow</h3>
-    <ol>
-      <li>Generate a PDF client-side (using jsPDF or similar)</li>
-      <li>Upload PDF to Supabase Storage</li>
-      <li>Send to SignWell API for signature collection</li>
-      <li>SignWell emails the signer</li>
-      <li>When signed, SignWell hits your webhook</li>
-      <li>Webhook downloads the signed PDF, stores it, updates your database</li>
-    </ol>
-
-    <h3>API Reference</h3>
-    <ul>
-      <li><strong>Base URL</strong>: <code>https://www.signwell.com/api/v1</code></li>
-      <li><strong>Auth</strong>: <code>X-Api-Key: your_api_key</code></li>
-      <li><strong>Create document</strong>: <code>POST /documents</code></li>
-      <li><strong>Get document</strong>: <code>GET /documents/{id}</code></li>
-    </ul>
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Set up SignWell for e-signatures. Create the config table, a webhook edge function, and client-side signwell-service.js and pdf-service.js modules."</strong>
+      Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.
+    </div>
   </div>
 
-  <!-- 8. Gemini -->
+  <!-- 9. Gemini -->
   <div class="section" id="gemini">
-    <h2><span class="icon">&#129302;</span> 8. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
-    <p>Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
+    <h2>9. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
-    <h3>Setup</h3>
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Go to <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></li>
       <li>Get a free API key</li>
-      <li>Store as a Supabase secret:</li>
     </ol>
-    <pre data-lang="bash"><code>supabase secrets set GEMINI_API_KEY=your_key_here</code></pre>
 
-    <h3>Usage in Edge Functions</h3>
-    <pre data-lang="typescript"><code>const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${Deno.env.get("GEMINI_API_KEY")}`,
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: "your prompt here" }] }],
-      generationConfig: { temperature: 0.1 }
-    })
-  }
-);</code></pre>
+    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
+- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude">
+      <strong>"Store my Gemini API key as a Supabase secret."</strong>
+      Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code>
+    </div>
   </div>
 
-  <!-- 9. Discord -->
+  <!-- 10. Discord -->
   <div class="section" id="discord">
-    <h2><span class="icon">&#128483;</span> 9. Discord Bot (Optional)</h2>
-    <p>If you want a Discord bot that queries your database:</p>
+    <h2>10. Discord Bot (Optional)</h2>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Go to <a href="https://discord.com/developers/applications" target="_blank">discord.com/developers/applications</a></li>
       <li>Create a <strong>New Application</strong></li>
-      <li>Go to <strong>Bot</strong> &rarr; <strong>Add Bot</strong></li>
-      <li>Copy the bot token</li>
-      <li>Host the bot on a $4/month DigitalOcean droplet (or free tier on Railway / Render)</li>
+      <li>Go to <strong>Bot</strong> &rarr; <strong>Add Bot</strong>, copy the bot token</li>
+      <li>Host on a $4/month DigitalOcean droplet (or free tier on Railway / Render)</li>
       <li>The bot queries Supabase directly using the REST API</li>
     </ol>
   </div>
 
-  <!-- 10. Custom Domain -->
+  <!-- 11. Custom Domain -->
   <div class="section" id="domain">
-    <h2><span class="icon">&#127760;</span> 10. Custom Domain (Optional)</h2>
+    <h2>11. Custom Domain (Optional)</h2>
 
-    <h3>GitHub Pages Custom Domain</h3>
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Buy a domain from any registrar (Namecheap, Cloudflare, Google Domains)</li>
       <li>In your repo <strong>Settings</strong> &rarr; <strong>Pages</strong> &rarr; <strong>Custom domain</strong>, enter your domain</li>
@@ -841,62 +717,25 @@ if (result.status === 'OK') {
     </ol>
   </div>
 
-  <!-- 11. Claude Code -->
-  <div class="section" id="claude">
-    <h2><span class="icon">&#129520;</span> 11. Setting Up Claude Code as Your AI Developer</h2>
-    <p>This is the secret weapon. Claude Code can read your codebase, run SQL, deploy functions, and push changes &mdash; all from the command line.</p>
-
-    <h3>Install Claude Code</h3>
-    <pre data-lang="bash"><code>npm install -g @anthropic-ai/claude-code</code></pre>
-
-    <h3>Create a CLAUDE.md File</h3>
-    <p>Put a <code>CLAUDE.md</code> file in your project root. This is the instruction manual Claude reads every time it starts a session. It should include:</p>
-    <ol>
-      <li><strong>Project overview</strong> &mdash; What your app does</li>
-      <li><strong>Tech stack</strong> &mdash; What technologies you use</li>
-      <li><strong>Repository structure</strong> &mdash; Where the key files live</li>
-      <li><strong>Database schema</strong> &mdash; All your tables and columns</li>
-      <li><strong>Common patterns</strong> &mdash; Code snippets for common operations</li>
-      <li><strong>Direct database access</strong> &mdash; The <code>psql</code> connection string so Claude can run migrations</li>
-      <li><strong>Deployment instructions</strong> &mdash; How to push changes live</li>
-      <li><strong>External service details</strong> &mdash; API endpoints, config table names, webhook URLs</li>
-      <li><strong>Conventions</strong> &mdash; Your coding style rules and patterns to follow</li>
-    </ol>
-
-    <h3>Key Instructions to Include</h3>
-    <p>These are the force-multiplier instructions that make Claude Code autonomous:</p>
-    <pre data-lang="markdown"><code>&gt; **IMPORTANT: You have direct database access!**
-&gt; Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.
-
-&gt; **IMPORTANT: Push changes immediately!**
-&gt; This is a GitHub Pages site - changes only go live after pushing.
-&gt; Always `git push` as soon as changes are ready.</code></pre>
-
-    <h3>Database Access for Claude</h3>
-    <p>Give Claude the <code>psql</code> connection string in your CLAUDE.md:</p>
-    <pre data-lang="bash"><code>psql "postgres://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"</code></pre>
-
-    <h3>Supabase CLI Access for Claude</h3>
-    <pre data-lang="bash"><code>supabase functions deploy &lt;function-name&gt;
-supabase functions logs &lt;function-name&gt;
-supabase secrets set KEY=value</code></pre>
-  </div>
-
-  <!-- 12. Template -->
+  <!-- 12. CLAUDE.md Template -->
   <div class="section" id="template">
-    <h2><span class="icon">&#128196;</span> 12. CLAUDE.md Template</h2>
-    <p>Copy this starter template and customize it for your own project:</p>
+    <h2>12. CLAUDE.md Template</h2>
+    <p>Copy this starter template into a file called <code>CLAUDE.md</code> in your project root. Fill in the placeholders with your actual credentials.</p>
+
     <pre data-lang="markdown"><code># CLAUDE.md - [Your Project Name]
 
 This file provides context for Claude (AI assistant) when working on this codebase.
 
 &gt; **IMPORTANT: You have direct database access!**
-&gt; See "Direct Database Access" section below.
 &gt; Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.
 
 &gt; **IMPORTANT: Push changes immediately!**
 &gt; This is a GitHub Pages site - changes only go live after pushing.
 &gt; Always `git push` as soon as changes are ready.
+
+&gt; **IMPORTANT: First-time setup!**
+&gt; If the Supabase CLI is not installed or linked, run:
+&gt; `npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref YOUR_REF`
 
 ## Project Overview
 
@@ -910,21 +749,11 @@ This file provides context for Claude (AI assistant) when working on this codeba
 **Live URLs:**
 - Public view: https://USERNAME.github.io/REPO/
 - Admin view: https://USERNAME.github.io/REPO/admin/
-- Repository: https://github.com/USERNAME/REPO
-
-## Database Schema (Supabase)
-
-### Core Tables
-[List all your tables, columns, and relationships]
 
 ## Deployment
 
-Push to main and it's live:
-```bash
-git add &lt;files&gt;
-git commit -m "Description"
-git push
-```
+Push to main and it's live. No build step, no PR process.
+**For Claude:** Always push changes immediately.
 
 ## Supabase Details
 
@@ -946,7 +775,7 @@ supabase functions logs &lt;function-name&gt;
 supabase secrets set KEY=value
 ```
 
-**For Claude:** Run these commands directly.
+Run these directly. If CLI not installed, install and link first.
 
 ## External Services
 
@@ -955,96 +784,99 @@ supabase secrets set KEY=value
 
 ### SMS (Telnyx)
 - Config in `telnyx_config` table
+- Edge functions: `send-sms`, `telnyx-webhook` (deploy with `--no-verify-jwt`)
 
 ### Payments (Square)
 - Config in `square_config` table
+- Edge function: `process-square-payment`
 
 ### E-Signatures (SignWell)
 - Config in `signwell_config` table
+- Edge function: `signwell-webhook` (deploy with `--no-verify-jwt`)
 
 ## Conventions
 
 1. Use toast notifications, not alert()
-2. Filter archived/deleted items client-side
+2. Filter archived items client-side
 3. Don't expose personal info in public views
-4. Client-side image compression for files > 500KB</code></pre>
+4. Client-side image compression for files &gt; 500KB</code></pre>
   </div>
 
-  <!-- 13. Checklist -->
+  <!-- 13. Day-One Checklist -->
   <div class="section" id="checklist">
-    <h2><span class="icon">&#9989;</span> 13. Day-One Checklist</h2>
+    <h2>13. Day-One Checklist</h2>
 
-    <h3>Must-Do (Core Stack &mdash; Free)</h3>
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+
+    <p><strong>Core Stack &mdash; Free:</strong></p>
     <ul class="checklist">
       <li>Create GitHub account and repository</li>
       <li>Enable GitHub Pages on the repo</li>
       <li>Create Supabase account and project</li>
-      <li>Note your Supabase URL, anon key, and database password</li>
-      <li>Create <code>shared/supabase.js</code> with your credentials</li>
-      <li>Design and create your database tables in SQL Editor</li>
-      <li>Enable RLS on all tables</li>
-      <li>Create storage buckets as needed</li>
-      <li>Install Supabase CLI and link your project</li>
-      <li>Create <code>CLAUDE.md</code> in your project root with all the above info</li>
-      <li>Install Claude Code (<code>npm install -g @anthropic-ai/claude-code</code>)</li>
-      <li>Push your initial commit</li>
+      <li>Copy: Supabase URL, anon key, project ref, DB password, session pooler string</li>
     </ul>
 
-    <h3>Email (Free &mdash; Resend)</h3>
+    <p><strong>Email &mdash; Free (Resend):</strong></p>
     <ul class="checklist">
       <li>Create Resend account</li>
-      <li>Verify your domain (or use <code>onboarding@resend.dev</code> for testing)</li>
-      <li>Create API key</li>
-      <li>Store as Supabase secret: <code>RESEND_API_KEY</code></li>
-      <li>Create and deploy <code>send-email</code> edge function</li>
+      <li>Verify your domain (or use <code>onboarding@resend.dev</code>)</li>
+      <li>Copy: API key</li>
     </ul>
 
-    <h3>SMS (Pay-as-you-go &mdash; Telnyx)</h3>
+    <p><strong>SMS &mdash; Pay-as-you-go (Telnyx):</strong></p>
     <ul class="checklist">
       <li>Create Telnyx account, add payment method</li>
       <li>Buy a phone number (~$1/month)</li>
-      <li>Create a Messaging Profile, assign number</li>
-      <li>Register for 10DLC (mandatory for US SMS)</li>
-      <li>Set inbound webhook URL to your edge function</li>
-      <li>Create <code>telnyx_config</code> table with your credentials</li>
-      <li>Create and deploy <code>send-sms</code> and <code>telnyx-webhook</code> edge functions</li>
+      <li>Create Messaging Profile, assign number, set webhook URL</li>
+      <li>Register for 10DLC (mandatory for US &mdash; do early, approval takes time)</li>
+      <li>Copy: API key, Messaging Profile ID, phone number, public key</li>
     </ul>
 
-    <h3>Payments (Free until you process &mdash; Square)</h3>
+    <p><strong>Payments &mdash; Free until you process (Square):</strong></p>
     <ul class="checklist">
-      <li>Create Square developer account</li>
-      <li>Create an application, get sandbox credentials</li>
-      <li>Create <code>square_config</code> table</li>
-      <li>Add Square Web Payments SDK to your payment pages</li>
-      <li>Create and deploy <code>process-square-payment</code> edge function</li>
-      <li>Test with sandbox, switch to production when ready</li>
+      <li>Create Square developer account and application</li>
+      <li>Copy: Application ID, sandbox access token, location ID</li>
     </ul>
 
-    <h3>E-Signatures (Free tier &mdash; SignWell)</h3>
+    <p><strong>E-Signatures &mdash; Free tier (SignWell):</strong></p>
     <ul class="checklist">
       <li>Create SignWell account</li>
-      <li>Get API key from Settings</li>
-      <li>Set up webhook URL in SignWell Settings</li>
-      <li>Create <code>signwell_config</code> table</li>
-      <li>Create and deploy <code>signwell-webhook</code> edge function (with <code>--no-verify-jwt</code>)</li>
+      <li>Set up webhook URL in Settings</li>
+      <li>Copy: API key</li>
     </ul>
 
-    <h3>Optional Add-Ons</h3>
+    <p><strong>Optional:</strong></p>
     <ul class="checklist">
       <li>Custom domain for GitHub Pages</li>
-      <li>Discord bot (DigitalOcean droplet or free tier on Railway/Render)</li>
-      <li>Google Gemini API key for AI-powered features</li>
-      <li>Error monitoring (error logging table + daily digest email)</li>
+      <li>Google Gemini API key (<a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>)</li>
+      <li>Discord developer application + bot token</li>
     </ul>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <p>Once you've pasted all credentials into your <code>CLAUDE.md</code>, open Claude Code in your project folder and say:</p>
+
+    <div class="callout claude">
+      <strong>"I've set up all my vendor accounts and put the credentials in CLAUDE.md. Please:</strong>
+      <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+        <li>Set up the project structure and push to GitHub</li>
+        <li>Install and link the Supabase CLI</li>
+        <li>Create the database tables I need for [your domain]</li>
+        <li>Set up email sending with Resend</li>
+        <li>Set up SMS with Telnyx</li>
+        <li>Set up payment processing with Square</li>
+        <li>Set up e-signatures with SignWell</li>
+        <li>Deploy all edge functions and store API keys as secrets"</li>
+      </ol>
+    </div>
+
+    <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
   </div>
 
   <!-- Cost Summary -->
   <div class="section">
-    <h2><span class="icon">&#128176;</span> Cost Summary</h2>
+    <h2>Cost Summary</h2>
     <table>
-      <thead>
-        <tr><th>Service</th><th>Monthly Cost</th><th>Notes</th></tr>
-      </thead>
+      <thead><tr><th>Service</th><th>Monthly Cost</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td>GitHub Pages</td><td><span class="cost-badge cost-free">$0</span></td><td>Unlimited for public repos</td></tr>
         <tr><td>Supabase</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 MB DB, 1 GB storage</td></tr>
