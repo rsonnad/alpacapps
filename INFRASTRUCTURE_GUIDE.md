@@ -69,7 +69,17 @@ Claude Code is your AI developer. Install it before anything else — for every 
 > ```
 > Then run `claude` in your project directory. Same features, same skills — just a terminal interface instead of the desktop app.
 
-### How it works from here
+### The easy way: use the setup skill
+
+This repo includes a built-in skill that walks you through the entire setup interactively. Just type:
+
+```
+/setup-infra
+```
+
+Claude will ask you for credentials one service at a time, validate each one, build everything out, and push. You don't need to read the rest of this guide — the skill covers it all.
+
+### How it works (if doing it manually)
 
 For every service below, the pattern is:
 1. **You** create the account and copy credentials (browser)
