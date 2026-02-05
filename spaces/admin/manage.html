@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.10</span>
+        <span class="app-version">v260205.11</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -8774,16 +8774,19 @@
       updateEventDetailActions(req);
 
       // Re-evaluate action buttons when terms fields change
-      // Debounce to prevent DOM mutation during active input interaction,
-      // which can cause click events to retarget to the modal backdrop
-      let termsUpdateTimer;
+      // Only update DOM when the filled state actually changes to avoid
+      // DOM mutation during active input that can retarget clicks to the backdrop
+      let lastTermsFilled = eventTermsFilled();
       ['eventTermMaxGuests', 'eventTermRentalFee'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.onchange = el.oninput = () => {
-            clearTimeout(termsUpdateTimer);
-            termsUpdateTimer = setTimeout(() => updateEventDetailActions(req), 150);
-          };
+          el.addEventListener('change', () => {
+            const nowFilled = eventTermsFilled();
+            if (nowFilled !== lastTermsFilled) {
+              lastTermsFilled = nowFilled;
+              updateEventDetailActions(req);
+            }
+          });
         }
       });
 
