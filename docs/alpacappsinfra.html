@@ -1008,10 +1008,16 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <li>Choose a region close to your users, click <strong>Create new project</strong></li>
     </ol>
 
-    <p>Once your project is created, you&rsquo;ll see a <strong>Project URL</strong> like <code>https://abcdefghijk.supabase.co</code>. The <code>abcdefghijk</code> part is your <strong>project ref</strong>. Enter it here to get clickable links to your settings pages:</p>
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Where to find your project ref:</strong> After your project is created, look at the URL in your browser&rsquo;s address bar. It will look like:<br>
+      <code style="display:inline-block; margin: 0.5rem 0; font-size:0.9rem;">https://supabase.com/dashboard/project/<strong style="color:var(--accent);">abcdefghijk</strong>/...</code><br>
+      The highlighted part (a random string of letters and numbers) is your <strong>project ref</strong>. You can also find it on your project&rsquo;s home page under <strong>Project Settings</strong> &rarr; <strong>General</strong>.
+    </div>
+
+    <p>Paste your project ref here &mdash; the links below will update so you can click straight to the right pages:</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1rem 0 1.5rem 0; flex-wrap: wrap;">
-      <input type="text" id="supabase-ref" placeholder="your-project-ref" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
+      <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
     </div>
 
     <ol start="5">
