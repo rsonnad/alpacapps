@@ -210,8 +210,8 @@ function buildMonthColumn(m, isCurrent, isTotals) {
 
   const netClass = (m.net >= 0) ? 'positive' : 'negative';
 
-  // Only show occupancy for current month and totals (it's a point-in-time snapshot)
-  const showOccupancy = (isCurrent || isTotals) && occupancyData;
+  // Occupancy: only show on current month (it's a point-in-time snapshot, not summable)
+  const showOccupancy = isCurrent && occupancyData;
   const occSection = showOccupancy ? buildOccupancySection() : '';
 
   return `
