@@ -907,7 +907,7 @@
 
   <header>
     <h1>Alpaca Playhouse Austin</h1>
-    <span class="app-version">v260206.12</span>
+    <span class="app-version">v260206.13</span>
     <p id="headerSubtitle">Community Fit Inquiry</p>
   </header>
 
@@ -1021,12 +1021,12 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="desired_move_in">Desired Move-in Date</label>
-                <input type="date" id="desired_move_in" name="desired_move_in">
+                <label for="desired_move_in">Desired Move-in Date <span class="required">*</span></label>
+                <input type="date" id="desired_move_in" name="desired_move_in" required>
               </div>
               <div class="form-group full-width">
-                <label for="desired_term">Desired Term</label>
-                <input type="text" id="desired_term" name="desired_term" placeholder="e.g. 6 months, 1 year, flexible">
+                <label for="desired_term">Desired Term <span class="required">*</span></label>
+                <input type="text" id="desired_term" name="desired_term" placeholder="e.g. 6 months, 1 year, flexible" required>
               </div>
             </div>
           </div>
@@ -1036,16 +1036,16 @@
             <h2>Financial Information</h2>
             <div class="form-grid">
               <div class="form-group">
-                <label for="employment_status">Employment Status</label>
-                <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed">
+                <label for="employment_status">Employment Status <span class="required">*</span></label>
+                <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed" required>
               </div>
               <div class="form-group">
-                <label for="employer">Employer</label>
-                <input type="text" id="employer" name="employer" placeholder="Company or business name">
+                <label for="employer">Employer <span class="required">*</span></label>
+                <input type="text" id="employer" name="employer" placeholder="Company or business name" required>
               </div>
               <div class="form-group">
-                <label for="monthly_income">Monthly Income ($)</label>
-                <input type="number" id="monthly_income" name="monthly_income" min="0" step="1">
+                <label for="monthly_income">Monthly Income ($) <span class="required">*</span></label>
+                <input type="number" id="monthly_income" name="monthly_income" min="0" step="1" required>
               </div>
               <div class="form-group">
                 <label for="deposit_return_method">Preferred Deposit Return Method</label>
@@ -1899,6 +1899,23 @@
     // STEP 2: Full Application Submission
     // =============================================
     async function submitFullApplication() {
+      // Validate required Step 2 fields
+      let hasError = false;
+      const step2Required = ['desired_move_in', 'desired_term', 'employment_status', 'employer', 'monthly_income'];
+      for (const field of step2Required) {
+        if (!getValue(field)) {
+          document.getElementById(field).classList.add('error');
+          hasError = true;
+        }
+      }
+
+      if (hasError) {
+        showError('Please fill in all required fields.');
+        const firstError = document.querySelector('#step2Sections .error');
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = feeAmount > 0 ? 'Processing Payment...' : 'Submitting...';
       form.classList.add('loading');
