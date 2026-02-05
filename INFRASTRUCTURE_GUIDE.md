@@ -4,7 +4,7 @@ How to set up a super low cost do-it-all system from scratch — messaging, mark
 
 **$0/month for the infrastructure.** Claude Code is free to start, or $20/month (Pro) for more usage — $100/$200 plans available for intensive development. SMS and payments are pay-as-you-go.
 
-**The philosophy:** You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want — it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes. You never need to touch the command line yourself.
+**The philosophy:** You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want — it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes.
 
 ---
 
