@@ -2972,6 +2972,56 @@
     </div>
   </div>
 
+  <!-- Record Rent Payment Modal -->
+  <div id="recordRentModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Record Rent Payment</h2>
+        <button class="modal-close" id="closeRecordRentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="recordRentForm">
+          <div class="form-group">
+            <label for="rentPaymentAmount">Amount *</label>
+            <input type="number" id="rentPaymentAmount" step="0.01" min="0" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="rentPaymentMethod">Payment Method *</label>
+            <select id="rentPaymentMethod" required>
+              <option value="">Select method...</option>
+              <option value="venmo">Venmo</option>
+              <option value="zelle">Zelle</option>
+              <option value="paypal">PayPal</option>
+              <option value="bank_ach">Bank ACH</option>
+              <option value="cash">Cash</option>
+              <option value="check">Check</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="rentPaymentPeriodStart">Period Start *</label>
+            <input type="date" id="rentPaymentPeriodStart" required>
+          </div>
+          <div class="form-group">
+            <label for="rentPaymentPeriodEnd">Period End *</label>
+            <input type="date" id="rentPaymentPeriodEnd" required>
+          </div>
+          <div class="form-group">
+            <label for="rentPaymentTransactionId">Transaction ID (optional)</label>
+            <input type="text" id="rentPaymentTransactionId" placeholder="Reference number...">
+          </div>
+          <div class="form-group">
+            <label for="rentPaymentNotes">Notes (optional)</label>
+            <input type="text" id="rentPaymentNotes" placeholder="e.g., Zelle from tenant">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelRecordRentBtn" class="btn-secondary">Cancel</button>
+        <button type="button" id="confirmRecordRentBtn" class="btn-primary">Record Payment</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Bulk Tag Edit Modal -->
   <div id="bulkTagModal" class="modal hidden">
     <div class="modal-content">
@@ -7066,6 +7116,9 @@
       document.getElementById('rentMonthlyAmount').textContent =
         rentalService.formatCurrency(app.approved_rate);
 
+      // Load rent payment history
+      loadRentHistory(app.assignment_id);
+
       // Update status tracker and action buttons
       updateRentalStatusTracker(app);
       updateRentalActions(app);
@@ -7714,6 +7767,110 @@
 
     function closeRecordDepositModal() {
       document.getElementById('recordDepositModal').classList.add('hidden');
+    }
+
+    // =============================================
+    // RENT PAYMENT RECORDING
+    // =============================================
+
+    function openRecordRentModal() {
+      const app = allApplications.find(a => a.id === currentApplicationId);
+      if (!app) return;
+
+      if (!app.assignment_id) {
+        showToast('No active assignment found. Tenant must be moved in first.', 'warning');
+        return;
+      }
+
+      // Pre-fill amount with monthly rate
+      document.getElementById('rentPaymentAmount').value = app.approved_rate || '';
+
+      // Default period to current month
+      const today = new Date();
+      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      document.getElementById('rentPaymentPeriodStart').value = firstOfMonth.toISOString().split('T')[0];
+      document.getElementById('rentPaymentPeriodEnd').value = lastOfMonth.toISOString().split('T')[0];
+
+      // Clear other fields
+      document.getElementById('rentPaymentMethod').value = '';
+      document.getElementById('rentPaymentTransactionId').value = '';
+      document.getElementById('rentPaymentNotes').value = '';
+
+      document.getElementById('recordRentModal').classList.remove('hidden');
+    }
+
+    async function confirmRecordRent() {
+      const app = allApplications.find(a => a.id === currentApplicationId);
+      if (!app || !app.assignment_id) return;
+
+      const amount = parseFloat(document.getElementById('rentPaymentAmount').value);
+      const method = document.getElementById('rentPaymentMethod').value;
+      const periodStart = document.getElementById('rentPaymentPeriodStart').value;
+      const periodEnd = document.getElementById('rentPaymentPeriodEnd').value;
+      const transactionId = document.getElementById('rentPaymentTransactionId').value.trim() || null;
+      const notes = document.getElementById('rentPaymentNotes').value.trim() || null;
+
+      if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount', 'warning');
+        return;
+      }
+      if (!method) {
+        showToast('Please select a payment method', 'warning');
+        return;
+      }
+      if (!periodStart || !periodEnd) {
+        showToast('Please set the payment period', 'warning');
+        return;
+      }
+
+      try {
+        await rentalService.recordRentPayment(app.assignment_id, {
+          amount,
+          periodStart,
+          periodEnd,
+          method,
+          transactionId,
+          notes,
+        });
+        closeRecordRentModal();
+        await loadRentHistory(app.assignment_id);
+        showToast('Rent payment recorded', 'success');
+      } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+      }
+    }
+
+    function closeRecordRentModal() {
+      document.getElementById('recordRentModal').classList.add('hidden');
+    }
+
+    async function loadRentHistory(assignmentId) {
+      const tbody = document.getElementById('rentHistoryBody');
+      if (!assignmentId) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No active assignment</td></tr>';
+        return;
+      }
+
+      try {
+        const payments = await rentalService.getRentHistory(assignmentId);
+        if (!payments.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No payments recorded</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = payments.map(p => {
+          const period = p.period_start
+            ? `${rentalService.formatDate(p.period_start)} – ${rentalService.formatDate(p.period_end)}`
+            : '-';
+          const amount = rentalService.formatCurrency(p.amount_due);
+          const paid = p.paid_date ? rentalService.formatDate(p.paid_date) : '-';
+          const method = p.payment_method || '-';
+          return `<tr><td>${period}</td><td>${amount}</td><td>${paid}</td><td>${method}</td></tr>`;
+        }).join('');
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Error loading payments</td></tr>';
+      }
     }
 
     // =============================================
@@ -10585,6 +10742,12 @@ If there are any problems or suggestions for improvements, please email them to 
       document.getElementById('cancelRecordDepositBtn')?.addEventListener('click', closeRecordDepositModal);
       document.getElementById('confirmRecordDepositBtn')?.addEventListener('click', confirmRecordDeposit);
 
+      // Record rent payment
+      document.getElementById('recordRentPaymentBtn')?.addEventListener('click', openRecordRentModal);
+      document.getElementById('closeRecordRentModal')?.addEventListener('click', closeRecordRentModal);
+      document.getElementById('cancelRecordRentBtn')?.addEventListener('click', closeRecordRentModal);
+      document.getElementById('confirmRecordRentBtn')?.addEventListener('click', confirmRecordRent);
+
       // Event detail modal
       document.getElementById('closeEventDetail')?.addEventListener('click', closeEventDetail);
 
@@ -10618,6 +10781,9 @@ If there are any problems or suggestions for improvements, please email them to 
       });
       document.getElementById('recordDepositModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'recordDepositModal') closeRecordDepositModal();
+      });
+      document.getElementById('recordRentModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'recordRentModal') closeRecordRentModal();
       });
       document.getElementById('eventDetailModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'eventDetailModal') closeEventDetail();

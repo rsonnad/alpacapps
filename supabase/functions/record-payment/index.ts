@@ -149,6 +149,28 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Dual-write to ledger for accounting
+      const { error: ledgerError } = await supabase.from('ledger').insert({
+        direction: 'income',
+        category: 'rent',
+        amount: parsed.amount,
+        payment_method: paymentMethod,
+        transaction_date: paymentDate,
+        person_id: matchResult.person_id,
+        person_name: matchResult.person_name,
+        assignment_id: matchResult.assignment_id,
+        source_payment_id: payment.id,
+        status: 'completed',
+        description: `Rent from ${senderName}`,
+        notes: `Auto-recorded from ${source}. Match method: ${matchResult.method}`,
+        recorded_by: `system:${source}`,
+      });
+
+      if (ledgerError) {
+        console.error('Error writing to ledger:', ledgerError);
+        // Don't fail the request - payment was recorded successfully
+      }
+
       // Update log with payment ID
       if (logEntry) {
         await supabase

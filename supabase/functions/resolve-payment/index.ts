@@ -151,6 +151,37 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Dual-write to ledger for accounting
+      // Get person name for ledger entry
+      const { data: personData } = await supabase
+        .from('people')
+        .select('first_name, last_name')
+        .eq('id', person_id)
+        .single();
+
+      const personName = personData ? `${personData.first_name} ${personData.last_name}` : pending.sender_name;
+
+      const { error: ledgerError } = await supabase.from('ledger').insert({
+        direction: 'income',
+        category: 'rent',
+        amount: pending.parsed_amount,
+        payment_method: paymentMethod,
+        transaction_date: paymentDate,
+        person_id: person_id,
+        person_name: personName,
+        assignment_id: assignment_id,
+        source_payment_id: payment.id,
+        status: 'completed',
+        description: `Rent from ${pending.sender_name}`,
+        notes: `Manually matched by ${resolved_by}`,
+        recorded_by: `system:resolve-payment`,
+      });
+
+      if (ledgerError) {
+        console.error('Error writing to ledger:', ledgerError);
+        // Don't fail the request - payment was recorded successfully
+      }
+
       // Save mapping for future payments (if requested)
       if (save_mapping && pending.sender_name) {
         const { error: mappingError } = await supabase
