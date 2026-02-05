@@ -249,16 +249,13 @@ body.is-admin .admin-only {
   text-decoration: underline;
 }
 
-/* Edit photos link in detail modal */
-.edit-photos-link {
-  font-size: 0.75rem;
-  font-weight: 500;
+/* Photos heading link in detail modal */
+.photos-heading-link {
   color: var(--accent);
   text-decoration: none;
-  margin-left: 0.5rem;
 }
 
-.edit-photos-link:hover {
+.photos-heading-link:hover {
   text-decoration: underline;
 }
 

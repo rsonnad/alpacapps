@@ -1091,7 +1091,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260205.06</span>
+        <span class="app-version">v260205.07</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -4476,6 +4476,7 @@
         const parentSpace = allSpaces.find(s => s.name === currentParentName);
         if (parentSpace && parentSpace.photos && parentSpace.photos.length > 0) {
           ancestorPhotoSections.push({
+            id: parentSpace.id,
             name: parentSpace.name,
             photos: parentSpace.photos
           });
@@ -4581,12 +4582,14 @@
       }
 
       // Space photos
-      const editLink = isAdmin ? `<a href="#" class="edit-photos-link" onclick="event.preventDefault(); openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">Edit photos</a>` : '';
       let spacePhotosHtml = '';
       if (space.photos.length) {
+        const photosHeading = isAdmin
+          ? `<a href="#" class="photos-heading-link" onclick="event.preventDefault(); openEditSpace('${space.id}'); spaceDetailModal.classList.add('hidden');">${space.name} Photos</a>`
+          : `${space.name} Photos`;
         spacePhotosHtml = `
           <div class="detail-section detail-photos">
-            <h3>${space.name} Photos ${editLink}</h3>
+            <h3>${photosHeading}</h3>
             <div class="detail-photos-grid">
               ${space.photos.map(p => `
                 <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
@@ -4601,9 +4604,12 @@
       // Child photos
       let childPhotosHtml = '';
       childSpaces.forEach(child => {
+        const childHeading = isAdmin
+          ? `<a href="#" class="photos-heading-link" onclick="event.preventDefault(); openEditSpace('${child.id}'); spaceDetailModal.classList.add('hidden');">${child.name} Photos</a>`
+          : `${child.name} Photos`;
         childPhotosHtml += `
           <div class="detail-section detail-photos">
-            <h3>${child.name} Photos</h3>
+            <h3>${childHeading}</h3>
             <div class="detail-photos-grid">
               ${child.photos.map(p => `
                 <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
@@ -4619,9 +4625,12 @@
       const needsSeparator = (space.photos.length > 0 || childSpaces.length > 0) && ancestorPhotoSections.length > 0;
       let ancestorPhotosHtml = needsSeparator ? '<hr style="border: none; border-top: 1px solid var(--border); margin: 1.5rem 0;">' : '';
       ancestorPhotoSections.forEach(section => {
+        const ancestorHeading = isAdmin
+          ? `<a href="#" class="photos-heading-link" onclick="event.preventDefault(); openEditSpace('${section.id}'); spaceDetailModal.classList.add('hidden');">${section.name} Photos</a>`
+          : `${section.name} Photos`;
         ancestorPhotosHtml += `
           <div class="detail-section detail-photos">
-            <h3>${section.name} Photos</h3>
+            <h3>${ancestorHeading}</h3>
             <div class="detail-photos-grid">
               ${section.photos.map(p => `
                 <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
