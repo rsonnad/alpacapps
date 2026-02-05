@@ -432,8 +432,150 @@
       .cap-grid { grid-template-columns: 1fr; }
     }
 
+    /* ---- AAP Header & Navigation ---- */
+    .aap-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      z-index: 1000;
+      transition: background-color 0.3s ease;
+    }
+    .aap-header--transparent { background-color: transparent; }
+    .aap-header--solid {
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .aap-header--solid .aap-header__logo-text,
+    .aap-header--solid .aap-nav__link,
+    .aap-header--solid .aap-menu-toggle__bar {
+      color: var(--text);
+      background-color: var(--text);
+    }
+    .aap-header--solid .aap-nav__link { background-color: transparent; }
+    .aap-header__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .aap-header__logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .aap-header__logo img { height: 50px; width: auto; }
+    .aap-header__logo-text {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.25rem;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .aap-nav { display: none; }
+    .aap-nav__list {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .aap-nav__link {
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.5rem 0;
+      position: relative;
+      color: #ffffff;
+      text-decoration: none;
+    }
+    .aap-nav__link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: currentColor;
+      transition: width 0.3s ease;
+    }
+    .aap-nav__link:hover::after { width: 100%; }
+    .aap-menu-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 0.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .aap-menu-toggle__bar {
+      width: 24px;
+      height: 2px;
+      background-color: #ffffff;
+      transition: transform 0.3s ease;
+    }
+    @media (min-width: 768px) {
+      .aap-nav { display: flex; }
+      .aap-menu-toggle { display: none; }
+    }
+    @media (max-width: 767px) {
+      .aap-header__logo-text { display: none; }
+    }
+    .aap-mobile-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ffffff;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .aap-mobile-nav--open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .aap-mobile-nav__list {
+      list-style: none;
+      text-align: center;
+      padding: 0;
+      margin: 0;
+    }
+    .aap-mobile-nav__item { margin-bottom: 1.5rem; }
+    .aap-mobile-nav__link {
+      font-size: 1.5rem;
+      font-family: 'Playfair Display', Georgia, serif;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .aap-mobile-nav__link:hover { color: var(--accent); }
+    .aap-mobile-nav__close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+    }
+
     @media print {
       body { background: white; }
+      .aap-header, .aap-mobile-nav { display: none; }
       .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
     }
@@ -441,7 +583,45 @@
 </head>
 <body>
 
-<div class="hero">
+<!-- Header -->
+<header class="aap-header aap-header--transparent" id="aap-header">
+  <div class="aap-header__inner">
+    <a href="/" class="aap-header__logo">
+      <img src="/assets/branding/whitehead.png" alt="Austin Alpaca Playhouse">
+      <span class="aap-header__logo-text">Austin Alpaca Playhouse</span>
+    </a>
+    <nav class="aap-nav" id="aap-nav">
+      <ul class="aap-nav__list">
+        <li><a href="/visiting/" class="aap-nav__link">Visiting</a></li>
+        <li><a href="/spaces/" class="aap-nav__link">Rentals</a></li>
+        <li><a href="/events/" class="aap-nav__link">Events</a></li>
+        <li><a href="/community/" class="aap-nav__link">Community</a></li>
+        <li><a href="/photos/" class="aap-nav__link">Photos</a></li>
+        <li><a href="/contact/" class="aap-nav__link">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">
+      <span class="aap-menu-toggle__bar"></span>
+      <span class="aap-menu-toggle__bar"></span>
+      <span class="aap-menu-toggle__bar"></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Navigation -->
+<div class="aap-mobile-nav" id="aap-mobile-nav">
+  <button class="aap-mobile-nav__close" id="aap-mobile-nav-close" aria-label="Close menu">&times;</button>
+  <ul class="aap-mobile-nav__list">
+    <li class="aap-mobile-nav__item"><a href="/visiting/" class="aap-mobile-nav__link">Visiting</a></li>
+    <li class="aap-mobile-nav__item"><a href="/spaces/" class="aap-mobile-nav__link">Rentals</a></li>
+    <li class="aap-mobile-nav__item"><a href="/events/" class="aap-mobile-nav__link">Events</a></li>
+    <li class="aap-mobile-nav__item"><a href="/community/" class="aap-mobile-nav__link">Community</a></li>
+    <li class="aap-mobile-nav__item"><a href="/photos/" class="aap-mobile-nav__link">Photos</a></li>
+    <li class="aap-mobile-nav__item"><a href="/contact/" class="aap-mobile-nav__link">Contact</a></li>
+  </ul>
+</div>
+
+<div class="hero" style="padding-top: calc(80px + 3.5rem);">
   <div class="hero-inner">
     <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/infra/alpacaservers2.jpg" alt="Alpacas in a server room" class="hero-image">
     <div class="hero-text">
@@ -1076,6 +1256,52 @@ Run these directly. If CLI not installed, install and link first.
   </div>
 
 </div>
+
+<script>
+(function() {
+  // Header scroll behavior
+  const header = document.getElementById('aap-header');
+  const hero = document.querySelector('.hero');
+
+  function updateHeader() {
+    if (!header || !hero) return;
+    const heroBottom = hero.offsetTop + hero.offsetHeight;
+    if (window.scrollY > heroBottom - 80) {
+      header.classList.remove('aap-header--transparent');
+      header.classList.add('aap-header--solid');
+    } else {
+      header.classList.remove('aap-header--solid');
+      header.classList.add('aap-header--transparent');
+    }
+  }
+
+  window.addEventListener('scroll', updateHeader, { passive: true });
+  updateHeader();
+
+  // Mobile menu toggle
+  const menuToggle = document.getElementById('aap-menu-toggle');
+  const mobileNav = document.getElementById('aap-mobile-nav');
+  const mobileNavClose = document.getElementById('aap-mobile-nav-close');
+
+  if (menuToggle && mobileNav) {
+    menuToggle.addEventListener('click', function() {
+      mobileNav.classList.add('aap-mobile-nav--open');
+    });
+  }
+  if (mobileNavClose && mobileNav) {
+    mobileNavClose.addEventListener('click', function() {
+      mobileNav.classList.remove('aap-mobile-nav--open');
+    });
+  }
+  // Close mobile nav on link click
+  var mobileLinks = document.querySelectorAll('.aap-mobile-nav__link');
+  mobileLinks.forEach(function(link) {
+    link.addEventListener('click', function() {
+      mobileNav.classList.remove('aap-mobile-nav--open');
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
