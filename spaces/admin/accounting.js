@@ -16,6 +16,7 @@ let transactions = [];
 let summary = {};
 let people = [];
 let currentFilters = {};
+let occupancyData = null; // { occupancyPct, occupiedUnits, availableUnits, totalUnits, revenuePct, currentRevenue, maxPotential, revenueGap }
 let initialized = false;
 
 // Check if running in embed mode (inside iframe on manage.html)
@@ -209,6 +210,10 @@ function buildMonthColumn(m, isCurrent, isTotals) {
 
   const netClass = (m.net >= 0) ? 'positive' : 'negative';
 
+  // Only show occupancy for current month and totals (it's a point-in-time snapshot)
+  const showOccupancy = (isCurrent || isTotals) && occupancyData;
+  const occSection = showOccupancy ? buildOccupancySection() : '';
+
   return `
     <div class="${colClass}">
       <div class="month-col-header">${headerLabel}</div>
@@ -247,6 +252,64 @@ function buildMonthColumn(m, isCurrent, isTotals) {
           <span class="month-row-label"><span class="month-row-dot pending"></span>Pending</span>
           <span class="month-row-value">${formatCurrency(m.pending || 0)}</span>
         </div>
+        ${occSection}
+      </div>
+    </div>
+  `;
+}
+
+function buildOccupancySection() {
+  const o = occupancyData;
+  const circumference = 2 * Math.PI * 22; // ~138.2 for r=22 (smaller donut)
+  const unitArcLen = (o.occupancyPct / 100) * circumference;
+  const revArcLen = (o.revenuePct / 100) * circumference;
+
+  return `
+    <div class="month-row separator"></div>
+    <div class="month-col-occ-block">
+      <div class="month-col-occ-header">Occupancy</div>
+      <div class="month-col-donut-row">
+        <svg viewBox="0 0 52 52" class="month-donut-svg">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#22c55e" stroke-width="5"
+            stroke-dasharray="${unitArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
+          <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.occupancyPct}%</text>
+        </svg>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot occupied"></span>Occupied</span>
+        <span class="month-row-value">${o.occupiedUnits}</span>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot available"></span>Available</span>
+        <span class="month-row-value">${o.availableUnits}</span>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot total"></span>Total</span>
+        <span class="month-row-value">${o.totalUnits}</span>
+      </div>
+    </div>
+    <div class="month-col-occ-block">
+      <div class="month-col-occ-header">Revenue</div>
+      <div class="month-col-donut-row">
+        <svg viewBox="0 0 52 52" class="month-donut-svg">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" stroke-width="5" />
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#3b82f6" stroke-width="5"
+            stroke-dasharray="${revArcLen} ${circumference}" stroke-dashoffset="${circumference * 0.25}" stroke-linecap="round" />
+          <text x="26" y="28" text-anchor="middle" class="month-donut-pct">${o.revenuePct}%</text>
+        </svg>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot occupied"></span>Current</span>
+        <span class="month-row-value">${formatCurrency(o.currentRevenue)}</span>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot potential"></span>Potential</span>
+        <span class="month-row-value">${formatCurrency(o.maxPotential)}</span>
+      </div>
+      <div class="month-row occ-detail">
+        <span class="month-row-label"><span class="occ-dot gap"></span>Gap</span>
+        <span class="month-row-value">${formatCurrency(o.revenueGap)}</span>
       </div>
     </div>
   `;
@@ -815,30 +878,20 @@ function renderOccupancy(countableSpaces, allSpaces) {
   const revenueGap = maxPotential - currentRevenue;
   const revenuePct = maxPotential > 0 ? Math.round((currentRevenue / maxPotential) * 100) : 0;
 
-  // Update unit occupancy donut
-  const circumference = 2 * Math.PI * 52; // ~326.7
-  const unitArcLen = (occupancyPct / 100) * circumference;
-  const unitArc = document.getElementById('unitOccupancyArc');
-  unitArc.setAttribute('stroke-dasharray', `${unitArcLen} ${circumference}`);
-  document.getElementById('unitOccupancyPct').textContent = `${occupancyPct}%`;
-  document.getElementById('unitOccupancySub').textContent = `${occupiedUnits} / ${totalUnits}`;
+  // Store globally for month columns to use
+  occupancyData = {
+    occupancyPct,
+    occupiedUnits,
+    availableUnits,
+    totalUnits,
+    revenuePct,
+    currentRevenue,
+    maxPotential,
+    revenueGap,
+  };
 
-  // Update unit detail rows
-  document.getElementById('unitOccupied').textContent = occupiedUnits;
-  document.getElementById('unitAvailable').textContent = availableUnits;
-  document.getElementById('unitTotal').textContent = totalUnits;
-
-  // Update revenue donut
-  const revArcLen = (revenuePct / 100) * circumference;
-  const revArc = document.getElementById('revenueOccupancyArc');
-  revArc.setAttribute('stroke-dasharray', `${revArcLen} ${circumference}`);
-  document.getElementById('revenueOccupancyPct').textContent = `${revenuePct}%`;
-  document.getElementById('revenueOccupancySub').textContent = formatCurrency(currentRevenue);
-
-  // Update revenue detail rows
-  document.getElementById('revenueCurrent').textContent = formatCurrency(currentRevenue);
-  document.getElementById('revenuePotential').textContent = formatCurrency(maxPotential);
-  document.getElementById('revenueGap').textContent = formatCurrency(revenueGap);
+  // Re-render month columns now that occupancy data is available
+  renderMonthColumns();
 
   // Render unit breakdown
   renderUnitBreakdown(allSpaces);

@@ -65,61 +65,15 @@
         </div>
       </div>
 
-      <!-- Occupancy & Revenue Potential Section -->
+      <!-- Unit Breakdown Section -->
       <div class="section">
         <div class="section-header">
-          <h2>Occupancy & Revenue</h2>
+          <h2>Unit Breakdown</h2>
           <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Current snapshot</span>
         </div>
         <div class="section-body">
-          <div class="occupancy-grid">
-            <!-- Occupancy by Units -->
-            <div class="occupancy-card">
-              <div class="occupancy-header">Unit Occupancy</div>
-              <div class="occupancy-donut" id="unitOccupancyDonut">
-                <svg viewBox="0 0 120 120" class="donut-svg">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="12" />
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="#22c55e" stroke-width="12"
-                    stroke-dasharray="0 327" stroke-dashoffset="82" stroke-linecap="round"
-                    id="unitOccupancyArc" />
-                  <text x="60" y="56" text-anchor="middle" class="donut-pct" id="unitOccupancyPct">0%</text>
-                  <text x="60" y="72" text-anchor="middle" class="donut-sub" id="unitOccupancySub">0 / 0</text>
-                </svg>
-              </div>
-              <div class="occupancy-detail">
-                <div class="occ-row"><span class="occ-dot occupied"></span><span>Occupied</span><strong id="unitOccupied">0</strong></div>
-                <div class="occ-row"><span class="occ-dot available"></span><span>Available</span><strong id="unitAvailable">0</strong></div>
-                <div class="occ-row"><span class="occ-dot total"></span><span>Total Dwellings</span><strong id="unitTotal">0</strong></div>
-              </div>
-            </div>
-
-            <!-- Revenue Potential -->
-            <div class="occupancy-card">
-              <div class="occupancy-header">Revenue Potential</div>
-              <div class="occupancy-donut" id="revenueOccupancyDonut">
-                <svg viewBox="0 0 120 120" class="donut-svg">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="12" />
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="#3b82f6" stroke-width="12"
-                    stroke-dasharray="0 327" stroke-dashoffset="82" stroke-linecap="round"
-                    id="revenueOccupancyArc" />
-                  <text x="60" y="56" text-anchor="middle" class="donut-pct" id="revenueOccupancyPct">0%</text>
-                  <text x="60" y="72" text-anchor="middle" class="donut-sub" id="revenueOccupancySub">$0</text>
-                </svg>
-              </div>
-              <div class="occupancy-detail">
-                <div class="occ-row"><span class="occ-dot occupied"></span><span>Current Monthly</span><strong id="revenueCurrent">$0</strong></div>
-                <div class="occ-row"><span class="occ-dot potential"></span><span>Max Potential</span><strong id="revenuePotential">$0</strong></div>
-                <div class="occ-row"><span class="occ-dot gap"></span><span>Revenue Gap</span><strong id="revenueGap">$0</strong></div>
-              </div>
-            </div>
-
-            <!-- Income vs Potential Bar -->
-            <div class="occupancy-card wide">
-              <div class="occupancy-header">Unit Breakdown</div>
-              <div class="unit-breakdown" id="unitBreakdown">
-                <div class="empty-state">Loading...</div>
-              </div>
-            </div>
+          <div class="unit-breakdown" id="unitBreakdown">
+            <div class="empty-state">Loading...</div>
           </div>
         </div>
       </div>
