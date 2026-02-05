@@ -1,0 +1,18 @@
+[Unit]
+Description=GenAlpaca Bug Fixer Worker
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/bug-fixer
+EnvironmentFile=/opt/bug-fixer/.env
+ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bug-fixer
+
+[Install]
+WantedBy=multi-user.target

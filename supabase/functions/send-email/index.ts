@@ -29,7 +29,10 @@ type EmailType =
   // FAQ notifications
   | "faq_unanswered"
   // Contact form
-  | "contact_form";
+  | "contact_form"
+  // Bug reports
+  | "bug_report_fixed"
+  | "bug_report_failed";
 
 interface EmailRequest {
   type: EmailType;
@@ -779,6 +782,94 @@ Subject: ${data.subject || 'General Inquiry'}
 
 Message:
 ${data.message || 'No message'}`
+      };
+
+    // ===== BUG REPORT NOTIFICATIONS =====
+    case "bug_report_fixed":
+      return {
+        subject: `Bug Fixed: ${(data.description || '').substring(0, 50)}`,
+        html: `
+          <h2 style="color: #27ae60;">Bug Fixed!</h2>
+          <p>Hi ${data.reporter_name},</p>
+          <p>Your bug report has been automatically fixed and deployed.</p>
+
+          <h3>Your Report</h3>
+          <p style="background: #f5f5f5; padding: 15px; border-radius: 8px;">${data.description}</p>
+          ${data.page_url ? `<p><strong>Page:</strong> <a href="${data.page_url}">${data.page_url}</a></p>` : ''}
+
+          ${data.screenshot_url ? `
+          <h3>Your Screenshot</h3>
+          <p><img src="${data.screenshot_url}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" alt="Bug screenshot"></p>
+          ` : ''}
+
+          <h3>What Was Fixed</h3>
+          <p style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60;">${data.fix_summary || 'The issue has been resolved.'}</p>
+
+          ${data.fix_commit_sha ? `<p><strong>Commit:</strong> <a href="https://github.com/rsonnad/alpacapps/commit/${data.fix_commit_sha}">${data.fix_commit_sha.substring(0, 7)}</a></p>` : ''}
+
+          <p>The fix is live now. Please verify at:<br>
+          <a href="${data.page_url || 'https://rsonnad.github.io/alpacapps/spaces/'}" style="background: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 8px;">View Live Site</a></p>
+
+          <p style="color: #666; font-size: 13px; margin-top: 20px;">If the fix doesn't look right, submit another bug report and we'll take another look.</p>
+        `,
+        text: `Bug Fixed!
+
+Hi ${data.reporter_name},
+
+Your bug report has been automatically fixed and deployed.
+
+YOUR REPORT:
+${data.description}
+${data.page_url ? `Page: ${data.page_url}` : ''}
+
+WHAT WAS FIXED:
+${data.fix_summary || 'The issue has been resolved.'}
+
+${data.fix_commit_sha ? `Commit: https://github.com/rsonnad/alpacapps/commit/${data.fix_commit_sha}` : ''}
+
+The fix is live now. Please verify at:
+${data.page_url || 'https://rsonnad.github.io/alpacapps/spaces/'}
+
+If the fix doesn't look right, submit another bug report and we'll take another look.`
+      };
+
+    case "bug_report_failed":
+      return {
+        subject: `Bug Report Update: Could not auto-fix`,
+        html: `
+          <h2 style="color: #e67e22;">Bug Report Update</h2>
+          <p>Hi ${data.reporter_name},</p>
+          <p>We received your bug report but the automated fix was not successful. A human will take a look.</p>
+
+          <h3>Your Report</h3>
+          <p style="background: #f5f5f5; padding: 15px; border-radius: 8px;">${data.description}</p>
+          ${data.page_url ? `<p><strong>Page:</strong> <a href="${data.page_url}">${data.page_url}</a></p>` : ''}
+
+          ${data.screenshot_url ? `
+          <h3>Your Screenshot</h3>
+          <p><img src="${data.screenshot_url}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" alt="Bug screenshot"></p>
+          ` : ''}
+
+          ${data.error_message ? `
+          <h3>What Went Wrong</h3>
+          <p style="background: #fef3e2; padding: 15px; border-radius: 8px; border-left: 4px solid #e67e22;">${data.error_message}</p>
+          ` : ''}
+
+          <p>We'll review this manually and follow up. Thank you for reporting!</p>
+        `,
+        text: `Bug Report Update
+
+Hi ${data.reporter_name},
+
+We received your bug report but the automated fix was not successful. A human will take a look.
+
+YOUR REPORT:
+${data.description}
+${data.page_url ? `Page: ${data.page_url}` : ''}
+
+${data.error_message ? `WHAT WENT WRONG:\n${data.error_message}` : ''}
+
+We'll review this manually and follow up. Thank you for reporting!`
       };
 
     default:
