@@ -1033,17 +1033,17 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 
     <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>## Supabase Details
-- Project ID: `YOUR_PROJECT_REF`
-- URL: `https://YOUR_PROJECT_REF.supabase.co`
+- Project ID: `<span class="supa-ref">YOUR_PROJECT_REF</span>`
+- URL: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co`
 - Anon key: `your-anon-key-here`
 
 ### Direct Database Access (for Claude)
-psql "postgres://postgres.YOUR_REF:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
+psql "postgres://postgres.<span class="supa-ref">YOUR_PROJECT_REF</span>:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
 
 URL-encode special characters in password (! = %21, @ = %40).
 
 ### Supabase CLI Access (for Claude)
-If CLI not installed: npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref YOUR_REF
+If CLI not installed: npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref <span class="supa-ref">YOUR_PROJECT_REF</span>
 supabase functions deploy &lt;function-name&gt;
 supabase secrets set KEY=value
 
@@ -1090,7 +1090,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Note the phone number in E.164 format (e.g., <code>+12125551234</code>)</li>
       <li>Create a Messaging Profile at <a href="https://portal.telnyx.com/#/app/messaging" target="_blank">portal.telnyx.com &rarr; Messaging</a></li>
       <li>Set inbound webhook URL:
-        <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook</code></pre>
+        <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/functions/v1/telnyx-webhook</code></pre>
       </li>
       <li>Assign your phone number to this profile, note the <strong>Messaging Profile ID</strong></li>
       <li>Get your API key at <a href="https://portal.telnyx.com/#/app/api-keys" target="_blank">portal.telnyx.com &rarr; API Keys</a>, copy it + the <strong>Public Key</strong></li>
@@ -1164,7 +1164,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Sign up at <a href="https://www.signwell.com/sign_up/" target="_blank">signwell.com/sign_up</a> (free: 3 docs/month, 25 with credit card)</li>
       <li>Copy your API key at <a href="https://www.signwell.com/app/settings/api" target="_blank">signwell.com &rarr; Settings &rarr; API</a></li>
       <li>Add a webhook at <a href="https://www.signwell.com/app/settings/webhooks" target="_blank">signwell.com &rarr; Settings &rarr; Webhooks</a>:
-        <pre><code>https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook</code></pre>
+        <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/functions/v1/signwell-webhook</code></pre>
       </li>
       <li>Subscribe to the <code>document_completed</code> event</li>
     </ol>
@@ -1454,14 +1454,23 @@ function checkRepoName() {
     });
 }
 
-// Supabase project ref — updates settings links
+// Supabase project ref — updates settings links + all credential placeholders
 function updateSupabaseLinks() {
-  var ref = document.getElementById('supabase-ref').value.trim() || '___';
+  var ref = document.getElementById('supabase-ref').value.trim();
+  var display = ref || '___';
+  var placeholder = ref || 'YOUR_PROJECT_REF';
   var apiLink = document.getElementById('supabase-api-link');
   var dbLink = document.getElementById('supabase-db-link');
-  document.getElementById('supabase-api-ref').textContent = ref;
-  document.getElementById('supabase-db-ref').textContent = ref;
-  if (ref && ref !== '___') {
+  document.getElementById('supabase-api-ref').textContent = display;
+  document.getElementById('supabase-db-ref').textContent = display;
+  // Update all .supa-ref spans across the page (credentials blocks, webhook URLs)
+  var spans = document.querySelectorAll('.supa-ref');
+  for (var i = 0; i < spans.length; i++) {
+    spans[i].textContent = placeholder;
+    spans[i].style.color = ref ? '#5a8a3a' : '';
+    spans[i].style.fontWeight = ref ? '700' : '';
+  }
+  if (ref) {
     apiLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/api';
     dbLink.href = 'https://supabase.com/dashboard/project/' + ref + '/settings/database';
   } else {
