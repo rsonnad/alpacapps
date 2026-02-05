@@ -1098,7 +1098,7 @@
     <header>
       <div class="header-left">
         <h1>&#129433; AlpacAPPs Admin</h1>
-        <span class="app-version">v260206.07</span>
+        <span class="app-version">v260206.08</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/" class="btn-small">Public View</a>
@@ -2844,6 +2844,13 @@
           </fieldset>
 
           <fieldset class="form-fieldset">
+            <legend>Amenities</legend>
+            <div id="editAmenitiesContainer" class="form-grid form-grid-4">
+              <!-- Amenity checkboxes populated by JS -->
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
             <legend>Photos <a href="#" id="addMorePhotosLink" class="add-more-link">+ Add images</a></legend>
             <div id="editPhotosContainer" class="edit-photos-grid">
               <!-- Photos will be populated by JS -->
@@ -3588,6 +3595,7 @@
     // Edit space state
     let currentEditSpaceId = null;
     let isSavingSpace = false;
+    let allAmenities = []; // Cached list of all amenity definitions
 
     // Lightbox state
     let lightboxGallery = [];
@@ -3851,7 +3859,7 @@
           .select(`
             *,
             parent:parent_id(name),
-            space_amenities(amenity:amenity_id(name)),
+            space_amenities(id, amenity:amenity_id(id, name)),
             media_spaces(
               display_order,
               is_primary,
@@ -3951,6 +3959,7 @@
           space.availableUntil = nextAssignment?.start_date ? parseAustinDate(nextAssignment.start_date) : null;
 
           space.amenities = space.space_amenities?.map(sa => sa.amenity?.name).filter(Boolean) || [];
+          space.amenityIds = space.space_amenities?.map(sa => sa.amenity?.id).filter(Boolean) || [];
 
           // Process media
           space.photos = (space.media_spaces || [])
@@ -4870,7 +4879,7 @@
     }
 
     // Edit space modal
-    function openEditSpace(spaceId) {
+    async function openEditSpace(spaceId) {
       if (authState?.appUser?.role !== 'admin') {
         showToast('Only admins can edit spaces', 'warning');
         return;
@@ -4921,8 +4930,42 @@
       document.getElementById('editCanBeDwelling').checked = space.can_be_dwelling !== false;
       document.getElementById('editCanBeEvent').checked = space.can_be_event || false;
 
+      // Populate amenity checkboxes
+      await renderAmenityCheckboxes(space);
+
       renderEditPhotos(space);
       document.getElementById('editSpaceModal').classList.remove('hidden');
+    }
+
+    async function renderAmenityCheckboxes(space) {
+      const container = document.getElementById('editAmenitiesContainer');
+      if (!container) return;
+
+      // Load all amenities once
+      if (allAmenities.length === 0) {
+        const { data, error } = await supabase
+          .from('amenities')
+          .select('id, name, category')
+          .order('name');
+        if (error) {
+          console.error('Error loading amenities:', error);
+          container.innerHTML = '<p style="color: var(--text-muted);">Failed to load amenities</p>';
+          return;
+        }
+        allAmenities = data || [];
+      }
+
+      const spaceAmenityIds = space.amenityIds || [];
+
+      container.innerHTML = allAmenities.map(amenity => `
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" name="editAmenity" value="${amenity.id}"
+              ${spaceAmenityIds.includes(amenity.id) ? 'checked' : ''}>
+            ${amenity.name}
+          </label>
+        </div>
+      `).join('');
     }
 
     function renderEditPhotos(space) {
@@ -5074,6 +5117,31 @@
           .select();
 
         if (error) throw error;
+
+        // Save amenity changes
+        const checkedAmenityIds = [...document.querySelectorAll('input[name="editAmenity"]:checked')]
+          .map(cb => cb.value);
+        const space = allSpaces.find(s => s.id === spaceId);
+        const currentAmenityIds = space?.amenityIds || [];
+
+        const toAdd = checkedAmenityIds.filter(id => !currentAmenityIds.includes(id));
+        const toRemove = currentAmenityIds.filter(id => !checkedAmenityIds.includes(id));
+
+        if (toRemove.length > 0) {
+          const { error: delError } = await supabase
+            .from('space_amenities')
+            .delete()
+            .eq('space_id', spaceId)
+            .in('amenity_id', toRemove);
+          if (delError) throw delError;
+        }
+
+        if (toAdd.length > 0) {
+          const { error: insError } = await supabase
+            .from('space_amenities')
+            .insert(toAdd.map(amenityId => ({ space_id: spaceId, amenity_id: amenityId })));
+          if (insError) throw insError;
+        }
 
         showToast('Space updated successfully!', 'success');
         document.getElementById('editSpaceModal').classList.add('hidden');
