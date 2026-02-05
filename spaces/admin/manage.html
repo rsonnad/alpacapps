@@ -667,7 +667,7 @@
     #tableView td:nth-child(9) { min-width: 80px; white-space: normal; } /* lease dates */
 
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { min-width: 85px; width: 85px; overflow: visible; } /* status */
+    #tableView td:nth-child(10) { min-width: 35px; text-align: center; } /* status */
 
     #tableView th:nth-child(11),
     #tableView td:nth-child(11) { min-width: 30px; text-align: center; overflow: visible; } /* vis */
@@ -3887,9 +3887,10 @@
         const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
 
         // Status badge - use isAvailable (accounts for parent/child propagation)
+        // Single letter: A=Available, O=Occupied
         let statusBadge = space.isAvailable
-          ? '<span class="badge available">Available</span>'
-          : '<span class="badge occupied">Occupied</span>';
+          ? '<span class="badge available" title="Available">A</span>'
+          : '<span class="badge occupied" title="Occupied">O</span>';
 
         // Visibility badge (separate column now)
         let visBadge = '';
