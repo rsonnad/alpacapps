@@ -1090,6 +1090,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2>
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 9 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+    </div>
+
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
     <ol>
       <li>Go to <a href="https://console.cloud.google.com/projectcreate" target="_blank">console.cloud.google.com &rarr; New Project</a></li>
@@ -1287,6 +1291,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
   <div class="section" id="gemini">
     <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">9. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
+
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 4</a>. Use the same project &mdash; just grab a Gemini API key below.
+    </div>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
