@@ -310,6 +310,24 @@
       background: var(--claude-bg);
     }
     .callout strong { display: block; margin-bottom: 0.25rem; }
+    .callout .claude-detail { display: block; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+
+    .copy-prompt {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(124,106,154,0.15);
+      color: #5a4a7a;
+      border: none;
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .copy-prompt:hover { background: rgba(124,106,154,0.25); }
 
     .cost-badge {
       display: inline-block;
@@ -1050,9 +1068,10 @@ supabase secrets set KEY=value
 For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Set up my Supabase project. Install the CLI, link it, create the core database tables for [your domain], enable RLS on all tables, and create storage buckets for photos and documents."</strong>
-      Claude will install the CLI, login, link, create <code>shared/supabase.js</code>, run SQL for tables + RLS + storage policies, commit, and push.
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will install the CLI, login, link, create <code>shared/supabase.js</code>, run SQL for tables + RLS + storage policies, commit, and push.</span>
     </div>
   </div>
 
@@ -1073,9 +1092,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - From address: notifications@yourdomain.com (or onboarding@resend.dev)</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Set up email sending with Resend. Store the API key as a Supabase secret and create a send-email edge function."</strong>
-      Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.</span>
     </div>
   </div>
 
@@ -1114,9 +1134,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - API: https://api.telnyx.com/v2/messages</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Set up Telnyx SMS. Create the telnyx_config and sms_messages tables, write the send-sms and telnyx-webhook edge functions, and deploy with --no-verify-jwt."</strong>
-      Claude will create tables, insert config, write both edge functions, deploy, create <code>shared/sms-service.js</code>, commit, and push.
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will create tables, insert config, write both edge functions, deploy, create <code>shared/sms-service.js</code>, commit, and push.</span>
     </div>
   </div>
 
@@ -1149,9 +1170,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - Production SDK: https://web.squarecdn.com/v1/square.js</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Set up Square payment processing. Create the config and payments tables, a process-square-payment edge function, and a client-side square-service.js module."</strong>
-      Claude will create tables, insert config, write the edge function + client module, deploy, commit, and push.
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will create tables, insert config, write the edge function + client module, deploy, commit, and push.</span>
     </div>
   </div>
 
@@ -1178,9 +1200,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - Deploy webhook with `--no-verify-jwt`</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Set up SignWell for e-signatures. Create the config table, a webhook edge function, and client-side signwell-service.js and pdf-service.js modules."</strong>
-      Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.</span>
     </div>
   </div>
 
@@ -1199,9 +1222,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude">
+    <div class="callout claude" style="position: relative;">
       <strong>"Store my Gemini API key as a Supabase secret."</strong>
-      Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
     </div>
   </div>
 
@@ -1369,10 +1393,10 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ul>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <p>Once you've pasted all credentials into your <code>CLAUDE.md</code>, open Claude Code in your project folder and say:</p>
+    <p>Once you've given Claude your credentials, tell it to set everything up. You can either use the setup skill or paste this prompt:</p>
 
-    <div class="callout claude">
-      <strong>"I've set up all my vendor accounts and put the credentials in CLAUDE.md. Please:</strong>
+    <div class="callout claude" style="position: relative;">
+      <strong>"I've set up all my vendor accounts. Please:
       <ol style="margin-top: 0.5rem; margin-bottom: 0;">
         <li>Set up the project structure and push to GitHub</li>
         <li>Install and link the Supabase CLI</li>
@@ -1382,8 +1406,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         <li>Set up payment processing with Square</li>
         <li>Set up e-signatures with SignWell</li>
         <li>Deploy all edge functions and store API keys as secrets"</li>
-      </ol>
+      </ol></strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
     </div>
+
+    <p>Or just type <code>/setup-alpacapps-infra</code> in Claude Code &mdash; the skill walks through the same setup interactively, asking what services you need as it goes.</p>
 
     <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
   </div>
@@ -1413,6 +1440,20 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 </div>
 
 <script>
+// Copy prompt text from "Then tell Claude" callouts
+function copyPrompt(btn) {
+  var callout = btn.closest('.callout');
+  var strong = callout.querySelector('strong');
+  // Get just the text from the strong element (the quoted prompt)
+  var text = strong.textContent.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+  // Remove surrounding quotes if present
+  text = text.replace(/^[""]|[""]$/g, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
 // Clone commands with dynamic project name
 function updateCloneCommands() {
   var username = document.getElementById('github-username').value.trim() || 'USERNAME';
