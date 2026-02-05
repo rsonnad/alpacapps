@@ -1,6 +1,6 @@
 # Infrastructure Replication Guide
 
-How to set up a zero-cost (or near-zero) property management system from scratch. This guide covers every vendor account, configuration step, and how to wire it all together with Claude Code as your AI developer.
+How to set up a zero-cost (or near-zero) do-it-all system from scratch — messaging, marketing, customer management, and finance. This guide covers every vendor account, configuration step, and how to wire it all together with Claude Code as your AI developer.
 
 **Total cost: $0/month** for the core stack (hosting, database, email). Optional paid add-ons for SMS, e-signatures, and payment processing are pay-as-you-go.
 
@@ -93,7 +93,7 @@ Claude: *installs Supabase CLI, links project, creates tables with RLS,
 
 1. Go to [github.com](https://github.com) and create a free account
 2. Create a new repository (public repos get free GitHub Pages)
-3. Name it whatever you want (e.g., `my-property-app`)
+3. Name it whatever you want (e.g., `my-app`)
 4. Go to repo **Settings** → **Pages**
 5. Under "Source," select **Deploy from a branch**
 6. Select **main** branch, **/ (root)** folder
@@ -249,7 +249,7 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 3. Go to **Numbers** → **Search & Buy** and buy a number with SMS capability (~$1/month)
 4. Note the phone number in E.164 format (e.g., `+12125551234`)
 5. Go to **Messaging** → **Messaging Profiles** → **Add New Profile**
-6. Name it (e.g., "My Property App")
+6. Name it (e.g., "My App")
 7. Under **Inbound** tab, set webhook URL:
    ```
    https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook
@@ -262,7 +262,7 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 **⚠️ 10DLC Registration (Required for US) — Do this now, it takes time:**
 1. Go to **Messaging** → **Compliance**
 2. Create a **Brand** (Sole Proprietor is simplest)
-3. Create a **Campaign** (use case: property management notifications)
+3. Create a **Campaign** (use case: business notifications)
 4. Assign your phone number to the campaign
 5. Wait for approval (can take days to weeks — SMS won't work without it)
 
