@@ -1208,23 +1208,75 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
   <div class="section" id="domain">
     <h2>10. Custom Domain (Optional)</h2>
 
-    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
+      <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
+    </div>
+
+    <h3><span class="step-label step-you">1. Buy a domain</span></h3>
+    <p>If you don&rsquo;t already own one, buy a domain from any registrar. Here are popular options:</p>
+    <ul>
+      <li><a href="https://www.namecheap.com" target="_blank">Namecheap</a> &mdash; ~$9/year for a <code>.com</code></li>
+      <li><a href="https://www.cloudflare.com/products/registrar/" target="_blank">Cloudflare Registrar</a> &mdash; at-cost pricing, no markup</li>
+      <li><a href="https://domains.squarespace.com" target="_blank">Squarespace Domains</a> (formerly Google Domains) &mdash; ~$12/year</li>
+    </ul>
+
+    <h3><span class="step-label step-you">2. Tell GitHub about your domain</span></h3>
     <ol>
-      <li>Buy a domain from any registrar (Namecheap, Cloudflare, Google Domains)</li>
-      <li>In your repo <strong>Settings</strong> &rarr; <strong>Pages</strong> &rarr; <strong>Custom domain</strong>, enter your domain</li>
-      <li>Add DNS records:
-        <ul>
-          <li><strong>A records</strong> pointing to GitHub's IPs:
-            <pre><code>185.199.108.153
-185.199.109.153
-185.199.110.153
-185.199.111.153</code></pre>
-          </li>
-          <li><strong>CNAME</strong> for <code>www</code> pointing to <code>&lt;username&gt;.github.io</code></li>
-        </ul>
-      </li>
-      <li>Check <strong>Enforce HTTPS</strong></li>
+      <li>Go to your repo on GitHub</li>
+      <li>Click <strong>Settings</strong> &rarr; <strong>Pages</strong> (left sidebar)</li>
+      <li>Under <strong>Custom domain</strong>, type your domain (e.g., <code>myapp.com</code>) and click <strong>Save</strong></li>
+      <li>GitHub will show a message that a DNS check is pending &mdash; that&rsquo;s normal until you complete step 3</li>
     </ol>
+
+    <h3><span class="step-label step-you">3. Point your domain to GitHub Pages (DNS settings)</span></h3>
+    <p>This is the key step: you need to tell your domain registrar to send traffic to GitHub&rsquo;s servers. The exact screens look a little different at each registrar, but you&rsquo;re doing the same thing everywhere.</p>
+
+    <p><strong>Find your DNS settings:</strong></p>
+    <ul>
+      <li><strong>Namecheap:</strong> Dashboard &rarr; click <strong>Manage</strong> next to your domain &rarr; <strong>Advanced DNS</strong> tab</li>
+      <li><strong>Cloudflare:</strong> Select your domain &rarr; <strong>DNS</strong> &rarr; <strong>Records</strong></li>
+      <li><strong>Squarespace Domains:</strong> Domains panel &rarr; click your domain &rarr; <strong>DNS</strong> &rarr; <strong>DNS Settings</strong></li>
+    </ul>
+
+    <p><strong>Add these records:</strong></p>
+    <table>
+      <thead><tr><th>Type</th><th>Name / Host</th><th>Value / Points to</th></tr></thead>
+      <tbody>
+        <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.108.153</code></td></tr>
+        <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.109.153</code></td></tr>
+        <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.110.153</code></td></tr>
+        <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.111.153</code></td></tr>
+        <tr><td><code>CNAME</code></td><td><code>www</code></td><td><code>&lt;username&gt;.github.io</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>What do these mean?</strong>
+      <ul style="margin: 0.5rem 0 0 0; padding-left: 1.25rem;">
+        <li>The four <strong>A records</strong> tell browsers &ldquo;when someone types <code>myapp.com</code>, go to GitHub&rsquo;s servers.&rdquo;</li>
+        <li>The <strong>CNAME record</strong> makes <code>www.myapp.com</code> work too, by pointing it to your GitHub Pages address.</li>
+        <li>The <code>@</code> symbol means &ldquo;the root domain&rdquo; (i.e., <code>myapp.com</code> with nothing in front of it).</li>
+      </ul>
+    </div>
+
+    <p>If your registrar already has default records (like parking page records), delete those first, then add the ones above.</p>
+
+    <h3><span class="step-label step-you">4. Turn on HTTPS</span></h3>
+    <ol>
+      <li>Wait 5&ndash;30 minutes for DNS changes to propagate (sometimes up to 24 hours)</li>
+      <li>Go back to your repo&rsquo;s <strong>Settings</strong> &rarr; <strong>Pages</strong></li>
+      <li>The DNS check should now show a green checkmark</li>
+      <li>Check the box for <strong>Enforce HTTPS</strong> &mdash; GitHub provides a free SSL certificate automatically</li>
+    </ol>
+
+    <h3>How do I know it&rsquo;s working?</h3>
+    <p>Visit your domain in a browser. If you see your site, you&rsquo;re done. If not:</p>
+    <ul>
+      <li>Double-check that you entered the A record IPs exactly as shown above</li>
+      <li>Make sure you deleted any old/default DNS records that might conflict</li>
+      <li>DNS changes can take up to 24 hours to fully propagate &mdash; wait and try again</li>
+      <li>Use <a href="https://dnschecker.org" target="_blank">dnschecker.org</a> to verify your records are visible worldwide</li>
+    </ul>
   </div>
 
   <!-- 11. CLAUDE.md Template -->
