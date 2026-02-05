@@ -8577,10 +8577,16 @@
       updateEventDetailActions(req);
 
       // Re-evaluate action buttons when terms fields change
+      // Debounce to prevent DOM mutation during active input interaction,
+      // which can cause click events to retarget to the modal backdrop
+      let termsUpdateTimer;
       ['eventTermMaxGuests', 'eventTermRentalFee'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.onchange = el.oninput = () => updateEventDetailActions(req);
+          el.onchange = el.oninput = () => {
+            clearTimeout(termsUpdateTimer);
+            termsUpdateTimer = setTimeout(() => updateEventDetailActions(req), 150);
+          };
         }
       });
 
