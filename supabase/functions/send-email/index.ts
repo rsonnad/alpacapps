@@ -34,6 +34,7 @@ type EmailType =
   | "bug_report_received"
   | "bug_report_fixed"
   | "bug_report_failed"
+  | "bug_report_verified"
   // Rental invite
   | "invite_to_apply";
 
@@ -930,6 +931,40 @@ ${data.page_url ? `Page: ${data.page_url}` : ''}
 ${data.error_message ? `WHAT WENT WRONG:\n${data.error_message}` : ''}
 
 We'll review this manually and follow up. Thank you for reporting!`
+      };
+
+    case "bug_report_verified":
+      return {
+        subject: `Re: New Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
+        html: `
+          <h2 style="color: #27ae60;">Screenshot of the Fix</h2>
+          <p>Hi ${data.reporter_name},</p>
+          <p>Here's a screenshot of the page after the fix was deployed:</p>
+
+          ${data.verification_screenshot_url ? `
+          <p><img src="${data.verification_screenshot_url}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" alt="Screenshot after fix"></p>
+          ` : ''}
+
+          ${data.page_url ? `<p><strong>Page:</strong> <a href="${data.page_url}">${data.page_url}</a></p>` : ''}
+
+          ${data.fix_summary ? `
+          <h3>What Was Fixed</h3>
+          <p style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60;">${data.fix_summary}</p>
+          ` : ''}
+
+          <p style="color: #666; font-size: 13px; margin-top: 20px;">If the fix doesn't look right, submit another bug report and we'll take another look.</p>
+        `,
+        text: `Screenshot of the Fix
+
+Hi ${data.reporter_name},
+
+Here's a screenshot of the page after the fix was deployed.
+
+${data.page_url ? `Page: ${data.page_url}` : ''}
+
+${data.fix_summary ? `WHAT WAS FIXED:\n${data.fix_summary}` : ''}
+
+If the fix doesn't look right, submit another bug report and we'll take another look.`
       };
 
     default:

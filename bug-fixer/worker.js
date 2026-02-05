@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
-import { writeFile, unlink, mkdir } from 'fs/promises';
+import { writeFile, readFile, unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import puppeteer from 'puppeteer';
 
 const execAsync = promisify(exec);
 
@@ -204,6 +205,98 @@ async function downloadScreenshot(url) {
 }
 
 // ============================================
+// Verification screenshot via Puppeteer
+// ============================================
+const DEPLOY_WAIT_MS = parseInt(process.env.DEPLOY_WAIT_MS || '90000'); // 90 seconds for GitHub Pages
+
+async function takeVerificationScreenshot(pageUrl) {
+  if (!pageUrl) {
+    log('info', 'No page_url - skipping verification screenshot');
+    return null;
+  }
+
+  // Only screenshot GitHub Pages URLs (our site)
+  if (!pageUrl.includes('rsonnad.github.io')) {
+    log('info', 'page_url is not our site - skipping verification screenshot', { url: pageUrl });
+    return null;
+  }
+
+  log('info', `Waiting ${DEPLOY_WAIT_MS / 1000}s for GitHub Pages deploy...`);
+  await new Promise(resolve => setTimeout(resolve, DEPLOY_WAIT_MS));
+
+  let browser = null;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 900 });
+
+    // Add cache-busting to force fresh load
+    const bustUrl = pageUrl + (pageUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+    log('info', 'Loading page for screenshot', { url: bustUrl });
+
+    await page.goto(bustUrl, {
+      waitUntil: 'networkidle2',
+      timeout: 30000,
+    });
+
+    // Extra wait for any JS rendering
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Take screenshot
+    await mkdir(TEMP_DIR, { recursive: true });
+    const screenshotPath = path.join(TEMP_DIR, `verification-${Date.now()}.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: false });
+
+    log('info', 'Verification screenshot taken', { path: screenshotPath });
+
+    // Upload to Supabase Storage
+    const fileBuffer = await readFile(screenshotPath);
+    const storagePath = `verification-${Date.now()}.png`;
+
+    const { data, error } = await supabase.storage
+      .from('bug-screenshots')
+      .upload(storagePath, fileBuffer, {
+        contentType: 'image/png',
+        upsert: false,
+      });
+
+    if (error) {
+      log('error', 'Failed to upload verification screenshot', { error: error.message });
+      await unlink(screenshotPath).catch(() => {});
+      return null;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('bug-screenshots')
+      .getPublicUrl(storagePath);
+
+    log('info', 'Verification screenshot uploaded', { url: publicUrl });
+
+    // Clean up local file
+    await unlink(screenshotPath).catch(() => {});
+
+    return publicUrl;
+  } catch (err) {
+    log('error', 'Verification screenshot failed', { error: err.message });
+    return null;
+  } finally {
+    if (browser) {
+      await browser.close().catch(() => {});
+    }
+  }
+}
+
+// ============================================
 // Send notification email
 // ============================================
 const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
@@ -311,6 +404,22 @@ async function processBugReport(report) {
         fix_summary: fixSummary,
         fix_commit_sha: commitSha,
       });
+
+      // 9. Take verification screenshot and send follow-up email
+      const verificationUrl = await takeVerificationScreenshot(report.page_url);
+      if (verificationUrl) {
+        await supabase
+          .from('bug_reports')
+          .update({ verification_screenshot_url: verificationUrl })
+          .eq('id', report.id);
+
+        await sendEmail('bug_report_verified', report, {
+          fix_summary: fixSummary,
+          fix_commit_sha: commitSha,
+          verification_screenshot_url: verificationUrl,
+        });
+        log('info', 'Verification screenshot email sent', { id: report.id });
+      }
 
       log('info', '=== Bug report fixed ===', { id: report.id, commit: commitSha });
     } else {

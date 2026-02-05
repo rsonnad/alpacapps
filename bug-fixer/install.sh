@@ -26,6 +26,25 @@ if ! command -v git &> /dev/null; then
 fi
 echo "  Git: $(git --version)"
 
+# Chromium dependencies for Puppeteer (headless screenshot capture)
+echo "  Installing Chromium dependencies..."
+apt-get install -y \
+    chromium-browser \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0 \
+    libxshmfence1 \
+    fonts-liberation \
+    2>/dev/null || echo "  (some chromium deps may already be installed)"
+echo "  Chromium deps: installed"
+
 # ---- Claude Code CLI ----
 echo ""
 echo "Installing Claude Code CLI..."
