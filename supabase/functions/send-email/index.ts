@@ -821,7 +821,7 @@ ${data.message || 'No message'}`
     // ===== BUG REPORT NOTIFICATIONS =====
     case "bug_report_received":
       return {
-        subject: `Bug Report Received: ${(data.description || '').substring(0, 50)}`,
+        subject: `New Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
         html: `
           <h2 style="color: #2980b9;">Bug Report Received</h2>
           <p>Hi ${data.reporter_name},</p>
