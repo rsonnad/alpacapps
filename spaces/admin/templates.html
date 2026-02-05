@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
+          <h1>&#129433; AlpacAPPs Admin</h1>
+        </a>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260205.03</span>
+        <span id="roleBadge" class="role-badge">Admin</span>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/" class="btn-small">Public View</a>
+        <span id="userInfo" class="user-info"></span>
+        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content">
+      <!-- Template Type Selector -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Template Editor</h2>
+          <div class="header-actions">
+            <select id="templateTypeSelector" class="template-type-select">
+              <option value="lease">Lease Agreement</option>
+              <option value="event">Event Agreement</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lease Template Section -->
+      <div id="leaseTemplateSection">
+        <div class="section">
+          <div class="section-header">
+            <h2>Lease Agreement Template</h2>
+            <div class="header-actions">
+              <button type="button" id="loadDefaultTemplateBtn" class="btn-small">Load Default</button>
+              <button type="button" id="saveTemplateBtn" class="btn-small btn-primary">Save Template</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Edit the lease agreement template below. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+              The template uses Markdown formatting: <code># Header</code>, <code>**bold**</code>, <code>- bullet list</code>, <code>---</code> for horizontal rule.
+            </p>
+
+            <div class="template-editor-container">
+              <div class="template-editor">
+                <label for="templateName">Template Name</label>
+                <input type="text" id="templateName" value="Standard Lease Agreement" style="margin-bottom: 1rem;">
+
+                <label for="templateContent">Template Content</label>
+                <textarea id="templateContent" class="template-textarea" rows="20" placeholder="Enter lease template content..."></textarea>
+              </div>
+
+              <div class="placeholder-reference">
+                <h4>Available Placeholders</h4>
+                <div id="placeholderList" class="placeholder-list"></div>
+              </div>
+            </div>
+
+            <div class="template-actions" style="margin-top: 1rem;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="templateMakeActive" checked>
+                Set as active template
+              </label>
+            </div>
+
+            <div id="templateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <!-- Lease Template History Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Template History</h2>
+          </div>
+          <div class="section-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Created</th>
+                  <th>Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="templateHistoryBody">
+                <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SignWell Configuration (only for lease templates) -->
+        <div class="section">
+          <div class="section-header">
+            <h2>SignWell Integration</h2>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Configure SignWell for electronic signature collection. Get your API key from
+              <a href="https://www.signwell.com/api/" target="_blank">signwell.com/api</a>.
+            </p>
+            <div class="form-group">
+              <label for="signwellApiKey">API Key</label>
+              <input type="password" id="signwellApiKey" placeholder="Enter SignWell API key...">
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="signwellTestMode" checked>
+                Test Mode (documents won't be sent for real signatures)
+              </label>
+            </div>
+            <button type="button" id="saveSignwellConfigBtn" class="btn-small btn-primary">Save SignWell Config</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Template Section -->
+      <div id="eventTemplateSection" style="display: none;">
+        <div class="section">
+          <div class="section-header">
+            <h2>Event Agreement Template</h2>
+            <div class="header-actions">
+              <button type="button" id="loadDefaultEventTemplateBtn" class="btn-small">Load Default</button>
+              <button type="button" id="saveEventTemplateBtn" class="btn-small btn-primary">Save Template</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Edit the event hosting agreement template. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+            </p>
+
+            <div class="template-editor-container">
+              <div class="template-editor">
+                <label for="eventTemplateName">Template Name</label>
+                <input type="text" id="eventTemplateName" value="Standard Event Agreement" style="margin-bottom: 1rem;">
+
+                <label for="eventTemplateContent">Template Content</label>
+                <textarea id="eventTemplateContent" class="template-textarea" rows="20" placeholder="Enter event agreement template content..."></textarea>
+              </div>
+
+              <div class="placeholder-reference">
+                <h4>Available Placeholders</h4>
+                <div id="eventPlaceholderList" class="placeholder-list"></div>
+              </div>
+            </div>
+
+            <div class="template-actions" style="margin-top: 1rem;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="eventTemplateMakeActive" checked>
+                Set as active template
+              </label>
+            </div>
+
+            <div id="eventTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <!-- Event Template History Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Template History</h2>
+          </div>
+          <div class="section-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Created</th>
+                  <th>Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventTemplateHistoryBody">
+                <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="templates.js"></script>
+</body>
+</html>
