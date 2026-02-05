@@ -352,9 +352,10 @@ Acknowledgments (boolean flags for each policy):
 
 **telnyx_config** - Telnyx API configuration (single row)
 - `id` (integer, always 1)
-- `api_key` - Telnyx API Key (Bearer token)
-- `messaging_profile_id` - Telnyx Messaging Profile ID
+- `api_key` - Telnyx API Key v2 (Bearer token for `Authorization: Bearer <key>`)
+- `messaging_profile_id` - Telnyx Messaging Profile ID (numbers must be assigned to a profile)
 - `phone_number` - Telnyx phone number in E.164 format (+17377474737)
+- `public_key` - Ed25519 public key for webhook signature verification (Base64-encoded)
 - `is_active` - Whether SMS sending is enabled
 - `test_mode` - When true, messages are logged but not sent via Telnyx
 
@@ -641,11 +642,61 @@ When generating lease agreements, the system calculates credits toward first mon
 - From address: `errors@genalpaca.com` (for error digests)
 
 ### Telnyx (SMS Notifications)
-- API: `https://api.telnyx.com/v2/messages`
-- Phone Number: +17377474737
-- Messaging Profile ID: `40019c2b-034b-4d3f-9eae-e00a13122927`
-- API Key: Stored in `telnyx_config` table
-- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
+- **Portal**: https://portal.telnyx.com (account: wingsiebird@gmail.com)
+- **API Base**: `https://api.telnyx.com/v2/messages`
+- **Auth**: Bearer token — `Authorization: Bearer <api_key>` (NOT Basic auth like Twilio)
+- **Phone Number**: +17377474737
+- **Messaging Profile ID**: `40019c2b-034b-4d3f-9eae-e00a13122927`
+- **API Key**: Stored in `telnyx_config.api_key` (generated in Telnyx Portal > API Keys)
+- **Public Key**: Stored in `telnyx_config.public_key` (from Telnyx Portal > API Keys > Public Key)
+- **Webhook URL**: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
+
+**10DLC Requirement (IMPORTANT):**
+US long code numbers require 10DLC registration to send/receive SMS. Without it, messages won't deliver and webhooks won't fire. Register in Telnyx Portal > Messaging > Compliance:
+1. Create a **Brand** (Sole Proprietor is simplest)
+2. Create a **Campaign** (use case: property management notifications)
+3. Assign phone number +17377474737 to the campaign
+4. Wait for approval before testing
+
+**Telnyx API Reference:**
+
+Outbound request format:
+```
+POST https://api.telnyx.com/v2/messages
+Headers: Authorization: Bearer <api_key>, Content-Type: application/json
+Body: { "from": "+17377474737", "to": "+1XXXXXXXXXX", "text": "message", "type": "SMS", "messaging_profile_id": "40019c2b-..." }
+Response: { "data": { "id": "msg-uuid", "to": [{"status": "queued"}], ... } }
+```
+
+Inbound webhook format (JSON POST, NOT form-encoded like Twilio):
+```json
+{
+  "data": {
+    "event_type": "message.received",
+    "payload": {
+      "id": "msg-uuid",
+      "from": { "phone_number": "+1XXXXXXXXXX", "carrier": "...", "line_type": "..." },
+      "to": [{ "phone_number": "+17377474737" }],
+      "text": "message body",
+      "media": [],
+      "type": "SMS"
+    }
+  }
+}
+```
+
+Webhook signature verification (Ed25519):
+- Headers: `telnyx-signature-ed25519` (Base64 signature), `telnyx-timestamp` (Unix timestamp)
+- Signed payload: `${timestamp}|${rawBody}`
+- Verify using Ed25519 with public key from `telnyx_config.public_key`
+- Currently disabled in deployed function pending 10DLC approval and testing
+
+**Key differences from Twilio (for future provider swaps):**
+- Auth: Bearer token (Twilio uses Basic auth with AccountSID:AuthToken)
+- Outbound: JSON body (Twilio uses form-encoded)
+- Inbound: JSON webhook (Twilio uses form-encoded + expects TwiML XML response)
+- Concept: Messaging Profile — numbers must be assigned to a profile that has the webhook URL
+- Edge function deployed with `--no-verify-jwt` (Telnyx can't send Supabase JWT)
 
 **Outbound SMS Flow:**
 1. Admin triggers notification (pipeline action, manual compose, or bulk)
@@ -705,8 +756,10 @@ const inbound = await smsService.getRecentInbound(50);
 
 **Telnyx Portal Configuration:**
 - Phone Number: +17377474737
-- Messaging Profile ID: `40019c2b-034b-4d3f-9eae-e00a13122927`
-- Inbound webhook POST URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
+- Messaging Profile: "AlpacApps" (ID: `40019c2b-034b-4d3f-9eae-e00a13122927`)
+- Profile > Inbound tab > Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/telnyx-webhook`
+- Numbers > My Numbers > +17377474737 must be assigned to "AlpacApps" messaging profile
+- 10DLC: Must be registered in Messaging > Compliance before SMS works
 
 ### Error Monitoring
 - Client-side errors captured via `shared/error-logger.js`
