@@ -84,6 +84,8 @@ export async function initAdminPage({ activeTab, onReady }) {
 
   await initAuth();
   let authState = getAuthState();
+  let pageContentShown = false;
+  let onReadyCalled = false;
 
   function handleAuthState(state) {
     authState = state;
@@ -117,15 +119,24 @@ export async function initAdminPage({ activeTab, onReady }) {
       // Render tab navigation
       renderTabNav(activeTab);
 
-      // Sign out handlers
-      document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
-      document.getElementById('headerSignOutBtn')?.addEventListener('click', () => signOut());
+      // Sign out handlers (only bind once)
+      if (!pageContentShown) {
+        document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
+        document.getElementById('headerSignOutBtn')?.addEventListener('click', () => signOut());
+      }
 
-      if (onReady) onReady(state);
+      pageContentShown = true;
+      if (onReady && !onReadyCalled) {
+        onReadyCalled = true;
+        onReady(state);
+      }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('unauthorizedOverlay').classList.remove('hidden');
-    } else if (!state.isAuthenticated) {
+    } else if (!state.isAuthenticated && !pageContentShown) {
+      // Only redirect to login if we haven't already shown page content.
+      // Prevents disruptive redirects when Supabase session expires while
+      // cached auth was keeping the page functional.
       window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
     }
   }

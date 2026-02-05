@@ -63,7 +63,9 @@ async function handleAuthState(state) {
   } else if (state.appUser || state.isUnauthorized) {
     loadingOverlay.classList.add('hidden');
     unauthorizedOverlay.classList.remove('hidden');
-  } else if (!state.isAuthenticated) {
+  } else if (!state.isAuthenticated && !initialized) {
+    // Only redirect if page content hasn't been shown yet — prevents
+    // disruptive redirects when Supabase session expires mid-use
     window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
   }
   // If state.isPending, do nothing — wait for the real role to come in

@@ -61,6 +61,7 @@ let currentAppUser = null;
 let currentRole = 'public';
 let authStateListeners = [];
 let authHandlingInProgress = false; // Prevent concurrent auth handling
+let resolvedFromCache = false; // Track whether we initially resolved from cache
 
 /**
  * Save verified auth state to localStorage for instant restore on next visit
@@ -144,6 +145,7 @@ export async function initAuth() {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
+      resolvedFromCache = true;
       // We still need the actual Supabase user object, so we don't set currentUser yet
       // but we resolve with a minimal user so the UI can proceed
       const minimalUser = { id: cached.userId, email: cached.email, displayName: cached.appUser.display_name };
@@ -173,8 +175,17 @@ export async function initAuth() {
           handleAuthChange(session);
         } else if (event === 'INITIAL_SESSION') {
           authLog.info('INITIAL_SESSION with no session - user not logged in');
-          if (cached) {
-            // Cache exists but Supabase says no session — session expired
+          if (resolvedFromCache) {
+            // Session expired but we already showed the page from cache.
+            // Don't nuke state and cause a disruptive redirect — keep the cached
+            // state so the page stays visible. The user will be prompted to
+            // re-authenticate only if an API call fails with 401.
+            authLog.warn('Supabase session gone but page loaded from cache — keeping cached state (session needs refresh)');
+            // Don't clear cache, don't reset state, don't notify listeners.
+            // The page continues to work with cached identity until a
+            // Supabase API call forces re-auth.
+          } else if (cached) {
+            // Cache exists but we didn't resolve from it (shouldn't normally happen)
             authLog.warn('Cached auth exists but Supabase session gone — clearing cache');
             clearCachedAuthState();
             currentUser = null;

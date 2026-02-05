@@ -3334,6 +3334,9 @@
     // =============================================
     // AUTH HANDLING
     // =============================================
+    let pageContentShown = false; // Track if we already showed page content
+    let spacesDataLoaded = false; // Prevent duplicate loadSpacesData calls
+
     function handleAuthState(state) {
       authState = state;
 
@@ -3352,14 +3355,21 @@
         document.getElementById('appContent').classList.remove('hidden');
         document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
         updateRoleUI();
-        loadSpacesData();
+        if (!spacesDataLoaded) {
+          spacesDataLoaded = true;
+          loadSpacesData();
+        }
+        pageContentShown = true;
       } else if (state.appUser) {
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('unauthorizedOverlay').classList.remove('hidden');
       } else if (state.isAuthenticated && state.isUnauthorized) {
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('unauthorizedOverlay').classList.remove('hidden');
-      } else if (!state.isAuthenticated) {
+      } else if (!state.isAuthenticated && !pageContentShown) {
+        // Only redirect to login if we haven't already shown page content.
+        // This prevents disruptive redirects when a Supabase session expires
+        // mid-use while cached auth was keeping the page functional.
         window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
       }
     }
