@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounting - Alpaca Playhouse Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="manage-shared.css?v=1">
+  <link rel="stylesheet" href="accounting.css?v=1">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Only administrators can access accounting.</p>
+      <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
+          <h1>&#129433; Alpaca Playhouse Admin</h1>
+        </a>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/" class="btn-small">Public View</a>
+        <a href="/spaces/admin/" class="btn-small">Dashboard</a>
+        <span id="userInfo" class="user-info"></span>
+        <span id="roleBadge" class="role-badge"></span>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="manage-container">
+      <!-- Tab Navigation -->
+      <div class="manage-tabs"></div>
+
+      <!-- Summary Cards -->
+      <div class="accounting-summary">
+        <div class="summary-card income">
+          <span class="summary-label">Total Received</span>
+          <span class="summary-value" id="totalIncome">$0.00</span>
+        </div>
+        <div class="summary-card expense">
+          <span class="summary-label">Total Refunded</span>
+          <span class="summary-value" id="totalExpenses">$0.00</span>
+        </div>
+        <div class="summary-card net">
+          <span class="summary-label">Net</span>
+          <span class="summary-value" id="netIncome">$0.00</span>
+        </div>
+        <div class="summary-card pending">
+          <span class="summary-label">Pending</span>
+          <span class="summary-value" id="pendingAmount">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Transactions Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Transactions</h2>
+          <span id="transactionCount" class="count-badge">0</span>
+          <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="addTransactionBtn" class="btn-primary btn-small">+ Record Payment</button>
+            <button id="exportCsvBtn" class="btn-secondary btn-small">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="section-filters">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Date Range</label>
+              <div class="date-range-row">
+                <input type="date" id="filterDateFrom" class="filter-input">
+                <span>to</span>
+                <input type="date" id="filterDateTo" class="filter-input">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Presets</label>
+              <div class="preset-buttons">
+                <button class="preset-btn active" data-preset="month">This Month</button>
+                <button class="preset-btn" data-preset="last-month">Last Month</button>
+                <button class="preset-btn" data-preset="quarter">This Quarter</button>
+                <button class="preset-btn" data-preset="ytd">YTD</button>
+                <button class="preset-btn" data-preset="all">All</button>
+              </div>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Direction</label>
+              <select id="filterDirection" class="filter-input">
+                <option value="">All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Category</label>
+              <select id="filterCategory" class="filter-input">
+                <option value="">All Categories</option>
+                <option value="application_fee">Application Fee</option>
+                <option value="rent">Rent</option>
+                <option value="prorated_rent">Prorated Rent</option>
+                <option value="security_deposit">Security Deposit</option>
+                <option value="move_in_deposit">Move-in Deposit</option>
+                <option value="reservation_deposit">Reservation Deposit</option>
+                <option value="event_rental_fee">Event Rental Fee</option>
+                <option value="event_reservation_fee">Event Reservation Fee</option>
+                <option value="event_cleaning_deposit">Event Cleaning Deposit</option>
+                <option value="refund">Refund</option>
+                <option value="damage_deduction">Damage Deduction</option>
+                <option value="late_fee">Late Fee</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Method</label>
+              <select id="filterMethod" class="filter-input">
+                <option value="">All Methods</option>
+                <option value="square">Square</option>
+                <option value="venmo">Venmo</option>
+                <option value="zelle">Zelle</option>
+                <option value="paypal">PayPal</option>
+                <option value="bank_ach">Bank/ACH</option>
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="stripe">Stripe</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Reconciled</label>
+              <select id="filterReconciled" class="filter-input">
+                <option value="">All</option>
+                <option value="false">Not Reconciled</option>
+                <option value="true">Reconciled</option>
+              </select>
+            </div>
+            <div class="filter-group filter-search">
+              <label>Search</label>
+              <input type="text" id="filterSearch" class="filter-input" placeholder="Name, description, notes...">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-body" id="transactionsTableContainer">
+          <div class="empty-state">Loading transactions...</div>
+        </div>
+      </div>
+
+      <!-- Monthly Summary Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Monthly Summary</h2>
+        </div>
+        <div class="section-body" id="monthlySummaryContainer">
+          <div class="empty-state">Loading summary...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Record Transaction Modal -->
+  <div id="transactionModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="transactionModalTitle">Record Payment</h2>
+        <button class="modal-close" id="closeTransactionModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="transactionForm">
+          <input type="hidden" id="txId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="txDirection">Type</label>
+              <select id="txDirection" required>
+                <option value="income">Income (Received)</option>
+                <option value="expense">Expense (Paid Out)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="txCategory">Category</label>
+              <select id="txCategory" required>
+                <option value="application_fee">Application Fee</option>
+                <option value="rent">Rent</option>
+                <option value="prorated_rent">Prorated Rent</option>
+                <option value="security_deposit">Security Deposit</option>
+                <option value="move_in_deposit">Move-in Deposit</option>
+                <option value="reservation_deposit">Reservation Deposit</option>
+                <option value="event_rental_fee">Event Rental Fee</option>
+                <option value="event_reservation_fee">Event Reservation Fee</option>
+                <option value="event_cleaning_deposit">Event Cleaning Deposit</option>
+                <option value="refund">Refund</option>
+                <option value="damage_deduction">Damage Deduction</option>
+                <option value="late_fee">Late Fee</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="txAmount">Amount ($)</label>
+              <input type="number" id="txAmount" step="0.01" min="0.01" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label for="txMethod">Payment Method</label>
+              <select id="txMethod" required>
+                <option value="square">Square</option>
+                <option value="venmo">Venmo</option>
+                <option value="zelle">Zelle</option>
+                <option value="paypal">PayPal</option>
+                <option value="bank_ach">Bank/ACH</option>
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="stripe">Stripe</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="txDate">Date</label>
+              <input type="date" id="txDate" required>
+            </div>
+            <div class="form-group">
+              <label for="txPerson">Person</label>
+              <select id="txPerson">
+                <option value="">-- Select Person --</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="txDescription">Description</label>
+            <input type="text" id="txDescription" placeholder="Brief description...">
+          </div>
+          <div class="form-group">
+            <label for="txNotes">Notes</label>
+            <textarea id="txNotes" rows="3" placeholder="Additional notes..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelTransactionBtn">Cancel</button>
+        <button class="btn-primary" id="saveTransactionBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refund Modal -->
+  <div id="refundModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2>Process Refund</h2>
+        <button class="modal-close" id="closeRefundModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="refund-details">
+          <p><strong>Original Payment:</strong> <span id="refundOriginalAmount">$0.00</span></p>
+          <p><strong>Already Refunded:</strong> <span id="refundAlreadyRefunded">$0.00</span></p>
+          <p><strong>Refundable:</strong> <span id="refundRefundable">$0.00</span></p>
+        </div>
+        <div class="form-group">
+          <label for="refundAmount">Refund Amount ($)</label>
+          <input type="number" id="refundAmount" step="0.01" min="0.01" required placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="refundReason">Reason</label>
+          <input type="text" id="refundReason" placeholder="Reason for refund...">
+        </div>
+        <input type="hidden" id="refundLedgerId">
+        <input type="hidden" id="refundSquarePaymentId">
+        <input type="hidden" id="refundPaymentRecordId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelRefundBtn">Cancel</button>
+        <button class="btn-danger" id="processRefundBtn">Process Refund</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reconcile Modal -->
+  <div id="reconcileModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2>Reconcile Transaction</h2>
+        <button class="modal-close" id="closeReconcileModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="reconcileQbRef">QuickBooks Reference</label>
+          <input type="text" id="reconcileQbRef" placeholder="QB transaction ID or reference...">
+        </div>
+        <div class="form-group">
+          <label for="reconcileNotes">Notes</label>
+          <textarea id="reconcileNotes" rows="2" placeholder="Reconciliation notes..."></textarea>
+        </div>
+        <input type="hidden" id="reconcileLedgerId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelReconcileBtn">Cancel</button>
+        <button class="btn-primary" id="confirmReconcileBtn">Mark Reconciled</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="accounting.js"></script>
+</body>
+</html>

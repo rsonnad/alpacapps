@@ -269,6 +269,28 @@ class SquareService {
         console.error('Failed to record $0 payment:', recordError);
       }
 
+      // Dual-write to ledger
+      if (paymentRecord) {
+        const categoryMap = {
+          rental_application: 'application_fee',
+          event_cleaning_deposit: 'event_cleaning_deposit',
+          event_reservation_deposit: 'event_reservation_fee',
+        };
+        await supabase.from('ledger').insert({
+          direction: 'income',
+          category: categoryMap[feeType] || 'other',
+          amount: 0,
+          payment_method: 'square',
+          transaction_date: new Date().toISOString().split('T')[0],
+          square_payment_id: paymentRecord.id,
+          rental_application_id: referenceType === 'rental_application' ? referenceId : null,
+          event_request_id: referenceType === 'event_hosting_request' ? referenceId : null,
+          status: 'completed',
+          description: `${feeType.replace(/_/g, ' ')} (fee waived)`,
+          recorded_by: 'system:square-service',
+        });
+      }
+
       // Increment code usage if applicable
       if (priceInfo.codeId) {
         await this.incrementCodeUsage(priceInfo.codeId);
@@ -349,6 +371,26 @@ class SquareService {
           updated_at: new Date().toISOString()
         })
         .eq('id', paymentRecord.id);
+
+      // Dual-write to ledger
+      const categoryMap = {
+        rental_application: 'application_fee',
+        event_cleaning_deposit: 'event_cleaning_deposit',
+        event_reservation_deposit: 'event_reservation_fee',
+      };
+      await supabase.from('ledger').insert({
+        direction: 'income',
+        category: categoryMap[feeType] || 'other',
+        amount: amount,
+        payment_method: 'square',
+        transaction_date: new Date().toISOString().split('T')[0],
+        square_payment_id: paymentRecord.id,
+        rental_application_id: referenceType === 'rental_application' ? referenceId : null,
+        event_request_id: referenceType === 'event_hosting_request' ? referenceId : null,
+        status: 'completed',
+        description: `Square payment: ${feeType.replace(/_/g, ' ')}`,
+        recorded_by: 'system:square-service',
+      });
 
       // Increment code usage if applicable
       if (priceInfo.codeId) {

@@ -1,0 +1,485 @@
+/* Accounting Page Styles */
+
+/* Summary Cards */
+.accounting-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-left: 4px solid var(--border);
+}
+
+.summary-card.income {
+  border-left-color: #22c55e;
+}
+
+.summary-card.expense {
+  border-left-color: #ef4444;
+}
+
+.summary-card.net {
+  border-left-color: #3b82f6;
+}
+
+.summary-card.pending {
+  border-left-color: #f59e0b;
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.summary-card.income .summary-value {
+  color: #22c55e;
+}
+
+.summary-card.expense .summary-value {
+  color: #ef4444;
+}
+
+.summary-card.net .summary-value {
+  color: #3b82f6;
+}
+
+.summary-card.pending .summary-value {
+  color: #f59e0b;
+}
+
+/* Filter Rows */
+.filter-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-row + .filter-row {
+  margin-top: 0.75rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.filter-group.filter-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.date-range-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-range-row span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.date-range-row input {
+  width: 140px;
+}
+
+/* Preset Buttons */
+.preset-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.preset-btn {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.preset-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Transactions Table */
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.transactions-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.transactions-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.transactions-table tbody tr {
+  transition: background 0.1s ease;
+}
+
+.transactions-table tbody tr:hover {
+  background: var(--bg);
+}
+
+.transactions-table tbody tr.voided {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+/* Direction Badge */
+.direction-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.direction-badge.income {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.direction-badge.expense {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Category Badge */
+.category-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Amount Styling */
+.amount-income {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.amount-expense {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Method Badge */
+.method-badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Status Badge */
+.tx-status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tx-status-badge.completed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.tx-status-badge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.tx-status-badge.failed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.tx-status-badge.voided {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+/* Reconciled Checkbox */
+.reconciled-check {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+/* Action Buttons */
+.tx-actions {
+  display: flex;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.tx-action-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tx-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.tx-action-btn.refund {
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.tx-action-btn.refund:hover {
+  background: #fee2e2;
+}
+
+/* Refund Details */
+.refund-details {
+  background: var(--bg);
+  border-radius: var(--radius-sm, 4px);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.refund-details p {
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+/* Monthly Summary Table */
+.monthly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.monthly-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid var(--border);
+}
+
+.monthly-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.monthly-table .amount-positive {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.monthly-table .amount-negative {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .accounting-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-input,
+  .filter-group select {
+    width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .date-range-row input {
+    width: 100%;
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .accounting-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .summary-value {
+    font-size: 1.25rem;
+  }
+
+  .transactions-table {
+    font-size: 0.8rem;
+  }
+
+  .transactions-table th,
+  .transactions-table td {
+    padding: 0.4rem 0.5rem;
+  }
+
+  /* Hide less important columns on mobile */
+  .col-status,
+  .col-method {
+    display: none;
+  }
+
+  .preset-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .accounting-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .col-reconciled {
+    display: none;
+  }
+}
