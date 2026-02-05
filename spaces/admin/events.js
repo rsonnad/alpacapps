@@ -14,7 +14,6 @@ import {
 import {
   showToast,
   initAdminPage,
-  renderTabNav,
   setupLightbox
 } from '../../shared/admin-shell.js';
 
@@ -38,10 +37,10 @@ let currentEventAgreementData = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
+    activeTab: 'events',
     requiredRole: 'staff',
     onReady: async (state) => {
       authState = state;
-      renderTabNav('events');
       setupLightbox();
       await loadEvents();
       setupEventListeners();

@@ -3,7 +3,7 @@
  */
 
 import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast, renderTabNav } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { leaseTemplateService } from '../../shared/lease-template-service.js';
 import { eventTemplateService } from '../../shared/event-template-service.js';
 import { formatDateAustin } from '../../shared/timezone.js';
@@ -21,11 +21,9 @@ let authState = null;
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize auth and admin page
   authState = await initAdminPage({
+    activeTab: 'templates',
     requiredRole: 'admin', // Templates require admin access
     onReady: async (state) => {
-      // Render tab navigation
-      renderTabNav('templates');
-
       // Load templates panel
       await loadTemplatesPanel();
 

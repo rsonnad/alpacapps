@@ -21,7 +21,6 @@ import {
 import {
   showToast,
   initAdminPage,
-  renderTabNav,
   setupLightbox
 } from '../../shared/admin-shell.js';
 
@@ -76,10 +75,10 @@ const VOLUNTEER_LABELS = {
 
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
+    activeTab: 'rentals',
     requiredRole: 'staff',
     onReady: async (state) => {
       authState = state;
-      renderTabNav('rentals');
       setupLightbox();
       await loadRentals();
       setupEventListeners();

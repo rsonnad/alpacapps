@@ -6,7 +6,7 @@ import { supabase } from '../../shared/supabase.js';
 import { mediaService } from '../../shared/media-service.js';
 import { errorLogger } from '../../shared/error-logger.js';
 import { formatDateTimeFull } from '../../shared/timezone.js';
-import { initAdminPage, showToast, renderTabNav, setupLightbox } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast, setupLightbox } from '../../shared/admin-shell.js';
 
 // Set up global error handlers
 errorLogger.setupGlobalHandlers();
@@ -36,11 +36,9 @@ let selectedUploadFiles = [];
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize auth and admin page
   authState = await initAdminPage({
+    activeTab: 'media',
     requiredRole: 'staff',
     onReady: async (state) => {
-      // Render tab navigation
-      renderTabNav('media');
-
       // Set up lightbox
       setupLightbox();
 

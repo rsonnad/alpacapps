@@ -75,10 +75,11 @@ export function renderTabNav(activeTab) {
  * Initialize an admin page with auth flow.
  * @param {Object} options
  * @param {string} options.activeTab - Which tab to highlight in nav
+ * @param {string} options.requiredRole - Minimum role required ('staff' or 'admin'). Default: 'staff'
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initAdminPage({ activeTab, onReady }) {
+export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -99,7 +100,11 @@ export async function initAdminPage({ activeTab, onReady }) {
       });
     }
 
-    if (state.appUser && (state.appUser.role === 'admin' || state.appUser.role === 'staff')) {
+    // Check if user meets the required role
+    const userRole = state.appUser?.role;
+    const meetsRoleRequirement = userRole === 'admin' || (requiredRole === 'staff' && userRole === 'staff');
+
+    if (state.appUser && meetsRoleRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
       document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;

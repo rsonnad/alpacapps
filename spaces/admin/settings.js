@@ -3,7 +3,7 @@
  */
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAdminPage, showToast, renderTabNav } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
 // =============================================
 // STATE
@@ -31,11 +31,9 @@ const FEE_TYPE_LABELS = {
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize auth and admin page
   authState = await initAdminPage({
+    activeTab: 'settings',
     requiredRole: 'admin', // Settings require admin access
     onReady: async (state) => {
-      // Render tab navigation
-      renderTabNav('settings');
-
       // Load settings data
       await loadSettingsPanel();
 
