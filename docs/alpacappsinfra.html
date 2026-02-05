@@ -976,22 +976,22 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>, then run <code>claude</code> from your project directory. Same features, same skills &mdash; these instructions just assume the desktop app.
     </div>
 
-    <h3>The easy way: use the setup skill</h3>
-    <p>Once Claude has your project open, type:</p>
+    <h3>Run the setup skill</h3>
+    <p>Once Claude Code is open in your project folder, type:</p>
     <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
     <p>Claude will ask you what you're building, which services you need, then walk you through the entire setup &mdash; creating your database, deploying edge functions, configuring webhooks, and building your CLAUDE.md. You don't need to read the rest of this guide unless you want to understand what's happening under the hood.</p>
 
-    <h3>How it works (if doing it manually)</h3>
-    <p>For every service below, the pattern is:</p>
+    <h3>What the rest of this guide is for</h3>
+    <p>The sections below explain each service in detail. For each one, you:</p>
     <ol>
       <li><strong>You</strong> create the account and copy credentials (in your browser)</li>
-      <li><strong>You</strong> paste credentials into your <code>CLAUDE.md</code> file</li>
-      <li><strong>You</strong> tell Claude what to do in plain English</li>
-      <li><strong>Claude</strong> handles the rest &mdash; installs CLIs, creates tables, writes edge functions, deploys, pushes code</li>
+      <li><strong>You</strong> give Claude the credentials (just paste them into the chat)</li>
+      <li><strong>Claude</strong> handles everything else &mdash; updates your config files, installs CLIs, creates tables, writes edge functions, deploys, and pushes code</li>
     </ol>
+    <p>You never need to edit files yourself. Just tell Claude what you want in plain English.</p>
     <div class="conversation">
-      <div class="you">"Set up the Supabase database with tables for spaces, people, and bookings. My credentials are in CLAUDE.md."</div>
-      <div class="ai">installs Supabase CLI, links project, creates tables with RLS, creates storage buckets, commits and pushes</div>
+      <div class="you">"Set up Supabase. Here are my credentials: project ref is abc123, anon key is eyJ..."</div>
+      <div class="ai">installs Supabase CLI, links project, updates CLAUDE.md, creates tables with RLS, creates storage buckets, commits and pushes</div>
     </div>
   </div>
 
@@ -1016,7 +1016,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <li>Go to <strong>Database settings</strong>: <code>supabase.com/dashboard/project/<strong>YOUR_REF</strong>/settings/database</code> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> tab and copy it</li>
     </ol>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>## Supabase Details
 - Project ID: `YOUR_PROJECT_REF`
 - URL: `https://YOUR_PROJECT_REF.supabase.co`
@@ -1052,7 +1052,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Create an API key at <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a> and copy it</li>
     </ol>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>### Email (Resend)
 - API key: `re_your_key_here` (store as Supabase secret: RESEND_API_KEY)
 - From address: notifications@yourdomain.com (or onboarding@resend.dev)</code></pre>
@@ -1086,7 +1086,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       Go to <a href="https://portal.telnyx.com/#/app/messaging/compliance" target="_blank">Messaging &rarr; Compliance</a>. Create a Brand (Sole Proprietor), then a Campaign (use case: business notifications). Assign your number. Approval can take days to weeks &mdash; SMS won't work without it.
     </div>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>### SMS (Telnyx)
 - API key: `KEY_your_key_here`
 - Messaging Profile ID: `your-profile-id`
@@ -1122,7 +1122,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       </li>
     </ol>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>### Payments (Square)
 - Application ID: `sq0idp-your-app-id`
 - Sandbox Access Token: `your-sandbox-token`
@@ -1154,7 +1154,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Subscribe to the <code>document_completed</code> event</li>
     </ol>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>### E-Signatures (SignWell)
 - API key: `your-signwell-api-key`
 - API base: https://www.signwell.com/api/v1
@@ -1179,7 +1179,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
     </ol>
 
-    <h3><span class="step-label step-paste">Paste into CLAUDE.md</span></h3>
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
     <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
 - API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
 
