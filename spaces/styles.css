@@ -1,27 +1,27 @@
 :root {
-  /* Pronounced warm palette - GitHub-inspired clarity */
-  --bg: #f6f8fa;
+  /* Warm alpaca palette */
+  --bg: #f5f4ed;
   --bg-card: #ffffff;
-  --text: #1c2526;
-  --text-muted: #57606a;
-  --border: #d1d9e0;
-  --accent: #b8860b;
-  --accent-light: #fdf5e6;
-  --occupied: #cf222e;
-  --occupied-light: #ffebe9;
-  --available: #1a7f37;
-  --available-light: #dafbe1;
-  --success: #1a7f37;
-  --success-light: #dafbe1;
-  --error: #cf222e;
-  --error-light: #ffebe9;
-  --secret: #8250df;
-  --secret-light: #fbefff;
-  --unlisted: #57606a;
-  --unlisted-light: #f6f8fa;
+  --text: #2e2226;
+  --text-muted: #6b5e62;
+  --border: #dfdeb8;
+  --accent: #e99c48;
+  --accent-light: #fdf1e0;
+  --occupied: #8f3d4b;
+  --occupied-light: #f5e6e9;
+  --available: #54a326;
+  --available-light: #e8f5e0;
+  --success: #54a326;
+  --success-light: #e8f5e0;
+  --error: #8f3d4b;
+  --error-light: #f5e6e9;
+  --secret: #7c6a9a;
+  --secret-light: #f3effc;
+  --unlisted: #6b5e62;
+  --unlisted-light: #f5f4ed;
   --radius: 6px;
-  --shadow: 0 1px 3px rgba(28,37,38,0.08), 0 1px 2px rgba(28,37,38,0.06);
-  --shadow-lg: 0 4px 12px rgba(28,37,38,0.10), 0 2px 4px rgba(28,37,38,0.06);
+  --shadow: 0 1px 3px rgba(46,34,38,0.08), 0 1px 2px rgba(46,34,38,0.06);
+  --shadow-lg: 0 4px 12px rgba(46,34,38,0.10), 0 2px 4px rgba(46,34,38,0.06);
 }
 
 * {
@@ -44,7 +44,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 2rem;
-  background: #1c2526;
+  background: #2e2226;
   color: white;
 }
 
@@ -110,7 +110,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #1c2526;
+  background: #2e2226;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -301,7 +301,7 @@ h1 {
 }
 
 .apply-link:hover {
-  background: #996f09;
+  background: #d48835;
 }
 
 .staff-link {
@@ -1001,7 +1001,7 @@ tr:last-child td {
 }
 
 .btn-primary:hover {
-  background: #996f09;
+  background: #d48835;
 }
 
 .btn-secondary {

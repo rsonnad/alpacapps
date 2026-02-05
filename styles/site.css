@@ -10,19 +10,19 @@
    ============================================= */
 
 :root {
-  /* Colors - pronounced warm palette */
+  /* Colors - warm alpaca palette */
   --aap-bg: #ffffff;
-  --aap-bg-muted: #f6f8fa;
-  --aap-bg-dark: #1c1917;
-  --aap-text: #1c2526;
+  --aap-bg-muted: #f5f4ed;  /* cream tint from #dfdeb8 */
+  --aap-bg-dark: #2e2226;   /* warm dark from burgundy family */
+  --aap-text: #2e2226;
   --aap-text-light: #ffffff;
-  --aap-text-muted: #57606a;
-  --aap-accent: #b8860b; /* Dark goldenrod - bold and warm */
-  --aap-accent-hover: #996f09;
-  --aap-link: #1c2526;
-  --aap-link-hover: #b8860b;
-  --aap-border: #d1d9e0;
-  --aap-overlay: rgba(0, 0, 0, 0.5);
+  --aap-text-muted: #6b5e62;
+  --aap-accent: #e99c48;    /* warm amber */
+  --aap-accent-hover: #d48835;
+  --aap-link: #2e2226;
+  --aap-link-hover: #e99c48;
+  --aap-border: #dfdeb8;    /* soft cream border */
+  --aap-overlay: rgba(46, 34, 38, 0.5);
 
   /* Typography - system font stack (GitHub-style, no external fonts needed) */
   --aap-font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
@@ -45,9 +45,9 @@
   --aap-radius-lg: 12px;
 
   /* Shadows */
-  --aap-shadow-sm: 0 1px 2px rgba(28, 37, 38, 0.06);
-  --aap-shadow: 0 1px 3px rgba(28, 37, 38, 0.08), 0 1px 2px rgba(28, 37, 38, 0.06);
-  --aap-shadow-lg: 0 4px 12px rgba(28, 37, 38, 0.1), 0 2px 4px rgba(28, 37, 38, 0.06);
+  --aap-shadow-sm: 0 1px 2px rgba(46, 34, 38, 0.06);
+  --aap-shadow: 0 1px 3px rgba(46, 34, 38, 0.08), 0 1px 2px rgba(46, 34, 38, 0.06);
+  --aap-shadow-lg: 0 4px 12px rgba(46, 34, 38, 0.1), 0 2px 4px rgba(46, 34, 38, 0.06);
 
   /* Transitions */
   --aap-transition: 0.2s ease;
@@ -157,7 +157,7 @@ ul, ol {
 
 .aap-header--solid {
   background-color: var(--aap-bg);
-  box-shadow: 0 1px 0 rgba(28, 37, 38, 0.1);
+  box-shadow: 0 1px 0 rgba(46, 34, 38, 0.08);
   border-bottom: 1px solid var(--aap-border);
 }
 
@@ -637,7 +637,7 @@ ul, ol {
 .aap-form__textarea:focus {
   outline: none;
   border-color: var(--aap-accent);
-  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15);
+  box-shadow: 0 0 0 3px rgba(233, 156, 72, 0.2);
 }
 
 .aap-form__textarea {
