@@ -7742,6 +7742,30 @@
       document.getElementById('recordDepositModal').classList.remove('hidden');
     };
 
+    function openEventRecordDepositModal(type) {
+      const req = allEventRequests.find(r => r.id === currentEventRequestId);
+      if (!req) return;
+
+      const titles = {
+        event_reservation: 'Record Reservation Deposit',
+        event_cleaning: 'Record Cleaning Deposit',
+        event_rental_fee: 'Record Rental Fee',
+      };
+      const amounts = {
+        event_reservation: parseFloat(req.reservation_fee) || eventService.DEFAULT_FEES.RESERVATION_FEE,
+        event_cleaning: parseFloat(req.cleaning_deposit) || eventService.DEFAULT_FEES.CLEANING_DEPOSIT,
+        event_rental_fee: parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE,
+      };
+
+      document.getElementById('depositType').value = type;
+      document.getElementById('depositAmount').value = `$${amounts[type]}`;
+      document.getElementById('depositMethod').value = '';
+      document.getElementById('depositTransactionId').value = '';
+      document.getElementById('recordDepositTitle').textContent = titles[type] || 'Record Payment';
+
+      document.getElementById('recordDepositModal').classList.remove('hidden');
+    }
+
     async function confirmRecordDeposit() {
       const type = document.getElementById('depositType').value;
       const method = document.getElementById('depositMethod').value;
@@ -7753,15 +7777,32 @@
       }
 
       try {
-        if (type === 'move_in') {
-          await rentalService.recordMoveInDeposit(currentApplicationId, { method, transactionId });
+        if (type.startsWith('event_')) {
+          const details = { method, transaction_id: transactionId };
+          if (type === 'event_reservation') {
+            await eventService.recordReservationFee(currentEventRequestId, details);
+          } else if (type === 'event_cleaning') {
+            await eventService.recordCleaningDeposit(currentEventRequestId, details);
+          } else if (type === 'event_rental_fee') {
+            await eventService.recordRentalFee(currentEventRequestId, details);
+          }
+          allEventRequests = await eventService.getRequests();
+          renderEventPipeline();
+          closeRecordDepositModal();
+          const updatedReq = allEventRequests.find(r => r.id === currentEventRequestId);
+          if (updatedReq) updateEventDepositsTab(updatedReq);
+          showToast('Payment recorded', 'success');
         } else {
-          await rentalService.recordSecurityDeposit(currentApplicationId, { method, transactionId });
+          if (type === 'move_in') {
+            await rentalService.recordMoveInDeposit(currentApplicationId, { method, transactionId });
+          } else {
+            await rentalService.recordSecurityDeposit(currentApplicationId, { method, transactionId });
+          }
+          await loadApplications();
+          closeRecordDepositModal();
+          openRentalDetail(currentApplicationId, getActiveDetailTab());
+          showToast('Deposit recorded', 'success');
         }
-        await loadApplications();
-        closeRecordDepositModal();
-        openRentalDetail(currentApplicationId, getActiveDetailTab());
-        showToast('Deposit recorded', 'success');
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -10749,6 +10790,11 @@ If there are any problems or suggestions for improvements, please email them to 
       document.getElementById('closeRecordRentModal')?.addEventListener('click', closeRecordRentModal);
       document.getElementById('cancelRecordRentBtn')?.addEventListener('click', closeRecordRentModal);
       document.getElementById('confirmRecordRentBtn')?.addEventListener('click', confirmRecordRent);
+
+      // Event deposit actions
+      document.getElementById('recordEventReservationBtn')?.addEventListener('click', () => openEventRecordDepositModal('event_reservation'));
+      document.getElementById('recordEventCleaningBtn')?.addEventListener('click', () => openEventRecordDepositModal('event_cleaning'));
+      document.getElementById('recordEventRentalFeeBtn')?.addEventListener('click', () => openEventRecordDepositModal('event_rental_fee'));
 
       // Event detail modal
       document.getElementById('closeEventDetail')?.addEventListener('click', closeEventDetail);
