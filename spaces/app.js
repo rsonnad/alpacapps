@@ -267,6 +267,7 @@ function setupEventListeners() {
   // Modal close
   document.getElementById('closeDetailModal').addEventListener('click', () => {
     spaceDetailModal.classList.add('hidden');
+    document.body.style.overflow = '';
     // Remove ID from URL when closing modal
     const url = new URL(window.location);
     url.searchParams.delete('id');
@@ -276,6 +277,7 @@ function setupEventListeners() {
   spaceDetailModal.addEventListener('click', (e) => {
     if (e.target === spaceDetailModal) {
       spaceDetailModal.classList.add('hidden');
+      document.body.style.overflow = '';
       const url = new URL(window.location);
       url.searchParams.delete('id');
       window.history.replaceState({}, '', url);
@@ -763,6 +765,7 @@ function displaySpaceDetail(space) {
   `;
 
   spaceDetailModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
 // Lightbox functionality
