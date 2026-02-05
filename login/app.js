@@ -13,9 +13,11 @@ const googleSignInBtn = document.getElementById('googleSignIn');
 const errorMessage = document.getElementById('errorMessage');
 const retryBtn = document.getElementById('retryBtn');
 
-// Get redirect URL from query params
+// Get redirect URL from query params or sessionStorage (survives OAuth round-trip)
 const urlParams = new URLSearchParams(window.location.search);
-const redirectUrl = urlParams.get('redirect') || '/spaces/admin/';
+const redirectUrl = urlParams.get('redirect')
+  || sessionStorage.getItem('genalpaca-login-redirect')
+  || '/spaces/admin/';
 
 console.log('[LOGIN]', 'Page loaded', { redirectUrl, href: window.location.href });
 
@@ -58,6 +60,7 @@ async function init() {
       const age = Date.now() - (cached.timestamp || 0);
       if (age < 90 * 24 * 60 * 60 * 1000 && (cached.role === 'admin' || cached.role === 'staff')) {
         console.log('[LOGIN]', 'Cached auth found, redirecting immediately', { email: cached.email, role: cached.role });
+        sessionStorage.removeItem('genalpaca-login-redirect');
         window.location.href = redirectUrl;
         return;
       }
@@ -74,6 +77,7 @@ async function init() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       console.log('[LOGIN]', 'Active session found, redirecting', { email: session.user.email });
+      sessionStorage.removeItem('genalpaca-login-redirect');
       window.location.href = redirectUrl;
       return;
     }
@@ -101,6 +105,7 @@ function checkAuthAndRedirect() {
   if (state.isAuthenticated) {
     if (state.isAuthorized) {
       console.log('[LOGIN]', 'Authorized — redirecting to:', redirectUrl);
+      sessionStorage.removeItem('genalpaca-login-redirect');
       window.location.href = redirectUrl;
     } else if (state.isUnauthorized) {
       console.log('[LOGIN]', 'Authenticated but unauthorized');
@@ -121,9 +126,11 @@ googleSignInBtn.addEventListener('click', async () => {
   showState('loading');
 
   try {
-    // Redirect URL should include the original intended destination
-    const loginRedirect = window.location.origin + '/login/?redirect=' + encodeURIComponent(redirectUrl);
-    console.log('[LOGIN]', 'Calling signInWithGoogle()', { loginRedirect });
+    // Redirect URL: use just /login/ so Supabase can append ?code= cleanly (PKCE flow)
+    // We store the intended destination in sessionStorage so it survives the OAuth round-trip
+    sessionStorage.setItem('genalpaca-login-redirect', redirectUrl);
+    const loginRedirect = window.location.origin + '/login/';
+    console.log('[LOGIN]', 'Calling signInWithGoogle()', { loginRedirect, storedRedirect: redirectUrl });
     await signInWithGoogle(loginRedirect);
     // Note: signInWithGoogle redirects to Google, so this line won't execute
   } catch (error) {

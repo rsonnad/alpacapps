@@ -51,9 +51,9 @@
       '/login/': '/login/index.html',
     };
 
-    // Check if it's a known path
+    // Check if it's a known path (preserve query params AND hash for OAuth callbacks)
     if (validPaths[path]) {
-      window.location.replace(validPaths[path] + window.location.search);
+      window.location.replace(validPaths[path] + window.location.search + window.location.hash);
     } else {
       // Unknown path - redirect to spaces
       window.location.replace('/spaces/');
