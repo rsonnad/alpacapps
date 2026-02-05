@@ -3886,10 +3886,10 @@
           : 'NOW';
         const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
 
-        // Status badge
-        let statusBadge = isOccupied
-          ? '<span class="badge occupied">Occupied</span>'
-          : '<span class="badge available">Available</span>';
+        // Status badge - use isAvailable (accounts for parent/child propagation)
+        let statusBadge = space.isAvailable
+          ? '<span class="badge available">Available</span>'
+          : '<span class="badge occupied">Occupied</span>';
 
         // Visibility badge (separate column now)
         let visBadge = '';
