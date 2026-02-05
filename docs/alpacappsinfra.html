@@ -40,8 +40,25 @@
     .hero {
       background: var(--text);
       color: #ffffff;
-      padding: 5rem 2rem 4rem;
-      text-align: center;
+      padding: 3.5rem 2rem;
+    }
+    .hero-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+    .hero-image {
+      flex-shrink: 0;
+      width: 280px;
+      height: 280px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid rgba(201,168,124,0.3);
+    }
+    .hero-text {
+      flex: 1;
     }
     .hero h1 {
       font-family: 'Playfair Display', Georgia, serif;
@@ -55,8 +72,8 @@
       font-size: 1.1rem;
       color: #b0b0b0;
       max-width: 620px;
-      margin: 0 auto 2rem;
       line-height: 1.7;
+      margin-bottom: 1.5rem;
     }
     .hero .badge {
       display: inline-block;
@@ -338,6 +355,8 @@
     .conversation .ai { font-style: italic; color: var(--text-muted); }
 
     @media (max-width: 640px) {
+      .hero-inner { flex-direction: column; gap: 1.5rem; text-align: center; }
+      .hero-image { width: 180px; height: 180px; }
       .hero h1 { font-size: 2rem; }
       .hero p { font-size: 0.95rem; }
       .section { padding: 1.5rem; }
@@ -356,9 +375,14 @@
 <body>
 
 <div class="hero">
-  <h1><span>AlpacApps</span> Infra</h1>
-  <p>Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, customer management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
-  <span class="badge">$0/month infrastructure &bull; $0&ndash;$200/month for Claude Code development</span>
+  <div class="hero-inner">
+    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/infra/alpacaservers2.jpg" alt="Alpacas in a server room" class="hero-image">
+    <div class="hero-text">
+      <h1><span>AlpacApps</span> Infra</h1>
+      <p>Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, customer management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
+      <span class="badge">$0/month infrastructure &bull; $0&ndash;$200/month for Claude Code development</span>
+    </div>
+  </div>
 </div>
 
 <div class="container">
