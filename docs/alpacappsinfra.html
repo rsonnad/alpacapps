@@ -52,9 +52,8 @@
     .hero-image {
       flex-shrink: 0;
       width: 280px;
-      height: 280px;
+      height: auto;
       border-radius: 12px;
-      object-fit: cover;
       border: 2px solid rgba(201,168,124,0.3);
     }
     .hero-text {
@@ -356,7 +355,7 @@
 
     @media (max-width: 640px) {
       .hero-inner { flex-direction: column; gap: 1.5rem; text-align: center; }
-      .hero-image { width: 180px; height: 180px; }
+      .hero-image { width: 180px; height: auto; }
       .hero h1 { font-size: 2rem; }
       .hero p { font-size: 0.95rem; }
       .section { padding: 1.5rem; }
