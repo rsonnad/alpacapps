@@ -75,13 +75,16 @@ async function runClaudeCode(report, screenshotPath) {
     '',
     report.page_url ? `Page URL: ${report.page_url}` : '',
     '',
-    'The attached screenshot shows the issue with annotations highlighting the problem.',
+    report.screenshot_url ? `Screenshot of the bug (downloaded locally, use Read tool to view): ${screenshotPath}` : '',
+    report.screenshot_url ? `Screenshot public URL: ${report.screenshot_url}` : '',
     '',
     'Instructions:',
     '- Read the CLAUDE.md file first for project context',
+    '- View the screenshot file to understand the visual bug',
     '- Identify the relevant files based on the page URL and description',
     '- Make the minimal fix needed',
     '- Do NOT push to git (the worker handles that)',
+    '- Do NOT update the version number (the worker handles that)',
   ].filter(Boolean).join('\n');
 
   const args = [
@@ -90,11 +93,6 @@ async function runClaudeCode(report, screenshotPath) {
     '--max-turns', '25',
     '--output-format', 'json',
   ];
-
-  // Add image if we have a screenshot
-  if (screenshotPath) {
-    args.push('--image', screenshotPath);
-  }
 
   log('info', 'Running Claude Code', { prompt_length: prompt.length });
 
@@ -146,7 +144,15 @@ async function downloadScreenshot(url) {
 // ============================================
 // Send notification email
 // ============================================
+const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
+
 async function sendEmail(type, report, extraData = {}) {
+  // Send to both the reporter and admin
+  const recipients = [report.reporter_email];
+  if (report.reporter_email !== ADMIN_EMAIL) {
+    recipients.push(ADMIN_EMAIL);
+  }
+
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
@@ -156,7 +162,7 @@ async function sendEmail(type, report, extraData = {}) {
       },
       body: JSON.stringify({
         type,
-        to: report.reporter_email,
+        to: recipients,
         data: {
           reporter_name: report.reporter_name,
           description: report.description,
@@ -202,6 +208,9 @@ async function processBugReport(report) {
       .from('bug_reports')
       .update({ status: 'processing' })
       .eq('id', report.id);
+
+    // 1b. Send confirmation email
+    await sendEmail('bug_report_received', report);
 
     // 2. Pull latest code
     await gitPull();

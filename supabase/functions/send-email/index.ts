@@ -31,6 +31,7 @@ type EmailType =
   // Contact form
   | "contact_form"
   // Bug reports
+  | "bug_report_received"
   | "bug_report_fixed"
   | "bug_report_failed";
 
@@ -785,6 +786,38 @@ ${data.message || 'No message'}`
       };
 
     // ===== BUG REPORT NOTIFICATIONS =====
+    case "bug_report_received":
+      return {
+        subject: `Bug Report Received: ${(data.description || '').substring(0, 50)}`,
+        html: `
+          <h2 style="color: #2980b9;">Bug Report Received</h2>
+          <p>Hi ${data.reporter_name},</p>
+          <p>We've received your bug report and our automated system is working on a fix right now.</p>
+
+          <h3>Your Report</h3>
+          <p style="background: #f5f5f5; padding: 15px; border-radius: 8px;">${data.description}</p>
+          ${data.page_url ? `<p><strong>Page:</strong> <a href="${data.page_url}">${data.page_url}</a></p>` : ''}
+
+          ${data.screenshot_url ? `
+          <h3>Your Screenshot</h3>
+          <p><img src="${data.screenshot_url}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" alt="Bug screenshot"></p>
+          ` : ''}
+
+          <p style="color: #666; font-size: 13px; margin-top: 20px;">You'll receive another email when the fix is deployed or if we need to escalate to a human.</p>
+        `,
+        text: `Bug Report Received
+
+Hi ${data.reporter_name},
+
+We've received your bug report and our automated system is working on a fix right now.
+
+YOUR REPORT:
+${data.description}
+${data.page_url ? `Page: ${data.page_url}` : ''}
+
+You'll receive another email when the fix is deployed or if we need to escalate to a human.`
+      };
+
     case "bug_report_fixed":
       return {
         subject: `Bug Fixed: ${(data.description || '').substring(0, 50)}`,
