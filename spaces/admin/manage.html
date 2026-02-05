@@ -6998,7 +6998,7 @@
     // RENTAL DETAIL MODAL
     // =============================================
 
-    async function openRentalDetail(applicationId) {
+    async function openRentalDetail(applicationId, activeTab = 'applicant') {
       currentApplicationId = applicationId;
       const app = allApplications.find(a => a.id === applicationId);
       if (!app) return;
@@ -7134,8 +7134,13 @@
       // Show modal
       document.getElementById('rentalDetailModal').classList.remove('hidden');
 
-      // Set first tab as active
-      switchDetailTab('applicant');
+      // Set active tab (preserves current tab when refreshing after actions)
+      switchDetailTab(activeTab);
+    }
+
+    function getActiveDetailTab() {
+      const active = document.querySelector('.detail-tab.active');
+      return active ? active.dataset.detailTab : 'applicant';
     }
 
     function switchDetailTab(tabName) {
@@ -7320,7 +7325,7 @@
         const newTestValue = !app?.is_test;
         await rentalService.toggleTestFlag(currentApplicationId, newTestValue);
         await loadApplications();
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
         showToast(newTestValue ? 'Marked as test' : 'Unmarked as test', 'success');
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
@@ -7332,7 +7337,7 @@
       try {
         await rentalService.startReview(currentApplicationId);
         await loadApplications();
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -7389,7 +7394,7 @@
           showToast('Application approved (no email on file)', 'success');
         }
 
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -7526,7 +7531,7 @@
       try {
         await rentalService.updateAgreementStatus(currentApplicationId, 'sent');
         await loadApplications();
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
         showToast('Agreement marked as sent', 'success');
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
@@ -7552,7 +7557,7 @@
           showToast('Agreement marked as signed', 'success');
         }
 
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -7577,7 +7582,7 @@
           showToast('Deposit confirmed (no email on file)', 'success');
         }
 
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -7758,7 +7763,7 @@
         }
         await loadApplications();
         closeRecordDepositModal();
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
         showToast('Deposit recorded', 'success');
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
@@ -8055,7 +8060,7 @@
 
         // Reload applications and refresh UI
         await loadApplications();
-        await openRentalDetail(currentApplicationId);
+        await openRentalDetail(currentApplicationId, getActiveDetailTab());
 
         showToast('Lease agreement PDF generated!', 'success');
       } catch (e) {
@@ -8107,7 +8112,7 @@
         const emailResult = await emailService.sendLeaseSent({ person: app.person });
 
         await loadApplications();
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
 
         if (emailResult.success) {
           showToast('Lease sent for signature & notification email sent', 'success');
@@ -10649,7 +10654,7 @@ If there are any problems or suggestions for improvements, please email them to 
           showToast('Deposit requested (no email on file)', 'success');
         }
 
-        openRentalDetail(currentApplicationId);
+        openRentalDetail(currentApplicationId, getActiveDetailTab());
       } catch (error) {
         showToast('Error: ' + error.message, 'error');
       }
@@ -10721,7 +10726,7 @@ If there are any problems or suggestions for improvements, please email them to 
         try {
           await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url || null);
           await loadApplications();
-          openRentalDetail(currentApplicationId);
+          openRentalDetail(currentApplicationId, getActiveDetailTab());
           showToast('Agreement marked as generated', 'success');
         } catch (error) {
           showToast('Error: ' + error.message, 'error');
