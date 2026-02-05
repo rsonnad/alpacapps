@@ -6103,6 +6103,7 @@
       document.getElementById('selectAllBtn')?.addEventListener('click', selectAll);
       document.getElementById('deselectAllBtn')?.addEventListener('click', deselectAll);
       document.getElementById('bulkTagBtn')?.addEventListener('click', openBulkTagModal);
+      document.getElementById('bulkDeleteBtn')?.addEventListener('click', bulkDeleteSelected);
 
       document.getElementById('closeMediaDetail')?.addEventListener('click', closeMediaDetail);
       document.getElementById('cancelMediaDetail')?.addEventListener('click', closeMediaDetail);
@@ -6161,7 +6162,7 @@
       try {
         allApplications = await rentalService.getApplications();
         renderPipeline();
-        renderDeniedDelayed();
+        renderDenied();
       } catch (error) {
         console.error('Error loading applications:', error);
       }
@@ -6285,32 +6286,32 @@
       `;
     }
 
-    function renderDeniedDelayed() {
-      const deniedDelayed = allApplications.filter(app =>
-        app.application_status === 'denied' || app.application_status === 'delayed'
+    function renderDenied() {
+      const denied = allApplications.filter(app =>
+        app.application_status === 'denied'
       );
 
-      const container = document.getElementById('deniedDelayedList');
-      const countEl = document.getElementById('deniedDelayedCount');
+      const container = document.getElementById('deniedList');
+      const countEl = document.getElementById('deniedCount');
 
-      if (countEl) countEl.textContent = deniedDelayed.length;
+      if (countEl) countEl.textContent = denied.length;
 
       if (container) {
-        if (deniedDelayed.length === 0) {
-          container.innerHTML = '<p class="text-muted">No denied or delayed applications.</p>';
+        if (denied.length === 0) {
+          container.innerHTML = '<p class="text-muted">No denied applications.</p>';
         } else {
-          container.innerHTML = deniedDelayed.map(app => {
+          container.innerHTML = denied.map(app => {
             const person = app.person || {};
             return `
               <div class="space-item" style="cursor: pointer;" onclick="window.openRentalDetail('${app.id}')">
                 <div class="space-item-info">
                   <div class="space-item-details">
                     <h3>${person.first_name || ''} ${person.last_name || ''}</h3>
-                    <small>${app.application_status} - ${app.denial_reason || app.delay_reason || 'No reason given'}</small>
+                    <small>denied - ${app.denial_reason || 'No reason given'}</small>
                   </div>
                 </div>
                 <div class="space-item-meta">
-                  <span class="status-badge ${app.application_status}">${app.application_status}</span>
+                  <span class="status-badge denied">denied</span>
                 </div>
               </div>
             `;
