@@ -820,13 +820,14 @@
         <div class="stack-layer layer-capabilities">
           <div class="layer-label">Capabilities</div>
           <div class="layer-items">
+            <span>User Login</span>
             <span>Email</span>
             <span>SMS</span>
             <span>Payments</span>
             <span>E-Signatures</span>
             <span>AI Features</span>
           </div>
-          <div class="layer-services">Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini</div>
+          <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini</div>
         </div>
 
         <div class="stack-layer layer-crm">
@@ -1018,7 +1019,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     </div>
   </div>
 
-  <!-- 4. Supabase -->
+  <!-- 3. Supabase -->
   <div class="section" id="supabase">
     <h2><img src="https://cdn.simpleicons.org/supabase" alt="Supabase" class="service-icon">3. Supabase <span class="cost-badge cost-free">Free</span></h2>
     <p>Database, storage, auth, and serverless edge functions &mdash; all in one.</p>
@@ -1059,8 +1060,10 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 - Project ID: `<span class="supa-ref">YOUR_PROJECT_REF</span>`
 - URL: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co`
 - Anon key: `your-anon-key-here`
+- Database password: `your-db-password`
 
 ### Direct Database Access (for Claude)
+Session pooler connection string (paste yours from Database settings):
 psql "postgres://postgres.<span class="supa-ref">YOUR_PROJECT_REF</span>:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
 
 URL-encode special characters in password (! = %21, @ = %40).
@@ -1188,7 +1191,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/functions/v1/telnyx-webhook</code></pre>
       </li>
       <li>Assign your phone number to this profile, note the <strong>Messaging Profile ID</strong></li>
-      <li>Get your API key at <a href="https://portal.telnyx.com/#/app/api-keys" target="_blank">portal.telnyx.com &rarr; API Keys</a>, copy it + the <strong>Public Key</strong></li>
+      <li>Get your API key at <a href="https://portal.telnyx.com/#/app/api-keys" target="_blank">portal.telnyx.com &rarr; API Keys</a> and copy it</li>
     </ol>
 
     <div class="callout warning">
@@ -1201,7 +1204,6 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 - API key: `KEY_your_key_here`
 - Messaging Profile ID: `your-profile-id`
 - Phone number: `+12125551234`
-- Public key: `your-public-key-here`
 - Config stored in `telnyx_config` table
 - Edge functions: `send-sms` (outbound), `telnyx-webhook` (inbound)
 - Deploy webhook with `--no-verify-jwt`
@@ -1397,7 +1399,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ul>
   </div>
 
-  <!-- 11. CLAUDE.md Template -->
+  <!-- 12. CLAUDE.md Template -->
   <div class="section" id="template">
     <h2>12. CLAUDE.md Template</h2>
     <p>Enter your project name and download a ready-to-use <code>CLAUDE.md</code> template. Save it in your project root and fill in the credential placeholders.</p>
@@ -1421,7 +1423,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 12. Day-One Checklist -->
+  <!-- 13. Day-One Checklist -->
   <div class="section" id="checklist">
     <h2>13. Day-One Checklist</h2>
 
@@ -1432,7 +1434,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Create GitHub account and repository</li>
       <li>Enable GitHub Pages on the repo</li>
       <li>Create Supabase account and project</li>
-      <li>Copy: Supabase URL, anon key, project ref, DB password, session pooler string</li>
+      <li>Copy: project ref, anon key, DB password, and session pooler connection string</li>
     </ul>
 
     <p><strong>User Login &mdash; Free (Google OAuth):</strong></p>
@@ -1458,7 +1460,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Buy a phone number (~$1/month)</li>
       <li>Create Messaging Profile, assign number, set webhook URL</li>
       <li>Register for 10DLC (mandatory for US &mdash; do early, approval takes time)</li>
-      <li>Copy: API key, Messaging Profile ID, phone number, public key</li>
+      <li>Copy: API key, Messaging Profile ID, phone number</li>
     </ul>
 
     <p><strong>Payments &mdash; Free until you process (Square):</strong></p>
@@ -1652,6 +1654,12 @@ function downloadTemplate() {
     'supabase secrets set KEY=value\n' +
     '```\n\n' +
     'Run these directly. If CLI not installed, install and link first.\n\n' +
+    '## Authentication\n\n' +
+    '### Google Sign-In (OAuth via Supabase)\n' +
+    '- Google Client ID: `your-client-id.apps.googleusercontent.com`\n' +
+    '- Auth handled by Supabase Auth (no edge function needed)\n' +
+    '- Redirect URI: `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`\n' +
+    '- Sign-in method: `supabase.auth.signInWithOAuth({ provider: \'google\' })`\n\n' +
     '## External Services\n\n' +
     '### Email (Resend)\n' +
     '- API key stored as Supabase secret: `RESEND_API_KEY`\n\n' +
