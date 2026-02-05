@@ -1,27 +1,27 @@
 :root {
-  /* Warm Desert Palette */
-  --bg: #faf8f5;
+  /* Pronounced warm palette - GitHub-inspired clarity */
+  --bg: #f6f8fa;
   --bg-card: #ffffff;
-  --text: #3d3024;
-  --text-muted: #8c7b6b;
-  --border: #e8e2da;
-  --accent: #b5651d;
-  --accent-light: #fdf3e8;
-  --occupied: #c75b3a;
-  --occupied-light: #fceee9;
-  --available: #6b8e5a;
-  --available-light: #eef5eb;
-  --success: #6b8e5a;
-  --success-light: #eef5eb;
-  --error: #c75b3a;
-  --error-light: #fceee9;
-  --secret: #7c6a9a;
-  --secret-light: #f3effc;
-  --unlisted: #9a9082;
-  --unlisted-light: #f5f2ee;
-  --radius: 8px;
-  --shadow: 0 1px 3px rgba(61,48,36,0.06), 0 1px 2px rgba(61,48,36,0.08);
-  --shadow-lg: 0 4px 12px rgba(61,48,36,0.08), 0 2px 4px rgba(61,48,36,0.06);
+  --text: #1c2526;
+  --text-muted: #57606a;
+  --border: #d1d9e0;
+  --accent: #b8860b;
+  --accent-light: #fdf5e6;
+  --occupied: #cf222e;
+  --occupied-light: #ffebe9;
+  --available: #1a7f37;
+  --available-light: #dafbe1;
+  --success: #1a7f37;
+  --success-light: #dafbe1;
+  --error: #cf222e;
+  --error-light: #ffebe9;
+  --secret: #8250df;
+  --secret-light: #fbefff;
+  --unlisted: #57606a;
+  --unlisted-light: #f6f8fa;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(28,37,38,0.08), 0 1px 2px rgba(28,37,38,0.06);
+  --shadow-lg: 0 4px 12px rgba(28,37,38,0.10), 0 2px 4px rgba(28,37,38,0.06);
 }
 
 * {
@@ -31,7 +31,7 @@
 }
 
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
@@ -44,7 +44,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 2rem;
-  background: #2d3024;
+  background: #1c2526;
   color: white;
 }
 
@@ -62,9 +62,10 @@ body {
 }
 
 .site-nav__logo span {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .site-nav__links {
@@ -109,7 +110,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #2d3024;
+  background: #1c2526;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -148,7 +149,7 @@ body {
 }
 
 .site-nav-mobile__links a {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
   font-size: 1.5rem;
   color: white;
   text-decoration: none;
@@ -300,7 +301,7 @@ h1 {
 }
 
 .apply-link:hover {
-  background: #9a5518;
+  background: #996f09;
 }
 
 .staff-link {
@@ -456,22 +457,23 @@ main {
 
 .space-card {
   background: var(--bg-card);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
 }
 
 .space-card:hover {
-  box-shadow: 0 8px 24px rgba(43,45,44,0.12), 0 4px 8px rgba(43,45,44,0.08);
-  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
 }
 
 .space-card:hover .card-image img {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
 .card-image {
@@ -999,7 +1001,7 @@ tr:last-child td {
 }
 
 .btn-primary:hover {
-  background: #9a5518;
+  background: #996f09;
 }
 
 .btn-secondary {

@@ -176,7 +176,7 @@
   font-size: 0.55rem;
   font-weight: 700;
   fill: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
 }
 
 /* Occupancy row colors */
