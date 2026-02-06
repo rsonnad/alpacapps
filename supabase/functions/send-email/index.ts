@@ -1170,8 +1170,8 @@ serve(async (req) => {
     // Sender addresses by category:
     // auto@ = automated system emails (bug reports, errors, identity verification)
     // team@ = human-facing team emails (rental, events, payments, invitations)
-    const AUTO_FROM = "Alpaca Playhouse <auto@alpacaplayhouse.com>";
-    const TEAM_FROM = "Alpaca Playhouse <team@alpacaplayhouse.com>";
+    const AUTO_FROM = "Alpaca Automaton <auto@alpacaplayhouse.com>";
+    const TEAM_FROM = "Alpaca Team <team@alpacaplayhouse.com>";
     const AUTO_REPLY_TO = "auto@alpacaplayhouse.com";
     const TEAM_REPLY_TO = "team@alpacaplayhouse.com";
 

@@ -434,7 +434,7 @@ async function sendRentalSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
+        from: 'Alpaca Team <team@alpacaplayhouse.com>',
         to: [person.email],
         reply_to: 'team@alpacaplayhouse.com',
         subject: 'Lease Signed - Reservation Deposit Due - Alpaca Playhouse',
@@ -537,7 +537,7 @@ async function sendEventSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
+        from: 'Alpaca Team <team@alpacaplayhouse.com>',
         to: [person.email],
         reply_to: 'team@alpacaplayhouse.com',
         subject: 'Event Agreement Signed - Outstanding Fees Due Before Event - Alpaca Playhouse',

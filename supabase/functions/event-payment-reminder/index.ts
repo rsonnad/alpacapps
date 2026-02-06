@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
+            from: 'Alpaca Team <team@alpacaplayhouse.com>',
             to: [person.email],
             reply_to: 'team@alpacaplayhouse.com',
             subject: `Payment Reminder: ${event.event_name} - Fees Due in 3 Days`,
