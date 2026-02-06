@@ -771,22 +771,32 @@ async function recordMoveInDeposit(applicationId, details = {}) {
  * Record security deposit payment
  */
 async function recordSecurityDeposit(applicationId, details = {}) {
-  const { paidAt = new Date().toISOString(), method = null, transactionId = null } = details;
+  const { paidAt = new Date().toISOString(), method = null, transactionId = null, amount = null } = details;
 
   // Get application to get the amount
   const app = await getApplication(applicationId);
   if (!app) throw new Error('Application not found');
 
-  // Update application
+  // Use provided amount or fall back to stored amount
+  const depositAmount = amount !== null ? amount : app.security_deposit_amount;
+
+  // Update application with the new amount if provided
+  const updateData = {
+    security_deposit_paid: true,
+    security_deposit_paid_at: paidAt,
+    security_deposit_method: method,
+    security_deposit_transaction_id: transactionId,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Update the stored amount if a new amount was provided
+  if (amount !== null) {
+    updateData.security_deposit_amount = amount;
+  }
+
   const { data, error } = await supabase
     .from('rental_applications')
-    .update({
-      security_deposit_paid: true,
-      security_deposit_paid_at: paidAt,
-      security_deposit_method: method,
-      security_deposit_transaction_id: transactionId,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', applicationId)
     .select()
     .single();
@@ -794,12 +804,12 @@ async function recordSecurityDeposit(applicationId, details = {}) {
   if (error) throw error;
 
   // Create payment record (only if security deposit > 0)
-  if (app.security_deposit_amount > 0) {
+  if (depositAmount > 0) {
     const { data: rpData } = await supabase.from('rental_payments').insert({
       rental_application_id: applicationId,
       payment_type: PAYMENT_TYPE.SECURITY_DEPOSIT,
-      amount_due: app.security_deposit_amount,
-      amount_paid: app.security_deposit_amount,
+      amount_due: depositAmount,
+      amount_paid: depositAmount,
       paid_date: paidAt,
       payment_method: method,
       transaction_id: transactionId,
@@ -810,7 +820,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
     await supabase.from('ledger').insert({
       direction: 'income',
       category: 'security_deposit',
-      amount: app.security_deposit_amount,
+      amount: depositAmount,
       payment_method: method || 'other',
       transaction_date: paidAt ? paidAt.split('T')[0] : new Date().toISOString().split('T')[0],
       person_id: app.person_id,
