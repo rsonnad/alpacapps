@@ -1,4 +1,4 @@
-// Authentication module for Google SSO with role-based access control
+// Authentication module with Google OAuth and email/password support
 import { supabase } from './supabase.js';
 
 // Timeout configuration

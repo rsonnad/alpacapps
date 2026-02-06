@@ -1,6 +1,6 @@
 // Login page application
 import { supabase } from '../shared/supabase.js';
-import { initAuth, signInWithGoogle, signInWithPassword, signOut, getAuthState } from '../shared/auth.js';
+import { initAuth, signInWithGoogle, signInWithPassword, signOut, getAuthState, onAuthStateChange } from '../shared/auth.js';
 
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
 
@@ -131,10 +131,14 @@ emailPasswordForm.addEventListener('submit', async (e) => {
   const password = document.getElementById('passwordInput').value;
 
   try {
+    // Listen for the SIGNED_IN event before triggering sign-in
+    const unsub = onAuthStateChange((state) => {
+      if (state.isAuthenticated) {
+        unsub();
+        checkAuthAndRedirect();
+      }
+    });
     await signInWithPassword(email, password);
-    // initAuth's onAuthStateChange will fire; check and redirect
-    await initAuth();
-    checkAuthAndRedirect();
   } catch (error) {
     console.error('[LOGIN]', 'Email/password sign in error:', error);
     showState('error', error.message);
