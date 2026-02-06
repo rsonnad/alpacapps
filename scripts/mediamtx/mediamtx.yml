@@ -1,0 +1,87 @@
+###############################################
+# MediaMTX Configuration — GenAlpaca Residency
+# Restreams UniFi Protect RTSPS cameras as RTSP/HLS/WebRTC
+#
+# Deploy to: ~/mediamtx/mediamtx.yml on Alpaca Mac
+# Run setup.sh to install and configure automatically
+###############################################
+
+# Global
+logLevel: info
+logDestinations: [stdout]
+
+# Control API
+api: yes
+apiAddress: :9997
+
+# RTSP server (standard, unencrypted for LAN consumers)
+rtsp: yes
+rtspAddress: :8554
+rtpAddress: :8000
+rtcpAddress: :8001
+rtspEncryption: "no"
+
+# HLS server (browser-friendly)
+hls: yes
+hlsAddress: :8888
+hlsVariant: lowLatency
+
+# WebRTC server (low-latency browser viewing)
+webrtc: yes
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+
+# Disable unused protocols
+rtmp: no
+srt: no
+
+###############################################
+# Path defaults — on-demand pulls save bandwidth
+pathDefaults:
+  sourceOnDemand: yes
+  sourceOnDemandStartTimeout: 10s
+  sourceOnDemandCloseAfter: 10s
+
+###############################################
+# Camera paths
+# Fingerprint is extracted during setup (all cameras share UDM Pro cert)
+# FORMAT: sourceFingerprint will be replaced by setup.sh
+paths:
+  # === Alpacamera (192.168.1.173) — backyard/patio ===
+  alpacamera-high:
+    source: rtsps://192.168.1.1:7441/lJxvADtGLsGulh8u?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  alpacamera-med:
+    source: rtsps://192.168.1.1:7441/aIs1aXMiVmJCgW68?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  alpacamera-low:
+    source: rtsps://192.168.1.1:7441/IzpIjAyLw50n4wqn?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  # === Front Of House (192.168.1.182) — front yard/driveway ===
+  front-house-high:
+    source: rtsps://192.168.1.1:7441/JvINuiuzqfecPHHB?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  front-house-med:
+    source: rtsps://192.168.1.1:7441/N3sph6SQAYTh5bUu?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  front-house-low:
+    source: rtsps://192.168.1.1:7441/lzyZPUsipXR67bK5?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  # === Side Yard (192.168.1.110) — side deck area ===
+  side-yard-high:
+    source: rtsps://192.168.1.1:7441/aeYad5AdqdFbsuGm?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  side-yard-med:
+    source: rtsps://192.168.1.1:7441/N8fKGdVD017n9urn?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
+
+  side-yard-low:
+    source: rtsps://192.168.1.1:7441/eLkr5lNQISofL8Go?enableSrtp
+    sourceFingerprint: "FINGERPRINT_PLACEHOLDER"
