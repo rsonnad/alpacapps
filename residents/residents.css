@@ -209,14 +209,15 @@
 /* Color presets */
 .color-presets {
   display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
+  gap: 0.3rem;
+  flex-wrap: nowrap;
 }
 
 .color-preset {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
+  flex-shrink: 0;
   border: 2px solid transparent;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.1s;
