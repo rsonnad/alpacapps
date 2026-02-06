@@ -887,7 +887,7 @@
     <a href="/" class="site-nav__logo">
       <img src="/assets/branding/alpaca-head-inverted.jpg" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="/assets/branding/wordmark-inverted.jpeg" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span class="site-nav__version">v260205.10</span>
+      <span class="site-nav__version">v260205.14</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
@@ -1661,6 +1661,12 @@
           }
         }
 
+        // Parse date_of_birth: field is now a text input for age (e.g. "28"),
+        // but the DB column is DATE type. Only send if it looks like a valid date.
+        const dobValue = getValue('date_of_birth');
+        const dobDate = dobValue ? new Date(dobValue) : null;
+        const isValidDate = dobDate && !isNaN(dobDate.getTime()) && dobValue.includes('-');
+
         // Build person data (Step 1 fields only)
         const personData = {
           first_name: firstName,
@@ -1668,7 +1674,7 @@
           email: email,
           phone: phone,
           whatsapp: phone,
-          date_of_birth: getValue('date_of_birth') || null,
+          date_of_birth: isValidDate ? dobValue : null,
           coliving_experience: getValue('coliving_experience'),
           life_focus: getValue('life_focus'),
           visiting_guide_response: getValue('visiting_guide_response'),
@@ -1679,6 +1685,11 @@
           referral_source: getValue('referral_source'),
           status: 'candidate'
         };
+
+        // If the user entered an age instead of a date, include it in notes
+        if (dobValue && !isValidDate) {
+          personData.notes = `Age: ${dobValue}`;
+        }
 
         // Insert person
         const personResponse = await fetch(`${SUPABASE_URL}/rest/v1/people`, {
@@ -1749,7 +1760,7 @@
                   '',
                   `Email: ${email}`,
                   `Phone: ${phone}`,
-                  `DOB: ${getValue('date_of_birth') || 'Not provided'}`,
+                  `Age: ${dobValue || 'Not provided'}`,
                   '',
                   `Preferred Accommodation: ${accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation')}`,
                   `Desired Timeframe: ${getValue('desired_timeframe')}`,
@@ -2184,7 +2195,7 @@
           document.getElementById('last_name').value = 'Inquirer';
           document.getElementById('email').value = 'test@example.com';
           document.getElementById('phone').value = '+1-512-555-0123';
-          document.getElementById('date_of_birth').value = '1990-01-15';
+          document.getElementById('date_of_birth').value = '28';
           document.getElementById('coliving_experience').value = 'I lived in a co-living house in Portland for 2 years.';
           document.getElementById('life_focus').value = 'Building a sustainable tech startup and practicing meditation.';
           document.getElementById('visiting_guide_response').value = 'Yes, I loved the community values section.';
