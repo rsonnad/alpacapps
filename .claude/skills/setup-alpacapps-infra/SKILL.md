@@ -225,7 +225,35 @@ Ask:
 **Then you:**
 1. `supabase secrets set GEMINI_API_KEY={key}`
 
-### Step 10: Final Summary
+### Step 10: Claude Code Permissions
+
+After all services are configured, offer to set up recommended Claude Code tool permissions so the user doesn't get prompted for routine actions.
+
+Ask with AskUserQuestion (multiSelect: true):
+
+> **Which Claude Code tools should run without asking for permission?**
+>
+> These save time by skipping the approval prompt for common actions. You can always change this later in `~/.claude/settings.json`.
+
+Options:
+- **Web Search & Fetch** — Let Claude search the web and fetch URLs without prompting (WebSearch, WebFetch)
+- **File editing** — Let Claude edit and write files without prompting (Edit, Write)
+- **Git commands** — Let Claude run git commands without prompting (Bash(git *))
+- **All Bash commands** — Let Claude run any terminal command without prompting (Bash(*))
+
+**Then you:**
+1. Read `~/.claude/settings.json` (create it if it doesn't exist)
+2. Merge the user's selections into the `allowedTools` array (don't duplicate entries already present)
+3. Write the updated file
+4. Confirm what was added
+
+**Mapping:**
+- "Web Search & Fetch" → add `"WebSearch"` and `"WebFetch"`
+- "File editing" → add `"Edit"` and `"Write"`
+- "Git commands" → add `"Bash(git *)"`
+- "All Bash commands" → add `"Bash(*)"` (this supersedes "Git commands" — if both selected, only add `"Bash(*)"`)
+
+### Step 11: Final Summary
 
 1. Verify GitHub Pages is live (curl the URL)
 2. Verify Supabase connection (run a test query)
@@ -234,6 +262,7 @@ Ask:
    - What was set up and what was skipped
    - All live URLs (clickable)
    - Any pending items (10DLC approval, domain verification)
+   - Claude Code permissions configured
    - "Your CLAUDE.md is complete. Any future Claude Code session in this project will have full context."
 
 ## Key Technical Details
