@@ -954,6 +954,19 @@ tr:last-child td {
   text-decoration: underline;
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.modal-header-actions .btn-primary {
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 0.4rem 1rem;
+}
+
 .modal-close {
   background: none;
   border: none;
@@ -1177,17 +1190,6 @@ tr:last-child td {
   padding-bottom: 0.5rem;
 }
 
-.detail-section.detail-cta {
-  grid-column: 1 / -1;
-  background: var(--accent-light);
-  border-left: 3px solid var(--accent);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.detail-section.detail-cta h3 {
-  display: none;
-}
 
 /* Photo requests list */
 .photo-requests {
