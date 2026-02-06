@@ -297,13 +297,13 @@
 
   <!-- Payment Method Modal -->
   <div id="paymentMethodModal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 450px;">
       <div class="modal-header">
         <h2 id="paymentMethodModalTitle">Add Payment Method</h2>
         <button class="modal-close" id="closePaymentMethodModal">&times;</button>
       </div>
       <div class="modal-body">
-        <form id="paymentMethodForm">
+        <form id="paymentMethodForm" onsubmit="return false;">
           <input type="hidden" id="paymentMethodId">
           <div class="form-group">
             <label for="paymentMethodName">Name</label>
@@ -322,7 +322,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn-danger" id="deletePaymentMethodBtn" style="margin-right: auto;">Delete</button>
+        <button class="btn-danger" id="deletePaymentMethodBtn" style="margin-right: auto; display: none;">Delete</button>
         <button class="btn-secondary" id="cancelPaymentMethodBtn">Cancel</button>
         <button class="btn-primary" id="savePaymentMethodBtn">Save</button>
       </div>
