@@ -1609,6 +1609,7 @@
       const lastName = getValue('last_name');
       const email = getValue('email');
       const phone = getValue('phone');
+      const dobValue = getValue('date_of_birth');
 
       let hasError = false;
       if (!firstName) { document.getElementById('first_name').classList.add('error'); hasError = true; }
@@ -1664,13 +1665,16 @@
         }
 
         // Build person data (Step 1 fields only)
+        // Check if dobValue is a valid date (YYYY-MM-DD format or valid date string)
+        const isValidDate = dobValue && !isNaN(Date.parse(dobValue)) && dobValue.includes('-');
+
         const personData = {
           first_name: firstName,
           last_name: lastName,
           email: email,
           phone: phone,
           whatsapp: phone,
-          date_of_birth: getValue('date_of_birth') || null,
+          date_of_birth: isValidDate ? dobValue : null,
           coliving_experience: getValue('coliving_experience'),
           life_focus: getValue('life_focus'),
           visiting_guide_response: getValue('visiting_guide_response'),
