@@ -1760,10 +1760,22 @@ window.openRecordDepositModal = function(type) {
   document.getElementById('recordDepositTitle').textContent =
     type === 'move_in' ? 'Record Move-in Deposit' : 'Record Security Deposit';
 
+  // Reset button state
+  const confirmBtn = document.getElementById('confirmRecordDepositBtn');
+  confirmBtn.disabled = false;
+  confirmBtn.textContent = 'Record Payment';
+
   document.getElementById('recordDepositModal').classList.remove('hidden');
 };
 
 async function confirmRecordDeposit() {
+  const confirmBtn = document.getElementById('confirmRecordDepositBtn');
+
+  // Prevent multiple clicks
+  if (confirmBtn.disabled) {
+    return;
+  }
+
   const type = document.getElementById('depositType').value;
   const amount = parseFloat(document.getElementById('depositAmount').value);
   const method = document.getElementById('depositMethod').value;
@@ -1779,7 +1791,6 @@ async function confirmRecordDeposit() {
     return;
   }
 
-  const confirmBtn = document.getElementById('confirmRecordDepositBtn');
   const originalText = confirmBtn.textContent;
 
   // Disable button and show loading state
