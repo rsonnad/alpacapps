@@ -1779,6 +1779,13 @@ async function confirmRecordDeposit() {
     return;
   }
 
+  const confirmBtn = document.getElementById('confirmRecordDepositBtn');
+  const originalText = confirmBtn.textContent;
+
+  // Disable button and show loading state
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Processing...';
+
   try {
     if (type === 'move_in') {
       await rentalService.recordMoveInDeposit(currentApplicationId, { amount, method, transactionId });
@@ -1791,11 +1798,18 @@ async function confirmRecordDeposit() {
     showToast('Deposit recorded', 'success');
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    // Re-enable button on error
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = originalText;
   }
 }
 
 function closeRecordDepositModal() {
   document.getElementById('recordDepositModal').classList.add('hidden');
+  // Reset button state for next use
+  const confirmBtn = document.getElementById('confirmRecordDepositBtn');
+  confirmBtn.disabled = false;
+  confirmBtn.textContent = 'Record Payment';
 }
 
 // =============================================
