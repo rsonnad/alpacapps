@@ -1,6 +1,7 @@
 /**
  * Home Automation - Lighting Page
  * Controls Govee lighting groups via Edge Function proxy
+ * Groups loaded dynamically from govee_devices table
  */
 
 import { supabase } from '../shared/supabase.js';
@@ -12,19 +13,6 @@ import { initResidentPage, showToast } from '../shared/resident-shell.js';
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const GOVEE_CONTROL_URL = `${SUPABASE_URL}/functions/v1/govee-control`;
 const POLL_INTERVAL_MS = 30000; // 30 seconds
-
-// Govee lighting groups (SameModeGroup type)
-const GOVEE_GROUPS = [
-  { name: 'Common',              groupId: '12097114', deviceCount: null, models: '' },
-  { name: 'East Bedroom',        groupId: '12097639', deviceCount: null, models: '' },
-  { name: 'Garage Mahal',        groupId: '13452517', deviceCount: 16,   models: 'Recessed Lights Pro' },
-  { name: 'Outhouse',            groupId: '13166268', deviceCount: 6,    models: 'Recessed Lights Pro' },
-  { name: 'Spartan Tea Lounge',  groupId: '12411623', deviceCount: 2,    models: 'Outdoor Strip, Wall Light' },
-  { name: 'Fishbowl',            groupId: '12411702', deviceCount: 2,    models: 'Recessed Downlights' },
-  { name: 'Spartan Main',        groupId: '12411712', deviceCount: 6,    models: 'Recessed Downlights' },
-  { name: 'Cedar Chamber',       groupId: '12001251', deviceCount: 4,    models: 'Recessed Lights Pro' },
-  { name: 'West Bedroom',        groupId: '12097082', deviceCount: null, models: '' },
-];
 
 // Color presets for quick selection
 const COLOR_PRESETS = [
@@ -41,7 +29,8 @@ const COLOR_PRESETS = [
 // =============================================
 // STATE
 // =============================================
-let groupStates = {}; // { groupId: { on, brightness, color } }
+let goveeGroups = []; // Loaded from DB
+let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
 let pollTimer = null;
 let lastPollTime = null;
 
@@ -57,6 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     activeTab: 'homeauto',
     requiredRole: 'resident',
     onReady: async () => {
+      await loadGroupsFromDB();
+      await loadGoveeSettings();
       renderLightingGroups();
       setupEventListeners();
       await refreshAllStates();
@@ -64,6 +55,127 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
   });
 });
+
+// =============================================
+// LOAD GROUPS FROM DATABASE
+// =============================================
+async function loadGroupsFromDB() {
+  try {
+    // Load active groups ordered by display_order
+    const { data: groups, error: groupErr } = await supabase
+      .from('govee_devices')
+      .select('device_id, name, display_order')
+      .eq('is_group', true)
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (groupErr) throw groupErr;
+
+    // Load child devices with their SKUs
+    const { data: children, error: childErr } = await supabase
+      .from('govee_devices')
+      .select('device_id, sku, parent_group_id')
+      .eq('is_group', false)
+      .eq('is_active', true)
+      .not('parent_group_id', 'is', null);
+
+    if (childErr) throw childErr;
+
+    // Load model name lookup
+    const { data: models, error: modelErr } = await supabase
+      .from('govee_models')
+      .select('sku, model_name');
+
+    if (modelErr) throw modelErr;
+
+    const modelMap = {};
+    for (const m of models) {
+      modelMap[m.sku] = m.model_name;
+    }
+
+    // Build goveeGroups array
+    goveeGroups = groups.map(g => {
+      const groupChildren = children.filter(c => c.parent_group_id === g.device_id);
+      const deviceCount = groupChildren.length || null;
+
+      // Get unique model names for this group's children
+      const uniqueModels = [...new Set(
+        groupChildren.map(c => modelMap[c.sku]).filter(Boolean)
+      )];
+      const modelsStr = uniqueModels.join(', ');
+
+      return {
+        name: g.name,
+        groupId: g.device_id,
+        deviceCount,
+        models: modelsStr,
+      };
+    });
+  } catch (err) {
+    console.error('Failed to load groups from DB:', err);
+    showToast('Failed to load lighting groups', 'error');
+  }
+}
+
+// =============================================
+// GOVEE SETTINGS (moved from admin settings.js)
+// =============================================
+async function loadGoveeSettings() {
+  try {
+    // Load config (non-sensitive fields only)
+    const { data: config, error } = await supabase
+      .from('govee_config')
+      .select('is_active, test_mode, last_synced_at')
+      .single();
+
+    if (error) throw error;
+
+    const checkbox = document.getElementById('goveeTestMode');
+    const badge = document.getElementById('goveeModeBadge');
+
+    if (checkbox) checkbox.checked = config.test_mode || false;
+    if (badge) {
+      badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+      badge.classList.toggle('live', !config.test_mode);
+    }
+
+    // Load device counts by area
+    const { data: devices, error: devError } = await supabase
+      .from('govee_devices')
+      .select('area, is_group')
+      .eq('is_active', true);
+
+    if (devError) throw devError;
+
+    const countEl = document.getElementById('goveeDeviceCount');
+    if (countEl) countEl.textContent = `${devices.length} devices`;
+
+    // Build area summary
+    const summaryEl = document.getElementById('goveeDeviceSummary');
+    if (summaryEl && devices.length > 0) {
+      const areas = {};
+      for (const d of devices) {
+        const area = d.area || 'Unknown';
+        if (!areas[area]) areas[area] = { lights: 0, groups: 0 };
+        if (d.is_group) areas[area].groups++;
+        else areas[area].lights++;
+      }
+
+      summaryEl.innerHTML = Object.entries(areas)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([area, counts]) =>
+          `<div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); font-size: 0.85rem;">
+            <span style="font-weight: 600;">${area}</span>
+            <span class="text-muted">${counts.lights} light${counts.lights !== 1 ? 's' : ''}${counts.groups > 0 ? ` + ${counts.groups} group${counts.groups !== 1 ? 's' : ''}` : ''}</span>
+          </div>`
+        ).join('');
+    } else if (summaryEl) {
+      summaryEl.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">No devices found.</p>';
+    }
+  } catch (error) {
+    console.error('Error loading Govee settings:', error);
+  }
+}
 
 // =============================================
 // API CALLS (via Edge Function)
@@ -112,7 +224,7 @@ async function toggleGroup(groupId, on) {
       },
     });
 
-    groupStates[groupId] = { ...groupStates[groupId], on };
+    groupStates[groupId] = { ...groupStates[groupId], on, disconnected: false };
     updateGroupUI(groupId);
     showToast(`${getGroupName(groupId)} turned ${on ? 'on' : 'off'}`, 'success', 2000);
   } catch (err) {
@@ -126,8 +238,6 @@ async function toggleGroup(groupId, on) {
 }
 
 async function setBrightness(groupId, value) {
-  const card = document.querySelector(`[data-group-id="${groupId}"]`);
-
   try {
     await goveeApi('controlDevice', {
       device: groupId,
@@ -147,8 +257,6 @@ async function setBrightness(groupId, value) {
 }
 
 async function setColor(groupId, hexColor) {
-  const card = document.querySelector(`[data-group-id="${groupId}"]`);
-
   try {
     const rgb = hexToRgbInt(hexColor);
     await goveeApi('controlDevice', {
@@ -194,7 +302,7 @@ async function allOff() {
   let successes = 0;
   let failures = 0;
 
-  for (const group of GOVEE_GROUPS) {
+  for (const group of goveeGroups) {
     try {
       await goveeApi('controlDevice', {
         device: group.groupId,
@@ -230,14 +338,14 @@ async function allOff() {
 // =============================================
 async function refreshAllStates() {
   const results = await Promise.allSettled(
-    GOVEE_GROUPS.map(g => refreshGroupState(g.groupId))
+    goveeGroups.map(g => refreshGroupState(g.groupId))
   );
 
   lastPollTime = new Date();
   updatePollStatus();
 
   const failed = results.filter(r => r.status === 'rejected').length;
-  if (failed > 0 && failed < GOVEE_GROUPS.length) {
+  if (failed > 0 && failed < goveeGroups.length) {
     // Some failed — don't spam toasts, just note it
     console.warn(`${failed} group state queries failed`);
   }
@@ -253,7 +361,7 @@ async function refreshGroupState(groupId) {
     // Parse Govee state response
     if (result.payload) {
       const capabilities = result.payload.capabilities || [];
-      const state = {};
+      const state = { disconnected: false };
 
       for (const cap of capabilities) {
         if (cap.instance === 'powerSwitch') {
@@ -272,7 +380,9 @@ async function refreshGroupState(groupId) {
     }
   } catch (err) {
     console.warn(`Failed to get state for group ${groupId}:`, err.message);
-    throw err;
+    // Mark as disconnected instead of throwing
+    groupStates[groupId] = { ...groupStates[groupId], disconnected: true };
+    updateGroupUI(groupId);
   }
 }
 
@@ -319,7 +429,7 @@ function renderLightingGroups() {
   const container = document.getElementById('lightingGroups');
   if (!container) return;
 
-  container.innerHTML = GOVEE_GROUPS.map(group => `
+  container.innerHTML = goveeGroups.map(group => `
     <div class="lighting-group-card" data-group-id="${group.groupId}">
       <div class="lighting-group-card__header">
         <div class="lighting-group-card__title">
@@ -369,6 +479,13 @@ function updateGroupUI(groupId) {
 
   const state = groupStates[groupId] || {};
 
+  // Handle disconnected state
+  if (state.disconnected) {
+    card.classList.add('disconnected');
+  } else {
+    card.classList.remove('disconnected');
+  }
+
   // Update toggle
   const toggle = card.querySelector('input[type="checkbox"]');
   if (toggle) toggle.checked = !!state.on;
@@ -398,6 +515,13 @@ function updateGroupStatus(groupId) {
   if (!statusEl) return;
 
   const state = groupStates[groupId] || {};
+
+  // Disconnected state
+  if (state.disconnected) {
+    statusEl.innerHTML = '<span>Disconnected</span>';
+    statusEl.className = 'group-status disconnected';
+    return;
+  }
 
   if (state.on === undefined) {
     statusEl.innerHTML = '<span>Status unknown</span>';
@@ -501,6 +625,29 @@ function setupEventListeners() {
     showToast('States refreshed', 'info', 1500);
   });
 
+  // Govee test mode toggle (admin-only)
+  document.getElementById('goveeTestMode')?.addEventListener('change', async (e) => {
+    const testMode = e.target.checked;
+    try {
+      const { error } = await supabase
+        .from('govee_config')
+        .update({ test_mode: testMode, updated_at: new Date().toISOString() })
+        .eq('id', 1);
+      if (error) throw error;
+
+      const badge = document.getElementById('goveeModeBadge');
+      if (badge) {
+        badge.textContent = testMode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !testMode);
+      }
+      showToast(`Govee ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+    } catch (error) {
+      console.error('Error updating Govee mode:', error);
+      showToast('Failed to update Govee mode', 'error');
+      e.target.checked = !testMode;
+    }
+  });
+
   // Clean up on page unload
   window.addEventListener('beforeunload', () => {
     stopPolling();
@@ -528,7 +675,7 @@ function rgbIntToHex(value) {
 }
 
 function getGroupName(groupId) {
-  return GOVEE_GROUPS.find(g => g.groupId === groupId)?.name || groupId;
+  return goveeGroups.find(g => g.groupId === groupId)?.name || groupId;
 }
 
 function sleep(ms) {

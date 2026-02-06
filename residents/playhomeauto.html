@@ -40,7 +40,7 @@
         <a href="/residents/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; Alpaca Playhouse</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.35</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.36</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -70,6 +70,28 @@
             <!-- Rendered by JS -->
           </div>
           <div class="poll-status" id="pollStatus"></div>
+        </div>
+      </section>
+
+      <!-- ===== LIGHTING SETTINGS (Admin Only) ===== -->
+      <section class="section admin-only" id="lightingSettingsSection">
+        <div class="section-header">
+          <h2>Lighting Settings</h2>
+          <span class="settings-badge" id="goveeModeBadge">Loading...</span>
+        </div>
+        <div class="section-body">
+          <label class="settings-toggle">
+            <input type="checkbox" id="goveeTestMode">
+            <span class="settings-toggle-label">Test Mode</span>
+            <span class="settings-toggle-hint">Log commands without calling Govee API</span>
+          </label>
+
+          <div style="margin-top: 1rem;">
+            <h3 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Device Inventory <span class="text-muted" id="goveeDeviceCount" style="font-weight:400;"></span></h3>
+            <div id="goveeDeviceSummary">
+              <p class="text-muted" style="font-size: 0.85rem;">Loading...</p>
+            </div>
+          </div>
         </div>
       </section>
 
