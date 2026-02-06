@@ -1158,6 +1158,10 @@ tr:last-child td {
   margin-bottom: 0;
 }
 
+.detail-full-width {
+  grid-column: 1 / -1;
+}
+
 .detail-description {
   grid-column: 1 / -1;
   color: var(--text-muted);

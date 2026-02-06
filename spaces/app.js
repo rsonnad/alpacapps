@@ -740,22 +740,22 @@ function displaySpaceDetail(space) {
         <p><strong>Available from:</strong> ${availFromStr}</p>
         <p><strong>Available until:</strong> ${availUntilStr}</p>
       </div>
-      <div class="detail-section">
+      <div class="detail-section detail-full-width">
         <h3>Amenities</h3>
         ${space.amenities.length
           ? `<p>${space.amenities.join(', ')}</p>`
           : '<p>No amenities listed</p>'
         }
       </div>
-    </div>
     ${space.description ? `
       <div class="detail-section detail-description">
         <h3>Description</h3>
         <p>${space.description}</p>
       </div>
     ` : ''}
-    <div class="detail-section detail-cta">
-      <p>Interested in this space? Contact us for availability and scheduling a tour.</p>
+      <div class="detail-section detail-cta">
+        <p>Interested in this space? Contact us for availability and scheduling a tour.</p>
+      </div>
     </div>
     ${spacePhotosHtml}
     ${childPhotosHtml}
