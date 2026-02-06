@@ -754,10 +754,8 @@ function displaySpaceDetail(space) {
         <p>${space.description}</p>
       </div>
     ` : ''}
-    <div class="detail-section">
-      <p style="color: var(--text-muted);">
-        Interested in this space? Contact us for availability and scheduling a tour.
-      </p>
+    <div class="detail-section detail-cta">
+      <p>Interested in this space? Contact us for availability and scheduling a tour.</p>
     </div>
     ${spacePhotosHtml}
     ${childPhotosHtml}
