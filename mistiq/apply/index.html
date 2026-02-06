@@ -21,7 +21,7 @@
     <div class="mistiq-header__inner">
       <a href="/mistiq/" class="mistiq-header__logo">
         <span class="mistiq-header__logo-text">Mistique Journey</span>
-        <span class="mistiq-header__version">v260206.14</span>
+        <span class="mistiq-header__version">v260206.15</span>
       </a>
 
       <nav class="mistiq-nav" id="mistiq-nav">
@@ -204,7 +204,7 @@
         <div id="form-success" class="mistiq-form-success" style="display: none;">
           <h2>Thank You!</h2>
           <p>Your intake survey has been submitted. We'll be in touch soon to confirm your Mistique Journey session.</p>
-          <p>Questions? Contact us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+          <p>Questions? Contact us at <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a></p>
           <a href="/mistiq/" class="mistiq-btn mistiq-btn--submit">Return to Mistique Journey</a>
         </div>
       </div>
@@ -393,7 +393,7 @@
 
       try {
         // For now, use mailto fallback
-        const mailtoLink = `mailto:alpacaplayhouse@gmail.com?subject=${encodeURIComponent('Mistique Journey Intake Survey')}&body=${encodeURIComponent(`
+        const mailtoLink = `mailto:team@alpacaplayhouse.com?subject=${encodeURIComponent('Mistique Journey Intake Survey')}&body=${encodeURIComponent(`
 Name: ${data.name}
 Email: ${data.email}
 Phone: ${data.phone}
@@ -421,7 +421,7 @@ Notes: ${data.additional_notes || 'None'}
         successMsg.style.display = 'block';
       } catch (err) {
         console.error('Form error:', err);
-        alert('There was an error submitting the form. Please email alpacaplayhouse@gmail.com directly.');
+        alert('There was an error submitting the form. Please email team@alpacaplayhouse.com directly.');
       }
     });
   </script>

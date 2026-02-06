@@ -410,7 +410,7 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 
 3. **Address Privacy:** Client agrees to NOT post the address of the venue in any distributed materials including texts, emails, social media postings or printed materials. Instead a link to alpacaplayhouse.com/visiting web page will be provided. $100 fee if address is posted.
 
-4. **Marketing Materials:** Client will send links to all marketing materials to +14242341750 on WhatsApp or to specified WhatsApp group or alpacaplayhouse@gmail.com
+4. **Marketing Materials:** Client will send links to all marketing materials to +14242341750 on WhatsApp or to specified WhatsApp group or team@alpacaplayhouse.com
 
 5. **Parking Management:** Client agrees to manage parking to ensure no vehicles are parked in front of neighbors houses. $150 penalty for each complaint from neighbors regarding parking on their property.
 
