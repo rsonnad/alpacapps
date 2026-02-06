@@ -887,7 +887,7 @@
     <a href="/" class="site-nav__logo">
       <img src="/assets/branding/alpaca-head-inverted.jpg" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="/assets/branding/wordmark-inverted.jpeg" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span class="site-nav__version">v260206.06</span>
+      <span class="site-nav__version">v260206.07</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
@@ -1748,35 +1748,21 @@
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              type: 'contact_form',
+              type: 'community_fit_inquiry',
               to: 'alpacaplayhouse@gmail.com',
               data: {
                 name: `${firstName} ${lastName}`,
                 email: email,
                 phone: phone,
-                subject: 'Community Fit Inquiry',
-                message: [
-                  `New Community Fit Inquiry from ${firstName} ${lastName}`,
-                  '',
-                  `Email: ${email}`,
-                  `Phone: ${phone}`,
-                  `Age: ${dobValue || 'Not provided'}`,
-                  '',
-                  `Preferred Accommodation: ${accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation')}`,
-                  `Desired Timeframe: ${getValue('desired_timeframe')}`,
-                  `Volunteer Interest: ${getValue('volunteer_interest') || 'Not specified'}`,
-                  `Referral: ${getValue('referral_source')}`,
-                  '',
-                  `Co-living Experience:`,
-                  getValue('coliving_experience'),
-                  '',
-                  `Life Focus / Goals:`,
-                  getValue('life_focus'),
-                  '',
-                  `Visiting Guide Response:`,
-                  getValue('visiting_guide_response'),
-                  photoUrl ? `\nPhoto: ${photoUrl}` : '',
-                ].join('\n')
+                dob: dobValue || '',
+                accommodation: accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation'),
+                timeframe: getValue('desired_timeframe'),
+                volunteer: getValue('volunteer_interest') || 'Not specified',
+                referral: getValue('referral_source'),
+                coliving_experience: getValue('coliving_experience'),
+                life_focus: getValue('life_focus'),
+                visiting_guide: getValue('visiting_guide_response'),
+                photo_url: photoUrl || ''
               }
             })
           });

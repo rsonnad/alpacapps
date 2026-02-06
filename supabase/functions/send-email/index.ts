@@ -30,6 +30,7 @@ type EmailType =
   | "faq_unanswered"
   // Contact form
   | "contact_form"
+  | "community_fit_inquiry"
   // Bug reports
   | "bug_report_received"
   | "bug_report_fixed"
@@ -795,18 +796,21 @@ After answering, remember to recompile the context so future visitors get better
       return {
         subject: `[Website Contact] ${data.subject || 'General Inquiry'}`,
         html: `
-          <h2>New Website Contact Form Submission</h2>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 120px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : 'Not provided'}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : 'Not provided'}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Subject:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.subject || 'General Inquiry'}</td></tr>
-          </table>
-          <h3>Message</h3>
-          <p style="background: #f5f5f5; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${data.message || 'No message'}</p>
-          ${data.email ? `<p><a href="mailto:${data.email}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Reply to ${data.name || data.email}</a></p>` : ''}
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333; margin-bottom: 4px;">${data.name || 'Someone'} submitted a message from alpacaplayhouse.com</h2>
+            <p style="color: #888; font-size: 13px; margin-top: 0;">${data.subject || 'General Inquiry'}</p>
+            <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 80px; vertical-align: top;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
+              ${data.email ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>` : ''}
+              ${data.phone ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Phone</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>` : ''}
+            </table>
+            ${data.message ? `
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 16px 0; white-space: pre-wrap; line-height: 1.5; color: #333;">${data.message}</div>
+            ` : ''}
+            ${data.email ? `<p style="margin-top: 20px;"><a href="mailto:${data.email}" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">Reply to ${data.name || data.email}</a></p>` : ''}
+          </div>
         `,
-        text: `New Website Contact Form Submission
+        text: `${data.name || 'Someone'} submitted a message from alpacaplayhouse.com
 
 Name: ${data.name || 'Not provided'}
 Email: ${data.email || 'Not provided'}
@@ -815,6 +819,72 @@ Subject: ${data.subject || 'General Inquiry'}
 
 Message:
 ${data.message || 'No message'}`
+      };
+
+    // ===== COMMUNITY FIT INQUIRY =====
+    case "community_fit_inquiry":
+      return {
+        subject: `[Community Fit] ${data.name || 'New Inquiry'}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333; margin-bottom: 4px;">${data.name || 'Someone'} submitted an inquiry from alpacaplayhouse.com</h2>
+            <p style="color: #888; font-size: 13px; margin-top: 0;">Community Fit Inquiry</p>
+
+            <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 110px; vertical-align: top;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
+              ${data.email ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>` : ''}
+              ${data.phone ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Phone</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>` : ''}
+              ${data.dob ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">DOB</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.dob}</td></tr>` : ''}
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Accommodation</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.accommodation || 'Not specified'}</td></tr>
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Timeframe</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.timeframe || 'Not specified'}</td></tr>
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Volunteer</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.volunteer || 'Not specified'}</td></tr>
+              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Referral</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.referral || 'Not specified'}</td></tr>
+            </table>
+
+            ${data.coliving_experience ? `
+            <h3 style="color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px;">Co-living Experience</h3>
+            <div style="background: #f8f9fa; padding: 14px 16px; border-radius: 8px; line-height: 1.5; color: #333;">${data.coliving_experience}</div>
+            ` : ''}
+
+            ${data.life_focus ? `
+            <h3 style="color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px;">Life Focus / Goals</h3>
+            <div style="background: #f8f9fa; padding: 14px 16px; border-radius: 8px; line-height: 1.5; color: #333;">${data.life_focus}</div>
+            ` : ''}
+
+            ${data.visiting_guide ? `
+            <h3 style="color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px;">Visiting Guide Response</h3>
+            <div style="background: #f8f9fa; padding: 14px 16px; border-radius: 8px; line-height: 1.5; color: #333;">${data.visiting_guide}</div>
+            ` : ''}
+
+            ${data.photo_url ? `
+            <h3 style="color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px;">Photo</h3>
+            <img src="${data.photo_url}" style="max-width: 200px; border-radius: 8px; border: 1px solid #eee;" />
+            ` : ''}
+
+            ${data.email ? `<p style="margin-top: 24px;"><a href="mailto:${data.email}" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">Reply to ${data.name || data.email}</a></p>` : ''}
+          </div>
+        `,
+        text: `${data.name || 'Someone'} submitted an inquiry from alpacaplayhouse.com
+
+Name: ${data.name || 'Not provided'}
+Email: ${data.email || 'Not provided'}
+Phone: ${data.phone || 'Not provided'}
+DOB: ${data.dob || 'Not provided'}
+Accommodation: ${data.accommodation || 'Not specified'}
+Timeframe: ${data.timeframe || 'Not specified'}
+Volunteer: ${data.volunteer || 'Not specified'}
+Referral: ${data.referral || 'Not specified'}
+
+Co-living Experience:
+${data.coliving_experience || 'Not provided'}
+
+Life Focus / Goals:
+${data.life_focus || 'Not provided'}
+
+Visiting Guide Response:
+${data.visiting_guide || 'Not provided'}
+
+${data.photo_url ? `Photo: ${data.photo_url}` : ''}`
       };
 
     // ===== BUG REPORT NOTIFICATIONS =====
