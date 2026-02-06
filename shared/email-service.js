@@ -29,6 +29,10 @@ export const EMAIL_TYPES = {
   STAFF_INVITATION: 'staff_invitation',
   // Rental invite
   INVITE_TO_APPLY: 'invite_to_apply',
+  // Identity verification
+  DL_UPLOAD_LINK: 'dl_upload_link',
+  DL_VERIFIED: 'dl_verified',
+  DL_MISMATCH: 'dl_mismatch',
 };
 
 /**
@@ -328,6 +332,20 @@ export const emailService = {
     return sendEmail(EMAIL_TYPES.INVITE_TO_APPLY, person.email, {
       first_name: person.first_name,
       continue_url: continueUrl,
+    });
+  },
+
+  // ===== IDENTITY VERIFICATION =====
+
+  /**
+   * Send DL upload link to applicant
+   * @param {object} person - Person with email and first_name
+   * @param {string} uploadUrl - The unique upload URL
+   */
+  async sendDLUploadLink(person, uploadUrl) {
+    return sendEmail(EMAIL_TYPES.DL_UPLOAD_LINK, person.email, {
+      first_name: person.first_name,
+      upload_url: uploadUrl,
     });
   },
 

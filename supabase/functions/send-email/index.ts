@@ -36,7 +36,11 @@ type EmailType =
   | "bug_report_failed"
   | "bug_report_verified"
   // Rental invite
-  | "invite_to_apply";
+  | "invite_to_apply"
+  // Identity verification
+  | "dl_upload_link"
+  | "dl_verified"
+  | "dl_mismatch";
 
 interface EmailRequest {
   type: EmailType;
@@ -965,6 +969,110 @@ ${data.page_url ? `Page: ${data.page_url}` : ''}
 ${data.fix_summary ? `WHAT WAS FIXED:\n${data.fix_summary}` : ''}
 
 If the fix doesn't look right, submit another bug report and we'll take another look.`
+      };
+
+    // ===== IDENTITY VERIFICATION =====
+    case "dl_upload_link":
+      return {
+        subject: "Action Required: Identity Verification - Alpaca Playhouse",
+        html: `
+          <h2>Identity Verification Required</h2>
+          <p>Hi ${data.first_name},</p>
+          <p>As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${data.upload_url}" style="background: #3d8b7a; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1em; display: inline-block;">Upload Your ID</a>
+          </div>
+          <p style="color: #666; font-size: 0.9em;">This link will expire in 7 days. If you need a new link, please let us know.</p>
+          <p><strong>Tips for a good photo:</strong></p>
+          <ul>
+            <li>Use good lighting - avoid glare and shadows</li>
+            <li>Make sure all text is readable</li>
+            <li>Include the full card in the frame</li>
+          </ul>
+          <p>If you have any questions, feel free to reply to this email.</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Identity Verification Required
+
+Hi ${data.first_name},
+
+As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID.
+
+Upload your ID here: ${data.upload_url}
+
+This link will expire in 7 days. If you need a new link, please let us know.
+
+Tips for a good photo:
+- Use good lighting - avoid glare and shadows
+- Make sure all text is readable
+- Include the full card in the frame
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+Alpaca Playhouse`
+      };
+
+    case "dl_verified":
+      return {
+        subject: "Identity Verified - Alpaca Playhouse",
+        html: `
+          <h2 style="color: #27ae60;">Identity Verified!</h2>
+          <p>Hi ${data.first_name},</p>
+          <p>Your identity has been successfully verified. Thank you for completing this step!</p>
+          <p>We'll continue processing your rental application and will be in touch with next steps soon.</p>
+          <p>If you have any questions, feel free to reply to this email.</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Identity Verified!
+
+Hi ${data.first_name},
+
+Your identity has been successfully verified. Thank you for completing this step!
+
+We'll continue processing your rental application and will be in touch with next steps soon.
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+Alpaca Playhouse`
+      };
+
+    case "dl_mismatch":
+      return {
+        subject: `Identity Verification Flagged: ${data.applicant_name}`,
+        html: `
+          <h2 style="color: #e67e22;">Identity Verification Flagged</h2>
+          <p>An identity verification needs your review.</p>
+          <div style="background: #fef9e7; border-radius: 8px; padding: 15px; margin: 15px 0;">
+            <table style="border-collapse: collapse; width: 100%;">
+              <tr>
+                <td style="padding: 6px 0;"><strong>Application Name:</strong></td>
+                <td style="padding: 6px 0;">${data.applicant_name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0;"><strong>Name on ID:</strong></td>
+                <td style="padding: 6px 0;">${data.extracted_name || 'Could not extract'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0;"><strong>Match Score:</strong></td>
+                <td style="padding: 6px 0;">${data.match_score}%</td>
+              </tr>
+              ${data.is_expired ? '<tr><td style="padding: 6px 0;"><strong>Note:</strong></td><td style="padding: 6px 0; color: #c0392b;">ID appears to be expired</td></tr>' : ''}
+            </table>
+          </div>
+          <p><a href="${data.admin_url}" style="background: #3d8b7a; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Review in Admin</a></p>
+        `,
+        text: `Identity Verification Flagged
+
+An identity verification needs your review.
+
+Application Name: ${data.applicant_name}
+Name on ID: ${data.extracted_name || 'Could not extract'}
+Match Score: ${data.match_score}%
+${data.is_expired ? 'Note: ID appears to be expired' : ''}
+
+Review in Admin: ${data.admin_url}`
       };
 
     default:

@@ -8,6 +8,7 @@ import { smsService } from '../../shared/sms-service.js';
 import { leaseTemplateService } from '../../shared/lease-template-service.js';
 import { pdfService } from '../../shared/pdf-service.js';
 import { signwellService } from '../../shared/signwell-service.js';
+import { identityService } from '../../shared/identity-service.js';
 import {
   getAustinToday,
   getAustinTodayISO,
@@ -236,10 +237,17 @@ function renderPipelineCard(app) {
     ? (ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || 'Flexible')
     : (space?.name || 'Flexible');
 
+  // Identity verification badge
+  const idStatus = app.identity_verification_status;
+  const idBadge = idStatus === 'verified' ? '<span title="ID Verified" style="color: #27ae60; margin-left: 4px;">&#128737;</span>'
+    : idStatus === 'flagged' ? '<span title="ID Flagged" style="color: #e67e22; margin-left: 4px;">&#128737;</span>'
+    : idStatus === 'link_sent' ? '<span title="ID Pending" style="color: #999; margin-left: 4px;">&#128737;</span>'
+    : '';
+
   return `
     <div class="pipeline-card" data-id="${app.id}">
       <div class="card-header">
-        <span class="applicant-name">${person.first_name || ''} ${person.last_name || ''}</span>
+        <span class="applicant-name">${person.first_name || ''} ${person.last_name || ''}${idBadge}</span>
         ${testBadge}
         <span class="days-ago">${days}d</span>
       </div>
@@ -1043,6 +1051,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     app.agreement_status || 'Pending';
   document.getElementById('agreementDocUrl').value = app.agreement_document_url || '';
   await updateDocumentsTabState(app);
+  await updateIdentityVerificationUI(app);
 
   // ===== DEPOSITS TAB =====
   const appFeeSection = document.getElementById('applicationFeeSection');
@@ -1983,6 +1992,207 @@ async function updateDocumentsTabState(app) {
     }
   }
   // Otherwise show generate section (default)
+}
+
+// =============================================
+// IDENTITY VERIFICATION
+// =============================================
+
+async function updateIdentityVerificationUI(app) {
+  const container = document.getElementById('identityVerificationContent');
+  if (!container) return;
+
+  const status = app.identity_verification_status || 'pending';
+
+  if (status === 'pending') {
+    container.innerHTML = `
+      <p class="text-muted" style="margin-bottom: 0.75rem;">No verification requested yet.</p>
+      <button type="button" id="requestIdVerificationBtn" class="btn-small btn-primary">Request ID Verification</button>
+    `;
+    document.getElementById('requestIdVerificationBtn')?.addEventListener('click', () => requestIdVerification(app));
+    return;
+  }
+
+  if (status === 'link_sent') {
+    // Check if token exists and show link info
+    let tokenInfo = '';
+    try {
+      const token = await identityService.getUploadToken(app.id);
+      if (token) {
+        const uploadUrl = `https://rsonnad.github.io/alpacapps/spaces/verify.html?token=${token.token}`;
+        const expiresDate = new Date(token.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        tokenInfo = `
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Link expires ${expiresDate}
+          </p>
+          <div style="margin-top: 0.75rem;">
+            <button type="button" id="copyIdLinkBtn" class="btn-small" data-url="${uploadUrl}">Copy Link</button>
+            <button type="button" id="resendIdEmailBtn" class="btn-small">Resend Email</button>
+          </div>
+        `;
+      }
+    } catch (e) {
+      console.error('Error loading token:', e);
+    }
+
+    container.innerHTML = `
+      <span class="status-badge" style="background: #fef9e7; color: #b7950b; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">Link Sent</span>
+      <p class="text-muted" style="margin-top: 0.5rem;">Waiting for applicant to upload their ID.</p>
+      ${tokenInfo}
+    `;
+
+    document.getElementById('copyIdLinkBtn')?.addEventListener('click', (e) => {
+      const url = e.target.dataset.url;
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
+    });
+    document.getElementById('resendIdEmailBtn')?.addEventListener('click', () => resendIdEmail(app));
+    return;
+  }
+
+  // For verified/flagged statuses, load the verification record
+  try {
+    const verification = await identityService.getVerification(app.id);
+    if (!verification) {
+      container.innerHTML = '<p class="text-muted">Verification record not found.</p>';
+      return;
+    }
+
+    if (status === 'verified' || verification.verification_status === 'auto_approved' || verification.verification_status === 'manually_approved') {
+      const reviewInfo = verification.verification_status === 'manually_approved' && verification.reviewed_by
+        ? `<p style="font-size: 0.85rem; color: var(--text-muted);">Approved by ${verification.reviewed_by} on ${new Date(verification.reviewed_at).toLocaleDateString()}</p>`
+        : '';
+      container.innerHTML = `
+        <span class="status-badge" style="background: #e8f5e9; color: #27ae60; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">Verified</span>
+        <div style="margin-top: 0.75rem; display: flex; gap: 1rem; align-items: flex-start;">
+          ${verification.document_url ? `<a href="${verification.document_url}" target="_blank"><img src="${verification.document_url}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" alt="ID"></a>` : ''}
+          <div>
+            <p style="margin: 0;"><strong>Name on ID:</strong> ${verification.extracted_full_name || 'N/A'}</p>
+            <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted);">Match score: ${verification.name_match_score}% - ${verification.name_match_details || ''}</p>
+            ${verification.extracted_state ? `<p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted);">State: ${verification.extracted_state}</p>` : ''}
+            ${reviewInfo}
+          </div>
+        </div>
+      `;
+    } else if (status === 'flagged' || verification.verification_status === 'flagged') {
+      const person = app.person || {};
+      const appName = `${person.first_name || ''} ${person.last_name || ''}`.trim();
+      container.innerHTML = `
+        <span class="status-badge" style="background: #fef9e7; color: #e67e22; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">Flagged for Review</span>
+        <div style="margin-top: 0.75rem; display: flex; gap: 1rem; align-items: flex-start;">
+          ${verification.document_url ? `<a href="${verification.document_url}" target="_blank"><img src="${verification.document_url}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" alt="ID"></a>` : ''}
+          <div>
+            <p style="margin: 0;"><strong>Application Name:</strong> ${appName}</p>
+            <p style="margin: 0.25rem 0 0;"><strong>Name on ID:</strong> ${verification.extracted_full_name || 'Could not extract'}</p>
+            <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted);">Match score: ${verification.name_match_score}% - ${verification.name_match_details || ''}</p>
+            ${verification.is_expired_dl ? '<p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: #c0392b;"><strong>ID appears to be expired</strong></p>' : ''}
+          </div>
+        </div>
+        <div style="margin-top: 1rem;">
+          <button type="button" id="approveIdBtn" class="btn-small btn-primary">Approve</button>
+          <button type="button" id="rejectIdBtn" class="btn-small" style="color: #c0392b;">Reject</button>
+        </div>
+      `;
+      document.getElementById('approveIdBtn')?.addEventListener('click', () => approveIdVerification(verification.id, app));
+      document.getElementById('rejectIdBtn')?.addEventListener('click', () => rejectIdVerification(verification.id, app));
+    } else if (verification.verification_status === 'manually_rejected') {
+      container.innerHTML = `
+        <span class="status-badge" style="background: #fde8e8; color: #c0392b; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">Rejected</span>
+        ${verification.review_notes ? `<p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Notes: ${verification.review_notes}</p>` : ''}
+        <div style="margin-top: 0.75rem;">
+          <button type="button" id="requestIdVerificationBtn" class="btn-small btn-primary">Request New Verification</button>
+        </div>
+      `;
+      document.getElementById('requestIdVerificationBtn')?.addEventListener('click', () => requestIdVerification(app));
+    }
+  } catch (e) {
+    console.error('Error loading verification:', e);
+    container.innerHTML = '<p class="text-muted">Error loading verification data.</p>';
+  }
+}
+
+async function requestIdVerification(app) {
+  if (!app.person_id) {
+    showToast('No person linked to this application', 'error');
+    return;
+  }
+
+  try {
+    const { uploadUrl } = await identityService.requestVerification(app.id, app.person_id);
+    const person = app.person || {};
+
+    // Send email with the link
+    if (person.email) {
+      await emailService.sendDLUploadLink(person, uploadUrl);
+      showToast('ID verification link sent!', 'success');
+    } else {
+      // No email - copy the link
+      await navigator.clipboard.writeText(uploadUrl);
+      showToast('No email on file. Link copied to clipboard.', 'warning');
+    }
+
+    // Refresh the UI
+    app.identity_verification_status = 'link_sent';
+    await updateIdentityVerificationUI(app);
+  } catch (e) {
+    console.error('Error requesting verification:', e);
+    showToast('Failed to request verification', 'error');
+  }
+}
+
+async function resendIdEmail(app) {
+  try {
+    const token = await identityService.getUploadToken(app.id);
+    if (!token || token.is_used) {
+      // Generate new token
+      await requestIdVerification(app);
+      return;
+    }
+
+    if (new Date(token.expires_at) < new Date()) {
+      // Token expired, generate new one
+      await requestIdVerification(app);
+      return;
+    }
+
+    const uploadUrl = `https://rsonnad.github.io/alpacapps/spaces/verify.html?token=${token.token}`;
+    const person = app.person || {};
+
+    if (person.email) {
+      await emailService.sendDLUploadLink(person, uploadUrl);
+      showToast('Verification email resent!', 'success');
+    } else {
+      await navigator.clipboard.writeText(uploadUrl);
+      showToast('No email on file. Link copied to clipboard.', 'warning');
+    }
+  } catch (e) {
+    console.error('Error resending email:', e);
+    showToast('Failed to resend email', 'error');
+  }
+}
+
+async function approveIdVerification(verificationId, app) {
+  try {
+    await identityService.approveVerification(verificationId, 'admin');
+    showToast('Identity approved!', 'success');
+    app.identity_verification_status = 'verified';
+    await updateIdentityVerificationUI(app);
+  } catch (e) {
+    console.error('Error approving verification:', e);
+    showToast('Failed to approve', 'error');
+  }
+}
+
+async function rejectIdVerification(verificationId, app) {
+  const notes = prompt('Rejection notes (optional):');
+  try {
+    await identityService.rejectVerification(verificationId, 'admin', notes);
+    showToast('Identity rejected', 'warning');
+    app.identity_verification_status = 'pending';
+    await updateIdentityVerificationUI(app);
+  } catch (e) {
+    console.error('Error rejecting verification:', e);
+    showToast('Failed to reject', 'error');
+  }
 }
 
 async function previewLease() {
