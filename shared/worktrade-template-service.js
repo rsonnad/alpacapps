@@ -11,17 +11,21 @@ const PLACEHOLDERS = {
   tenant_name: 'Full name of the work trade renter',
   tenant_email: 'Renter email address',
   tenant_phone: 'Renter phone number',
+  tenant_ssn: 'Social Security Number (for 1099 tax reporting)',
   emergency_contact: 'Emergency contact name and phone number',
 
-  // Dwelling
-  dwelling_description: 'Description of the rental unit (e.g., "the cabin on the west most part of the property")',
+  // Dwelling (optional — worktrade may not include housing)
+  dwelling_description: 'Description of the rental unit, if applicable',
 
   // Financial
   rate: 'Monthly rent amount (e.g., "$599")',
-  security_deposit: 'Security/cleaning deposit amount (e.g., "$300")',
   pay_rate: 'Hourly pay rate for work (e.g., "$25")',
   pay_rate_terms: 'Pay rate terms (e.g., "for first 90 days. Negotiated rate after 90 days.")',
   min_hours_per_week: 'Minimum hours of work per week (e.g., "6")',
+
+  // Payment
+  payment_method: 'Payment method (e.g., "Direct Deposit", "Check", "Venmo")',
+  payment_info: 'Payment account details (e.g., routing/account number, Venmo handle)',
 
   // Dates & Terms
   agreement_start_date: 'Start date of the agreement (e.g., "June 30, 2024")',
@@ -203,13 +207,15 @@ function parseTemplate(templateContent, agreementData) {
     tenant_name: agreementData.tenantName,
     tenant_email: agreementData.tenantEmail,
     tenant_phone: agreementData.tenantPhone,
+    tenant_ssn: agreementData.tenantSsn,
     emergency_contact: agreementData.emergencyContact,
     dwelling_description: agreementData.dwellingDescription,
     rate: agreementData.rate,
-    security_deposit: agreementData.securityDeposit,
     pay_rate: agreementData.payRate,
     pay_rate_terms: agreementData.payRateTerms,
     min_hours_per_week: agreementData.minHoursPerWeek,
+    payment_method: agreementData.paymentMethod,
+    payment_info: agreementData.paymentInfo,
     agreement_start_date: agreementData.agreementStartDate,
     notice_period: agreementData.noticePeriod,
     signing_date: agreementData.signingDate,
@@ -254,13 +260,15 @@ function getTemplatePreview(templateContent) {
     tenantName: 'John Smith',
     tenantEmail: 'john.smith@email.com',
     tenantPhone: '512-555-1234',
+    tenantSsn: '123-45-6789',
     emergencyContact: 'Jane Smith - 512-555-5678',
     dwellingDescription: 'the cabin on the west most part of the property (farthest from the house)',
     rate: '$599',
-    securityDeposit: '$300',
     payRate: '$25',
     payRateTerms: 'for first 90 days. Negotiated rate after 90 days.',
     minHoursPerWeek: '6',
+    paymentMethod: 'Direct Deposit',
+    paymentInfo: 'Chase Bank, Routing: 021000021, Account: XXXX1234',
     agreementStartDate: 'June 30, 2024',
     noticePeriod: '2 weeks',
     signingDate: 'February 6, 2026',
@@ -291,13 +299,11 @@ renter agrees to follow the following:
 
 ## Unit
 
-The renter shall take {{dwelling_description}}.
+{{dwelling_description}}
 
 ## Monthly Rent
 
 **{{rate}}**
-
-- The renter will place a security/cleaning deposit of **{{security_deposit}}**. Some portion of the deposit can be worked during the first month.
 
 ## Agreement Start Date
 
@@ -342,6 +348,16 @@ Either party may terminate the agreement with {{notice_period}} notice.
 - Due to the wide range of tasks required to manage the property, the renter agrees to complete the highest priority tasks as outlined on Monday or other system, which may include: cleaning, organization, landscaping, building assistance, electronics management, or other tasks.
 
 - The renter will be available for weekly calls (15 minutes) to review completed and upcoming tasks. These calls may not be required if work tasks do not warrant.
+
+## Payment & Tax Information
+
+Work performed under this agreement is compensated as **1099 independent contractor** work.
+
+- **SSN:** {{tenant_ssn}}
+- **Payment Method:** {{payment_method}}
+- **Payment Details:** {{payment_info}}
+
+Renter will be paid at the end of each month for any excess hours (beyond the value of the next month's rent). Payment may take 3-5 days to process.
 
 ## Departure Terms
 
