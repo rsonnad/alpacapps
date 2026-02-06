@@ -2594,6 +2594,7 @@ function setupEventListeners() {
   document.getElementById('recordSecurityDepositBtn')?.addEventListener('click', () => window.openRecordDepositModal('security'));
   document.getElementById('confirmRecordDepositBtn')?.addEventListener('click', confirmRecordDeposit);
   document.getElementById('closeRecordDepositBtn')?.addEventListener('click', closeRecordDepositModal);
+  document.getElementById('cancelRecordDepositBtn')?.addEventListener('click', closeRecordDepositModal);
   document.getElementById('recordDepositModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'recordDepositModal') closeRecordDepositModal();
   });
