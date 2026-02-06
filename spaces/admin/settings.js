@@ -541,7 +541,7 @@ async function loadInboundSms() {
       .select(`*, person:person_id(id, first_name, last_name, phone)`)
       .eq('direction', 'inbound')
       .order('created_at', { ascending: false })
-      .limit(30);
+      .limit(3);
 
     if (error) throw error;
 

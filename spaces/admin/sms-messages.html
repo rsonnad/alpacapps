@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Messages - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="rentals.css?v=5">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
+          <h1>&#129433; AlpacAPPs Admin</h1>
+        </a>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.25</span>
+        <span id="roleBadge" class="role-badge">Admin</span>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/" class="btn-small">Public View</a>
+        <span id="userInfo" class="user-info"></span>
+        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Page Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="margin: 0;">SMS Messages</h2>
+            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">All inbound and outbound SMS communications</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="settings.html" class="btn-small btn-secondary">Back to Settings</a>
+            <button class="btn-small btn-primary" id="composeMessageBtn">Compose</button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Direction</label>
+              <select id="filterDirection" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                <option value="">All</option>
+                <option value="inbound">Inbound</option>
+                <option value="outbound">Outbound</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Person</label>
+              <select id="filterPerson" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                <option value="">All People</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Search</label>
+              <input type="text" id="filterSearch" placeholder="Search message text..." style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages List -->
+        <div id="messagesList" style="background: white; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+          <p class="text-muted" style="padding: 2rem; text-align: center;">Loading messages...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Compose SMS Modal -->
+  <div id="composeSmsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 id="composeSmsTitle">Send SMS</h2>
+        <button class="modal-close" id="closeComposeSmsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="smsRecipientSelect">Recipient</label>
+          <select id="smsRecipientSelect">
+            <option value="">Select a tenant...</option>
+          </select>
+        </div>
+
+        <div id="smsConversationSection" class="hidden" style="margin-bottom: 1rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Conversation History</label>
+          <div id="smsConversationThread" style="max-height: 200px; overflow-y: auto; background: #fafafa; border-radius: 8px; padding: 0.5rem; margin-top: 0.25rem;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="smsComposeBody">Message</label>
+          <textarea id="smsComposeBody" rows="4" placeholder="Type your message..."></textarea>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <span><span id="smsCharCount">0</span> characters</span>
+            <span><span id="smsSegmentCount">0</span> segment(s)</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelComposeSmsBtn">Cancel</button>
+        <button class="btn-primary" id="sendSmsBtn">Send SMS</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="sms-messages.js"></script>
+</body>
+</html>
