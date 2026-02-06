@@ -6,6 +6,7 @@ import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { leaseTemplateService } from '../../shared/lease-template-service.js';
 import { eventTemplateService } from '../../shared/event-template-service.js';
+import { worktradeTemplateService } from '../../shared/worktrade-template-service.js';
 import { formatDateAustin } from '../../shared/timezone.js';
 
 // =============================================
@@ -100,6 +101,36 @@ async function loadTemplatesPanel() {
 
   // Load event template history
   await loadEventTemplateHistory();
+
+  // Load worktrade placeholder reference
+  const worktradePlaceholders = worktradeTemplateService.getAvailablePlaceholders();
+  const worktradePlaceholderList = document.getElementById('worktradePlaceholderList');
+  if (worktradePlaceholderList) {
+    worktradePlaceholderList.innerHTML = Object.entries(worktradePlaceholders)
+      .map(([key, desc]) => `
+        <div class="placeholder-item">
+          <code>{{${key}}}</code>
+          <span class="placeholder-desc">${desc}</span>
+        </div>
+      `).join('');
+  }
+
+  // Load active worktrade template
+  try {
+    const worktradeTemplate = await worktradeTemplateService.getActiveTemplate();
+    if (worktradeTemplate) {
+      document.getElementById('worktradeTemplateName').value = worktradeTemplate.name;
+      document.getElementById('worktradeTemplateContent').value = worktradeTemplate.content;
+    } else {
+      // Load default template
+      document.getElementById('worktradeTemplateContent').value = worktradeTemplateService.getDefaultTemplate();
+    }
+  } catch (e) {
+    console.error('Error loading worktrade template:', e);
+  }
+
+  // Load worktrade template history
+  await loadWorktradeTemplateHistory();
 }
 
 async function loadTemplateHistory() {
@@ -349,6 +380,131 @@ function loadDefaultEventTemplate() {
 }
 
 // =============================================
+// WORKTRADE TEMPLATE FUNCTIONS
+// =============================================
+
+async function loadWorktradeTemplateHistory() {
+  try {
+    const templates = await worktradeTemplateService.getAllTemplates();
+    const tbody = document.getElementById('worktradeTemplateHistoryBody');
+    if (!tbody) return;
+
+    if (templates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = templates.map(t => `
+      <tr>
+        <td>${t.name}</td>
+        <td>v${t.version}</td>
+        <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+        <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
+        <td>
+          <button class="btn-small" data-action="load-worktrade-template" data-id="${t.id}">Load</button>
+          ${!t.is_active ? `<button class="btn-small" data-action="set-active-worktrade-template" data-id="${t.id}">Set Active</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    // Add click handlers
+    tbody.querySelectorAll('[data-action="load-worktrade-template"]').forEach(btn => {
+      btn.addEventListener('click', () => loadWorktradeTemplate(btn.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="set-active-worktrade-template"]').forEach(btn => {
+      btn.addEventListener('click', () => setActiveWorktradeTemplate(btn.dataset.id));
+    });
+  } catch (e) {
+    console.error('Error loading worktrade template history:', e);
+  }
+}
+
+async function loadWorktradeTemplate(templateId) {
+  try {
+    const { data, error } = await supabase
+      .from('worktrade_agreement_templates')
+      .select('*')
+      .eq('id', templateId)
+      .single();
+
+    if (error) throw error;
+
+    document.getElementById('worktradeTemplateName').value = data.name;
+    document.getElementById('worktradeTemplateContent').value = data.content;
+    showToast('Work trade template loaded', 'success');
+  } catch (e) {
+    showToast('Error loading work trade template: ' + e.message, 'error');
+  }
+}
+
+async function setActiveWorktradeTemplate(templateId) {
+  try {
+    await worktradeTemplateService.setActiveTemplate(templateId);
+    await loadWorktradeTemplateHistory();
+    showToast('Work trade template set as active', 'success');
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function saveWorktradeTemplate() {
+  const name = document.getElementById('worktradeTemplateName').value.trim();
+  const content = document.getElementById('worktradeTemplateContent').value;
+  const makeActive = document.getElementById('worktradeMakeActive').checked;
+
+  if (!name) {
+    showToast('Please enter a template name', 'warning');
+    return;
+  }
+
+  if (!content.trim()) {
+    showToast('Template content cannot be empty', 'warning');
+    return;
+  }
+
+  // Validate template
+  const validation = worktradeTemplateService.validateTemplate(content);
+  const validationDiv = document.getElementById('worktradeTemplateValidation');
+
+  if (!validation.isValid) {
+    validationDiv.innerHTML = `
+      <div class="validation-error">
+        <strong>Validation Errors:</strong>
+        <ul>${validation.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+    return;
+  }
+
+  if (validation.warnings.length > 0) {
+    validationDiv.innerHTML = `
+      <div class="validation-warning">
+        <strong>Warnings:</strong>
+        <ul>${validation.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+  } else {
+    validationDiv.style.display = 'none';
+  }
+
+  try {
+    await worktradeTemplateService.saveTemplate(content, name, makeActive);
+    await loadWorktradeTemplateHistory();
+    showToast('Work trade template saved successfully!', 'success');
+  } catch (e) {
+    showToast('Error saving work trade template: ' + e.message, 'error');
+  }
+}
+
+function loadDefaultWorktradeTemplate() {
+  document.getElementById('worktradeTemplateContent').value = worktradeTemplateService.getDefaultTemplate();
+  document.getElementById('worktradeTemplateName').value = 'Standard Work Trade Agreement';
+  showToast('Default work trade template loaded', 'info');
+}
+
+// =============================================
 // SIGNWELL CONFIG
 // =============================================
 
@@ -399,6 +555,7 @@ function setupEventListeners() {
     const type = e.target.value;
     document.getElementById('leaseTemplateSection').style.display = type === 'lease' ? 'block' : 'none';
     document.getElementById('eventTemplateSection').style.display = type === 'event' ? 'block' : 'none';
+    document.getElementById('worktradeTemplateSection').style.display = type === 'worktrade' ? 'block' : 'none';
   });
 
   // Lease template buttons
@@ -409,4 +566,8 @@ function setupEventListeners() {
   // Event template buttons
   document.getElementById('loadDefaultEventTemplateBtn')?.addEventListener('click', loadDefaultEventTemplate);
   document.getElementById('saveEventTemplateBtn')?.addEventListener('click', saveEventTemplate);
+
+  // Work trade template buttons
+  document.getElementById('loadDefaultWorktradeTemplateBtn')?.addEventListener('click', loadDefaultWorktradeTemplate);
+  document.getElementById('saveWorktradeTemplateBtn')?.addEventListener('click', saveWorktradeTemplate);
 }

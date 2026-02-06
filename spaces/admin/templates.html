@@ -63,6 +63,7 @@
             <select id="templateTypeSelector" class="template-type-select">
               <option value="lease">Lease Agreement</option>
               <option value="event">Event Agreement</option>
+              <option value="worktrade">Work Trade Agreement</option>
             </select>
           </div>
         </div>
@@ -216,6 +217,71 @@
                 </tr>
               </thead>
               <tbody id="eventTemplateHistoryBody">
+                <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Trade Template Section -->
+      <div id="worktradeTemplateSection" style="display: none;">
+        <div class="section">
+          <div class="section-header">
+            <h2>Work Trade Agreement Template</h2>
+            <div class="header-actions">
+              <button type="button" id="loadDefaultWorktradeTemplateBtn" class="btn-small">Load Default</button>
+              <button type="button" id="saveWorktradeTemplateBtn" class="btn-small btn-primary">Save Template</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              Edit the work trade agreement template. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+            </p>
+
+            <div class="template-editor-container">
+              <div class="template-editor">
+                <label for="worktradeTemplateName">Template Name</label>
+                <input type="text" id="worktradeTemplateName" value="Standard Work Trade Agreement" style="margin-bottom: 1rem;">
+
+                <label for="worktradeTemplateContent">Template Content</label>
+                <textarea id="worktradeTemplateContent" class="template-textarea" rows="20" placeholder="Enter work trade agreement template content..."></textarea>
+              </div>
+
+              <div class="placeholder-reference">
+                <h4>Available Placeholders</h4>
+                <div id="worktradePlaceholderList" class="placeholder-list"></div>
+              </div>
+            </div>
+
+            <div class="template-actions" style="margin-top: 1rem;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="worktradeMakeActive" checked>
+                Set as active template
+              </label>
+            </div>
+
+            <div id="worktradeTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <!-- Work Trade Template History Section -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Template History</h2>
+          </div>
+          <div class="section-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Created</th>
+                  <th>Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="worktradeTemplateHistoryBody">
                 <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
               </tbody>
             </table>
