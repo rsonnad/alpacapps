@@ -890,7 +890,7 @@ ${data.photo_url ? `Photo: ${data.photo_url}` : ''}`
     // ===== BUG REPORT NOTIFICATIONS =====
     case "bug_report_received":
       return {
-        subject: `Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
+        subject: `Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').replace(/[\r\n]+/g, ' ').substring(0, 50)}`,
         html: `
           <h2 style="color: #2980b9;">Bug Report Received</h2>
           <p>Hi ${data.reporter_name},</p>
@@ -922,7 +922,7 @@ You'll receive another email when the fix is deployed or if we need to escalate 
 
     case "bug_report_fixed":
       return {
-        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
+        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').replace(/[\r\n]+/g, ' ').substring(0, 50)}`,
         html: `
           <h2 style="color: #27ae60;">Bug Fixed!</h2>
           <p>Hi ${data.reporter_name},</p>
@@ -970,7 +970,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
 
     case "bug_report_failed":
       return {
-        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
+        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').replace(/[\r\n]+/g, ' ').substring(0, 50)}`,
         html: `
           <h2 style="color: #e67e22;">Bug Report Update</h2>
           <p>Hi ${data.reporter_name},</p>
@@ -1009,7 +1009,7 @@ We'll review this manually and follow up. Thank you for reporting!`
 
     case "bug_report_verified":
       return {
-        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').substring(0, 50)}`,
+        subject: `Re: Bug by ${data.reporter_name || 'Unknown'}: ${(data.description || '').replace(/[\r\n]+/g, ' ').substring(0, 50)}`,
         html: `
           <h2 style="color: #27ae60;">Screenshot of the Fix</h2>
           <p>Hi ${data.reporter_name},</p>
@@ -1175,6 +1175,9 @@ serve(async (req) => {
     const AUTO_REPLY_TO = "auto@alpacaplayhouse.com";
     const TEAM_REPLY_TO = "team@alpacaplayhouse.com";
 
+    const body: EmailRequest = await req.json();
+    const { type, to, data, subject: customSubject, from, reply_to } = body;
+
     // Map email types to their sender category
     const AUTO_TYPES: EmailType[] = [
       "bug_report_received", "bug_report_fixed", "bug_report_failed", "bug_report_verified",
@@ -1185,9 +1188,6 @@ serve(async (req) => {
     const isAutoType = AUTO_TYPES.includes(type);
     const DEFAULT_FROM = isAutoType ? AUTO_FROM : TEAM_FROM;
     const DEFAULT_REPLY_TO = isAutoType ? AUTO_REPLY_TO : TEAM_REPLY_TO;
-
-    const body: EmailRequest = await req.json();
-    const { type, to, data, subject: customSubject, from, reply_to } = body;
 
     if (!type || !to || !data) {
       return new Response(
