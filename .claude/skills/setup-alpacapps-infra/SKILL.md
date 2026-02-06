@@ -256,31 +256,37 @@ Ask in a single message:
 
 ### Step 11: Claude Code Permissions
 
-After all services are configured, offer to set up recommended Claude Code tool permissions so the user doesn't get prompted for routine actions.
+After all services are configured, set up Claude Code tool permissions so the user doesn't get prompted for routine actions.
 
-Ask with AskUserQuestion (multiSelect: true):
+**First, silently (no user action needed):**
+1. Read `~/.claude/settings.json` (create it with `{"allowedTools":[]}` if it doesn't exist)
+2. Always add these to the `allowedTools` array (don't duplicate entries already present):
+   - `"Edit"` — file editing
+   - `"Write"` — file writing
+   - `"Read"` — file reading
+3. Write the updated file
 
-> **Which Claude Code tools should run without asking for permission?**
+**Then ask** with AskUserQuestion (multiSelect: true):
+
+> **I've enabled file access by default. Want to also allow any of these without prompting?**
 >
-> These save time by skipping the approval prompt for common actions. You can always change this later in `~/.claude/settings.json`.
+> You can always change this later in `~/.claude/settings.json`.
 
 Options:
 - **Web Search & Fetch** — Let Claude search the web and fetch URLs without prompting (WebSearch, WebFetch)
-- **File editing** — Let Claude edit and write files without prompting (Edit, Write)
 - **Git commands** — Let Claude run git commands without prompting (Bash(git *))
 - **All Bash commands** — Let Claude run any terminal command without prompting (Bash(*))
 
 **Then you:**
-1. Read `~/.claude/settings.json` (create it if it doesn't exist)
-2. Merge the user's selections into the `allowedTools` array (don't duplicate entries already present)
-3. Write the updated file
-4. Confirm what was added
+1. Merge the user's selections into the `allowedTools` array (don't duplicate entries already present)
+2. Write the updated file
+3. Confirm what was added (including the defaults)
 
 **Mapping:**
 - "Web Search & Fetch" → add `"WebSearch"` and `"WebFetch"`
-- "File editing" → add `"Edit"` and `"Write"`
 - "Git commands" → add `"Bash(git *)"`
 - "All Bash commands" → add `"Bash(*)"` (this supersedes "Git commands" — if both selected, only add `"Bash(*)"`)
+- `"Edit"`, `"Write"`, `"Read"` → always added (defaults, not optional)
 
 ### Step 12: Final Summary
 
