@@ -2584,6 +2584,8 @@ function setupEventListeners() {
   document.getElementById('sendForSignatureBtn')?.addEventListener('click', sendForSignature);
 
   // Deposit modals
+  document.getElementById('recordMoveInDepositBtn')?.addEventListener('click', () => openRecordDepositModal('move_in'));
+  document.getElementById('recordSecurityDepositBtn')?.addEventListener('click', () => openRecordDepositModal('security'));
   document.getElementById('confirmRecordDepositBtn')?.addEventListener('click', confirmRecordDeposit);
   document.getElementById('closeRecordDepositBtn')?.addEventListener('click', closeRecordDepositModal);
   document.getElementById('recordDepositModal')?.addEventListener('click', (e) => {
