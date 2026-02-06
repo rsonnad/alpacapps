@@ -40,7 +40,7 @@
         <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; AlpacAPPs Admin</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.29</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.30</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -192,6 +192,47 @@
           </div>
           <div class="settings-card-body">
             <div id="forwardingRulesList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== GOVEE LIGHTING GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+          <h2>Govee Lighting</h2>
+          <span class="settings-badge" id="goveeModeBadge">Loading...</span>
+        </div>
+
+        <!-- Govee Config -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Configuration</h3>
+              <p>Devices: <strong id="goveeDeviceCount">Loading...</strong> | Last synced: <strong id="goveeLastSynced">Never</strong></p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <label class="settings-toggle">
+              <input type="checkbox" id="goveeTestMode">
+              <span class="settings-toggle-label">Test Mode</span>
+              <span class="settings-toggle-hint">Log commands without calling Govee API</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Govee Device Inventory -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Device Inventory</h3>
+              <p>All Govee/AiDot devices backed up in database.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div id="goveeDeviceSummary">
+              <p class="text-muted" style="font-size: 0.85rem;">Loading...</p>
+            </div>
           </div>
         </div>
       </div>

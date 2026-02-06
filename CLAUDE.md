@@ -104,6 +104,15 @@ Key columns added to `rental_applications`:
 - `signwell_document_id` - SignWell document tracking ID
 - `signed_pdf_url` - URL to signed lease PDF after e-signature
 
+### Govee Lighting System
+```
+govee_config         - Govee Cloud API configuration (single row, id=1)
+                      (api_key, api_base, is_active, test_mode, last_synced_at)
+govee_devices        - All Govee/AiDot smart lights (63 devices)
+                      (device_id, sku, name, area, device_type, is_group,
+                       capabilities, online, last_state, is_active, notes)
+```
+
 ### Legacy (Deprecated - don't use for new features)
 ```
 photos          - Old photo storage
@@ -349,6 +358,12 @@ git push
    - Tailscale mesh VPN connects DO droplet to Alpaca Mac
    - UniFi Network API for firewall/DHCP/WiFi management
    - `HOMEAUTOMATION.md` for full documentation
+16. **Govee Lighting Integration** - 63 Govee/AiDot smart lights backed up in Supabase
+   - `govee_config` table stores API key, test mode toggle (single row, id=1)
+   - `govee_devices` table stores all 63 devices with name, SKU, area, type
+   - Cloud API base: `https://openapi.api.govee.com/router/api/v1/`
+   - Admin Settings page shows device inventory by area + test mode toggle
+   - Areas: Garage Mahal (17), Spartan (18), Outdoor (12), Outhouse (7), Interior (5), Bedrooms (4)
 
 ## Testing Changes
 

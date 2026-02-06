@@ -57,7 +57,8 @@ async function loadSettingsPanel() {
     loadSquareConfig(),
     loadTelnyxConfig(),
     loadInboundSms(),
-    loadForwardingRules()
+    loadForwardingRules(),
+    loadGoveeConfig()
   ]);
 }
 
@@ -957,6 +958,73 @@ async function deleteForwardingRule() {
 }
 
 // =============================================
+// GOVEE LIGHTING
+// =============================================
+
+async function loadGoveeConfig() {
+  try {
+    // Load config (non-sensitive fields only)
+    const { data: config, error } = await supabase
+      .from('govee_config')
+      .select('is_active, test_mode, last_synced_at')
+      .single();
+
+    if (error) throw error;
+
+    const checkbox = document.getElementById('goveeTestMode');
+    const badge = document.getElementById('goveeModeBadge');
+    const lastSynced = document.getElementById('goveeLastSynced');
+
+    if (checkbox) checkbox.checked = config.test_mode || false;
+    if (badge) {
+      badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+      badge.classList.toggle('live', !config.test_mode);
+    }
+    if (lastSynced) {
+      lastSynced.textContent = config.last_synced_at
+        ? new Date(config.last_synced_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+        : 'Never';
+    }
+
+    // Load device counts by area
+    const { data: devices, error: devError } = await supabase
+      .from('govee_devices')
+      .select('area, is_group')
+      .eq('is_active', true);
+
+    if (devError) throw devError;
+
+    const countEl = document.getElementById('goveeDeviceCount');
+    if (countEl) countEl.textContent = `${devices.length} devices`;
+
+    // Build area summary
+    const summaryEl = document.getElementById('goveeDeviceSummary');
+    if (summaryEl && devices.length > 0) {
+      const areas = {};
+      for (const d of devices) {
+        const area = d.area || 'Unknown';
+        if (!areas[area]) areas[area] = { lights: 0, groups: 0 };
+        if (d.is_group) areas[area].groups++;
+        else areas[area].lights++;
+      }
+
+      summaryEl.innerHTML = Object.entries(areas)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([area, counts]) =>
+          `<div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); font-size: 0.85rem;">
+            <span style="font-weight: 600;">${area}</span>
+            <span class="text-muted">${counts.lights} light${counts.lights !== 1 ? 's' : ''}${counts.groups > 0 ? ` + ${counts.groups} group${counts.groups !== 1 ? 's' : ''}` : ''}</span>
+          </div>`
+        ).join('');
+    } else if (summaryEl) {
+      summaryEl.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">No devices found.</p>';
+    }
+  } catch (error) {
+    console.error('Error loading Govee config:', error);
+  }
+}
+
+// =============================================
 // EVENT LISTENERS
 // =============================================
 
@@ -998,6 +1066,29 @@ function setupEventListeners() {
     } catch (error) {
       console.error('Error updating Telnyx mode:', error);
       showToast('Failed to update SMS mode', 'error');
+      e.target.checked = !testMode;
+    }
+  });
+
+  // Govee test mode toggle
+  document.getElementById('goveeTestMode')?.addEventListener('change', async (e) => {
+    const testMode = e.target.checked;
+    try {
+      const { error } = await supabase
+        .from('govee_config')
+        .update({ test_mode: testMode, updated_at: new Date().toISOString() })
+        .eq('id', 1);
+      if (error) throw error;
+
+      const badge = document.getElementById('goveeModeBadge');
+      if (badge) {
+        badge.textContent = testMode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !testMode);
+      }
+      showToast(`Govee ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+    } catch (error) {
+      console.error('Error updating Govee mode:', error);
+      showToast('Failed to update Govee mode', 'error');
       e.target.checked = !testMode;
     }
   });

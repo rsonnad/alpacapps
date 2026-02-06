@@ -28,7 +28,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
     │  192.168.1.1      │ │                  │  │  12 zones         │
     │                   │ │  WiZ (11 bulbs)  │  │                   │
     │  - Network API    │ │  Govee (~19)     │  │  Living Sound     │
-    │  - UniFi Protect  │ │  Kasa (1 switch) │  │  MasterBlaster    │
+    │  - UniFi Protect  │ │  Kasa (2 switches)│  │  MasterBlaster    │
     │  - WireGuard VPN  │ │  Tuya (2)        │  │  DJ, Backyard...  │
     │  - DHCP/Firewall  │ │  Matter (13)     │  │  (see full list)  │
     └───────────────────┘ └──────────────────┘  └──────────────────┘
@@ -102,7 +102,7 @@ A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on 
 | Service | Port | Auto-Start | Purpose |
 |---------|------|------------|---------|
 | node-sonos-http-api | 5005 | launchd (`com.sonos.httpapi`) | Sonos speaker control |
-| MediaMTX | 8554 | launchd (pending setup) | Camera RTSP restreaming |
+| MediaMTX | 8554 | launchd (`com.mediamtx`) — pending deploy | Camera RTSP restreaming (9 streams) |
 | Tailscale | — | Login item | VPN mesh connectivity |
 
 ### Software Installed
@@ -376,20 +376,53 @@ rtsps://192.168.1.1:7441/<unique_stream_token>
 
 ### MediaMTX (Restreaming)
 
-MediaMTX converts RTSPS from UniFi Protect into standard RTSP/HLS/WebRTC:
+MediaMTX converts RTSPS from UniFi Protect into standard RTSP/HLS/WebRTC.
+Runs on Alpaca Mac as launchd service `com.mediamtx`.
 
-Config (`mediamtx.yml`):
-```yaml
-paths:
-  front-door:
-    source: rtsps://192.168.1.1:7441/TOKEN_HERE
-    sourceFingerprint: ""
-  side-yard:
-    source: rtsps://192.168.1.1:7441/TOKEN_HERE
-    sourceFingerprint: ""
+**Setup:** Run `scripts/mediamtx/setup.sh` on the Alpaca Mac (installs MediaMTX, extracts UDM Pro cert fingerprint, deploys config and launchd plist).
+
+**Config:** `~/mediamtx/mediamtx.yml` on Alpaca Mac (source in `scripts/mediamtx/mediamtx.yml`)
+
+**Available Streams (9 total — 3 cameras x 3 quality levels):**
+
+| Stream Name | Camera | Resolution |
+|-------------|--------|------------|
+| `alpacamera-high` | Alpacamera (backyard) | 2688x1512 |
+| `alpacamera-med` | Alpacamera | 1280x720 |
+| `alpacamera-low` | Alpacamera | 640x360 |
+| `front-house-high` | Front Of House | 2688x1512 |
+| `front-house-med` | Front Of House | 1280x720 |
+| `front-house-low` | Front Of House | 640x360 |
+| `side-yard-high` | Side Yard | 2688x1512 |
+| `side-yard-med` | Side Yard | 1280x720 |
+| `side-yard-low` | Side Yard | 640x360 |
+
+**Access URLs** (replace `{stream}` with any stream name above):
+
+| Protocol | URL | Use Case |
+|----------|-----|----------|
+| RTSP | `rtsp://192.168.1.74:8554/{stream}` | VLC, NVR, programmatic |
+| HLS | `http://192.168.1.74:8888/{stream}` | Browser playback |
+| WebRTC | `http://192.168.1.74:8889/{stream}` | Low-latency browser |
+| API | `http://192.168.1.74:9997/v3/paths/list` | Stream status |
+
+**Via Tailscale** (from DO droplet or any Tailscale node):
+- `rtsp://100.110.178.14:8554/{stream}`
+- `http://100.110.178.14:8888/{stream}`
+
+**On-demand:** Streams only pull from cameras when a viewer connects (`sourceOnDemand: yes`), saving bandwidth.
+
+**Logs:** `~/mediamtx/mediamtx.log` on Alpaca Mac
+
+**Service management:**
+```bash
+# On Alpaca Mac
+launchctl stop com.mediamtx      # Stop
+launchctl start com.mediamtx     # Start
+launchctl unload ~/Library/LaunchAgents/com.mediamtx.plist  # Disable
+launchctl load ~/Library/LaunchAgents/com.mediamtx.plist    # Enable
+tail -f ~/mediamtx/mediamtx.log  # View logs
 ```
-
-Access at: `rtsp://<alpaca-mac-ip>:8554/front-door`
 
 ### Programmatic API
 
@@ -540,12 +573,17 @@ The goal is to unify control through the DO droplet → Alpaca Mac → local net
 
 | Ecosystem | Count | Protocol | Control | Status |
 |-----------|-------|----------|---------|--------|
-| **WiZ** (Philips/Signify) | 11 discovered | UDP :38899 (local) | `pywizlight` CLI/Python | Working — fully controllable |
-| **Govee** (ESP32-based) | ~19 suspected | UDP multicast (LAN) or Cloud REST API | `govee-py` / Govee Cloud API | LAN control disabled — need Govee Home app or Cloud API |
+| **WiZ** (Philips/Signify) | 11 bulbs | UDP :38899 (local) | `pywizlight` CLI/Python | Working — fully controllable |
+| **Govee/AiDot** (ESP32) | 63 devices | Cloud REST API (+ optional LAN UDP) | Govee Cloud API | **Working** — Cloud API key active, all devices controllable |
 | **Matter** | 13 devices (2 fabrics) | mDNS/Matter over IP | `chip-tool` or Home Assistant | Discovered — need commissioning info |
-| **TP-Link Kasa** | 2 (HS210 + HS220) | Cloud + local | `python-kasa` | Working — fully controllable |
-| **Tuya** | 1+ device | Cloud + local | `tinytuya` | Discovered (192.168.1.69) |
-| **Alexa** | Hub for voice control | Cloud | `alexa-remote-control` | 5 Amazon/Echo devices on network |
+| **TP-Link Kasa** | 2 switches | Cloud + local | `python-kasa` | Working — fully controllable |
+| **Tuya** | 3 devices | Cloud + local | `tinytuya` | Discovered at .69, .208, .254 |
+| **Amazon Smart Plug** | 1 plug | Cloud | Alexa app | AmazonPlug13A2 at 192.168.1.145 |
+| **Alexa** | Hub for voice control | Cloud | `alexa-remote-control` | 7 Echo/Show devices on network |
+
+**Total smart lighting/plug devices: ~80** (63 Govee + 11 WiZ + 2 Kasa + 3 Tuya + 1 Amazon plug)
+
+> **AiDot vs Govee:** AiDot is Govee's parent company. All AiDot-hostname and espressif-hostname devices are Govee products. The Cloud API reveals **63 total Govee devices** (54 individual lights + 9 group controllers), organized by area in the device catalog below.
 
 ### WiZ Lights (11 discovered)
 
@@ -608,52 +646,149 @@ echo '{"method":"getPilot"}' | nc -u -w1 192.168.1.108 38899
 echo '{"method":"getSystemConfig"}' | nc -u -w1 192.168.1.108 38899
 ```
 
-### Govee Lights (~19 suspected devices)
+### Govee / AiDot Lights (63 devices via Cloud API)
 
-Govee devices use Espressif ESP32 chipsets (MAC prefix `dc:b4:d9`). They do **not** respond to LAN API scans — LAN Control must be enabled per-device in the Govee Home app, or use the cloud API.
+AiDot is Govee's parent company. All these devices are Govee products. **Cloud API is now active** — controllable from the DO droplet or anywhere, no LAN required.
 
-**Suspected Govee device IPs** (all `dc:b4:d9:*` MAC addresses):
-```
-192.168.1.27   dc:b4:d9:5a:11:34
-192.168.1.38   dc:b4:d9:58:24:2c
-192.168.1.44   dc:b4:d9:4d:1c:dc
-192.168.1.63   dc:b4:d9:4c:a4:84
-192.168.1.81   dc:b4:d9:58:48:28
-192.168.1.107  dc:b4:d9:5a:12:14
-192.168.1.109  dc:b4:d9:58:3a:8c
-192.168.1.125  dc:b4:d9:4d:47:d4
-192.168.1.137  dc:b4:d9:59:42:50
-192.168.1.140  dc:b4:d9:59:28:10
-192.168.1.165  dc:b4:d9:58:3a:c8
-192.168.1.167  dc:b4:d9:56:91:24  (also advertises as "espressif" in mDNS)
-192.168.1.171  dc:b4:d9:56:8d:ec
-192.168.1.175  dc:b4:d9:4d:29:88
-192.168.1.185  dc:b4:d9:5a:06:c8
-192.168.1.197  dc:b4:d9:58:39:5c
-192.168.1.224  dc:b4:d9:5a:07:7c
-192.168.1.235  dc:b4:d9:59:46:e8
-192.168.1.252  dc:b4:d9:58:1a:88
-```
+#### Device Catalog (by area)
+
+**Garage Mahal (15 lights + 1 group)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| garage mahal (group) | SameModeGroup | 13452517 | Group controller |
+| garage mahal 1 | H601F | 2A:D4:DC:B4:D9:58:3A:8C | Light bar |
+| garage mahal 2 | H601F | 0C:EC:DC:B4:D9:59:46:E8 | Light bar |
+| Garage Mahal 3 | H601F | 26:E2:DC:B4:D9:58:39:5C | Light bar |
+| Garage Mahal 4 | H601F | 7F:85:98:88:E0:FB:90:F0 | Light bar |
+| Garage Mahal 5 | H601F | 2B:D0:DC:B4:D9:58:3A:C8 | Light bar |
+| Garage Mahal 6 | H601F | C1:61:DC:B4:D9:58:1A:88 | Light bar |
+| Garage Mahal 7 | H601F | 16:45:DC:B4:D9:58:48:28 | Light bar |
+| Garage Mahal 8 | H601F | 0E:46:DC:B4:D9:58:24:2C | Light bar |
+| Garage Mahal 9 | H601F | D9:83:DC:B4:D9:56:91:24 | Light bar |
+| Garage Mahal 10 | H601F | 18:EB:DC:06:75:48:DC:98 | Light bar |
+| Garage Mahal 11 | H601F | 8C:4B:DC:B4:D9:5A:06:C8 | Light bar |
+| Garage Mahal 12 | H601F | 32:EF:DC:B4:D9:5A:07:7C | Light bar |
+| Garage Mahal 13 | H601F | 1C:90:DC:06:75:4D:C1:E8 | Light bar |
+| Garage Mahal R1 | H601F | E9:59:DC:B4:D9:59:42:50 | Light bar |
+| Garage Mahal R2 | H601F | 79:A5:DC:B4:D9:5A:12:14 | Light bar |
+| Garage Mahal R3 | H601F | 1D:28:DC:B4:D9:56:8D:EC | Light bar |
+
+**Spartan Room (16 lights + 4 groups)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| Spartan (group) | SameModeGroup | 12411623 | Group controller |
+| Spartan Main (group) | SameModeGroup | 12411712 | Group controller |
+| Spartan LilBed (group) | SameModeGroup | 12411702 | Group controller |
+| Spartan Small Bed (group) | SameModeGroup | 12001251 | Group controller |
+| Spartan Main 1 | H601A | 07:81:D0:C9:07:E7:47:FA | Light bar |
+| Spartan Main 2 | H601A | 07:68:98:17:3C:27:34:38 | Light bar |
+| Spartan Main 3 | H601A | 08:35:98:17:3C:28:B9:14 | Light bar |
+| Spartan Main 4 | H601A | 08:3B:98:17:3C:27:34:32 | Light bar |
+| Spartan Main 5 | H601A | 08:2D:98:17:3C:28:93:5E | Light bar |
+| Spartan Main 6 | H601A | 08:40:98:17:3C:07:AF:D2 | Light bar |
+| Spartan Bigbed 1 | H601F | 0A:C2:DC:06:75:52:3A:6C | Light bar |
+| Spartan Bigbed 2 | H601F | 12:2F:DC:06:75:4D:B4:F4 | Light bar |
+| Spartan Bigbed 3 | H601F | 20:28:DC:06:75:4A:7D:C0 | Light bar |
+| Spartan Bigbed 4 | H601F | 0A:46:DC:06:75:49:7D:58 | Light bar |
+| Spartan Lilbed 1 | H601A | 07:89:98:17:3C:06:57:66 | Light bar |
+| Spartan Lilbed 2 | H601A | 06:BE:98:17:3C:08:FC:DC | Light bar |
+| spartan UpDown Wall | H7076 | 26:70:DE:99:C1:C6:5B:84 | Wall light |
+| spartan roof | H6173 | 1B:63:C8:39:33:30:49:91 | Strip light |
+
+**Outhouse (6 lights + 1 group)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| Outhouse (group) | SameModeGroup | 13166268 | Group controller |
+| outhousemain1 | H601F | 73:E5:DC:B4:D9:4D:29:88 | Light bar |
+| outhousemain2 | H601F | 12:DC:DC:B4:D9:4C:A4:84 | Light bar |
+| outhousemain3 | H601F | 13:BC:DC:B4:D9:4D:47:D4 | Light bar |
+| outhousemain4 | H601F | 43:F2:DC:B4:D9:4D:1C:DC | Light bar |
+| outhouse stall left | H601F | 4B:F5:DC:B4:D9:59:28:10 | Light bar |
+| outhouse stall right | H601F | 1E:D4:DC:B4:D9:5A:11:34 | Light bar |
+
+**Bedrooms (2 groups)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| East Bedroom (group) | SameModeGroup | 12097639 | Group controller |
+| West Bedroom (group) | SameModeGroup | 12097082 | Group controller |
+| West Bedroom (group 2) | SameModeGroup | 12097079 | Group controller |
+| Common (group) | SameModeGroup | 12097114 | Group controller |
+
+**Outdoor / Yard (12 lights)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| Front Container Floods | H7057 | 10:84:DA:B9:84:86:4D:11 | Floodlight |
+| Front fence Lights | H70C5 | 7A:0F:C5:75:4E:0E:1B:1B | Permanent outdoor |
+| far back fence lights | H70C5 | 17:2A:C4:75:55:E6:73:8E | Permanent outdoor |
+| north back fence light | H70C5 | 0E:7E:C5:75:4E:0E:38:30 | Permanent outdoor |
+| Pond tree | H70C5 | 0D:26:C6:75:6E:0E:2F:12 | Permanent outdoor |
+| Sauna Fence Light | H70C2 | 6C:15:CC:A6:34:7E:CD:02 | Permanent outdoor |
+| Sauna Stick Lights | H7055 | F9:FC:CA:30:38:36:40:37 | Pathway light |
+| sauna tree String | H70C2 | 1C:5D:E8:4B:E4:72:BE:38 | Permanent outdoor |
+| food fence string | H7026 | 29:96:DD:99:83:C6:18:39 | String light |
+| back patio string Lite | H7039 | 0D:AE:D0:C8:03:C6:4E:03 | String light |
+| LED garag String Light | H7039 | 18:85:DD:6E:06:06:72:49 | String light |
+| shower flood | H7057 | 19:4B:DB:C3:43:86:13:70 | Floodlight |
+
+**Interior / Other (5 lights)**
+
+| Name | SKU | Device ID | Type |
+|------|-----|-----------|------|
+| Stairway | H6109 | 09:FD:A4:C1:38:93:77:E2 | LED strip |
+| livingroom strip light | H619E | 3A:CF:D4:AD:FC:06:C8:5C | Strip light |
+| balcony striplight | H6172 | AD:57:D7:39:32:35:39:1A | Strip light |
+| dog house roof | H6117 | 3E:06:A4:C1:38:1C:DE:19 | LED strip |
+| TreDeco Projector | H7071 | 10:40:DC:91:77:3B:AD:CD | Star projector |
 
 #### Govee Cloud API
 
-To use the cloud API (works from DO droplet, no local network needed):
+**API key:** Stored in `HOMEAUTOMATION.local.md`
+**Base URL:** `https://openapi.api.govee.com/router/api/v1/`
 
-1. Open Govee Home app → Profile icon → Settings (gear) → **"Apply for API Key"**
-2. Or visit: https://developer.govee.com/reference/apply-you-govee-api-key
-3. API key arrives via email
+Works from DO droplet or anywhere — no LAN access needed.
 
 ```bash
 # List all devices
-curl -s -H "Govee-API-Key: YOUR_KEY" \
-  https://developer.govee.com/router/api/v1/user/devices
+curl -s -H "Govee-API-Key: $GOVEE_KEY" \
+  https://openapi.api.govee.com/router/api/v1/user/devices
 
-# Turn on a device
-curl -s -X POST -H "Govee-API-Key: YOUR_KEY" \
+# Get device state
+curl -s -X POST -H "Govee-API-Key: $GOVEE_KEY" \
   -H "Content-Type: application/json" \
-  https://developer.govee.com/router/api/v1/device/control \
-  -d '{"requestId":"1","payload":{"sku":"MODEL","device":"DEVICE_MAC","capability":{"type":"devices.capabilities.on_off","instance":"powerSwitch","value":1}}}'
+  https://openapi.api.govee.com/router/api/v1/device/state \
+  -d '{"requestId":"1","payload":{"sku":"H601F","device":"DEVICE_ID"}}'
+
+# Turn on/off
+curl -s -X POST -H "Govee-API-Key: $GOVEE_KEY" \
+  -H "Content-Type: application/json" \
+  https://openapi.api.govee.com/router/api/v1/device/control \
+  -d '{"requestId":"1","payload":{"sku":"SKU","device":"DEVICE_ID","capability":{"type":"devices.capabilities.on_off","instance":"powerSwitch","value":1}}}'
+
+# Set brightness (1-100)
+curl -s -X POST -H "Govee-API-Key: $GOVEE_KEY" \
+  -H "Content-Type: application/json" \
+  https://openapi.api.govee.com/router/api/v1/device/control \
+  -d '{"requestId":"1","payload":{"sku":"SKU","device":"DEVICE_ID","capability":{"type":"devices.capabilities.range","instance":"brightness","value":50}}}'
+
+# Set color (RGB as integer: R*65536 + G*256 + B)
+curl -s -X POST -H "Govee-API-Key: $GOVEE_KEY" \
+  -H "Content-Type: application/json" \
+  https://openapi.api.govee.com/router/api/v1/device/control \
+  -d '{"requestId":"1","payload":{"sku":"SKU","device":"DEVICE_ID","capability":{"type":"devices.capabilities.color_setting","instance":"colorRgb","value":16711680}}}'
+
+# Set color temperature (2000-9000K, varies by device)
+curl -s -X POST -H "Govee-API-Key: $GOVEE_KEY" \
+  -H "Content-Type: application/json" \
+  https://openapi.api.govee.com/router/api/v1/device/control \
+  -d '{"requestId":"1","payload":{"sku":"SKU","device":"DEVICE_ID","capability":{"type":"devices.capabilities.color_setting","instance":"colorTemperatureK","value":3000}}}'
 ```
+
+**Rate limits:** 10,000 requests/day, 10 requests/minute per device.
 
 #### Enabling Govee LAN Control
 
@@ -710,55 +845,90 @@ Discovered via `python-kasa` (installed on Alpaca Mac at `/Users/alpaca/Library/
 /Users/alpaca/Library/Python/3.9/bin/kasa --host 192.168.1.101 brightness 50
 ```
 
-### Tuya Devices (1 discovered via broadcast)
+### Tuya Devices (3 confirmed + 2 additional)
 
-Discovered via `tinytuya` (installed on Alpaca Mac).
+Discovered via `tinytuya` (installed on Alpaca Mac) and UDM Pro client list. All confirmed Tuya devices show hostname "wlan0" and OUI "Tuya Smart Inc."
 
-| Device | IP | Tuya ID | Protocol | Notes |
-|--------|-----|---------|----------|-------|
-| Unknown | 192.168.1.69 | eb5675c98829e89548zvya | 3.3 | Responds to tinytuya broadcast |
+| Device | IP | MAC | Protocol | Notes |
+|--------|-----|-----|----------|-------|
+| Unknown | 192.168.1.69 | fc:67:1f:ae:11:35 | 3.3 | Responds to tinytuya broadcast |
+| Unknown | 192.168.1.208 | fc:67:1f:ae:0c:fe | — | Tuya OUI confirmed |
+| Unknown | 192.168.1.254 | 10:5a:17:c6:2d:d5 | — | Tuya OUI confirmed |
 
-**Additional Tuya-OUI devices** (MAC prefix `18:de:50`, not responding to Tuya broadcast):
-- `192.168.1.164` (18:de:50:5f:66:90)
-- `192.168.1.219` (18:de:50:5f:67:4c)
-
-These may be Tuya-based devices from a white-label brand (many smart plugs, sensors use Tuya chipsets).
+**Additional devices with Tuya-era OUI** (18:de:50, possibly offline or different subnet):
+- `192.168.1.164` (18:de:50:5f:66:90) — not in current UDM client list
+- `192.168.1.219` (18:de:50:5f:67:4c) — not in current UDM client list
 
 ### Other Smart Devices on Network
 
-| Device | IP | MAC/OUI | Type |
-|--------|-----|---------|------|
-| VIZIO TV (HomeKit) | — | — | TV/display |
-| Nest Thermostat | 192.168.1.111 | 14:c1:4e (Google) | Thermostat |
-| Nest Thermostat | 192.168.1.139 | 14:c1:4e (Google) | Thermostat |
-| Nest Thermostat | 192.168.1.249 | 14:c1:4e (Google) | Thermostat |
-| Amazon Echo (dot?) | 192.168.1.42 | — | Voice assistant |
-| Amazon Echo (dot?) | 192.168.1.100 | — | Voice assistant |
-| Echo Show | 192.168.1.131 | — | Voice assistant + screen |
-| Echo Show | 192.168.1.184 | — | Voice assistant + screen |
-| Amazon device | 192.168.1.190 | — | Echo/Fire device |
-| Amazon device | 192.168.1.213 | — | Echo/Fire device |
-| Amazon device | 192.168.1.229 | — | Echo/Fire device |
-| HP Printer | 192.168.1.64 | b0:5c:da (HP) | Printer |
-| LG Smart Dryer | 192.168.1.22 | ac:f1:08 (LG) | Appliance |
-| Roku (Jon's) | 192.168.1.163 | d4:e2:2f (Roku) | Streaming |
-| ESP32 device | 192.168.1.49 | 3c:84:27 (Espressif) | IoT device |
+**Smart Home / IoT:**
 
-### Alexa Devices (7 on network)
+| Device | Hostname | IP | MAC | Type |
+|--------|----------|-----|-----|------|
+| Amazon Smart Plug | AmazonPlug13A2 | 192.168.1.145 | 24:ce:33:93:d9:b1 | Smart plug |
+| Nest Thermostat | Nest-Thermostat-940D | 192.168.1.111 | 14:c1:4e:7a:94:0d | Thermostat (Matter) |
+| Nest Thermostat | Nest-Thermostat-AE0D | 192.168.1.139 | 14:c1:4e:2d:ae:0d | Thermostat (Matter) |
+| Nest Thermostat | Nest-Thermostat-8EEB | 192.168.1.249 | 14:c1:4e:b5:8e:eb | Thermostat (Matter) |
+| MyQ Garage Opener | MyQ-64F | 192.168.1.243 | 2c:d2:6b:93:30:22 | Garage door |
+| Midea Air Conditioner | (none) | 192.168.1.237 | c4:39:60:0e:e9:70 | HVAC |
+| EcoNet Water Heater | EcoNet-EC2E9842615B | 192.168.1.168 | ec:2e:98:42:61:5b | Water heater |
+| ANOVA Oven | ANOVA Oven | 192.168.1.181 | 10:52:1c:be:49:b8 | Kitchen appliance |
+| LG Smart Dryer | LG_Smart_Dryer2_open | 192.168.1.22 | ac:f1:08:80:6f:9b | Laundry |
+| LG Smart Washer | LG_Smart_Laundry2_open | 192.168.1.246 | ac:f1:08:1e:ba:c7 | Laundry |
+| Intellirocks device | (none) | 192.168.1.10 | d4:ad:fc:43:5f:b2 | IoT sensor? |
 
-Amazon/Echo devices serve as the current voice control hub for lights:
-- `192.168.1.42` — amazon-080d0e2f9
-- `192.168.1.100` — amazon-7c33ec9c38900cc0
-- `192.168.1.131` — echoshow-3bf32cb7f1ef46a6
-- `192.168.1.184` — echoshow-9f2eb6d9d752aab3
-- `192.168.1.190` — amazon-67f77a339
-- `192.168.1.213` — amazon-14ea528bd
-- `192.168.1.229` — amazon-20cb70679
+**Cameras & Security:**
 
-To query all Alexa-registered devices (including lights, smart plugs, etc.):
-1. Install [alexa-remote-control](https://github.com/thorsten-gehrig/alexa-remote-control) on the DO droplet
-2. Use [alexa-cookie-cli](https://github.com/adn77/alexa-cookie-cli) for one-time browser auth
-3. Run `./alexa_remote_control.sh -l` to list all registered smart home devices
+| Device | Hostname | IP | MAC | Type |
+|--------|----------|-----|-----|------|
+| UniFi G5 PTZ | Alpacamera | 192.168.1.173 | f4:e2:c6:7a:7f:fe | UVC G5 PTZ (fw 5.1.240, recording) |
+| UniFi G5 PTZ | Front Of House | 192.168.1.182 | 1c:6a:1b:87:8f:55 | UVC G5 PTZ (fw 5.1.240, recording) |
+| UniFi G5 PTZ | Side Yard | 192.168.1.110 | f4:e2:c6:79:a0:a2 | UVC G5 PTZ (fw 5.1.240, recording) |
+| Trolink Camera 1 | WVCABN73I8YL861I | 192.168.1.18 | 30:4a:26:15:bc:69 | WiFi camera |
+| Trolink Camera 2 | WVCABN8ZLH8LFC3B | 192.168.1.21 | 30:4a:26:15:bc:70 | WiFi camera |
+| Trolink Camera 3 | WVCABNUQUXILGOBE | 192.168.1.26 | 30:4a:26:18:c2:8d | WiFi camera |
+| Trolink Camera 4 | WVCB34M3DFFQBTTU | 192.168.1.132 | 68:b9:d3:03:86:0e | WiFi camera |
+
+**Entertainment & Media:**
+
+| Device | Hostname | IP | MAC | Type |
+|--------|----------|-----|-----|------|
+| VIZIO TV | viziocastdisplay | 192.168.1.129 | a4:8d:3b:d5:14:97 | TV (HomeKit + Cast) |
+| Roku | JonRoku | 192.168.1.163 | d4:e2:2f:e1:23:57 | Streaming |
+| HP Printer | HP536C6E | 192.168.1.64 | b0:5c:da:53:6c:6f | Printer |
+| IR Blaster | iRed | 192.168.1.8 | a8:5b:b7:a1:59:23 | IR control (Apple) |
+
+**Vehicles:**
+
+| Device | Hostname | IP | MAC |
+|--------|----------|-----|-----|
+| Tesla Model 3 | Tesla_Model_3 | 192.168.1.136 | cc:88:26:18:b5:77 |
+
+### Alexa / Amazon Devices (11 on network)
+
+Amazon/Echo devices serve as the current voice control hub for lights.
+
+**Echo/Show (voice assistants):**
+
+| Hostname | IP | MAC | Type |
+|----------|-----|-----|------|
+| amazon-080d0e2f9 | 192.168.1.42 | 0c:ee:99:91:8a:4f | Echo |
+| amazon-7c33ec9c38900cc0 | 192.168.1.100 | 0c:dc:91:76:4a:d7 | Echo |
+| echoshow-3bf32cb7f1ef46a6 | 192.168.1.131 | 08:91:a3:37:4f:4f | Echo Show |
+| echoshow-9f2eb6d9d752aab3 | 192.168.1.184 | 58:e4:88:b5:37:af | Echo Show |
+| amazon-67f77a339 | 192.168.1.190 | a4:08:01:b4:36:06 | Echo |
+| amazon-14ea528bd | 192.168.1.213 | 40:a2:db:a3:77:be | Echo |
+| amazon-20cb70679 | 192.168.1.229 | f4:03:2a:22:dd:e6 | Echo |
+
+**Other Amazon devices:**
+
+| Hostname | IP | MAC | Type |
+|----------|-----|-----|------|
+| AmazonPlug13A2 | 192.168.1.145 | 24:ce:33:93:d9:b1 | Smart Plug |
+| (none) | 192.168.1.91 | f0:2f:9e:bb:80:30 | Unknown Amazon |
+| (none) | 192.168.1.209 | cc:f7:35:a3:53:32 | Unknown Amazon |
+| (none) | 192.168.1.228 | 08:7c:39:39:be:89 | Unknown Amazon |
+| (none) | 192.168.1.232 | 70:70:aa:21:b8:d8 | Unknown Amazon |
 
 ### Alexa Authentication (for full device inventory)
 
@@ -784,13 +954,44 @@ To query all Alexa-registered devices (including lights, smart plugs, etc.):
 | `python-kasa` | `/Users/alpaca/Library/Python/3.9/bin/kasa` | TP-Link Kasa discovery & control |
 | `tinytuya` | (Python library) | Tuya device discovery & control |
 
+### Full Network Device Count (from UDM Pro)
+
+| Category | Count | Notes |
+|----------|-------|-------|
+| Govee/AiDot lights | 63 | 54 individual lights + 9 group controllers (Cloud API active) |
+| WiZ lights | 11 | All ESP05_SHRGBL_21 color bulbs |
+| TP-Link switches | 2 | HS210 (Stair Landing) + HS220 (Nook) |
+| Tuya devices | 3-5 | 3 confirmed, 2 possibly offline |
+| Amazon Smart Plugs | 1 | AmazonPlug13A2 |
+| Alexa Echo/Show | 7 | Voice control hubs |
+| Other Amazon | 4 | Unknown type |
+| Sonos speakers | 12 | All identified |
+| Nest thermostats | 3 | Matter-enabled |
+| Cameras | 7 | 3 UniFi G5 PTZ + 4 Trolink |
+| Appliances | 5 | LG washer/dryer, Anova, Midea AC, EcoNet |
+| Other IoT | 3 | MyQ garage, iRed IR, Intellirocks |
+| **Total IoT devices** | **~95** | |
+
+### TODO: Camera Streaming
+
+- [ ] **Deploy MediaMTX to Alpaca Mac** — Run `scripts/mediamtx/setup.sh` when Mac is reachable via Tailscale. Config and launchd plist are prepared in `scripts/mediamtx/`.
+- [ ] **Fix Tailscale connectivity** — Mac shows "active; relay" but SSH/ping times out. May need Tailscale restart or firewall check on Mac.
+- [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located? Can they stream RTSP?
+
 ### TODO: Lighting Catalog
 
-- [ ] **Map WiZ room IDs to physical rooms** — Open WiZ app, note which room each bulb is assigned to
-- [ ] **Get Govee API key** — Govee Home → Profile → Settings → Apply for API Key (or https://developer.govee.com)
-- [ ] **Enable Govee LAN Control** — In Govee Home app per-device: Settings → LAN Control → ON
-- [ ] **Get Alexa refresh token** — Log into http://159.89.157.120:3001 and save the token
-- [ ] **Identify Tuya device at 192.168.1.69** — Check Tuya/Smart Life app
-- [ ] **Identify Tuya-OUI devices at .164 and .219** — May be white-label Tuya
-- [ ] **Identify Matter devices** — The 10 Alexa-fabric Matter devices are likely Govee/WiZ re-exposed via Alexa's Matter bridge
-- [ ] **Count remaining lights** — Many Govee lights (strip lights, panels, etc.) may be cloud-only
+**Completed:**
+- [x] **Get Govee API key** — `d0f84...764` (stored in `HOMEAUTOMATION.local.md`)
+- [x] **Map Govee devices to rooms** — 63 devices cataloged via Cloud API (see device catalog above)
+- [x] **Verified Govee Cloud API control** — brightness, on/off, color all working from DO droplet
+
+**Pending credentials:**
+- [ ] **Get Alexa refresh token** — `alexa-cookie2` proxy at http://159.89.157.120:3001 (fixed, working)
+
+**Manual identification needed:**
+- [ ] **Map WiZ room IDs to physical rooms** — Open WiZ app, note room names for IDs 4528222, 4352002, 4937866
+- [ ] **Enable Govee LAN Control** — Per-device in Govee Home app: Settings → LAN Control → ON (optional, Cloud API works fine)
+- [ ] **Identify 3 Tuya devices** — Check Tuya/Smart Life app for .69, .208, .254
+- [ ] **Identify 4 unknown Amazon devices** — .91, .209, .228, .232 (plugs? Fire sticks?)
+- [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located?
+- [ ] **Identify Matter devices** — The 10 Alexa-fabric Matter devices are likely Govee bulbs re-exposed via Alexa's Matter bridge
