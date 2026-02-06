@@ -978,7 +978,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
         html: `
           <h2>Identity Verification Required</h2>
           <p>Hi ${data.first_name},</p>
-          <p>As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID.</p>
+          <p>As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID or other valid government ID.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${data.upload_url}" style="background: #3d8b7a; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1em; display: inline-block;">Upload Your ID</a>
           </div>
@@ -996,7 +996,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
 
 Hi ${data.first_name},
 
-As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID.
+As part of your rental application, we need to verify your identity. Please upload a clear photo of your driver's license or state ID or other valid government ID.
 
 Upload your ID here: ${data.upload_url}
 

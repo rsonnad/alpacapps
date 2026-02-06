@@ -224,6 +224,142 @@
 
     input[type="file"] { display: none; }
 
+    /* Ask Section */
+    .ask-section {
+      background: #f0faf7;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+    .ask-section h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #3d8b7a;
+      margin: 0 0 0.25rem;
+      text-align: center;
+    }
+    .ask-section > p {
+      color: #666;
+      font-size: 0.85rem;
+      margin: 0 0 0.75rem;
+      text-align: center;
+    }
+    .question-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .question-input {
+      flex: 1;
+      padding: 0.625rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .question-input:focus {
+      outline: none;
+      border-color: #3d8b7a;
+      box-shadow: 0 0 0 3px rgba(61, 139, 122, 0.1);
+    }
+    .ask-btn {
+      padding: 0.625rem 1.25rem;
+      background: #3d8b7a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ask-btn:hover { background: #2d7a6a; }
+    .ask-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .answer-container {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+    .answer-container.visible { display: block; }
+    .answer-text { font-size: 0.9rem; line-height: 1.5; color: #333; }
+    .answer-feedback {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .feedback-btn {
+      padding: 0.25rem 0.75rem;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .feedback-btn:hover { background: #e0e0e0; }
+    .low-confidence-notice {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #e67e22;
+      font-style: italic;
+    }
+    .low-confidence-notice.visible { display: block; }
+    .followup-form {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .followup-form.visible { display: block; }
+    .followup-form p { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; }
+    .followup-fields { display: flex; flex-direction: column; gap: 0.5rem; }
+    .followup-input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .followup-btn {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #3d8b7a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .question-submitted {
+      display: none;
+      margin-top: 0.75rem;
+      color: #27ae60;
+      font-size: 0.85rem;
+    }
+    .question-submitted.visible { display: block; }
+
+    .questions-contact {
+      font-size: 0.85rem;
+      color: #666;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .questions-contact a { color: #3d8b7a; text-decoration: none; }
+    .questions-contact a:hover { text-decoration: underline; }
+
+    .btn-community {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: #3d8b7a;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+    .btn-community:hover { background: #327568; }
+
     @media (max-width: 600px) {
       .site-nav { padding: 0.75rem 1rem; }
       .container { margin: 1rem auto; }
@@ -258,7 +394,7 @@
       <div id="uploadForm" style="display: none;">
         <h1>Identity Verification</h1>
         <p class="subtitle">
-          Hi <strong id="applicantName"></strong>, please upload a clear photo of your driver's license or state ID to verify your identity.
+          Hi <strong id="applicantName"></strong>, please upload a clear photo of your driver's license or state ID or other valid government ID to verify your identity.
         </p>
 
         <div class="tips">
@@ -301,13 +437,85 @@
         <div class="result-icon">&#9989;</div>
         <h2 class="result-title">Identity Verified!</h2>
         <p class="result-text">Your identity has been successfully verified. You're all set - no further action is needed.</p>
+
+        <!-- Ask a Question -->
+        <div class="ask-section">
+          <h3>Have a question?</h3>
+          <p>Get instant answers about rentals, the community, and more.</p>
+          <div class="question-input-wrapper">
+            <input type="text" id="questionInput1" class="question-input" placeholder="What would you like to know?" autocomplete="off">
+            <button class="ask-btn" data-target="1">Ask</button>
+          </div>
+          <div id="answerContainer1" class="answer-container">
+            <div id="answerText1" class="answer-text"></div>
+            <div id="lowConfidence1" class="low-confidence-notice">
+              I'm not fully confident in this answer. If this didn't help, let us know and we'll get back to you.
+            </div>
+            <div class="answer-feedback" id="feedback1">
+              <span>Was this helpful?</span>
+              <button class="feedback-btn" onclick="handleFeedback(true, '1')">Yes, thanks!</button>
+              <button class="feedback-btn" onclick="handleFeedback(false, '1')">Not quite</button>
+            </div>
+            <div id="followupForm1" class="followup-form">
+              <p>Sorry about that! Leave your info and we'll get back to you with an answer.</p>
+              <div class="followup-fields">
+                <input type="text" id="followupName1" class="followup-input" placeholder="Your name">
+                <input type="email" id="followupEmail1" class="followup-input" placeholder="Email">
+                <input type="tel" id="followupPhone1" class="followup-input" placeholder="Phone (optional)">
+              </div>
+              <button class="followup-btn" onclick="submitFollowup('1')">Submit to a Human</button>
+            </div>
+            <div id="questionSubmitted1" class="question-submitted">
+              Thanks! We've received your question and will get back to you.
+            </div>
+          </div>
+        </div>
+
+        <p class="questions-contact">Or email us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+        <a href="https://alpacaplayhouse.com/community/" class="btn-community">Learn About Our Community</a>
       </div>
 
       <!-- Review result -->
       <div id="reviewResult" class="result result-review">
         <div class="result-icon">&#128269;</div>
         <h2 class="result-title">Submitted for Review</h2>
-        <p class="result-text">Your ID has been uploaded and is being reviewed by our team. We'll be in touch shortly.</p>
+        <p class="result-text">Your ID has been uploaded and is being reviewed by our team. We will add the confirmation of your identity to your application file.</p>
+
+        <!-- Ask a Question -->
+        <div class="ask-section">
+          <h3>Have a question?</h3>
+          <p>Get instant answers about rentals, the community, and more.</p>
+          <div class="question-input-wrapper">
+            <input type="text" id="questionInput2" class="question-input" placeholder="What would you like to know?" autocomplete="off">
+            <button class="ask-btn" data-target="2">Ask</button>
+          </div>
+          <div id="answerContainer2" class="answer-container">
+            <div id="answerText2" class="answer-text"></div>
+            <div id="lowConfidence2" class="low-confidence-notice">
+              I'm not fully confident in this answer. If this didn't help, let us know and we'll get back to you.
+            </div>
+            <div class="answer-feedback" id="feedback2">
+              <span>Was this helpful?</span>
+              <button class="feedback-btn" onclick="handleFeedback(true, '2')">Yes, thanks!</button>
+              <button class="feedback-btn" onclick="handleFeedback(false, '2')">Not quite</button>
+            </div>
+            <div id="followupForm2" class="followup-form">
+              <p>Sorry about that! Leave your info and we'll get back to you with an answer.</p>
+              <div class="followup-fields">
+                <input type="text" id="followupName2" class="followup-input" placeholder="Your name">
+                <input type="email" id="followupEmail2" class="followup-input" placeholder="Email">
+                <input type="tel" id="followupPhone2" class="followup-input" placeholder="Phone (optional)">
+              </div>
+              <button class="followup-btn" onclick="submitFollowup('2')">Submit to a Human</button>
+            </div>
+            <div id="questionSubmitted2" class="question-submitted">
+              Thanks! We've received your question and will get back to you.
+            </div>
+          </div>
+        </div>
+
+        <p class="questions-contact">Or email us at <a href="mailto:alpacaplayhouse@gmail.com">alpacaplayhouse@gmail.com</a></p>
+        <a href="https://alpacaplayhouse.com/community/" class="btn-community">Learn About Our Community</a>
       </div>
     </div>
   </div>
@@ -525,6 +733,127 @@
 
     // Initialize
     validateToken();
+
+    // =============================================
+    // ASK A QUESTION (Gemini-powered)
+    // =============================================
+    let currentQuestion = '';
+
+    document.querySelectorAll('.ask-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleAskQuestion(btn.dataset.target));
+    });
+    document.querySelectorAll('.question-input').forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const target = input.id.replace('questionInput', '');
+          handleAskQuestion(target);
+        }
+      });
+    });
+
+    async function handleAskQuestion(suffix) {
+      const input = document.getElementById(`questionInput${suffix}`);
+      const btn = input.parentElement.querySelector('.ask-btn');
+      const question = input.value.trim();
+      if (!question) return;
+
+      currentQuestion = question;
+      btn.disabled = true;
+      btn.textContent = 'Thinking...';
+
+      const container = document.getElementById(`answerContainer${suffix}`);
+      const answerText = document.getElementById(`answerText${suffix}`);
+      const lowConf = document.getElementById(`lowConfidence${suffix}`);
+      const followup = document.getElementById(`followupForm${suffix}`);
+      const submitted = document.getElementById(`questionSubmitted${suffix}`);
+      const feedback = document.getElementById(`feedback${suffix}`);
+
+      container.classList.remove('visible');
+      lowConf.classList.remove('visible');
+      followup.classList.remove('visible');
+      submitted.classList.remove('visible');
+      if (feedback) feedback.style.display = '';
+
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/ask-question`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ question }),
+        });
+        const result = await resp.json();
+
+        answerText.textContent = result.answer || result.text || 'Sorry, I could not find an answer.';
+        container.classList.add('visible');
+
+        if (result.confident === false) {
+          lowConf.classList.add('visible');
+        }
+      } catch (err) {
+        answerText.textContent = "Sorry, I had trouble getting an answer. Leave your info below and we'll get back to you.";
+        container.classList.add('visible');
+        if (feedback) feedback.style.display = 'none';
+        followup.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Ask';
+      }
+    }
+
+    window.handleFeedback = function(helpful, suffix) {
+      const feedback = document.getElementById(`feedback${suffix}`);
+      const submitted = document.getElementById(`questionSubmitted${suffix}`);
+      const followup = document.getElementById(`followupForm${suffix}`);
+
+      if (helpful) {
+        if (feedback) feedback.style.display = 'none';
+        submitted.textContent = 'Great! Glad we could help.';
+        submitted.classList.add('visible');
+      } else {
+        followup.classList.add('visible');
+      }
+    };
+
+    window.submitFollowup = async function(suffix) {
+      const name = document.getElementById(`followupName${suffix}`).value.trim();
+      const email = document.getElementById(`followupEmail${suffix}`).value.trim();
+      const phone = document.getElementById(`followupPhone${suffix}`).value.trim();
+
+      if (!email) {
+        alert('Please enter your email address.');
+        return;
+      }
+
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            type: 'faq_unanswered',
+            to: 'alpacaplayhouse@gmail.com',
+            data: {
+              question: currentQuestion,
+              name: name || 'Verify page visitor',
+              email,
+              phone: phone || 'N/A',
+              source: 'identity_verification_page',
+            },
+          }),
+        });
+
+        const followup = document.getElementById(`followupForm${suffix}`);
+        const submitted = document.getElementById(`questionSubmitted${suffix}`);
+        followup.classList.remove('visible');
+        submitted.classList.add('visible');
+      } catch (err) {
+        alert('Something went wrong. Please email us directly.');
+      }
+    };
   </script>
 </body>
 </html>

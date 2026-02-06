@@ -211,10 +211,15 @@ If the image is not a valid ID document, return: {"error": "not_a_valid_id"}`,
       );
     }
 
-    // Name comparison
+    // Name comparison — use extracted first/last fields (more reliable than full_name
+    // since some states format full_name as "LAST FIRST")
+    const appFirst = (person.first_name || '').trim().toLowerCase();
+    const appLast = (person.last_name || '').trim().toLowerCase();
+    const dlFirst = (extracted.first_name || '').trim().toLowerCase();
+    const dlLast = (extracted.last_name || '').trim().toLowerCase();
     const applicationName = `${person.first_name || ''} ${person.last_name || ''}`.trim();
     const extractedName = extracted.full_name || '';
-    const { score, details } = compareNames(applicationName, extractedName);
+    const { score, details } = compareNameParts(appFirst, appLast, dlFirst, dlLast);
 
     // Check DL expiration
     const isExpired = extracted.expiration_date
@@ -344,43 +349,51 @@ If the image is not a valid ID document, return: {"error": "not_a_valid_id"}`,
   }
 });
 
-// Name comparison with fuzzy matching
-function compareNames(applicationName: string, dlName: string): { score: number; details: string } {
-  const normalize = (n: string) => n.toLowerCase()
-    .replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, '')
-    .replace(/[^a-z\s]/g, '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+// Name comparison using extracted first/last name fields directly
+// (avoids issues with state-specific full_name formatting like "LAST FIRST")
+function compareNameParts(appFirst: string, appLast: string, dlFirst: string, dlLast: string): { score: number; details: string } {
+  const clean = (s: string) => s.toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, '').replace(/[^a-z]/g, '').trim();
 
-  const appParts = normalize(applicationName);
-  const dlParts = normalize(dlName);
+  const af = clean(appFirst);
+  const al = clean(appLast);
+  const df = clean(dlFirst);
+  const dl = clean(dlLast);
 
-  if (appParts.length === 0 || dlParts.length === 0) {
-    return { score: 0, details: 'One or both names are empty' };
+  if (!af || !al || !df || !dl) {
+    return { score: 0, details: 'One or more name fields are empty' };
   }
 
   // Exact match
-  if (appParts.join(' ') === dlParts.join(' ')) {
+  if (af === df && al === dl) {
     return { score: 100, details: 'Exact match' };
   }
 
-  // First and last name match (ignoring middle names)
-  const appFirst = appParts[0];
-  const appLast = appParts[appParts.length - 1];
-  const dlFirst = dlParts[0];
-  const dlLast = dlParts[dlParts.length - 1];
-
-  if (appFirst === dlFirst && appLast === dlLast) {
-    return { score: 95, details: 'First and last name match (middle name difference)' };
+  // Check swapped names (in case first/last are reversed)
+  if (af === dl && al === df) {
+    return { score: 95, details: 'Names match (first/last swapped on ID)' };
   }
 
   // Fuzzy match on first + last
-  const firstDist = levenshteinDistance(appFirst, dlFirst);
-  const lastDist = levenshteinDistance(appLast, dlLast);
-  const firstScore = 1 - firstDist / Math.max(appFirst.length, dlFirst.length, 1);
-  const lastScore = 1 - lastDist / Math.max(appLast.length, dlLast.length, 1);
-  const combinedScore = Math.round(firstScore * 40 + lastScore * 60);
+  const firstDist = levenshteinDistance(af, df);
+  const lastDist = levenshteinDistance(al, dl);
+  const firstScore = 1 - firstDist / Math.max(af.length, df.length, 1);
+  const lastScore = 1 - lastDist / Math.max(al.length, dl.length, 1);
+  let combinedScore = Math.round(firstScore * 40 + lastScore * 60);
+
+  // Also try swapped and use the better score
+  const firstDistSwap = levenshteinDistance(af, dl);
+  const lastDistSwap = levenshteinDistance(al, df);
+  const firstScoreSwap = 1 - firstDistSwap / Math.max(af.length, dl.length, 1);
+  const lastScoreSwap = 1 - lastDistSwap / Math.max(al.length, df.length, 1);
+  const swappedScore = Math.round(firstScoreSwap * 40 + lastScoreSwap * 60);
+
+  if (swappedScore > combinedScore) {
+    combinedScore = swappedScore;
+    return {
+      score: combinedScore,
+      details: `Names match when swapped. First: ${Math.round(firstScoreSwap * 100)}%, Last: ${Math.round(lastScoreSwap * 100)}%`,
+    };
+  }
 
   return {
     score: combinedScore,
