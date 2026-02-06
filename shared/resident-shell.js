@@ -72,11 +72,11 @@ function renderResidentTabNav(activeTab) {
  * Initialize a resident page with auth flow.
  * @param {Object} options
  * @param {string} options.activeTab - Which tab to highlight in nav
- * @param {string} options.requiredRole - Minimum role required ('staff' or 'admin'). Default: 'staff'
+ * @param {string} options.requiredRole - Minimum role required ('resident', 'staff', or 'admin'). Default: 'resident'
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initResidentPage({ activeTab, requiredRole = 'staff', onReady }) {
+export async function initResidentPage({ activeTab, requiredRole = 'resident', onReady }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -98,8 +98,12 @@ export async function initResidentPage({ activeTab, requiredRole = 'staff', onRe
     }
 
     // Check if user meets the required role
+    // Role hierarchy: admin > staff > resident = associate
     const userRole = state.appUser?.role;
-    const meetsRoleRequirement = userRole === 'admin' || (requiredRole === 'staff' && userRole === 'staff');
+    const ROLE_LEVEL = { admin: 3, staff: 2, resident: 1, associate: 1 };
+    const userLevel = ROLE_LEVEL[userRole] || 0;
+    const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+    const meetsRoleRequirement = userLevel >= requiredLevel;
 
     if (state.appUser && meetsRoleRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
@@ -109,8 +113,9 @@ export async function initResidentPage({ activeTab, requiredRole = 'staff', onRe
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
       if (roleBadge) {
-        roleBadge.textContent = state.appUser.role || 'Staff';
-        roleBadge.className = 'role-badge ' + (state.appUser.role || 'staff');
+        const role = state.appUser.role || 'resident';
+        roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        roleBadge.className = 'role-badge ' + role;
       }
       if (state.appUser.role === 'admin') {
         document.body.classList.add('is-admin');

@@ -31,7 +31,7 @@ const CAMERAS = [
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
     activeTab: 'cameras',
-    requiredRole: 'staff',
+    requiredRole: 'resident',
     onReady: () => {
       renderCameras();
     },

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS app_users (
   auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
   display_name TEXT,
-  role TEXT NOT NULL DEFAULT 'staff' CHECK (role IN ('admin', 'staff')),
+  role TEXT NOT NULL DEFAULT 'resident' CHECK (role IN ('admin', 'staff', 'resident', 'associate')),
   invited_by UUID REFERENCES app_users(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   last_login_at TIMESTAMPTZ
@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_app_users_email ON app_users(email);
 CREATE TABLE IF NOT EXISTS user_invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'staff' CHECK (role IN ('admin', 'staff')),
+  role TEXT NOT NULL DEFAULT 'resident' CHECK (role IN ('admin', 'staff', 'resident', 'associate')),
   invited_by UUID REFERENCES app_users(id),
   invited_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '7 days'),

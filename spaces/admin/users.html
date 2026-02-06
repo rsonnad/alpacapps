@@ -271,7 +271,7 @@
         <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; AlpacAPPs Admin</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.34</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.35</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -295,7 +295,9 @@
           <form id="inviteForm" class="invite-form">
             <input type="email" id="inviteEmail" placeholder="user@gmail.com" required>
             <select id="inviteRole">
-              <option value="staff">Staff (read-only)</option>
+              <option value="resident">Resident (cameras & lighting)</option>
+              <option value="associate">Associate (cameras & lighting)</option>
+              <option value="staff">Staff (full read access)</option>
               <option value="admin">Admin (full access)</option>
             </select>
             <button type="submit" class="btn-primary">Send Invitation</button>

@@ -235,6 +235,16 @@
   color: #3730a3;
 }
 
+.role-badge.resident {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.role-badge.associate {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
 /* Button danger */
 .btn-danger {
   padding: 0.375rem 0.75rem;

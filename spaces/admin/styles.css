@@ -87,6 +87,16 @@
   color: var(--accent);
 }
 
+.role-badge.resident {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.role-badge.associate {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
 .user-info {
   font-size: 0.875rem;
   color: var(--text-muted);

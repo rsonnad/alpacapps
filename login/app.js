@@ -58,10 +58,15 @@ async function init() {
     if (raw) {
       const cached = JSON.parse(raw);
       const age = Date.now() - (cached.timestamp || 0);
-      if (age < 90 * 24 * 60 * 60 * 1000 && (cached.role === 'admin' || cached.role === 'staff')) {
+      if (age < 90 * 24 * 60 * 60 * 1000 && ['admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
+        // Resident/associate users go to resident area by default
+        let targetUrl = redirectUrl;
+        if (targetUrl === '/spaces/admin/' && ['resident', 'associate'].includes(cached.role)) {
+          targetUrl = '/residents/cameras.html';
+        }
         console.log('[LOGIN]', 'Cached auth found, redirecting immediately', { email: cached.email, role: cached.role });
         sessionStorage.removeItem('genalpaca-login-redirect');
-        window.location.href = redirectUrl;
+        window.location.href = targetUrl;
         return;
       }
     }
@@ -104,9 +109,14 @@ function checkAuthAndRedirect() {
 
   if (state.isAuthenticated) {
     if (state.isAuthorized) {
-      console.log('[LOGIN]', 'Authorized — redirecting to:', redirectUrl);
+      // Resident/associate users go to resident area by default (not admin)
+      let targetUrl = redirectUrl;
+      if (targetUrl === '/spaces/admin/' && ['resident', 'associate'].includes(state.role)) {
+        targetUrl = '/residents/cameras.html';
+      }
+      console.log('[LOGIN]', 'Authorized — redirecting to:', targetUrl);
       sessionStorage.removeItem('genalpaca-login-redirect');
-      window.location.href = redirectUrl;
+      window.location.href = targetUrl;
     } else if (state.isUnauthorized) {
       console.log('[LOGIN]', 'Authenticated but unauthorized');
       showState('unauthorized');

@@ -141,7 +141,7 @@ export async function initAuth() {
 
     // If we have cached auth, use it to pre-populate state immediately
     // This lets the UI show content instantly while Supabase verifies in background
-    if (cached?.appUser && (cached.role === 'admin' || cached.role === 'staff')) {
+    if (cached?.appUser && ['admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
@@ -487,9 +487,10 @@ export function getAuthState() {
     role: currentRole,
     isAuthenticated: currentUser !== null,
     isAdmin: currentRole === 'admin',
-    isStaff: currentRole === 'staff' || currentRole === 'admin',
+    isStaff: ['staff', 'admin'].includes(currentRole),
+    isResident: ['resident', 'associate', 'staff', 'admin'].includes(currentRole),
     // Treat 'pending' as authorized to allow redirect while we verify in background
-    isAuthorized: currentRole === 'admin' || currentRole === 'staff' || currentRole === 'pending',
+    isAuthorized: ['admin', 'staff', 'resident', 'associate', 'pending'].includes(currentRole),
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
   };
@@ -563,6 +564,12 @@ export function requireRole(role, redirectUrl = '/spaces/') {
 
   if (role === 'staff' && !state.isStaff) {
     alert('Staff access required');
+    window.location.href = redirectUrl;
+    return false;
+  }
+
+  if (role === 'resident' && !state.isResident) {
+    alert('Resident access required');
     window.location.href = redirectUrl;
     return false;
   }

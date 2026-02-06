@@ -232,13 +232,18 @@ function showInvitationModal(email, role) {
   currentInviteEmail = email;
   currentInviteRole = role;
 
-  const roleDescription = role === 'admin'
-    ? 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)'
-    : 'staff access (view all spaces and occupant details)';
+  const roleDescriptions = {
+    admin: 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)',
+    staff: 'staff access (view all spaces and occupant details)',
+    resident: 'resident access (cameras, lighting, and house info)',
+    associate: 'associate access (cameras, lighting, and house info)',
+  };
+  const roleDescription = roleDescriptions[role] || roleDescriptions.resident;
 
+  const roleLabels = { admin: 'an admin', staff: 'a staff member', resident: 'a resident', associate: 'an associate' };
   const inviteText = `Hi,
 
-You've been invited to access AlpacApp as ${role === 'admin' ? 'an admin' : 'a staff member'}.
+You've been invited to access AlpacApp as ${roleLabels[role] || 'a user'}.
 
 You will have ${roleDescription}.
 
@@ -502,6 +507,8 @@ function renderUsers() {
                   ${isCurrentUser ? 'disabled' : ''}
                   onchange="updateUserRole('${u.id}', this.value)"
                 >
+                  <option value="associate" ${u.role === 'associate' ? 'selected' : ''}>Associate</option>
+                  <option value="resident" ${u.role === 'resident' ? 'selected' : ''}>Resident</option>
                   <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>Staff</option>
                   <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                 </select>

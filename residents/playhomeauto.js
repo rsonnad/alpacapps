@@ -55,7 +55,7 @@ const colorTimers = {};
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
     activeTab: 'homeauto',
-    requiredRole: 'staff',
+    requiredRole: 'resident',
     onReady: async () => {
       renderLightingGroups();
       setupEventListeners();

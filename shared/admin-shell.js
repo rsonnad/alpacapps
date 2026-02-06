@@ -101,8 +101,12 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
     }
 
     // Check if user meets the required role
+    // Role hierarchy: admin > staff > resident = associate
     const userRole = state.appUser?.role;
-    const meetsRoleRequirement = userRole === 'admin' || (requiredRole === 'staff' && userRole === 'staff');
+    const ROLE_LEVEL = { admin: 3, staff: 2, resident: 1, associate: 1 };
+    const userLevel = ROLE_LEVEL[userRole] || 0;
+    const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+    const meetsRoleRequirement = userLevel >= requiredLevel;
 
     if (state.appUser && meetsRoleRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
@@ -112,8 +116,9 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
       if (roleBadge) {
-        roleBadge.textContent = state.appUser.role || 'Staff';
-        roleBadge.className = 'role-badge ' + (state.appUser.role || 'staff');
+        const role = state.appUser.role || 'staff';
+        roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        roleBadge.className = 'role-badge ' + role;
       }
       if (state.appUser.role === 'admin') {
         document.body.classList.add('is-admin');
