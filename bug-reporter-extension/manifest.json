@@ -3,7 +3,7 @@
   "name": "GenAlpaca Bug Reporter",
   "version": "1.0.0",
   "description": "Capture, annotate, and submit bug reports for GenAlpaca",
-  "permissions": ["activeTab", "tabs"],
+  "permissions": ["activeTab", "tabs", "storage"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

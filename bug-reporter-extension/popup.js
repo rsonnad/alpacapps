@@ -17,6 +17,40 @@ let annotations = []; // history for undo
 let screenshotImg = null;
 
 // ============================================
+// Autosave draft to chrome.storage.local
+// ============================================
+let saveTimeout = null;
+
+function saveDraft(immediate) {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  const doSave = () => {
+    const draft = {
+      currentStep: getCurrentStep(),
+      screenshotDataUrl,
+      pageUrl,
+      annotations,
+      description: inputDescription?.value || '',
+      currentTool,
+      annotationColor,
+    };
+    chrome.storage.local.set({ bugReportDraft: draft });
+  };
+  if (immediate) { doSave(); } else { saveTimeout = setTimeout(doSave, 300); }
+}
+
+function clearDraft() {
+  chrome.storage.local.remove('bugReportDraft');
+}
+
+function getCurrentStep() {
+  if (!stepCapture.classList.contains('hidden')) return 'capture';
+  if (!stepAnnotate.classList.contains('hidden')) return 'annotate';
+  if (!stepSubmit.classList.contains('hidden')) return 'submit';
+  if (!stepDone.classList.contains('hidden')) return 'done';
+  return 'capture';
+}
+
+// ============================================
 // DOM refs
 // ============================================
 const stepCapture = document.getElementById('step-capture');
@@ -76,6 +110,7 @@ btnCapture.addEventListener('click', async () => {
       canvas.height = screenshotImg.height * scale;
       redrawCanvas();
       showStep(stepAnnotate);
+      saveDraft(true);
     };
     screenshotImg.src = screenshotDataUrl;
   } catch (err) {
@@ -93,11 +128,13 @@ document.querySelectorAll('.tool[data-tool]').forEach(btn => {
     currentTool = btn.dataset.tool;
     document.querySelectorAll('.tool[data-tool]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    saveDraft();
   });
 });
 
 colorPicker.addEventListener('input', (e) => {
   annotationColor = e.target.value;
+  saveDraft();
 });
 
 // ============================================
@@ -193,6 +230,7 @@ canvas.addEventListener('mousedown', (e) => {
     if (text) {
       annotations.push({ type: 'text', color: annotationColor, x: pos.x, y: pos.y, text });
       redrawCanvas();
+      saveDraft();
     }
     isDrawing = false;
   }
@@ -232,6 +270,7 @@ canvas.addEventListener('mouseup', (e) => {
     annotations.push({ type: 'rect', color: annotationColor, x: startX, y: startY, w: pos.x - startX, h: pos.y - startY });
   }
   redrawCanvas();
+  saveDraft();
 });
 
 canvas.addEventListener('mouseleave', () => {
@@ -240,17 +279,20 @@ canvas.addEventListener('mouseleave', () => {
     currentAnnotation = null;
     isDrawing = false;
     redrawCanvas();
+    saveDraft();
   }
 });
 
 btnUndo.addEventListener('click', () => {
   annotations.pop();
   redrawCanvas();
+  saveDraft();
 });
 
 btnClear.addEventListener('click', () => {
   annotations = [];
   redrawCanvas();
+  saveDraft();
 });
 
 // ============================================
@@ -260,10 +302,12 @@ btnNext.addEventListener('click', () => {
   // Export annotated canvas as preview
   previewImg.src = canvas.toDataURL('image/png');
   showStep(stepSubmit);
+  saveDraft(true);
 });
 
 btnBackAnnotate.addEventListener('click', () => {
   showStep(stepAnnotate);
+  saveDraft(true);
 });
 
 // ============================================
@@ -343,6 +387,7 @@ btnSubmit.addEventListener('click', async () => {
     }
 
     // 4. Done!
+    clearDraft();
     doneEmail.textContent = email;
     showStep(stepDone);
 
@@ -373,5 +418,54 @@ btnAnother.addEventListener('click', () => {
   btnSubmit.textContent = 'Submit Bug Report';
   btnCapture.disabled = false;
   btnCapture.textContent = 'Capture Screenshot';
+  clearDraft();
   showStep(stepCapture);
 });
+
+// ============================================
+// Restore draft on popup open
+// ============================================
+chrome.storage.local.get('bugReportDraft', ({ bugReportDraft: draft }) => {
+  if (!draft || !draft.screenshotDataUrl) return;
+
+  // Restore state
+  screenshotDataUrl = draft.screenshotDataUrl;
+  pageUrl = draft.pageUrl || '';
+  annotations = draft.annotations || [];
+  currentTool = draft.currentTool || 'draw';
+  annotationColor = draft.annotationColor || '#ff0000';
+
+  // Restore UI elements
+  colorPicker.value = annotationColor;
+  if (draft.description) inputDescription.value = draft.description;
+
+  // Update active tool button
+  document.querySelectorAll('.tool[data-tool]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === currentTool);
+  });
+
+  // Load screenshot and redraw canvas
+  screenshotImg = new Image();
+  screenshotImg.onload = () => {
+    const maxW = 388;
+    const scale = Math.min(1, maxW / screenshotImg.width);
+    canvas.width = screenshotImg.width * scale;
+    canvas.height = screenshotImg.height * scale;
+    redrawCanvas();
+
+    // Navigate to saved step
+    if (draft.currentStep === 'submit') {
+      previewImg.src = canvas.toDataURL('image/png');
+      showStep(stepSubmit);
+    } else if (draft.currentStep === 'annotate') {
+      showStep(stepAnnotate);
+    }
+    // Don't restore to 'done' — that means it was already submitted
+  };
+  screenshotImg.src = screenshotDataUrl;
+});
+
+// ============================================
+// Autosave on description input (debounced)
+// ============================================
+inputDescription.addEventListener('input', () => saveDraft());
