@@ -887,7 +887,7 @@
     <a href="/" class="site-nav__logo">
       <img src="/assets/branding/alpaca-head-inverted.jpg" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="/assets/branding/wordmark-inverted.jpeg" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span class="site-nav__version">v260205.19</span>
+      <span class="site-nav__version">v260205.20</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
@@ -1663,12 +1663,6 @@
           }
         }
 
-        // Parse date_of_birth: field is now a text input for age (e.g. "28"),
-        // but the DB column is DATE type. Only send if it looks like a valid date.
-        const dobValue = getValue('date_of_birth');
-        const dobDate = dobValue ? new Date(dobValue) : null;
-        const isValidDate = dobDate && !isNaN(dobDate.getTime()) && dobValue.includes('-');
-
         // Build person data (Step 1 fields only)
         const personData = {
           first_name: firstName,
@@ -1676,7 +1670,7 @@
           email: email,
           phone: phone,
           whatsapp: phone,
-          date_of_birth: isValidDate ? dobValue : null,
+          date_of_birth: getValue('date_of_birth') || null,
           coliving_experience: getValue('coliving_experience'),
           life_focus: getValue('life_focus'),
           visiting_guide_response: getValue('visiting_guide_response'),

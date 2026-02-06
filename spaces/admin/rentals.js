@@ -971,7 +971,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('detailApplicantEmail').textContent = person.email || '-';
   document.getElementById('detailApplicantPhone').textContent = person.phone || '-';
   document.getElementById('detailApplicantDOB').textContent =
-    person.date_of_birth ? rentalService.formatDate(person.date_of_birth) : '-';
+    person.date_of_birth || '-';
 
   // Community Fit
   document.getElementById('detailPreferredAccomm').textContent =

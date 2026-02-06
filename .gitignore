@@ -1,5 +1,5 @@
-# Project instructions with sensitive data
-CLAUDE.md
+# Private credentials and operator directives
+CLAUDE.local.md
 
 # OS files
 .DS_Store
