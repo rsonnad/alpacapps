@@ -1000,10 +1000,17 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>, then run <code>claude</code> from your project directory. Same features, same skills &mdash; these instructions just assume the desktop app.
     </div>
 
-    <h3>Run the setup skill</h3>
+    <h3>Run the setup wizard</h3>
     <p>Once Claude Code is open in your project folder, type:</p>
     <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
     <p>Claude will ask you what you're building, which services you need, then walk you through the entire setup &mdash; creating your database, deploying edge functions, configuring webhooks, and building your <code>CLAUDE.md</code> (checked into repo) and <code>CLAUDE.local.md</code> (gitignored credentials). You don't need to read the rest of this guide unless you want to understand what's happening under the hood.</p>
+
+    <div class="callout warning" style="font-size: 0.85rem;">
+      <strong>Slash command not working?</strong>
+      The <code>/setup-alpacapps-infra</code> skill requires the <strong>Max plan ($100/month)</strong> or higher. If you're on the Pro plan, type this instead:
+      <pre data-lang="claude code" style="margin: 0.75rem 0 0.25rem 0;"><code>Read .claude/skills/setup-alpacapps-infra/SKILL.md and follow those instructions to set up my project</code></pre>
+      This does the exact same thing &mdash; Claude reads the setup guide and walks you through it step by step.
+    </div>
 
     <h3>What the rest of this guide is for</h3>
     <p>The sections below explain each service in detail. For each one, you:</p>
@@ -1430,7 +1437,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ul>
 
     <div class="callout">
-      <strong>Tip:</strong> If you use the <code>/setup-alpacapps-infra</code> skill, Claude will build both files for you automatically as it sets up each service. Don't forget to add <code>CLAUDE.local.md</code> to your <code>.gitignore</code>.
+      <strong>Tip:</strong> The setup wizard (Step 2) builds both files for you automatically as it sets up each service. Don't forget to add <code>CLAUDE.local.md</code> to your <code>.gitignore</code>.
     </div>
   </div>
 

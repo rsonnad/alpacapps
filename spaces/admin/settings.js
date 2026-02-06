@@ -569,12 +569,12 @@ async function loadInboundSms() {
         : msg.from_number;
       const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
       return `
-        <div style="padding: 0.5rem; border-bottom: 1px solid var(--border); cursor: pointer;" data-action="open-sms" data-person-id="${msg.person_id || ''}" data-from-number="${msg.from_number}">
+        <div data-action="open-sms" data-person-id="${msg.person_id || ''}" data-from-number="${msg.from_number}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <strong style="font-size: 0.85rem;">${senderName}</strong>
             <span class="text-muted" style="font-size: 0.75rem;">${time}</span>
           </div>
-          <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${msg.body}</p>
+          <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${msg.body}</p>
         </div>
       `;
     }).join('');

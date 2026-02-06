@@ -39,7 +39,7 @@
         <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; AlpacAPPs Admin</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.07</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.13</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -53,111 +53,124 @@
     <div class="manage-tabs" id="tabNav"></div>
 
     <!-- Main Content -->
-    <main class="manage-content">
-      <!-- Payment Methods Section -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Payment Methods</h2>
-          <button class="btn-small btn-primary" id="addPaymentMethodBtn">+ Add Method</button>
-        </div>
-        <div class="section-body">
-          <p class="text-muted" style="margin-bottom: 1rem;">
-            Configure payment methods that tenants can use for rent and deposits.
-          </p>
-          <div id="paymentMethodsList" class="payment-methods-grid"></div>
-        </div>
-      </div>
+    <main class="manage-content settings-page">
 
-      <!-- Fee Settings Section (Square Payments) -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Payment Fees (Square)</h2>
-          <span class="badge" id="squareModeBadge">Test Mode</span>
+      <!-- ===== PAYMENTS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <h2>Payments</h2>
         </div>
-        <div class="section-body">
-          <p class="text-muted" style="margin-bottom: 1rem;">
-            Configure default fees for rental applications and event deposits. Payments are processed via Square.
-          </p>
-          <div class="fee-settings-grid" id="feeSettingsGrid">
-            <!-- Fee settings loaded by JS -->
+
+        <!-- Payment Methods -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Payment Methods</h3>
+              <p>Configure payment methods that tenants can use for rent and deposits.</p>
+            </div>
+            <button class="btn-small btn-primary" id="addPaymentMethodBtn">+ Add Method</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="paymentMethodsList" class="payment-methods-grid"></div>
           </div>
         </div>
-      </div>
 
-      <!-- Discount Codes Section -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Fee Codes</h2>
-          <button class="btn-small btn-primary" id="addFeeCodeBtn">+ Add Code</button>
-        </div>
-        <div class="section-body">
-          <p class="text-muted" style="margin-bottom: 1rem;">
-            Create codes that set a specific price when entered. Use $0 for a free waiver.
-          </p>
-          <div id="feeCodesGrid" class="fee-codes-grid">
-            <!-- Fee codes loaded by JS -->
+        <!-- Fee Settings -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Default Fees <span class="settings-badge" id="squareModeBadge">Test Mode</span></h3>
+              <p>Default fee amounts for rental applications and event deposits. Processed via Square.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div class="fee-settings-grid" id="feeSettingsGrid">
+              <!-- Fee settings loaded by JS -->
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Square Configuration Section -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Square Configuration</h2>
+        <!-- Fee Codes -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Fee Codes</h3>
+              <p>Create codes that set a specific price when entered. Use $0 for a free waiver.</p>
+            </div>
+            <button class="btn-small btn-primary" id="addFeeCodeBtn">+ Add Code</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="feeCodesGrid" class="fee-codes-grid">
+              <!-- Fee codes loaded by JS -->
+            </div>
+          </div>
         </div>
-        <div class="section-body">
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="checkbox-label">
+
+        <!-- Square Config -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Square Configuration</h3>
+              <p>Toggle between sandbox and live payment processing.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <label class="settings-toggle">
               <input type="checkbox" id="squareTestMode">
-              <span>Test Mode (use sandbox credentials)</span>
+              <span class="settings-toggle-label">Test Mode</span>
+              <span class="settings-toggle-hint">Use sandbox credentials for testing</span>
             </label>
           </div>
-          <p class="text-muted" style="font-size: 0.8rem;">
-            When test mode is enabled, payments go through Square's sandbox environment. Disable for live payments.
-          </p>
         </div>
       </div>
 
-      <!-- Telnyx SMS Section -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Telnyx SMS</h2>
-          <span class="badge" id="telnyxModeBadge">Loading...</span>
+      <!-- ===== SMS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h2>SMS (Telnyx)</h2>
+          <span class="settings-badge" id="telnyxModeBadge">Loading...</span>
         </div>
-        <div class="section-body">
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="checkbox-label">
+
+        <!-- SMS Config -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Configuration</h3>
+              <p>Phone: <strong id="telnyxPhoneDisplay">Loading...</strong></p>
+            </div>
+            <div class="settings-card-actions">
+              <button class="btn-small btn-primary" id="openComposeSmsBtn">Compose SMS</button>
+              <button class="btn-small" id="openBulkSmsBtn">Send to All Tenants</button>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <label class="settings-toggle">
               <input type="checkbox" id="telnyxTestMode">
-              <span>Test Mode (log messages without sending)</span>
+              <span class="settings-toggle-label">Test Mode</span>
+              <span class="settings-toggle-hint">Log messages in database without actually sending via Telnyx</span>
             </label>
           </div>
-          <div style="margin-bottom: 1rem;">
-            <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.25rem;">
-              <strong>Phone Number:</strong> <span id="telnyxPhoneDisplay">Loading...</span>
-            </p>
-            <p class="text-muted" style="font-size: 0.8rem;">
-              When test mode is enabled, SMS messages are logged in the database but not actually sent via Telnyx.
-            </p>
+        </div>
+
+        <!-- Inbound SMS -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Inbound Messages</h3>
+              <p>Recent inbound SMS from tenants. Click a message to reply.</p>
+            </div>
+            <button class="btn-small" id="refreshInboundSmsBtn">Refresh</button>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn-small btn-primary" id="openComposeSmsBtn">Compose SMS</button>
-            <button class="btn-small" id="openBulkSmsBtn">Send to All Tenants</button>
+          <div class="settings-card-body settings-card-body--flush">
+            <div id="inboundSmsList" class="inbound-sms-list">
+              <p class="text-muted" style="padding: 1rem;">Loading...</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Recent Inbound SMS Section -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Inbound SMS</h2>
-          <button class="btn-small" id="refreshInboundSmsBtn">Refresh</button>
-        </div>
-        <div class="section-body">
-          <div id="inboundSmsList" style="max-height: 400px; overflow-y: auto;">
-            <p class="text-muted">Loading...</p>
-          </div>
-        </div>
-      </div>
     </main>
   </div>
 

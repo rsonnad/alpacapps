@@ -1613,11 +1613,11 @@
   }
 }
 
-/* Square mode badge */
+/* Square mode badge (legacy ID, now using .settings-badge) */
 #squareModeBadge {
   font-size: 0.7rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
   background: #fef3c7;
   color: #92400e;
 }
@@ -1625,6 +1625,187 @@
 #squareModeBadge.live {
   background: #dcfce7;
   color: #166534;
+}
+
+/* =============================================
+   SETTINGS PAGE — Groups & Cards
+   ============================================= */
+
+.settings-page {
+  max-width: 900px;
+}
+
+/* Group container */
+.settings-group {
+  margin-bottom: 2.5rem;
+}
+
+.settings-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.25rem 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.settings-group-header svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.settings-group-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.settings-group-header .settings-badge {
+  margin-left: auto;
+}
+
+/* Card within a group */
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.settings-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.settings-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-card-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.15rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-card-header p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.settings-card-header .btn-small {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.settings-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.settings-card-body {
+  padding: 1rem 1.25rem;
+}
+
+.settings-card-body--flush {
+  padding: 0;
+}
+
+/* Settings badge (reusable) */
+.settings-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.settings-badge.live {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Toggle row inside card body */
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.settings-toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.settings-toggle-hint {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: 1.4rem;
+}
+
+/* Inbound SMS list inside flush card */
+.inbound-sms-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.inbound-sms-list > div {
+  padding: 0.65rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.inbound-sms-list > div:last-child {
+  border-bottom: none;
+}
+
+.inbound-sms-list > div:hover {
+  background: var(--bg);
+}
+
+/* Mobile settings */
+@media (max-width: 768px) {
+  .settings-card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .settings-card-header .btn-small,
+  .settings-card-actions {
+    align-self: flex-start;
+  }
 }
 
 /* =============================================
