@@ -734,7 +734,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
   if (error) throw error;
 
   // Create payment record
-  const { data: rpData } = await supabase.from('rental_payments').insert({
+  const { data: rpData, error: rpError } = await supabase.from('rental_payments').insert({
     rental_application_id: applicationId,
     payment_type: PAYMENT_TYPE.MOVE_IN_DEPOSIT,
     amount_due: depositAmount,
@@ -743,6 +743,8 @@ async function recordMoveInDeposit(applicationId, details = {}) {
     payment_method: method,
     transaction_id: transactionId,
   }).select().single();
+
+  if (rpError) throw rpError;
 
   // Dual-write to ledger
   const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
@@ -805,7 +807,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
 
   // Create payment record (only if security deposit > 0)
   if (depositAmount > 0) {
-    const { data: rpData } = await supabase.from('rental_payments').insert({
+    const { data: rpData, error: rpError } = await supabase.from('rental_payments').insert({
       rental_application_id: applicationId,
       payment_type: PAYMENT_TYPE.SECURITY_DEPOSIT,
       amount_due: depositAmount,
@@ -814,6 +816,8 @@ async function recordSecurityDeposit(applicationId, details = {}) {
       payment_method: method,
       transaction_id: transactionId,
     }).select().single();
+
+    if (rpError) throw rpError;
 
     // Dual-write to ledger
     const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
