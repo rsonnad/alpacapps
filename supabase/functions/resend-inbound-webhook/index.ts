@@ -105,8 +105,8 @@ async function verifyWebhookSignature(
  * (race condition when sending to our own domain).
  */
 async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ html: string; text: string } | null> {
-  const MAX_ATTEMPTS = 3;
-  const DELAY_MS = 2000;
+  const MAX_ATTEMPTS = 5;
+  const DELAY_MS = 5000;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {

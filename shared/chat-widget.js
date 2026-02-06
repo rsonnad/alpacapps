@@ -106,7 +106,7 @@ async function sendAdminNotification(question, userEmail) {
       },
       body: JSON.stringify({
         type: 'faq_unanswered',
-        to: 'team@alpacaplayhouse.com',
+        to: 'alpacaplayhouse@gmail.com',
         data: {
           question,
           user_email: userEmail || 'Not provided',
