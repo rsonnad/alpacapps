@@ -335,7 +335,7 @@ Either party may terminate the agreement with {{notice_period}} notice.
 
 ## Work Reporting
 
-- The renter will send an email summary at the end of each day where work is performed outlining the work completed and the hours to alpacaplayhouse@gmail.com. This email must be sent on each and every day when work is performed (before the end of the day).
+- The renter will send an email summary at the end of each day where work is performed outlining the work completed and the hours to team@alpacaplayhouse.com. This email must be sent on each and every day when work is performed (before the end of the day).
 
 - Hours for work not reported on the same day by email will be discounted 25%.
 

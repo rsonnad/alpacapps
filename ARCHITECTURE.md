@@ -55,7 +55,8 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Bug Fixer Worker | DigitalOcean | Same droplet as OpenClaw |
 | E-Signatures | SignWell | API: signwell.com/api |
 | Payments | Square | API: connect.squareup.com |
-| Email Delivery | Resend | API key stored in Supabase secrets |
+| Email (Outbound) | Resend | Domain: alpacaplayhouse.com, API key in Supabase secrets |
+| Email (Inbound) | Resend | Webhook → `resend-inbound-webhook` Edge Function |
 | SMS Notifications | Telnyx | Phone: +17377474737, config in `telnyx_config` table |
 | Error Monitoring | Custom | Daily digest emails via Resend |
 | Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
@@ -122,6 +123,8 @@ alpacapps/
 │       ├── send-sms/          # Outbound SMS via Telnyx
 │       │   └── index.ts
 │       ├── telnyx-webhook/    # Inbound SMS receiver
+│       │   └── index.ts
+│       ├── resend-inbound-webhook/  # Inbound email receiver & router
 │       │   └── index.ts
 │       └── contact-form/      # Contact form submission handler
 │           └── index.ts
@@ -662,14 +665,76 @@ When generating lease agreements, the system calculates credits toward first mon
 - Supports tagging, filtering, and bulk operations
 - Images stored in Supabase Storage with automatic compression
 
-### Resend (Email Delivery)
-- API: `https://api.resend.com`
-- API key stored as Supabase secret: `RESEND_API_KEY`
-- Used for:
-  - Error digest emails (daily summary of client-side errors)
-  - Contact form submissions
-  - General email notifications
-- From address: `errors@genalpaca.com` (for error digests)
+### Resend (Email Sending & Receiving)
+- **Account**: wingsiebird@gmail.com
+- **Domain**: `alpacaplayhouse.com` (verified for both sending and receiving)
+- **Region**: North Virginia (us-east-1)
+- **API**: `https://api.resend.com`
+- **API Key**: Stored as Supabase secret `RESEND_API_KEY`
+- **Webhook Secret**: Stored as Supabase secret `RESEND_WEBHOOK_SECRET` (SVIX-based signing)
+
+**DNS Records** (managed in GoDaddy):
+| Type | Host | Value | Purpose |
+|------|------|-------|---------|
+| MX | @ | `inbound-smtp.us-east-1.amazonaws.com` (priority 10) | Inbound email receiving |
+| MX | send | `feedback-smtp.us-east-1.amazonses.com` (priority 10) | SPF for outbound sending |
+| TXT | send | `v=spf1 include:...amazonses.com ~all` | SPF record |
+| TXT | resend._domainkey | `p=MIGfMA0GCSqG...` | DKIM signing |
+
+**Outbound Email:**
+- Edge Function: `send-email` (43 email templates)
+- Client service: `shared/email-service.js`
+- From addresses: `noreply@alpacaplayhouse.com` (system), `notifications@alpacaplayhouse.com` (forwards)
+- Reply-to: `hello@alpacaplayhouse.com` or original sender for forwards
+- Used for: Rental notifications, payment reminders, invitations, bug reports, contact forms, error digests
+
+**Inbound Email:**
+- Edge Function: `resend-inbound-webhook` (deployed with `--no-verify-jwt`)
+- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/resend-inbound-webhook`
+- Webhook event: `email.received`
+- Signature verification: SVIX HMAC-SHA256 (headers: `svix-id`, `svix-timestamp`, `svix-signature`)
+- Email body NOT included in webhook payload — fetched via `GET /emails/{id}` API call
+
+**Inbound Email Routing Rules** (`*@alpacaplayhouse.com`):
+All inbound emails are logged to the `inbound_emails` table, then routed by prefix:
+
+| Prefix | Action | Destination |
+|--------|--------|-------------|
+| `haydn@` | Forward | `hrsonnad@gmail.com` |
+| `rahulio@` | Forward | `rahulioson@gmail.com` |
+| `sonia@` | Forward | `sonia245g@gmail.com` |
+| `team@` | Forward | `alpacaplayhouse@gmail.com` |
+| `herd@` | Special logic | Stub for future AI processing |
+| `auto@` | Special logic | Bug report replies create follow-up `bug_reports` row; other replies forwarded to admin |
+| (default) | Forward | `alpacaplayhouse@gmail.com` |
+
+**Inbound Email Flow:**
+1. External sender emails `someone@alpacaplayhouse.com`
+2. MX record routes to Resend (via `inbound-smtp.us-east-1.amazonaws.com`)
+3. Resend fires `email.received` webhook to Edge Function
+4. Edge Function verifies SVIX signature
+5. Fetches full email body from Resend API (`GET /emails/{email_id}`)
+6. Logs to `inbound_emails` table
+7. Routes based on prefix: forward via Resend send API, or run special logic
+8. Forwarded emails use original sender name, set reply-to to original sender
+
+**Inbound Email Database Table: `inbound_emails`**
+- `id` (uuid, PK)
+- `created_at` (timestamptz)
+- `resend_email_id` (text) - Resend's email ID
+- `from_address` (text) - Original sender
+- `to_address` (text) - Recipient address at alpacaplayhouse.com
+- `cc` (text[]) - CC addresses
+- `subject` (text)
+- `body_html` (text) - Full HTML body
+- `body_text` (text) - Plain text body
+- `attachments` (jsonb) - Attachment metadata
+- `route_action` (text) - "forward" or "special"
+- `forwarded_to` (text) - Destination email for forwards
+- `forwarded_at` (timestamptz) - When forwarded
+- `special_logic_type` (text) - "herd", "auto", etc.
+- `processed_at` (timestamptz) - When special logic completed
+- `raw_payload` (jsonb) - Full webhook data
 
 ### Telnyx (SMS Notifications)
 - **Portal**: https://portal.telnyx.com (account: wingsiebird@gmail.com)

@@ -53,6 +53,8 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
+- `send-email/` - Outbound email via Resend API (43 templates)
+- `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards
 
 ## Database Schema (Supabase)
 
@@ -78,6 +80,15 @@ telnyx_config        - Telnyx API configuration (single row, id=1)
                       (api_key, messaging_profile_id, phone_number, is_active, test_mode)
 sms_messages         - Log of all SMS sent/received
                       (person_id, direction, from/to_number, body, sms_type, telnyx_id, status)
+```
+
+### Inbound Email System
+```
+inbound_emails       - Log of all inbound emails received via Resend
+                      (resend_email_id, from_address, to_address, cc, subject,
+                       body_html, body_text, attachments, route_action,
+                       forwarded_to, forwarded_at, special_logic_type,
+                       processed_at, raw_payload)
 ```
 
 ### Lease Agreement System
@@ -233,6 +244,37 @@ git push
 4. Webhook notifies system → downloads signed PDF → stores in Supabase
 5. `agreement_status` updated to "signed"
 
+### Resend (Email)
+- **Domain**: `alpacaplayhouse.com` (verified, sending + receiving)
+- **Account**: wingsiebird@gmail.com
+- **API Key**: Stored as Supabase secret `RESEND_API_KEY`
+- **Webhook Secret**: Stored as Supabase secret `RESEND_WEBHOOK_SECRET` (SVIX-based)
+- **Outbound**: `send-email` Edge Function sends via Resend API (43 templates)
+  - From: `notifications@alpacaplayhouse.com` (forwarded emails) or `noreply@alpacaplayhouse.com` (system emails)
+  - Client service: `shared/email-service.js`
+- **Inbound**: `resend-inbound-webhook` Edge Function (deployed with `--no-verify-jwt`)
+  - Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/resend-inbound-webhook`
+  - Event: `email.received`
+  - All inbound emails logged to `inbound_emails` table
+  - Webhook payload doesn't include body — fetched separately via Resend API
+
+**DNS Records** (GoDaddy, domain: `alpacaplayhouse.com`):
+- MX `@` → `inbound-smtp.us-east-1.amazonaws.com` (priority 10) — inbound receiving
+- MX `send` → `feedback-smtp.us-east-1.amazonses.com` (priority 10) — SPF for outbound
+- TXT `send` → SPF record for outbound
+- TXT `resend._domainkey` → DKIM record
+
+**Inbound Email Routing** (`*@alpacaplayhouse.com`):
+| Prefix | Action | Destination |
+|--------|--------|-------------|
+| `haydn@` | Forward | `hrsonnad@gmail.com` |
+| `rahulio@` | Forward | `rahulioson@gmail.com` |
+| `sonia@` | Forward | `sonia245g@gmail.com` |
+| `team@` | Forward | `alpacaplayhouse@gmail.com` |
+| `herd@` | Special logic | (stub — future AI processing) |
+| `auto@` | Special logic | Bug report replies → new bug report; others → admin |
+| Everything else | Forward | `alpacaplayhouse@gmail.com` |
+
 ### Telnyx (SMS)
 - Config stored in `telnyx_config` table (api_key, messaging_profile_id, phone_number, test_mode)
 - Outbound: `send-sms` Edge Function calls Telnyx Messages API
@@ -286,6 +328,13 @@ git push
    - `bug_reports` table captures: `user_agent`, `browser_name`, `browser_version`, `os_name`, `os_version`, `screen_resolution`, `viewport_size`, `device_type`, `extension_platform`, `extension_version`
    - Worker writes back `diagnosis` (root cause) and `notes` (observations/caveats) after Claude Code analyzes the bug
    - Claude Code prompt instructs it to output structured JSON with `diagnosis`, `fix_summary`, and `notes`
+14. **Resend Inbound Email** - Inbound email receiving and routing via Resend
+   - Domain `alpacaplayhouse.com` configured for both sending and receiving
+   - MX record points to `inbound-smtp.us-east-1.amazonaws.com`
+   - Edge function: `resend-inbound-webhook` (SVIX signature verification)
+   - Prefix-based routing: personal forwards, team@, auto@ (bug reply logic), herd@ (stub)
+   - All emails logged to `inbound_emails` table
+   - Forwarded emails preserve original sender name, set reply-to to original sender
 
 ## Testing Changes
 

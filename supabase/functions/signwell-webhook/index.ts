@@ -434,9 +434,9 @@ async function sendRentalSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
+        from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
         to: [person.email],
-        reply_to: 'alpacaplayhouse@gmail.com',
+        reply_to: 'team@alpacaplayhouse.com',
         subject: 'Lease Signed - Reservation Deposit Due - Alpaca Playhouse',
         html: `
           <h2>Lease Signing Complete!</h2>
@@ -467,7 +467,7 @@ async function sendRentalSignedEmail(
           </div>
 
           <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
-          <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
+          <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Lease Signing Complete!
@@ -493,7 +493,7 @@ Monthly Rent: $${monthlyRate || 'TBD'}/${rateTermDisplay}
 
 Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.
 
-Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
+Questions? Reply to this email or contact us at team@alpacaplayhouse.com
 
 Best regards,
 Alpaca Playhouse`,
@@ -537,9 +537,9 @@ async function sendEventSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
+        from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
         to: [person.email],
-        reply_to: 'alpacaplayhouse@gmail.com',
+        reply_to: 'team@alpacaplayhouse.com',
         subject: 'Event Agreement Signed - Outstanding Fees Due Before Event - Alpaca Playhouse',
         html: `
           <h2>Event Agreement Signed!</h2>
@@ -590,7 +590,7 @@ async function sendEventSignedEmail(
           </ul>
 
           <p>Once we receive the cleaning deposit and rental fee, your event is confirmed!</p>
-          <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
+          <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Event Agreement Signed!
@@ -628,7 +628,7 @@ REMINDERS
 
 Once we receive the cleaning deposit and rental fee, your event is confirmed!
 
-Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
+Questions? Reply to this email or contact us at team@alpacaplayhouse.com
 
 Best regards,
 Alpaca Playhouse`,

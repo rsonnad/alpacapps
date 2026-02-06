@@ -34,7 +34,7 @@ function buildContextPrompt(contextData: ContextData): string {
   // Add general info
   parts.push(`GENERAL INFO:
 - Location: 160 Still Forest Drive, Cedar Creek, TX 78612 (30 minutes east of Austin)
-- Contact: alpacaplayhouse@gmail.com
+- Contact: team@alpacaplayhouse.com
 - Website: alpacaplayhouse.com`);
 
   // Add spaces info

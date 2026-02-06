@@ -5,9 +5,12 @@ import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/b
 const RESEND_API_URL = "https://api.resend.com";
 
 /**
- * Routing rules for inbound emails to *@mail.alpacaplayhouse.com
+ * Routing rules for inbound emails to *@alpacaplayhouse.com
  *
  * prefix → { action, forwardTo?, specialLogic? }
+ *
+ * auto@ = automated system replies (bug reports, error digests, identity verification)
+ * team@ = human-facing team replies (rental, events, payments, invitations)
  */
 const ROUTING_RULES: Record<string, { action: string; forwardTo?: string; specialLogic?: string }> = {
   "haydn":   { action: "forward", forwardTo: "hrsonnad@gmail.com" },
@@ -15,6 +18,7 @@ const ROUTING_RULES: Record<string, { action: string; forwardTo?: string; specia
   "sonia":   { action: "forward", forwardTo: "sonia245g@gmail.com" },
   "herd":    { action: "special", specialLogic: "herd" },
   "auto":    { action: "special", specialLogic: "auto" },
+  "team":    { action: "forward", forwardTo: "alpacaplayhouse@gmail.com" },
 };
 
 const DEFAULT_ROUTE = { action: "forward", forwardTo: "alpacaplayhouse@gmail.com" };
@@ -113,16 +117,12 @@ async function forwardEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `Alpaca Mail <noreply@alpacaplayhouse.com>`,
+        from: `${originalFrom.replace(/<.*>/, '').trim() || originalFrom} <notifications@alpacaplayhouse.com>`,
         to: [to],
         reply_to: originalFrom,
-        subject: `Fwd: ${subject}`,
-        html: html
-          ? `<p><em>Forwarded from: ${originalFrom}</em></p><hr/>${html}`
-          : `<p><em>Forwarded from: ${originalFrom}</em></p><hr/><pre>${text}</pre>`,
-        text: text
-          ? `Forwarded from: ${originalFrom}\n---\n${text}`
-          : `Forwarded from: ${originalFrom}\n---\n(HTML-only email)`,
+        subject: subject,
+        html: html || `<pre>${text}</pre>`,
+        text: text || "(HTML-only email)",
       }),
     });
 
@@ -142,17 +142,124 @@ async function forwardEmail(
 
 /**
  * Handle special logic for herd@ and auto@ addresses.
- * Stub for now — will be expanded later.
+ *
+ * auto@ handles replies to automated system emails:
+ * - Bug report replies (subject contains "Bug by") → creates a follow-up bug report
+ *   so the bug fixer worker picks it up for another fix attempt
+ * - Other auto@ emails → forwarded to admin for manual review
  */
 async function handleSpecialLogic(
   type: string,
   emailRecord: any,
-  supabase: any
+  supabase: any,
+  resendApiKey: string
 ): Promise<void> {
   console.log(`Special logic triggered: type=${type}, from=${emailRecord.from_address}, subject=${emailRecord.subject}`);
 
-  // TODO: Implement herd@ and auto@ processing logic
-  // For now, just mark as processed
+  if (type === "auto") {
+    await handleAutoReply(emailRecord, supabase, resendApiKey);
+  }
+
+  // herd@ - not yet implemented
+}
+
+/**
+ * Handle replies to auto@ (bug reports, error digests, etc.)
+ *
+ * Bug report replies: tries to find the original bug report by subject,
+ * then creates a new follow-up bug report referencing the original.
+ * The bug fixer worker on DigitalOcean will pick it up.
+ */
+async function handleAutoReply(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const body = emailRecord.body_text || emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+
+  // Check if this is a reply to a bug report email
+  // Bug report subjects look like: "Re: Bug by John: Something is broken..."
+  // or "Re: Screenshot of the Fix" etc.
+  const bugReplyMatch = subject.match(/Re:\s*(?:Bug by .+?:\s*|Screenshot of the Fix)/i);
+
+  if (bugReplyMatch) {
+    console.log("Detected bug report reply, creating follow-up bug report");
+
+    // Try to find the original bug report by matching the subject
+    // Extract the original description from "Bug by Name: <description>"
+    const descMatch = subject.match(/Bug by .+?:\s*(.+)/i);
+    let originalBugId: string | null = null;
+
+    if (descMatch) {
+      const originalDesc = descMatch[1].trim();
+      // Search for matching bug report
+      const { data: matchingBugs } = await supabase
+        .from("bug_reports")
+        .select("id, page_url")
+        .ilike("description", `%${originalDesc.substring(0, 40)}%`)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (matchingBugs && matchingBugs.length > 0) {
+        originalBugId = matchingBugs[0].id;
+        console.log(`Matched to original bug report: ${originalBugId}`);
+      }
+    }
+
+    // Extract sender name from email "Name <email@domain>" format
+    const nameMatch = from.match(/^([^<]+)/);
+    const senderName = nameMatch ? nameMatch[1].trim() : from.split("@")[0];
+    const senderEmail = from.match(/<(.+)>/)?.[1] || from;
+
+    // Strip email reply chains — try to get just the new message
+    let replyBody = body;
+    // Remove common reply markers
+    const replyMarkers = [
+      /On .+ wrote:/i,
+      /-----Original Message-----/i,
+      /From:.*\nSent:.*\nTo:/i,
+      /_{5,}/,
+    ];
+    for (const marker of replyMarkers) {
+      const idx = replyBody.search(marker);
+      if (idx > 0) {
+        replyBody = replyBody.substring(0, idx).trim();
+        break;
+      }
+    }
+
+    // Create a new follow-up bug report for the worker
+    const { error: insertError } = await supabase
+      .from("bug_reports")
+      .insert({
+        description: `[Follow-up${originalBugId ? ` to bug ${originalBugId}` : ""}] ${replyBody.substring(0, 2000)}`,
+        reporter_name: senderName,
+        reporter_email: senderEmail,
+        page_url: originalBugId
+          ? (await supabase.from("bug_reports").select("page_url").eq("id", originalBugId).single())?.data?.page_url
+          : null,
+        status: "pending",
+      });
+
+    if (insertError) {
+      console.error("Failed to create follow-up bug report:", insertError);
+    } else {
+      console.log("Follow-up bug report created from email reply");
+    }
+  } else {
+    // Not a bug report reply — forward to admin for manual review
+    console.log("Non-bug auto@ email, forwarding to admin");
+    await forwardEmail(
+      resendApiKey,
+      "alpacaplayhouse@gmail.com",
+      from,
+      `[auto@ reply] ${subject}`,
+      emailRecord.body_html || "",
+      emailRecord.body_text || ""
+    );
+  }
 }
 
 serve(async (req) => {
@@ -268,7 +375,7 @@ serve(async (req) => {
 
       // Special logic if applicable
       if (route.action === "special" && route.specialLogic) {
-        await handleSpecialLogic(route.specialLogic, record, supabase);
+        await handleSpecialLogic(route.specialLogic, record, supabase, resendApiKey);
         await supabase
           .from("inbound_emails")
           .update({ processed_at: new Date().toISOString() })

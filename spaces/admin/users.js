@@ -250,7 +250,7 @@ If you don't have a password yet, click "Forgot password?" on the login page to 
 
 Your access has already been pre-approved for ${email}, so you'll have immediate access once you sign in.
 
-If there are any problems or suggestions for improvements, please email them to alpacaplayhouse@gmail.com as soon as you can and they will be rapidly addressed.`;
+If there are any problems or suggestions for improvements, please email them to team@alpacaplayhouse.com as soon as you can and they will be rapidly addressed.`;
 
   // Show modal
   const modal = document.getElementById('inviteTextModal');

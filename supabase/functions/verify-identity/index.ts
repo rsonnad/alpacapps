@@ -282,7 +282,7 @@ If the image is not a valid ID document, return: {"error": "not_a_valid_id"}`,
 
     // Send emails
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Alpaca Playhouse <noreply@alpacaplayhouse.com>';
+    const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Alpaca Playhouse <auto@alpacaplayhouse.com>';
 
     if (RESEND_API_KEY && person.email) {
       try {
@@ -302,7 +302,7 @@ If the image is not a valid ID document, return: {"error": "not_a_valid_id"}`,
           });
         } else {
           // Send mismatch alert to admin
-          const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'alpacaautomatic@gmail.com';
+          const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'auto@alpacaplayhouse.com';
           const adminUrl = `https://rsonnad.github.io/alpacapps/spaces/admin/rentals.html`;
           await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: 'POST',

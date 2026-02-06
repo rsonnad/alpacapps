@@ -197,9 +197,9 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Alpaca Playhouse <noreply@alpacaplayhouse.com>',
+            from: 'Alpaca Playhouse <team@alpacaplayhouse.com>',
             to: [person.email],
-            reply_to: 'alpacaplayhouse@gmail.com',
+            reply_to: 'team@alpacaplayhouse.com',
             subject: `Payment Reminder: ${event.event_name} - Fees Due in 3 Days`,
             html: `
               <h2>Payment Reminder - Your Event is Coming Up!</h2>
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
                 <li>Cleanup must be completed by 1:01pm the day after your event</li>
               </ul>
 
-              <p>Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com</p>
+              <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
               <p>Best regards,<br>Alpaca Playhouse</p>
             `,
             text: `Payment Reminder - Your Event is Coming Up!
@@ -272,7 +272,7 @@ QUICK REMINDERS
 - Direct attendees to alpacaplayhouse.com/visiting for directions (do NOT post the address publicly)
 - Cleanup must be completed by 1:01pm the day after your event
 
-Questions? Reply to this email or contact us at alpacaplayhouse@gmail.com
+Questions? Reply to this email or contact us at team@alpacaplayhouse.com
 
 Best regards,
 Alpaca Playhouse`,

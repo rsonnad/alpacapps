@@ -1167,8 +1167,24 @@ serve(async (req) => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const DEFAULT_FROM = Deno.env.get("EMAIL_FROM") || "Alpaca Playhouse <noreply@alpacaplayhouse.com>";
-    const DEFAULT_REPLY_TO = Deno.env.get("EMAIL_REPLY_TO") || "hello@alpacaplayhouse.com";
+    // Sender addresses by category:
+    // auto@ = automated system emails (bug reports, errors, identity verification)
+    // team@ = human-facing team emails (rental, events, payments, invitations)
+    const AUTO_FROM = "Alpaca Playhouse <auto@alpacaplayhouse.com>";
+    const TEAM_FROM = "Alpaca Playhouse <team@alpacaplayhouse.com>";
+    const AUTO_REPLY_TO = "auto@alpacaplayhouse.com";
+    const TEAM_REPLY_TO = "team@alpacaplayhouse.com";
+
+    // Map email types to their sender category
+    const AUTO_TYPES: EmailType[] = [
+      "bug_report_received", "bug_report_fixed", "bug_report_failed", "bug_report_verified",
+      "dl_upload_link", "dl_verified", "dl_mismatch",
+      "faq_unanswered",
+    ];
+
+    const isAutoType = AUTO_TYPES.includes(type);
+    const DEFAULT_FROM = isAutoType ? AUTO_FROM : TEAM_FROM;
+    const DEFAULT_REPLY_TO = isAutoType ? AUTO_REPLY_TO : TEAM_REPLY_TO;
 
     const body: EmailRequest = await req.json();
     const { type, to, data, subject: customSubject, from, reply_to } = body;
