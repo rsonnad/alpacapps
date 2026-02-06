@@ -701,21 +701,31 @@ async function requestDeposit(applicationId) {
  * Record move-in deposit payment
  */
 async function recordMoveInDeposit(applicationId, details = {}) {
-  const { paidAt = new Date().toISOString(), method = null, transactionId = null } = details;
+  const { paidAt = new Date().toISOString(), method = null, transactionId = null, amount = null } = details;
 
   // Get application to get the amount
   const app = await getApplication(applicationId);
   if (!app) throw new Error('Application not found');
 
-  // Update application
+  // Use provided amount or fall back to stored amount
+  const depositAmount = amount !== null ? amount : app.move_in_deposit_amount;
+
+  // Update application with the new amount if provided
+  const updateData = {
+    move_in_deposit_paid: true,
+    move_in_deposit_paid_at: paidAt,
+    move_in_deposit_method: method,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Update the stored amount if a new amount was provided
+  if (amount !== null) {
+    updateData.move_in_deposit_amount = amount;
+  }
+
   const { data, error } = await supabase
     .from('rental_applications')
-    .update({
-      move_in_deposit_paid: true,
-      move_in_deposit_paid_at: paidAt,
-      move_in_deposit_method: method,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', applicationId)
     .select()
     .single();
@@ -726,8 +736,8 @@ async function recordMoveInDeposit(applicationId, details = {}) {
   const { data: rpData } = await supabase.from('rental_payments').insert({
     rental_application_id: applicationId,
     payment_type: PAYMENT_TYPE.MOVE_IN_DEPOSIT,
-    amount_due: app.move_in_deposit_amount,
-    amount_paid: app.move_in_deposit_amount,
+    amount_due: depositAmount,
+    amount_paid: depositAmount,
     paid_date: paidAt,
     payment_method: method,
     transaction_id: transactionId,
@@ -738,7 +748,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
   await supabase.from('ledger').insert({
     direction: 'income',
     category: 'move_in_deposit',
-    amount: app.move_in_deposit_amount,
+    amount: depositAmount,
     payment_method: method || 'other',
     transaction_date: paidAt ? paidAt.split('T')[0] : new Date().toISOString().split('T')[0],
     person_id: app.person_id,

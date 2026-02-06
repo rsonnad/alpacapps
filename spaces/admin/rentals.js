@@ -1754,7 +1754,7 @@ window.openRecordDepositModal = function(type) {
   const amount = type === 'move_in' ? app.move_in_deposit_amount : app.security_deposit_amount;
 
   document.getElementById('depositType').value = type;
-  document.getElementById('depositAmount').value = rentalService.formatCurrency(amount);
+  document.getElementById('depositAmount').value = amount || 0;
   document.getElementById('depositMethod').value = '';
   document.getElementById('depositTransactionId').value = '';
   document.getElementById('recordDepositTitle').textContent =
@@ -1765,8 +1765,14 @@ window.openRecordDepositModal = function(type) {
 
 async function confirmRecordDeposit() {
   const type = document.getElementById('depositType').value;
+  const amount = parseFloat(document.getElementById('depositAmount').value);
   const method = document.getElementById('depositMethod').value;
   const transactionId = document.getElementById('depositTransactionId').value.trim() || null;
+
+  if (!amount || amount <= 0) {
+    showToast('Please enter a valid amount', 'warning');
+    return;
+  }
 
   if (!method) {
     showToast('Please select a payment method', 'warning');
@@ -1775,9 +1781,9 @@ async function confirmRecordDeposit() {
 
   try {
     if (type === 'move_in') {
-      await rentalService.recordMoveInDeposit(currentApplicationId, { method, transactionId });
+      await rentalService.recordMoveInDeposit(currentApplicationId, { amount, method, transactionId });
     } else {
-      await rentalService.recordSecurityDeposit(currentApplicationId, { method, transactionId });
+      await rentalService.recordSecurityDeposit(currentApplicationId, { amount, method, transactionId });
     }
     await loadApplications();
     closeRecordDepositModal();
