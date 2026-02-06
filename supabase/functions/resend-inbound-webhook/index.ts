@@ -101,22 +101,44 @@ async function verifyWebhookSignature(
 /**
  * Fetch full email content (body) from Resend API.
  * The webhook payload doesn't include the body — we need to fetch it separately.
+ * Retries with delay because the body may not be available immediately
+ * (race condition when sending to our own domain).
  */
 async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ html: string; text: string } | null> {
-  try {
-    const res = await fetch(`${RESEND_API_URL}/emails/${emailId}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (!res.ok) {
-      console.error(`Failed to fetch email content: ${res.status} ${res.statusText}`);
-      return null;
+  const MAX_ATTEMPTS = 3;
+  const DELAY_MS = 2000;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      if (attempt > 1) {
+        console.log(`Retry ${attempt}/${MAX_ATTEMPTS} fetching email body (waiting ${DELAY_MS}ms)...`);
+        await new Promise(r => setTimeout(r, DELAY_MS));
+      }
+
+      const res = await fetch(`${RESEND_API_URL}/emails/${emailId}`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      if (!res.ok) {
+        console.error(`Failed to fetch email content: ${res.status} ${res.statusText}`);
+        return null;
+      }
+      const data = await res.json();
+      const html = data.html || "";
+      const text = data.text || "";
+
+      // If body is empty and we have retries left, try again
+      if (!html && !text && attempt < MAX_ATTEMPTS) {
+        console.warn(`Email body empty on attempt ${attempt}, will retry...`);
+        continue;
+      }
+
+      return { html, text };
+    } catch (error) {
+      console.error("Error fetching email content:", error.message);
+      if (attempt === MAX_ATTEMPTS) return null;
     }
-    const data = await res.json();
-    return { html: data.html || "", text: data.text || "" };
-  } catch (error) {
-    console.error("Error fetching email content:", error.message);
-    return null;
   }
+  return null;
 }
 
 /**
