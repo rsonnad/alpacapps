@@ -1792,7 +1792,14 @@ async function confirmRecordDeposit() {
     } else {
       await rentalService.recordSecurityDeposit(currentApplicationId, { amount, method, transactionId });
     }
-    await loadApplications();
+
+    // Refresh only the current application instead of reloading all applications
+    const updatedApp = await rentalService.getApplication(currentApplicationId);
+    const index = allApplications.findIndex(a => a.id === currentApplicationId);
+    if (index !== -1) {
+      allApplications[index] = updatedApp;
+    }
+
     closeRecordDepositModal();
     openRentalDetail(currentApplicationId, getActiveDetailTab());
     showToast('Deposit recorded', 'success');
