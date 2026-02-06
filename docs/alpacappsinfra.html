@@ -958,6 +958,36 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       If you see "git is not recognized," download Git from <a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a>, install it (use all defaults), then close and reopen your terminal and try again. Mac already has Git built in.
     </div>
 
+    <h3><span class="step-label step-you">Connect Git to your GitHub account</span></h3>
+    <p>Before Claude Code can push code to your repository, Git needs to know your GitHub credentials. The easiest way is GitHub CLI, which handles this through your browser &mdash; no passwords or tokens to manage.</p>
+
+    <p><strong>a) Install GitHub CLI</strong></p>
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
+      <ul style="margin: 0; padding-left: 1.25rem;">
+        <li><strong>Mac:</strong> Paste into Terminal: <code>brew install gh</code><br>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Don&rsquo;t have Homebrew? Paste this first: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></span></li>
+        <li><strong>Windows:</strong> Paste into your terminal: <code>winget install --id GitHub.cli</code><br>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Then close and reopen your terminal.</span></li>
+      </ul>
+    </div>
+
+    <p><strong>b) Log in to GitHub through your browser</strong></p>
+    <p>Paste this into your terminal and press Enter:</p>
+    <pre data-lang="bash" style="position: relative;"><code>gh auth login</code><button onclick="navigator.clipboard.writeText('gh auth login');this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Copy'},2000)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Copy</button></pre>
+    <p>It will ask a few questions &mdash; pick these answers:</p>
+    <ol>
+      <li><strong>Where do you use GitHub?</strong> &rarr; <code>GitHub.com</code></li>
+      <li><strong>Preferred protocol?</strong> &rarr; <code>HTTPS</code></li>
+      <li><strong>Authenticate Git with GitHub credentials?</strong> &rarr; <code>Yes</code></li>
+      <li><strong>How would you like to authenticate?</strong> &rarr; <code>Login with a web browser</code></li>
+    </ol>
+    <p>It will show a one-time code and open your browser. Paste the code, click <strong>Authorize</strong>, and you&rsquo;re done.</p>
+
+    <div class="callout success" style="font-size: 0.85rem;">
+      <strong>How to verify it worked:</strong>
+      Run <code>gh auth status</code> in your terminal. You should see your GitHub username and &ldquo;Logged in to github.com.&rdquo;
+    </div>
+
     <p><strong>Project structure included in the template:</strong></p>
     <pre data-lang="folder structure"><code>your-repo/
 ├── index.html              # Landing page
