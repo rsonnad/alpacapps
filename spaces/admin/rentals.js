@@ -2592,6 +2592,9 @@ function setupEventListeners() {
     if (e.target.id === 'recordDepositModal') closeRecordDepositModal();
   });
 
+  // Deposit request section buttons
+  document.getElementById('confirmDepositBtn')?.addEventListener('click', () => window.confirmDeposit());
+
   // Rent modals
   document.getElementById('openRecordRentBtn')?.addEventListener('click', openRecordRentModal);
   document.getElementById('confirmRecordRentBtn')?.addEventListener('click', confirmRecordRent);
