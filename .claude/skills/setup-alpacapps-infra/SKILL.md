@@ -13,7 +13,7 @@ You are an expert infrastructure setup assistant helping the user build a do-it-
 2. **Silent prerequisite installs.** Don't ask — just check and install Supabase CLI if missing. Only pause if git or Node.js is missing (they require manual install — link the user to https://git-scm.com and https://nodejs.org).
 3. **One service at a time.** Complete each service fully before moving to the next.
 4. **Every URL you show the user must be a full clickable URL.** Always `https://...` — never a path fragment, never `go to Settings → API`, never a template with `{REF}` still in it. Substitute all variables before presenting to the user.
-5. **Build CLAUDE.md incrementally.** After each service, append its config to CLAUDE.md, commit, and push. Don't repeat "update CLAUDE.md, commit, and push" in every step — it's implicit.
+5. **Build CLAUDE.md and CLAUDE.local.md incrementally.** Two files: `CLAUDE.md` (checked into repo) has shareable project context — architecture, schema, patterns, conventions. `CLAUDE.local.md` (gitignored) has credentials, connection strings, and operator directives. After each service, append shareable details to CLAUDE.md and credentials/secrets to CLAUDE.local.md, commit, and push. Don't repeat "update files, commit, and push" in every step — it's implicit. Make sure `.gitignore` includes `CLAUDE.local.md` (not `CLAUDE.md`).
 6. **Validate before proceeding.** Test every credential and connection before moving on.
 7. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs and present them as copy-paste-ready values.
 8. **Derive everything you can.** Don't ask the user for things you can compute (project URL from ref, pooler connection string from ref + password, etc.).
@@ -86,7 +86,7 @@ Ask the user what they want to name their repo. The name must be unique on their
 - If `gh` is NOT available: Tell the user to go to https://github.com/{USERNAME}/{REPO}/settings/pages → Deploy from branch → main → / (root) → Save
 - **Important:** Use branch deployment (not GitHub Actions workflow) — this is a static site with no build step.
 
-**Then** create the project folder structure adapted to their domain, scaffold CLAUDE.md, commit, and push.
+**Then** create the project folder structure adapted to their domain, scaffold both `CLAUDE.md` (shareable context, checked in) and `CLAUDE.local.md` (credentials/operator directives, gitignored). Add `CLAUDE.local.md` to `.gitignore`. Add a note at the top of `CLAUDE.md` saying "See `CLAUDE.local.md` for credentials and environment-specific configuration." Commit and push.
 
 ### Step 3: Supabase
 
@@ -119,8 +119,9 @@ Once you have the ref, immediately construct and show the direct links:
 4. Create database tables tailored to the user's domain description (don't use hardcoded schemas)
 5. Enable RLS on all tables
 6. Create storage buckets with public read policies
-7. Append Supabase config to CLAUDE.md (ref, URL, anon key, psql string, CLI instructions)
-8. Commit and push
+7. Append shareable Supabase details to CLAUDE.md (storage buckets, anon key location, CLI commands reference)
+8. Append credentials to CLAUDE.local.md (project ref, URL, psql connection string with password, CLI access instructions, operator directives for direct DB access)
+9. Commit and push
 
 ### Step 4: Google Sign-In (Google OAuth) — if selected
 
@@ -145,7 +146,7 @@ Ask in a single message with all URLs:
 1. Create `shared/auth.js` with Google OAuth sign-in using `supabase.auth.signInWithOAuth({ provider: 'google' })`
 2. Add login/logout UI to the app
 3. Add auth guards to admin pages
-4. Append auth config to CLAUDE.md (Client ID, redirect URI, sign-in method)
+4. Append auth patterns to CLAUDE.md (sign-in method, redirect URI pattern). Append Client ID to CLAUDE.local.md
 
 ### Step 5: Resend (Email) — if selected
 
@@ -248,7 +249,8 @@ Ask in a single message:
    ```bash
    ssh -i {KEY_PATH} {USER}@{IP} "chown -R {SERVICE_USER}:{SERVICE_USER} /path/to/repo/.git"
    ```
-4. Append DigitalOcean config to CLAUDE.md:
+4. Append DigitalOcean overview to CLAUDE.md (runs bot + worker, repo clone for screenshots, uses SKILL.md)
+5. Append credentials to CLAUDE.local.md:
    - Droplet IP, SSH command, OS/specs
    - Service users and their working directories
    - Repo paths with git `core.sharedRepository=group` note
@@ -258,9 +260,11 @@ Ask in a single message:
 
 After all services are configured, set up Claude Code tool permissions so the user doesn't get prompted for routine actions.
 
+**Important:** The correct settings key is `permissions.allow` (NOT `allowedTools` which is deprecated and doesn't work).
+
 **First, silently (no user action needed):**
-1. Read `~/.claude/settings.json` (create it with `{"allowedTools":[]}` if it doesn't exist)
-2. Always add these to the `allowedTools` array (don't duplicate entries already present):
+1. Read `~/.claude/settings.json` (create it with `{"permissions":{"allow":[]}}` if it doesn't exist)
+2. Always add these to the `permissions.allow` array (don't duplicate entries already present):
    - `"Edit"` — file editing
    - `"Write"` — file writing
    - `"Read"` — file reading
@@ -278,7 +282,7 @@ Options:
 - **All Bash commands** — Let Claude run any terminal command without prompting (Bash(*))
 
 **Then you:**
-1. Merge the user's selections into the `allowedTools` array (don't duplicate entries already present)
+1. Merge the user's selections into the `permissions.allow` array (don't duplicate entries already present)
 2. Write the updated file
 3. Confirm what was added (including the defaults)
 
@@ -298,7 +302,7 @@ Options:
    - All live URLs (clickable)
    - Any pending items (10DLC approval, domain verification)
    - Claude Code permissions configured
-   - "Your CLAUDE.md is complete. Any future Claude Code session in this project will have full context."
+   - "Your CLAUDE.md and CLAUDE.local.md are complete. Any future Claude Code session in this project will have full context. CLAUDE.md is checked into the repo (shareable); CLAUDE.local.md is gitignored (private credentials)."
 
 ## Key Technical Details
 
@@ -309,4 +313,4 @@ Options:
 - **psql**: Use session pooler (IPv4 compatible), URL-encode password special chars
 - **Telnyx**: Bearer token auth (NOT Basic), JSON body (NOT form-encoded)
 - **Square**: Sandbox first, production later
-- **CLAUDE.md**: Must include psql connection string, CLI instructions, and "push immediately" directive
+- **Two context files**: `CLAUDE.md` (checked in) has architecture, schema, patterns, conventions. `CLAUDE.local.md` (gitignored) has psql connection string, CLI instructions, credentials, and operator directives like "push immediately"
