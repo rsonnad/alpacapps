@@ -302,7 +302,7 @@ If the image is not a valid ID document, return: {"error": "not_a_valid_id"}`,
           });
         } else {
           // Send mismatch alert to admin
-          const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'auto@alpacaplayhouse.com';
+          const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'team@alpacaplayhouse.com';
           const adminUrl = `https://rsonnad.github.io/alpacapps/spaces/admin/rentals.html`;
           await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: 'POST',

@@ -17,7 +17,7 @@ const corsHeaders = {
 };
 
 // Email configuration
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'auto@alpacaplayhouse.com';
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'team@alpacaplayhouse.com';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const FROM_EMAIL = 'Alpaca Playhouse Errors <auto@alpacaplayhouse.com>';
 
