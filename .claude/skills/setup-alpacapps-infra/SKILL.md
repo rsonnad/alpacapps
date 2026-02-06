@@ -1,6 +1,6 @@
 ---
 name: setup-alpacapps-infra
-description: Interactive infrastructure setup wizard. Walks through setting up the full stack (Supabase, Telnyx, Square, SignWell, Resend) step by step. Use when starting a new project or adding services to an existing one.
+description: Interactive infrastructure setup wizard. Walks through setting up the full stack (Supabase, Telnyx, Square, SignWell, Resend, DigitalOcean) step by step. Use when starting a new project or adding services to an existing one.
 ---
 
 # Infrastructure Setup Wizard
@@ -41,6 +41,7 @@ Ask two things in a single message:
 - Payment processing (Square) — 2.9% + 30¢ per transaction
 - E-signatures (SignWell) — Free, 3–25 docs/month
 - AI-powered features (Google Gemini) — Free
+- DigitalOcean Droplet (server for bots, workers, automation) — ~$12/mo
 
 Remember their choices and skip everything they don't need.
 
@@ -225,7 +226,35 @@ Ask:
 **Then you:**
 1. `supabase secrets set GEMINI_API_KEY={key}`
 
-### Step 10: Claude Code Permissions
+### Step 10: DigitalOcean Droplet — if selected
+
+Ask in a single message:
+
+> If you already have a DigitalOcean droplet:
+> 1. Paste the **droplet IPv4 address**
+> 2. Paste the **SSH key path** on your local machine (e.g., `~/.ssh/id_rsa` or `~/.ssh/do_key`)
+> 3. What **SSH user** do you connect as? (e.g., `root`)
+>
+> If you need a new droplet, create one at https://cloud.digitalocean.com/droplets/new
+> — recommended: Ubuntu 22.04, Basic plan, $12/mo (2 GB / 1 vCPU)
+
+**Then you:**
+1. Test SSH connectivity: `ssh -o ConnectTimeout=5 -i {KEY_PATH} {USER}@{IP} "echo connected"`
+2. If running services that clone this repo (e.g., bug fixer, bots), configure git permissions:
+   ```bash
+   ssh -i {KEY_PATH} {USER}@{IP} "cd /path/to/repo && git config core.sharedRepository group"
+   ```
+3. Ensure the repo clone is owned by the correct service user (not root):
+   ```bash
+   ssh -i {KEY_PATH} {USER}@{IP} "chown -R {SERVICE_USER}:{SERVICE_USER} /path/to/repo/.git"
+   ```
+4. Append DigitalOcean config to CLAUDE.md:
+   - Droplet IP, SSH command, OS/specs
+   - Service users and their working directories
+   - Repo paths with git `core.sharedRepository=group` note
+   - Troubleshooting: ownership fix command for `.git/objects`
+
+### Step 11: Claude Code Permissions
 
 After all services are configured, offer to set up recommended Claude Code tool permissions so the user doesn't get prompted for routine actions.
 
@@ -253,7 +282,7 @@ Options:
 - "Git commands" → add `"Bash(git *)"`
 - "All Bash commands" → add `"Bash(*)"` (this supersedes "Git commands" — if both selected, only add `"Bash(*)"`)
 
-### Step 11: Final Summary
+### Step 12: Final Summary
 
 1. Verify GitHub Pages is live (curl the URL)
 2. Verify Supabase connection (run a test query)
