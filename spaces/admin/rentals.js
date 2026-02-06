@@ -1752,10 +1752,11 @@ window.openRecordDepositModal = function(type) {
   if (!app) return;
 
   const amount = type === 'move_in' ? app.move_in_deposit_amount : app.security_deposit_amount;
+  const method = type === 'move_in' ? app.move_in_deposit_method : app.security_deposit_method;
 
   document.getElementById('depositType').value = type;
   document.getElementById('depositAmount').value = amount || 0;
-  document.getElementById('depositMethod').value = '';
+  document.getElementById('depositMethod').value = method || '';
   document.getElementById('depositTransactionId').value = '';
   document.getElementById('recordDepositTitle').textContent =
     type === 'move_in' ? 'Record Move-in Deposit' : 'Record Security Deposit';
