@@ -2612,6 +2612,9 @@ function setupEventListeners() {
   document.getElementById('recordDepositModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'recordDepositModal') closeRecordDepositModal();
   });
+  document.getElementById('recordDepositForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+  });
 
   // Deposit request section buttons
   document.getElementById('confirmDepositBtn')?.addEventListener('click', () => window.confirmDeposit());
