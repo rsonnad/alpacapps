@@ -410,6 +410,52 @@ export async function signInWithGoogle(redirectTo) {
 }
 
 /**
+ * Sign in with email and password
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<object>} Session data
+ */
+export async function signInWithPassword(email, password) {
+  authLog.info('signInWithPassword() called', { email });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    authLog.error('signInWithPassword() error', error);
+    throw error;
+  }
+  authLog.info('signInWithPassword() success', { email: data.user?.email });
+  return data;
+}
+
+/**
+ * Send a password reset email
+ * @param {string} email
+ * @param {string} redirectTo - URL to redirect to after clicking reset link
+ */
+export async function resetPasswordForEmail(email, redirectTo) {
+  authLog.info('resetPasswordForEmail() called', { email, redirectTo });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) {
+    authLog.error('resetPasswordForEmail() error', error);
+    throw error;
+  }
+  authLog.info('resetPasswordForEmail() email sent');
+}
+
+/**
+ * Update the current user's password
+ * @param {string} newPassword
+ */
+export async function updatePassword(newPassword) {
+  authLog.info('updatePassword() called');
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    authLog.error('updatePassword() error', error);
+    throw error;
+  }
+  authLog.info('updatePassword() success');
+}
+
+/**
  * Sign out the current user
  */
 export async function signOut() {

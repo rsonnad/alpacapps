@@ -244,9 +244,11 @@ You will have ${roleDescription}.
 
 To get started:
 1. Go to: https://alpacaplayhouse.com/login/
-2. Click "Sign in with Google" using this email address (${email})
+2. Sign in with Google, or use your email and password
 
-Your access has already been pre-approved, so you'll have immediate access once you sign in.
+If you don't have a password yet, click "Forgot password?" on the login page to set one up.
+
+Your access has already been pre-approved for ${email}, so you'll have immediate access once you sign in.
 
 If there are any problems or suggestions for improvements, please email them to alpacaplayhouse@gmail.com as soon as you can and they will be rapidly addressed.`;
 

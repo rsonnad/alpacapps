@@ -69,6 +69,88 @@
       margin-bottom: 2rem;
     }
 
+    .input-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.875rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: #2f6d5f;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .forgot-link {
+      display: block;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .forgot-link:hover {
+      color: var(--accent);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider::before { margin-right: 0.75rem; }
+    .divider::after { margin-left: 0.75rem; }
+
     .btn-google {
       display: flex;
       align-items: center;
@@ -178,11 +260,26 @@
     <div class="login-card">
       <div class="logo">&#129433;</div>
       <h1>AlpacAPPs</h1>
-      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260206.01</span>
+      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260205.04</span>
       <p class="subtitle">Staff & Admin Access</p>
 
       <!-- Login form -->
       <div id="loginContent">
+        <form id="emailPasswordForm">
+          <div class="input-group">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="input-group">
+            <label for="passwordInput">Password</label>
+            <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-primary">Sign in</button>
+        </form>
+        <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+
+        <div class="divider">or</div>
+
         <button id="googleSignIn" class="btn-google">
           <svg viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

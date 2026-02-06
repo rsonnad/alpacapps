@@ -1,6 +1,6 @@
 // Login page application
 import { supabase } from '../shared/supabase.js';
-import { initAuth, signInWithGoogle, signOut, getAuthState } from '../shared/auth.js';
+import { initAuth, signInWithGoogle, signInWithPassword, signOut, getAuthState } from '../shared/auth.js';
 
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
 
@@ -119,6 +119,27 @@ function checkAuthAndRedirect() {
     showState('login');
   }
 }
+
+// Email/password form handler
+const emailPasswordForm = document.getElementById('emailPasswordForm');
+emailPasswordForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  console.log('[LOGIN]', 'Email/password form submitted');
+  showState('loading');
+
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+
+  try {
+    await signInWithPassword(email, password);
+    // initAuth's onAuthStateChange will fire; check and redirect
+    await initAuth();
+    checkAuthAndRedirect();
+  } catch (error) {
+    console.error('[LOGIN]', 'Email/password sign in error:', error);
+    showState('error', error.message);
+  }
+});
 
 // Event listeners
 googleSignInBtn.addEventListener('click', async () => {
