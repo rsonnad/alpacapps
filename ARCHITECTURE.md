@@ -62,6 +62,10 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
+| Home Server (Alpaca Mac) | On-premise Mac | LAN: 192.168.1.74, Tailscale: see HOMEAUTOMATION.local.md |
+| Sonos Control API | Alpaca Mac | node-sonos-http-api on port 5005 |
+| Network Management | UDM Pro | UniFi Network API on https://192.168.1.1 |
+| Camera Streaming | UDM Pro | UniFi Protect RTSP on port 7441 |
 
 ## Repository Structure
 
@@ -1377,10 +1381,43 @@ All bug emails CC the admin (`alpacaautomatic@gmail.com`).
 | Worker Service | DigitalOcean droplet (same as OpenClaw) |
 | Email Delivery | Resend (via `send-email` Edge Function) |
 
+## Home Automation
+
+Programmatic control of on-premise hardware (Sonos speakers, UniFi network, cameras) via a dedicated Mac acting as a local bridge.
+
+See `HOMEAUTOMATION.md` for full documentation and `HOMEAUTOMATION.local.md` for credentials.
+
+```
+DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
+                                          │
+                                    LAN (192.168.1.0/24)
+                                          │
+                            ┌─────────────┼─────────────┐
+                            ▼             ▼             ▼
+                      Sonos (12)    UDM Pro       Cameras
+                      :5005 API     :443 API      :7441 RTSP
+```
+
+### Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Alpaca Mac | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming |
+| node-sonos-http-api | Alpaca Mac :5005 | REST API for 12 Sonos speaker zones |
+| MediaMTX | Alpaca Mac :8554 | RTSP restreaming from UniFi Protect |
+| Tailscale | DO Droplet + Alpaca Mac | Encrypted mesh VPN for remote access |
+| UniFi Network API | UDM Pro :443 | Firewall, DHCP, WiFi management |
+| UniFi Protect | UDM Pro :7441 | Camera RTSP streams + snapshot API |
+
+### Sonos Rooms (12 zones)
+
+Outhouse, Living Sound, SkyBalcony Sound, MasterBlaster, Pequeno, Dining Sound, Garage Bridge, Front Outside Sound, DJ, Backyard Sound, Skyloft Sound, garage outdoors
+
 ## Related Documentation
 
 - `README.md` - Quick setup
 - `API.md` - Full REST API reference (includes Edge Function docs)
 - `SKILL.md` - OpenClaw integration
+- `HOMEAUTOMATION.md` - Home automation system (Sonos, UniFi, cameras)
 - `bug-reporter-extension/install.html` - Tester installation guide
 - Supabase Dashboard - https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn

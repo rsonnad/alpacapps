@@ -288,6 +288,14 @@ git push
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info
 
+### Home Automation (Sonos, UniFi, Cameras)
+- Full documentation in `HOMEAUTOMATION.md`
+- Credentials and IPs in `HOMEAUTOMATION.local.md`
+- Alpaca Mac (home server) bridges DO droplet to local LAN via Tailscale
+- Sonos HTTP API on port 5005: play, pause, volume, favorites, TTS
+- UniFi Network API on UDM Pro port 443: firewall, DHCP, WiFi management
+- 12 Sonos zones controllable via `http://<alpaca-tailscale-ip>:5005/{room}/{action}`
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -335,6 +343,12 @@ git push
    - Prefix-based routing: personal forwards, team@, auto@ (bug reply logic), herd@ (stub)
    - All emails logged to `inbound_emails` table
    - Forwarded emails preserve original sender name, set reply-to to original sender
+15. **Home Automation System** - Sonos + UniFi programmatic control
+   - Alpaca Mac (macOS 12.7.6) runs as home server on Black Rock City WiFi
+   - node-sonos-http-api discovers and controls 12 Sonos zones
+   - Tailscale mesh VPN connects DO droplet to Alpaca Mac
+   - UniFi Network API for firewall/DHCP/WiFi management
+   - `HOMEAUTOMATION.md` for full documentation
 
 ## Testing Changes
 
@@ -347,3 +361,4 @@ git push
 - `architecture.md` - Full system documentation
 - `API.md` - REST API reference for Supabase
 - `SKILL.md` - OpenClaw bot integration guide
+- `HOMEAUTOMATION.md` - Home automation system (Sonos, UniFi, cameras)

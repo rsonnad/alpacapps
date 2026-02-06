@@ -603,6 +603,46 @@
       display: block;
     }
 
+    /* Staff Sandbox Toggle */
+    .staff-sandbox-bar {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+    .staff-sandbox-bar.visible { display: flex; }
+    .staff-sandbox-bar label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; }
+    .staff-sandbox-badge {
+      background: #f59e0b;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .sandbox-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      z-index: 9999;
+      border-bottom: 2px solid #f59e0b;
+    }
+    .sandbox-banner.visible { display: block; }
+    body.sandbox-active { padding-top: 2.5rem; }
+
     #card-container {
       min-height: 90px;
       padding: 1rem;
@@ -882,12 +922,14 @@
   </style>
 </head>
 <body>
+  <!-- Staff Sandbox Banner (shown when staff test mode active) -->
+  <div id="sandboxBanner" class="sandbox-banner">SANDBOX MODE — Payments use Square test credentials</div>
   <!-- Site-wide Navigation -->
   <nav class="site-nav">
     <a href="/" class="site-nav__logo">
       <img src="/assets/branding/alpaca-head-inverted.jpg" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="/assets/branding/wordmark-inverted.jpeg" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span class="site-nav__version">v260206.25</span>
+      <span class="site-nav__version">v260206.26</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
@@ -1189,6 +1231,15 @@
             </p>
           </div>
 
+          <!-- Staff Sandbox Toggle (hidden unless staff/admin logged in) -->
+          <div id="staffSandboxBar" class="staff-sandbox-bar">
+            <label>
+              <input type="checkbox" id="staffTestToggle">
+              Square Sandbox Mode
+            </label>
+            <span id="staffTestBadge" class="staff-sandbox-badge" style="display:none;">SANDBOX</span>
+          </div>
+
           <!-- Payment Section (shown when fee > $0) -->
           <div class="form-section payment-section" id="paymentSection">
             <h2>Payment</h2>
@@ -1334,7 +1385,8 @@
   <!-- Load Supabase library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module">
-    import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { initAuth, getAuthState } from '../../shared/auth.js';
     import { askQuestion, submitUnansweredQuestion } from '../../shared/chat-widget.js';
     import { saveVisitor, getVisitor } from '../../shared/visitor-identity.js';
     const SUPABASE_KEY = SUPABASE_ANON_KEY;
@@ -1344,6 +1396,65 @@
     const urlParams = new URLSearchParams(window.location.search);
     const continueAppId = urlParams.get('continue');
     const isStep2 = !!continueAppId;
+
+    // Staff sandbox test mode state
+    let staffTestMode = false;
+    let staffAuthState = null;
+
+    // Non-blocking auth check for staff sandbox toggle
+    (async () => {
+      try {
+        await initAuth();
+        staffAuthState = getAuthState();
+        if (staffAuthState.isStaff) {
+          // Show the sandbox toggle
+          document.getElementById('staffSandboxBar')?.classList.add('visible');
+          // Restore persisted state from sessionStorage or URL param
+          const urlTest = urlParams.get('staff_test') === '1';
+          const sessionTest = sessionStorage.getItem('square_staff_test') === '1';
+          if (urlTest || sessionTest) {
+            staffTestMode = true;
+            sessionStorage.setItem('square_staff_test', '1');
+            const toggle = document.getElementById('staffTestToggle');
+            if (toggle) toggle.checked = true;
+            updateSandboxUI(true);
+          }
+        }
+      } catch (e) {
+        // Auth failure is fine — regular tenant, no toggle shown
+      }
+    })();
+
+    function updateSandboxUI(active) {
+      const badge = document.getElementById('staffTestBadge');
+      const banner = document.getElementById('sandboxBanner');
+      if (badge) badge.style.display = active ? 'inline-block' : 'none';
+      if (banner) banner.classList.toggle('visible', active);
+      document.body.classList.toggle('sandbox-active', active);
+    }
+
+    // Staff toggle handler
+    document.getElementById('staffTestToggle')?.addEventListener('change', (e) => {
+      const checked = e.target.checked;
+      if (checked) {
+        sessionStorage.setItem('square_staff_test', '1');
+      } else {
+        sessionStorage.removeItem('square_staff_test');
+      }
+      // If Square SDK already loaded, must reload to switch SDK
+      if (squarePayments) {
+        const url = new URL(window.location.href);
+        if (checked) {
+          url.searchParams.set('staff_test', '1');
+        } else {
+          url.searchParams.delete('staff_test');
+        }
+        window.location.href = url.toString();
+        return;
+      }
+      staffTestMode = checked;
+      updateSandboxUI(checked);
+    });
 
     // State
     let feeAmount = 0;
@@ -1525,7 +1636,7 @@
         );
         if (!configResponse.ok) throw new Error('Failed to load Square config');
         const [config] = await configResponse.json();
-        const isTestMode = config.test_mode;
+        const isTestMode = staffTestMode || config.test_mode;
         const appId = isTestMode ? config.sandbox_app_id : config.production_app_id;
         const locationId = isTestMode ? config.sandbox_location_id : config.production_location_id;
         const sdkUrl = isTestMode
@@ -2013,22 +2124,40 @@
               amount: feeAmount,
               fee_code_used: appliedCode,
               original_amount: originalAmount,
-              status: 'pending'
+              status: 'pending',
+              is_test: staffTestMode,
+              test_mode_overridden_by: staffTestMode && staffAuthState?.appUser?.id ? staffAuthState.appUser.id : null
             })
           });
           if (!paymentRecordResponse.ok) throw new Error('Failed to create payment record');
           const [paymentRecord] = await paymentRecordResponse.json();
 
+          // Build edge function request
+          const edgeFunctionBody = {
+            sourceId: tokenResult.token,
+            amount: Math.round(feeAmount * 100),
+            paymentRecordId: paymentRecord.id,
+            buyerEmail: buyerEmail,
+            note: `Rental Application Fee - ${buyerName}`
+          };
+
+          // If staff sandbox mode, include override + auth token
+          if (staffTestMode && staffAuthState?.isStaff) {
+            edgeFunctionBody.testModeOverride = true;
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session?.access_token) {
+                edgeFunctionBody.userAccessToken = session.access_token;
+              }
+            } catch (e) {
+              console.warn('Could not get auth session for test mode override:', e);
+            }
+          }
+
           const processResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-square-payment`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sourceId: tokenResult.token,
-              amount: Math.round(feeAmount * 100),
-              paymentRecordId: paymentRecord.id,
-              buyerEmail: buyerEmail,
-              note: `Rental Application Fee - ${buyerName}`
-            })
+            body: JSON.stringify(edgeFunctionBody)
           });
           const processResult = await processResponse.json();
 

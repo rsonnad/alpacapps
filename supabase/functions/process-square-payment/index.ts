@@ -2,6 +2,7 @@
  * Process Square Payment Edge Function
  *
  * Receives a tokenized card from the client and processes payment via Square API.
+ * Supports per-session test mode override for staff/admin users.
  *
  * Deploy with: supabase functions deploy process-square-payment
  * Endpoint: https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/process-square-payment
@@ -20,6 +21,8 @@ interface PaymentRequest {
   paymentRecordId: string; // Our internal payment record ID
   buyerEmail?: string;
   note?: string;
+  testModeOverride?: boolean;   // Per-session sandbox override (staff/admin only)
+  userAccessToken?: string;     // Caller's JWT for verifying staff/admin role
 }
 
 interface SquareConfig {
@@ -43,9 +46,9 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const body: PaymentRequest = await req.json();
-    const { sourceId, amount, paymentRecordId, buyerEmail, note } = body;
+    const { sourceId, amount, paymentRecordId, buyerEmail, note, testModeOverride, userAccessToken } = body;
 
-    console.log('Processing Square payment:', { amount, paymentRecordId, buyerEmail });
+    console.log('Processing Square payment:', { amount, paymentRecordId, buyerEmail, testModeOverride: !!testModeOverride });
 
     if (!sourceId || !amount || !paymentRecordId) {
       return new Response(
@@ -69,7 +72,53 @@ Deno.serve(async (req) => {
     }
 
     const squareConfig = config as SquareConfig;
-    const isTestMode = squareConfig.test_mode;
+    let isTestMode = squareConfig.test_mode;
+    let overriddenByUserId: string | null = null;
+
+    // Handle per-session test mode override (staff/admin only)
+    if (testModeOverride === true) {
+      if (!userAccessToken) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required for test mode override' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify the caller's JWT
+      const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const userClient = createClient(supabaseUrl, supabaseAnon, {
+        global: { headers: { Authorization: `Bearer ${userAccessToken}` } }
+      });
+      const { data: { user }, error: authError } = await userClient.auth.getUser();
+
+      if (authError || !user) {
+        console.error('Test mode override auth failed:', authError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid authentication token' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify staff/admin role in app_users
+      const { data: appUser, error: roleError } = await supabase
+        .from('app_users')
+        .select('id, role')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (roleError || !appUser || !['admin', 'staff'].includes(appUser.role)) {
+        console.error('Test mode override denied — not staff/admin:', user.email);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Staff or admin role required for test mode override' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      isTestMode = true;
+      overriddenByUserId = appUser.id;
+      console.log(`Test mode override authorized for ${user.email} (app_users.id: ${appUser.id})`);
+    }
+
     const accessToken = isTestMode ? squareConfig.sandbox_access_token : squareConfig.production_access_token;
     const locationId = isTestMode ? squareConfig.sandbox_location_id : squareConfig.production_location_id;
     const apiBase = isTestMode ? 'https://connect.squareupsandbox.com' : 'https://connect.squareup.com';
@@ -97,7 +146,7 @@ Deno.serve(async (req) => {
       paymentPayload.note = note;
     }
 
-    console.log('Calling Square API:', { apiBase, locationId, amount });
+    console.log('Calling Square API:', { apiBase, locationId, amount, isTestMode });
 
     // Call Square Payments API
     const squareResponse = await fetch(`${apiBase}/v2/payments`, {
@@ -129,13 +178,27 @@ Deno.serve(async (req) => {
     const payment = squareResult.payment;
     console.log('Square payment successful:', payment.id);
 
+    // Update payment record with test mode audit info
+    const updateData: Record<string, unknown> = {
+      is_test: isTestMode,
+      updated_at: new Date().toISOString()
+    };
+    if (overriddenByUserId) {
+      updateData.test_mode_overridden_by = overriddenByUserId;
+    }
+    await supabase
+      .from('square_payments')
+      .update(updateData)
+      .eq('id', paymentRecordId);
+
     return new Response(
       JSON.stringify({
         success: true,
         paymentId: payment.id,
         orderId: payment.order_id,
         receiptUrl: payment.receipt_url,
-        status: payment.status
+        status: payment.status,
+        isTest: isTestMode
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
