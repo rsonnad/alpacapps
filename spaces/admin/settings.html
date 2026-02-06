@@ -39,7 +39,7 @@
         <a href="/spaces/admin/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; AlpacAPPs Admin</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.17</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.19</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -171,7 +171,69 @@
         </div>
       </div>
 
+      <!-- ===== EMAIL FORWARDING GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <h2>Email Forwarding</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Forwarding Rules</h3>
+              <p>Configure where inbound emails to <strong>@alpacaplayhouse.com</strong> get forwarded.</p>
+            </div>
+            <button class="btn-small btn-primary" id="addForwardingRuleBtn">+ Add Rule</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="forwardingRulesList"></div>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- Forwarding Rule Modal -->
+  <div id="forwardingRuleModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2 id="forwardingRuleModalTitle">Add Forwarding Rule</h2>
+        <button class="modal-close" id="closeForwardingRuleModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="forwardingRuleForm" onsubmit="return false;">
+          <input type="hidden" id="forwardingRuleId">
+          <div class="form-group">
+            <label for="forwardingPrefix">Address Prefix</label>
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+              <input type="text" id="forwardingPrefix" placeholder="e.g., team" required style="flex: 1;">
+              <span class="text-muted" style="white-space: nowrap;">@alpacaplayhouse.com</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="forwardingTo">Forward To</label>
+            <input type="email" id="forwardingTo" placeholder="e.g., someone@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label for="forwardingLabel">Label (optional)</label>
+            <input type="text" id="forwardingLabel" placeholder="e.g., Main inbox">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="forwardingActive" checked>
+              Active
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="deleteForwardingRuleBtn" style="margin-right: auto; display: none;">Delete</button>
+        <button class="btn-secondary" id="cancelForwardingRuleBtn">Cancel</button>
+        <button class="btn-primary" id="saveForwardingRuleBtn">Save</button>
+      </div>
+    </div>
   </div>
 
   <!-- Fee Code Modal -->

@@ -5,23 +5,44 @@ import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/b
 const RESEND_API_URL = "https://api.resend.com";
 
 /**
- * Routing rules for inbound emails to *@alpacaplayhouse.com
- *
- * prefix → { action, forwardTo?, specialLogic? }
- *
- * auto@ = automated system replies (bug reports, error digests, identity verification)
- * team@ = human-facing team replies (rental, events, payments, invitations)
+ * Special-logic prefixes that are NOT simple forwards.
+ * These are handled by handleSpecialLogic() instead of forwarding.
  */
-const ROUTING_RULES: Record<string, { action: string; forwardTo?: string; specialLogic?: string }> = {
-  "haydn":   { action: "forward", forwardTo: "hrsonnad@gmail.com" },
-  "rahulio": { action: "forward", forwardTo: "rahulioson@gmail.com" },
-  "sonia":   { action: "forward", forwardTo: "sonia245g@gmail.com" },
-  "herd":    { action: "special", specialLogic: "herd" },
-  "auto":    { action: "special", specialLogic: "auto" },
-  "team":    { action: "forward", forwardTo: "alpacaplayhouse@gmail.com" },
+const SPECIAL_PREFIXES: Record<string, string> = {
+  "herd": "herd",
+  "auto": "auto",
 };
 
-const DEFAULT_ROUTE = { action: "forward", forwardTo: "alpacaplayhouse@gmail.com" };
+/**
+ * Load forwarding rules from the email_forwarding_config table.
+ * Returns a map of prefix → array of forward-to addresses.
+ * Falls back to hardcoded defaults if the DB query fails.
+ */
+async function loadForwardingRules(supabase: any): Promise<Record<string, string[]>> {
+  try {
+    const { data, error } = await supabase
+      .from("email_forwarding_config")
+      .select("address_prefix, forward_to")
+      .eq("is_active", true);
+
+    if (error) throw error;
+
+    const rules: Record<string, string[]> = {};
+    for (const row of data || []) {
+      const prefix = row.address_prefix.toLowerCase();
+      if (!rules[prefix]) rules[prefix] = [];
+      rules[prefix].push(row.forward_to);
+    }
+    return rules;
+  } catch (err) {
+    console.error("Failed to load forwarding rules from DB, using defaults:", err);
+    return {
+      team: ["alpacaplayhouse@gmail.com"],
+    };
+  }
+}
+
+const DEFAULT_FORWARD_TO = "alpacaplayhouse@gmail.com";
 
 /**
  * Extract the local part (prefix) from an email address.
@@ -253,7 +274,7 @@ async function handleAutoReply(
     console.log("Non-bug auto@ email, forwarding to admin");
     await forwardEmail(
       resendApiKey,
-      "alpacaplayhouse@gmail.com",
+      DEFAULT_FORWARD_TO,
       from,
       `[auto@ reply] ${subject}`,
       emailRecord.body_html || "",
@@ -330,12 +351,17 @@ serve(async (req) => {
       text = content.text;
     }
 
+    // Load forwarding rules from database
+    const forwardingRules = await loadForwardingRules(supabase);
+
     // Process each recipient (there could be multiple to addresses)
     for (const toAddr of toList) {
       const prefix = extractPrefix(toAddr);
-      const route = ROUTING_RULES[prefix] || DEFAULT_ROUTE;
+      const specialLogic = SPECIAL_PREFIXES[prefix] || null;
+      const forwardTargets = forwardingRules[prefix] || (specialLogic ? [] : [DEFAULT_FORWARD_TO]);
+      const action = specialLogic ? "special" : "forward";
 
-      console.log(`Routing ${toAddr} (prefix=${prefix}): action=${route.action}, forward=${route.forwardTo || "none"}`);
+      console.log(`Routing ${toAddr} (prefix=${prefix}): action=${action}, forward=${forwardTargets.join(",") || "none"}, special=${specialLogic || "none"}`);
 
       // Store in database
       const { data: record, error: insertError } = await supabase
@@ -349,9 +375,9 @@ serve(async (req) => {
           body_html: html,
           body_text: text,
           attachments: attachments.length > 0 ? attachments : null,
-          route_action: route.action,
-          forwarded_to: route.forwardTo || null,
-          special_logic_type: route.specialLogic || null,
+          route_action: action,
+          forwarded_to: forwardTargets.length > 0 ? forwardTargets[0] : null,
+          special_logic_type: specialLogic,
           raw_payload: data,
         })
         .select()
@@ -362,10 +388,14 @@ serve(async (req) => {
         continue;
       }
 
-      // Forward if applicable
-      if (route.action === "forward" && route.forwardTo) {
-        const forwarded = await forwardEmail(resendApiKey, route.forwardTo, from, subject, html, text);
-        if (forwarded) {
+      // Forward to all configured targets
+      if (forwardTargets.length > 0) {
+        let anyForwarded = false;
+        for (const target of forwardTargets) {
+          const forwarded = await forwardEmail(resendApiKey, target, from, subject, html, text);
+          if (forwarded) anyForwarded = true;
+        }
+        if (anyForwarded) {
           await supabase
             .from("inbound_emails")
             .update({ forwarded_at: new Date().toISOString() })
@@ -374,8 +404,8 @@ serve(async (req) => {
       }
 
       // Special logic if applicable
-      if (route.action === "special" && route.specialLogic) {
-        await handleSpecialLogic(route.specialLogic, record, supabase, resendApiKey);
+      if (specialLogic) {
+        await handleSpecialLogic(specialLogic, record, supabase, resendApiKey);
         await supabase
           .from("inbound_emails")
           .update({ processed_at: new Date().toISOString() })

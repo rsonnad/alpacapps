@@ -14,6 +14,8 @@ let allPaymentMethods = [];
 let bulkSmsRecipients = [];
 let editingFeeCodeId = null;
 let editingPaymentMethodId = null;
+let editingForwardingRuleId = null;
+let allForwardingRules = [];
 
 const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
 
@@ -54,7 +56,8 @@ async function loadSettingsPanel() {
     loadFeeCodes(),
     loadSquareConfig(),
     loadTelnyxConfig(),
-    loadInboundSms()
+    loadInboundSms(),
+    loadForwardingRules()
   ]);
 }
 
@@ -291,42 +294,26 @@ async function loadFeeCodes() {
       return;
     }
 
-    grid.innerHTML = codes.map(code => {
+    grid.innerHTML = `<div class="fee-codes-header"><span>Code</span><span>Fee Type</span><span>Price</span><span>Description</span><span>Usage</span><span></span></div>` + codes.map(code => {
       const usageText = code.usage_limit
-        ? `${code.times_used}/${code.usage_limit} used`
-        : `${code.times_used} used`;
+        ? `${code.times_used}/${code.usage_limit}`
+        : `${code.times_used}`;
       const expiredClass = code.expires_at && new Date(code.expires_at) < new Date() ? 'expired' : '';
       const inactiveClass = !code.is_active ? 'inactive' : '';
 
       return `
-        <div class="fee-code-card ${expiredClass} ${inactiveClass}">
-          <div class="fee-code-field">
-            <label class="fee-code-label">Code</label>
-            <span class="code-name">${code.code}</span>
-          </div>
-          <div class="fee-code-field">
-            <label class="fee-code-label">Fee Type</label>
-            <span class="code-type">${FEE_TYPE_LABELS[code.fee_type] || code.fee_type}</span>
-          </div>
-          <div class="fee-code-field">
-            <label class="fee-code-label">Price</label>
-            <span class="code-price ${code.price === 0 ? 'free' : ''}">
-              ${code.price === 0 ? 'FREE' : '$' + code.price.toFixed(2)}
-            </span>
-          </div>
-          ${code.description ? `
-          <div class="fee-code-field">
-            <label class="fee-code-label">Description</label>
-            <span class="code-usage">${code.description}</span>
-          </div>` : ''}
-          <div class="fee-code-field">
-            <label class="fee-code-label">Usage</label>
-            <span class="code-usage">${usageText}</span>
-          </div>
-          <div class="code-actions">
+        <div class="fee-code-row ${expiredClass} ${inactiveClass}">
+          <span class="code-name">${code.code}</span>
+          <span class="code-type">${FEE_TYPE_LABELS[code.fee_type] || code.fee_type}</span>
+          <span class="code-price ${code.price === 0 ? 'free' : ''}">
+            ${code.price === 0 ? 'FREE' : '$' + code.price.toFixed(2)}
+          </span>
+          ${code.description ? `<span class="code-desc">${code.description}</span>` : '<span class="code-desc"></span>'}
+          <span class="code-usage">${usageText} used</span>
+          <span class="code-actions">
             <button class="btn-small btn-secondary" data-action="edit-fee-code" data-id="${code.id}">Edit</button>
             <button class="btn-small btn-danger" data-action="delete-fee-code" data-id="${code.id}" data-code="${code.code}">Delete</button>
-          </div>
+          </span>
         </div>
       `;
     }).join('');
@@ -816,6 +803,160 @@ async function handleSendBulkSms() {
 }
 
 // =============================================
+// EMAIL FORWARDING RULES
+// =============================================
+
+async function loadForwardingRules() {
+  const container = document.getElementById('forwardingRulesList');
+  if (!container) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('email_forwarding_config')
+      .select('*')
+      .order('address_prefix')
+      .order('forward_to');
+
+    if (error) throw error;
+    allForwardingRules = data || [];
+
+    if (allForwardingRules.length === 0) {
+      container.innerHTML = '<p class="text-muted">No forwarding rules configured.</p>';
+      return;
+    }
+
+    // Group by prefix
+    const grouped = {};
+    for (const rule of allForwardingRules) {
+      if (!grouped[rule.address_prefix]) grouped[rule.address_prefix] = [];
+      grouped[rule.address_prefix].push(rule);
+    }
+
+    container.innerHTML = Object.entries(grouped).map(([prefix, rules]) => `
+      <div style="margin-bottom: 1rem;">
+        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+          ${prefix}@alpacaplayhouse.com
+        </div>
+        ${rules.map(r => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: ${r.is_active ? '#f8faf8' : '#fafafa'}; border-radius: 6px; margin-bottom: 0.25rem; border: 1px solid ${r.is_active ? '#e0e8e0' : '#eee'};">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.85rem;">${r.forward_to}</span>
+              ${r.label ? `<span class="text-muted" style="font-size: 0.75rem;">(${r.label})</span>` : ''}
+              ${!r.is_active ? '<span style="font-size: 0.7rem; color: #999; background: #eee; padding: 1px 6px; border-radius: 3px;">Inactive</span>' : ''}
+            </div>
+            <button class="btn-small" data-action="edit-forwarding" data-id="${r.id}" style="font-size: 0.75rem; padding: 2px 8px;">Edit</button>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    container.querySelectorAll('[data-action="edit-forwarding"]').forEach(btn => {
+      btn.addEventListener('click', () => openForwardingRuleModal(btn.dataset.id));
+    });
+  } catch (error) {
+    console.error('Error loading forwarding rules:', error);
+    container.innerHTML = '<p class="text-muted" style="color: red;">Error loading forwarding rules.</p>';
+  }
+}
+
+function openForwardingRuleModal(ruleId = null) {
+  editingForwardingRuleId = ruleId;
+  const modal = document.getElementById('forwardingRuleModal');
+  const title = document.getElementById('forwardingRuleModalTitle');
+  const deleteBtn = document.getElementById('deleteForwardingRuleBtn');
+
+  if (ruleId) {
+    title.textContent = 'Edit Forwarding Rule';
+    deleteBtn.style.display = 'block';
+    const rule = allForwardingRules.find(r => r.id === ruleId);
+    if (rule) {
+      document.getElementById('forwardingRuleId').value = rule.id;
+      document.getElementById('forwardingPrefix').value = rule.address_prefix;
+      document.getElementById('forwardingTo').value = rule.forward_to;
+      document.getElementById('forwardingLabel').value = rule.label || '';
+      document.getElementById('forwardingActive').checked = rule.is_active;
+    }
+  } else {
+    title.textContent = 'Add Forwarding Rule';
+    deleteBtn.style.display = 'none';
+    document.getElementById('forwardingRuleForm').reset();
+    document.getElementById('forwardingRuleId').value = '';
+    document.getElementById('forwardingActive').checked = true;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeForwardingRuleModal() {
+  document.getElementById('forwardingRuleModal').classList.add('hidden');
+  editingForwardingRuleId = null;
+}
+
+async function saveForwardingRule() {
+  const ruleId = document.getElementById('forwardingRuleId').value;
+  const data = {
+    address_prefix: document.getElementById('forwardingPrefix').value.trim().toLowerCase(),
+    forward_to: document.getElementById('forwardingTo').value.trim().toLowerCase(),
+    label: document.getElementById('forwardingLabel').value.trim() || null,
+    is_active: document.getElementById('forwardingActive').checked,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!data.address_prefix || !data.forward_to) {
+    showToast('Prefix and forward-to email are required', 'warning');
+    return;
+  }
+
+  try {
+    if (ruleId) {
+      const { error } = await supabase
+        .from('email_forwarding_config')
+        .update(data)
+        .eq('id', ruleId);
+      if (error) throw error;
+      showToast('Forwarding rule updated', 'success');
+    } else {
+      const { error } = await supabase
+        .from('email_forwarding_config')
+        .insert(data);
+      if (error) throw error;
+      showToast('Forwarding rule created', 'success');
+    }
+
+    closeForwardingRuleModal();
+    await loadForwardingRules();
+  } catch (error) {
+    console.error('Error saving forwarding rule:', error);
+    if (error.message?.includes('duplicate') || error.code === '23505') {
+      showToast('This prefix + email combination already exists', 'error');
+    } else {
+      showToast('Failed to save forwarding rule', 'error');
+    }
+  }
+}
+
+async function deleteForwardingRule() {
+  if (!editingForwardingRuleId) return;
+  if (!confirm('Delete this forwarding rule?')) return;
+
+  try {
+    const { error } = await supabase
+      .from('email_forwarding_config')
+      .delete()
+      .eq('id', editingForwardingRuleId);
+
+    if (error) throw error;
+
+    showToast('Forwarding rule deleted', 'success');
+    closeForwardingRuleModal();
+    await loadForwardingRules();
+  } catch (error) {
+    console.error('Error deleting forwarding rule:', error);
+    showToast('Failed to delete forwarding rule', 'error');
+  }
+}
+
+// =============================================
 // EVENT LISTENERS
 // =============================================
 
@@ -860,6 +1001,13 @@ function setupEventListeners() {
       e.target.checked = !testMode;
     }
   });
+
+  // Forwarding rules
+  document.getElementById('addForwardingRuleBtn')?.addEventListener('click', () => openForwardingRuleModal());
+  document.getElementById('closeForwardingRuleModal')?.addEventListener('click', closeForwardingRuleModal);
+  document.getElementById('cancelForwardingRuleBtn')?.addEventListener('click', closeForwardingRuleModal);
+  document.getElementById('saveForwardingRuleBtn')?.addEventListener('click', saveForwardingRule);
+  document.getElementById('deleteForwardingRuleBtn')?.addEventListener('click', deleteForwardingRule);
 
   // SMS compose
   document.getElementById('openComposeSmsBtn')?.addEventListener('click', () => openComposeSmsModal());
@@ -920,6 +1068,7 @@ function setupEventListeners() {
     if (e.key === 'Escape') {
       closeFeeCodeModal();
       closePaymentMethodModal();
+      closeForwardingRuleModal();
       document.getElementById('composeSmsModal')?.classList.add('hidden');
       document.getElementById('bulkSmsModal')?.classList.add('hidden');
     }

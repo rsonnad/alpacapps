@@ -1524,73 +1524,108 @@
 }
 
 .fee-codes-grid {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.fee-code-card {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-
-.fee-code-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
-.fee-code-label {
-  font-size: 0.75rem;
+/* Header row for fee codes table */
+.fee-codes-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 70px 1fr 70px 110px;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
 }
 
-.fee-code-card .code-name {
+/* Each fee code row */
+.fee-code-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 70px 1fr 70px 110px;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.fee-code-row:last-child {
+  border-bottom: none;
+}
+
+.fee-code-row:hover {
+  background: var(--bg);
+}
+
+.fee-code-row.inactive {
+  opacity: 0.5;
+}
+
+.fee-code-row.expired {
+  opacity: 0.5;
+}
+
+.fee-code-row .code-name {
   font-family: monospace;
   font-weight: 600;
-  font-size: 0.95rem;
-  background: var(--border);
-  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
   display: inline-block;
   width: fit-content;
 }
 
-.fee-code-card .code-type {
-  font-size: 0.875rem;
-  color: var(--text);
+.fee-code-row .code-type {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
-.fee-code-card .code-price {
+.fee-code-row .code-price {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
 }
 
-.fee-code-card .code-price.free {
-  color: #10b981;
+.fee-code-row .code-price.free {
+  color: var(--success);
 }
 
-.fee-code-card .code-actions {
+.fee-code-row .code-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fee-code-row .code-usage {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.fee-code-row .code-actions {
   display: flex;
-  gap: 0.5rem;
-  align-items: flex-end;
-}
-
-.fee-code-card .code-usage {
-  font-size: 0.875rem;
-  color: var(--text);
+  gap: 0.35rem;
+  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {
-  .fee-code-card {
-    grid-template-columns: 1fr;
+  .fee-codes-header { display: none; }
+
+  .fee-code-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .fee-code-row .code-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 }
 
@@ -1635,18 +1670,23 @@
   max-width: 900px;
 }
 
-/* Group container */
+/* ---- Group container ---- */
 .settings-group {
-  margin-bottom: 2.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 .settings-group-header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0 0.25rem 0.75rem;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--border);
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
 .settings-group-header svg {
@@ -1655,7 +1695,7 @@
 }
 
 .settings-group-header h2 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
   margin: 0;
@@ -1665,18 +1705,13 @@
   margin-left: auto;
 }
 
-/* Card within a group */
+/* ---- Card within a group ---- */
 .settings-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 0.75rem;
-  overflow: hidden;
-  transition: box-shadow 0.15s ease;
+  border-bottom: 1px solid var(--border);
 }
 
-.settings-card:hover {
-  box-shadow: var(--shadow);
+.settings-card:last-child {
+  border-bottom: none;
 }
 
 .settings-card-header {
@@ -1684,17 +1719,19 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem 0.75rem;
 }
 
 .settings-card-header h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--accent);
   color: var(--text);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
@@ -1719,14 +1756,14 @@
 }
 
 .settings-card-body {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1.25rem 1.25rem;
 }
 
 .settings-card-body--flush {
   padding: 0;
 }
 
-/* Settings badge (reusable) */
+/* ---- Settings badge (reusable) ---- */
 .settings-badge {
   display: inline-flex;
   align-items: center;
@@ -1745,13 +1782,17 @@
   color: #166534;
 }
 
-/* Toggle row inside card body */
+/* ---- Toggle row ---- */
 .settings-toggle {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
   cursor: pointer;
+  background: var(--bg);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
 .settings-toggle input[type="checkbox"] {
@@ -1774,7 +1815,18 @@
   margin-left: 1.4rem;
 }
 
-/* Inbound SMS list inside flush card */
+/* ---- Fee setting cards (within settings card) ---- */
+.settings-card .fee-settings-grid {
+  gap: 0.5rem;
+}
+
+.settings-card .fee-setting-card {
+  background: var(--bg);
+}
+
+/* ---- Fee code rows (within settings card) ---- */
+
+/* ---- Inbound SMS list ---- */
 .inbound-sms-list {
   max-height: 400px;
   overflow-y: auto;
@@ -1795,7 +1847,7 @@
   background: var(--bg);
 }
 
-/* Mobile settings */
+/* ---- Mobile settings ---- */
 @media (max-width: 768px) {
   .settings-card-header {
     flex-direction: column;
