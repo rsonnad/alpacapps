@@ -715,6 +715,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
     move_in_deposit_paid: true,
     move_in_deposit_paid_at: paidAt,
     move_in_deposit_method: method,
+    move_in_deposit_transaction_id: transactionId,
     updated_at: new Date().toISOString(),
   };
 
@@ -783,6 +784,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
       security_deposit_paid: true,
       security_deposit_paid_at: paidAt,
       security_deposit_method: method,
+      security_deposit_transaction_id: transactionId,
       updated_at: new Date().toISOString(),
     })
     .eq('id', applicationId)
