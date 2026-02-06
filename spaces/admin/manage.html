@@ -2919,19 +2919,9 @@
           return space;
         });
 
-        // Second pass: propagate parent unavailability to children
-        processedSpaces.forEach(space => {
-          if (space.parent_id && space.isAvailable) {
-            const parentSpace = processedSpaces.find(s => s.id === space.parent_id);
-            if (parentSpace && !parentSpace.isAvailable) {
-              space.isAvailable = false;
-              space.availableFrom = parentSpace.availableFrom;
-              if (!space.availableUntil && parentSpace.availableUntil) {
-                space.availableUntil = parentSpace.availableUntil;
-              }
-            }
-          }
-        });
+        // Note: Parent-child availability is independent. Each space's availability
+        // is determined solely by its own assignments. A booking in one room of a
+        // multi-unit space (e.g. Spartan Trailer) does not block other rooms.
 
         // Split into active and archived
         allSpaces = processedSpaces.filter(s => !s.is_archived);

@@ -84,6 +84,14 @@ serve(async (req) => {
       });
     }
 
+    // Check if this space has child spaces (is a parent)
+    const { data: childSpaces } = await supabase
+      .from('spaces')
+      .select('id')
+      .eq('parent_id', space.id);
+
+    const childIds = (childSpaces || []).map(c => c.id);
+
     // Get assignments for this space (active, pending_contract, contract_sent)
     // These are bookings that should block availability
     const { data: assignments, error: assignmentsError } = await supabase
@@ -93,6 +101,7 @@ serve(async (req) => {
         start_date,
         end_date,
         status,
+        airbnb_uid,
         assignment_spaces!inner(space_id)
       `)
       .eq('assignment_spaces.space_id', space.id)
@@ -107,8 +116,39 @@ serve(async (req) => {
       });
     }
 
+    let filteredAssignments = assignments || [];
+
+    // For parent spaces: exclude Airbnb-imported assignments that are duplicates
+    // of bookings already on a child space (same dates). This prevents a child
+    // room's booking from blocking the parent's iCal feed and cascading to
+    // other Airbnb listings that import the parent's calendar.
+    if (childIds.length > 0 && filteredAssignments.length > 0) {
+      const airbnbAssignments = filteredAssignments.filter(a => a.airbnb_uid);
+      if (airbnbAssignments.length > 0) {
+        // Get all child space Airbnb assignments
+        const { data: childAssignments } = await supabase
+          .from('assignments')
+          .select('start_date, end_date, assignment_spaces!inner(space_id)')
+          .not('airbnb_uid', 'is', null)
+          .in('assignment_spaces.space_id', childIds)
+          .in('status', ['active', 'pending_contract', 'contract_sent']);
+
+        if (childAssignments && childAssignments.length > 0) {
+          const childDatePairs = new Set(
+            childAssignments.map(a => `${a.start_date}|${a.end_date}`)
+          );
+
+          filteredAssignments = filteredAssignments.filter(a => {
+            if (!a.airbnb_uid) return true; // Keep non-Airbnb assignments
+            const key = `${a.start_date}|${a.end_date}`;
+            return !childDatePairs.has(key); // Skip if child has same dates
+          });
+        }
+      }
+    }
+
     // Generate iCal content
-    const icalContent = generateIcal(space.name, spaceSlug, assignments || []);
+    const icalContent = generateIcal(space.name, spaceSlug, filteredAssignments);
 
     return new Response(icalContent, {
       headers: {

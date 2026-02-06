@@ -52,11 +52,25 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get all spaces with Airbnb iCal URLs
+    // Get all spaces with Airbnb iCal URLs (include parent_id to detect parent/child)
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('id, name, airbnb_ical_url')
+      .select('id, name, airbnb_ical_url, parent_id')
       .not('airbnb_ical_url', 'is', null);
+
+    // Also fetch all spaces to build parent→children map
+    const { data: allSpaces } = await supabase
+      .from('spaces')
+      .select('id, parent_id')
+      .not('parent_id', 'is', null);
+
+    const childSpacesByParent: Record<string, string[]> = {};
+    for (const s of (allSpaces || [])) {
+      if (!childSpacesByParent[s.parent_id]) {
+        childSpacesByParent[s.parent_id] = [];
+      }
+      childSpacesByParent[s.parent_id].push(s.id);
+    }
 
     if (spacesError) {
       throw new Error(`Failed to fetch spaces: ${spacesError.message}`);
@@ -171,6 +185,30 @@ serve(async (req) => {
                 result.skipped++;
               }
             } else {
+              // For parent spaces: skip bookings that already exist on a child space
+              // (Airbnb syncs child reservations into the parent listing's calendar
+              // with different UIDs, causing duplicate assignments that block other listings)
+              const childIds = childSpacesByParent[space.id] || [];
+              if (childIds.length > 0) {
+                const newStart = event.dtstart.toISOString().split('T')[0];
+                const newEnd = event.dtend.toISOString().split('T')[0];
+
+                // Check if any child space already has an Airbnb assignment with the same dates
+                const { data: childAssignments } = await supabase
+                  .from('assignments')
+                  .select('id, assignment_spaces!inner(space_id)')
+                  .not('airbnb_uid', 'is', null)
+                  .eq('start_date', newStart)
+                  .eq('end_date', newEnd)
+                  .in('assignment_spaces.space_id', childIds);
+
+                if (childAssignments && childAssignments.length > 0) {
+                  console.log(`Skipping duplicate on parent ${space.name}: booking ${newStart}–${newEnd} already exists on child space`);
+                  result.skipped++;
+                  continue;
+                }
+              }
+
               // Create new assignment
               const { data: newAssignment, error: createError } = await supabase
                 .from('assignments')
