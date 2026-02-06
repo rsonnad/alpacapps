@@ -22,6 +22,7 @@ let screenshotImg = null;
 let saveTimeout = null;
 
 function saveDraft(immediate) {
+  if (!chrome?.storage?.local) return;
   if (saveTimeout) clearTimeout(saveTimeout);
   const doSave = () => {
     const draft = {
@@ -39,7 +40,7 @@ function saveDraft(immediate) {
 }
 
 function clearDraft() {
-  chrome.storage.local.remove('bugReportDraft');
+  if (chrome?.storage?.local) chrome.storage.local.remove('bugReportDraft');
 }
 
 function getCurrentStep() {
@@ -425,45 +426,47 @@ btnAnother.addEventListener('click', () => {
 // ============================================
 // Restore draft on popup open
 // ============================================
-chrome.storage.local.get('bugReportDraft', ({ bugReportDraft: draft }) => {
-  if (!draft || !draft.screenshotDataUrl) return;
+if (chrome?.storage?.local) {
+  chrome.storage.local.get('bugReportDraft', ({ bugReportDraft: draft }) => {
+    if (!draft || !draft.screenshotDataUrl) return;
 
-  // Restore state
-  screenshotDataUrl = draft.screenshotDataUrl;
-  pageUrl = draft.pageUrl || '';
-  annotations = draft.annotations || [];
-  currentTool = draft.currentTool || 'draw';
-  annotationColor = draft.annotationColor || '#ff0000';
+    // Restore state
+    screenshotDataUrl = draft.screenshotDataUrl;
+    pageUrl = draft.pageUrl || '';
+    annotations = draft.annotations || [];
+    currentTool = draft.currentTool || 'draw';
+    annotationColor = draft.annotationColor || '#ff0000';
 
-  // Restore UI elements
-  colorPicker.value = annotationColor;
-  if (draft.description) inputDescription.value = draft.description;
+    // Restore UI elements
+    colorPicker.value = annotationColor;
+    if (draft.description) inputDescription.value = draft.description;
 
-  // Update active tool button
-  document.querySelectorAll('.tool[data-tool]').forEach(b => {
-    b.classList.toggle('active', b.dataset.tool === currentTool);
+    // Update active tool button
+    document.querySelectorAll('.tool[data-tool]').forEach(b => {
+      b.classList.toggle('active', b.dataset.tool === currentTool);
+    });
+
+    // Load screenshot and redraw canvas
+    screenshotImg = new Image();
+    screenshotImg.onload = () => {
+      const maxW = 388;
+      const scale = Math.min(1, maxW / screenshotImg.width);
+      canvas.width = screenshotImg.width * scale;
+      canvas.height = screenshotImg.height * scale;
+      redrawCanvas();
+
+      // Navigate to saved step
+      if (draft.currentStep === 'submit') {
+        previewImg.src = canvas.toDataURL('image/png');
+        showStep(stepSubmit);
+      } else if (draft.currentStep === 'annotate') {
+        showStep(stepAnnotate);
+      }
+      // Don't restore to 'done' — that means it was already submitted
+    };
+    screenshotImg.src = screenshotDataUrl;
   });
-
-  // Load screenshot and redraw canvas
-  screenshotImg = new Image();
-  screenshotImg.onload = () => {
-    const maxW = 388;
-    const scale = Math.min(1, maxW / screenshotImg.width);
-    canvas.width = screenshotImg.width * scale;
-    canvas.height = screenshotImg.height * scale;
-    redrawCanvas();
-
-    // Navigate to saved step
-    if (draft.currentStep === 'submit') {
-      previewImg.src = canvas.toDataURL('image/png');
-      showStep(stepSubmit);
-    } else if (draft.currentStep === 'annotate') {
-      showStep(stepAnnotate);
-    }
-    // Don't restore to 'done' — that means it was already submitted
-  };
-  screenshotImg.src = screenshotDataUrl;
-});
+}
 
 // ============================================
 // Autosave on description input (debounced)
