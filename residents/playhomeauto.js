@@ -15,15 +15,15 @@ const POLL_INTERVAL_MS = 30000; // 30 seconds
 
 // Govee lighting groups (SameModeGroup type)
 const GOVEE_GROUPS = [
-  { name: 'Common', groupId: '12097114' },
-  { name: 'East Bedroom', groupId: '12097639' },
-  { name: 'Garage Mahal', groupId: '13452517' },
-  { name: 'Outhouse', groupId: '13166268' },
-  { name: 'Spartan', groupId: '12411623' },
-  { name: 'Spartan LilBed', groupId: '12411702' },
-  { name: 'Spartan Main', groupId: '12411712' },
-  { name: 'Spartan Small Bed', groupId: '12001251' },
-  { name: 'West Bedroom', groupId: '12097082' },
+  { name: 'Common',              groupId: '12097114', deviceCount: null, models: '' },
+  { name: 'East Bedroom',        groupId: '12097639', deviceCount: null, models: '' },
+  { name: 'Garage Mahal',        groupId: '13452517', deviceCount: 16,   models: 'Recessed Lights Pro' },
+  { name: 'Outhouse',            groupId: '13166268', deviceCount: 6,    models: 'Recessed Lights Pro' },
+  { name: 'Spartan Tea Lounge',  groupId: '12411623', deviceCount: 2,    models: 'Outdoor Strip, Wall Light' },
+  { name: 'Fishbowl',            groupId: '12411702', deviceCount: 2,    models: 'Recessed Downlights' },
+  { name: 'Spartan Main',        groupId: '12411712', deviceCount: 6,    models: 'Recessed Downlights' },
+  { name: 'Cedar Chamber',       groupId: '12001251', deviceCount: 4,    models: 'Recessed Lights Pro' },
+  { name: 'West Bedroom',        groupId: '12097082', deviceCount: null, models: '' },
 ];
 
 // Color presets for quick selection
@@ -322,7 +322,10 @@ function renderLightingGroups() {
   container.innerHTML = GOVEE_GROUPS.map(group => `
     <div class="lighting-group-card" data-group-id="${group.groupId}">
       <div class="lighting-group-card__header">
-        <span class="lighting-group-card__name">${group.name}</span>
+        <div class="lighting-group-card__title">
+          <span class="lighting-group-card__name">${group.name}</span>
+          ${group.deviceCount ? `<span class="lighting-group-card__devices">${group.deviceCount} ${group.deviceCount === 1 ? 'device' : 'devices'} · ${group.models}</span>` : ''}
+        </div>
         <label class="toggle-switch">
           <input type="checkbox" data-action="toggle" data-group="${group.groupId}">
           <span class="slider"></span>

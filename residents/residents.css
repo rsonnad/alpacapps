@@ -101,10 +101,23 @@
   margin-bottom: 0.75rem;
 }
 
+.lighting-group-card__title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
 .lighting-group-card__name {
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--text);
+}
+
+.lighting-group-card__devices {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 /* ===== TOGGLE SWITCH ===== */
