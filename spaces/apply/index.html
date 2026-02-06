@@ -1600,6 +1600,11 @@
     // STEP 1: Community Fit Inquiry Submission
     // =============================================
     async function submitInquiry() {
+      // Show immediate feedback
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      form.classList.add('loading');
+
       const firstName = getValue('first_name');
       const lastName = getValue('last_name');
       const email = getValue('email');
@@ -1622,12 +1627,11 @@
 
       if (hasError) {
         showError('Please fill in all required fields.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Inquiry';
+        form.classList.remove('loading');
         return;
       }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
-      form.classList.add('loading');
 
       try {
         // Upload photo if provided
