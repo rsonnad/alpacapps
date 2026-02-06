@@ -71,13 +71,25 @@ async function gitCommitAndPush(description) {
 // Claude Code execution
 // ============================================
 async function runClaudeCode(report, screenshotPath) {
+  // Build browser environment context if available
+  const envLines = [];
+  if (report.browser_name) envLines.push(`Browser: ${report.browser_name} ${report.browser_version || ''}`);
+  if (report.os_name) envLines.push(`OS: ${report.os_name} ${report.os_version || ''}`);
+  if (report.device_type) envLines.push(`Device: ${report.device_type}`);
+  if (report.screen_resolution) envLines.push(`Screen: ${report.screen_resolution}`);
+  if (report.viewport_size) envLines.push(`Viewport: ${report.viewport_size}`);
+  if (report.extension_platform) envLines.push(`Reported via: ${report.extension_platform} extension v${report.extension_version || '?'}`);
+  const envBlock = envLines.length > 0
+    ? `\nReporter Environment:\n${envLines.join('\n')}\n`
+    : '';
+
   const prompt = [
-    `Fix this bug reported by ${report.reporter_name}:`,
+    `Fix this bug reported by ${report.reporter_name} (${report.reporter_email}):`,
     '',
     `Description: ${report.description}`,
     '',
     report.page_url ? `Page URL: ${report.page_url}` : '',
-    '',
+    envBlock,
     report.screenshot_url ? `Screenshot of the bug (downloaded locally, use Read tool to view): ${screenshotPath}` : '',
     report.screenshot_url ? `Screenshot public URL: ${report.screenshot_url}` : '',
     '',
@@ -88,6 +100,11 @@ async function runClaudeCode(report, screenshotPath) {
     '- Make the minimal fix needed',
     '- Do NOT push to git (the worker handles that)',
     '- Do NOT update the version number (the worker handles that)',
+    '',
+    'IMPORTANT: Your final output MUST be a JSON object with these fields:',
+    '- "diagnosis": A clear explanation of what was wrong (root cause analysis). What was the bug and why did it happen?',
+    '- "fix_summary": What you changed to fix it (files modified, approach taken)',
+    '- "notes": Any additional observations, caveats, or things to watch out for (or empty string if none)',
   ].filter(Boolean).join('\n');
 
   // Write prompt to temp file to avoid shell escaping issues
@@ -165,20 +182,32 @@ async function runClaudeCode(report, screenshotPath) {
         return;
       }
 
-      // Try to parse JSON output for summary
-      let summary = 'Fix applied.';
+      // Try to parse JSON output for summary, diagnosis, and notes
+      let result = { fix_summary: 'Fix applied.', diagnosis: '', notes: '' };
       try {
         const output = JSON.parse(stdout);
-        if (output.result) {
-          summary = output.result;
+        const text = output.result || stdout;
+        // Try to extract structured JSON from Claude's response
+        const jsonMatch = text.match(/\{[\s\S]*"diagnosis"[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            result.fix_summary = parsed.fix_summary || parsed.summary || text.substring(0, 500);
+            result.diagnosis = parsed.diagnosis || '';
+            result.notes = parsed.notes || '';
+          } catch {
+            result.fix_summary = text.substring(0, 500);
+          }
+        } else {
+          result.fix_summary = text.substring(0, 500);
         }
       } catch {
         if (stdout) {
-          summary = stdout.substring(0, 500);
+          result.fix_summary = stdout.substring(0, 500);
         }
       }
 
-      resolve(summary);
+      resolve(result);
     });
 
     child.on('error', async (err) => {
@@ -459,8 +488,11 @@ async function processBugReport(report) {
     }
 
     // 4. Run Claude Code
-    const fixSummary = await runClaudeCode(report, screenshotPath);
-    log('info', 'Claude Code finished', { summary: fixSummary.substring(0, 200) });
+    const fixResult = await runClaudeCode(report, screenshotPath);
+    log('info', 'Claude Code finished', {
+      summary: fixResult.fix_summary.substring(0, 200),
+      diagnosis: fixResult.diagnosis.substring(0, 200),
+    });
 
     // 5. Check if changes were made
     const hasChanges = await gitHasChanges();
@@ -470,12 +502,14 @@ async function processBugReport(report) {
       const commitSha = await gitCommitAndPush(report.description);
       log('info', 'Fix pushed', { commit: commitSha });
 
-      // 7. Update report
+      // 7. Update report with fix details, diagnosis, and notes
       await supabase
         .from('bug_reports')
         .update({
           status: 'fixed',
-          fix_summary: fixSummary,
+          fix_summary: fixResult.fix_summary,
+          diagnosis: fixResult.diagnosis,
+          notes: fixResult.notes,
           fix_commit_sha: commitSha,
           processed_at: new Date().toISOString(),
         })
@@ -483,7 +517,7 @@ async function processBugReport(report) {
 
       // 8. Email reporter
       await sendEmail('bug_report_fixed', report, {
-        fix_summary: fixSummary,
+        fix_summary: fixResult.fix_summary,
         fix_commit_sha: commitSha,
       });
 
@@ -496,7 +530,7 @@ async function processBugReport(report) {
           .eq('id', report.id);
 
         await sendEmail('bug_report_verified', report, {
-          fix_summary: fixSummary,
+          fix_summary: fixResult.fix_summary,
           fix_commit_sha: commitSha,
           verification_screenshot_url: verificationUrl,
         });
@@ -512,7 +546,9 @@ async function processBugReport(report) {
         .from('bug_reports')
         .update({
           status: 'failed',
-          fix_summary: fixSummary,
+          fix_summary: fixResult.fix_summary,
+          diagnosis: fixResult.diagnosis,
+          notes: fixResult.notes,
           error_message: msg,
           processed_at: new Date().toISOString(),
         })

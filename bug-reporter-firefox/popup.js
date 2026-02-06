@@ -5,6 +5,68 @@ const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 
 // ============================================
+// Browser/platform detection
+// ============================================
+function getBrowserInfo() {
+  const ua = navigator.userAgent;
+  let browserName = 'Unknown', browserVersion = '', osName = 'Unknown', osVersion = '';
+
+  // Browser detection
+  if (ua.includes('Firefox/')) {
+    browserName = 'Firefox';
+    browserVersion = ua.match(/Firefox\/([\d.]+)/)?.[1] || '';
+  } else if (ua.includes('Edg/')) {
+    browserName = 'Edge';
+    browserVersion = ua.match(/Edg\/([\d.]+)/)?.[1] || '';
+  } else if (ua.includes('Chrome/') && !ua.includes('Edg/')) {
+    browserName = 'Chrome';
+    browserVersion = ua.match(/Chrome\/([\d.]+)/)?.[1] || '';
+  } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
+    browserName = 'Safari';
+    browserVersion = ua.match(/Version\/([\d.]+)/)?.[1] || '';
+  }
+
+  // OS detection
+  if (ua.includes('Windows NT')) {
+    osName = 'Windows';
+    const ntVer = ua.match(/Windows NT ([\d.]+)/)?.[1] || '';
+    const winMap = { '10.0': '10/11', '6.3': '8.1', '6.2': '8', '6.1': '7' };
+    osVersion = winMap[ntVer] || ntVer;
+  } else if (ua.includes('Mac OS X')) {
+    osName = 'macOS';
+    osVersion = (ua.match(/Mac OS X ([\d_]+)/)?.[1] || '').replace(/_/g, '.');
+  } else if (ua.includes('Android')) {
+    osName = 'Android';
+    osVersion = ua.match(/Android ([\d.]+)/)?.[1] || '';
+  } else if (ua.includes('iPhone') || ua.includes('iPad')) {
+    osName = 'iOS';
+    osVersion = (ua.match(/OS ([\d_]+)/)?.[1] || '').replace(/_/g, '.');
+  } else if (ua.includes('Linux')) {
+    osName = 'Linux';
+  } else if (ua.includes('CrOS')) {
+    osName = 'ChromeOS';
+  }
+
+  // Device type
+  const isMobile = /Android|iPhone|iPod/i.test(ua);
+  const isTablet = /iPad|Android(?!.*Mobile)/i.test(ua);
+  const deviceType = isTablet ? 'tablet' : isMobile ? 'mobile' : 'desktop';
+
+  return {
+    user_agent: ua,
+    browser_name: browserName,
+    browser_version: browserVersion,
+    os_name: osName,
+    os_version: osVersion,
+    screen_resolution: `${screen.width}x${screen.height}`,
+    viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+    device_type: deviceType,
+    extension_platform: 'firefox',
+    extension_version: browser.runtime.getManifest().version,
+  };
+}
+
+// ============================================
 // State
 // ============================================
 let screenshotDataUrl = null;
@@ -451,6 +513,7 @@ btnSubmit.addEventListener('click', async () => {
         description: description,
         screenshot_url: screenshotUrl,
         page_url: pageUrl,
+        ...getBrowserInfo(),
       }),
     });
 
