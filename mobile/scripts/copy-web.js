@@ -188,24 +188,33 @@ for (const htmlFile of htmlFiles) {
 }
 console.log(`  ✅ Processed ${injectedCount} HTML files`);
 
-// Replace root index.html with a redirect to the mobile app
-// The mobile app starts at the new single-page resident app
-console.log('\n📱 Setting mobile app entry point to /mobile/app/index.html...');
-const mobileIndex = path.join(WWW, 'index.html');
-fs.writeFileSync(mobileIndex, `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0;url=/mobile/app/index.html">
-  <script src="/capacitor.js"></script>
-  <title>Alpaca Playhouse</title>
-</head>
-<body>
-  <p>Loading...</p>
-</body>
-</html>
-`, 'utf8');
-console.log('  ✅ Entry point set');
+// Copy the mobile app's index.html as the root index.html
+// This avoids meta-refresh redirect loops in Capacitor's WebView
+console.log('\n📱 Setting mobile app as root entry point...');
+const mobileAppIndex = path.join(WWW, 'mobile', 'app', 'index.html');
+const rootIndex = path.join(WWW, 'index.html');
+if (fs.existsSync(mobileAppIndex)) {
+  let mobileHtml = fs.readFileSync(mobileAppIndex, 'utf8');
+  // Fix relative paths: mobile.css → /mobile/app/mobile.css, mobile-app.js → /mobile/app/mobile-app.js
+  mobileHtml = mobileHtml.replace('href="mobile.css"', 'href="/mobile/app/mobile.css"');
+  mobileHtml = mobileHtml.replace('src="mobile-app.js"', 'src="/mobile/app/mobile-app.js"');
+  fs.writeFileSync(rootIndex, mobileHtml, 'utf8');
+  console.log('  ✅ Root index.html now serves mobile app directly');
+} else {
+  console.warn('  ⚠️  mobile/app/index.html not found');
+}
+
+// Fix login redirect: login page should redirect back to / (the mobile app) instead of /residents/
+// Patch the login app.js to use /mobile/app/index.html for resident redirects
+const loginAppJs = path.join(WWW, 'login', 'app.js');
+if (fs.existsSync(loginAppJs)) {
+  let loginJs = fs.readFileSync(loginAppJs, 'utf8');
+  loginJs = loginJs.replace(
+    "targetUrl = '/residents/cameras.html'",
+    "targetUrl = '/mobile/app/index.html'"
+  );
+  fs.writeFileSync(loginAppJs, loginJs, 'utf8');
+  console.log('  ✅ Login redirect patched for mobile app');
+}
 
 console.log(`\n✅ Done! ${DIRS_TO_COPY.length} directories + ${FILES_TO_COPY.length} files copied to mobile/www/\n`);

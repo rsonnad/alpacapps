@@ -3,7 +3,7 @@
  * Single-page app orchestrator for the Alpaca Playhouse mobile app.
  */
 
-import { initAuth, getAuthState, signOut, onAuthStateChange } from '../../shared/auth.js';
+import { initAuth, getAuthState, signOut, signInWithPassword, onAuthStateChange } from '../../shared/auth.js';
 import { userHasTeslaAccount } from '../../shared/services/cars-data.js';
 
 // =============================================
@@ -33,6 +33,8 @@ async function initApp() {
       // Authorized resident+
       appUser = state.appUser;
       document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('unauthorizedOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
       document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
 
@@ -44,9 +46,12 @@ async function initApp() {
 
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
       document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.add('hidden');
       document.getElementById('unauthorizedOverlay').classList.remove('hidden');
     } else if (!state.isAuthenticated) {
-      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+      // Show inline login form — NO redirect (avoids Capacitor WebView loops)
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.remove('hidden');
     }
   }
 
@@ -55,6 +60,57 @@ async function initApp() {
 
   // Sign out handler
   document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
+}
+
+// =============================================
+// INLINE LOGIN
+// =============================================
+function setupLogin() {
+  const loginBtn = document.getElementById('loginBtn');
+  const emailInput = document.getElementById('loginEmail');
+  const passwordInput = document.getElementById('loginPassword');
+  const loginError = document.getElementById('loginError');
+
+  async function doLogin() {
+    const email = emailInput?.value?.trim();
+    const password = passwordInput?.value;
+
+    if (!email || !password) {
+      showLoginError('Enter email and password');
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+    hideLoginError();
+
+    try {
+      await signInWithPassword(email, password);
+      // Auth state listener will handle the rest
+    } catch (err) {
+      showLoginError(err.message || 'Sign in failed');
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign In';
+    }
+  }
+
+  loginBtn?.addEventListener('click', doLogin);
+
+  // Enter key on password field
+  passwordInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function showLoginError(msg) {
+    if (loginError) {
+      loginError.textContent = msg;
+      loginError.style.display = 'block';
+    }
+  }
+
+  function hideLoginError() {
+    if (loginError) loginError.style.display = 'none';
+  }
 }
 
 // =============================================
@@ -163,4 +219,5 @@ async function initTab(tabId) {
 // BOOTSTRAP
 // =============================================
 setupTabBar();
+setupLogin();
 initApp();

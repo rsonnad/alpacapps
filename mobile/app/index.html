@@ -26,6 +26,24 @@
   </div>
 
   <!-- ======================================= -->
+  <!-- LOGIN OVERLAY                             -->
+  <!-- ======================================= -->
+  <div id="loginOverlay" class="m-unauthorized-overlay hidden">
+    <div class="m-unauthorized-card">
+      <h2>Alpaca Playhouse</h2>
+      <p>Sign in to continue</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;width:280px">
+        <input id="loginEmail" type="email" placeholder="Email" autocomplete="email"
+               style="height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--m-border);background:var(--m-bg-input);color:var(--m-text);font-size:15px">
+        <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"
+               style="height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--m-border);background:var(--m-bg-input);color:var(--m-text);font-size:15px">
+        <button id="loginBtn" class="m-btn m-btn--primary" style="width:100%">Sign In</button>
+        <div id="loginError" style="color:var(--m-error);font-size:13px;text-align:center;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================= -->
   <!-- UNAUTHORIZED OVERLAY                     -->
   <!-- ======================================= -->
   <div id="unauthorizedOverlay" class="m-unauthorized-overlay hidden">

@@ -103,17 +103,29 @@ document.addEventListener('DOMContentLoaded', async () => {
           );
           if (!group) continue;
           const gid = group.groupId;
-          // Parse what changed from the result string
-          const r = action.result.toLowerCase();
-          if (r.includes(' on')) {
-            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
-          } else if (r.includes(' off')) {
-            groupStates[gid] = { ...groupStates[gid], on: false, disconnected: false };
-          } else if (r.includes(' color')) {
-            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
-          } else if (r.includes(' brightness')) {
-            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
+          const args = action.args || {};
+          const patch = { disconnected: false };
+          switch (args.action) {
+            case 'on':
+              patch.on = true;
+              break;
+            case 'off':
+              patch.on = false;
+              break;
+            case 'color':
+              patch.on = true;
+              // Convert color name to hex for the picker
+              if (args.value) {
+                const named = paiColorToHex(args.value);
+                if (named) patch.color = named;
+              }
+              break;
+            case 'brightness':
+              patch.on = true;
+              if (args.value) patch.brightness = parseInt(args.value);
+              break;
           }
+          groupStates[gid] = { ...groupStates[gid], ...patch };
           updateGroupUI(gid);
         }
         // Also do a background Govee state refresh for accuracy
@@ -1647,6 +1659,22 @@ function handlePopoverOutsideClick(e) {
 // =============================================
 // UTILITIES
 // =============================================
+
+// Map PAI color names to hex (mirrors COLOR_MAP in alpaca-ai)
+function paiColorToHex(value) {
+  if (!value) return null;
+  const lower = value.toLowerCase().trim();
+  const map = {
+    red: '#ff0000', green: '#00ff00', blue: '#0000ff', white: '#ffffff',
+    yellow: '#ffff00', orange: '#ffa500', purple: '#800080', pink: '#ff69b7',
+    cyan: '#00ffff', magenta: '#ff00ff', warm: '#fff3a5', cool: '#e1e1ff',
+  };
+  if (map[lower]) return map[lower];
+  // Check hex input
+  if (/^#?[0-9a-f]{6}$/i.test(lower)) return lower.startsWith('#') ? lower : '#' + lower;
+  return null;
+}
+
 function hexToRgbInt(hex) {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.slice(0, 2), 16);

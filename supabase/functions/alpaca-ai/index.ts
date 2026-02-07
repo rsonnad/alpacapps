@@ -948,6 +948,7 @@ serve(async (req) => {
             fc.args.device_type ||
             "unknown",
           result,
+          args: fc.args,
         });
 
         functionResponses.push({
