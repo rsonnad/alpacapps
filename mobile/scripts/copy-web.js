@@ -187,4 +187,24 @@ for (const htmlFile of htmlFiles) {
 }
 console.log(`  ✅ Processed ${injectedCount} HTML files`);
 
+// Replace root index.html with a redirect to residents/cameras.html
+// The mobile app starts at the resident experience, not the marketing landing page
+console.log('\n📱 Setting mobile app entry point to /residents/cameras.html...');
+const mobileIndex = path.join(WWW, 'index.html');
+fs.writeFileSync(mobileIndex, `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="0;url=/residents/cameras.html">
+  <script src="/capacitor.js"></script>
+  <title>Alpaca Playhouse</title>
+</head>
+<body>
+  <p>Loading...</p>
+</body>
+</html>
+`, 'utf8');
+console.log('  ✅ Entry point set');
+
 console.log(`\n✅ Done! ${DIRS_TO_COPY.length} directories + ${FILES_TO_COPY.length} files copied to mobile/www/\n`);
