@@ -196,7 +196,8 @@ function getDataRows(car) {
   let locationStr = '--';
   if (hasLocation) {
     const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
-    locationStr = `<span class="car-location-toggle" onclick="window._toggleMap(${car.id})" title="Show on map">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}${speedSuffix}</span>`;
+    const coordsText = `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}${speedSuffix}`;
+    locationStr = `<span class="car-location-toggle" onclick="window._toggleMap(${car.id})" title="Show on map"><span id="locText_${car.id}">${coordsText}</span></span>`;
   }
   let tiresStr = '--';
   if (s.tpms_fl_psi != null) {
@@ -406,12 +407,15 @@ function initMap(carId) {
     delete leafletMaps[carId];
   }
 
-  const map = L.map(mapEl, { zoomControl: false }).setView([lat, lng], 15);
+  const map = L.map(mapEl, { zoomControl: false }).setView([lat, lng], 11);
   L.control.zoom({ position: 'topright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OSM',
     maxZoom: 19,
   }).addTo(map);
+
+  // 10-mile radius circle (16093 m)
+  L.circle([lat, lng], { radius: 16093, color: '#3b82f6', fillOpacity: 0.04, weight: 1 }).addTo(map);
 
   L.marker([lat, lng]).addTo(map)
     .bindPopup(`<b>${car.name}</b>`).openPopup();
@@ -428,14 +432,26 @@ function initMap(carId) {
 async function reverseGeocode(carId, lat, lng) {
   const addrEl = document.getElementById(`mapAddr_${carId}`);
   if (!addrEl) return;
-
-  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-  if (geocodeCache[key]) {
-    addrEl.textContent = geocodeCache[key];
-    return;
-  }
-
   addrEl.textContent = 'Resolving address...';
+  const addr = await reverseGeocodeToString(lat, lng);
+  addrEl.textContent = addr;
+}
+
+function formatShortAddress(data) {
+  const a = data.address || {};
+  const parts = [];
+  const street = a.house_number ? `${a.house_number} ${a.road || ''}` : (a.road || '');
+  if (street.trim()) parts.push(street.trim());
+  const city = a.city || a.town || a.village || a.hamlet || a.county || '';
+  if (city) parts.push(city);
+  if (a.state) parts.push(a.state);
+  return parts.join(', ') || data.display_name || 'Unknown';
+}
+
+async function reverseGeocodeToString(lat, lng) {
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  if (geocodeCache[key]) return geocodeCache[key];
+
   try {
     const resp = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
@@ -443,11 +459,23 @@ async function reverseGeocode(carId, lat, lng) {
     );
     if (!resp.ok) throw new Error('Geocode failed');
     const data = await resp.json();
-    const addr = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    geocodeCache[key] = addr;
-    addrEl.textContent = addr;
+    const short = formatShortAddress(data);
+    geocodeCache[key] = short;
+    return short;
   } catch {
-    addrEl.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  }
+}
+
+async function resolveAllAddresses() {
+  for (const car of vehicles) {
+    const s = car.last_state;
+    if (!s?.latitude || !s?.longitude) continue;
+    const el = document.getElementById(`locText_${car.id}`);
+    if (!el) continue;
+    const addr = await reverseGeocodeToString(s.latitude, s.longitude);
+    const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
+    el.textContent = `${addr}${speedSuffix}`;
   }
 }
 
@@ -597,6 +625,7 @@ function handleVisibilityChange() {
 async function refreshFromDB() {
   await loadVehicles();
   renderFleet();
+  resolveAllAddresses(); // async — patches DOM when ready
 }
 
 // =============================================
@@ -613,6 +642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Load vehicles and render
       await loadVehicles();
       renderFleet();
+      resolveAllAddresses(); // async — patches DOM when ready
 
       // Start polling
       startPolling();
