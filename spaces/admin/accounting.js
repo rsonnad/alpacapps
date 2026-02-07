@@ -370,15 +370,15 @@ function renderTransactions() {
     <table class="transactions-table">
       <thead>
         <tr>
-          <th>Date</th>
-          <th></th>
-          <th>Category</th>
-          <th>Description</th>
-          <th style="text-align: right;">Amount</th>
-          <th class="col-method">Method</th>
-          <th class="col-status">Status</th>
-          <th class="col-reconciled" style="text-align: center;">QB</th>
-          <th>Actions</th>
+          <th style="width:90px">Date</th>
+          <th style="width:30px"></th>
+          <th style="width:130px">Category</th>
+          <th class="col-description">Description</th>
+          <th style="text-align: right; width:90px">Amount</th>
+          <th class="col-method" style="width:70px">Method</th>
+          <th class="col-status" style="width:90px">Status</th>
+          <th class="col-reconciled" style="text-align: center; width:35px">QB</th>
+          <th style="width:90px">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -425,7 +425,7 @@ function renderTransactionRow(tx) {
       <td style="white-space: nowrap;">${formatDate(tx.transaction_date)}</td>
       <td><span class="direction-badge ${tx.direction}">${dirIcon}</span></td>
       <td><span class="category-badge">${CATEGORY_LABELS[tx.category] || tx.category}</span>${testBadge}</td>
-      <td>${escapeHtml(displayDesc)}</td>
+      <td class="col-description" title="${escapeHtml(displayDesc)}">${escapeHtml(displayDesc)}</td>
       <td style="text-align: right;" class="${amountClass}">${prefix}${formatCurrency(tx.amount)}</td>
       <td class="col-method"><span class="method-badge">${PAYMENT_METHOD_LABELS[tx.payment_method] || tx.payment_method || '—'}</span></td>
       <td class="col-status"><span class="tx-status-badge ${tx.status}">${tx.status}</span></td>
