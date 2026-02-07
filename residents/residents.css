@@ -1556,112 +1556,160 @@ span.sonos-library-item__star.starred {
   cursor: pointer;
 }
 
-/* ===== GROUP MEMBER CARDS ===== */
-.sonos-group-members {
-  margin-top: 0.75rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+/* ===== GROUPED ZONE: INLINE EQ (top of card) ===== */
+.sonos-group-eq {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.sonos-group-members__label {
+.sonos-group-eq__label {
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 0.15rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
-.sonos-member-card {
+.sonos-group-eq__room {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.6rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  min-height: 2.2rem;
+  padding: 0.3rem 0;
 }
 
-.sonos-member-card.coordinator {
-  border-color: var(--accent);
-  background: linear-gradient(135deg, var(--bg) 0%, var(--accent-light, #f0e6d6) 100%);
+.sonos-group-eq__room + .sonos-group-eq__room {
+  border-top: 1px solid var(--border-light, #f0f0f0);
 }
 
-.sonos-member-num {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.3rem;
-  height: 1.3rem;
-  border-radius: 50%;
-  background: var(--accent);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.sonos-member-info {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  flex: 0 0 auto;
-  min-width: 0;
-  max-width: 40%;
-}
-
-.sonos-member-name {
-  font-size: 0.78rem;
+.sonos-group-eq__name {
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text);
+  flex: 0 0 7rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.sonos-member-badge {
-  font-size: 0.55rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--accent);
-  background: var(--accent-light, #f0e6d6);
-  border: 1px solid var(--accent);
-  padding: 0.05rem 0.3rem;
-  border-radius: 6px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.sonos-member-vol-wrap {
+.sonos-group-eq__sliders {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  gap: 0.75rem;
   flex: 1;
   min-width: 0;
 }
 
-.sonos-member-slider {
+.sonos-eq-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   flex: 1;
-  accent-color: var(--accent);
-  height: 5px;
-  cursor: pointer;
-  min-width: 60px;
+  min-width: 0;
 }
 
-.sonos-member-vol {
-  font-size: 0.7rem;
+.sonos-eq-inline__label {
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--text-muted);
-  width: 2.2rem;
+  flex-shrink: 0;
+  width: 0.8rem;
+}
+
+.sonos-eq-inline__slider {
+  flex: 1;
+  accent-color: var(--accent);
+  height: 4px;
+  cursor: pointer;
+  min-width: 40px;
+}
+
+.sonos-eq-inline__val {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent);
+  width: 1.8rem;
   text-align: right;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== GROUPED ZONE: INDIVIDUAL VOLUMES (bottom of card) ===== */
+.sonos-member-volumes {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.sonos-member-volumes__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0;
+  width: 100%;
+  transition: color 0.15s;
+}
+
+.sonos-member-volumes__toggle:hover {
+  color: var(--text);
+}
+
+.sonos-member-volumes__toggle svg {
+  transition: transform 0.2s;
+}
+
+.sonos-member-volumes__toggle.open svg {
+  transform: rotate(180deg);
+}
+
+.sonos-member-volumes__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.35rem;
+}
+
+.sonos-member-volumes__list.hidden {
+  display: none;
+}
+
+.sonos-member-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sonos-member-vol-row__name {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  flex: 0 0 6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sonos-member-vol-row__slider {
+  flex: 1;
+  accent-color: var(--accent);
+  height: 4px;
+  cursor: pointer;
+  min-width: 50px;
+}
+
+.sonos-member-vol-row__val {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ===== POLL STATUS ===== */
@@ -2578,20 +2626,16 @@ span.sonos-library-item__star.starred {
     font-size: 1rem;
   }
 
-  /* Sonos member cards */
-  .sonos-member-card {
-    padding: 0.35rem 0.45rem;
+  /* Sonos grouped EQ inline */
+  .sonos-group-eq__name {
+    flex: 0 0 5rem;
   }
-  .sonos-member-info {
-    max-width: 35%;
+  .sonos-group-eq__sliders {
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  .sonos-member-name {
-    font-size: 0.7rem;
-  }
-  .sonos-member-num {
-    width: 1.1rem;
-    height: 1.1rem;
-    font-size: 0.6rem;
+  .sonos-member-vol-row__name {
+    flex: 0 0 4.5rem;
   }
 }
 

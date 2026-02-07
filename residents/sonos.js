@@ -107,6 +107,8 @@ async function loadZones() {
           volume: m.state?.volume ?? 0,
           mute: m.state?.mute ?? false,
           isCoordinator: m.roomName === coord.roomName,
+          bass: m.state?.equalizer?.bass ?? 0,
+          treble: m.state?.equalizer?.treble ?? 0,
         })),
       });
     }
@@ -310,24 +312,47 @@ function renderZones() {
         </label>`
       : '';
 
-    // Member volume rows (only if group has multiple speakers)
-    const memberRows = isGrouped
-      ? `<div class="sonos-group-members">
-          <div class="sonos-group-members__label">${group.members.length} Speakers Grouped</div>
-          ${group.members.map((m, i) => `
-            <div class="sonos-member-card ${m.isCoordinator ? 'coordinator' : ''}">
-              <span class="sonos-member-num">${i + 1}</span>
-              <div class="sonos-member-info">
-                <span class="sonos-member-name">${escapeHtml(m.roomName)}</span>
-                ${m.isCoordinator ? '<span class="sonos-member-badge">Primary</span>' : ''}
-              </div>
-              <div class="sonos-member-vol-wrap">
-                <input type="range" min="0" max="100" value="${m.volume}" class="sonos-member-slider"
-                  data-action="memberVolume" data-room="${escapeHtml(m.roomName)}">
-                <span class="sonos-member-vol">${m.volume}%</span>
+    // Grouped speakers: EQ section at top + expandable volumes at bottom
+    const groupEqSection = isGrouped
+      ? `<div class="sonos-group-eq">
+          <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
+          ${group.members.map(m => `
+            <div class="sonos-group-eq__room">
+              <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
+              <div class="sonos-group-eq__sliders">
+                <div class="sonos-eq-inline">
+                  <span class="sonos-eq-inline__label">B</span>
+                  <input type="range" min="-10" max="10" value="${m.bass}" class="sonos-eq-inline__slider"
+                    data-action="memberBass" data-room="${escapeHtml(m.roomName)}">
+                  <span class="sonos-eq-inline__val" data-eq-bass-val="${escapeHtml(m.roomName)}">${m.bass > 0 ? '+' : ''}${m.bass}</span>
+                </div>
+                <div class="sonos-eq-inline">
+                  <span class="sonos-eq-inline__label">T</span>
+                  <input type="range" min="-10" max="10" value="${m.treble}" class="sonos-eq-inline__slider"
+                    data-action="memberTreble" data-room="${escapeHtml(m.roomName)}">
+                  <span class="sonos-eq-inline__val" data-eq-treble-val="${escapeHtml(m.roomName)}">${m.treble > 0 ? '+' : ''}${m.treble}</span>
+                </div>
               </div>
             </div>
           `).join('')}
+        </div>`
+      : '';
+
+    const memberVolumes = isGrouped
+      ? `<div class="sonos-member-volumes">
+          <button class="sonos-member-volumes__toggle" data-action="toggleMemberVols" type="button">
+            Individual Volumes ${CHEVRON_SVG}
+          </button>
+          <div class="sonos-member-volumes__list hidden">
+            ${group.members.map(m => `
+              <div class="sonos-member-vol-row">
+                <span class="sonos-member-vol-row__name">${escapeHtml(m.roomName)}</span>
+                <input type="range" min="0" max="100" value="${m.volume}" class="sonos-member-vol-row__slider"
+                  data-action="memberVolume" data-room="${escapeHtml(m.roomName)}">
+                <span class="sonos-member-vol-row__val">${m.volume}%</span>
+              </div>
+            `).join('')}
+          </div>
         </div>`
       : '';
 
@@ -351,9 +376,12 @@ function renderZones() {
     return `
       <div class="${cardClasses}" data-room="${coordName}" data-drop-target="true">
         ${groupCheckbox}
+
+        ${groupEqSection}
+
         <div class="sonos-zone-card__header">
           <div class="sonos-zone-card__title">
-            <span class="sonos-zone-card__name">${groupTitle}</span>
+            <span class="sonos-zone-card__name">${isGrouped ? escapeHtml(group.coordinatorName) : groupTitle}</span>
             <span class="sonos-zone-card__status">
               ${statusText}${modeIcons.length ? ' &middot; ' + modeIcons.join(', ') : ''}${duration > 0 ? ' &middot; ' + state.elapsedTimeFormatted + ' / ' + formatDuration(duration) : ''}
             </span>
@@ -384,9 +412,7 @@ function renderZones() {
           <button class="sonos-btn sonos-btn--mute ${mainMuted ? 'active' : ''}" data-action="toggleMute" data-room="${coordName}" data-muted="${mainMuted ? '1' : '0'}" title="${mainMuted ? 'Unmute' : 'Mute'}">
             ${mainMuted ? MUTE_SVG : VOL_SVG}
           </button>
-          <button class="sonos-btn sonos-btn--eq" data-action="openEq" data-room="${coordName}" title="Equalizer">
-            ${EQ_SVG}
-          </button>
+          ${!isGrouped ? `<button class="sonos-btn sonos-btn--eq" data-action="openEq" data-room="${coordName}" title="Equalizer">${EQ_SVG}</button>` : ''}
         </div>
 
         <div class="sonos-volume-control">
@@ -395,7 +421,7 @@ function renderZones() {
             data-action="volume" data-room="${coordName}">
         </div>
 
-        ${memberRows}
+        ${memberVolumes}
 
         <div class="sonos-drop-hint hidden">Drop to play here</div>
       </div>
@@ -1039,21 +1065,53 @@ function setupEventListeners() {
     }
   });
 
-  // Volume sliders (main + member)
+  // Volume sliders (main + member) and inline EQ sliders
   zonesContainer.addEventListener('input', (e) => {
     const action = e.target.dataset.action;
-    if (action !== 'volume' && action !== 'memberVolume') return;
     const room = e.target.dataset.room;
+
     if (action === 'volume') {
       const label = e.target.closest('.sonos-volume-control')?.querySelector('.sonos-volume-label');
       if (label) label.textContent = `${e.target.value}%`;
+      clearTimeout(volumeTimers[room]);
+      volumeTimers[room] = setTimeout(() => setVolume(room, e.target.value), 400);
+      return;
     }
+
     if (action === 'memberVolume') {
-      const volLabel = e.target.closest('.sonos-member-card')?.querySelector('.sonos-member-vol');
+      const volLabel = e.target.closest('.sonos-member-vol-row')?.querySelector('.sonos-member-vol-row__val');
       if (volLabel) volLabel.textContent = `${e.target.value}%`;
+      clearTimeout(volumeTimers[room]);
+      volumeTimers[room] = setTimeout(() => setVolume(room, e.target.value), 400);
+      return;
     }
-    clearTimeout(volumeTimers[room]);
-    volumeTimers[room] = setTimeout(() => setVolume(room, e.target.value), 400);
+
+    if (action === 'memberBass') {
+      const v = parseInt(e.target.value);
+      const valEl = e.target.closest('.sonos-eq-inline')?.querySelector('.sonos-eq-inline__val');
+      if (valEl) valEl.textContent = (v > 0 ? '+' : '') + v;
+      debouncedEq('bass', room, v);
+      return;
+    }
+
+    if (action === 'memberTreble') {
+      const v = parseInt(e.target.value);
+      const valEl = e.target.closest('.sonos-eq-inline')?.querySelector('.sonos-eq-inline__val');
+      if (valEl) valEl.textContent = (v > 0 ? '+' : '') + v;
+      debouncedEq('treble', room, v);
+      return;
+    }
+  });
+
+  // Toggle individual volumes dropdown
+  zonesContainer.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('[data-action="toggleMemberVols"]');
+    if (!toggleBtn) return;
+    const list = toggleBtn.closest('.sonos-member-volumes')?.querySelector('.sonos-member-volumes__list');
+    if (list) {
+      list.classList.toggle('hidden');
+      toggleBtn.classList.toggle('open');
+    }
   });
 
   // Pause All
