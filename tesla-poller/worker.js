@@ -156,12 +156,16 @@ function parseVehicleState(data) {
   const ds = data.drive_state || {};
   const vs = data.vehicle_state || {};
   const cls = data.climate_state || {};
+  const clos = data.closures_state || {};
 
   return {
     battery_level: cs.battery_level ?? null,
     battery_range_mi: cs.battery_range != null ? Math.round(cs.battery_range * 10) / 10 : null,
     charging_state: cs.charging_state || null,
     charge_limit_soc: cs.charge_limit_soc ?? null,
+    charge_rate_mph: cs.charge_rate ?? null,
+    minutes_to_full: cs.minutes_to_full_charge ?? null,
+    charger_power_kw: cs.charger_power ?? null,
     odometer_mi: vs.odometer != null ? Math.round(vs.odometer * 10) / 10 : null,
     inside_temp_f: cls.inside_temp != null ? Math.round(cls.inside_temp * 9 / 5 + 32) : null,
     outside_temp_f: cls.outside_temp != null ? Math.round(cls.outside_temp * 9 / 5 + 32) : null,
@@ -177,6 +181,13 @@ function parseVehicleState(data) {
     tpms_rl_psi: vs.tpms_pressure_rl != null ? Math.round(vs.tpms_pressure_rl * 14.5038) : null,
     tpms_rr_psi: vs.tpms_pressure_rr != null ? Math.round(vs.tpms_pressure_rr * 14.5038) : null,
     software_version: vs.car_version || null,
+    // Closures (0 = closed, non-zero = open)
+    driver_door_open: clos.df ?? null,
+    passenger_door_open: clos.pf ?? null,
+    rear_left_door_open: clos.dr ?? null,
+    rear_right_door_open: clos.pr ?? null,
+    frunk_open: clos.ft ?? null,
+    trunk_open: clos.rt ?? null,
   };
 }
 
@@ -264,6 +275,37 @@ async function pollAccount(account) {
         .eq('id', dbVehicle.id);
     }
 
+    // One-time: fetch vehicle_config if not yet stored (only when online)
+    if (!dbVehicle.vehicle_config && v.state === 'online') {
+      try {
+        await new Promise(r => setTimeout(r, API_DELAY_MS));
+        const configData = await teslaApi(
+          accessToken,
+          `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('vehicle_config')}`,
+          apiBase
+        );
+        if (configData.response?.vehicle_config) {
+          await supabase
+            .from('tesla_vehicles')
+            .update({
+              vehicle_config: configData.response.vehicle_config,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', dbVehicle.id);
+          log('info', 'Vehicle config saved', {
+            name: dbVehicle.name,
+            carType: configData.response.vehicle_config.car_type,
+            exteriorColor: configData.response.vehicle_config.exterior_color,
+          });
+        }
+      } catch (err) {
+        log('warn', 'vehicle_config fetch failed (will retry next poll)', {
+          name: dbVehicle.name,
+          error: err.message,
+        });
+      }
+    }
+
     // If vehicle is asleep or offline, just update state — don't wake it
     if (v.state === 'asleep' || v.state === 'offline') {
       log('info', 'Vehicle sleeping/offline', {
@@ -287,7 +329,7 @@ async function pollAccount(account) {
     try {
       const vehicleData = await teslaApi(
         accessToken,
-        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state')}`,
+        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state;closures_state')}`,
         apiBase
       );
 

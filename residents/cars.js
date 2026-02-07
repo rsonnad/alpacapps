@@ -33,6 +33,9 @@ const ICONS = {
   tires: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
   unlock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 5-5 5 5 0 0 1 4.33 2.5"/></svg>',
+  doors: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h7l2-2v8l-2-2H3"/></svg>',
+  sentry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  software: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
 };
 
 // Tesla car SVG silhouettes (fallback when images fail to load)
@@ -129,6 +132,34 @@ function getStatusDisplay(car) {
   return { text: 'Online', color: 'var(--available, #27ae60)' };
 }
 
+function getClosuresStr(s) {
+  // Build list of open closures
+  const open = [];
+  if (s.driver_door_open) open.push('Driver door');
+  if (s.passenger_door_open) open.push('Passenger door');
+  if (s.rear_left_door_open) open.push('Rear left');
+  if (s.rear_right_door_open) open.push('Rear right');
+  if (s.frunk_open) open.push('Frunk');
+  if (s.trunk_open) open.push('Trunk');
+
+  if (s.driver_door_open == null && s.frunk_open == null) return '--';
+  if (open.length === 0) return 'All closed';
+  return `<span style="color:var(--occupied,#e74c3c)">${open.join(', ')} open</span>`;
+}
+
+function getChargingDetail(s) {
+  if (s.charging_state !== 'Charging') return '';
+  const parts = [];
+  if (s.charger_power_kw != null && s.charger_power_kw > 0) parts.push(`${s.charger_power_kw} kW`);
+  if (s.charge_rate_mph != null && s.charge_rate_mph > 0) parts.push(`${s.charge_rate_mph} mi/hr`);
+  if (s.minutes_to_full != null && s.minutes_to_full > 0) {
+    const hrs = Math.floor(s.minutes_to_full / 60);
+    const mins = s.minutes_to_full % 60;
+    parts.push(hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`);
+  }
+  return parts.length ? ` \u00b7 ${parts.join(' \u00b7 ')}` : '';
+}
+
 function getDataRows(car) {
   const s = car.last_state;
   if (!s) {
@@ -139,6 +170,7 @@ function getDataRows(car) {
       { label: 'Status', icon: 'status', value: car.vehicle_state === 'unknown' ? 'Not connected' : car.vehicle_state },
       { label: 'Climate', icon: 'climate', value: '--' },
       { label: 'Location', icon: 'location', value: '--' },
+      { label: 'Doors', icon: 'doors', value: '--' },
       { label: 'Tires', icon: 'tires', value: '--' },
       { label: 'Locked', icon: 'lock', value: '--' },
     ];
@@ -146,11 +178,11 @@ function getDataRows(car) {
 
   const status = getStatusDisplay(car);
   const batteryStr = s.battery_level != null
-    ? `${s.battery_level}%${s.battery_range_mi != null ? ` \u00b7 ${Math.round(s.battery_range_mi)} mi` : ''}`
+    ? `${s.battery_level}%${s.charge_limit_soc != null ? ` / ${s.charge_limit_soc}%` : ''}${s.battery_range_mi != null ? ` \u00b7 ${Math.round(s.battery_range_mi)} mi` : ''}${getChargingDetail(s)}`
     : '--';
   const climateStr = s.climate_on
-    ? `${s.inside_temp_f || '--'}\u00b0F`
-    : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)` : '--';
+    ? `${s.inside_temp_f || '--'}\u00b0F (on)${s.outside_temp_f != null ? ` \u00b7 ${s.outside_temp_f}\u00b0F outside` : ''}`
+    : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)${s.outside_temp_f != null ? ` \u00b7 ${s.outside_temp_f}\u00b0F outside` : ''}` : '--';
   const hasLocation = s.latitude != null && s.longitude != null;
   let locationStr = '--';
   if (hasLocation) {
@@ -161,16 +193,45 @@ function getDataRows(car) {
     ? `${s.tpms_fl_psi} / ${s.tpms_fr_psi} / ${s.tpms_rl_psi} / ${s.tpms_rr_psi}`
     : '--';
   const lockStr = s.locked === true ? 'Locked' : s.locked === false ? 'Unlocked' : '--';
+  const sentryStr = s.sentry_mode === true ? 'On' : s.sentry_mode === false ? 'Off' : '--';
+  const closuresStr = getClosuresStr(s);
 
-  return [
+  const rows = [
     { label: 'Battery', icon: 'battery', value: batteryStr },
     { label: 'Odometer', icon: 'odometer', value: s.odometer_mi != null ? `${formatNumber(Math.round(s.odometer_mi))} mi` : '--' },
     { label: 'Status', icon: 'status', value: `<span style="color:${status.color}">${status.text}</span>` },
     { label: 'Climate', icon: 'climate', value: climateStr },
     { label: 'Location', icon: 'location', value: locationStr },
+    { label: 'Doors', icon: 'doors', value: closuresStr },
     { label: 'Tires', icon: 'tires', value: tiresStr },
     { label: 'Locked', icon: 'lock', value: lockStr },
+    { label: 'Sentry', icon: 'sentry', value: sentryStr },
   ];
+
+  // Software version (show only if available)
+  if (s.software_version) {
+    rows.push({ label: 'Software', icon: 'software', value: s.software_version });
+  }
+
+  return rows;
+}
+
+// =============================================
+// VEHICLE CONFIG HELPERS
+// =============================================
+
+function getConfigSubtitle(car) {
+  const vc = car.vehicle_config;
+  if (!vc) return '';
+  const parts = [];
+  // Trim badging (e.g., "74d" → "Long Range Dual Motor", "p74d" → "Performance")
+  if (vc.trim_badging) parts.push(vc.trim_badging.toUpperCase());
+  // Wheel type (e.g., "Apollo19" → "19\" wheels")
+  if (vc.wheel_type) {
+    const match = vc.wheel_type.match(/(\d+)/);
+    if (match) parts.push(`${match[1]}" wheels`);
+  }
+  return parts.length ? ` \u00b7 ${parts.join(' \u00b7 ')}` : '';
 }
 
 // =============================================
@@ -249,7 +310,7 @@ function renderFleet() {
               ${car.color || ''}
             </span>
           </div>
-          <div class="car-card__model">${car.year} ${car.model}</div>
+          <div class="car-card__model">${car.year} ${car.model}${getConfigSubtitle(car)}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
           </div>
