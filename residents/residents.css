@@ -198,6 +198,12 @@
   min-width: 0;
 }
 
+.lighting-group-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .lighting-group-card__name {
   font-weight: 600;
   font-size: 0.95rem;
@@ -412,7 +418,7 @@
 .child-device-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
   padding: 0.35rem 0;
   border-bottom: 1px solid var(--border-light, #f0f0f0);
   font-size: 0.8rem;
@@ -434,6 +440,12 @@
   gap: 0.1rem;
   min-width: 0;
   flex: 1;
+}
+
+.child-device-row__name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .child-device-row__name {
@@ -616,13 +628,7 @@
   background: #9ca3af;
 }
 
-.lighting-group-card__title .status-dot {
-  margin-right: 0.25rem;
-}
-
-.child-device-row__info .status-dot {
-  margin-right: 0.3rem;
-}
+/* Status dot spacing handled by name-row gap */
 
 /* ===== SEGMENT CONTROLS ===== */
 .child-device-row__expanded {
@@ -1516,13 +1522,13 @@ body.is-admin .admin-only {
   }
 
   /* Tabs: fade-hint for scroll */
-  .manage-tabs {
+  .manage-tabs-row {
     -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
     scrollbar-width: none;
   }
 
-  .manage-tabs::-webkit-scrollbar {
+  .manage-tabs-row::-webkit-scrollbar {
     display: none;
   }
 

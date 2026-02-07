@@ -56,14 +56,26 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-function renderResidentTabNav(activeTab) {
+function renderResidentTabNav(activeTab, userRole) {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
-  tabsContainer.innerHTML = RESIDENT_TABS.map(tab => {
+  // Render context switcher above tabs for staff+ users
+  const isStaff = ['staff', 'admin'].includes(userRole);
+  let switcherHtml = '';
+  if (isStaff) {
+    switcherHtml = `<div class="context-switcher">
+      <a class="context-switcher-btn active">Resident</a>
+      <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
+    </div>`;
+  }
+
+  const tabsHtml = RESIDENT_TABS.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
+
+  tabsContainer.innerHTML = switcherHtml + `<div class="manage-tabs-row">${tabsHtml}</div>`;
 }
 
 // =============================================
@@ -126,7 +138,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
       }
 
       // Render tab navigation
-      renderResidentTabNav(activeTab);
+      renderResidentTabNav(activeTab, state.appUser?.role);
 
       // Sign out handlers (only bind once)
       if (!pageContentShown) {

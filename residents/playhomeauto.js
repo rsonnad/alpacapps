@@ -868,8 +868,10 @@ function renderGroupCard(group) {
     <div class="lighting-group-card" data-group-id="${group.groupId}">
       <div class="lighting-group-card__header">
         <div class="lighting-group-card__title">
-          <span class="status-dot status-dot--gray" data-group-dot="${group.groupId}" title="Loading..."></span>
-          <span class="lighting-group-card__name">${group.name}</span>
+          <div class="lighting-group-card__name-row">
+            <span class="status-dot status-dot--gray" data-group-dot="${group.groupId}" title="Loading..."></span>
+            <span class="lighting-group-card__name">${group.name}</span>
+          </div>
           ${group.deviceCount ? `<span class="lighting-group-card__devices">${group.deviceCount} ${group.deviceCount === 1 ? 'device' : 'devices'} · ${group.models}</span>` : ''}
         </div>
         <label class="toggle-switch">
@@ -935,8 +937,10 @@ function renderChildDevice(child) {
   return `
     <div class="child-device-row" data-device-id="${child.deviceId}" data-device-sku="${child.sku}">
       <div class="child-device-row__info">
-        <span class="status-dot status-dot--gray" data-device-dot="${child.deviceId}" title="Loading..."></span>
-        <span class="child-device-row__name">${child.name}</span>
+        <div class="child-device-row__name-row">
+          <span class="status-dot status-dot--gray" data-device-dot="${child.deviceId}" title="Loading..."></span>
+          <span class="child-device-row__name">${child.name}</span>
+        </div>
         <span class="child-device-row__model">${child.modelName}</span>
       </div>
       <div class="child-device-row__controls">
