@@ -133,18 +133,27 @@ function getStatusDisplay(car) {
 }
 
 function getClosuresStr(s) {
-  // Build list of open closures
+  // Build list of open closures (0 = closed, non-zero = open)
   const open = [];
-  if (s.driver_door_open) open.push('Driver door');
-  if (s.passenger_door_open) open.push('Passenger door');
-  if (s.rear_left_door_open) open.push('Rear left');
-  if (s.rear_right_door_open) open.push('Rear right');
-  if (s.frunk_open) open.push('Frunk');
-  if (s.trunk_open) open.push('Trunk');
+  if (s.df) open.push('Driver');
+  if (s.pf) open.push('Passenger');
+  if (s.dr) open.push('Rear L');
+  if (s.pr) open.push('Rear R');
+  if (s.ft) open.push('Frunk');
+  if (s.rt) open.push('Trunk');
+  // Windows
+  const windowsOpen = [];
+  if (s.fd_window) windowsOpen.push('FL');
+  if (s.fp_window) windowsOpen.push('FR');
+  if (s.rd_window) windowsOpen.push('RL');
+  if (s.rp_window) windowsOpen.push('RR');
 
-  if (s.driver_door_open == null && s.frunk_open == null) return '--';
-  if (open.length === 0) return 'All closed';
-  return `<span style="color:var(--occupied,#e74c3c)">${open.join(', ')} open</span>`;
+  if (s.df == null && s.ft == null) return '--';
+  const parts = [];
+  if (open.length === 0 && windowsOpen.length === 0) return 'All closed';
+  if (open.length > 0) parts.push(`<span style="color:var(--occupied,#e74c3c)">${open.join(', ')} open</span>`);
+  if (windowsOpen.length > 0) parts.push(`<span style="color:var(--occupied,#e74c3c)">Windows: ${windowsOpen.join(', ')}</span>`);
+  return parts.join(' \u00b7 ');
 }
 
 function getChargingDetail(s) {
@@ -189,9 +198,17 @@ function getDataRows(car) {
     const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
     locationStr = `<span class="car-location-toggle" onclick="window._toggleMap(${car.id})" title="Show on map">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}${speedSuffix}</span>`;
   }
-  const tiresStr = s.tpms_fl_psi != null
-    ? `${s.tpms_fl_psi} / ${s.tpms_fr_psi} / ${s.tpms_rl_psi} / ${s.tpms_rr_psi}`
-    : '--';
+  let tiresStr = '--';
+  if (s.tpms_fl_psi != null) {
+    const warnColor = 'color:var(--occupied,#e74c3c);font-weight:600';
+    const fl = s.tpms_warn_fl ? `<span style="${warnColor}">${s.tpms_fl_psi}</span>` : s.tpms_fl_psi;
+    const fr = s.tpms_warn_fr ? `<span style="${warnColor}">${s.tpms_fr_psi}</span>` : s.tpms_fr_psi;
+    const rl = s.tpms_warn_rl ? `<span style="${warnColor}">${s.tpms_rl_psi}</span>` : s.tpms_rl_psi;
+    const rr = s.tpms_warn_rr ? `<span style="${warnColor}">${s.tpms_rr_psi}</span>` : s.tpms_rr_psi;
+    tiresStr = `${fl} / ${fr} / ${rl} / ${rr}`;
+    const hasWarn = s.tpms_warn_fl || s.tpms_warn_fr || s.tpms_warn_rl || s.tpms_warn_rr;
+    if (hasWarn) tiresStr += ' <span style="color:var(--occupied,#e74c3c);font-size:0.75rem">\u26a0</span>';
+  }
   const lockStr = s.locked === true ? 'Locked' : s.locked === false ? 'Unlocked' : '--';
   const sentryStr = s.sentry_mode === true ? 'On' : s.sentry_mode === false ? 'Off' : '--';
   const closuresStr = getClosuresStr(s);
@@ -208,9 +225,22 @@ function getDataRows(car) {
     { label: 'Sentry', icon: 'sentry', value: sentryStr },
   ];
 
-  // Software version (show only if available)
+  // Software version + update status
   if (s.software_version) {
-    rows.push({ label: 'Software', icon: 'software', value: s.software_version });
+    let swStr = s.software_version;
+    if (s.software_update) {
+      const upd = s.software_update;
+      if (upd.status === 'available') {
+        swStr += ` \u00b7 <span style="color:var(--available,#27ae60)">Update available${upd.version ? ': ' + upd.version : ''}</span>`;
+      } else if (upd.status === 'downloading') {
+        swStr += ` \u00b7 Downloading ${upd.download_pct ?? 0}%`;
+      } else if (upd.status === 'installing') {
+        swStr += ` \u00b7 Installing ${upd.install_pct ?? 0}%`;
+      } else if (upd.status === 'scheduled') {
+        swStr += ' \u00b7 Update scheduled';
+      }
+    }
+    rows.push({ label: 'Software', icon: 'software', value: swStr });
   }
 
   return rows;

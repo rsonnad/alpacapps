@@ -156,7 +156,6 @@ function parseVehicleState(data) {
   const ds = data.drive_state || {};
   const vs = data.vehicle_state || {};
   const cls = data.climate_state || {};
-  const clos = data.closures_state || {};
 
   return {
     battery_level: cs.battery_level ?? null,
@@ -180,14 +179,30 @@ function parseVehicleState(data) {
     tpms_fr_psi: vs.tpms_pressure_fr != null ? Math.round(vs.tpms_pressure_fr * 14.5038) : null,
     tpms_rl_psi: vs.tpms_pressure_rl != null ? Math.round(vs.tpms_pressure_rl * 14.5038) : null,
     tpms_rr_psi: vs.tpms_pressure_rr != null ? Math.round(vs.tpms_pressure_rr * 14.5038) : null,
+    tpms_warn_fl: vs.tpms_soft_warning_fl ?? null,
+    tpms_warn_fr: vs.tpms_soft_warning_fr ?? null,
+    tpms_warn_rl: vs.tpms_soft_warning_rl ?? null,
+    tpms_warn_rr: vs.tpms_soft_warning_rr ?? null,
     software_version: vs.car_version || null,
-    // Closures (0 = closed, non-zero = open)
-    driver_door_open: clos.df ?? null,
-    passenger_door_open: clos.pf ?? null,
-    rear_left_door_open: clos.dr ?? null,
-    rear_right_door_open: clos.pr ?? null,
-    frunk_open: clos.ft ?? null,
-    trunk_open: clos.rt ?? null,
+    // Closures from vehicle_state (0 = closed, non-zero = open)
+    df: vs.df ?? null,   // driver front door
+    pf: vs.pf ?? null,   // passenger front door
+    dr: vs.dr ?? null,   // driver rear door
+    pr: vs.pr ?? null,   // passenger rear door
+    ft: vs.ft ?? null,   // frunk (front trunk)
+    rt: vs.rt ?? null,   // rear trunk
+    // Windows (0 = closed, non-zero = open)
+    fd_window: vs.fd_window ?? null,
+    fp_window: vs.fp_window ?? null,
+    rd_window: vs.rd_window ?? null,
+    rp_window: vs.rp_window ?? null,
+    // Software update status
+    software_update: vs.software_update?.status && vs.software_update.status !== '' ? {
+      status: vs.software_update.status,
+      version: vs.software_update.version?.trim() || null,
+      download_pct: vs.software_update.download_perc ?? null,
+      install_pct: vs.software_update.install_perc ?? null,
+    } : null,
   };
 }
 
@@ -329,7 +344,7 @@ async function pollAccount(account) {
     try {
       const vehicleData = await teslaApi(
         accessToken,
-        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state;closures_state')}`,
+        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state')}`,
         apiBase
       );
 
