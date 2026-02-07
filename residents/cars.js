@@ -273,23 +273,23 @@ function renderSettings() {
     const statusText = isHealthy ? 'Connected' : hasError ? 'Needs reconnection' : 'Not connected';
 
     const errorHtml = hasError
-      ? `<div style="font-size:0.7rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Token expired \u2014 click Reconnect to re-authorize with Tesla.</div>`
+      ? `<div style="font-size:0.8rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Token expired \u2014 click Reconnect to re-authorize with Tesla.</div>`
       : '';
 
     let connectBtn;
     if (hasError) {
-      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="background:var(--occupied,#e74c3c);color:white;border-color:var(--occupied,#e74c3c);">Reconnect</button>`;
+      connectBtn = `<button class="btn-primary" onclick="window._connectTesla(${acc.id})" style="background:var(--occupied,#e74c3c);border-color:var(--occupied,#e74c3c);">Reconnect</button>`;
     } else if (hasToken) {
-      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="font-size:0.7rem;">Reconnect</button>`;
+      connectBtn = `<button class="btn-secondary" onclick="window._connectTesla(${acc.id})">Reconnect</button>`;
     } else {
-      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
+      connectBtn = `<button class="btn-primary" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
     }
 
     return `
-      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid var(--border-light, #f0f0f0);">
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.8rem 0;border-bottom:1px solid var(--border-light, #f0f0f0);">
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:0.85rem;">${statusDot}${acc.owner_name}</div>
-          <div style="font-size:0.7rem;color:var(--text-muted);">${statusText}${acc.tesla_email ? ` \u00b7 ${acc.tesla_email}` : ''}</div>
+          <div style="font-weight:600;font-size:0.9rem;">${statusDot}${acc.owner_name}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">${statusText}${acc.tesla_email ? ` \u00b7 ${acc.tesla_email}` : ''}</div>
           ${errorHtml}
         </div>
         ${connectBtn}
