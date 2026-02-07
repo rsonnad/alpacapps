@@ -948,8 +948,8 @@ body.is-admin .admin-only {
 
 /* ===== CAR GRID ===== */
 .car-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
@@ -959,43 +959,50 @@ body.is-admin .admin-only {
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow);
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.15s;
+  display: flex;
+  flex-direction: row;
 }
 
 .car-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
 }
 
+/* Left: Car silhouette */
 .car-card__image {
-  aspect-ratio: 16 / 8;
+  width: 200px;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  padding: 1rem 2rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .car-card__image svg {
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
+/* Right: All info */
 .car-card__info {
-  padding: 0.75rem 1rem 1rem;
+  flex: 1;
+  padding: 1rem 1.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .car-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.15rem;
+  align-items: baseline;
+  margin-bottom: 0.1rem;
 }
 
 .car-card__name {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--text);
 }
 
@@ -1003,7 +1010,7 @@ body.is-admin .admin-only {
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .car-card__color-chip {
@@ -1022,27 +1029,31 @@ body.is-admin .admin-only {
   flex-shrink: 0;
 }
 
-/* Car Data Grid */
+/* Car Data Grid — 2 columns */
 .car-data-grid {
   border-top: 1px solid var(--border);
   padding-top: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
 }
 
 .car-data-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0;
+  gap: 0.4rem;
+  padding: 0.35rem 0;
   font-size: 0.8rem;
+  border-bottom: 1px solid var(--border-light, #f0f0f0);
 }
 
-.car-data-row + .car-data-row {
-  border-top: 1px solid var(--border-light, #f0f0f0);
+.car-data-row:nth-last-child(-n+2) {
+  border-bottom: none;
 }
 
 .car-data-row__icon {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
   color: var(--text-muted);
   display: flex;
@@ -1050,14 +1061,14 @@ body.is-admin .admin-only {
 }
 
 .car-data-row__icon svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .car-data-row__label {
   color: var(--text-muted);
   font-weight: 500;
-  min-width: 5rem;
+  white-space: nowrap;
 }
 
 .car-data-row__value {
@@ -1081,7 +1092,16 @@ body.is-admin .admin-only {
     grid-template-columns: 1fr;
   }
 
-  .car-grid {
+  .car-card {
+    flex-direction: column;
+  }
+
+  .car-card__image {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .car-data-grid {
     grid-template-columns: 1fr;
   }
 
