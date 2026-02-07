@@ -1,0 +1,34 @@
+###############################################
+# go2rtc Configuration — GenAlpaca Residency
+# Restreams UniFi Protect cameras as HLS/WebRTC
+#
+# Deploy to: ~/go2rtc/go2rtc.yaml on Alpaca Mac
+# go2rtc handles UniFi Protect's quirky RTSP much
+# better than MediaMTX (no SPS parsing crashes)
+#
+# URL format: rtspx:// (RTSP over TLS control, no SRTP)
+# Remove ?enableSrtp from UniFi Protect URLs
+###############################################
+
+api:
+  listen: ":1984"
+
+streams:
+  alpacamera-high:
+    - rtspx://192.168.1.1:7441/lJxvADtGLsGulh8u
+  alpacamera-med:
+    - rtspx://192.168.1.1:7441/aIs1aXMiVmJCgW68
+  alpacamera-low:
+    - rtspx://192.168.1.1:7441/IzpIjAyLw50n4wqn
+  front-house-high:
+    - rtspx://192.168.1.1:7441/JvINuiuzqfecPHHB
+  front-house-med:
+    - rtspx://192.168.1.1:7441/N3sph6SQAYTh5bUu
+  front-house-low:
+    - rtspx://192.168.1.1:7441/lzyZPUsipXR67bK5
+  side-yard-high:
+    - rtspx://192.168.1.1:7441/aeYad5AdqdFbsuGm
+  side-yard-med:
+    - rtspx://192.168.1.1:7441/N8fKGdVD017n9urn
+  side-yard-low:
+    - rtspx://192.168.1.1:7441/eLkr5lNQISofL8Go

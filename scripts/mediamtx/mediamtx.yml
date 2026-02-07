@@ -2,6 +2,11 @@
 # MediaMTX Configuration — GenAlpaca Residency
 # Restreams UniFi Protect RTSPS cameras as RTSP/HLS/WebRTC
 #
+# NOTE: We use go2rtc instead of MediaMTX for HLS streaming.
+# MediaMTX has issues with UniFi Protect's malformed SPS NAL units
+# which cause the HLS muxer to crash repeatedly.
+# This file is kept for reference but is NOT actively used.
+#
 # Deploy to: ~/mediamtx/mediamtx.yml on Alpaca Mac
 # Run setup.sh to install and configure automatically
 ###############################################
@@ -9,6 +14,8 @@
 # Global
 logLevel: info
 logDestinations: [stdout]
+readTimeout: 20s
+writeTimeout: 20s
 
 # Control API
 api: yes
@@ -24,7 +31,7 @@ rtspEncryption: "no"
 # HLS server (browser-friendly)
 hls: yes
 hlsAddress: :8888
-hlsVariant: mpegts
+hlsVariant: fmp4
 hlsSegmentCount: 7
 hlsSegmentDuration: 1s
 
@@ -43,8 +50,7 @@ pathDefaults:
   sourceOnDemand: yes
   sourceOnDemandStartTimeout: 25s
   sourceOnDemandCloseAfter: 60s
-  readTimeout: 20s
-  writeTimeout: 20s
+  rtspTransport: tcp
 
 ###############################################
 # Camera paths
