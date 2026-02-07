@@ -247,7 +247,7 @@ function renderCameras() {
         <div class="controls-bar__ptz" id="ptz-${i}">
           <button class="ptz-btn ptz-up" data-cam="${i}" data-dir="up" title="Tilt Up">▲</button>
           <button class="ptz-btn ptz-left" data-cam="${i}" data-dir="left" title="Pan Left">◀</button>
-          <button class="ptz-btn ptz-home" data-cam="${i}" data-dir="home" title="Home Position">⌂<span class="ptz-label">Home</span></button>
+          <button class="ptz-btn ptz-home" data-cam="${i}" data-dir="home" title="Home Position">⌂</button>
           <button class="ptz-btn ptz-right" data-cam="${i}" data-dir="right" title="Pan Right">▶</button>
           <button class="ptz-btn ptz-down" data-cam="${i}" data-dir="down" title="Tilt Down">▼</button>
           <button class="ptz-btn ptz-zoomin" data-cam="${i}" data-dir="zoomin" title="Zoom In">+<span class="ptz-label">Zoom In</span></button>
@@ -690,7 +690,7 @@ function renderLightbox() {
       <div class="camera-lightbox__ptz" id="lb-ptz">
         <button class="ptz-btn ptz-up" data-dir="up" title="Tilt Up">▲</button>
         <button class="ptz-btn ptz-left" data-dir="left" title="Pan Left">◀</button>
-        <button class="ptz-btn ptz-home" data-dir="home" title="Home Position">⌂<span class="ptz-label">Home</span></button>
+        <button class="ptz-btn ptz-home" data-dir="home" title="Home Position">⌂</button>
         <button class="ptz-btn ptz-right" data-dir="right" title="Pan Right">▶</button>
         <button class="ptz-btn ptz-down" data-dir="down" title="Tilt Down">▼</button>
         <button class="ptz-btn ptz-zoomin" data-dir="zoomin" title="Zoom In">+<span class="ptz-label">Zoom In</span></button>
