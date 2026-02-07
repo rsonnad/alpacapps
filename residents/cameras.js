@@ -152,14 +152,17 @@ function startStream(camIndex, quality) {
   if (Hls.isSupported()) {
     const hls = new Hls({
       enableWorker: true,
-      lowLatencyMode: true,
+      lowLatencyMode: false,       // LL-HLS too aggressive for proxied streams
       backBufferLength: 30,
-      manifestLoadingMaxRetry: 6,
-      manifestLoadingRetryDelay: 2000,
-      levelLoadingMaxRetry: 6,
-      levelLoadingRetryDelay: 2000,
-      fragLoadingMaxRetry: 6,
-      fragLoadingRetryDelay: 2000,
+      liveSyncDurationCount: 3,    // Buffer 3 segments before playing
+      liveMaxLatencyDurationCount: 10,
+      manifestLoadingMaxRetry: 10,
+      manifestLoadingRetryDelay: 3000,
+      manifestLoadingMaxRetryTimeout: 30000,
+      levelLoadingMaxRetry: 10,
+      levelLoadingRetryDelay: 3000,
+      fragLoadingMaxRetry: 10,
+      fragLoadingRetryDelay: 3000,
     });
     activeHls[camIndex] = hls;
 
@@ -174,22 +177,29 @@ function startStream(camIndex, quality) {
     });
 
     hls.on(Hls.Events.ERROR, (event, data) => {
-      if (data.fatal) {
-        hls.destroy();
-        delete activeHls[camIndex];
+      // Non-fatal errors: try to recover without full restart
+      if (!data.fatal) return;
 
-        if (retryCount[camIndex] < MAX_RETRIES) {
-          retryCount[camIndex]++;
-          // Retry in 5s — camera needs time to warm up on-demand
-          setTimeout(() => startStream(camIndex, quality), 5000);
-        } else {
-          overlay.classList.remove('hidden');
-          overlay.querySelector('.camera-card__loading').textContent = 'Stream offline';
-          dot.className = 'status-dot status-offline';
-          // Long retry after max retries exhausted
-          retryCount[camIndex] = 0;
-          setTimeout(() => startStream(camIndex, quality), 30000);
-        }
+      // Try built-in recovery first
+      if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        console.warn(`[Camera ${camIndex}] Media error, attempting recovery`);
+        hls.recoverMediaError();
+        return;
+      }
+
+      // Fatal network/other error — destroy and retry
+      hls.destroy();
+      delete activeHls[camIndex];
+
+      if (retryCount[camIndex] < MAX_RETRIES) {
+        retryCount[camIndex]++;
+        setTimeout(() => startStream(camIndex, quality), 5000);
+      } else {
+        overlay.classList.remove('hidden');
+        overlay.querySelector('.camera-card__loading').textContent = 'Stream offline';
+        dot.className = 'status-dot status-offline';
+        retryCount[camIndex] = 0;
+        setTimeout(() => startStream(camIndex, quality), 30000);
       }
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {

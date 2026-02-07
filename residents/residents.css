@@ -668,16 +668,34 @@
   gap: 0.5rem;
 }
 
+.segment-zone__label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 4.5rem;
+  flex-shrink: 0;
+}
+
+.segment-zone__icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.segment-zone__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .segment-zone__name {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
-  min-width: 2.5rem;
 }
 
 .segment-color-picker {
-  width: 28px;
-  height: 22px;
+  width: 32px;
+  height: 26px;
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 1px;
@@ -693,9 +711,9 @@
 }
 
 .color-preset-tiny {
-  width: 16px !important;
-  height: 16px !important;
-  min-width: 16px;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
   border-width: 1px;
 }
 

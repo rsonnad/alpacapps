@@ -27,14 +27,33 @@ const COLOR_PRESETS = [
 ];
 
 // H601F segment mapping — Ring (nightlight) vs Main (downlight)
+// Icons: ring = hollow circle, main = filled circle with rays
+const ZONE_ICONS = {
+  Ring: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+    <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" fill="none"/>
+  </svg>`,
+  Main: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="5" fill="currentColor"/>
+    <line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="10" y1="16" x2="10" y2="19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="16" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="3.5" y1="3.5" x2="5.6" y2="5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14.4" y1="14.4" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="3.5" y1="16.5" x2="5.6" y2="14.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14.4" y1="5.6" x2="16.5" y2="3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`,
+};
+
 const SEGMENT_ZONES = {
   H601F: [
-    { name: 'Ring', segments: [0], description: 'Outer ring / nightlight' },
-    { name: 'Main', segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
+    { name: 'Ring', icon: ZONE_ICONS.Ring, segments: [0], description: 'Outer ring / nightlight' },
+    { name: 'Main', icon: ZONE_ICONS.Main, segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
   ],
   H601A: [
-    { name: 'Ring', segments: [0], description: 'Outer ring / nightlight' },
-    { name: 'Main', segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
+    { name: 'Ring', icon: ZONE_ICONS.Ring, segments: [0], description: 'Outer ring / nightlight' },
+    { name: 'Main', icon: ZONE_ICONS.Main, segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
   ],
 };
 
@@ -81,6 +100,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       startPolling();
       // Load child device states in background (staggered to respect rate limits)
       loadAllChildrenStates();
+      // Auto-load scenes for devices whose panels start expanded
+      autoLoadVisibleScenes();
     },
   });
 });
@@ -966,11 +987,13 @@ function renderSegmentControls(child) {
   const zones = getSegmentZones(child.sku, child.segmentCount);
   return `
     <div class="segment-controls" data-segment-panel="${child.deviceId}">
-      <div class="segment-controls__label">Segment Colors</div>
       <div class="segment-zone-list">
         ${zones.map(z => `
           <div class="segment-zone">
-            <span class="segment-zone__name" title="${z.description}">${z.name}</span>
+            <div class="segment-zone__label" title="${z.description}">
+              ${z.icon ? `<span class="segment-zone__icon">${z.icon}</span>` : ''}
+              <span class="segment-zone__name">${z.name}</span>
+            </div>
             <input type="color" value="#FFD4A3" class="segment-color-picker"
               data-action="segment-color" data-device="${child.deviceId}"
               data-sku="${child.sku}" data-segments='${JSON.stringify(z.segments)}'>
@@ -999,7 +1022,7 @@ function renderSceneSelector(child) {
         <input type="text" class="scene-search" placeholder="Search scenes..."
           data-action="scene-search" data-device="${child.deviceId}">
         <div class="scene-list" data-scene-list="${child.deviceId}">
-          <span class="text-muted" style="font-size:0.75rem;">Click to load scenes...</span>
+          <span class="text-muted" style="font-size:0.75rem;">Loading scenes...</span>
         </div>
       </div>
     </div>
@@ -1063,6 +1086,21 @@ function filterScenes(listSelector, query) {
   chips.forEach(chip => {
     chip.style.display = chip.dataset.sceneName.toLowerCase().includes(q) ? '' : 'none';
   });
+}
+
+// Auto-load scenes for devices whose expanded panels start visible
+// (devices with segments have panels expanded by default, and may also have scenes)
+async function autoLoadVisibleScenes() {
+  for (const group of goveeGroups) {
+    for (const child of group.children) {
+      if (child.hasSegments && child.hasScenes) {
+        // Panel starts expanded, so auto-load scenes
+        await expandDeviceScenePanel(child.deviceId, child.sku);
+        // Small delay to avoid hammering the API
+        await sleep(200);
+      }
+    }
+  }
 }
 
 // =============================================

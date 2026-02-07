@@ -24,7 +24,9 @@ rtspEncryption: "no"
 # HLS server (browser-friendly)
 hls: yes
 hlsAddress: :8888
-hlsVariant: lowLatency
+hlsVariant: mpegts
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
 
 # WebRTC server (low-latency browser viewing)
 webrtc: yes
@@ -39,8 +41,10 @@ srt: no
 # Path defaults — on-demand pulls save bandwidth
 pathDefaults:
   sourceOnDemand: yes
-  sourceOnDemandStartTimeout: 15s
+  sourceOnDemandStartTimeout: 25s
   sourceOnDemandCloseAfter: 60s
+  readTimeout: 20s
+  writeTimeout: 20s
 
 ###############################################
 # Camera paths
