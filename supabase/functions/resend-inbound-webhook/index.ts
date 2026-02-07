@@ -105,8 +105,8 @@ async function verifyWebhookSignature(
  * (race condition when sending to our own domain).
  */
 async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ html: string; text: string } | null> {
-  const MAX_ATTEMPTS = 5;
-  const DELAY_MS = 5000;
+  const MAX_ATTEMPTS = 3;
+  const DELAY_MS = 2000;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
@@ -115,12 +115,15 @@ async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ htm
         await new Promise(r => setTimeout(r, DELAY_MS));
       }
 
-      const res = await fetch(`${RESEND_API_URL}/emails/${emailId}`, {
+      // Use the Received Emails API endpoint (not /emails/ which is for outbound only)
+      const res = await fetch(`${RESEND_API_URL}/emails/receiving/${emailId}`, {
         headers: { Authorization: `Bearer ${apiKey}` },
       });
       if (!res.ok) {
-        console.error(`Failed to fetch email content: ${res.status} ${res.statusText}`);
-        return null;
+        const errBody = await res.text();
+        console.error(`Failed to fetch email content: ${res.status} ${res.statusText} - ${errBody}`);
+        if (attempt === MAX_ATTEMPTS) return null;
+        continue;
       }
       const data = await res.json();
       const html = data.html || "";
