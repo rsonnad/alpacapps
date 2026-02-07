@@ -147,6 +147,19 @@ weather_config       - OpenWeatherMap API configuration (single row, id=1)
                       (owm_api_key, latitude, longitude, location_name, is_active)
 ```
 
+### Tesla Vehicle Data
+```
+tesla_accounts  - Tesla account credentials (one per car owner)
+                  (owner_name, tesla_email, refresh_token, access_token,
+                   token_expires_at, is_active, last_error,
+                   last_token_refresh_at, created_at, updated_at)
+tesla_vehicles  - Vehicle data + cached state from Tesla API
+                  (account_id [FK→tesla_accounts], vehicle_api_id, vin,
+                   name, model, year, color, color_hex, svg_key, image_url,
+                   display_order, is_active, vehicle_state [online/asleep/offline/unknown],
+                   last_state [jsonb], last_synced_at, created_at, updated_at)
+```
+
 ### AI Image Generation
 ```
 image_gen_jobs  - Async image generation job queue
@@ -382,6 +395,17 @@ git push
   - Tools: `generate_image`, `edit_image`, `continue_editing`
   - Restart Claude Code after changing `.mcp.json`
 
+### Tesla Vehicle Data Poller
+- **Worker:** `/opt/tesla-poller/worker.js` on DO droplet (systemd: `tesla-poller.service`)
+- **API:** Tesla Owner API (`https://owner-api.teslamotors.com`) — free, no Fleet API subscription needed
+- **Auth:** Each car owner generates a refresh token at tesla-info.com, admin pastes into Settings
+- **Token rotation:** Refresh tokens are SINGLE-USE — new token saved immediately after exchange
+- **Polling:** Every 5 min, sleep-aware (doesn't wake sleeping cars)
+- **DB:** `tesla_accounts` (credentials), `tesla_vehicles` (cached state in `last_state` JSONB)
+- **Client:** `residents/cars.js` polls Supabase every 30s with visibility-based pause
+- **Vehicles:** 4 cars on 4 separate Tesla accounts: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
+- **Data tracked:** battery, range, charging state, odometer, climate, location, tire pressure, lock state
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -471,11 +495,16 @@ git push
    - Retry up to 3x on failure, 3s rate-limit delay between API calls
    - Systemd service: `image-gen.service` (runs as `bugfixer` user)
    - Nano Banana MCP (`.mcp.json`, gitignored) for interactive image gen in Claude Code
-20. **Cars Resident Page** - Tesla fleet display at `residents/cars.html`
-   - Shows 4 Tesla vehicles: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
+20. **Cars Resident Page + Tesla Poller** - Live Tesla vehicle data at `residents/cars.html`
+   - 4 Tesla vehicles on 4 separate accounts: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
    - AI-generated hero images from Gemini, with SVG fallback
-   - Horizontal card layout: image left, data grid right
-   - Placeholder data rows for future Tesla Fleet API integration
+   - DO droplet poller (`tesla-poller.service`) polls Tesla Owner API every 5 min
+   - Sleep-aware: doesn't wake sleeping cars, just records state
+   - Token rotation: single-use refresh tokens saved immediately after exchange
+   - Client polls Supabase every 30s with visibility-based pause
+   - Admin Settings tab for pasting refresh tokens per account
+   - Data grid: battery, odometer, status, climate, location, tires, lock state
+   - Staleness indicator shows time since last sync
 
 ## Testing Changes
 

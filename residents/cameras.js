@@ -135,7 +135,7 @@ function startStream(camIndex, quality) {
   // Initialize retry counter
   if (retryCount[camIndex] === undefined) retryCount[camIndex] = 0;
 
-  const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}`;
+  const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}&mp4`;
 
   overlay.classList.remove('hidden');
   const retries = retryCount[camIndex];
