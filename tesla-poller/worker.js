@@ -1,10 +1,11 @@
 /**
  * Tesla Vehicle Data Poller
- * Polls Tesla Owner API for vehicle state every 5 minutes.
+ * Polls Tesla Fleet API for vehicle state every 5 minutes.
  * Stores results in tesla_vehicles.last_state (JSONB) via Supabase.
  *
  * Each tesla_accounts row represents a separate Tesla account.
- * Refresh tokens are single-use and rotate on every refresh.
+ * Fleet API credentials (client_id, client_secret) stored per account.
+ * Refresh tokens rotate on every refresh (single-use).
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -17,8 +18,8 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '300000'); // 5 min
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 
-const TESLA_API_BASE = 'https://owner-api.teslamotors.com';
-const TESLA_TOKEN_URL = 'https://auth.tesla.com/oauth2/v3/token';
+const TESLA_TOKEN_URL = 'https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token';
+const DEFAULT_FLEET_API_BASE = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
 
 if (!SUPABASE_SERVICE_KEY) {
   console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
@@ -37,10 +38,10 @@ function log(level, msg, data = {}) {
 }
 
 // ============================================
-// Tesla API Helper
+// Tesla Fleet API Helper
 // ============================================
-async function teslaApi(accessToken, path) {
-  const response = await fetch(`${TESLA_API_BASE}${path}`, {
+async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
+  const response = await fetch(`${apiBase}${path}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'User-Agent': 'GenAlpacaPoller/1.0',
@@ -56,6 +57,10 @@ async function teslaApi(accessToken, path) {
     throw new Error('Token expired or invalid (401)');
   }
 
+  if (response.status === 412) {
+    throw new Error('Fleet API requires new tokens — old Owner API tokens not accepted (412)');
+  }
+
   if (response.status === 429) {
     throw new Error('Rate limited (429)');
   }
@@ -69,7 +74,7 @@ async function teslaApi(accessToken, path) {
 }
 
 // ============================================
-// Token Refresh (single-use tokens!)
+// Token Refresh (Fleet API, single-use tokens!)
 // ============================================
 async function refreshTokenIfNeeded(account) {
   // If token is still valid (with 5-min buffer), return it
@@ -85,17 +90,26 @@ async function refreshTokenIfNeeded(account) {
     throw new Error('No refresh token available');
   }
 
+  if (!account.fleet_client_id || !account.fleet_client_secret) {
+    throw new Error('Fleet API client_id/client_secret not configured');
+  }
+
   log('info', 'Refreshing token', { accountId: account.id, owner: account.owner_name });
+
+  // Fleet API token refresh requires client_id + client_secret + audience
+  const params = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: account.fleet_client_id,
+    client_secret: account.fleet_client_secret,
+    refresh_token: account.refresh_token,
+    scope: 'openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds',
+    audience: account.fleet_api_base || DEFAULT_FLEET_API_BASE,
+  });
 
   const response = await fetch(TESLA_TOKEN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      grant_type: 'refresh_token',
-      client_id: 'ownerapi',
-      refresh_token: account.refresh_token,
-      scope: 'openid email offline_access',
-    }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
   });
 
   if (!response.ok) {
@@ -184,10 +198,12 @@ async function pollAccount(account) {
     return;
   }
 
+  const apiBase = account.fleet_api_base || DEFAULT_FLEET_API_BASE;
+
   // 1. Get vehicle list (does NOT wake sleeping cars)
   let vehicleList;
   try {
-    vehicleList = await teslaApi(accessToken, '/api/1/vehicles');
+    vehicleList = await teslaApi(accessToken, '/api/1/vehicles', apiBase);
   } catch (err) {
     log('error', 'Vehicle list fetch failed', {
       accountId: account.id,
@@ -267,7 +283,7 @@ async function pollAccount(account) {
     await new Promise(r => setTimeout(r, API_DELAY_MS));
 
     try {
-      const vehicleData = await teslaApi(accessToken, `/api/1/vehicles/${v.id}/vehicle_data`);
+      const vehicleData = await teslaApi(accessToken, `/api/1/vehicles/${v.id}/vehicle_data`, apiBase);
 
       if (vehicleData.sleeping) {
         // Vehicle went to sleep between list and data call
@@ -324,12 +340,13 @@ async function pollAllAccounts() {
   isProcessing = true;
 
   try {
-    // Fetch active accounts that have refresh tokens
+    // Fetch active accounts that have refresh tokens and Fleet API credentials
     const { data: accounts, error } = await supabase
       .from('tesla_accounts')
       .select('*')
       .eq('is_active', true)
-      .not('refresh_token', 'is', null);
+      .not('refresh_token', 'is', null)
+      .not('fleet_client_id', 'is', null);
 
     if (error) {
       log('error', 'Failed to fetch accounts', { error: error.message });
@@ -372,7 +389,8 @@ async function main() {
   log('info', 'Tesla poller starting', {
     pollInterval: `${POLL_INTERVAL_MS / 1000}s`,
     apiDelay: `${API_DELAY_MS}ms`,
-    apiBase: TESLA_API_BASE,
+    defaultApiBase: DEFAULT_FLEET_API_BASE,
+    tokenUrl: TESLA_TOKEN_URL,
   });
 
   // Verify connectivity

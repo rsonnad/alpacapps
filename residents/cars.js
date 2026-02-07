@@ -30,6 +30,7 @@ const ICONS = {
   location: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
   tires: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  unlock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 5-5 5 5 0 0 1 4.33 2.5"/></svg>',
 };
 
 // Tesla car SVG silhouettes (fallback when images fail to load)
@@ -203,6 +204,11 @@ function renderFleet() {
       : `<div class="car-card__svg-fallback" style="color:${svgColor}">${carSvg}</div>`;
 
     const syncTime = formatSyncTime(car.last_synced_at);
+    const isLocked = car.last_state?.locked;
+    const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
+    const lockLabel = isLocked === false ? 'Unlocked' : 'Locked';
+    const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
+    const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
 
     return `
       <div class="car-card">
@@ -220,6 +226,19 @@ function renderFleet() {
           <div class="car-card__model">${car.year} ${car.model}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
+          </div>
+          <div class="car-card__controls">
+            <button class="car-cmd-btn" id="lockBtn_${car.id}"
+                    onclick="window._sendCommand(${car.id}, '${nextCmd}')"
+                    title="${nextLabel} ${car.name}">
+              <span class="car-cmd-btn__icon">${lockIcon}</span>
+              <span class="car-cmd-btn__label">${nextLabel}</span>
+            </button>
+            <button class="car-cmd-btn car-cmd-btn--secondary" id="flashBtn_${car.id}"
+                    onclick="window._sendCommand(${car.id}, 'flash_lights')"
+                    title="Flash lights">
+              <span class="car-cmd-btn__label">Flash</span>
+            </button>
           </div>
           <div class="car-card__sync-time">${syncTime}</div>
         </div>
@@ -268,6 +287,49 @@ function renderSettings() {
     `;
   }).join('');
 }
+
+// =============================================
+// VEHICLE COMMANDS
+// =============================================
+
+window._sendCommand = async function(vehicleId, command) {
+  const btn = document.getElementById(
+    command.startsWith('door_') ? `lockBtn_${vehicleId}` : `flashBtn_${vehicleId}`
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('car-cmd-btn--loading');
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('tesla-command', {
+      body: { vehicle_id: vehicleId, command },
+    });
+
+    if (error) {
+      showToast(`Command failed: ${error.message}`, 'error');
+      return;
+    }
+
+    if (data?.error) {
+      showToast(`${command.replace(/_/g, ' ')}: ${data.error}`, 'error');
+      return;
+    }
+
+    const friendlyCmd = command.replace(/_/g, ' ').replace('door ', '');
+    showToast(`${data?.vehicle_name || 'Vehicle'}: ${friendlyCmd} sent`, 'success');
+
+    // Refresh data after a short delay
+    setTimeout(refreshFromDB, 2000);
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('car-cmd-btn--loading');
+    }
+  }
+};
 
 // Save token handler (attached to window for onclick access)
 window._saveToken = async function(accountId) {

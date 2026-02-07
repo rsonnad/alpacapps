@@ -66,6 +66,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `govee-control/` - Proxies requests to Govee Cloud API (staff+ auth)
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
+- `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
 
 **Edge Function Deployment Flags:**
 Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to prevent Supabase's gateway from rejecting valid user tokens before they reach the function code.
@@ -162,11 +163,12 @@ weather_config       - OpenWeatherMap API configuration (single row, id=1)
 
 ### Tesla Vehicle Data
 ```
-tesla_accounts  - Tesla account credentials (one per car owner)
+tesla_accounts  - Tesla account credentials + Fleet API config
                   (owner_name, tesla_email, refresh_token, access_token,
                    token_expires_at, is_active, last_error,
-                   last_token_refresh_at, created_at, updated_at)
-tesla_vehicles  - Vehicle data + cached state from Tesla API
+                   last_token_refresh_at, fleet_client_id, fleet_client_secret,
+                   fleet_api_base, created_at, updated_at)
+tesla_vehicles  - Vehicle data + cached state from Tesla Fleet API
                   (account_id [FK→tesla_accounts], vehicle_api_id, vin,
                    name, model, year, color, color_hex, svg_key, image_url,
                    display_order, is_active, vehicle_state [online/asleep/offline/unknown],
@@ -415,16 +417,21 @@ git push
   - Tools: `generate_image`, `edit_image`, `continue_editing`
   - Restart Claude Code after changing `.mcp.json`
 
-### Tesla Vehicle Data Poller
+### Tesla Vehicle Data Poller + Commands
 - **Worker:** `/opt/tesla-poller/worker.js` on DO droplet (systemd: `tesla-poller.service`)
-- **API:** Tesla Owner API (`https://owner-api.teslamotors.com`) — free, no Fleet API subscription needed
-- **Auth:** Each car owner generates a refresh token at tesla-info.com, admin pastes into Settings
-- **Token rotation:** Refresh tokens are SINGLE-USE — new token saved immediately after exchange
+- **API:** Tesla Fleet API (`https://fleet-api.prd.na.vn.cloud.tesla.com`)
+- **Auth URL:** `https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token`
+- **App:** "Tespaca" registered at developer.tesla.com, public key at `.well-known/appspecific/com.tesla.3p.public-key.pem`
+- **Fleet creds:** `fleet_client_id`, `fleet_client_secret`, `fleet_api_base` stored per account in `tesla_accounts` table
+- **Token rotation:** Refresh tokens may rotate — new token saved immediately after exchange
 - **Polling:** Every 5 min, sleep-aware (doesn't wake sleeping cars)
-- **DB:** `tesla_accounts` (credentials), `tesla_vehicles` (cached state in `last_state` JSONB)
+- **DB:** `tesla_accounts` (credentials + Fleet API config), `tesla_vehicles` (cached state in `last_state` JSONB)
 - **Client:** `residents/cars.js` polls Supabase every 30s with visibility-based pause
-- **Vehicles:** 4 cars on 4 separate Tesla accounts: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
+- **Vehicles:** 6 cars on 1 account: Casper (Model 3 2019), Delphi (Model Y 2023), Sloop (Model Y 2026), Cygnus (Model Y 2026), Kimba (Model Y 2022), Brisa Branca (Model 3 2022)
 - **Data tracked:** battery, range, charging state, odometer, climate, location, tire pressure, lock state
+- **Commands:** `tesla-command` Supabase edge function — lock, unlock, wake, flash lights, honk horn
+- **Commands auth:** resident+ role required (any resident can unlock to rotate cars off chargers)
+- **UI:** Lock/unlock and flash buttons on each car card in `residents/cars.js`
 
 ### Camera Streaming (go2rtc + Caddy)
 - **Server:** go2rtc v1.9.14 on Alpaca Mac (`~/go2rtc/go2rtc`)
@@ -533,15 +540,18 @@ git push
    - Retry up to 3x on failure, 3s rate-limit delay between API calls
    - Systemd service: `image-gen.service` (runs as `bugfixer` user)
    - Nano Banana MCP (`.mcp.json`, gitignored) for interactive image gen in Claude Code
-20. **Cars Resident Page + Tesla Poller** - Live Tesla vehicle data at `residents/cars.html`
-   - 4 Tesla vehicles on 4 separate accounts: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
-   - AI-generated hero images from Gemini, with SVG fallback
-   - DO droplet poller (`tesla-poller.service`) polls Tesla Owner API every 5 min
+20. **Cars Resident Page + Tesla Fleet API** - Live Tesla vehicle data + commands at `residents/cars.html`
+   - 6 Tesla vehicles on 1 account: Casper (Model 3 2019), Delphi (Model Y 2023), Sloop (Model Y 2026), Cygnus (Model Y 2026), Kimba (Model Y 2022), Brisa Branca (Model 3 2022)
+   - Migrated from Tesla Owner API (dead) to Fleet API (`fleet-api.prd.na.vn.cloud.tesla.com`)
+   - "Tespaca" app registered at developer.tesla.com, EC public key hosted in repo
+   - Fleet API creds (`fleet_client_id`, `fleet_client_secret`) stored per account in `tesla_accounts`
+   - DO droplet poller (`tesla-poller.service`) polls Fleet API every 5 min
    - Sleep-aware: doesn't wake sleeping cars, just records state
-   - Token rotation: single-use refresh tokens saved immediately after exchange
    - Client polls Supabase every 30s with visibility-based pause
    - Admin Settings tab for pasting refresh tokens per account
    - Data grid: battery, odometer, status, climate, location, tires, lock state
+   - Lock/unlock + flash buttons on each car card via `tesla-command` edge function
+   - Edge function handles wake-up (30s polling) before sending commands to sleeping cars
    - Staleness indicator shows time since last sync
 21. **Camera Streaming via go2rtc** - Live HLS camera feeds on Cameras resident page
    - 3 UniFi G5 PTZ cameras restreamed via go2rtc on Alpaca Mac
