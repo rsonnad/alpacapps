@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cameras - Alpaca Playhouse</title>
+  <title>Cars - Alpaca Playhouse</title>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="stylesheet" href="../spaces/styles.css?v=5">
@@ -40,7 +40,7 @@
         <a href="/residents/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; Alpaca Playhouse</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.42</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.01</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -54,22 +54,24 @@
     <div class="manage-tabs" id="tabNav"></div>
 
     <!-- Main Content -->
-    <main class="manage-content cameras-page">
-      <section class="section">
+    <main class="manage-content cars-page">
+
+      <!-- Fleet Section -->
+      <section class="section" id="fleetSection">
         <div class="section-header">
-          <h2>Live Camera Feeds</h2>
+          <h2>Tesla Fleet</h2>
         </div>
         <div class="section-body">
-          <div class="camera-grid" id="cameraGrid">
-            <!-- Rendered by JS -->
+          <div class="car-grid" id="carGrid">
+            <!-- Rendered by cars.js -->
           </div>
         </div>
       </section>
+
     </main>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-  <script type="module" src="cameras.js"></script>
+  <script type="module" src="cars.js"></script>
 </body>
 </html>
