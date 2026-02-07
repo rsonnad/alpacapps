@@ -92,12 +92,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       setupEventListeners();
       await refreshAllStates();
       startPolling();
-      // Refresh group states when PAI takes light actions
+      // Sync UI when PAI takes light actions
       window.addEventListener('pai-actions', (e) => {
         const lightActions = (e.detail?.actions || []).filter(a => a.type === 'control_lights');
+        for (const action of lightActions) {
+          if (!action.result?.startsWith('OK:')) continue;
+          // Find group by name match
+          const group = goveeGroups.find(g =>
+            g.name.toLowerCase() === (action.target || '').toLowerCase()
+          );
+          if (!group) continue;
+          const gid = group.groupId;
+          // Parse what changed from the result string
+          const r = action.result.toLowerCase();
+          if (r.includes(' on')) {
+            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
+          } else if (r.includes(' off')) {
+            groupStates[gid] = { ...groupStates[gid], on: false, disconnected: false };
+          } else if (r.includes(' color')) {
+            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
+          } else if (r.includes(' brightness')) {
+            groupStates[gid] = { ...groupStates[gid], on: true, disconnected: false };
+          }
+          updateGroupUI(gid);
+        }
+        // Also do a background Govee state refresh for accuracy
         if (lightActions.length) {
-          // Short delay to let Govee propagate the state change
-          setTimeout(() => refreshAllStates(), 1500);
+          setTimeout(() => refreshAllStates(), 2000);
         }
       });
       // Load child device states in background (staggered to respect rate limits)

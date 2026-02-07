@@ -266,7 +266,8 @@ RULES:
     for (const g of scope.goveeGroups) {
       parts.push(`- "${g.name}" (area: ${g.area}, id: ${g.deviceId}, sku: ${g.sku})`);
     }
-    parts.push(`Actions: turn on/off, set brightness (1-100), change color (name or hex)`);
+    parts.push(`Actions: turn on/off, set brightness (1-100), change color (name or hex)
+IMPORTANT: Lights must be ON to change color or brightness. If the user asks to change color/brightness, ALWAYS call control_lights twice: first with action "on", then with the color/brightness action. The system will NOT auto-turn-on for you.`);
   } else {
     parts.push(`\nNo lighting groups available for this user.`);
   }
@@ -548,6 +549,33 @@ async function executeToolCall(
           }
           default:
             return `Unknown light action: ${args.action}`;
+        }
+
+        // Auto-turn on light before color/brightness changes (Govee requires power on first)
+        if (args.action === "color" || args.action === "brightness") {
+          const onPayload = {
+            requestId: `${Date.now()}-on`,
+            payload: {
+              sku: args.sku || "SameModeGroup",
+              device: args.device_id,
+              capability: {
+                type: "devices.capabilities.on_off",
+                instance: "powerSwitch",
+                value: 1,
+              },
+            },
+          };
+          console.log("PAI → Govee auto-on:", JSON.stringify(onPayload));
+          await fetch(`${GOVEE_BASE_URL}/device/control`, {
+            method: "POST",
+            headers: {
+              "Govee-API-Key": goveeApiKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(onPayload),
+          });
+          // Brief pause for Govee to process power-on before sending color/brightness
+          await new Promise((r) => setTimeout(r, 500));
         }
 
         // Call Govee Cloud API directly (avoids edge-function-to-edge-function routing issues)
