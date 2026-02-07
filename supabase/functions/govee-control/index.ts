@@ -55,14 +55,14 @@ serve(async (req) => {
       return jsonResponse({ error: "Invalid token" }, 401);
     }
 
-    // Verify user has staff+ role
+    // Verify user has resident+ role
     const { data: appUser } = await supabase
       .from("app_users")
       .select("role")
       .eq("auth_user_id", user.id)
       .single();
 
-    if (!appUser || !["staff", "admin"].includes(appUser.role)) {
+    if (!appUser || !["resident", "associate", "staff", "admin"].includes(appUser.role)) {
       return jsonResponse({ error: "Insufficient permissions" }, 403);
     }
 

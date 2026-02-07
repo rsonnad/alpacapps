@@ -6,6 +6,7 @@
 
 import { initAuth, getAuthState, signOut, onAuthStateChange } from './auth.js';
 import { errorLogger } from './error-logger.js';
+import { initPaiWidget } from './pai-widget.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -137,10 +138,11 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
       // Render tab navigation
       renderResidentTabNav(activeTab, state.appUser?.role);
 
-      // Sign out handlers (only bind once)
+      // Sign out handlers + PAI widget (only bind once)
       if (!pageContentShown) {
         document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
         document.getElementById('headerSignOutBtn')?.addEventListener('click', () => signOut());
+        initPaiWidget();
       }
 
       pageContentShown = true;

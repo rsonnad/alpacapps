@@ -36,6 +36,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `pdf-service.js` - PDF generation from markdown using jsPDF
 - `signwell-service.js` - SignWell e-signature API integration
 - `sms-service.js` - SMS sending via Telnyx (mirrors email-service.js pattern)
+- `pai-widget.js` - PAI floating chat widget (injected on all resident pages via resident-shell.js)
 
 ### Consumer View (`/spaces/`)
 - `app.js` - Public listing with real availability from assignments
@@ -64,7 +65,8 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
 - `send-email/` - Outbound email via Resend API (43 templates)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards
-- `govee-control/` - Proxies requests to Govee Cloud API (staff+ auth)
+- `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
+- `alpaca-ai/` - PAI chat assistant: Gemini-powered natural language smart home control + property Q&A (resident+ auth)
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
@@ -83,6 +85,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
+| `alpaca-ai` | `supabase functions deploy alpaca-ai --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
