@@ -10,3 +10,4 @@ HOMEAUTOMATION.local.md
 *.swo
 .idea/
 .vscode/
+mobile/node_modules/
