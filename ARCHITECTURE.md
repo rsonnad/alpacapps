@@ -66,6 +66,9 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Sonos Control API | Alpaca Mac | node-sonos-http-api on port 5005 |
 | Network Management | UDM Pro | UniFi Network API on https://192.168.1.1 |
 | Camera Streaming | UDM Pro | UniFi Protect RTSP on port 7441 |
+| Nest Thermostats | Google SDM API | OAuth tokens in `nest_config` table |
+| Weather Forecast | OpenWeatherMap | API key in `weather_config` table |
+| Govee Lighting | Govee Cloud API | API key as Supabase secret `GOVEE_API_KEY` |
 
 ## Repository Structure
 
@@ -130,7 +133,13 @@ alpacapps/
 │       │   └── index.ts
 │       ├── resend-inbound-webhook/  # Inbound email receiver & router
 │       │   └── index.ts
-│       └── contact-form/      # Contact form submission handler
+│       ├── contact-form/      # Contact form submission handler
+│       │   └── index.ts
+│       ├── govee-control/     # Govee Cloud API proxy (staff+ auth)
+│       │   └── index.ts
+│       ├── sonos-control/     # Sonos HTTP API proxy via Alpaca Mac (resident+ auth)
+│       │   └── index.ts
+│       └── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
 │           └── index.ts
 │
 ├── login/                  # Login page
@@ -155,6 +164,19 @@ alpacapps/
 │   ├── media.js            # Media library logic
 │   ├── users.html          # User management
 │   └── users.js            # User management logic
+│
+├── residents/             # Resident-facing pages (auth required, resident+ role)
+│   ├── climate.html       # Climate page: thermostats + weather forecast
+│   ├── thermostat.js      # Climate page logic (Nest API + OpenWeatherMap)
+│   ├── playhomeauto.html  # Govee lighting control page
+│   ├── playhomeauto.js    # Lighting page logic
+│   ├── sonos.html         # Sonos music control page
+│   ├── sonos.js           # Music page logic
+│   ├── cameras.html       # Camera feeds page
+│   ├── cameras.js         # Camera page logic
+│   ├── cars.html          # Vehicle info page
+│   ├── cars.js            # Cars page logic
+│   └── residents.css      # Shared CSS for all resident pages
 │
 ├── bug-reporter-extension/ # Chrome extension for bug reporting
 │   ├── manifest.json       # Manifest V3
@@ -1412,6 +1434,96 @@ DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
 ### Sonos Rooms (12 zones)
 
 Outhouse, Living Sound, SkyBalcony Sound, MasterBlaster, Pequeno, Dining Sound, Garage Bridge, Front Outside Sound, DJ, Backyard Sound, Skyloft Sound, garage outdoors
+
+## Nest Thermostats
+
+3 Google Nest thermostats controlled via the Google Smart Device Management (SDM) API.
+
+### Architecture
+
+```
+Browser → nest-control Edge Function → Google SDM API
+                │                            │
+                └── nest_config (OAuth) ─────┘
+                    (refresh_token → access_token auto-refresh)
+```
+
+### Devices
+
+| Room | LAN IP | SDM Device ID |
+|------|--------|---------------|
+| Master | 192.168.1.111 | Populated after OAuth setup |
+| Kitchen | 192.168.1.139 | Populated after OAuth setup |
+| Skyloft | 192.168.1.249 | Populated after OAuth setup |
+
+### Database Tables
+
+- `nest_config` (single row, id=1) — Google OAuth credentials, access/refresh tokens, test mode
+- `nest_devices` — Cached thermostat info with `last_state` JSONB for instant page loads
+- `thermostat_rules` — Future rules engine schema (schedule, temp triggers, weather triggers)
+
+### Edge Function: `nest-control`
+
+| Action | Role | Description |
+|--------|------|-------------|
+| `listDevices` | resident+ | List all SDM devices |
+| `getDeviceState` | resident+ | Get single device state, caches in `nest_devices.last_state` |
+| `getAllStates` | resident+ | Get all active thermostat states in parallel |
+| `setTemperature` | resident+ | Set target temp (F→C conversion) |
+| `setMode` | resident+ | Set mode: HEAT, COOL, HEATCOOL, OFF |
+| `setEco` | resident+ | Toggle eco: MANUAL_ECO or OFF |
+| `oauthCallback` | admin | Exchange OAuth code for tokens (one-time setup) |
+
+### OAuth Setup (one-time)
+
+1. Google Cloud Console: enable SDM API, create OAuth 2.0 Web client
+2. Device Access Console: register ($5), create project, link OAuth client
+3. Insert `google_client_id`, `google_client_secret`, `sdm_project_id` into `nest_config`
+4. Deploy edge function: `supabase functions deploy nest-control`
+5. Admin visits Climate tab → Settings → "Authorize Google Account"
+6. Click "Discover Devices" to populate `nest_devices` table
+
+## Weather Forecast
+
+48-hour weather forecast on the Climate page via OpenWeatherMap.
+
+### Architecture
+
+```
+Browser → OpenWeatherMap API (client-side, no edge function)
+              │
+              └── weather_config table (API key, lat/lon)
+```
+
+### Display
+
+1. **Rain windows summary** — Condensed view of when rain is expected (e.g., "Today 2 PM - 5 PM, 70% chance")
+2. **Hourly detail** — Expandable bar chart showing temp + precipitation probability per hour, grouped by day
+
+### Configuration
+
+- `weather_config` table (single row, id=1)
+- Location: 160 Still Forest Dr, Cedar Creek, TX (lat: 30.13, lon: -97.46)
+- Supports One Call API 3.0 with 2.5 free tier fallback
+- Rain threshold: 30% probability of precipitation
+
+## Resident Pages
+
+All resident pages live in `/residents/` and share:
+- `shared/resident-shell.js` — Auth flow, tab navigation (Cameras, Climate, Lighting, Music, Cars), toast notifications
+- `residents/residents.css` — Shared CSS for all resident pages
+- Tab nav auto-rendered by `initResidentPage({ activeTab, requiredRole, onReady })`
+- Role hierarchy: admin > staff > resident = associate
+- Admin-only sections use `.admin-only` CSS class, shown when `body.is-admin`
+
+### Edge Function Pattern (resident pages)
+
+All resident-facing edge functions follow the same pattern:
+1. Verify Bearer token (Supabase session)
+2. Check `app_users` role (resident+ or staff+ depending on function)
+3. Read config from single-row config table
+4. Proxy request to external API
+5. Return response
 
 ## Related Documentation
 

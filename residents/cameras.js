@@ -1,5 +1,5 @@
 /**
- * Cameras Page - Live camera feeds via HLS proxy
+ * Cameras Page - Live camera feeds via go2rtc + HLS proxy
  * Loads stream config from camera_streams table, plays via HLS.js
  */
 
@@ -135,7 +135,7 @@ function startStream(camIndex, quality) {
   // Initialize retry counter
   if (retryCount[camIndex] === undefined) retryCount[camIndex] = 0;
 
-  const hlsUrl = `${stream.proxy_base_url}/${stream.stream_name}/index.m3u8`;
+  const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}`;
 
   overlay.classList.remove('hidden');
   const retries = retryCount[camIndex];

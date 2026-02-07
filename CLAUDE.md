@@ -49,12 +49,23 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `media.js` - Media library with tagging and filtering
 - Shows occupant info, visibility controls, edit capabilities
 
+### Resident View (`/residents/`)
+- `climate.html` / `thermostat.js` - Climate page: Nest thermostats + 48-hour weather forecast
+- `playhomeauto.html` / `playhomeauto.js` - Govee lighting control
+- `sonos.html` / `sonos.js` - Sonos music control
+- `cameras.html` / `cameras.js` - Camera feeds
+- `cars.html` / `cars.js` - Vehicle info
+- `residents.css` - Shared CSS for all resident pages
+
 ### Supabase Edge Functions (`/supabase/functions/`)
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
 - `send-email/` - Outbound email via Resend API (43 templates)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards
+- `govee-control/` - Proxies requests to Govee Cloud API (staff+ auth)
+- `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
+- `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 
 ## Database Schema (Supabase)
 
@@ -114,6 +125,26 @@ govee_devices        - All Govee/AiDot smart lights (63 devices)
                        parent_group_id, display_order, space_id)
 govee_models         - SKU → friendly model name lookup (16 rows)
                       (sku [PK], model_name, category)
+```
+
+### Nest Thermostat System
+```
+nest_config          - Google SDM API OAuth credentials (single row, id=1)
+                      (google_client_id, google_client_secret, sdm_project_id,
+                       refresh_token, access_token, token_expires_at,
+                       is_active, test_mode)
+nest_devices         - Cached thermostat info (3 devices: Master, Kitchen, Skyloft)
+                      (sdm_device_id, room_name, device_type, display_order,
+                       is_active, last_state [jsonb], lan_ip)
+thermostat_rules     - Future rules engine (schema only, not yet implemented)
+                      (name, device_id [FK→nest_devices], rule_type,
+                       conditions [jsonb], actions [jsonb], is_active, priority)
+```
+
+### Weather System
+```
+weather_config       - OpenWeatherMap API configuration (single row, id=1)
+                      (owm_api_key, latitude, longitude, location_name, is_active)
 ```
 
 ### Legacy (Deprecated - don't use for new features)
@@ -308,6 +339,25 @@ git push
 - UniFi Network API on UDM Pro port 443: firewall, DHCP, WiFi management
 - 12 Sonos zones controllable via `http://<alpaca-tailscale-ip>:5005/{room}/{action}`
 
+### Google Nest (Thermostats)
+- **API**: Google Smart Device Management (SDM) API
+- **Auth**: OAuth 2.0 with refresh token stored in `nest_config` table
+- **Devices**: 3 Nest thermostats — Master, Kitchen, Skyloft
+- **LAN IPs**: 192.168.1.111 (Master), .139 (Kitchen), .249 (Skyloft)
+- **Edge function**: `nest-control` proxies to SDM API, handles token refresh
+- **SDM API base**: `https://smartdevicemanagement.googleapis.com/v1`
+- **Traits used**: Temperature, Humidity, ThermostatMode, ThermostatHvac, ThermostatEco, ThermostatTemperatureSetpoint, Connectivity
+- **Temperature**: SDM API uses Celsius, UI shows Fahrenheit, edge function converts
+- **Rate limit**: 5 QPS per SDM project (polling at 0.1 QPS is well within limit)
+- **OAuth setup**: One-time admin flow via Climate tab Settings → "Authorize Google Account"
+
+### OpenWeatherMap (Weather)
+- **API**: One Call API 3.0 (with 2.5 free tier fallback)
+- **Config**: `weather_config` table (owm_api_key, latitude, longitude, location_name)
+- **Location**: 160 Still Forest Dr, Cedar Creek, TX (30.13, -97.46)
+- **Display**: Rain windows summary + expandable hourly 48-hour forecast
+- **Client-side only**: No edge function needed, API key safe for read-only weather
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -375,6 +425,20 @@ git push
    - Settings (test mode toggle, device inventory) shown to admin users on lighting page
    - Edge function: `govee-control` proxies requests to Govee Cloud API (staff+ auth required)
    - Areas: Garage Mahal (17), Spartan (18), Outdoor (12), Outhouse (7), Interior (5), Bedrooms (4)
+17. **Nest Thermostat Integration** - Climate page with Google SDM API
+   - `residents/climate.html` + `residents/thermostat.js` — Climate tab in resident nav
+   - 3 thermostats: Master, Kitchen, Skyloft (LAN IPs: .111, .139, .249)
+   - Full controls: current temp, target temp +/-, mode (Heat/Cool/Heat-Cool/Off), eco toggle
+   - Edge function: `nest-control` handles OAuth token refresh + SDM API proxy
+   - DB: `nest_config` (OAuth creds), `nest_devices` (cached state), `thermostat_rules` (future)
+   - OAuth flow: admin completes one-time Google authorization from Settings section
+   - 30s polling with visibility-based pause (same pattern as Sonos/Govee)
+18. **Weather Forecast on Climate Page** - 48-hour forecast via OpenWeatherMap
+   - Rain windows summary at top: "Rain expected: Today 2 PM - 5 PM (70% chance)"
+   - Expandable hourly detail chart with temp and precipitation probability per hour
+   - `weather_config` table stores OWM API key + lat/lon (Cedar Creek, TX: 30.13, -97.46)
+   - Supports One Call API 3.0 with 2.5 free tier fallback
+   - Client-side API call (no edge function needed)
 
 ## Testing Changes
 

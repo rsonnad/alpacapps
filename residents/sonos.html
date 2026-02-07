@@ -40,7 +40,7 @@
         <a href="/residents/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; Alpaca Playhouse</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.61</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.62</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -61,38 +61,34 @@
     <main class="manage-content sonos-page">
       <div class="sonos-layout">
 
-        <!-- LEFT: Music Library (Playlists + Favorites) -->
-        <aside class="sonos-library">
-          <div class="sonos-library__header">
-            <h3>Music Library</h3>
-            <input type="search" id="librarySearch" class="sonos-library__search"
-              placeholder="Filter..." autocomplete="off">
-          </div>
-
-          <!-- Playlists -->
-          <div class="sonos-library__section">
-            <div class="sonos-library__section-header">
-              <span>Playlists <span id="playlistsCount" class="text-muted"></span></span>
-              <button class="sonos-library-toggle btn-small" data-target="playlistsList">Hide</button>
+        <!-- LEFT: Music Library + Schedules -->
+        <div class="sonos-sidebar">
+          <aside class="sonos-library">
+            <div class="sonos-library__header">
+              <h3>Music Library</h3>
+              <input type="search" id="librarySearch" class="sonos-library__search"
+                placeholder="Filter..." autocomplete="off">
             </div>
-            <div id="playlistsList" class="sonos-library__list">
+
+            <!-- Library sections rendered dynamically by JS -->
+            <div id="libraryBody">
               <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;">Loading...</p>
             </div>
-          </div>
 
-          <!-- Favorites -->
-          <div class="sonos-library__section">
-            <div class="sonos-library__section-header">
-              <span>Favorites <span id="favoritesCount" class="text-muted"></span></span>
-              <button class="sonos-library-toggle btn-small" data-target="favoritesList">Hide</button>
-            </div>
-            <div id="favoritesList" class="sonos-library__list">
-              <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;">Loading...</p>
-            </div>
-          </div>
+            <p class="sonos-library__hint">Drag a playlist or favorite onto a zone to play it. On mobile, tap to select then tap a zone.</p>
+          </aside>
 
-          <p class="sonos-library__hint">Drag a playlist or favorite onto a zone to play it. On mobile, tap to select then tap a zone.</p>
-        </aside>
+          <!-- Scheduled Alarms -->
+          <section class="sonos-schedules-section" id="schedulesSection">
+            <div class="sonos-schedules__header">
+              <h3>Scheduled</h3>
+              <button class="btn-small staff-only" id="addScheduleBtn" title="Add a scheduled alarm">+ Add</button>
+            </div>
+            <div id="schedulesList">
+              <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;text-align:center;">Loading...</p>
+            </div>
+          </section>
+        </div>
 
         <!-- RIGHT: Zone Groups -->
         <div class="sonos-main">
@@ -100,6 +96,7 @@
             <div class="section-header">
               <h2>Zones</h2>
               <div class="section-header-actions">
+                <button class="btn-small staff-only" id="groupRoomsBtn" title="Group/ungroup rooms">Group Rooms</button>
                 <button class="btn-small" id="refreshZonesBtn" title="Refresh all zone states">Refresh</button>
                 <button class="btn-all-off" id="pauseAllBtn" title="Pause all zones">Pause All</button>
               </div>
