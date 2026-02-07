@@ -263,17 +263,27 @@ function renderSettings() {
   section.style.display = '';
 
   list.innerHTML = accounts.map(acc => {
+    const hasError = !!acc.last_error;
     const hasToken = !!acc.refresh_token;
-    const statusDot = hasToken
+    const isHealthy = hasToken && !hasError;
+
+    const statusDot = isHealthy
       ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--available, #27ae60);margin-right:0.4rem;"></span>'
       : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--occupied, #e74c3c);margin-right:0.4rem;"></span>';
-    const statusText = hasToken ? 'Connected' : 'Not connected';
-    const errorHtml = acc.last_error
-      ? `<div style="font-size:0.7rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Error: ${acc.last_error}</div>`
+    const statusText = isHealthy ? 'Connected' : hasError ? 'Needs reconnection' : 'Not connected';
+
+    const errorHtml = hasError
+      ? `<div style="font-size:0.7rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Token expired \u2014 click Reconnect to re-authorize with Tesla.</div>`
       : '';
-    const connectBtn = hasToken
-      ? `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="font-size:0.7rem;">Reconnect</button>`
-      : `<button class="btn-small" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
+
+    let connectBtn;
+    if (hasError) {
+      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="background:var(--occupied,#e74c3c);color:white;border-color:var(--occupied,#e74c3c);">Reconnect</button>`;
+    } else if (hasToken) {
+      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="font-size:0.7rem;">Reconnect</button>`;
+    } else {
+      connectBtn = `<button class="btn-small" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
+    }
 
     return `
       <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid var(--border-light, #f0f0f0);">
