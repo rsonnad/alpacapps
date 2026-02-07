@@ -94,13 +94,17 @@ function renderCameras() {
   grid.querySelectorAll('.quality-select').forEach(select => {
     select.addEventListener('change', (e) => {
       const idx = parseInt(e.target.dataset.cam);
+      retryCount[idx] = 0;
       startStream(idx, e.target.value);
     });
   });
 
-  // Start all streams at medium quality
+  // Start all streams at low quality (most reliable, fastest to connect)
   cameras.forEach((cam, i) => {
-    const defaultQuality = cam.streams.med ? 'med' : (cam.streams.low ? 'low' : 'high');
+    const defaultQuality = cam.streams.low ? 'low' : (cam.streams.med ? 'med' : 'high');
+    // Set the select to match
+    const select = grid.querySelector(`.quality-select[data-cam="${i}"]`);
+    if (select) select.value = defaultQuality;
     startStream(i, defaultQuality);
   });
 }
@@ -108,7 +112,9 @@ function renderCameras() {
 // =============================================
 // HLS PLAYBACK
 // =============================================
-const activeHls = {}; // track Hls instances for cleanup
+const activeHls = {};   // track Hls instances for cleanup
+const retryCount = {};  // retry counter per camera
+const MAX_RETRIES = 8;  // ~40s of retrying (5s intervals)
 
 function startStream(camIndex, quality) {
   const cam = cameras[camIndex];
@@ -126,14 +132,18 @@ function startStream(camIndex, quality) {
     delete activeHls[camIndex];
   }
 
+  // Initialize retry counter
+  if (retryCount[camIndex] === undefined) retryCount[camIndex] = 0;
+
   const hlsUrl = `${stream.proxy_base_url}/${stream.stream_name}/index.m3u8`;
 
   overlay.classList.remove('hidden');
-  overlay.querySelector('.camera-card__loading').textContent = 'Connecting...';
+  const retries = retryCount[camIndex];
+  overlay.querySelector('.camera-card__loading').textContent =
+    retries === 0 ? 'Connecting...' : `Warming up camera... (${retries}/${MAX_RETRIES})`;
   dot.className = 'status-dot status-connecting';
 
   if (typeof Hls === 'undefined') {
-    // HLS.js not loaded yet — show error
     overlay.querySelector('.camera-card__loading').textContent = 'Player not available';
     dot.className = 'status-dot status-offline';
     return;
@@ -144,6 +154,12 @@ function startStream(camIndex, quality) {
       enableWorker: true,
       lowLatencyMode: true,
       backBufferLength: 30,
+      manifestLoadingMaxRetry: 6,
+      manifestLoadingRetryDelay: 2000,
+      levelLoadingMaxRetry: 6,
+      levelLoadingRetryDelay: 2000,
+      fragLoadingMaxRetry: 6,
+      fragLoadingRetryDelay: 2000,
     });
     activeHls[camIndex] = hls;
 
@@ -151,6 +167,7 @@ function startStream(camIndex, quality) {
     hls.attachMedia(video);
 
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      retryCount[camIndex] = 0;
       overlay.classList.add('hidden');
       dot.className = 'status-dot status-live';
       video.play().catch(() => {});
@@ -158,27 +175,43 @@ function startStream(camIndex, quality) {
 
     hls.on(Hls.Events.ERROR, (event, data) => {
       if (data.fatal) {
-        overlay.classList.remove('hidden');
-        overlay.querySelector('.camera-card__loading').textContent = 'Stream unavailable';
-        dot.className = 'status-dot status-offline';
+        hls.destroy();
+        delete activeHls[camIndex];
 
-        // Retry after 10s
-        setTimeout(() => startStream(camIndex, quality), 10000);
+        if (retryCount[camIndex] < MAX_RETRIES) {
+          retryCount[camIndex]++;
+          // Retry in 5s — camera needs time to warm up on-demand
+          setTimeout(() => startStream(camIndex, quality), 5000);
+        } else {
+          overlay.classList.remove('hidden');
+          overlay.querySelector('.camera-card__loading').textContent = 'Stream offline';
+          dot.className = 'status-dot status-offline';
+          // Long retry after max retries exhausted
+          retryCount[camIndex] = 0;
+          setTimeout(() => startStream(camIndex, quality), 30000);
+        }
       }
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     // Native HLS (Safari/iOS)
     video.src = hlsUrl;
     video.addEventListener('loadedmetadata', () => {
+      retryCount[camIndex] = 0;
       overlay.classList.add('hidden');
       dot.className = 'status-dot status-live';
       video.play().catch(() => {});
     }, { once: true });
     video.addEventListener('error', () => {
-      overlay.classList.remove('hidden');
-      overlay.querySelector('.camera-card__loading').textContent = 'Stream unavailable';
-      dot.className = 'status-dot status-offline';
-      setTimeout(() => startStream(camIndex, quality), 10000);
+      if (retryCount[camIndex] < MAX_RETRIES) {
+        retryCount[camIndex]++;
+        setTimeout(() => startStream(camIndex, quality), 5000);
+      } else {
+        overlay.classList.remove('hidden');
+        overlay.querySelector('.camera-card__loading').textContent = 'Stream offline';
+        dot.className = 'status-dot status-offline';
+        retryCount[camIndex] = 0;
+        setTimeout(() => startStream(camIndex, quality), 30000);
+      }
     }, { once: true });
   } else {
     overlay.querySelector('.camera-card__loading').textContent = 'Browser not supported';

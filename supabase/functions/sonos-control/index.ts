@@ -15,6 +15,8 @@ interface SonosRequest {
     | "unmute"
     | "favorite"
     | "favorites"
+    | "playlists"
+    | "playlist"
     | "pauseall"
     | "resumeall"
     | "join"
@@ -143,6 +145,15 @@ serve(async (req) => {
       case "favorites":
         if (!room) return jsonResponse({ error: "Missing room" }, 400);
         path = `/${room}/favorites`;
+        break;
+      case "playlists":
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        path = `/${room}/playlists`;
+        break;
+      case "playlist":
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!body.name) return jsonResponse({ error: "Missing name" }, 400);
+        path = `/${room}/playlist/${encodeURIComponent(body.name)}`;
         break;
       case "pauseall":
         path = "/pauseall";

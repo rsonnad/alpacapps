@@ -39,8 +39,8 @@ srt: no
 # Path defaults — on-demand pulls save bandwidth
 pathDefaults:
   sourceOnDemand: yes
-  sourceOnDemandStartTimeout: 10s
-  sourceOnDemandCloseAfter: 10s
+  sourceOnDemandStartTimeout: 15s
+  sourceOnDemandCloseAfter: 60s
 
 ###############################################
 # Camera paths
