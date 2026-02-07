@@ -11,10 +11,10 @@ import { errorLogger } from './error-logger.js';
 // TAB DEFINITIONS
 // =============================================
 const RESIDENT_TABS = [
-  { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
-  { id: 'climate', label: 'Climate', href: 'climate.html' },
   { id: 'homeauto', label: 'Lighting', href: 'playhomeauto.html' },
   { id: 'music', label: 'Music', href: 'sonos.html' },
+  { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
+  { id: 'climate', label: 'Climate', href: 'climate.html' },
   { id: 'cars', label: 'Cars', href: 'cars.html' },
   // Future tabs:
   // { id: 'info', label: 'House Info', href: 'info.html' },
