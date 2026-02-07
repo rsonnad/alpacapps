@@ -23,7 +23,8 @@ interface SonosRequest {
     | "leave"
     | "bass"
     | "treble"
-    | "loudness";
+    | "loudness"
+    | "balance";
   room?: string;
   value?: number | string;
   name?: string;
@@ -195,6 +196,14 @@ serve(async (req) => {
         if (loudnessVal === undefined || loudnessVal === null)
           return jsonResponse({ error: "Missing value" }, 400);
         path = `/${room}/loudness/${encodeURIComponent(String(loudnessVal))}`;
+        break;
+      }
+      case "balance": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const balVal = body.value;
+        if (balVal === undefined || balVal === null)
+          return jsonResponse({ error: "Missing value" }, 400);
+        path = `/${room}/balance/${encodeURIComponent(String(balVal))}`;
         break;
       }
       default:

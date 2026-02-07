@@ -25,6 +25,7 @@ let schedules = [];        // Array of schedule objects from DB
 let pollTimer = null;
 let elapsedTimer = null;
 let volumeTimers = {};
+let balanceState = {};    // { roomName: value } — persisted locally since Sonos doesn't expose balance
 let dragItem = null;       // { type: 'playlist'|'favorite', name: string }
 let pendingLibraryItem = null;
 let userRole = null;       // 'admin', 'staff', 'resident', 'associate'
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (['staff', 'admin'].includes(userRole)) {
         document.body.classList.add('is-staff');
       }
+      loadBalanceState();
       await loadZones();
       renderZones();
       await Promise.all([loadPlaylists(), loadFavorites(), loadPlaylistTags(), loadSchedules(), loadScenes()]);
@@ -332,7 +334,9 @@ function renderZones() {
             <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
             ${ungroupBtn}
           </div>
-          ${group.members.map(m => `
+          ${group.members.map(m => {
+            const bal = balanceState[m.roomName] || 0;
+            return `
             <div class="sonos-group-eq__room-summary">
               <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
               <div class="sonos-group-eq__sliders">
@@ -349,8 +353,14 @@ function renderZones() {
                   <span class="sonos-eq-inline__val" data-eq-treble-val="${escapeHtml(m.roomName)}">${fmtEq(m.treble)}</span>
                 </div>
               </div>
-            </div>
-          `).join('')}
+              <div class="sonos-balance-inline">
+                <span class="sonos-balance-inline__label">L</span>
+                <input type="range" min="-100" max="100" value="${bal}" class="sonos-balance-inline__slider"
+                  data-action="balance" data-room="${escapeHtml(m.roomName)}">
+                <span class="sonos-balance-inline__label">R</span>
+              </div>
+            </div>`;
+          }).join('')}
         </div>`
       : '';
 
@@ -402,6 +412,12 @@ function renderZones() {
               ${statusText}${modeIcons.length ? ' &middot; ' + modeIcons.join(', ') : ''}${duration > 0 ? ' &middot; ' + state.elapsedTimeFormatted + ' / ' + formatDuration(duration) : ''}
             </span>
           </div>
+          ${!isGrouped ? `<div class="sonos-balance-inline sonos-balance-inline--header">
+            <span class="sonos-balance-inline__label">L</span>
+            <input type="range" min="-100" max="100" value="${balanceState[group.coordinatorName] || 0}" class="sonos-balance-inline__slider"
+              data-action="balance" data-room="${coordName}">
+            <span class="sonos-balance-inline__label">R</span>
+          </div>` : ''}
         </div>
 
         <div class="sonos-zone-card__track">
@@ -1170,6 +1186,14 @@ function setupEventListeners() {
       debouncedEq('treble', room, v);
       return;
     }
+
+    if (action === 'balance') {
+      const v = parseInt(e.target.value);
+      balanceState[room] = v;
+      saveBalanceState();
+      debouncedBalance(room, v);
+      return;
+    }
   });
 
   // Toggle individual volumes dropdown + tone controls expander
@@ -1691,6 +1715,13 @@ async function openEqModal(roomName) {
           <div class="eq-slider__range"><span>-10</span><span>0</span><span>+10</span></div>
         </div>
 
+        <div class="eq-slider-row">
+          <label class="eq-slider__label">Balance</label>
+          <div class="eq-balance__labels"><span>L</span><span>C</span><span>R</span></div>
+          <input type="range" min="-100" max="100" value="${balanceState[roomName] || 0}" class="eq-slider" id="eqBalanceSlider">
+          <div class="eq-slider__range"><span>-100</span><span>0</span><span>+100</span></div>
+        </div>
+
         <div class="eq-loudness-row">
           <span class="eq-slider__label">Loudness</span>
           <label class="toggle-switch">
@@ -1731,6 +1762,18 @@ async function openEqModal(roomName) {
     debouncedEq('treble', roomName, v);
   });
 
+  // Balance slider
+  const balanceSlider = overlay.querySelector('#eqBalanceSlider');
+  balanceSlider.addEventListener('input', () => {
+    const v = parseInt(balanceSlider.value);
+    balanceState[roomName] = v;
+    saveBalanceState();
+    debouncedBalance(roomName, v);
+    // Also sync the inline header slider if visible
+    const headerSlider = document.querySelector(`.sonos-balance-inline--header [data-room="${CSS.escape(escapeHtml(roomName))}"]`);
+    if (headerSlider) headerSlider.value = v;
+  });
+
   // Loudness toggle
   const loudnessToggle = overlay.querySelector('#eqLoudnessToggle');
   loudnessToggle.addEventListener('change', async () => {
@@ -1748,10 +1791,14 @@ async function openEqModal(roomName) {
     bassVal.textContent = '0';
     trebleSlider.value = 0;
     trebleVal.textContent = '0';
+    balanceSlider.value = 0;
+    balanceState[roomName] = 0;
+    saveBalanceState();
     try {
       await Promise.all([
         sonosApi('bass', { room: roomName, value: 0 }),
         sonosApi('treble', { room: roomName, value: 0 }),
+        sonosApi('balance', { room: roomName, value: 0 }),
       ]);
       showToast('EQ reset to flat', 'info', 1500);
     } catch (err) {
@@ -1775,4 +1822,33 @@ function debouncedEq(type, room, value) {
 function clearAllEqTimers() {
   Object.values(eqTimers).forEach(t => clearTimeout(t));
   eqTimers = {};
+}
+
+// =============================================
+// BALANCE CONTROL
+// =============================================
+let balanceTimers = {};
+
+function debouncedBalance(room, value) {
+  clearTimeout(balanceTimers[room]);
+  balanceTimers[room] = setTimeout(async () => {
+    try {
+      await sonosApi('balance', { room, value });
+    } catch (err) {
+      showToast(`Balance failed: ${err.message}`, 'error');
+    }
+  }, 400);
+}
+
+function saveBalanceState() {
+  try {
+    localStorage.setItem('sonos_balance', JSON.stringify(balanceState));
+  } catch {}
+}
+
+function loadBalanceState() {
+  try {
+    const saved = localStorage.getItem('sonos_balance');
+    if (saved) balanceState = JSON.parse(saved);
+  } catch {}
 }

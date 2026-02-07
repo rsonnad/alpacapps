@@ -41,7 +41,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.30 2:55a</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.31 3:12a</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -70,6 +70,21 @@
           <div class="car-grid" id="carGrid">
             <!-- Rendered by cars.js -->
           </div>
+        </div>
+      </section>
+
+      <!-- Tesla Settings (admin only) -->
+      <section class="section admin-only" id="teslaSettingsSection" style="display:none;">
+        <div class="section-header">
+          <h2>Tesla Settings</h2>
+        </div>
+        <div class="section-body">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+            Each car owner must generate a refresh token at
+            <a href="https://tesla-info.com/tesla-token.php" target="_blank" rel="noopener">tesla-info.com</a>
+            and provide it to you.
+          </p>
+          <div id="teslaAccountsList"></div>
         </div>
       </section>
 

@@ -1487,6 +1487,15 @@ span.sonos-library-item__star.starred {
   padding: 0 0.1rem;
 }
 
+.eq-balance__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 0 0.1rem;
+}
+
 .eq-loudness-row {
   display: flex;
   justify-content: space-between;
@@ -1627,6 +1636,35 @@ span.sonos-library-item__star.starred {
   text-align: right;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+}
+
+/* ===== BALANCE SLIDER ===== */
+.sonos-balance-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+
+.sonos-balance-inline--header {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.sonos-balance-inline__label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sonos-balance-inline__slider {
+  flex: 1;
+  accent-color: var(--accent);
+  height: 4px;
+  cursor: pointer;
+  min-width: 60px;
+  max-width: 120px;
 }
 
 /* ===== GROUPED ZONE: INDIVIDUAL VOLUMES (bottom of card) ===== */
@@ -2449,6 +2487,14 @@ span.sonos-library-item__star.starred {
   margin-left: auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Sync time (staleness indicator under car cards) */
+.car-card__sync-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: auto;
+  padding-top: 0.35rem;
 }
 
 /* ===== RESPONSIVE ===== */
