@@ -1,5 +1,5 @@
 #!/bin/bash
-# bump-version.sh — Increment version number from DB, update all HTML files, write back to DB.
+# bump-version.sh — Atomically increment version number in DB, update all HTML files.
 #
 # Usage: ./scripts/bump-version.sh
 #
@@ -9,55 +9,75 @@
 #   H:MMa/p = timestamp in Austin timezone (e.g., 8:04p)
 #
 # Flow:
-#   1. Read current version from site_config table
-#   2. Compute next version (bump NN if same day, reset to .01 if new day)
-#   3. Find-and-replace the old version string in all HTML files
-#   4. Write the new version back to the DB
-#   5. Print the new version to stdout
+#   1. Atomically increment version in DB using UPDATE ... RETURNING (no race conditions)
+#   2. Find-and-replace the old version string in all HTML files
+#   3. Print the new version to stdout
+#
+# The SQL does the increment in a single atomic statement:
+#   - If same day: bump sequence number
+#   - If new day: reset to .01
 
 set -euo pipefail
 
-PSQL="/opt/homebrew/opt/libpq/bin/psql"
-DB_URL="postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-
-# 1. Read current version from DB
-CURRENT_VERSION=$($PSQL "$DB_URL" -t -A -c "SELECT version FROM site_config WHERE id = 1;")
-if [ -z "$CURRENT_VERSION" ]; then
-  echo "ERROR: Could not read version from site_config" >&2
+# Auto-detect psql path (macOS Homebrew vs Linux)
+if [ -x "/opt/homebrew/opt/libpq/bin/psql" ]; then
+  PSQL="/opt/homebrew/opt/libpq/bin/psql"
+elif command -v psql &>/dev/null; then
+  PSQL="psql"
+else
+  echo "ERROR: psql not found" >&2
   exit 1
 fi
 
-# Parse current version: vYYMMDD.NN
-CURRENT_DATE="${CURRENT_VERSION:1:6}"   # e.g. "260206"
-CURRENT_SEQ="${CURRENT_VERSION:8:2}"    # e.g. "14"
+DB_URL="postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-# 2. Compute today's date in Austin timezone
+# Compute today's date and timestamp in Austin timezone
 TODAY=$(TZ="America/Chicago" date +"%y%m%d")
+TIMESTAMP=$(TZ="America/Chicago" date +"%-I:%M%p" | sed 's/AM/a/;s/PM/p/')
 
-if [ "$TODAY" = "$CURRENT_DATE" ]; then
-  # Same day — increment sequence
-  NEXT_SEQ=$(printf "%02d" $((10#$CURRENT_SEQ + 1)))
-else
-  # New day — reset to 01
-  NEXT_SEQ="01"
+# 1. Atomically increment version in DB and return the new value.
+#    This is a single UPDATE statement — no race condition between read and write.
+#    Logic:
+#      - Extract the date part (chars 2-7) and sequence part (chars 9-10) from current version
+#      - If date matches today: increment sequence
+#      - If new day: reset to 01
+#    Returns the new display version (e.g., "v260207.48 11:43a")
+NEW_DISPLAY_VERSION=$($PSQL "$DB_URL" -t -A --no-psqlrc -c "
+  UPDATE site_config
+  SET
+    version = CASE
+      WHEN substring(version from 2 for 6) = '${TODAY}'
+      THEN 'v${TODAY}.' || lpad((substring(version from 9 for 2)::int + 1)::text, 2, '0') || ' ${TIMESTAMP}'
+      ELSE 'v${TODAY}.01 ${TIMESTAMP}'
+    END,
+    updated_at = now()
+  WHERE id = 1
+  RETURNING version;
+" | head -1)
+
+if [ -z "$NEW_DISPLAY_VERSION" ]; then
+  echo "ERROR: Failed to bump version in site_config" >&2
+  exit 1
 fi
 
-NEW_VERSION="v${TODAY}.${NEXT_SEQ}"
-
-# Compute timestamp in Austin timezone (e.g., "8:04p" or "12:30a")
-TIMESTAMP=$(TZ="America/Chicago" date +"%-I:%M%p" | sed 's/AM/a/;s/PM/p/')
-DISPLAY_VERSION="${NEW_VERSION} ${TIMESTAMP}"
-
-# 3. Replace ANY version string (v + 6 digits + . + 2 digits, optionally followed by timestamp) in all HTML files
+# 2. Replace ANY version string in all HTML files
 cd "$PROJECT_ROOT"
 VERSION_PATTERN='v[0-9]\{6\}\.[0-9]\{2\}\( [0-9]\{1,2\}:[0-9]\{2\}[ap]\)\{0,1\}'
+
+# Detect sed flavor: macOS BSD vs GNU
+IS_GNU_SED=false
+if sed --version 2>/dev/null | grep -q 'GNU'; then
+  IS_GNU_SED=true
+fi
+
 find . -name "*.html" -not -path "./.git/*" -exec grep -l 'v[0-9]\{6\}\.[0-9]\{2\}' {} \; | while read -r file; do
-  sed -i '' "s/$VERSION_PATTERN/$DISPLAY_VERSION/g" "$file"
+  if [ "$IS_GNU_SED" = true ]; then
+    sed -i "s/$VERSION_PATTERN/$NEW_DISPLAY_VERSION/g" "$file"
+  else
+    sed -i '' "s/$VERSION_PATTERN/$NEW_DISPLAY_VERSION/g" "$file"
+  fi
 done
 
-# 4. Write new version to DB (store with timestamp)
-$PSQL "$DB_URL" -c "UPDATE site_config SET version = '$DISPLAY_VERSION', updated_at = now() WHERE id = 1;" > /dev/null
-
-# 5. Output new version
-echo "$DISPLAY_VERSION"
+# 3. Output new version
+echo "$NEW_DISPLAY_VERSION"

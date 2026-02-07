@@ -32,6 +32,7 @@ const DIRS_TO_COPY = [
   'mistiq',
   'styles',
   'assets/branding',
+  'mobile/app',  // New mobile-first SPA
 ];
 
 // Individual files to copy (relative to project root)
@@ -187,16 +188,16 @@ for (const htmlFile of htmlFiles) {
 }
 console.log(`  ✅ Processed ${injectedCount} HTML files`);
 
-// Replace root index.html with a redirect to residents/cameras.html
-// The mobile app starts at the resident experience, not the marketing landing page
-console.log('\n📱 Setting mobile app entry point to /residents/cameras.html...');
+// Replace root index.html with a redirect to the mobile app
+// The mobile app starts at the new single-page resident app
+console.log('\n📱 Setting mobile app entry point to /mobile/app/index.html...');
 const mobileIndex = path.join(WWW, 'index.html');
 fs.writeFileSync(mobileIndex, `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0;url=/residents/cameras.html">
+  <meta http-equiv="refresh" content="0;url=/mobile/app/index.html">
   <script src="/capacitor.js"></script>
   <title>Alpaca Playhouse</title>
 </head>
