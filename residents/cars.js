@@ -271,6 +271,9 @@ function renderSettings() {
     const errorHtml = acc.last_error
       ? `<div style="font-size:0.7rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Error: ${acc.last_error}</div>`
       : '';
+    const connectBtn = hasToken
+      ? `<button class="btn-small" onclick="window._connectTesla(${acc.id})" style="font-size:0.7rem;">Reconnect</button>`
+      : `<button class="btn-small" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
 
     return `
       <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid var(--border-light, #f0f0f0);">
@@ -279,10 +282,7 @@ function renderSettings() {
           <div style="font-size:0.7rem;color:var(--text-muted);">${statusText}${acc.tesla_email ? ` \u00b7 ${acc.tesla_email}` : ''}</div>
           ${errorHtml}
         </div>
-        <input type="text" id="token_${acc.id}" placeholder="Paste refresh token..."
-               style="width:200px;font-size:0.75rem;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:4px;"
-               value="" />
-        <button class="btn-small" onclick="window._saveToken(${acc.id})">Save</button>
+        ${connectBtn}
       </div>
     `;
   }).join('');
@@ -331,34 +331,27 @@ window._sendCommand = async function(vehicleId, command) {
   }
 };
 
-// Save token handler (attached to window for onclick access)
-window._saveToken = async function(accountId) {
-  const input = document.getElementById(`token_${accountId}`);
-  if (!input) return;
-  const token = input.value.trim();
-  if (!token) {
-    showToast('Please paste a refresh token', 'error');
+// Connect Tesla account via OAuth flow
+window._connectTesla = async function(accountId) {
+  // Get current Supabase session token to pass through OAuth state
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    showToast('Not logged in. Please sign in first.', 'error');
     return;
   }
 
-  const { error } = await supabase
-    .from('tesla_accounts')
-    .update({
-      refresh_token: token,
-      last_error: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', accountId);
+  // Build Tesla OAuth URL with account_id and token in state
+  const state = `${accountId}:${session.access_token}`;
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',
+    redirect_uri: 'https://alpacaplayhouse.com/auth/tesla/callback',
+    scope: 'openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds',
+    state: state,
+    audience: 'https://fleet-api.prd.na.vn.cloud.tesla.com',
+  });
 
-  if (error) {
-    showToast(`Failed to save: ${error.message}`, 'error');
-    return;
-  }
-
-  input.value = '';
-  showToast('Token saved! Data will appear within 5 minutes.', 'success');
-  await loadAccounts();
-  renderSettings();
+  window.location.href = `https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/authorize?${params.toString()}`;
 };
 
 // =============================================

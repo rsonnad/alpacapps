@@ -19,67 +19,113 @@
       background: white;
       border-radius: 12px;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 500px;
       width: 90%;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
       text-align: center;
     }
-    .code {
-      background: #f0f0f0;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      word-break: break-all;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-    }
     .success { color: #2d8a4e; }
     .error { color: #d32f2f; }
-    button {
-      background: #2d3142;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      margin-top: 0.5rem;
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #2d3142;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 1rem auto;
     }
-    button:hover { background: #3d4152; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    a { color: #2d3142; }
   </style>
 </head>
 <body>
   <div class="card" id="card">
     <h2>Tesla Authorization</h2>
-    <p>Processing...</p>
+    <div class="spinner"></div>
+    <p>Connecting your Tesla account...</p>
   </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script>
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY1ODgxNjUsImV4cCI6MjA0MjE2NDE2NX0.vGSLw5PtxKcdRGPQHxNfoHqVvmzWQWFiCZsHaRuIvNw';
+
+    const card = document.getElementById('card');
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const error = params.get('error');
-    const state = params.get('state');
-    const card = document.getElementById('card');
+    const stateParam = params.get('state') || '';
 
-    if (error) {
-      card.innerHTML = `
-        <h2 class="error">Authorization Failed</h2>
-        <p>Error: ${error}</p>
-        <p>${params.get('error_description') || ''}</p>
-      `;
-    } else if (code) {
-      card.innerHTML = `
-        <h2 class="success">Authorization Successful!</h2>
-        <p>Copy this authorization code and paste it in Claude Code:</p>
-        <div class="code" id="codeBox">${code}</div>
-        <button onclick="navigator.clipboard.writeText('${code}').then(() => this.textContent = 'Copied!')">Copy Code</button>
-        <p style="font-size:0.8rem;color:#888;margin-top:1rem;">This code expires in a few minutes. Use it quickly.</p>
-      `;
-    } else {
-      card.innerHTML = `
-        <h2 class="error">No Code Received</h2>
-        <p>The authorization response did not include an authorization code.</p>
-      `;
+    // State format: "accountId:supabaseToken"
+    const [accountId, ...tokenParts] = stateParam.split(':');
+    const supabaseToken = tokenParts.join(':'); // rejoin in case token contains colons
+
+    async function exchangeCode() {
+      if (error) {
+        card.innerHTML = `
+          <h2 class="error">Authorization Failed</h2>
+          <p>${params.get('error_description') || error}</p>
+          <p><a href="/residents/cars.html">Back to Cars</a></p>
+        `;
+        return;
+      }
+
+      if (!code) {
+        card.innerHTML = `
+          <h2 class="error">No Code Received</h2>
+          <p>Tesla did not return an authorization code.</p>
+          <p><a href="/residents/cars.html">Back to Cars</a></p>
+        `;
+        return;
+      }
+
+      if (!accountId || !supabaseToken) {
+        card.innerHTML = `
+          <h2 class="error">Missing Session Data</h2>
+          <p>Could not identify which account to connect. Please try again from the Cars page.</p>
+          <p><a href="/residents/cars.html">Back to Cars</a></p>
+        `;
+        return;
+      }
+
+      try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: 'Bearer ' + supabaseToken } }
+        });
+
+        const { data, error: fnError } = await supabase.functions.invoke('tesla-command', {
+          body: {
+            action: 'exchangeCode',
+            code: code,
+            account_id: parseInt(accountId),
+          },
+        });
+
+        if (fnError) {
+          throw new Error(fnError.message || 'Function call failed');
+        }
+
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+
+        card.innerHTML = `
+          <h2 class="success">Tesla Connected!</h2>
+          <p>Your Tesla account has been successfully linked. Vehicle data will appear within 5 minutes.</p>
+          <p><a href="/residents/cars.html">Back to Cars</a></p>
+        `;
+      } catch (err) {
+        console.error('Token exchange failed:', err);
+        card.innerHTML = `
+          <h2 class="error">Connection Failed</h2>
+          <p>${err.message}</p>
+          <p>Please try again from the <a href="/residents/cars.html">Cars page</a>.</p>
+        `;
+      }
     }
+
+    exchangeCode();
   </script>
 </body>
 </html>

@@ -7,8 +7,11 @@ const DEFAULT_FLEET_API_BASE =
   "https://fleet-api.prd.na.vn.cloud.tesla.com";
 
 interface TeslaCommandRequest {
-  vehicle_id: number; // tesla_vehicles.id
-  command: "door_unlock" | "door_lock" | "wake_up" | "flash_lights" | "honk_horn";
+  action?: "exchangeCode"; // OAuth code exchange action
+  vehicle_id?: number; // tesla_vehicles.id (for vehicle commands)
+  command?: "door_unlock" | "door_lock" | "wake_up" | "flash_lights" | "honk_horn";
+  code?: string; // OAuth authorization code
+  account_id?: number; // tesla_accounts.id (for exchangeCode)
 }
 
 const corsHeaders = {
@@ -78,6 +81,87 @@ serve(async (req) => {
 
     // 3. Parse request
     const body: TeslaCommandRequest = await req.json();
+
+    // ---- OAuth Code Exchange (admin-only) ----
+    if (body.action === "exchangeCode") {
+      if (appUser?.role !== "admin") {
+        return jsonResponse({ error: "Admin required for token exchange" }, 403);
+      }
+      if (!body.code) {
+        return jsonResponse({ error: "Missing authorization code" }, 400);
+      }
+      if (!body.account_id) {
+        return jsonResponse({ error: "Missing account_id" }, 400);
+      }
+
+      // Load account to get Fleet API credentials
+      const { data: acct, error: acctErr } = await supabase
+        .from("tesla_accounts")
+        .select("*")
+        .eq("id", body.account_id)
+        .single();
+
+      if (acctErr || !acct) {
+        return jsonResponse({ error: "Account not found" }, 404);
+      }
+      if (!acct.fleet_client_id || !acct.fleet_client_secret) {
+        return jsonResponse({ error: "Fleet API credentials not configured on account" }, 400);
+      }
+
+      // Exchange authorization code for tokens
+      const tokenParams = new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: acct.fleet_client_id,
+        client_secret: acct.fleet_client_secret,
+        code: body.code,
+        redirect_uri: "https://alpacaplayhouse.com/auth/tesla/callback",
+        audience: acct.fleet_api_base || DEFAULT_FLEET_API_BASE,
+      });
+
+      const tokenResponse = await fetch(TESLA_TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: tokenParams.toString(),
+      });
+
+      const tokenData = await tokenResponse.json();
+      if (tokenData.error) {
+        console.error("OAuth token exchange error:", tokenData);
+        return jsonResponse(
+          { error: `Token exchange failed: ${tokenData.error_description || tokenData.error}` },
+          400
+        );
+      }
+
+      if (!tokenData.access_token || !tokenData.refresh_token) {
+        return jsonResponse({ error: "Token response missing tokens" }, 500);
+      }
+
+      // Save tokens to account
+      const { error: updateErr } = await supabase
+        .from("tesla_accounts")
+        .update({
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          token_expires_at: new Date(
+            Date.now() + tokenData.expires_in * 1000
+          ).toISOString(),
+          last_token_refresh_at: new Date().toISOString(),
+          last_error: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", body.account_id);
+
+      if (updateErr) {
+        console.error("Failed to save tokens:", updateErr.message);
+        return jsonResponse({ error: `Failed to save tokens: ${updateErr.message}` }, 500);
+      }
+
+      console.log(`Tesla OAuth tokens saved for account ${body.account_id}`);
+      return jsonResponse({ success: true, account_id: body.account_id });
+    }
+
+    // ---- Vehicle Commands ----
     const { vehicle_id, command } = body;
 
     if (!vehicle_id || !command) {
