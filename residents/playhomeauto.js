@@ -26,6 +26,28 @@ const COLOR_PRESETS = [
   { name: 'Pink', hex: '#FF69B4' },
 ];
 
+// H601F segment mapping — Ring (nightlight) vs Main (downlight)
+const SEGMENT_ZONES = {
+  H601F: [
+    { name: 'Ring', segments: [0], description: 'Outer ring / nightlight' },
+    { name: 'Main', segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
+  ],
+  H601A: [
+    { name: 'Ring', segments: [0], description: 'Outer ring / nightlight' },
+    { name: 'Main', segments: [1, 2, 3, 4, 5, 6], description: 'Downlight' },
+  ],
+};
+
+function getSegmentZones(sku, segmentCount) {
+  if (SEGMENT_ZONES[sku]) return SEGMENT_ZONES[sku];
+  // Generic: All + individual segments
+  const all = Array.from({ length: segmentCount }, (_, i) => i);
+  return [
+    { name: 'All', segments: all, description: 'All segments' },
+    ...all.map(i => ({ name: `Seg ${i + 1}`, segments: [i], description: `Segment ${i}` })),
+  ];
+}
+
 // =============================================
 // STATE
 // =============================================
@@ -36,6 +58,8 @@ let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
 let pollTimer = null;
 let lastPollTime = null;
 let childrenStateLoaded = {}; // { groupId: true } — tracks which groups have had child states fetched
+let sceneCache = {}; // { sku: [{name, value}] } — client-side scene cache
+let sceneFetching = {}; // { sku: Promise } — dedup concurrent fetches
 
 // Debounce timers
 const brightnessTimers = {};
@@ -78,10 +102,10 @@ async function loadGroupsFromDB() {
 
     if (groupErr) throw groupErr;
 
-    // Load child devices with their SKUs and names
+    // Load child devices with their SKUs, names, and capabilities
     const { data: children, error: childErr } = await supabase
       .from('govee_devices')
-      .select('device_id, name, sku, parent_group_id')
+      .select('device_id, name, sku, parent_group_id, capabilities')
       .eq('is_group', false)
       .eq('is_active', true)
       .not('parent_group_id', 'is', null)
@@ -89,16 +113,18 @@ async function loadGroupsFromDB() {
 
     if (childErr) throw childErr;
 
-    // Load model name lookup
+    // Load model name lookup with segment_count
     const { data: models, error: modelErr } = await supabase
       .from('govee_models')
-      .select('sku, model_name');
+      .select('sku, model_name, segment_count');
 
     if (modelErr) throw modelErr;
 
     const modelMap = {};
+    const segmentCountMap = {};
     for (const m of models) {
       modelMap[m.sku] = m.model_name;
+      if (m.segment_count) segmentCountMap[m.sku] = m.segment_count;
     }
 
     // Build goveeGroups array with children
@@ -117,12 +143,20 @@ async function loadGroupsFromDB() {
         area: g.area || 'Other',
         deviceCount,
         models: modelsStr,
-        children: groupChildren.map(c => ({
-          deviceId: c.device_id,
-          name: c.name,
-          sku: c.sku,
-          modelName: modelMap[c.sku] || c.sku,
-        })),
+        children: groupChildren.map(c => {
+          const caps = c.capabilities || [];
+          const hasSegments = caps.some(cap => cap.instance === 'segmentedColorRgb');
+          const hasScenes = caps.some(cap => cap.instance === 'lightScene');
+          return {
+            deviceId: c.device_id,
+            name: c.name,
+            sku: c.sku,
+            modelName: modelMap[c.sku] || c.sku,
+            segmentCount: segmentCountMap[c.sku] || 0,
+            hasSegments,
+            hasScenes,
+          };
+        }),
       };
     });
 
@@ -235,6 +269,29 @@ async function goveeApi(action, params = {}) {
   }
 
   return response.json();
+}
+
+// =============================================
+// SCENE FETCHING
+// =============================================
+async function fetchScenesForSku(sku, sampleDeviceId) {
+  if (sceneCache[sku]) return sceneCache[sku];
+  if (sceneFetching[sku]) return sceneFetching[sku];
+
+  sceneFetching[sku] = (async () => {
+    try {
+      const result = await goveeApi('getScenes', { sku, device: sampleDeviceId });
+      sceneCache[sku] = result.scenes || [];
+      return sceneCache[sku];
+    } catch (err) {
+      console.warn(`Failed to fetch scenes for ${sku}:`, err.message);
+      return [];
+    } finally {
+      delete sceneFetching[sku];
+    }
+  })();
+
+  return sceneFetching[sku];
 }
 
 // =============================================
@@ -448,6 +505,77 @@ async function setDeviceColorTemp(deviceId, sku, temp) {
 }
 
 // =============================================
+// SEGMENT COLOR CONTROLS
+// =============================================
+async function setSegmentColor(deviceId, sku, segments, hexColor) {
+  try {
+    const rgb = hexToRgbInt(hexColor);
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.segment_color_setting',
+        instance: 'segmentedColorRgb',
+        value: { segment: segments, rgb },
+      },
+    });
+    showToast(`Segment color set`, 'success', 1500);
+  } catch (err) {
+    showToast(`Segment color failed: ${err.message}`, 'error');
+  }
+}
+
+// =============================================
+// SCENE CONTROLS
+// =============================================
+async function activateScene(deviceId, sku, sceneValue, sceneName) {
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.dynamic_scene',
+        instance: 'lightScene',
+        value: sceneValue,
+      },
+    });
+    showToast(`Scene: ${sceneName}`, 'success', 2000);
+  } catch (err) {
+    showToast(`Scene failed: ${err.message}`, 'error');
+  }
+}
+
+async function activateGroupScene(groupId, sceneValue, sceneName) {
+  const group = goveeGroups.find(g => g.groupId === groupId);
+  if (!group) return;
+
+  // Send scene to first child that supports scenes
+  const sceneChild = group.children.find(c => c.hasScenes);
+  if (!sceneChild) return;
+
+  try {
+    // Use the group device ID with SameModeGroup to apply to all
+    await goveeApi('controlDevice', {
+      device: groupId,
+      sku: 'SameModeGroup',
+      capability: {
+        type: 'devices.capabilities.dynamic_scene',
+        instance: 'lightScene',
+        value: sceneValue,
+      },
+    });
+    showToast(`Scene: ${sceneName}`, 'success', 2000);
+  } catch {
+    // If group doesn't support scenes, fall back to first child
+    try {
+      await activateScene(sceneChild.deviceId, sceneChild.sku, sceneValue, sceneName);
+    } catch (err) {
+      showToast(`Scene failed: ${err.message}`, 'error');
+    }
+  }
+}
+
+// =============================================
 // DEVICE STATE LOADING
 // =============================================
 async function refreshDeviceState(deviceId, sku) {
@@ -467,6 +595,10 @@ async function refreshDeviceState(deviceId, sku) {
           state.color = rgbIntToHex(cap.state?.value);
         } else if (cap.instance === 'colorTemperatureK') {
           state.colorTemp = cap.state?.value;
+        } else if (cap.instance === 'online') {
+          if (cap.state?.value === false) {
+            state.disconnected = true;
+          }
         }
       }
 
@@ -522,6 +654,13 @@ function updateDeviceUI(deviceId) {
   const colorBtn = row.querySelector('.child-color-btn');
   if (colorBtn && state.color) {
     colorBtn.style.background = state.color;
+  }
+
+  // Update status dot
+  const dot = row.querySelector('.status-dot');
+  if (dot) {
+    dot.className = 'status-dot ' + getStatusDotClass(state);
+    dot.title = getStatusDotTitle(state);
   }
 
   // Dim row if off
@@ -618,6 +757,28 @@ function updatePollStatus() {
 }
 
 // =============================================
+// STATUS DOT HELPERS
+// =============================================
+function getStatusDotClass(state) {
+  if (state.disconnected) return 'status-dot--red';
+  if (state.on) return 'status-dot--green';
+  return 'status-dot--gray';
+}
+
+function getStatusDotTitle(state) {
+  if (state.disconnected) return 'Disconnected';
+  if (state.on) return 'On';
+  return 'Off';
+}
+
+function getGroupStatusDotHtml(groupId) {
+  const state = groupStates[groupId] || {};
+  const cls = getStatusDotClass(state);
+  const title = getStatusDotTitle(state);
+  return `<span class="status-dot ${cls}" data-group-dot="${groupId}" title="${title}"></span>`;
+}
+
+// =============================================
 // RENDERING
 // =============================================
 const COLLAPSE_STORAGE_KEY = 'lighting_collapsed_sections';
@@ -672,6 +833,25 @@ function saveSectionState(sectionId, isOpen) {
 }
 
 function renderGroupCard(group) {
+  const anyChildHasScenes = group.children.some(c => c.hasScenes);
+  const sceneChild = group.children.find(c => c.hasScenes);
+
+  const groupSceneHtml = anyChildHasScenes
+    ? `<div class="group-scene-picker">
+        <button class="btn-scene-toggle" data-action="group-scene-expand" data-group="${group.groupId}"
+          data-sku="${sceneChild.sku}" data-sample-device="${sceneChild.deviceId}">
+          <span class="scene-icon">&#9733;</span> Scenes
+        </button>
+        <div class="group-scene-panel hidden" data-group-scene-panel="${group.groupId}">
+          <input type="text" class="scene-search" placeholder="Search scenes..."
+            data-action="group-scene-search" data-group="${group.groupId}">
+          <div class="scene-list" data-group-scene-list="${group.groupId}">
+            <span class="text-muted" style="font-size:0.75rem;">Loading...</span>
+          </div>
+        </div>
+      </div>`
+    : '';
+
   const childrenHtml = group.children.length > 0
     ? `<div class="child-devices" data-children-for="${group.groupId}">
         <div class="child-devices__header">
@@ -688,6 +868,7 @@ function renderGroupCard(group) {
     <div class="lighting-group-card" data-group-id="${group.groupId}">
       <div class="lighting-group-card__header">
         <div class="lighting-group-card__title">
+          <span class="status-dot status-dot--gray" data-group-dot="${group.groupId}" title="Loading..."></span>
           <span class="lighting-group-card__name">${group.name}</span>
           ${group.deviceCount ? `<span class="lighting-group-card__devices">${group.deviceCount} ${group.deviceCount === 1 ? 'device' : 'devices'} · ${group.models}</span>` : ''}
         </div>
@@ -721,6 +902,8 @@ function renderGroupCard(group) {
         </div>
       </div>
 
+      ${groupSceneHtml}
+
       ${childrenHtml}
 
       <div class="group-status" data-status="${group.groupId}">
@@ -731,9 +914,28 @@ function renderGroupCard(group) {
 }
 
 function renderChildDevice(child) {
+  const segmentBtn = child.hasSegments
+    ? `<button class="child-extra-btn" title="Segment colors"
+        data-action="segment-expand" data-device="${child.deviceId}" data-sku="${child.sku}"
+        data-segments="${child.segmentCount}">&#9783;</button>`
+    : '';
+
+  const sceneBtn = child.hasScenes
+    ? `<button class="child-extra-btn" title="Scenes"
+        data-action="scene-expand" data-device="${child.deviceId}" data-sku="${child.sku}">&#9733;</button>`
+    : '';
+
+  const expandedHtml = (child.hasSegments || child.hasScenes)
+    ? `<div class="child-device-row__expanded hidden" data-expanded-for="${child.deviceId}">
+        ${child.hasSegments ? renderSegmentControls(child) : ''}
+        ${child.hasScenes ? renderSceneSelector(child) : ''}
+      </div>`
+    : '';
+
   return `
     <div class="child-device-row" data-device-id="${child.deviceId}" data-device-sku="${child.sku}">
       <div class="child-device-row__info">
+        <span class="status-dot status-dot--gray" data-device-dot="${child.deviceId}" title="Loading..."></span>
         <span class="child-device-row__name">${child.name}</span>
         <span class="child-device-row__model">${child.modelName}</span>
       </div>
@@ -747,11 +949,120 @@ function renderChildDevice(child) {
         <button class="child-color-btn" title="Set color"
           data-action="device-color-btn" data-device="${child.deviceId}" data-sku="${child.sku}"
           style="background: #FFD4A3;"></button>
+        ${segmentBtn}
+        ${sceneBtn}
+      </div>
+      ${expandedHtml}
+    </div>
+  `;
+}
+
+function renderSegmentControls(child) {
+  const zones = getSegmentZones(child.sku, child.segmentCount);
+  return `
+    <div class="segment-controls" data-segment-panel="${child.deviceId}">
+      <div class="segment-controls__label">Segment Colors</div>
+      <div class="segment-zone-list">
+        ${zones.map(z => `
+          <div class="segment-zone">
+            <span class="segment-zone__name" title="${z.description}">${z.name}</span>
+            <input type="color" value="#FFD4A3" class="segment-color-picker"
+              data-action="segment-color" data-device="${child.deviceId}"
+              data-sku="${child.sku}" data-segments='${JSON.stringify(z.segments)}'>
+            <div class="segment-zone-presets">
+              ${COLOR_PRESETS.map(p => `
+                <button class="color-preset color-preset-tiny" title="${p.name}"
+                  style="background:${p.hex}"
+                  data-action="segment-preset" data-device="${child.deviceId}"
+                  data-sku="${child.sku}" data-segments='${JSON.stringify(z.segments)}'
+                  data-hex="${p.hex}" ${p.temp ? `data-temp="${p.temp}"` : ''}>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
 }
 
+function renderSceneSelector(child) {
+  return `
+    <div class="scene-selector" data-scene-panel="${child.deviceId}">
+      <div class="scene-selector__label">Scenes</div>
+      <div class="scene-selector__controls">
+        <input type="text" class="scene-search" placeholder="Search scenes..."
+          data-action="scene-search" data-device="${child.deviceId}">
+        <div class="scene-list" data-scene-list="${child.deviceId}">
+          <span class="text-muted" style="font-size:0.75rem;">Click to load scenes...</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// SCENE PANEL EXPANSION
+// =============================================
+async function expandDeviceScenePanel(deviceId, sku) {
+  const listEl = document.querySelector(`[data-scene-list="${deviceId}"]`);
+  if (!listEl || listEl.dataset.loaded) return;
+
+  listEl.innerHTML = '<span class="text-muted" style="font-size:0.75rem;">Loading scenes...</span>';
+  const scenes = await fetchScenesForSku(sku, deviceId);
+  listEl.dataset.loaded = 'true';
+
+  if (scenes.length === 0) {
+    listEl.innerHTML = '<span class="text-muted" style="font-size:0.75rem;">No scenes available</span>';
+    return;
+  }
+
+  listEl.innerHTML = scenes.map(s => `
+    <button class="scene-chip" data-action="activate-scene"
+      data-device="${deviceId}" data-sku="${sku}"
+      data-scene-value='${JSON.stringify(s.value)}'
+      data-scene-name="${s.name}">
+      ${s.name}
+    </button>
+  `).join('');
+}
+
+async function expandGroupScenePanel(groupId, sku, sampleDeviceId) {
+  const listEl = document.querySelector(`[data-group-scene-list="${groupId}"]`);
+  if (!listEl || listEl.dataset.loaded) return;
+
+  listEl.innerHTML = '<span class="text-muted" style="font-size:0.75rem;">Loading scenes...</span>';
+  const scenes = await fetchScenesForSku(sku, sampleDeviceId);
+  listEl.dataset.loaded = 'true';
+
+  if (scenes.length === 0) {
+    listEl.innerHTML = '<span class="text-muted" style="font-size:0.75rem;">No scenes available</span>';
+    return;
+  }
+
+  listEl.innerHTML = scenes.map(s => `
+    <button class="scene-chip" data-action="activate-group-scene"
+      data-group="${groupId}"
+      data-scene-value='${JSON.stringify(s.value)}'
+      data-scene-name="${s.name}">
+      ${s.name}
+    </button>
+  `).join('');
+}
+
+function filterScenes(listSelector, query) {
+  const listEl = document.querySelector(listSelector);
+  if (!listEl) return;
+  const chips = listEl.querySelectorAll('.scene-chip');
+  const q = query.toLowerCase();
+  chips.forEach(chip => {
+    chip.style.display = chip.dataset.sceneName.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// =============================================
+// GROUP UI UPDATE
+// =============================================
 function updateGroupUI(groupId) {
   const card = document.querySelector(`[data-group-id="${groupId}"]`);
   if (!card) return;
@@ -763,6 +1074,13 @@ function updateGroupUI(groupId) {
     card.classList.add('disconnected');
   } else {
     card.classList.remove('disconnected');
+  }
+
+  // Update status dot
+  const dot = card.querySelector(`[data-group-dot="${groupId}"]`);
+  if (dot) {
+    dot.className = 'status-dot ' + getStatusDotClass(state);
+    dot.title = getStatusDotTitle(state);
   }
 
   // Update group toggle (specific selector avoids matching child device toggles)
@@ -875,9 +1193,30 @@ function setupEventListeners() {
         setDeviceBrightness(device, sku, e.target.value);
       }, 400);
     }
+
+    // Segment color picker (debounced)
+    if (action === 'segment-color' && device && sku) {
+      const segments = JSON.parse(e.target.dataset.segments);
+      const key = `seg_${device}_${segments.join(',')}`;
+      clearTimeout(colorTimers[key]);
+      colorTimers[key] = setTimeout(() => {
+        setSegmentColor(device, sku, segments, e.target.value);
+      }, 400);
+    }
+
+    // Scene search filtering (device)
+    if (action === 'scene-search' && device) {
+      filterScenes(`[data-scene-list="${device}"]`, e.target.value);
+    }
+
+    // Scene search filtering (group)
+    if (action === 'group-scene-search') {
+      const groupId = e.target.dataset.group;
+      if (groupId) filterScenes(`[data-group-scene-list="${groupId}"]`, e.target.value);
+    }
   });
 
-  // Click handlers: presets, child toggle, device color button
+  // Click handlers
   container.addEventListener('click', (e) => {
     // Group color presets
     const presetBtn = e.target.closest('[data-action="preset"]');
@@ -929,6 +1268,90 @@ function setupEventListeners() {
       hideDeviceColorPopover();
       return;
     }
+
+    // Segment expand/collapse toggle
+    const segExpand = e.target.closest('[data-action="segment-expand"]');
+    if (segExpand) {
+      const deviceId = segExpand.dataset.device;
+      const expandedPanel = container.querySelector(`[data-expanded-for="${deviceId}"]`);
+      if (expandedPanel) {
+        const isHidden = expandedPanel.classList.toggle('hidden');
+        segExpand.classList.toggle('active', !isHidden);
+      }
+      return;
+    }
+
+    // Scene expand/collapse toggle (device)
+    const sceneExpand = e.target.closest('[data-action="scene-expand"]');
+    if (sceneExpand) {
+      const { device, sku } = sceneExpand.dataset;
+      const expandedPanel = container.querySelector(`[data-expanded-for="${device}"]`);
+      if (expandedPanel) {
+        const isHidden = expandedPanel.classList.toggle('hidden');
+        sceneExpand.classList.toggle('active', !isHidden);
+        if (!isHidden) {
+          expandDeviceScenePanel(device, sku);
+        }
+      }
+      return;
+    }
+
+    // Segment preset button
+    const segPreset = e.target.closest('[data-action="segment-preset"]');
+    if (segPreset) {
+      const { device, sku, segments, hex, temp } = segPreset.dataset;
+      const parsedSegs = JSON.parse(segments);
+      if (temp) {
+        // For segment temp, we use the whole-device color temp
+        // (segments don't support color temp individually)
+        setDeviceColorTemp(device, sku, parseInt(temp));
+      } else {
+        setSegmentColor(device, sku, parsedSegs, hex);
+      }
+      // Update the zone color picker to match
+      const zoneRow = segPreset.closest('.segment-zone');
+      const picker = zoneRow?.querySelector('.segment-color-picker');
+      if (picker) picker.value = hex;
+      return;
+    }
+
+    // Activate scene (device)
+    const sceneChip = e.target.closest('[data-action="activate-scene"]');
+    if (sceneChip) {
+      const { device, sku, sceneValue, sceneName } = sceneChip.dataset;
+      activateScene(device, sku, JSON.parse(sceneValue), sceneName);
+      // Highlight active scene
+      sceneChip.closest('.scene-list')?.querySelectorAll('.scene-chip')
+        .forEach(c => c.classList.remove('active'));
+      sceneChip.classList.add('active');
+      return;
+    }
+
+    // Group scene expand/collapse
+    const groupSceneExpand = e.target.closest('[data-action="group-scene-expand"]');
+    if (groupSceneExpand) {
+      const { group, sku, sampleDevice } = groupSceneExpand.dataset;
+      const panel = container.querySelector(`[data-group-scene-panel="${group}"]`);
+      if (panel) {
+        const isHidden = panel.classList.toggle('hidden');
+        groupSceneExpand.classList.toggle('active', !isHidden);
+        if (!isHidden) {
+          expandGroupScenePanel(group, sku, sampleDevice);
+        }
+      }
+      return;
+    }
+
+    // Activate group scene
+    const groupSceneChip = e.target.closest('[data-action="activate-group-scene"]');
+    if (groupSceneChip) {
+      const { group, sceneValue, sceneName } = groupSceneChip.dataset;
+      activateGroupScene(group, JSON.parse(sceneValue), sceneName);
+      groupSceneChip.closest('.scene-list')?.querySelectorAll('.scene-chip')
+        .forEach(c => c.classList.remove('active'));
+      groupSceneChip.classList.add('active');
+      return;
+    }
   });
 
   // All Off button
@@ -969,6 +1392,22 @@ function setupEventListeners() {
       console.error('Error updating Govee mode:', error);
       showToast('Failed to update Govee mode', 'error');
       e.target.checked = !testMode;
+    }
+  });
+
+  // Sync Capabilities button (admin-only)
+  document.getElementById('syncCapabilitiesBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('syncCapabilitiesBtn');
+    btn.disabled = true;
+    btn.textContent = 'Syncing...';
+    try {
+      const result = await goveeApi('syncCapabilities');
+      showToast(`Synced ${result.synced}/${result.total} device capabilities`, 'success');
+    } catch (err) {
+      showToast(`Sync failed: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sync Capabilities';
     }
   });
 
