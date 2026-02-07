@@ -313,28 +313,45 @@ function renderZones() {
       : '';
 
     // Grouped speakers: EQ section at top + expandable volumes at bottom
+    const fmtEq = (v) => (v > 0 ? '+' : '') + v;
     const groupEqSection = isGrouped
       ? `<div class="sonos-group-eq">
-          <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
-          ${group.members.map(m => `
-            <div class="sonos-group-eq__room">
-              <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
-              <div class="sonos-group-eq__sliders">
-                <div class="sonos-eq-inline">
-                  <span class="sonos-eq-inline__label">B</span>
-                  <input type="range" min="-10" max="10" value="${m.bass}" class="sonos-eq-inline__slider"
-                    data-action="memberBass" data-room="${escapeHtml(m.roomName)}">
-                  <span class="sonos-eq-inline__val" data-eq-bass-val="${escapeHtml(m.roomName)}">${m.bass > 0 ? '+' : ''}${m.bass}</span>
-                </div>
-                <div class="sonos-eq-inline">
-                  <span class="sonos-eq-inline__label">T</span>
-                  <input type="range" min="-10" max="10" value="${m.treble}" class="sonos-eq-inline__slider"
-                    data-action="memberTreble" data-room="${escapeHtml(m.roomName)}">
-                  <span class="sonos-eq-inline__val" data-eq-treble-val="${escapeHtml(m.roomName)}">${m.treble > 0 ? '+' : ''}${m.treble}</span>
+          <div class="sonos-group-eq__summary">
+            <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
+            ${group.members.map(m => `
+              <div class="sonos-group-eq__room-summary">
+                <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
+                <span class="sonos-group-eq__vals">
+                  <span class="sonos-group-eq__tag">B:<span data-eq-bass-val="${escapeHtml(m.roomName)}">${fmtEq(m.bass)}</span></span>
+                  <span class="sonos-group-eq__tag">T:<span data-eq-treble-val="${escapeHtml(m.roomName)}">${fmtEq(m.treble)}</span></span>
+                </span>
+              </div>
+            `).join('')}
+          </div>
+          <button class="sonos-group-eq__toggle" data-action="toggleEqSliders" type="button">
+            Tone Controls ${CHEVRON_SVG}
+          </button>
+          <div class="sonos-group-eq__sliders-panel hidden">
+            ${group.members.map(m => `
+              <div class="sonos-group-eq__room-sliders">
+                <span class="sonos-group-eq__slider-name">${escapeHtml(m.roomName)}</span>
+                <div class="sonos-group-eq__sliders">
+                  <div class="sonos-eq-inline">
+                    <span class="sonos-eq-inline__label">B</span>
+                    <input type="range" min="-10" max="10" value="${m.bass}" class="sonos-eq-inline__slider"
+                      data-action="memberBass" data-room="${escapeHtml(m.roomName)}">
+                    <span class="sonos-eq-inline__val" data-eq-bass-slider-val="${escapeHtml(m.roomName)}">${fmtEq(m.bass)}</span>
+                  </div>
+                  <div class="sonos-eq-inline">
+                    <span class="sonos-eq-inline__label">T</span>
+                    <input type="range" min="-10" max="10" value="${m.treble}" class="sonos-eq-inline__slider"
+                      data-action="memberTreble" data-room="${escapeHtml(m.roomName)}">
+                    <span class="sonos-eq-inline__val" data-eq-treble-slider-val="${escapeHtml(m.roomName)}">${fmtEq(m.treble)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>`
       : '';
 
@@ -1088,29 +1105,51 @@ function setupEventListeners() {
 
     if (action === 'memberBass') {
       const v = parseInt(e.target.value);
+      const fmt = (v > 0 ? '+' : '') + v;
       const valEl = e.target.closest('.sonos-eq-inline')?.querySelector('.sonos-eq-inline__val');
-      if (valEl) valEl.textContent = (v > 0 ? '+' : '') + v;
+      if (valEl) valEl.textContent = fmt;
+      // Also update summary tag
+      const card = e.target.closest('.sonos-zone-card');
+      const summaryEl = card?.querySelector(`[data-eq-bass-val="${CSS.escape(room)}"]`);
+      if (summaryEl) summaryEl.textContent = fmt;
       debouncedEq('bass', room, v);
       return;
     }
 
     if (action === 'memberTreble') {
       const v = parseInt(e.target.value);
+      const fmt = (v > 0 ? '+' : '') + v;
       const valEl = e.target.closest('.sonos-eq-inline')?.querySelector('.sonos-eq-inline__val');
-      if (valEl) valEl.textContent = (v > 0 ? '+' : '') + v;
+      if (valEl) valEl.textContent = fmt;
+      // Also update summary tag
+      const card = e.target.closest('.sonos-zone-card');
+      const summaryEl = card?.querySelector(`[data-eq-treble-val="${CSS.escape(room)}"]`);
+      if (summaryEl) summaryEl.textContent = fmt;
       debouncedEq('treble', room, v);
       return;
     }
   });
 
-  // Toggle individual volumes dropdown
+  // Toggle individual volumes dropdown + tone controls expander
   zonesContainer.addEventListener('click', (e) => {
     const toggleBtn = e.target.closest('[data-action="toggleMemberVols"]');
-    if (!toggleBtn) return;
-    const list = toggleBtn.closest('.sonos-member-volumes')?.querySelector('.sonos-member-volumes__list');
-    if (list) {
-      list.classList.toggle('hidden');
-      toggleBtn.classList.toggle('open');
+    if (toggleBtn) {
+      const list = toggleBtn.closest('.sonos-member-volumes')?.querySelector('.sonos-member-volumes__list');
+      if (list) {
+        list.classList.toggle('hidden');
+        toggleBtn.classList.toggle('open');
+      }
+      return;
+    }
+
+    const eqToggle = e.target.closest('[data-action="toggleEqSliders"]');
+    if (eqToggle) {
+      const panel = eqToggle.closest('.sonos-group-eq')?.querySelector('.sonos-group-eq__sliders-panel');
+      if (panel) {
+        panel.classList.toggle('hidden');
+        eqToggle.classList.toggle('open');
+      }
+      return;
     }
   });
 
