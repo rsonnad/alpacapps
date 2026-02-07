@@ -164,8 +164,12 @@ googleSignInBtn.addEventListener('click', async () => {
     // Redirect URL: use just /login/ so Supabase can append ?code= cleanly (PKCE flow)
     // We store the intended destination in sessionStorage so it survives the OAuth round-trip
     sessionStorage.setItem('genalpaca-login-redirect', redirectUrl);
-    const loginRedirect = window.location.origin + '/login/';
-    console.log('[LOGIN]', 'Calling signInWithGoogle()', { loginRedirect, storedRedirect: redirectUrl });
+    // In Capacitor (native app), use the custom URL scheme for OAuth redirect
+    const isCapacitor = window.Capacitor?.isNativePlatform?.() ?? false;
+    const loginRedirect = isCapacitor
+      ? 'com.alpacaplayhouse.app://login/'
+      : window.location.origin + '/login/';
+    console.log('[LOGIN]', 'Calling signInWithGoogle()', { loginRedirect, storedRedirect: redirectUrl, isCapacitor });
     await signInWithGoogle(loginRedirect);
     // Note: signInWithGoogle redirects to Google, so this line won't execute
   } catch (error) {

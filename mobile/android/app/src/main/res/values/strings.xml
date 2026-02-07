@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Alpaca Playhouse</string>
+    <string name="title_activity_main">Alpaca Playhouse</string>
+    <string name="package_name">com.alpacaplayhouse.app</string>
+    <string name="custom_url_scheme">com.alpacaplayhouse.app</string>
+</resources>

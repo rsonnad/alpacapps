@@ -10,4 +10,24 @@ HOMEAUTOMATION.local.md
 *.swo
 .idea/
 .vscode/
+# Mobile app (Capacitor)
 mobile/node_modules/
+mobile/www/
+mobile/build/
+mobile/ios/App/Pods/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/local.properties
+
+# Signing keys (never commit)
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+mobile/fastlane/google-play-key.json
+
+# Fastlane temp files
+mobile/fastlane/report.xml
+mobile/fastlane/screenshots/
+mobile/fastlane/test_output/
