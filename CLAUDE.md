@@ -471,7 +471,7 @@ git push
 ### LG ThinQ (Washer/Dryer)
 - **API**: LG ThinQ Connect REST API (PAT auth)
 - **PAT Portal**: https://connect-pat.lgthinq.com/
-- **API Base**: `https://api-us.lgthinq.com/`
+- **API Base**: `https://api-aic.lgthinq.com` (Americas region)
 - **Worker**: `/opt/lg-poller/worker.js` on DO droplet (systemd: `lg-poller.service`)
 - **Polling**: Every 30s for rapid laundry status updates
 - **DB**: `lg_config` (PAT/API config), `lg_appliances` (cached state in `last_state` JSONB)

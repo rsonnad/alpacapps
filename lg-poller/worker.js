@@ -41,9 +41,11 @@ async function lgApi(config, path, method = 'GET', body = null) {
   const url = `${config.api_base}${path}`;
   const headers = {
     'Authorization': `Bearer ${config.pat}`,
-    'x-country-code': config.country_code || 'US',
+    'x-country': config.country_code || 'US',
     'x-message-id': crypto.randomUUID(),
     'x-client-id': config.client_id,
+    'x-api-key': 'v6GFvkweNo7DK7yD3ylIZ9w52aKBU0eJ7wLXkSR3',
+    'x-service-phase': 'OP',
     'Content-Type': 'application/json',
   };
 
@@ -242,22 +244,25 @@ async function discoverDevices(config) {
 
   try {
     const result = await lgApi(config, '/devices');
-    const devices = result?.response?.items || result?.items || result?.result || [];
+    // ThinQ Connect API returns response as a direct array
+    const devices = Array.isArray(result?.response) ? result.response : [];
 
-    if (!Array.isArray(devices) || !devices.length) {
+    if (!devices.length) {
       log('warn', 'No devices found on LG account. Response:', { result: JSON.stringify(result).substring(0, 500) });
       return;
     }
 
     for (const d of devices) {
-      const type = (d.deviceType || d.type || '').toUpperCase();
+      // Device type is nested: d.deviceInfo.deviceType = "DEVICE_WASHER" | "DEVICE_DRYER"
+      const info = d.deviceInfo || {};
+      const type = (info.deviceType || '').toUpperCase();
       let deviceType = null;
-      if (type.includes('WASHER') || type.includes('WASH')) deviceType = 'washer';
-      else if (type.includes('DRYER') || type.includes('DRY')) deviceType = 'dryer';
+      if (type.includes('WASHER')) deviceType = 'washer';
+      else if (type.includes('DRYER')) deviceType = 'dryer';
       else continue; // Skip non-laundry devices
 
-      const name = deviceType === 'washer' ? 'Washer' : 'Dryer';
-      const lgDeviceId = d.deviceId || d.id;
+      const name = info.alias || (deviceType === 'washer' ? 'Washer' : 'Dryer');
+      const lgDeviceId = d.deviceId;
 
       const { error } = await supabase
         .from('lg_appliances')

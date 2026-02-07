@@ -151,9 +151,11 @@ serve(async (req) => {
 
       const headers: Record<string, string> = {
         "Authorization": `Bearer ${config.pat}`,
-        "x-country-code": config.country_code || "US",
+        "x-country": config.country_code || "US",
         "x-message-id": crypto.randomUUID(),
         "x-client-id": config.client_id,
+        "x-api-key": "v6GFvkweNo7DK7yD3ylIZ9w52aKBU0eJ7wLXkSR3",
+        "x-service-phase": "OP",
         "Content-Type": "application/json",
       };
 
