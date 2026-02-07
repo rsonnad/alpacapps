@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla Authorization</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #faf9f7;
+      color: #2d3142;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .code {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      word-break: break-all;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .success { color: #2d8a4e; }
+    .error { color: #d32f2f; }
+    button {
+      background: #2d3142;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    button:hover { background: #3d4152; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h2>Tesla Authorization</h2>
+    <p>Processing...</p>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    const state = params.get('state');
+    const card = document.getElementById('card');
+
+    if (error) {
+      card.innerHTML = `
+        <h2 class="error">Authorization Failed</h2>
+        <p>Error: ${error}</p>
+        <p>${params.get('error_description') || ''}</p>
+      `;
+    } else if (code) {
+      card.innerHTML = `
+        <h2 class="success">Authorization Successful!</h2>
+        <p>Copy this authorization code and paste it in Claude Code:</p>
+        <div class="code" id="codeBox">${code}</div>
+        <button onclick="navigator.clipboard.writeText('${code}').then(() => this.textContent = 'Copied!')">Copy Code</button>
+        <p style="font-size:0.8rem;color:#888;margin-top:1rem;">This code expires in a few minutes. Use it quickly.</p>
+      `;
+    } else {
+      card.innerHTML = `
+        <h2 class="error">No Code Received</h2>
+        <p>The authorization response did not include an authorization code.</p>
+      `;
+    }
+  </script>
+</body>
+</html>
