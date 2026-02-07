@@ -44,10 +44,27 @@ function log(level, msg, data = {}) {
 }
 
 // ============================================
-// Gemini Image Generation
+// Download source image for editing
 // ============================================
-async function generateImage(prompt) {
+async function downloadImage(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to download image: ${response.status}`);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const mimeType = response.headers.get('content-type') || (url.endsWith('.png') ? 'image/png' : 'image/jpeg');
+  return { base64: buffer.toString('base64'), mimeType };
+}
+
+// ============================================
+// Gemini Image Generation / Editing
+// ============================================
+async function generateImage(prompt, sourceBase64 = null, sourceMimeType = null) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+  // Build request parts: text prompt + optional source image
+  const requestParts = [{ text: prompt }];
+  if (sourceBase64) {
+    requestParts.push({ inlineData: { mimeType: sourceMimeType, data: sourceBase64 } });
+  }
 
   const response = await fetch(url, {
     method: 'POST',
@@ -56,7 +73,7 @@ async function generateImage(prompt) {
       'x-goog-api-key': GEMINI_API_KEY,
     },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts: requestParts }],
       generationConfig: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
@@ -179,8 +196,24 @@ async function processJob(job) {
     .eq('id', job.id);
 
   try {
-    // 1. Generate image via Gemini
-    const result = await generateImage(job.prompt);
+    // 1. If source_media_id is set, download the source image for editing
+    let sourceBase64 = null;
+    let sourceMimeType = null;
+    if (job.source_media_id) {
+      const { data: sourceMedia, error: srcErr } = await supabase
+        .from('media')
+        .select('url')
+        .eq('id', job.source_media_id)
+        .single();
+      if (srcErr || !sourceMedia) throw new Error(`Source media not found: ${job.source_media_id}`);
+      log('info', 'Downloading source image', { id: job.id, url: sourceMedia.url.substring(0, 80) });
+      const downloaded = await downloadImage(sourceMedia.url);
+      sourceBase64 = downloaded.base64;
+      sourceMimeType = downloaded.mimeType;
+    }
+
+    // 2. Generate/edit image via Gemini
+    const result = await generateImage(job.prompt, sourceBase64, sourceMimeType);
     log('info', 'Image generated', {
       id: job.id,
       inputTokens: result.inputTokens,
@@ -188,18 +221,18 @@ async function processJob(job) {
       mimeType: result.mimeType,
     });
 
-    // 2. Upload to Supabase Storage
+    // 3. Upload to Supabase Storage
     const { publicUrl, path: storagePath, sizeBytes } = await uploadToStorage(result.base64, result.mimeType);
     log('info', 'Uploaded to storage', { id: job.id, url: publicUrl, size: sizeBytes });
 
-    // 3. Create media record
+    // 4. Create media record
     const media = await createMediaRecord(publicUrl, storagePath, sizeBytes, result.mimeType, job);
     log('info', 'Media record created', { id: job.id, mediaId: media.id });
 
-    // 4. Calculate cost
+    // 5. Calculate cost
     const cost = calculateCost(result.inputTokens, result.outputTokens);
 
-    // 5. Update job as completed
+    // 6. Update job as completed
     await supabase.from('image_gen_jobs')
       .update({
         status: 'completed',
