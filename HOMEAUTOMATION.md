@@ -71,7 +71,7 @@ Tailscale connects the DO droplet to the Alpaca Mac and the entire LAN:
 | Machine | Tailscale IP | Hostname |
 |---------|-------------|----------|
 | DO Droplet | See `HOMEAUTOMATION.local.md` | openclawzcloudrunner |
-| Alpaca Mac | See `HOMEAUTOMATION.local.md` | alpacaopenmac |
+| Alpaca Mac | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 |
 
 **Subnet Routing:** The Alpaca Mac advertises `192.168.1.0/24` to the Tailnet, allowing the DO droplet to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
 
@@ -87,30 +87,89 @@ Tailscale connects the DO droplet to the Alpaca Mac and the entire LAN:
 
 A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. Acts as a bridge between the DO droplet and local LAN devices.
 
-### Configuration
+### Bulletproof Configuration
 
-- **Auto-login:** Enabled (recovers from power outages)
-- **Sleep prevention:** "Prevent automatic sleeping when display is off" enabled under Power Adapter
-- **Auto-updates:** Disabled (prevents unexpected restarts)
-- **SSH:** Remote Login enabled for all users
-- **Tailscale:** Auto-starts on login, advertises subnet route `192.168.1.0/24`
-- **IP Forwarding:** Enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`) — required for Tailscale subnet routing
-- **sudo password:** See `HOMEAUTOMATION.local.md`
+The Mac is configured to survive power outages, reboots, and network disruptions without any human intervention.
+
+**Auto-login:**
+- `alpaca` user logs in automatically on boot (System Preferences > Users & Groups > Login Options)
+- No password prompt on startup — desktop loads unattended
+
+**Power Management** (`pmset -a`):
+- `sleep 0` — never sleep
+- `disksleep 0` — never spin down disks
+- `displaysleep 0` — never turn off display
+- `womp 1` — Wake on LAN enabled
+- **Note:** `autorestart` is NOT supported on this MacBook Pro 13,2 (desktop-only feature). After a complete power failure that drains the battery, someone must press the power button. The internal battery provides a buffer for short outages.
+- `standby 0` — no standby mode
+- `autopoweroff 0` — no auto power off
+- `hibernatemode 0` — no hibernation
+- `powernap 0` — no Power Nap (prevents unpredictable wakes)
+
+**Caffeinate Daemon** (`/Library/LaunchDaemons/com.caffeinate.plist`):
+- Runs `/usr/bin/caffeinate -dims` as a LaunchDaemon (runs as root, before login)
+- `KeepAlive: true` — restarts if killed
+- `RunAtLoad: true` — starts on boot
+- Prevents sleep at the system level as a safety net
+
+**Networking & Remote Access:**
+- SSH: Remote Login enabled (`systemsetup -setremotelogin on`)
+- Screen Sharing: Enabled with full Remote Management permissions
+- Tailscale: `TailscaleStartOnLogin=1`, auto-update enabled
+- Tailscale operator: `alpaca` (can run `tailscale` commands without sudo)
+- Subnet routing: Advertises `192.168.1.0/24` to the Tailnet
+- IP Forwarding: `net.inet.ip.forwarding=1` in `/etc/sysctl.conf`
+
+**Security:**
+- `sudo`: NOPASSWD for `alpaca` user (`/etc/sudoers.d/alpaca`)
+- Tailscale key expiry: Disabled (won't disconnect unexpectedly)
+
+### What Happens on Reboot
+
+1. Mac must be manually powered on after a full power loss (MacBook Pro limitation — `autorestart` is desktop-only). The internal battery provides a buffer for short outages.
+2. `alpaca` user logs in automatically (no password prompt)
+3. Caffeinate daemon starts (LaunchDaemon, runs before login)
+4. Tailscale app launches (Login Item, `TailscaleStartOnLogin=1`)
+5. Sonos HTTP API starts (`~/Library/LaunchAgents/com.sonos.httpapi.plist`)
+6. MediaMTX starts (`~/Library/LaunchAgents/com.mediamtx.plist`)
+7. DO droplet can SSH in via Tailscale within ~60 seconds of boot
+
+**No human intervention required.**
 
 ### Services Running
 
 | Service | Port | Auto-Start | Purpose |
 |---------|------|------------|---------|
 | node-sonos-http-api | 5005 | launchd (`com.sonos.httpapi`) | Sonos speaker control |
-| MediaMTX | 8554 | launchd (`com.mediamtx`) — pending deploy | Camera RTSP restreaming (9 streams) |
+| MediaMTX | 8554 | launchd (`com.mediamtx`) | Camera RTSP restreaming (9 streams) |
 | Tailscale | — | Login item | VPN mesh connectivity |
+| caffeinate | — | LaunchDaemon | Prevent sleep |
 
 ### Software Installed
 
 - **Homebrew** (`/usr/local/bin/brew`)
 - **Node.js 18.20.8** via nvm (`~/.nvm/versions/node/v18.20.8/`)
 - **node-sonos-http-api** (`~/node-sonos-http-api/`)
-- **Tailscale** (`/Applications/Tailscale.app`)
+- **Tailscale 1.94.1** (`/Applications/Tailscale.app`, CLI at `/usr/local/bin/tailscale`)
+
+### Setting Up a New Remote Mac (Checklist)
+
+If you ever need to configure another Mac as a remote server, follow this checklist:
+
+1. **Auto-login:** System Preferences > Users & Groups > Login Options > Automatic login
+2. **Power management:** `sudo pmset -a sleep 0 disksleep 0 displaysleep 0 womp 1 standby 0 autopoweroff 0 hibernatemode 0 powernap 0` (add `autorestart 1` if using a desktop Mac — not supported on MacBooks)
+3. **Caffeinate daemon:** Create `/Library/LaunchDaemons/com.caffeinate.plist` with `caffeinate -dims`, `KeepAlive: true`, `RunAtLoad: true`
+4. **Load caffeinate:** `sudo launchctl load -w /Library/LaunchDaemons/com.caffeinate.plist`
+5. **Enable SSH:** `sudo systemsetup -setremotelogin on`
+6. **Enable Screen Sharing:** System Preferences > Sharing > Remote Management (check all permissions)
+7. **Install Tailscale:** Download from tailscale.com, sign in, set operator: `sudo tailscale set --operator=USERNAME`
+8. **Tailscale auto-start:** Ensure `TailscaleStartOnLogin=1` in Tailscale preferences
+9. **Tailscale auto-update:** `tailscale set --auto-update`
+10. **Disable key expiry:** In Tailscale admin console (login.tailscale.com) > Machine settings > Disable key expiry
+11. **Subnet routing:** `tailscale set --advertise-routes=192.168.1.0/24` + approve in admin console
+12. **Passwordless sudo:** `echo "USERNAME ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/USERNAME && sudo chmod 440 /etc/sudoers.d/USERNAME`
+13. **IP forwarding:** `echo 'net.inet.ip.forwarding=1' | sudo tee -a /etc/sysctl.conf && sudo sysctl -w net.inet.ip.forwarding=1`
+14. **Install Chrome Remote Desktop** (fallback remote access that doesn't depend on Tailscale)
 
 ### launchd Service: Sonos API
 
@@ -407,8 +466,8 @@ Runs on Alpaca Mac as launchd service `com.mediamtx`.
 | API | `http://192.168.1.74:9997/v3/paths/list` | Stream status |
 
 **Via Tailscale** (from DO droplet or any Tailscale node):
-- `rtsp://100.110.178.14:8554/{stream}`
-- `http://100.110.178.14:8888/{stream}`
+- `rtsp://100.102.122.65:8554/{stream}`
+- `http://100.102.122.65:8888/{stream}`
 
 **On-demand:** Streams only pull from cameras when a viewer connects (`sourceOnDemand: yes`), saving bandwidth.
 
@@ -974,8 +1033,8 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 
 ### TODO: Camera Streaming
 
-- [ ] **Deploy MediaMTX to Alpaca Mac** — Run `scripts/mediamtx/setup.sh` when Mac is reachable via Tailscale. Config and launchd plist are prepared in `scripts/mediamtx/`.
-- [ ] **Fix Tailscale connectivity** — Mac shows "active; relay" but SSH/ping times out. May need Tailscale restart or firewall check on Mac.
+- [x] ~~**Deploy MediaMTX to Alpaca Mac**~~ — Deployed 2026-02-07. Config with 9 camera streams (3 cameras x 3 quality levels) at `~/mediamtx/mediamtx.yml`. UDM Pro TLS fingerprint extracted and embedded. Service running as `com.mediamtx` launchd agent.
+- [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.102.122.65`. Key expiry disabled.
 - [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located? Can they stream RTSP?
 
 ### TODO: Lighting Catalog

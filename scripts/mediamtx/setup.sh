@@ -3,10 +3,10 @@
 # Installs MediaMTX, extracts UDM Pro cert fingerprint, deploys config & launchd service
 #
 # Run this ON the Alpaca Mac (or via SSH):
-#   ssh alpaca@100.110.178.14 'bash -s' < scripts/mediamtx/setup.sh
+#   ssh alpaca@100.102.122.65 'bash -s' < scripts/mediamtx/setup.sh
 #
 # Or from the DO droplet:
-#   ssh alpaca@100.110.178.14 'bash -s' < /path/to/setup.sh
+#   ssh alpaca@100.102.122.65 'bash -s' < /path/to/setup.sh
 
 set -euo pipefail
 
