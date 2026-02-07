@@ -14,7 +14,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 │   runner)            │    (subnet routing)      │                  │
 │                      │                          │  node-sonos-     │
 │  - Cron alarms       │  ┌─ direct LAN access ─►│   http-api :5005 │
-│  - Bot triggers      │  │  192.168.1.0/24      │  MediaMTX  :8554 │
+│  - Bot triggers      │  │  192.168.1.0/24      │  go2rtc    :1984 │
 │  - UDM Pro API calls │  │  (via subnet route)  │  SSH       :22   │
 │  - Lighting control  │  │                       │  pywizlight      │
 └──────────┬──────────┘  │                       └────────┬─────────┘
@@ -131,7 +131,7 @@ The Mac is configured to survive power outages, reboots, and network disruptions
 3. Caffeinate daemon starts (LaunchDaemon, runs before login)
 4. Tailscale app launches (Login Item, `TailscaleStartOnLogin=1`)
 5. Sonos HTTP API starts (`~/Library/LaunchAgents/com.sonos.httpapi.plist`)
-6. MediaMTX starts (`~/Library/LaunchAgents/com.mediamtx.plist`)
+6. go2rtc starts (`~/Library/LaunchAgents/com.go2rtc.plist`)
 7. DO droplet can SSH in via Tailscale within ~60 seconds of boot
 
 **No human intervention required.**
@@ -141,7 +141,7 @@ The Mac is configured to survive power outages, reboots, and network disruptions
 | Service | Port | Auto-Start | Purpose |
 |---------|------|------------|---------|
 | node-sonos-http-api | 5005 | launchd (`com.sonos.httpapi`) | Sonos speaker control |
-| MediaMTX | 8554 | launchd (`com.mediamtx`) | Camera RTSP restreaming (9 streams) |
+| go2rtc | 1984 | launchd (`com.go2rtc`) | Camera HLS/WebRTC streaming (9 streams) |
 | Tailscale | — | Login item | VPN mesh connectivity |
 | caffeinate | — | LaunchDaemon | Prevent sleep |
 
@@ -433,16 +433,18 @@ rtsps://192.168.1.1:7441/<unique_stream_token>
 - Self-signed certificate — clients must accept/ignore it
 - Each camera gets a unique token copied from the UI
 
-### MediaMTX (Restreaming)
+### go2rtc (Camera Streaming)
 
-MediaMTX converts RTSPS from UniFi Protect into standard RTSP/HLS/WebRTC.
-Runs on Alpaca Mac as launchd service `com.mediamtx`.
+go2rtc converts RTSPS from UniFi Protect into HLS/WebRTC/MSE for browser playback.
+Runs on Alpaca Mac as launchd service `com.go2rtc` (v1.9.14).
 
-**Setup:** Run `scripts/mediamtx/setup.sh` on the Alpaca Mac (installs MediaMTX, extracts UDM Pro cert fingerprint, deploys config and launchd plist).
+**Why go2rtc, not MediaMTX:** MediaMTX's HLS muxer crashes repeatedly on UniFi Protect's malformed SPS NAL units ("unable to extract DTS: invalid SPS"). go2rtc handles these quirky streams perfectly with zero errors.
 
-**Config:** `~/mediamtx/mediamtx.yml` on Alpaca Mac (source in `scripts/mediamtx/mediamtx.yml`)
+**Config:** `~/go2rtc/go2rtc.yaml` on Alpaca Mac (source in `scripts/go2rtc/go2rtc.yaml`)
 
-**Available Streams (9 total — 3 cameras x 3 quality levels):**
+**Key detail:** UniFi Protect URLs use `rtspx://` protocol (RTSP over TLS control channel, no SRTP on media data). Remove `?enableSrtp` from the Protect RTSP URLs.
+
+**Available Streams (9 total — 3 cameras × 3 quality levels):**
 
 | Stream Name | Camera | Resolution |
 |-------------|--------|------------|
@@ -460,28 +462,106 @@ Runs on Alpaca Mac as launchd service `com.mediamtx`.
 
 | Protocol | URL | Use Case |
 |----------|-----|----------|
-| RTSP | `rtsp://192.168.1.74:8554/{stream}` | VLC, NVR, programmatic |
-| HLS | `http://192.168.1.74:8888/{stream}` | Browser playback |
-| WebRTC | `http://192.168.1.74:8889/{stream}` | Low-latency browser |
-| API | `http://192.168.1.74:9997/v3/paths/list` | Stream status |
+| HLS (fMP4) | `http://localhost:1984/api/stream.m3u8?src={stream}&mp4` | Browser playback (HLS.js) |
+| HLS (TS) | `http://localhost:1984/api/stream.m3u8?src={stream}` | Basic HLS (audio only) |
+| MP4 stream | `http://localhost:1984/api/stream.mp4?src={stream}` | Direct MP4 (continuous) |
+| RTSP | `rtsp://localhost:8554/{stream}` | VLC, NVR, programmatic |
+| API | `http://localhost:1984/api/streams` | Stream status/consumers |
+| Web UI | `http://localhost:1984/` | Built-in player (LAN only) |
 
-**Via Tailscale** (from DO droplet or any Tailscale node):
-- `rtsp://100.102.122.65:8554/{stream}`
-- `http://100.102.122.65:8888/{stream}`
+**Via Tailscale** (from DO droplet): Replace `localhost` with `100.102.122.65`
 
-**On-demand:** Streams only pull from cameras when a viewer connects (`sourceOnDemand: yes`), saving bandwidth.
+**Public access** (via Caddy reverse proxy on DO droplet):
+- HLS: `https://cam.alpacaplayhouse.com/api/stream.m3u8?src={stream}&mp4`
+- Only `/api/*` paths are proxied; web UI is blocked
+- CORS restricted to `rsonnad.github.io` and `alpacaplayhouse.com`
 
-**Logs:** `~/mediamtx/mediamtx.log` on Alpaca Mac
+**On-demand:** go2rtc only connects to cameras when a viewer requests a stream. Streams auto-disconnect when no consumers remain.
+
+**IMPORTANT — `&mp4` parameter:** Always use `&mp4` in the HLS URL. Without it, go2rtc sends TS segments that contain only audio. The `&mp4` flag enables fMP4 mode with proper init segments (EXT-X-MAP) that include video.
+
+**Logs:** `~/go2rtc/logs/stdout.log` and `~/go2rtc/logs/stderr.log`
 
 **Service management:**
 ```bash
 # On Alpaca Mac
-launchctl stop com.mediamtx      # Stop
-launchctl start com.mediamtx     # Start
-launchctl unload ~/Library/LaunchAgents/com.mediamtx.plist  # Disable
-launchctl load ~/Library/LaunchAgents/com.mediamtx.plist    # Enable
-tail -f ~/mediamtx/mediamtx.log  # View logs
+launchctl list | grep go2rtc                                   # Check status
+launchctl unload ~/Library/LaunchAgents/com.go2rtc.plist       # Stop
+launchctl load ~/Library/LaunchAgents/com.go2rtc.plist         # Start
+tail -f ~/go2rtc/logs/stdout.log                               # View logs
 ```
+
+### Caddy Reverse Proxy (cam.alpacaplayhouse.com)
+
+Caddy on the DO droplet reverse-proxies go2rtc's API through HTTPS with auto-provisioned Let's Encrypt certificate.
+
+**DNS:** `cam` A record → `159.89.157.120` (DO droplet IP, configured in GoDaddy)
+
+**Config:** `/etc/caddy/Caddyfile` on DO droplet
+
+**What Caddy does:**
+1. Receives HTTPS requests at `cam.alpacaplayhouse.com/api/*`
+2. Strips go2rtc's CORS headers (which are `*`)
+3. Adds origin-specific CORS headers (github.io, alpacaplayhouse.com)
+4. Proxies to go2rtc at `http://100.102.122.65:1984` via Tailscale
+5. Blocks all non-`/api/` paths (returns 404)
+
+**Manage Caddy:**
+```bash
+# On DO droplet
+caddy validate --config /etc/caddy/Caddyfile    # Validate config
+systemctl reload caddy                            # Reload without downtime
+systemctl status caddy                            # Check status
+```
+
+### Database: camera_streams Table
+
+Stream configuration is stored in Supabase, not hardcoded in the frontend.
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `stream_name` | text | Unique stream ID (e.g., `alpacamera-low`) |
+| `camera_name` | text | Display name (e.g., `Alpacamera`) |
+| `quality` | text | `low`, `med`, or `high` |
+| `resolution` | text | e.g., `640x360` |
+| `location` | text | Physical location description |
+| `proxy_base_url` | text | Default: `https://cam.alpacaplayhouse.com` |
+| `lan_ip` | text | Camera LAN IP |
+| `is_active` | bool | Whether to show in UI |
+
+Frontend constructs HLS URL as: `${proxy_base_url}/api/stream.m3u8?src=${stream_name}&mp4`
+
+RLS: Authenticated users can read; no public access.
+
+### UniFi Protect API (Camera Control)
+
+The UDM Pro exposes an unofficial REST API for camera settings (IR, PTZ, etc.).
+
+**Authentication:** Same as Network API — cookie-based with CSRF token from JWT.
+
+```bash
+# IR LED control script (on Alpaca Mac)
+python3 /tmp/unifi_ir.py auto    # Set all cameras to auto IR
+python3 /tmp/unifi_ir.py on      # Force IR LEDs on
+python3 /tmp/unifi_ir.py off     # Force IR LEDs off
+```
+
+**Camera IDs (from Protect API bootstrap):**
+
+| Camera | Protect ID |
+|--------|-----------|
+| Alpacamera | `694c550400317503e400044b` |
+| Front Of House | `696534fc003eed03e4028eee` |
+| Side Yard | `696537cc0067ed03e402929c` |
+
+**Key PATCH endpoint:** `PATCH https://192.168.1.1/proxy/protect/api/cameras/{id}`
+
+**IR LED modes:** `auto` (default), `on`, `off`, `autoFilterOnly`, `manual`
+
+**ISP Settings** (via `ispSettings` in PATCH body):
+- `irLedMode` — IR LED control
+- `irLedLevel` — IR intensity (0-6)
+- `icrSensitivity` — Day/night switch threshold
 
 ### Programmatic API
 
@@ -1033,8 +1113,9 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 
 ### TODO: Camera Streaming
 
-- [x] ~~**Deploy MediaMTX to Alpaca Mac**~~ — Deployed 2026-02-07. Config with 9 camera streams (3 cameras x 3 quality levels) at `~/mediamtx/mediamtx.yml`. UDM Pro TLS fingerprint extracted and embedded. Service running as `com.mediamtx` launchd agent.
+- [x] ~~**Deploy camera streaming**~~ — Deployed 2026-02-07. go2rtc v1.9.14 on Alpaca Mac with 9 streams. Caddy reverse proxy on DO droplet at `cam.alpacaplayhouse.com`. HLS.js frontend at `residents/cameras.html`.
 - [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.102.122.65`. Key expiry disabled.
+- [x] ~~**MediaMTX → go2rtc migration**~~ — MediaMTX crashed on UniFi Protect's malformed SPS NAL units. Switched to go2rtc which handles them perfectly. MediaMTX binary kept at `~/mediamtx/mediamtx.v1.16.0.bak` but service is unloaded.
 - [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located? Can they stream RTSP?
 
 ### TODO: Lighting Catalog

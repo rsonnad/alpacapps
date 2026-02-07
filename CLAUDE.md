@@ -160,6 +160,13 @@ tesla_vehicles  - Vehicle data + cached state from Tesla API
                    last_state [jsonb], last_synced_at, created_at, updated_at)
 ```
 
+### Camera Streaming System
+```
+camera_streams  - go2rtc HLS stream configuration (9 rows: 3 cameras × 3 qualities)
+                  (camera_name, quality [low/med/high], stream_name,
+                   proxy_base_url, location, protect_share_url, is_active)
+```
+
 ### AI Image Generation
 ```
 image_gen_jobs  - Async image generation job queue
@@ -406,6 +413,20 @@ git push
 - **Vehicles:** 4 cars on 4 separate Tesla accounts: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
 - **Data tracked:** battery, range, charging state, odometer, climate, location, tire pressure, lock state
 
+### Camera Streaming (go2rtc + Caddy)
+- **Server:** go2rtc v1.9.14 on Alpaca Mac (`~/go2rtc/go2rtc`)
+- **Config:** `~/go2rtc/go2rtc.yaml` (also in repo at `scripts/go2rtc/go2rtc.yaml`)
+- **Protocol:** `rtspx://` (RTSP over TLS, no SRTP) to UniFi Protect on UDM Pro
+- **Cameras:** 3 UniFi G5 PTZ cameras × 3 quality levels = 9 streams
+- **Proxy:** Caddy on DO droplet at `cam.alpacaplayhouse.com/api/*` → go2rtc:1984 via Tailscale
+- **HLS URL format:** `https://cam.alpacaplayhouse.com/api/stream.m3u8?src={stream_name}&mp4`
+- **DB:** `camera_streams` table stores stream config (stream_name, proxy_base_url, quality, location)
+- **Client:** `residents/cameras.js` loads streams from DB, plays via HLS.js with fMP4 mode (`&mp4` parameter)
+- **PTZ:** UniFi Protect API — continuous move at `POST /proxy/protect/api/cameras/{id}/move`, presets at `POST .../ptz/goto/{slot}`
+- **CORS:** Caddy strips go2rtc's CORS headers, adds origin-specific ones for `rsonnad.github.io` and `alpacaplayhouse.com`
+- **Launchd:** `com.go2rtc` service (KeepAlive + RunAtLoad)
+- **Full docs:** `HOMEAUTOMATION.md`
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -505,6 +526,15 @@ git push
    - Admin Settings tab for pasting refresh tokens per account
    - Data grid: battery, odometer, status, climate, location, tires, lock state
    - Staleness indicator shows time since last sync
+21. **Camera Streaming via go2rtc** - Live HLS camera feeds on Cameras resident page
+   - 3 UniFi G5 PTZ cameras restreamed via go2rtc on Alpaca Mac
+   - go2rtc handles UniFi Protect's quirky RTSP (MediaMTX crashed on SPS parsing)
+   - `rtspx://` protocol (RTSP over TLS control, no SRTP on media)
+   - Caddy reverse proxy on DO droplet: `cam.alpacaplayhouse.com` → go2rtc:1984 via Tailscale
+   - HLS fMP4 mode (`&mp4` parameter) required — without it, segments contain only audio
+   - `camera_streams` DB table stores stream config, frontend constructs HLS URL dynamically
+   - PTZ controls via UniFi Protect API (continuous move + preset goto)
+   - Lightbox mode with camera navigation and quality switching
 
 ## Testing Changes
 

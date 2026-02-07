@@ -208,17 +208,29 @@ async function pollAccount(account) {
 
   // 2. Process each vehicle
   for (const v of vehicles) {
-    // Match to our tesla_vehicles row by vehicle_api_id, or by account_id if not yet matched
+    // Match by Tesla's unique vehicle_api_id (for known vehicles)
     let { data: dbVehicle } = await supabase
       .from('tesla_vehicles')
       .select('*')
-      .eq('account_id', account.id)
+      .eq('vehicle_api_id', v.id)
       .eq('is_active', true)
-      .limit(1)
       .maybeSingle();
 
+    // Fallback: match unlinked vehicle by account_id (first poll, before api_id is set)
     if (!dbVehicle) {
-      log('warn', 'No matching DB vehicle', { accountId: account.id, apiId: v.id });
+      const { data: unlinked } = await supabase
+        .from('tesla_vehicles')
+        .select('*')
+        .eq('account_id', account.id)
+        .eq('is_active', true)
+        .is('vehicle_api_id', null)
+        .limit(1)
+        .maybeSingle();
+      dbVehicle = unlinked;
+    }
+
+    if (!dbVehicle) {
+      log('warn', 'No matching DB vehicle', { accountId: account.id, apiId: v.id, apiName: v.display_name });
       continue;
     }
 

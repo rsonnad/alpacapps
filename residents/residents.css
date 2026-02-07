@@ -97,6 +97,309 @@
   font-size: 0.85rem;
 }
 
+/* ===== CAMERA EXPAND BUTTON ===== */
+.camera-card__expand {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 0.3rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-card__video:hover .camera-card__expand {
+  opacity: 1;
+}
+
+.camera-card__expand:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+/* ===== PTZ CONTROLS ===== */
+.ptz-controls {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-areas:
+    ".      up      zoomin"
+    "left   home    right"
+    ".      down    zoomout";
+  grid-template-columns: 28px 28px 28px;
+  grid-template-rows: 28px 28px 28px;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.camera-card__video:hover .ptz-controls {
+  opacity: 1;
+}
+
+.ptz-btn {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.ptz-btn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+.ptz-btn.active {
+  background: var(--accent, #b8860b);
+  border-color: var(--accent, #b8860b);
+}
+
+.ptz-up { grid-area: up; }
+.ptz-down { grid-area: down; }
+.ptz-left { grid-area: left; }
+.ptz-right { grid-area: right; }
+.ptz-home { grid-area: home; }
+.ptz-zoomin { grid-area: zoomin; }
+.ptz-zoomout { grid-area: zoomout; }
+
+/* ===== CAMERA LIGHTBOX ===== */
+.camera-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-lightbox.hidden {
+  display: none;
+}
+
+.camera-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.camera-lightbox__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 95vw;
+  max-width: 1400px;
+  max-height: 95vh;
+}
+
+.camera-lightbox__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  background: rgba(30,30,30,0.9);
+  border-radius: 8px 8px 0 0;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: none;
+}
+
+.camera-lightbox__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.camera-lightbox__header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.camera-lightbox__header-controls .quality-select {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
+}
+
+.camera-lightbox__header-controls .quality-select option {
+  background: #222;
+  color: white;
+}
+
+.camera-lightbox__close {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.camera-lightbox__close:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.camera-lightbox__video-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: #111;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.camera-lightbox__video-container {
+  flex: 1;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.camera-lightbox__video-container video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.camera-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  font-size: 2rem;
+  width: 44px;
+  height: 72px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+  border-radius: 4px;
+}
+
+.camera-lightbox__nav:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.camera-lightbox__nav--prev {
+  left: 0.5rem;
+}
+
+.camera-lightbox__nav--next {
+  right: 0.5rem;
+}
+
+/* Lightbox PTZ */
+.camera-lightbox__ptz {
+  display: grid;
+  grid-template-areas:
+    ".      up      zoomin"
+    "left   home    right"
+    ".      down    zoomout";
+  grid-template-columns: 36px 36px 36px;
+  grid-template-rows: 36px 36px 36px;
+  gap: 3px;
+  justify-content: center;
+  padding: 0.6rem 0;
+  background: rgba(30,30,30,0.9);
+  border-radius: 0 0 8px 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: none;
+}
+
+.camera-lightbox__ptz .ptz-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.camera-lightbox__ptz .ptz-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.camera-lightbox__ptz .ptz-btn.active {
+  background: var(--accent, #b8860b);
+  border-color: var(--accent, #b8860b);
+}
+
+/* ===== CAMERA MOBILE ===== */
+@media (max-width: 768px) {
+  .ptz-controls {
+    opacity: 1; /* Always show on touch devices */
+    grid-template-columns: 24px 24px 24px;
+    grid-template-rows: 24px 24px 24px;
+  }
+
+  .ptz-btn {
+    font-size: 0.6rem;
+  }
+
+  .camera-card__expand {
+    opacity: 1;
+  }
+
+  .camera-lightbox__content {
+    width: 100vw;
+    max-height: 100vh;
+  }
+
+  .camera-lightbox__nav {
+    width: 36px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+
+  .camera-lightbox__ptz {
+    grid-template-columns: 32px 32px 32px;
+    grid-template-rows: 32px 32px 32px;
+  }
+
+  .camera-lightbox__ptz .ptz-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+}
+
 /* ===== LIGHTING GROUPS ===== */
 .lighting-groups {
   display: flex;

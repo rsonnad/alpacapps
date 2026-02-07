@@ -1,0 +1,25 @@
+[Unit]
+Description=PTZ Proxy for UniFi Protect cameras
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bugfixer
+Group=bugfixer
+WorkingDirectory=/opt/ptz-proxy
+ExecStart=/usr/bin/node /opt/ptz-proxy/ptz-proxy.js
+Restart=always
+RestartSec=5
+
+# Environment
+EnvironmentFile=/opt/ptz-proxy/.env
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/ptz-proxy
+
+[Install]
+WantedBy=multi-user.target
