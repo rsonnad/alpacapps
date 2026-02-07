@@ -2983,6 +2983,15 @@ span.sonos-library-item__star.starred {
   color: var(--text);
 }
 
+.car-card__owner {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .car-card__model {
   font-size: 0.8rem;
   font-weight: 500;
@@ -3053,6 +3062,41 @@ span.sonos-library-item__star.starred {
   margin-left: auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Location toggle link */
+.car-location-toggle {
+  cursor: pointer;
+  color: var(--accent, #4a90d9);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.car-location-toggle:hover {
+  text-decoration-style: solid;
+}
+
+/* Map panel */
+.car-card__map-panel {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-light, #f0f0f0);
+  padding-top: 0.5rem;
+}
+
+.car-card__map-address {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  line-height: 1.3;
+}
+
+.car-card__map {
+  width: 100%;
+  height: 180px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #ddd);
+  z-index: 0;
 }
 
 /* Sync time (staleness indicator under car cards) */

@@ -18,6 +18,8 @@ let vehicles = [];
 let accounts = [];
 let pollTimer = null;
 let currentUserRole = null;
+const leafletMaps = {};       // car.id → Leaflet map instance
+const geocodeCache = {};      // "lat,lng" → address string
 
 // =============================================
 // SVG ICONS (inline for data rows)
@@ -75,7 +77,7 @@ const CAR_SVG = {
 async function loadVehicles() {
   const { data, error } = await supabase
     .from('tesla_vehicles')
-    .select('*')
+    .select('*, account:account_id(id, owner_name, tesla_email)')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
@@ -149,12 +151,11 @@ function getDataRows(car) {
   const climateStr = s.climate_on
     ? `${s.inside_temp_f || '--'}\u00b0F`
     : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)` : '--';
+  const hasLocation = s.latitude != null && s.longitude != null;
   let locationStr = '--';
-  if (s.latitude != null && s.longitude != null) {
-    locationStr = `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}`;
-    if (s.speed_mph != null && s.speed_mph > 0) {
-      locationStr += ` \u00b7 ${s.speed_mph} mph`;
-    }
+  if (hasLocation) {
+    const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
+    locationStr = `<span class="car-location-toggle" onclick="window._toggleMap(${car.id})" title="Show on map">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}${speedSuffix}</span>`;
   }
   const tiresStr = s.tpms_fl_psi != null
     ? `${s.tpms_fl_psi} / ${s.tpms_fr_psi} / ${s.tpms_rl_psi} / ${s.tpms_rr_psi}`
@@ -185,6 +186,16 @@ function renderFleet() {
     return;
   }
 
+  // Count vehicles per owner for numbering
+  const ownerCounts = {};
+  const ownerIndex = {};
+  vehicles.forEach(car => {
+    const oid = car.account?.id;
+    if (oid != null) {
+      ownerCounts[oid] = (ownerCounts[oid] || 0) + 1;
+    }
+  });
+
   grid.innerHTML = vehicles.map(car => {
     const svgKey = car.svg_key || 'modelY';
     const carSvg = CAR_SVG[svgKey] || CAR_SVG.modelY;
@@ -214,12 +225,23 @@ function renderFleet() {
     const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
     const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
 
+    // Owner info
+    let ownerHtml = '';
+    if (car.account) {
+      const oid = car.account.id;
+      ownerIndex[oid] = (ownerIndex[oid] || 0) + 1;
+      const total = ownerCounts[oid];
+      const numberStr = total > 1 ? ` · ${ownerIndex[oid]} of ${total}` : '';
+      ownerHtml = `<div class="car-card__owner">${car.account.owner_name} · ${car.account.tesla_email}${numberStr}</div>`;
+    }
+
     return `
       <div class="car-card">
         <div class="car-card__image">
           ${imageContent}
         </div>
         <div class="car-card__info">
+          ${ownerHtml}
           <div class="car-card__header">
             <div class="car-card__name">${car.name}</div>
             <span class="car-card__color-chip">
@@ -230,6 +252,10 @@ function renderFleet() {
           <div class="car-card__model">${car.year} ${car.model}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
+          </div>
+          <div class="car-card__map-panel" id="mapPanel_${car.id}" style="display:none;">
+            <div class="car-card__map-address" id="mapAddr_${car.id}"></div>
+            <div class="car-card__map" id="map_${car.id}"></div>
           </div>
           <div class="car-card__controls">
             <button class="car-cmd-btn" id="lockBtn_${car.id}"
@@ -249,6 +275,82 @@ function renderFleet() {
       </div>
     `;
   }).join('');
+}
+
+// =============================================
+// MAP TOGGLE + REVERSE GEOCODING
+// =============================================
+
+window._toggleMap = function(carId) {
+  const panel = document.getElementById(`mapPanel_${carId}`);
+  if (!panel) return;
+
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? '' : 'none';
+
+  if (isHidden) {
+    initMap(carId);
+  }
+};
+
+function initMap(carId) {
+  const car = vehicles.find(v => v.id === carId);
+  if (!car?.last_state?.latitude) return;
+
+  const lat = car.last_state.latitude;
+  const lng = car.last_state.longitude;
+  const mapEl = document.getElementById(`map_${carId}`);
+  if (!mapEl) return;
+
+  // Destroy previous map if exists
+  if (leafletMaps[carId]) {
+    leafletMaps[carId].remove();
+    delete leafletMaps[carId];
+  }
+
+  const map = L.map(mapEl, { zoomControl: false }).setView([lat, lng], 15);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OSM',
+    maxZoom: 19,
+  }).addTo(map);
+
+  L.marker([lat, lng]).addTo(map)
+    .bindPopup(`<b>${car.name}</b>`).openPopup();
+
+  leafletMaps[carId] = map;
+
+  // Fix tile rendering after panel becomes visible
+  setTimeout(() => map.invalidateSize(), 100);
+
+  // Reverse geocode
+  reverseGeocode(carId, lat, lng);
+}
+
+async function reverseGeocode(carId, lat, lng) {
+  const addrEl = document.getElementById(`mapAddr_${carId}`);
+  if (!addrEl) return;
+
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  if (geocodeCache[key]) {
+    addrEl.textContent = geocodeCache[key];
+    return;
+  }
+
+  addrEl.textContent = 'Resolving address...';
+  try {
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    if (!resp.ok) throw new Error('Geocode failed');
+    const data = await resp.json();
+    const addr = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    geocodeCache[key] = addr;
+    addrEl.textContent = addr;
+  } catch {
+    addrEl.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  }
 }
 
 // =============================================
