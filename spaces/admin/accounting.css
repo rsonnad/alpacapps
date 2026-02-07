@@ -720,3 +720,91 @@
     display: none;
   }
 }
+
+/* =============================================
+   COMPUTE COSTS TABLE
+   ============================================= */
+.cc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.cc-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.cc-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.cc-table tbody tr {
+  transition: background 0.1s ease;
+}
+
+.cc-table tbody tr:hover {
+  background: var(--bg);
+}
+
+.cc-service-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cc-cost {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.cc-cost-free {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cc-notes-cell {
+  max-width: 200px;
+}
+
+.cc-notes {
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.cc-delete-btn {
+  font-size: 1rem !important;
+  line-height: 1;
+  padding: 0.1rem 0.4rem !important;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+}
+
+.cc-table tbody tr:hover .cc-delete-btn {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .cc-notes-cell {
+    display: none;
+  }
+}

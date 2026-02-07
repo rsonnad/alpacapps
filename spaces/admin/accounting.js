@@ -17,6 +17,7 @@ let summary = {};
 let people = [];
 let currentFilters = {};
 let occupancyData = null; // { occupancyPct, occupiedUnits, availableUnits, totalUnits, revenuePct, currentRevenue, maxPotential, revenueGap }
+let computeCosts = [];
 let initialized = false;
 
 // Check if running in embed mode (inside iframe on manage.html)
@@ -45,7 +46,7 @@ initAdminPage({
     await loadPeople();
     setDefaultDateRange();
     setupEventListeners();
-    await Promise.all([loadData(), loadOccupancy()]);
+    await Promise.all([loadData(), loadOccupancy(), loadComputeCosts()]);
   }
 });
 
@@ -499,6 +500,12 @@ function setupEventListeners() {
   document.getElementById('closeReconcileModal').addEventListener('click', closeReconcileModal);
   document.getElementById('cancelReconcileBtn').addEventListener('click', closeReconcileModal);
   document.getElementById('confirmReconcileBtn').addEventListener('click', handleConfirmReconcile);
+
+  // Compute Cost Modal
+  document.getElementById('addComputeCostBtn').addEventListener('click', openComputeCostModal);
+  document.getElementById('closeComputeCostModal').addEventListener('click', closeComputeCostModal);
+  document.getElementById('cancelComputeCostBtn').addEventListener('click', closeComputeCostModal);
+  document.getElementById('saveComputeCostBtn').addEventListener('click', saveComputeCost);
 
   // Close modals on overlay click
   document.querySelectorAll('.modal').forEach(modal => {
@@ -980,4 +987,166 @@ function renderUnitBreakdown(spaces) {
   }).join('');
 
   container.innerHTML = rows || '<div class="empty-state">No dwelling spaces found</div>';
+}
+
+// =============================================
+// COMPUTE COSTS
+// =============================================
+const SERVICE_LABELS = {
+  gemini: 'Gemini',
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  digitalocean: 'DigitalOcean',
+  supabase: 'Supabase',
+  telnyx: 'Telnyx',
+  resend: 'Resend',
+  signwell: 'SignWell',
+  other: 'Other',
+};
+
+const SERVICE_COLORS = {
+  gemini: '#4285f4',
+  openai: '#10a37f',
+  anthropic: '#d97706',
+  digitalocean: '#0080ff',
+  supabase: '#3ecf8e',
+  telnyx: '#00c08b',
+  resend: '#000',
+  signwell: '#6366f1',
+  other: '#6b7280',
+};
+
+async function loadComputeCosts() {
+  try {
+    const { data, error } = await supabase
+      .from('compute_costs')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+    computeCosts = data || [];
+    renderComputeCosts();
+  } catch (err) {
+    console.error('Failed to load compute costs:', err);
+    document.getElementById('computeCostsContainer').innerHTML =
+      '<div class="empty-state">Failed to load compute costs.</div>';
+  }
+}
+
+function renderComputeCosts() {
+  const container = document.getElementById('computeCostsContainer');
+  const totalEl = document.getElementById('computeCostTotal');
+
+  if (computeCosts.length === 0) {
+    container.innerHTML = '<div class="empty-state">No compute cost entries yet.</div>';
+    totalEl.textContent = '$0.00';
+    return;
+  }
+
+  const total = computeCosts.reduce((sum, c) => sum + parseFloat(c.cost_usd || 0), 0);
+  totalEl.textContent = '$' + total.toFixed(2);
+
+  const rows = computeCosts.map(c => {
+    const color = SERVICE_COLORS[c.service] || SERVICE_COLORS.other;
+    const label = SERVICE_LABELS[c.service] || c.service;
+    const cost = parseFloat(c.cost_usd || 0);
+    const costDisplay = cost === 0 ? 'Free' : '$' + cost.toFixed(4);
+    const costClass = cost === 0 ? 'cc-cost-free' : '';
+
+    return `
+      <tr>
+        <td style="white-space: nowrap;">${formatDate(c.date)}</td>
+        <td><span class="cc-service-badge" style="background: ${color}15; color: ${color}; border: 1px solid ${color}40;">${escapeHtml(label)}</span></td>
+        <td>${escapeHtml(c.description)}</td>
+        <td class="cc-cost ${costClass}" style="text-align: right; white-space: nowrap;">${costDisplay}</td>
+        <td class="cc-notes-cell">${c.notes ? `<span class="cc-notes" title="${escapeHtml(c.notes)}">${escapeHtml(c.notes)}</span>` : ''}</td>
+        <td>
+          <button class="tx-action-btn cc-delete-btn" data-id="${c.id}" title="Delete">×</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <table class="cc-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Service</th>
+          <th>Description</th>
+          <th style="text-align: right;">Cost</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  // Attach delete handlers
+  container.querySelectorAll('.cc-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteComputeCost(btn.dataset.id));
+  });
+}
+
+function openComputeCostModal() {
+  document.getElementById('computeCostModalTitle').textContent = 'Add Compute Cost';
+  document.getElementById('ccId').value = '';
+  document.getElementById('ccDate').value = getToday();
+  document.getElementById('ccService').value = 'gemini';
+  document.getElementById('ccDescription').value = '';
+  document.getElementById('ccCost').value = '';
+  document.getElementById('ccNotes').value = '';
+  document.getElementById('computeCostModal').classList.remove('hidden');
+}
+
+function closeComputeCostModal() {
+  document.getElementById('computeCostModal').classList.add('hidden');
+}
+
+async function saveComputeCost() {
+  const date = document.getElementById('ccDate').value;
+  const service = document.getElementById('ccService').value;
+  const description = document.getElementById('ccDescription').value.trim();
+  const cost = parseFloat(document.getElementById('ccCost').value) || 0;
+  const notes = document.getElementById('ccNotes').value.trim();
+
+  if (!date || !description) {
+    showToast('Date and description are required', 'error');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from('compute_costs').insert({
+      date,
+      service,
+      description,
+      cost_usd: cost,
+      notes: notes || null,
+    });
+
+    if (error) throw error;
+
+    showToast('Compute cost entry added', 'success');
+    closeComputeCostModal();
+    await loadComputeCosts();
+  } catch (err) {
+    console.error('Failed to save compute cost:', err);
+    showToast('Failed to save entry', 'error');
+  }
+}
+
+async function deleteComputeCost(id) {
+  if (!confirm('Delete this compute cost entry?')) return;
+
+  try {
+    const { error } = await supabase.from('compute_costs').delete().eq('id', id);
+    if (error) throw error;
+
+    showToast('Entry deleted', 'success');
+    await loadComputeCosts();
+  } catch (err) {
+    console.error('Failed to delete compute cost:', err);
+    showToast('Failed to delete entry', 'error');
+  }
 }

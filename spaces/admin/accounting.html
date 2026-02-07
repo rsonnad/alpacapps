@@ -38,7 +38,7 @@
           <img src="/assets/branding/alpaca-head.jpg" alt="AlpacAPPs" class="header-logo__icon">
           <img src="/assets/branding/wordmark.jpeg" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.11</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.12</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/admin/" class="btn-small">Dashboard</a>
@@ -197,6 +197,72 @@
         </div>
       </div>
 
+      <!-- Compute Costs Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Compute Costs</h2>
+          <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Hosting & Token Gen</span>
+          <span id="computeCostTotal" class="count-badge" style="margin-left: 0.5rem;">$0.00</span>
+          <div style="margin-left: auto;">
+            <button id="addComputeCostBtn" class="btn-primary btn-small">+ Add Entry</button>
+          </div>
+        </div>
+        <div class="section-body" id="computeCostsContainer">
+          <div class="empty-state">Loading compute costs...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Compute Cost Modal -->
+  <div id="computeCostModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 id="computeCostModalTitle">Add Compute Cost</h2>
+        <button class="modal-close" id="closeComputeCostModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="computeCostForm">
+          <input type="hidden" id="ccId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ccDate">Date</label>
+              <input type="date" id="ccDate" required>
+            </div>
+            <div class="form-group">
+              <label for="ccService">Service</label>
+              <select id="ccService" required>
+                <option value="gemini">Gemini</option>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="digitalocean">DigitalOcean</option>
+                <option value="supabase">Supabase</option>
+                <option value="telnyx">Telnyx</option>
+                <option value="resend">Resend</option>
+                <option value="signwell">SignWell</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ccDescription">Description</label>
+            <input type="text" id="ccDescription" required placeholder="e.g. Generated 28 AI images">
+          </div>
+          <div class="form-group">
+            <label for="ccCost">Cost (USD)</label>
+            <input type="number" id="ccCost" step="0.0001" min="0" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="ccNotes">Notes</label>
+            <textarea id="ccNotes" rows="2" placeholder="Token counts, model info, etc."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelComputeCostBtn">Cancel</button>
+        <button class="btn-primary" id="saveComputeCostBtn">Save</button>
+      </div>
     </div>
   </div>
 
