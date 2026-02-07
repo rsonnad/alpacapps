@@ -124,13 +124,13 @@
   background: rgba(0,0,0,0.8);
 }
 
-/* ===== PTZ CONTROLS ===== */
+/* ===== PTZ CONTROLS (mobile overlay) ===== */
 .ptz-controls {
   position: absolute;
   bottom: 0.5rem;
   right: 0.5rem;
   z-index: 5;
-  display: grid;
+  display: none; /* hidden on desktop, shown on mobile */
   grid-template-areas:
     ".      up      zoomin"
     "left   home    right"
@@ -138,12 +138,6 @@
   grid-template-columns: 28px 28px 28px;
   grid-template-rows: 28px 28px 28px;
   gap: 2px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.camera-card__video:hover .ptz-controls {
-  opacity: 1;
 }
 
 .ptz-btn {
@@ -179,6 +173,79 @@
 .ptz-home { grid-area: home; }
 .ptz-zoomin { grid-area: zoomin; }
 .ptz-zoomout { grid-area: zoomout; }
+
+/* Label hints on non-directional buttons (desktop) */
+.ptz-label {
+  font-size: 0.55rem;
+  margin-left: 2px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* ===== CONTROLS BAR (below video, desktop) ===== */
+.camera-card__controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.controls-bar__ptz {
+  display: grid;
+  grid-template-areas:
+    ".      up      zoomin"
+    "left   home    right"
+    ".      down    zoomout";
+  grid-template-columns: 28px 28px auto;
+  grid-template-rows: 28px 28px 28px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.controls-bar__ptz .ptz-btn {
+  background: rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+}
+
+.controls-bar__ptz .ptz-btn:hover {
+  background: rgba(0,0,0,0.12);
+}
+
+.controls-bar__ptz .ptz-btn.active {
+  background: var(--accent, #b8860b);
+  color: white;
+  border-color: var(--accent, #b8860b);
+}
+
+/* Non-directional buttons get wider to fit label */
+.controls-bar__ptz .ptz-home,
+.controls-bar__ptz .ptz-zoomin,
+.controls-bar__ptz .ptz-zoomout {
+  min-width: 28px;
+  padding: 0 0.3rem;
+  justify-content: center;
+  gap: 1px;
+}
+
+.controls-bar__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Toolbar hint text inside buttons */
+.toolbar-hint {
+  font-size: 0.65rem;
+  opacity: 0.8;
+}
 
 /* ===== CAMERA LIGHTBOX ===== */
 .camera-lightbox {
@@ -333,7 +400,7 @@
     ".      up      zoomin"
     "left   home    right"
     ".      down    zoomout";
-  grid-template-columns: 36px 36px 36px;
+  grid-template-columns: 36px 36px auto;
   grid-template-rows: 36px 36px 36px;
   gap: 3px;
   justify-content: center;
@@ -352,6 +419,20 @@
   border: 1px solid rgba(255,255,255,0.2);
 }
 
+/* Non-directional buttons wider to fit label */
+.camera-lightbox__ptz .ptz-home,
+.camera-lightbox__ptz .ptz-zoomin,
+.camera-lightbox__ptz .ptz-zoomout {
+  width: auto;
+  min-width: 36px;
+  padding: 0 0.5rem;
+  gap: 3px;
+}
+
+.camera-lightbox__ptz .ptz-label {
+  font-size: 0.65rem;
+}
+
 .camera-lightbox__ptz .ptz-btn:hover {
   background: rgba(255,255,255,0.25);
 }
@@ -361,17 +442,7 @@
   border-color: var(--accent, #b8860b);
 }
 
-/* ===== CAMERA TOOLBAR (grid card) ===== */
-.camera-card__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.75rem;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
+/* ===== TOOLBAR BUTTONS (shared) ===== */
 .toolbar-btn {
   background: rgba(0,0,0,0.05);
   border: 1px solid var(--border);
@@ -481,23 +552,29 @@
 
 /* ===== CAMERA MOBILE ===== */
 @media (max-width: 768px) {
-  .ptz-controls {
-    opacity: 1; /* Always show on touch devices */
+  /* Show mobile PTZ overlay on touch devices */
+  .ptz-controls--mobile {
+    display: grid;
     grid-template-columns: 24px 24px 24px;
     grid-template-rows: 24px 24px 24px;
   }
 
-  .ptz-btn {
+  .ptz-controls--mobile .ptz-btn {
     font-size: 0.6rem;
+  }
+
+  /* Hide desktop controls bar on mobile */
+  .camera-card__controls-bar {
+    display: none;
+  }
+
+  /* Hide ptz-label on mobile (no room) */
+  .ptz-label {
+    display: none;
   }
 
   .camera-card__expand {
     opacity: 1;
-  }
-
-  .camera-card__toolbar {
-    gap: 0.3rem;
-    padding: 0.25rem 0.5rem;
   }
 
   .toolbar-btn {
@@ -534,6 +611,14 @@
     width: 32px;
     height: 32px;
     font-size: 0.75rem;
+  }
+
+  .camera-lightbox__ptz .ptz-home,
+  .camera-lightbox__ptz .ptz-zoomin,
+  .camera-lightbox__ptz .ptz-zoomout {
+    width: 32px;
+    min-width: 32px;
+    padding: 0;
   }
 }
 

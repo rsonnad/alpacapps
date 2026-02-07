@@ -214,27 +214,6 @@ function renderCameras() {
           <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}</span>
         </div>
       </div>
-      ${cam.protectCameraId ? `
-      <div class="camera-card__toolbar" data-cam="${i}">
-        <button class="toolbar-btn snapshot-btn" data-cam="${i}" title="Take Snapshot">${ICONS.snapshot}</button>
-        <span class="toolbar-sep"></span>
-        <select class="toolbar-select ir-select" data-cam="${i}" title="Night Vision">
-          <option value="auto">IR: Auto</option>
-          <option value="on">IR: On</option>
-          <option value="off">IR: Off</option>
-        </select>
-        <button class="toolbar-btn toolbar-toggle led-toggle" data-cam="${i}" title="Status LED">LED</button>
-        <button class="toolbar-btn toolbar-toggle hdr-toggle" data-cam="${i}" title="HDR Mode">HDR</button>
-        <span class="toolbar-sep"></span>
-        <select class="toolbar-select preset-select" data-cam="${i}" title="PTZ Preset">
-          <option value="" disabled selected>Preset</option>
-          <option value="-1">Home</option>
-          <option value="0">Preset 1</option>
-          <option value="1">Preset 2</option>
-          <option value="2">Preset 3</option>
-        </select>
-      </div>
-      ` : ''}
       <div class="camera-card__video" id="video-container-${i}" data-cam="${i}">
         <video id="video-${i}" muted autoplay playsinline></video>
         <div class="camera-card__overlay" id="overlay-${i}">
@@ -250,8 +229,8 @@ function renderCameras() {
           </svg>
         </button>
         ${cam.protectCameraId ? `
-        <!-- PTZ Controls -->
-        <div class="ptz-controls" id="ptz-${i}">
+        <!-- PTZ Controls (mobile overlay) -->
+        <div class="ptz-controls ptz-controls--mobile" id="ptz-mobile-${i}">
           <button class="ptz-btn ptz-up" data-cam="${i}" data-dir="up" title="Tilt Up">▲</button>
           <button class="ptz-btn ptz-left" data-cam="${i}" data-dir="left" title="Pan Left">◀</button>
           <button class="ptz-btn ptz-home" data-cam="${i}" data-dir="home" title="Home Position">⌂</button>
@@ -262,6 +241,39 @@ function renderCameras() {
         </div>
         ` : ''}
       </div>
+      ${cam.protectCameraId ? `
+      <!-- Controls bar below video (desktop) -->
+      <div class="camera-card__controls-bar" data-cam="${i}">
+        <div class="controls-bar__ptz" id="ptz-${i}">
+          <button class="ptz-btn ptz-up" data-cam="${i}" data-dir="up" title="Tilt Up">▲</button>
+          <button class="ptz-btn ptz-left" data-cam="${i}" data-dir="left" title="Pan Left">◀</button>
+          <button class="ptz-btn ptz-home" data-cam="${i}" data-dir="home" title="Home Position">⌂<span class="ptz-label">Home</span></button>
+          <button class="ptz-btn ptz-right" data-cam="${i}" data-dir="right" title="Pan Right">▶</button>
+          <button class="ptz-btn ptz-down" data-cam="${i}" data-dir="down" title="Tilt Down">▼</button>
+          <button class="ptz-btn ptz-zoomin" data-cam="${i}" data-dir="zoomin" title="Zoom In">+<span class="ptz-label">Zoom In</span></button>
+          <button class="ptz-btn ptz-zoomout" data-cam="${i}" data-dir="zoomout" title="Zoom Out">−<span class="ptz-label">Zoom Out</span></button>
+        </div>
+        <div class="controls-bar__toolbar">
+          <button class="toolbar-btn snapshot-btn" data-cam="${i}" title="Take Snapshot">${ICONS.snapshot}<span class="toolbar-hint">Snapshot</span></button>
+          <span class="toolbar-sep"></span>
+          <select class="toolbar-select ir-select" data-cam="${i}" title="Night Vision">
+            <option value="auto">IR: Auto</option>
+            <option value="on">IR: On</option>
+            <option value="off">IR: Off</option>
+          </select>
+          <button class="toolbar-btn toolbar-toggle led-toggle" data-cam="${i}" title="Status LED">LED</button>
+          <button class="toolbar-btn toolbar-toggle hdr-toggle" data-cam="${i}" title="HDR Mode">HDR</button>
+          <span class="toolbar-sep"></span>
+          <select class="toolbar-select preset-select" data-cam="${i}" title="PTZ Preset">
+            <option value="" disabled selected>Preset</option>
+            <option value="-1">Home</option>
+            <option value="0">Preset 1</option>
+            <option value="1">Preset 2</option>
+            <option value="2">Preset 3</option>
+          </select>
+        </div>
+      </div>
+      ` : ''}
     </div>
   `).join('');
 
@@ -678,11 +690,11 @@ function renderLightbox() {
       <div class="camera-lightbox__ptz" id="lb-ptz">
         <button class="ptz-btn ptz-up" data-dir="up" title="Tilt Up">▲</button>
         <button class="ptz-btn ptz-left" data-dir="left" title="Pan Left">◀</button>
-        <button class="ptz-btn ptz-home" data-dir="home" title="Home Position">⌂</button>
+        <button class="ptz-btn ptz-home" data-dir="home" title="Home Position">⌂<span class="ptz-label">Home</span></button>
         <button class="ptz-btn ptz-right" data-dir="right" title="Pan Right">▶</button>
         <button class="ptz-btn ptz-down" data-dir="down" title="Tilt Down">▼</button>
-        <button class="ptz-btn ptz-zoomin" data-dir="zoomin" title="Zoom In">+</button>
-        <button class="ptz-btn ptz-zoomout" data-dir="zoomout" title="Zoom Out">−</button>
+        <button class="ptz-btn ptz-zoomin" data-dir="zoomin" title="Zoom In">+<span class="ptz-label">Zoom In</span></button>
+        <button class="ptz-btn ptz-zoomout" data-dir="zoomout" title="Zoom Out">−<span class="ptz-label">Zoom Out</span></button>
       </div>
     </div>
   `;
