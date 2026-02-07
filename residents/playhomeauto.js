@@ -891,9 +891,9 @@ function renderGroupCard(group) {
     ? `<div class="child-devices" data-children-for="${group.groupId}">
         <div class="child-devices__header">
           <span class="child-devices__count">${group.children.length} device${group.children.length !== 1 ? 's' : ''}</span>
-          <button class="child-devices__toggle" data-action="toggle-children" data-group="${group.groupId}">Hide</button>
+          <button class="child-devices__toggle" data-action="toggle-children" data-group="${group.groupId}">Show</button>
         </div>
-        <div class="child-devices__list expanded" data-children-list="${group.groupId}">
+        <div class="child-devices__list" data-children-list="${group.groupId}">
           ${group.children.map(c => renderChildDevice(c)).join('')}
         </div>
       </div>`
@@ -952,7 +952,7 @@ function renderGroupCard(group) {
 
 function renderChildDevice(child) {
   const segmentBtn = child.hasSegments
-    ? `<button class="child-extra-btn active" title="Segment colors"
+    ? `<button class="child-extra-btn" title="Segment colors"
         data-action="segment-expand" data-device="${child.deviceId}" data-sku="${child.sku}"
         data-segments="${child.segmentCount}">&#9783;</button>`
     : '';
@@ -962,9 +962,8 @@ function renderChildDevice(child) {
         data-action="scene-expand" data-device="${child.deviceId}" data-sku="${child.sku}">&#9733;</button>`
     : '';
 
-  // Segment controls start expanded so dual-color Ring/Main is immediately visible
   const expandedHtml = (child.hasSegments || child.hasScenes)
-    ? `<div class="child-device-row__expanded${child.hasSegments ? '' : ' hidden'}" data-expanded-for="${child.deviceId}">
+    ? `<div class="child-device-row__expanded hidden" data-expanded-for="${child.deviceId}">
         ${child.hasSegments ? renderSegmentControls(child) : ''}
         ${child.hasScenes ? renderSceneSelector(child) : ''}
       </div>`
