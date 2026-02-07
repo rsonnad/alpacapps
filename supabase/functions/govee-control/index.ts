@@ -214,8 +214,19 @@ serve(async (req) => {
 
     const result = await goveeResponse.json();
 
+    if (!goveeResponse.ok) {
+      console.error(
+        `Govee API error [${action}]: status=${goveeResponse.status}`,
+        JSON.stringify({ device: body.device, sku: body.sku, response: result })
+      );
+      // Normalize error field so client always sees it
+      const errorMsg =
+        result.error || result.message || result.msg || `Govee API error ${goveeResponse.status}`;
+      return jsonResponse({ error: errorMsg, goveeStatus: goveeResponse.status }, goveeResponse.status);
+    }
+
     return new Response(JSON.stringify(result), {
-      status: goveeResponse.ok ? 200 : goveeResponse.status,
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

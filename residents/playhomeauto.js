@@ -279,8 +279,10 @@ async function goveeApi(action, params = {}) {
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(err.error || `API error ${response.status}`);
+    const err = await response.json().catch(() => ({}));
+    const msg = err.error || err.message || err.msg || `API error ${response.status}`;
+    console.error('goveeApi error:', { action, status: response.status, body: err, params });
+    throw new Error(msg);
   }
 
   return response.json();
@@ -556,6 +558,7 @@ async function activateScene(deviceId, sku, sceneValue, sceneName) {
     });
     showToast(`Scene: ${sceneName}`, 'success', 2000);
   } catch (err) {
+    console.error('Scene activation failed:', { deviceId, sku, sceneName, sceneValue, error: err.message });
     showToast(`Scene failed: ${err.message}`, 'error');
   }
 }
@@ -564,29 +567,35 @@ async function activateGroupScene(groupId, sceneValue, sceneName) {
   const group = goveeGroups.find(g => g.groupId === groupId);
   if (!group) return;
 
-  // Send scene to first child that supports scenes
-  const sceneChild = group.children.find(c => c.hasScenes);
-  if (!sceneChild) return;
+  // Scene must be sent to an actual device, not SameModeGroup (groups don't support dynamic_scene)
+  // Send to all children that support scenes
+  const sceneChildren = group.children.filter(c => c.hasScenes);
+  if (sceneChildren.length === 0) return;
 
-  try {
-    // Use the group device ID with SameModeGroup to apply to all
-    await goveeApi('controlDevice', {
-      device: groupId,
-      sku: 'SameModeGroup',
-      capability: {
-        type: 'devices.capabilities.dynamic_scene',
-        instance: 'lightScene',
-        value: sceneValue,
-      },
-    });
-    showToast(`Scene: ${sceneName}`, 'success', 2000);
-  } catch {
-    // If group doesn't support scenes, fall back to first child
+  let success = 0;
+  for (const child of sceneChildren) {
     try {
-      await activateScene(sceneChild.deviceId, sceneChild.sku, sceneValue, sceneName);
+      await goveeApi('controlDevice', {
+        device: child.deviceId,
+        sku: child.sku,
+        capability: {
+          type: 'devices.capabilities.dynamic_scene',
+          instance: 'lightScene',
+          value: sceneValue,
+        },
+      });
+      success++;
     } catch (err) {
-      showToast(`Scene failed: ${err.message}`, 'error');
+      console.error('Group scene failed for child:', child.deviceId, err.message);
     }
+    // Small delay between children to avoid rate limits
+    if (sceneChildren.length > 1) await sleep(200);
+  }
+
+  if (success > 0) {
+    showToast(`Scene: ${sceneName} (${success}/${sceneChildren.length})`, 'success', 2000);
+  } else {
+    showToast(`Scene failed for all devices`, 'error');
   }
 }
 
@@ -1099,12 +1108,20 @@ async function autoLoadVisibleScenes() {
   const skusFetched = new Set();
   const devicesToPopulate = [];
 
-  // Collect all visible devices that need scenes
+  // Collect all devices with segments (panels start expanded) that also have scenes
   for (const group of goveeGroups) {
     for (const child of group.children) {
       if (child.hasSegments && child.hasScenes) {
         devicesToPopulate.push(child);
       }
+    }
+  }
+
+  // Also pre-fetch scenes by SKU for all scene-capable devices (for faster ★ button response)
+  const allSceneSkus = new Set();
+  for (const group of goveeGroups) {
+    for (const child of group.children) {
+      if (child.hasScenes) allSceneSkus.add(child.sku);
     }
   }
 
@@ -1114,9 +1131,20 @@ async function autoLoadVisibleScenes() {
   for (const child of devicesToPopulate) {
     if (!skusFetched.has(child.sku)) {
       skusFetched.add(child.sku);
-      // Also try reading from DB cache first
       await fetchScenesWithDbFallback(child.sku, child.deviceId);
       await sleep(300);
+    }
+  }
+
+  // Pre-fetch remaining scene SKUs in background (so ★ button is instant)
+  for (const sku of allSceneSkus) {
+    if (!skusFetched.has(sku)) {
+      skusFetched.add(sku);
+      const sampleChild = goveeGroups.flatMap(g => g.children).find(c => c.sku === sku);
+      if (sampleChild) {
+        fetchScenesWithDbFallback(sku, sampleChild.deviceId).catch(() => {}); // fire and forget
+        await sleep(300);
+      }
     }
   }
 
