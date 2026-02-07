@@ -64,7 +64,7 @@ const FLEET = [
     colorHex: '#f5f5f5',
     svgKey: 'model3',
     svgColor: '#999',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443383830-6r0bxc.png',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443383830-6r0bxc.jpg',
   },
   {
     name: 'Delphi',
@@ -74,7 +74,7 @@ const FLEET = [
     colorHex: '#f5f5f5',
     svgKey: 'modelY',
     svgColor: '#999',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443394322-ajaz4j.png',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443394322-ajaz4j.jpg',
   },
   {
     name: 'Sloop',
@@ -84,7 +84,7 @@ const FLEET = [
     colorHex: '#8a8a8a',
     svgKey: 'modelY',
     svgColor: '#777',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443406118-zsjutd.png',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443406118-zsjutd.jpg',
   },
   {
     name: 'Cygnus',
@@ -94,7 +94,7 @@ const FLEET = [
     colorHex: '#8a8a8a',
     svgKey: 'modelY',
     svgColor: '#777',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443424118-dxo6h4.png',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443424118-dxo6h4.jpg',
   },
 ];
 

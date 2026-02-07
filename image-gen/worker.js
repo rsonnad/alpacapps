@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import sharp from 'sharp';
 
 // ============================================
 // Configuration
@@ -106,10 +107,39 @@ async function generateImage(prompt, sourceBase64 = null, sourceMimeType = null)
 }
 
 // ============================================
+// Compress image (PNG/WebP → JPEG, max 1920px)
+// ============================================
+async function compressImage(base64Data, mimeType) {
+  const originalBuffer = Buffer.from(base64Data, 'base64');
+  const originalSize = originalBuffer.length;
+
+  const compressed = sharp(originalBuffer)
+    .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 85 });
+
+  const compressedBuffer = await compressed.toBuffer();
+  const metadata = await sharp(compressedBuffer).metadata();
+  const reduction = ((1 - compressedBuffer.length / originalSize) * 100).toFixed(0);
+
+  log('info', 'Image compressed', {
+    from: `${(originalSize / 1024).toFixed(0)}KB ${mimeType}`,
+    to: `${(compressedBuffer.length / 1024).toFixed(0)}KB image/jpeg`,
+    reduction: `${reduction}%`,
+    dimensions: `${metadata.width}x${metadata.height}`,
+  });
+
+  return {
+    buffer: compressedBuffer,
+    mimeType: 'image/jpeg',
+    width: metadata.width,
+    height: metadata.height,
+  };
+}
+
+// ============================================
 // Upload to Supabase Storage
 // ============================================
-async function uploadToStorage(base64Data, mimeType) {
-  const buffer = Buffer.from(base64Data, 'base64');
+async function uploadToStorage(buffer, mimeType) {
   const ext = mimeType.includes('png') ? 'png' : 'jpg';
   const storagePath = `${STORAGE_PREFIX}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
@@ -136,7 +166,7 @@ async function uploadToStorage(base64Data, mimeType) {
 // ============================================
 // Create media record
 // ============================================
-async function createMediaRecord(publicUrl, storagePath, sizeBytes, mimeType, job) {
+async function createMediaRecord(publicUrl, storagePath, sizeBytes, mimeType, job, width = null, height = null) {
   const { data: media, error } = await supabase
     .from('media')
     .insert({
@@ -146,6 +176,8 @@ async function createMediaRecord(publicUrl, storagePath, sizeBytes, mimeType, jo
       media_type: 'image',
       mime_type: mimeType,
       file_size_bytes: sizeBytes,
+      width,
+      height,
       category: 'mktg',
       title: job.metadata?.title || job.metadata?.car_name || null,
       caption: `AI-generated: ${job.prompt.substring(0, 120)}`,
@@ -221,18 +253,21 @@ async function processJob(job) {
       mimeType: result.mimeType,
     });
 
-    // 3. Upload to Supabase Storage
-    const { publicUrl, path: storagePath, sizeBytes } = await uploadToStorage(result.base64, result.mimeType);
+    // 3. Compress image (PNG → JPEG, max 1920px)
+    const compressed = await compressImage(result.base64, result.mimeType);
+
+    // 4. Upload to Supabase Storage
+    const { publicUrl, path: storagePath, sizeBytes } = await uploadToStorage(compressed.buffer, compressed.mimeType);
     log('info', 'Uploaded to storage', { id: job.id, url: publicUrl, size: sizeBytes });
 
-    // 4. Create media record
-    const media = await createMediaRecord(publicUrl, storagePath, sizeBytes, result.mimeType, job);
+    // 5. Create media record
+    const media = await createMediaRecord(publicUrl, storagePath, sizeBytes, compressed.mimeType, job, compressed.width, compressed.height);
     log('info', 'Media record created', { id: job.id, mediaId: media.id });
 
-    // 5. Calculate cost
+    // 6. Calculate cost
     const cost = calculateCost(result.inputTokens, result.outputTokens);
 
-    // 6. Update job as completed
+    // 7. Update job as completed
     await supabase.from('image_gen_jobs')
       .update({
         status: 'completed',

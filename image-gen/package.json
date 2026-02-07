@@ -8,6 +8,7 @@
     "dev": "node --watch worker.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "sharp": "^0.33.0"
   }
 }
