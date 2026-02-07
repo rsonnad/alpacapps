@@ -18,6 +18,7 @@ let vehicles = [];
 let accounts = [];
 let pollTimer = null;
 let currentUserRole = null;
+const leafletMaps = {};       // car.id → Leaflet map instance
 const geocodeCache = {};      // "lat,lng" → address string
 
 // =============================================
@@ -196,7 +197,7 @@ function getDataRows(car) {
   if (hasLocation) {
     const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
     const coordsText = `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}${speedSuffix}`;
-    locationStr = `<span id="locText_${car.id}">${coordsText}</span>`;
+    locationStr = `<span class="car-location-toggle" onclick="window._toggleMap(${car.id})" title="Show on map"><span id="locText_${car.id}">${coordsText}</span></span>`;
   }
   let tiresStr = '--';
   if (s.tpms_fl_psi != null) {
@@ -351,6 +352,10 @@ function renderFleet() {
           <div class="car-data-grid">
             ${dataRowsHtml}
           </div>
+          <div class="car-card__map-panel" id="mapPanel_${car.id}" style="display:none;">
+            <div class="car-card__map-address" id="mapAddr_${car.id}"></div>
+            <div class="car-card__map" id="map_${car.id}"></div>
+          </div>
           <div class="car-card__controls">
             <button class="${lockBtnClass}" id="lockBtn_${car.id}"
                     onclick="window._sendCommand(${car.id}, '${nextCmd}')"
@@ -369,6 +374,64 @@ function renderFleet() {
       </div>
     `;
   }).join('');
+}
+
+// =============================================
+// MAP TOGGLE
+// =============================================
+
+window._toggleMap = function(carId) {
+  const panel = document.getElementById(`mapPanel_${carId}`);
+  if (!panel) return;
+
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? '' : 'none';
+
+  if (isHidden) {
+    initMap(carId);
+  }
+};
+
+function initMap(carId) {
+  const car = vehicles.find(v => v.id === carId);
+  if (!car?.last_state?.latitude) return;
+
+  const lat = car.last_state.latitude;
+  const lng = car.last_state.longitude;
+  const mapEl = document.getElementById(`map_${carId}`);
+  if (!mapEl) return;
+
+  // Destroy previous map if exists
+  if (leafletMaps[carId]) {
+    leafletMaps[carId].remove();
+    delete leafletMaps[carId];
+  }
+
+  const map = L.map(mapEl, { zoomControl: false }).setView([lat, lng], 15);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OSM',
+    maxZoom: 19,
+  }).addTo(map);
+
+  L.marker([lat, lng]).addTo(map)
+    .bindPopup(`<b>${car.name}</b>`).openPopup();
+
+  leafletMaps[carId] = map;
+
+  // Fix tile rendering after panel becomes visible
+  setTimeout(() => map.invalidateSize(), 100);
+
+  // Reverse geocode the address label above the map
+  reverseGeocodeMapLabel(carId, lat, lng);
+}
+
+async function reverseGeocodeMapLabel(carId, lat, lng) {
+  const addrEl = document.getElementById(`mapAddr_${carId}`);
+  if (!addrEl) return;
+  addrEl.textContent = 'Resolving address...';
+  const addr = await reverseGeocodeToString(lat, lng);
+  addrEl.textContent = addr;
 }
 
 // =============================================
