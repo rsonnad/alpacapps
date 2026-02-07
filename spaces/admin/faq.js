@@ -226,6 +226,7 @@ function renderQuestionLog() {
             <div class="faq-card__question">${escapeHtml(entry.question)}</div>
             <div class="faq-card__actions">
               <span class="confidence-badge confidence-badge--${(entry.confidence || 'LOW').toLowerCase()}">${entry.confidence || '?'}</span>
+              <button class="btn-secondary btn-small" onclick="editAutoEntry('${entry.id}')">Edit</button>
               <button class="btn-danger btn-small" onclick="deleteFaq('${entry.id}')">×</button>
             </div>
           </div>
@@ -448,6 +449,16 @@ window.saveFaq = async function() {
     console.error('Error saving FAQ:', error);
     showToast('Failed to save FAQ entry', 'error');
   }
+};
+
+window.editAutoEntry = function(id) {
+  const entry = faqEntries.find(e => e.id === id);
+  if (!entry) return;
+  // Open modal pre-filled with the AI answer so admin can correct it
+  openFaqModal({
+    ...entry,
+    answer: entry.answer || entry.ai_answer || ''
+  });
 };
 
 window.deleteFaq = async function(id) {
