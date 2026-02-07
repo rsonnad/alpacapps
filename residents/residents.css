@@ -3,34 +3,6 @@
    Layered on top of spaces/styles.css and spaces/admin/styles.css
    ============================================= */
 
-/* ===== HEADER LOGO ===== */
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-  color: inherit;
-}
-
-.header-logo__icon {
-  height: 36px;
-  width: auto;
-}
-
-.header-logo__wordmark {
-  height: 50px;
-  width: auto;
-}
-
-@media (max-width: 768px) {
-  .header-logo__icon {
-    height: 28px;
-  }
-  .header-logo__wordmark {
-    height: 40px;
-  }
-}
-
 /* ===== CAMERA GRID ===== */
 .camera-grid {
   display: grid;
