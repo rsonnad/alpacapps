@@ -892,6 +892,144 @@ body.is-admin .admin-only {
   margin-left: 1.4rem;
 }
 
+/* ===== SONOS TWO-COLUMN LAYOUT ===== */
+.sonos-page { padding-bottom: 2rem; }
+
+.sonos-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ===== SONOS LIBRARY SIDEBAR ===== */
+.sonos-library {
+  position: sticky;
+  top: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.75rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+}
+
+.sonos-library__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sonos-library__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.sonos-library__search {
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  background: var(--bg);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.sonos-library__search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sonos-library__section {
+  margin-bottom: 0.5rem;
+}
+
+.sonos-library__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.35rem;
+}
+
+.sonos-library__section-header .btn-small {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.sonos-library__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sonos-library__list.hidden {
+  display: none;
+}
+
+.sonos-library__hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.75rem 0.25rem 0.25rem;
+  line-height: 1.35;
+}
+
+/* Library draggable items */
+.sonos-library-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: grab;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.sonos-library-item:hover {
+  background: var(--accent-light, #f0e6d6);
+}
+
+.sonos-library-item.dragging {
+  opacity: 0.4;
+}
+
+.sonos-library-item.selected {
+  background: var(--accent);
+  color: white;
+}
+
+.sonos-library-item__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.sonos-library-item.selected .sonos-library-item__icon {
+  opacity: 1;
+}
+
+.sonos-library-item__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 /* ===== SONOS ZONE GRID ===== */
 .sonos-zones {
   display: grid;
@@ -905,7 +1043,8 @@ body.is-admin .admin-only {
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
   box-shadow: var(--shadow);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
 }
 
 .sonos-zone-card:hover {
@@ -916,13 +1055,43 @@ body.is-admin .admin-only {
   border-left: 3px solid var(--available);
 }
 
+.sonos-zone-card.muted {
+  opacity: 0.75;
+}
+
 .sonos-zone-card.loading {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.sonos-zone-card.grouped-member {
-  opacity: 0.65;
+/* Drag-and-drop states */
+.sonos-zone-card.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
+.sonos-zone-card.awaiting-drop {
+  border-style: dashed;
+  border-color: var(--accent);
+}
+
+/* Drop hint overlay */
+.sonos-drop-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.35rem;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.sonos-drop-hint.hidden {
+  display: none;
 }
 
 /* Zone Header */
@@ -963,12 +1132,6 @@ body.is-admin .admin-only {
   padding: 0.1rem 0.4rem;
   border-radius: 8px;
   margin-left: 0.3rem;
-}
-
-.sonos-group-badge.sonos-grouped {
-  background: var(--border);
-  color: var(--text-muted);
-  font-weight: 400;
 }
 
 /* Track Info */
@@ -1097,93 +1260,81 @@ body.is-admin .admin-only {
   cursor: pointer;
 }
 
-/* ===== SONOS FAVORITES ===== */
-.favorites-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
+/* ===== GROUP MEMBER ROWS ===== */
+.sonos-group-members {
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
 }
 
-.favorite-btn {
-  background: var(--accent-light, #f0e6d6);
-  color: var(--accent);
-  border: 1px solid transparent;
-  padding: 0.4rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.favorite-btn:hover {
-  background: var(--accent);
-  color: white;
-}
-
-/* ===== ROOM PICKER MODAL ===== */
-.room-picker-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.room-picker {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  padding: 1rem;
-  max-height: 80vh;
-  overflow-y: auto;
-  min-width: 250px;
-  max-width: 350px;
-}
-
-.room-picker__header {
+.sonos-group-members__label {
+  font-size: 0.7rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.room-picker__option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  border-radius: 4px;
-  color: var(--text);
-}
-
-.room-picker__option:hover {
-  background: var(--accent-light, #f0e6d6);
-}
-
-.room-picker__playing {
-  font-size: 0.65rem;
-  color: var(--available);
-  font-weight: 600;
-}
-
-.room-picker__cancel {
   color: var(--text-muted);
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--border) !important;
-  padding-top: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.sonos-member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+}
+
+.sonos-member-name {
+  font-size: 0.75rem;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 auto;
+  max-width: 40%;
+}
+
+.sonos-member-vol {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  width: 2.2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sonos-member-slider {
+  flex: 1;
+  accent-color: var(--accent);
+  height: 4px;
+  cursor: pointer;
+}
+
+/* ===== POLL STATUS ===== */
+.poll-status {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: right;
+  padding-top: 0.5rem;
+}
+
+/* ===== SONOS MOBILE ===== */
+@media (max-width: 768px) {
+  .sonos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sonos-library {
+    position: static;
+    max-height: none;
+  }
+
+  .sonos-zones {
+    grid-template-columns: 1fr;
+  }
+
+  .sonos-library__hint {
+    display: none;
+  }
 }
 
 /* ===== CAR GRID ===== */
