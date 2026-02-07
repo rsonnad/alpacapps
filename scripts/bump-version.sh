@@ -44,10 +44,11 @@ fi
 
 NEW_VERSION="v${TODAY}.${NEXT_SEQ}"
 
-# 3. Replace old version in all HTML files
+# 3. Replace ANY version string (v + 6 digits + . + 2 digits) in all HTML files
 cd "$PROJECT_ROOT"
-find . -name "*.html" -not -path "./.git/*" -exec grep -l "$CURRENT_VERSION" {} \; | while read -r file; do
-  sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/g" "$file"
+VERSION_PATTERN='v[0-9]\{6\}\.[0-9]\{2\}'
+find . -name "*.html" -not -path "./.git/*" -exec grep -l "$VERSION_PATTERN" {} \; | while read -r file; do
+  sed -i '' "s/$VERSION_PATTERN/$NEW_VERSION/g" "$file"
 done
 
 # 4. Write new version to DB
