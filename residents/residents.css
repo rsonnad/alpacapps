@@ -1775,6 +1775,255 @@ span.sonos-library-item__star.starred {
   color: white;
 }
 
+/* ===== SONOS SCENE BAR (above zones) ===== */
+.sonos-scene-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sonos-scene-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.sonos-scene-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light, #f0e6d6);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.sonos-scene-btn.activating {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+  pointer-events: none;
+}
+
+.sonos-scene-btn__emoji { font-size: 1rem; }
+
+.sonos-scene-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== SONOS SCENES SIDEBAR ===== */
+.sonos-scenes-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.75rem;
+}
+
+.sonos-scenes__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.sonos-scenes__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.sonos-scene-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.sonos-scene-card:last-child { border-bottom: none; }
+
+.sonos-scene-card__left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.sonos-scene-card__emoji {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.sonos-scene-card__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sonos-scene-card__name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sonos-scene-card__detail {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.sonos-scene-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.sonos-scene-play-btn {
+  background: var(--accent-light, #f0e6d6) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.sonos-scene-play-btn:hover {
+  background: var(--accent) !important;
+  color: white !important;
+}
+
+/* ===== SCENE MODAL ===== */
+.scene-modal { max-width: 560px; }
+
+.scene-rooms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.75rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.scene-rooms-header label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.scene-rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.scene-room-row {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem;
+}
+
+.scene-room-row__main {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.scene-room-row__main select {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.scene-room-remove {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.scene-room-remove:hover {
+  background: var(--occupied-light, #fee2e2);
+  border-color: var(--occupied);
+  color: var(--occupied);
+}
+
+.scene-room-row__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.scene-room-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.scene-room-opt label {
+  font-size: 0.65rem !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  text-transform: uppercase;
+  margin-bottom: 0 !important;
+}
+
+.scene-room-opt input[type="number"] {
+  width: 3.5rem !important;
+  padding: 0.25rem 0.35rem !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.78rem !important;
+  background: var(--bg-card);
+  color: var(--text);
+  text-align: center;
+}
+
+.scene-room-opt select {
+  padding: 0.25rem 0.35rem !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.78rem !important;
+  background: var(--bg-card);
+  color: var(--text);
+  min-width: 5rem;
+}
+
 /* ===== SCHEDULE MODAL ===== */
 .modal-overlay {
   position: fixed;
@@ -1969,6 +2218,19 @@ span.sonos-library-item__star.starred {
   .sonos-schedule-card {
     flex-wrap: wrap;
   }
+
+  .sonos-scene-bar {
+    gap: 0.35rem;
+  }
+
+  .sonos-scene-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .scene-room-row__options {
+    flex-direction: column;
+  }
 }
 
 /* ===== CAR GRID ===== */
@@ -1993,11 +2255,26 @@ span.sonos-library-item__star.starred {
   border-color: var(--accent);
 }
 
-/* Left: Car silhouette */
+/* Left: Car image (AI-generated or SVG fallback) */
 .car-card__image {
-  width: 200px;
+  width: 240px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.car-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.car-card__svg-fallback {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;

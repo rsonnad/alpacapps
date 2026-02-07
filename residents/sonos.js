@@ -29,6 +29,8 @@ let pendingLibraryItem = null;
 let userRole = null;       // 'admin', 'staff', 'resident', 'associate'
 let groupingMode = false;
 let groupingSelected = []; // room names selected for grouping
+let scenes = [];           // Array of scene objects from DB (with nested actions)
+let activatingScene = null; // ID of scene currently being activated
 
 // =============================================
 // INITIALIZATION
@@ -44,9 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       await loadZones();
       renderZones();
-      await Promise.all([loadPlaylists(), loadFavorites(), loadPlaylistTags(), loadSchedules()]);
+      await Promise.all([loadPlaylists(), loadFavorites(), loadPlaylistTags(), loadSchedules(), loadScenes()]);
       renderMusicLibrary();
       renderSchedules();
+      renderScenesSection();
+      renderSceneBar();
       setupEventListeners();
       startPolling();
     },
@@ -161,6 +165,19 @@ async function loadSchedules() {
     if (!error) schedules = data || [];
   } catch (err) {
     console.error('Failed to load schedules:', err);
+  }
+}
+
+async function loadScenes() {
+  try {
+    const { data, error } = await supabase
+      .from('sonos_scenes')
+      .select('*, sonos_scene_actions(*)')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    if (!error) scenes = data || [];
+  } catch (err) {
+    console.error('Failed to load scenes:', err);
   }
 }
 
@@ -1095,6 +1112,36 @@ function setupEventListeners() {
     });
   }
 
+  // Scene section events
+  const scenesSection = document.getElementById('scenesSection');
+  if (scenesSection) {
+    document.getElementById('addSceneBtn')?.addEventListener('click', () => openSceneModal());
+
+    scenesSection.addEventListener('click', (e) => {
+      const activateBtn = e.target.closest('[data-activate-scene]');
+      if (activateBtn) {
+        activateScene(parseInt(activateBtn.dataset.activateScene));
+        return;
+      }
+      const editBtn = e.target.closest('[data-edit-scene]');
+      if (editBtn) {
+        const s = scenes.find(s => s.id === parseInt(editBtn.dataset.editScene));
+        if (s) openSceneModal(s);
+        return;
+      }
+      const deleteBtn = e.target.closest('[data-delete-scene]');
+      if (deleteBtn) {
+        deleteScene(parseInt(deleteBtn.dataset.deleteScene));
+      }
+    });
+  }
+
+  // Scene bar activation (above zones)
+  document.querySelector('.sonos-main')?.addEventListener('click', (e) => {
+    const sceneBtn = e.target.closest('[data-activate-scene]');
+    if (sceneBtn) activateScene(parseInt(sceneBtn.dataset.activateScene));
+  });
+
   // Visibility
   document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('beforeunload', stopPolling);
@@ -1103,6 +1150,373 @@ function setupEventListeners() {
   setupDragAndDrop();
   setupTouchFallback();
   setupSearch();
+}
+
+// =============================================
+// SCENES
+// =============================================
+
+function renderSceneBar() {
+  let bar = document.getElementById('sceneBar');
+  if (!bar) {
+    const sectionBody = document.querySelector('#zonesSection .section-body');
+    if (!sectionBody) return;
+    bar = document.createElement('div');
+    bar.id = 'sceneBar';
+    bar.className = 'sonos-scene-bar';
+    sectionBody.parentNode.insertBefore(bar, sectionBody);
+  }
+
+  if (!scenes.length) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = '';
+  bar.innerHTML = scenes.map(scene => {
+    const isActivating = activatingScene === scene.id;
+    return `
+      <button class="sonos-scene-btn ${isActivating ? 'activating' : ''}"
+              data-activate-scene="${scene.id}"
+              ${isActivating ? 'disabled' : ''}
+              title="${escapeHtml(scene.description || scene.name)}">
+        <span class="sonos-scene-btn__emoji">${scene.emoji || '🎵'}</span>
+        <span class="sonos-scene-btn__name">${escapeHtml(scene.name)}</span>
+        ${isActivating ? '<span class="sonos-scene-btn__spinner"></span>' : ''}
+      </button>
+    `;
+  }).join('');
+}
+
+function renderScenesSection() {
+  const container = document.getElementById('scenesList');
+  if (!container) return;
+
+  if (!scenes.length) {
+    container.innerHTML = '<p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">No scenes yet.</p>';
+    return;
+  }
+
+  container.innerHTML = scenes.map(s => {
+    const roomCount = (s.sonos_scene_actions || []).length;
+    return `
+      <div class="sonos-scene-card" data-scene-id="${s.id}">
+        <div class="sonos-scene-card__left">
+          <span class="sonos-scene-card__emoji">${s.emoji || '🎵'}</span>
+          <div class="sonos-scene-card__info">
+            <span class="sonos-scene-card__name">${escapeHtml(s.name)}</span>
+            <span class="sonos-scene-card__detail">${roomCount} room${roomCount !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <div class="sonos-scene-card__actions">
+          <button class="btn-small sonos-scene-play-btn" data-activate-scene="${s.id}" title="Activate">&#9654;</button>
+          ${isStaffPlus() ? `
+            <button class="btn-small" data-edit-scene="${s.id}">Edit</button>
+            <button class="btn-small btn-danger-small" data-delete-scene="${s.id}">&times;</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openSceneModal(scene = null) {
+  document.getElementById('sceneModal')?.remove();
+
+  const isEdit = !!scene;
+  const rooms = getAllRoomNames();
+  const existingActions = scene?.sonos_scene_actions || [];
+
+  const modal = document.createElement('div');
+  modal.id = 'sceneModal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-card scene-modal">
+      <h3 style="margin:0 0 1rem;">${isEdit ? 'Edit' : 'New'} Scene</h3>
+      <form id="sceneForm">
+        <div class="form-row">
+          <div class="form-group" style="flex:0 0 3.5rem">
+            <label>Emoji</label>
+            <input type="text" name="emoji" value="${escapeHtml(scene?.emoji || '🎵')}"
+                   maxlength="4" style="text-align:center;font-size:1.2rem">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Name</label>
+            <input type="text" name="name" required value="${escapeHtml(scene?.name || '')}" placeholder="e.g. Tour Mode">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description (optional)</label>
+          <input type="text" name="description" value="${escapeHtml(scene?.description || '')}" placeholder="Brief description">
+        </div>
+
+        <div class="scene-rooms-header">
+          <label>Room Configurations</label>
+          <button type="button" class="btn-small" id="addSceneRoomBtn">+ Add Room</button>
+        </div>
+        <div id="sceneRoomsList" class="scene-rooms-list"></div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancelSceneBtn">Cancel</button>
+          <button type="submit" class="btn-primary">${isEdit ? 'Save' : 'Create'}</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const roomsList = modal.querySelector('#sceneRoomsList');
+
+  // Pre-populate room rows for editing, or start with one empty row
+  if (existingActions.length) {
+    existingActions
+      .sort((a, b) => a.display_order - b.display_order)
+      .forEach(action => addSceneRoomRow(roomsList, rooms, action));
+  } else {
+    addSceneRoomRow(roomsList, rooms);
+  }
+
+  modal.querySelector('#addSceneRoomBtn').addEventListener('click', () => {
+    addSceneRoomRow(roomsList, rooms);
+  });
+
+  modal.querySelector('#cancelSceneBtn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  modal.querySelector('#sceneForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await saveScene(e.target, scene?.id);
+    modal.remove();
+  });
+}
+
+function addSceneRoomRow(container, rooms, action = null) {
+  const row = document.createElement('div');
+  row.className = 'scene-room-row';
+  row.innerHTML = `
+    <div class="scene-room-row__main">
+      <select name="scene_room" required class="scene-room-select">
+        <option value="">Room...</option>
+        ${rooms.map(r => `<option value="${escapeHtml(r)}" ${action?.room === r ? 'selected' : ''}>${escapeHtml(r)}</option>`).join('')}
+      </select>
+      <select name="scene_playlist" required>
+        <option value="">Playlist/Fav...</option>
+        <optgroup label="Playlists">
+          ${playlists.map(p => `<option value="${escapeHtml(p)}" data-source="playlist" ${action?.playlist_name === p && action?.source_type === 'playlist' ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
+        </optgroup>
+        <optgroup label="Favorites">
+          ${favorites.map(f => `<option value="${escapeHtml(f)}" data-source="favorite" ${action?.playlist_name === f && action?.source_type === 'favorite' ? 'selected' : ''}>${escapeHtml(f)}</option>`).join('')}
+        </optgroup>
+      </select>
+      <button type="button" class="scene-room-remove" title="Remove">&times;</button>
+    </div>
+    <div class="scene-room-row__options">
+      <div class="scene-room-opt">
+        <label>Vol</label>
+        <input type="number" name="scene_volume" min="0" max="100" placeholder="—" value="${action?.volume ?? ''}">
+      </div>
+      <div class="scene-room-opt">
+        <label>Bass</label>
+        <input type="number" name="scene_bass" min="-10" max="10" placeholder="—" value="${action?.bass ?? ''}">
+      </div>
+      <div class="scene-room-opt">
+        <label>Treble</label>
+        <input type="number" name="scene_treble" min="-10" max="10" placeholder="—" value="${action?.treble ?? ''}">
+      </div>
+      <div class="scene-room-opt">
+        <label>Group&nbsp;with</label>
+        <select name="scene_group_coordinator" class="scene-group-select">
+          <option value="">Independent</option>
+        </select>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(row);
+
+  row.querySelector('.scene-room-remove').addEventListener('click', () => {
+    row.remove();
+    updateGroupCoordinatorOptions(container);
+  });
+
+  row.querySelector('.scene-room-select').addEventListener('change', () => {
+    updateGroupCoordinatorOptions(container);
+  });
+
+  updateGroupCoordinatorOptions(container);
+
+  // Set initial group coordinator after options are populated
+  if (action?.group_coordinator) {
+    setTimeout(() => { row.querySelector('.scene-group-select').value = action.group_coordinator; }, 0);
+  }
+}
+
+function updateGroupCoordinatorOptions(container) {
+  const rows = container.querySelectorAll('.scene-room-row');
+  const selectedRooms = [];
+  rows.forEach(row => {
+    const roomVal = row.querySelector('.scene-room-select')?.value;
+    if (roomVal) selectedRooms.push(roomVal);
+  });
+
+  rows.forEach(row => {
+    const groupSelect = row.querySelector('.scene-group-select');
+    const currentVal = groupSelect.value;
+    const thisRoom = row.querySelector('.scene-room-select')?.value;
+    groupSelect.innerHTML = '<option value="">Independent</option>' +
+      selectedRooms
+        .filter(r => r !== thisRoom)
+        .map(r => `<option value="${escapeHtml(r)}" ${currentVal === r ? 'selected' : ''}>${escapeHtml(r)}</option>`)
+        .join('');
+  });
+}
+
+async function saveScene(form, existingId = null) {
+  const sceneData = {
+    name: form.name.value.trim(),
+    emoji: form.emoji.value.trim() || '🎵',
+    description: form.description.value.trim() || null,
+  };
+
+  const roomRows = form.querySelectorAll('.scene-room-row');
+  const actions = [];
+  let order = 0;
+  roomRows.forEach(row => {
+    const room = row.querySelector('[name="scene_room"]').value;
+    const playlistSelect = row.querySelector('[name="scene_playlist"]');
+    const selectedOption = playlistSelect.selectedOptions[0];
+    if (!room || !playlistSelect.value) return;
+
+    actions.push({
+      room,
+      source_type: selectedOption?.dataset.source || 'playlist',
+      playlist_name: playlistSelect.value,
+      volume: row.querySelector('[name="scene_volume"]').value ? parseInt(row.querySelector('[name="scene_volume"]').value) : null,
+      bass: row.querySelector('[name="scene_bass"]').value !== '' ? parseInt(row.querySelector('[name="scene_bass"]').value) : null,
+      treble: row.querySelector('[name="scene_treble"]').value !== '' ? parseInt(row.querySelector('[name="scene_treble"]').value) : null,
+      group_coordinator: row.querySelector('[name="scene_group_coordinator"]').value || null,
+      display_order: order++,
+    });
+  });
+
+  if (!actions.length) {
+    showToast('Add at least one room', 'warning');
+    return;
+  }
+
+  try {
+    if (existingId) {
+      sceneData.updated_at = new Date().toISOString();
+      const { error } = await supabase.from('sonos_scenes').update(sceneData).eq('id', existingId);
+      if (error) throw error;
+      await supabase.from('sonos_scene_actions').delete().eq('scene_id', existingId);
+      const { error: actError } = await supabase.from('sonos_scene_actions')
+        .insert(actions.map(a => ({ ...a, scene_id: existingId })));
+      if (actError) throw actError;
+      showToast('Scene updated', 'success', 2000);
+    } else {
+      const { data: newScene, error } = await supabase.from('sonos_scenes').insert(sceneData).select().single();
+      if (error) throw error;
+      const { error: actError } = await supabase.from('sonos_scene_actions')
+        .insert(actions.map(a => ({ ...a, scene_id: newScene.id })));
+      if (actError) throw actError;
+      showToast('Scene created', 'success', 2000);
+    }
+    await loadScenes();
+    renderScenesSection();
+    renderSceneBar();
+  } catch (err) {
+    showToast(`Failed: ${err.message}`, 'error');
+  }
+}
+
+async function deleteScene(id) {
+  if (!confirm('Delete this scene?')) return;
+  try {
+    const { error } = await supabase.from('sonos_scenes').delete().eq('id', id);
+    if (error) throw error;
+    await loadScenes();
+    renderScenesSection();
+    renderSceneBar();
+    showToast('Scene deleted', 'success', 1500);
+  } catch (err) {
+    showToast(`Failed: ${err.message}`, 'error');
+  }
+}
+
+function sceneDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function activateScene(sceneId) {
+  const scene = scenes.find(s => s.id === sceneId);
+  if (!scene || activatingScene) return;
+
+  const actions = scene.sonos_scene_actions || [];
+  if (!actions.length) { showToast('Scene has no rooms configured', 'warning'); return; }
+
+  activatingScene = sceneId;
+  renderSceneBar();
+  renderScenesSection();
+
+  try {
+    // Phase 1: Ungroup all scene rooms
+    showToast('Ungrouping rooms...', 'info', 2000);
+    for (const a of actions) {
+      try { await sonosApi('leave', { room: a.room }); } catch {}
+    }
+
+    // Phase 2: Set up groups
+    const groupMembers = actions.filter(a => a.group_coordinator && a.group_coordinator !== a.room);
+    if (groupMembers.length > 0) {
+      await sceneDelay(1500);
+      showToast('Grouping rooms...', 'info', 2000);
+      for (const a of groupMembers) {
+        try { await sonosApi('join', { room: a.room, other: a.group_coordinator }); }
+        catch (err) { console.error(`Group failed: ${a.room} → ${a.group_coordinator}`, err); }
+      }
+    }
+
+    // Phase 3: Set volumes
+    const volumeActions = actions.filter(a => a.volume != null);
+    if (volumeActions.length > 0) {
+      await sceneDelay(1000);
+      showToast('Setting volumes...', 'info', 2000);
+      for (const a of volumeActions) {
+        try { await sonosApi('volume', { room: a.room, value: a.volume }); } catch {}
+      }
+    }
+
+    // Phase 4: Play playlists on coordinators/independent rooms only
+    const playActions = actions.filter(a => !a.group_coordinator || a.group_coordinator === a.room);
+    await sceneDelay(1000);
+    showToast('Starting playback...', 'info', 2000);
+    for (const a of playActions) {
+      try { await sonosApi(a.source_type, { room: a.room, name: a.playlist_name }); }
+      catch (err) { console.error(`Play failed on ${a.room}`, err); }
+    }
+
+    // Phase 5: Set EQ
+    const eqActions = actions.filter(a => a.bass != null || a.treble != null);
+    if (eqActions.length > 0) {
+      await sceneDelay(500);
+      showToast('Setting EQ...', 'info', 2000);
+      for (const a of eqActions) {
+        if (a.bass != null) { try { await sonosApi('bass', { room: a.room, value: a.bass }); } catch {} }
+        if (a.treble != null) { try { await sonosApi('treble', { room: a.room, value: a.treble }); } catch {} }
+      }
+    }
+
+    showToast(`${scene.emoji} ${scene.name} activated!`, 'success', 3000);
+  } catch (err) {
+    showToast(`Scene failed: ${err.message}`, 'error');
+  } finally {
+    activatingScene = null;
+    renderSceneBar();
+    renderScenesSection();
+    setTimeout(() => refreshAllZones(), 3000);
+  }
 }
 
 // =============================================
