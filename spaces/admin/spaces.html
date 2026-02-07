@@ -105,8 +105,8 @@
 
     /* Spaces Table Improvements */
     #tableView table {
-      table-layout: fixed;
       width: 100%;
+      table-layout: auto;
     }
 
     #tableView th,
@@ -123,49 +123,55 @@
 
     #tableView th {
       font-size: 0.7rem;
-      white-space: normal;
-      word-break: break-word;
+      white-space: nowrap;
     }
 
+    /* Thumbnail */
     #tableView th:nth-child(1),
-    #tableView td:nth-child(1) { width: 148px; min-width: 148px; }
+    #tableView td:nth-child(1) { width: 148px; }
 
+    /* Name - gets remaining space, wraps */
     #tableView th:nth-child(2),
-    #tableView td:nth-child(2) { min-width: 560px; white-space: normal; }
+    #tableView td:nth-child(2) { white-space: normal; min-width: 220px; }
 
+    /* Rate */
     #tableView th:nth-child(3),
-    #tableView td:nth-child(3) { min-width: 55px; }
+    #tableView td:nth-child(3) { white-space: nowrap; }
 
+    /* Details */
     #tableView th:nth-child(4),
-    #tableView td:nth-child(4) { min-width: 70px; white-space: normal; }
+    #tableView td:nth-child(4) { white-space: normal; }
 
+    /* Amenities */
     #tableView th:nth-child(5),
-    #tableView td:nth-child(5) { min-width: 60px; white-space: normal; }
+    #tableView td:nth-child(5) { white-space: normal; max-width: 120px; }
 
+    /* Available */
     #tableView th:nth-child(6),
-    #tableView td:nth-child(6) { min-width: 55px; }
+    #tableView td:nth-child(6) { white-space: nowrap; }
 
+    /* Until */
     #tableView th:nth-child(7),
-    #tableView td:nth-child(7) { min-width: 60px; }
+    #tableView td:nth-child(7) { white-space: nowrap; }
 
+    /* Tenant */
     #tableView th:nth-child(8),
-    #tableView td:nth-child(8) { min-width: 80px; white-space: normal; }
+    #tableView td:nth-child(8) { white-space: normal; max-width: 110px; }
 
+    /* Lease Dates */
     #tableView th:nth-child(9),
-    #tableView td:nth-child(9) { min-width: 80px; white-space: normal; }
+    #tableView td:nth-child(9) { white-space: normal; }
 
+    /* Status */
     #tableView th:nth-child(10),
-    #tableView td:nth-child(10) { min-width: 55px; text-align: center; }
+    #tableView td:nth-child(10) { text-align: center; width: 50px; }
 
+    /* Vis */
     #tableView th:nth-child(11),
-    #tableView td:nth-child(11) { min-width: 40px; text-align: center; overflow: visible; }
+    #tableView td:nth-child(11) { text-align: center; width: 40px; overflow: visible; }
 
     .table-container {
       overflow-x: auto;
-    }
-
-    #tableView table {
-      min-width: 1300px;
     }
 
     #tableView .table-thumbnail {
@@ -196,7 +202,7 @@
     }
 
     #tableView .td-name-desc {
-      min-width: 560px;
+      white-space: normal;
     }
 
     #tableView td small {
@@ -277,7 +283,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.18</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.19</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -373,7 +379,7 @@
               <thead>
                 <tr>
                   <th></th>
-                  <th data-sort="name" style="min-width: 560px;">Name</th>
+                  <th data-sort="name">Name</th>
                   <th data-sort="monthly_rate">Rate</th>
                   <th data-sort="sq_footage">Details</th>
                   <th>Amenities</th>
