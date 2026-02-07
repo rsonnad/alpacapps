@@ -448,7 +448,17 @@ function formatShortAddress(data) {
   return parts.join(', ') || data.display_name || 'Unknown';
 }
 
+// Home address override — Nominatim returns wrong house number for this location
+const HOME_LAT = 30.13;
+const HOME_LNG = -97.46;
+const HOME_ADDR = '160 Still Forest Dr, Cedar Creek, Texas';
+
 async function reverseGeocodeToString(lat, lng) {
+  // If within ~200m of home, use known correct address
+  if (Math.abs(lat - HOME_LAT) < 0.002 && Math.abs(lng - HOME_LNG) < 0.002) {
+    return HOME_ADDR;
+  }
+
   const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
   if (geocodeCache[key]) return geocodeCache[key];
 
