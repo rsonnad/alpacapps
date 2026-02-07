@@ -1136,6 +1136,7 @@ span.sonos-library-item__star.starred {
 
 .sonos-zone-card.playing {
   border-left: 3px solid var(--available);
+  background: linear-gradient(135deg, var(--bg-card) 0%, #ecfdf5 100%);
 }
 
 .sonos-zone-card.muted {
@@ -1149,6 +1150,7 @@ span.sonos-library-item__star.starred {
 
 .sonos-zone-card.grouped.playing {
   border-left: 3px solid var(--available);
+  background: linear-gradient(135deg, var(--bg-card) 0%, #ecfdf5 100%);
 }
 
 .sonos-group-plus {
@@ -1545,15 +1547,16 @@ span.sonos-library-item__star.starred {
   margin-bottom: 0.25rem;
 }
 
-/* Summary row: room name + compact B/T values */
+/* Summary row: room name + inline B/T sliders */
 .sonos-group-eq__room-summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.3rem 0.5rem;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 6px;
-  background: var(--accent-light, #f0e6d6);
-  margin-bottom: 0.25rem;
+  background: #efe0c9;
+  margin-bottom: 0.3rem;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .sonos-group-eq__room-summary:last-child {
@@ -1562,7 +1565,21 @@ span.sonos-library-item__star.starred {
 
 /* Playing state: light green background for room rows */
 .sonos-zone-card.playing .sonos-group-eq__room-summary {
-  background: #dcfce7;
+  background: #bbf7d0;
+  border-color: rgba(0,0,0,0.04);
+}
+
+.sonos-group-eq__room-summary .sonos-group-eq__name {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.sonos-group-eq__room-summary .sonos-group-eq__vals {
+  flex: 1;
+  display: flex;
+  gap: 0.4rem;
+  min-width: 0;
+  align-items: center;
 }
 
 .sonos-group-eq__name {
