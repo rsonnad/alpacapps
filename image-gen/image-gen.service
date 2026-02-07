@@ -1,0 +1,19 @@
+[Unit]
+Description=GenAlpaca Image Generation Worker
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/image-gen
+EnvironmentFile=/opt/image-gen/.env
+ExecStart=/usr/bin/node /opt/image-gen/worker.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=image-gen
+
+[Install]
+WantedBy=multi-user.target

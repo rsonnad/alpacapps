@@ -147,6 +147,16 @@ weather_config       - OpenWeatherMap API configuration (single row, id=1)
                       (owm_api_key, latitude, longitude, location_name, is_active)
 ```
 
+### AI Image Generation
+```
+image_gen_jobs  - Async image generation job queue
+                  (prompt, job_type, status, metadata [jsonb],
+                   result_media_id [FK→media], result_url,
+                   input_tokens, output_tokens, estimated_cost_usd,
+                   batch_id, batch_label, attempt_count, max_attempts,
+                   priority, created_at, started_at, completed_at)
+```
+
 ### Legacy (Deprecated - don't use for new features)
 ```
 photos          - Old photo storage
@@ -358,6 +368,20 @@ git push
 - **Display**: Rain windows summary + expandable hourly 48-hour forecast
 - **Client-side only**: No edge function needed, API key safe for read-only weather
 
+### AI Image Generation (Gemini)
+- **Worker:** `/opt/image-gen/worker.js` on DO droplet (systemd: `image-gen.service`)
+- **API:** Gemini 2.5 Flash Image (`generateContent` with `responseModalities: ["TEXT","IMAGE"]`)
+- **Cost:** ~$0.039/image (1290 output tokens x $30/1M tokens)
+- **Storage:** `housephotos/ai-gen/` prefix in Supabase Storage
+- **DB:** `image_gen_jobs` table (job queue), results link to `media` table
+- **Trigger:** Insert rows into `image_gen_jobs` — worker polls every 10s
+- **Batch:** Set `batch_id` + `batch_label` for grouped jobs
+- **Cost tracking:** API response includes `usageMetadata` token counts, stored per-job
+- **MCP (local):** Nano Banana MCP configured in `.mcp.json` for interactive Claude Code sessions
+  - Uses same Gemini API key as the worker
+  - Tools: `generate_image`, `edit_image`, `continue_editing`
+  - Restart Claude Code after changing `.mcp.json`
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -439,6 +463,19 @@ git push
    - `weather_config` table stores OWM API key + lat/lon (Cedar Creek, TX: 30.13, -97.46)
    - Supports One Call API 3.0 with 2.5 free tier fallback
    - Client-side API call (no edge function needed)
+19. **AI Image Generation Worker** - Async Gemini image gen on DO droplet
+   - Worker at `/opt/image-gen/worker.js` polls `image_gen_jobs` table every 10s
+   - Gemini 2.5 Flash Image API generates images from text prompts
+   - Uploads to Supabase Storage (`housephotos/ai-gen/`), creates `media` record
+   - Per-job cost tracking from API response token counts (~$0.039/image)
+   - Retry up to 3x on failure, 3s rate-limit delay between API calls
+   - Systemd service: `image-gen.service` (runs as `bugfixer` user)
+   - Nano Banana MCP (`.mcp.json`, gitignored) for interactive image gen in Claude Code
+20. **Cars Resident Page** - Tesla fleet display at `residents/cars.html`
+   - Shows 4 Tesla vehicles: Casper (Model 3), Delphi, Sloop, Cygnus (Model Y)
+   - AI-generated hero images from Gemini, with SVG fallback
+   - Horizontal card layout: image left, data grid right
+   - Placeholder data rows for future Tesla Fleet API integration
 
 ## Testing Changes
 

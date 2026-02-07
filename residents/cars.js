@@ -17,7 +17,7 @@ const ICONS = {
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
 };
 
-// Tesla car SVG silhouettes (side profile)
+// Tesla car SVG silhouettes (fallback when images fail to load)
 const CAR_SVG = {
   model3: `<svg viewBox="0 0 400 160" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M50 110 C50 110 55 65 90 55 L160 45 C170 43 200 38 240 38 L310 42 C340 48 360 65 365 80 L370 95 C372 100 370 110 365 110" stroke="currentColor" stroke-width="3" fill="none"/>
@@ -64,6 +64,7 @@ const FLEET = [
     colorHex: '#f5f5f5',
     svgKey: 'model3',
     svgColor: '#999',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443383830-6r0bxc.png',
   },
   {
     name: 'Delphi',
@@ -73,6 +74,7 @@ const FLEET = [
     colorHex: '#f5f5f5',
     svgKey: 'modelY',
     svgColor: '#999',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443394322-ajaz4j.png',
   },
   {
     name: 'Sloop',
@@ -82,6 +84,7 @@ const FLEET = [
     colorHex: '#8a8a8a',
     svgKey: 'modelY',
     svgColor: '#777',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443406118-zsjutd.png',
   },
   {
     name: 'Cygnus',
@@ -91,6 +94,7 @@ const FLEET = [
     colorHex: '#8a8a8a',
     svgKey: 'modelY',
     svgColor: '#777',
+    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443424118-dxo6h4.png',
   },
 ];
 
@@ -123,10 +127,18 @@ function renderFleet() {
       </div>
     `).join('');
 
+    // Use AI-generated image with SVG fallback
+    const imageContent = car.imageUrl
+      ? `<img src="${car.imageUrl}" alt="${car.name} - ${car.year} ${car.model}"
+             class="car-card__img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+         /><div class="car-card__svg-fallback" style="display:none;color:${car.svgColor}">${carSvg}</div>`
+      : `<div class="car-card__svg-fallback" style="color:${car.svgColor}">${carSvg}</div>`;
+
     return `
       <div class="car-card">
-        <div class="car-card__image" style="color:${car.svgColor}">
-          ${carSvg}
+        <div class="car-card__image">
+          ${imageContent}
         </div>
         <div class="car-card__info">
           <div class="car-card__header">

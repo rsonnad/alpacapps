@@ -1,0 +1,13 @@
+{
+  "name": "genalpaca-image-gen",
+  "version": "1.0.0",
+  "description": "Async image generation worker - polls Supabase for jobs, uses Gemini 2.5 Flash Image API",
+  "type": "module",
+  "scripts": {
+    "start": "node worker.js",
+    "dev": "node --watch worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

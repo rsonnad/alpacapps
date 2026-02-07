@@ -2439,6 +2439,14 @@ span.sonos-library-item__star.starred {
 
   .car-card__image {
     width: 100%;
+    max-height: 200px;
+  }
+
+  .car-card__img {
+    max-height: 200px;
+  }
+
+  .car-card__svg-fallback {
     padding: 0.75rem 1.5rem;
     max-height: 120px;
   }
