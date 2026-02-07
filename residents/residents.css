@@ -1925,11 +1925,149 @@ body.is-admin .admin-only {
   margin-bottom: 0.75rem;
 }
 
+/* ===== WEATHER FORECAST ===== */
+.rain-summary__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.rain-summary__icon {
+  font-size: 1.2rem;
+}
+
+.rain-summary--clear {
+  color: var(--available, #22c55e);
+}
+
+.rain-summary--rain {
+  color: #3b82f6;
+}
+
+.rain-windows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.rain-window {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.rain-window__icon {
+  font-size: 0.9rem;
+}
+
+.rain-window__time {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rain-window__chance {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+/* Hourly detail */
+.weather-detail {
+  margin-top: 0.75rem;
+}
+
+.weather-detail__toggle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.35rem 0;
+}
+
+.weather-detail__toggle:hover {
+  color: var(--text);
+}
+
+.weather-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.weather-day__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.weather-day__hours {
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.weather-hour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+  padding: 0.15rem 0.2rem;
+  border-radius: 4px;
+  position: relative;
+}
+
+.weather-hour.has-rain {
+  background: #eff6ff;
+}
+
+.weather-hour__pop-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 2px;
+  margin-bottom: 0.15rem;
+  max-height: 40px;
+}
+
+.weather-hour__pop-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #3b82f6;
+  min-height: 0.8rem;
+}
+
+.weather-hour__temp {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.weather-hour__time {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .thermostat-grid {
     grid-template-columns: 1fr;
   }
   .thermostat-card__temp-value {
     font-size: 2rem;
+  }
+  .weather-hour {
+    min-width: 34px;
   }
 }

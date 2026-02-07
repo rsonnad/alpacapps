@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.history.replaceState({}, '', window.location.pathname);
       }
 
-      await loadThermostats();
+      // Load weather and thermostats in parallel
+      await Promise.all([
+        loadWeatherForecast(),
+        loadThermostats(),
+      ]);
       renderThermostats();
       setupEventListeners();
       startPolling();
@@ -500,6 +504,209 @@ async function handleOAuthCallback(code) {
   } catch (err) {
     showToast(`OAuth failed: ${err.message}`, 'error');
   }
+}
+
+// =============================================
+// ADMIN: DEVICE DISCOVERY
+// =============================================
+// =============================================
+// WEATHER FORECAST (OpenWeatherMap One Call API)
+// =============================================
+let weatherData = null;
+
+async function loadWeatherForecast() {
+  try {
+    const { data: config } = await supabase
+      .from('weather_config')
+      .select('owm_api_key, latitude, longitude, location_name, is_active')
+      .single();
+
+    if (!config?.is_active || !config?.owm_api_key) {
+      const summary = document.getElementById('rainSummary');
+      if (summary) {
+        summary.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">Weather API not configured. Admin: add OpenWeatherMap API key to weather_config.</p>';
+      }
+      return;
+    }
+
+    // Show location name
+    const locEl = document.getElementById('weatherLocation');
+    if (locEl) locEl.textContent = config.location_name || '';
+
+    // Fetch 48-hour forecast from OpenWeatherMap One Call API 3.0
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${config.latitude}&lon=${config.longitude}&exclude=minutely,daily,alerts&units=imperial&appid=${config.owm_api_key}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      // Try 2.5 API as fallback (free tier)
+      const url25 = `https://api.openweathermap.org/data/2.5/forecast?lat=${config.latitude}&lon=${config.longitude}&units=imperial&appid=${config.owm_api_key}&cnt=16`;
+      const resp25 = await fetch(url25);
+      if (!resp25.ok) throw new Error('Weather API request failed');
+      const data25 = await resp25.json();
+      weatherData = parse25Forecast(data25);
+    } else {
+      const data = await response.json();
+      weatherData = parseOneCallForecast(data);
+    }
+
+    renderWeatherForecast();
+  } catch (err) {
+    console.error('Weather forecast failed:', err);
+    const summary = document.getElementById('rainSummary');
+    if (summary) {
+      summary.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">Failed to load weather forecast.</p>';
+    }
+  }
+}
+
+function parseOneCallForecast(data) {
+  // One Call API: hourly array with 48 entries
+  const hours = (data.hourly || []).slice(0, 48).map(h => ({
+    time: new Date(h.dt * 1000),
+    temp: Math.round(h.temp),
+    pop: Math.round((h.pop || 0) * 100), // probability of precipitation (0-100)
+    rain: h.rain?.['1h'] || 0, // mm in last hour
+    snow: h.snow?.['1h'] || 0,
+    description: h.weather?.[0]?.description || '',
+    icon: h.weather?.[0]?.icon || '',
+    main: h.weather?.[0]?.main || '',
+  }));
+  return { hours, current: data.current };
+}
+
+function parse25Forecast(data) {
+  // 2.5 API: 3-hour intervals, up to 16 entries = 48 hours
+  const hours = (data.list || []).map(item => ({
+    time: new Date(item.dt * 1000),
+    temp: Math.round(item.main.temp),
+    pop: Math.round((item.pop || 0) * 100),
+    rain: item.rain?.['3h'] || 0,
+    snow: item.snow?.['3h'] || 0,
+    description: item.weather?.[0]?.description || '',
+    icon: item.weather?.[0]?.icon || '',
+    main: item.weather?.[0]?.main || '',
+  }));
+  return { hours, current: null };
+}
+
+function renderWeatherForecast() {
+  if (!weatherData?.hours?.length) return;
+
+  renderRainSummary();
+  renderHourlyChart();
+}
+
+function renderRainSummary() {
+  const container = document.getElementById('rainSummary');
+  if (!container) return;
+
+  const { hours } = weatherData;
+
+  // Find rain windows (contiguous hours where pop >= 30%)
+  const windows = [];
+  let currentWindow = null;
+
+  for (const h of hours) {
+    const hasRain = h.pop >= 30;
+    if (hasRain) {
+      if (!currentWindow) {
+        currentWindow = { start: h.time, end: h.time, maxPop: h.pop, totalRain: h.rain };
+      } else {
+        currentWindow.end = h.time;
+        currentWindow.maxPop = Math.max(currentWindow.maxPop, h.pop);
+        currentWindow.totalRain += h.rain;
+      }
+    } else {
+      if (currentWindow) {
+        windows.push(currentWindow);
+        currentWindow = null;
+      }
+    }
+  }
+  if (currentWindow) windows.push(currentWindow);
+
+  if (!windows.length) {
+    container.innerHTML = `
+      <div class="rain-summary__status rain-summary--clear">
+        <span class="rain-summary__icon">&#9728;&#65039;</span>
+        <span>No rain expected in the next 48 hours</span>
+      </div>`;
+    return;
+  }
+
+  const now = new Date();
+  const windowsHtml = windows.map(w => {
+    const startStr = formatWeatherTime(w.start, now);
+    const endStr = formatWeatherTime(w.end, now);
+    const timeRange = startStr === endStr ? startStr : `${startStr} - ${endStr}`;
+    return `
+      <div class="rain-window">
+        <span class="rain-window__icon">&#127783;&#65039;</span>
+        <span class="rain-window__time">${timeRange}</span>
+        <span class="rain-window__chance">${w.maxPop}% chance</span>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="rain-summary__status rain-summary--rain">
+      <span class="rain-summary__icon">&#127783;&#65039;</span>
+      <span>Rain expected</span>
+    </div>
+    <div class="rain-windows">${windowsHtml}</div>`;
+}
+
+function renderHourlyChart() {
+  const container = document.getElementById('weatherChart');
+  if (!container) return;
+
+  const { hours } = weatherData;
+  const now = new Date();
+
+  // Group by day
+  const days = {};
+  for (const h of hours) {
+    const dayKey = h.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (!days[dayKey]) days[dayKey] = [];
+    days[dayKey].push(h);
+  }
+
+  let html = '';
+  for (const [dayLabel, dayHours] of Object.entries(days)) {
+    html += `<div class="weather-day">
+      <div class="weather-day__label">${dayLabel}</div>
+      <div class="weather-day__hours">`;
+
+    for (const h of dayHours) {
+      const timeStr = h.time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+      const barHeight = Math.max(2, h.pop);
+      const barColor = h.pop >= 70 ? '#3b82f6' : h.pop >= 30 ? '#93c5fd' : '#e5e7eb';
+      const rainClass = h.pop >= 30 ? 'has-rain' : '';
+
+      html += `
+        <div class="weather-hour ${rainClass}" title="${h.temp}°F, ${h.pop}% rain, ${h.description}">
+          <div class="weather-hour__pop-bar" style="height: ${barHeight}%; background: ${barColor};"></div>
+          <div class="weather-hour__pop-label">${h.pop > 0 ? h.pop + '%' : ''}</div>
+          <div class="weather-hour__temp">${h.temp}°</div>
+          <div class="weather-hour__time">${timeStr}</div>
+        </div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function formatWeatherTime(date, now) {
+  const isToday = date.toDateString() === now.toDateString();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+
+  if (isToday) return `Today ${timeStr}`;
+  if (isTomorrow) return `Tomorrow ${timeStr}`;
+  return date.toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + timeStr;
 }
 
 // =============================================

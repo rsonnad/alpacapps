@@ -40,7 +40,7 @@
         <a href="/residents/" style="text-decoration: none; color: inherit;">
           <h1>&#129433; Alpaca Playhouse</h1>
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.57</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260206.58</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -54,6 +54,27 @@
 
     <!-- Main Content -->
     <main class="manage-content thermostat-page">
+
+      <!-- Weather Forecast Section -->
+      <section class="section" id="weatherSection">
+        <div class="section-header">
+          <h2>48-Hour Forecast</h2>
+          <div class="section-header-actions">
+            <span class="text-muted" style="font-size: 0.75rem;" id="weatherLocation"></span>
+          </div>
+        </div>
+        <div class="section-body">
+          <!-- Rain windows summary -->
+          <div id="rainSummary" class="rain-summary">
+            <p class="text-muted" style="font-size: 0.85rem;">Loading forecast...</p>
+          </div>
+          <!-- Hourly detail (collapsible) -->
+          <details class="weather-detail" id="weatherDetail">
+            <summary class="weather-detail__toggle">Hourly Detail</summary>
+            <div class="weather-chart" id="weatherChart"></div>
+          </details>
+        </div>
+      </section>
 
       <!-- Thermostats Section -->
       <section class="section" id="thermostatsSection">
