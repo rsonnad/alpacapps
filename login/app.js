@@ -26,6 +26,9 @@ console.log('[LOGIN]', 'Page loaded', { redirectUrl, href: window.location.href 
  */
 function showState(state, message = '') {
   console.log('[LOGIN]', `showState(${state})`, message || '');
+  // Make the page visible (was hidden to prevent login form flash on cached-auth redirect)
+  document.body.classList.add('ready');
+
   loginContent.classList.add('hidden');
   loadingContent.classList.add('hidden');
   errorContent.classList.add('hidden');

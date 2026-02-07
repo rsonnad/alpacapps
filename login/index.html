@@ -40,6 +40,11 @@
       padding: 2rem;
     }
 
+    /* Hide everything until JS decides what to show — prevents login form flash */
+    body:not(.ready) .login-container {
+      display: none;
+    }
+
     .login-container {
       width: 100%;
       max-width: 400px;
@@ -260,7 +265,7 @@
     <div class="login-card">
       <div class="logo">&#129433;</div>
       <h1>AlpacAPPs</h1>
-      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260207.16</span>
+      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260207.17</span>
       <p class="subtitle">Staff & Admin Access</p>
 
       <!-- Login form -->
