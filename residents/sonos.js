@@ -339,26 +339,29 @@ function renderZones() {
             return `
             <div class="sonos-group-eq__room-summary">
               <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
-              <div class="sonos-group-eq__sliders">
-                <div class="sonos-eq-inline">
-                  <span class="sonos-eq-inline__label">B</span>
-                  <input type="range" min="-10" max="10" value="${m.bass}" class="sonos-eq-inline__slider"
-                    data-action="memberBass" data-room="${escapeHtml(m.roomName)}">
-                  <span class="sonos-eq-inline__val" data-eq-bass-val="${escapeHtml(m.roomName)}">${fmtEq(m.bass)}</span>
-                </div>
-                <div class="sonos-eq-inline">
-                  <span class="sonos-eq-inline__label">T</span>
-                  <input type="range" min="-10" max="10" value="${m.treble}" class="sonos-eq-inline__slider"
-                    data-action="memberTreble" data-room="${escapeHtml(m.roomName)}">
-                  <span class="sonos-eq-inline__val" data-eq-treble-val="${escapeHtml(m.roomName)}">${fmtEq(m.treble)}</span>
-                </div>
-              </div>
               <div class="sonos-balance-inline">
                 <span class="sonos-balance-inline__label">L</span>
                 <input type="range" min="-100" max="100" value="${bal}" class="sonos-balance-inline__slider"
                   data-action="balance" data-room="${escapeHtml(m.roomName)}">
                 <span class="sonos-balance-inline__label">R</span>
               </div>
+              <details class="sonos-group-eq__bt-details">
+                <summary class="sonos-group-eq__bt-toggle">B/T ${CHEVRON_SVG}</summary>
+                <div class="sonos-group-eq__sliders">
+                  <div class="sonos-eq-inline">
+                    <span class="sonos-eq-inline__label">B</span>
+                    <input type="range" min="-10" max="10" value="${m.bass}" class="sonos-eq-inline__slider"
+                      data-action="memberBass" data-room="${escapeHtml(m.roomName)}">
+                    <span class="sonos-eq-inline__val" data-eq-bass-val="${escapeHtml(m.roomName)}">${fmtEq(m.bass)}</span>
+                  </div>
+                  <div class="sonos-eq-inline">
+                    <span class="sonos-eq-inline__label">T</span>
+                    <input type="range" min="-10" max="10" value="${m.treble}" class="sonos-eq-inline__slider"
+                      data-action="memberTreble" data-room="${escapeHtml(m.roomName)}">
+                    <span class="sonos-eq-inline__val" data-eq-treble-val="${escapeHtml(m.roomName)}">${fmtEq(m.treble)}</span>
+                  </div>
+                </div>
+              </details>
             </div>`;
           }).join('')}
         </div>`
