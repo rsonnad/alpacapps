@@ -1,0 +1,568 @@
+/**
+ * Climate / Thermostat Page
+ * Shows Nest thermostats with current state, target temp controls, mode, and eco toggle.
+ */
+
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
+import { initResidentPage, showToast } from '../shared/resident-shell.js';
+
+// =============================================
+// CONFIGURATION
+// =============================================
+const NEST_CONTROL_URL = `${SUPABASE_URL}/functions/v1/nest-control`;
+const POLL_INTERVAL_MS = 30000;
+
+// =============================================
+// STATE
+// =============================================
+let thermostats = [];
+let pollTimer = null;
+let lastPollTime = null;
+let currentUserRole = null;
+
+// =============================================
+// INITIALIZATION
+// =============================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await initResidentPage({
+    activeTab: 'climate',
+    requiredRole: 'resident',
+    onReady: async (authState) => {
+      currentUserRole = authState.appUser?.role;
+
+      // Check for OAuth callback code in URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code && currentUserRole === 'admin') {
+        await handleOAuthCallback(code);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      await loadThermostats();
+      renderThermostats();
+      setupEventListeners();
+      startPolling();
+
+      if (currentUserRole === 'admin') {
+        await loadNestSettings();
+      }
+    },
+  });
+});
+
+// =============================================
+// API WRAPPER
+// =============================================
+async function nestApi(action, params = {}) {
+  const session = await supabase.auth.getSession();
+  const token = session.data.session?.access_token;
+  if (!token) {
+    showToast('Session expired. Please refresh.', 'error');
+    throw new Error('No auth token');
+  }
+
+  const response = await fetch(NEST_CONTROL_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action, ...params }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(err.error || `API error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// =============================================
+// DATA LOADING
+// =============================================
+async function loadThermostats() {
+  try {
+    const { data, error } = await supabase
+      .from('nest_devices')
+      .select('*')
+      .eq('is_active', true)
+      .eq('device_type', 'thermostat')
+      .order('display_order', { ascending: true });
+
+    if (error) throw error;
+
+    thermostats = (data || []).map(d => ({
+      id: d.id,
+      sdmDeviceId: d.sdm_device_id,
+      roomName: d.room_name,
+      displayOrder: d.display_order,
+      lanIp: d.lan_ip,
+      state: d.last_state || null,
+    }));
+  } catch (err) {
+    console.error('Failed to load thermostats:', err);
+    showToast('Failed to load thermostats', 'error');
+  }
+}
+
+async function refreshAllStates() {
+  if (!thermostats.length) return;
+
+  try {
+    const result = await nestApi('getAllStates');
+    if (result.devices) {
+      for (const device of result.devices) {
+        if (device.error) continue;
+        const t = thermostats.find(th => th.sdmDeviceId === device.deviceId);
+        if (t && device.state) {
+          t.state = device.state;
+          updateThermostatUI(t.sdmDeviceId);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('State refresh failed:', err.message);
+  }
+
+  lastPollTime = new Date();
+  updatePollStatus();
+}
+
+async function refreshDeviceState(sdmDeviceId) {
+  try {
+    const state = await nestApi('getDeviceState', { deviceId: sdmDeviceId });
+    const t = thermostats.find(th => th.sdmDeviceId === sdmDeviceId);
+    if (t && state) {
+      t.state = state;
+      updateThermostatUI(sdmDeviceId);
+    }
+  } catch (err) {
+    console.warn(`State refresh failed for ${sdmDeviceId}:`, err.message);
+  }
+}
+
+// =============================================
+// RENDERING
+// =============================================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderThermostats() {
+  const container = document.getElementById('thermostatGrid');
+  if (!container) return;
+
+  if (!thermostats.length) {
+    container.innerHTML = '<p class="text-muted" style="padding: 2rem; text-align: center;">No thermostats configured.</p>';
+    return;
+  }
+
+  container.innerHTML = thermostats.map(t => renderCard(t)).join('');
+}
+
+function renderCard(t) {
+  const s = t.state || {};
+  const deviceAttr = escapeHtml(t.sdmDeviceId);
+  const isOnline = s.connectivity === 'ONLINE';
+  const isHeating = s.hvacStatus === 'HEATING';
+  const isCooling = s.hvacStatus === 'COOLING';
+  const isEco = s.ecoMode === 'MANUAL_ECO';
+
+  // Target temp display
+  let targetDisplay = '--';
+  if (s.mode === 'HEAT' && s.heatSetpointF != null) {
+    targetDisplay = `${s.heatSetpointF}`;
+  } else if (s.mode === 'COOL' && s.coolSetpointF != null) {
+    targetDisplay = `${s.coolSetpointF}`;
+  } else if (s.mode === 'HEATCOOL' && s.heatSetpointF != null && s.coolSetpointF != null) {
+    targetDisplay = `${s.heatSetpointF} - ${s.coolSetpointF}`;
+  }
+
+  // HVAC badge
+  let hvacClass = 'hvac-off';
+  let hvacLabel = 'Idle';
+  if (isHeating) { hvacClass = 'hvac-heating'; hvacLabel = 'Heating'; }
+  else if (isCooling) { hvacClass = 'hvac-cooling'; hvacLabel = 'Cooling'; }
+
+  // Card classes
+  const cardClasses = [
+    'thermostat-card',
+    isHeating ? 'heating' : '',
+    isCooling ? 'cooling' : '',
+    !isOnline && s.connectivity ? 'disconnected' : '',
+  ].filter(Boolean).join(' ');
+
+  return `
+    <div class="${cardClasses}" data-device="${deviceAttr}">
+      <div class="thermostat-card__header">
+        <span class="thermostat-card__name">${escapeHtml(t.roomName)}</span>
+        ${s.connectivity ? `<span class="status-dot ${isOnline ? 'status-live' : 'status-offline'}" title="${isOnline ? 'Online' : 'Offline'}"></span>` : ''}
+      </div>
+
+      <div class="thermostat-card__current">
+        <span class="thermostat-card__temp-value">${s.currentTempF != null ? s.currentTempF : '--'}</span>
+        <span class="thermostat-card__temp-unit">&deg;F</span>
+        ${s.humidity != null ? `<span class="thermostat-card__humidity">${s.humidity}%</span>` : ''}
+      </div>
+
+      <div class="thermostat-card__badges">
+        <span class="thermostat-badge ${hvacClass}">${hvacLabel}</span>
+        ${isEco ? '<span class="thermostat-badge eco-badge">Eco</span>' : ''}
+        ${s.mode ? `<span class="thermostat-badge hvac-off">${escapeHtml(formatMode(s.mode))}</span>` : ''}
+      </div>
+
+      <div class="thermostat-card__target">
+        <span class="thermostat-card__target-label">Target</span>
+        <div class="thermostat-card__target-controls">
+          <button class="thermostat-btn" data-action="tempDown" data-device="${deviceAttr}" ${s.mode === 'OFF' ? 'disabled' : ''}>&#8722;</button>
+          <span class="thermostat-card__target-value">${targetDisplay}&deg;F</span>
+          <button class="thermostat-btn" data-action="tempUp" data-device="${deviceAttr}" ${s.mode === 'OFF' ? 'disabled' : ''}>+</button>
+        </div>
+      </div>
+
+      <div class="thermostat-card__mode">
+        <select data-action="setMode" data-device="${deviceAttr}">
+          <option value="HEAT" ${s.mode === 'HEAT' ? 'selected' : ''}>Heat</option>
+          <option value="COOL" ${s.mode === 'COOL' ? 'selected' : ''}>Cool</option>
+          <option value="HEATCOOL" ${s.mode === 'HEATCOOL' ? 'selected' : ''}>Heat/Cool</option>
+          <option value="OFF" ${s.mode === 'OFF' ? 'selected' : ''}>Off</option>
+        </select>
+        <button class="thermostat-eco-btn ${isEco ? 'active' : ''}"
+                data-action="toggleEco" data-device="${deviceAttr}"
+                title="${isEco ? 'Disable Eco' : 'Enable Eco'}">
+          Eco
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function formatMode(mode) {
+  const labels = { HEAT: 'Heat', COOL: 'Cool', HEATCOOL: 'Heat/Cool', OFF: 'Off' };
+  return labels[mode] || mode;
+}
+
+function updateThermostatUI(sdmDeviceId) {
+  const t = thermostats.find(th => th.sdmDeviceId === sdmDeviceId);
+  if (!t) return;
+  const card = document.querySelector(`[data-device="${CSS.escape(sdmDeviceId)}"]`);
+  if (!card) return;
+  card.outerHTML = renderCard(t);
+}
+
+function updatePollStatus() {
+  const el = document.getElementById('pollStatus');
+  if (!el || !lastPollTime) return;
+  const timeStr = lastPollTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  el.textContent = `Last updated: ${timeStr}`;
+}
+
+// =============================================
+// CONTROLS
+// =============================================
+async function setTemperature(sdmDeviceId, direction) {
+  const t = thermostats.find(th => th.sdmDeviceId === sdmDeviceId);
+  if (!t?.state || t.state.mode === 'OFF') return;
+
+  const card = document.querySelector(`[data-device="${CSS.escape(sdmDeviceId)}"]`);
+  card?.classList.add('loading');
+
+  try {
+    const s = t.state;
+    const delta = direction === 'up' ? 1 : -1;
+
+    if (s.mode === 'HEATCOOL') {
+      await nestApi('setTemperature', {
+        deviceId: sdmDeviceId,
+        heatTemp: s.heatSetpointF + delta,
+        coolTemp: s.coolSetpointF + delta,
+      });
+    } else if (s.mode === 'COOL') {
+      await nestApi('setTemperature', {
+        deviceId: sdmDeviceId,
+        temperature: s.coolSetpointF + delta,
+      });
+    } else {
+      await nestApi('setTemperature', {
+        deviceId: sdmDeviceId,
+        temperature: s.heatSetpointF + delta,
+      });
+    }
+
+    showToast(`Temperature adjusted`, 'success', 2000);
+    setTimeout(() => refreshDeviceState(sdmDeviceId), 1500);
+  } catch (err) {
+    showToast(`Temperature failed: ${err.message}`, 'error');
+  } finally {
+    card?.classList.remove('loading');
+  }
+}
+
+async function setMode(sdmDeviceId, mode) {
+  const card = document.querySelector(`[data-device="${CSS.escape(sdmDeviceId)}"]`);
+  card?.classList.add('loading');
+
+  try {
+    await nestApi('setMode', { deviceId: sdmDeviceId, mode });
+    showToast(`Mode set to ${formatMode(mode)}`, 'success', 2000);
+    setTimeout(() => refreshDeviceState(sdmDeviceId), 1500);
+  } catch (err) {
+    showToast(`Mode change failed: ${err.message}`, 'error');
+  } finally {
+    card?.classList.remove('loading');
+  }
+}
+
+async function toggleEco(sdmDeviceId) {
+  const t = thermostats.find(th => th.sdmDeviceId === sdmDeviceId);
+  const currentEco = t?.state?.ecoMode;
+  const newEco = currentEco === 'MANUAL_ECO' ? 'OFF' : 'MANUAL_ECO';
+
+  const card = document.querySelector(`[data-device="${CSS.escape(sdmDeviceId)}"]`);
+  card?.classList.add('loading');
+
+  try {
+    await nestApi('setEco', { deviceId: sdmDeviceId, ecoMode: newEco });
+    showToast(`Eco ${newEco === 'MANUAL_ECO' ? 'enabled' : 'disabled'}`, 'success', 2000);
+    setTimeout(() => refreshDeviceState(sdmDeviceId), 1500);
+  } catch (err) {
+    showToast(`Eco toggle failed: ${err.message}`, 'error');
+  } finally {
+    card?.classList.remove('loading');
+  }
+}
+
+// =============================================
+// POLLING
+// =============================================
+function startPolling() {
+  stopPolling();
+  refreshAllStates();
+  pollTimer = setInterval(() => refreshAllStates(), POLL_INTERVAL_MS);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    refreshAllStates();
+    pollTimer = setInterval(() => refreshAllStates(), POLL_INTERVAL_MS);
+  }
+}
+
+// =============================================
+// EVENT LISTENERS
+// =============================================
+function setupEventListeners() {
+  // Refresh button
+  document.getElementById('refreshBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true;
+    btn.textContent = 'Refreshing...';
+    await refreshAllStates();
+    btn.disabled = false;
+    btn.textContent = 'Refresh';
+  });
+
+  // Event delegation on thermostat grid
+  const grid = document.getElementById('thermostatGrid');
+  if (grid) {
+    // Click events (buttons)
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const deviceId = btn.dataset.device;
+
+      if (action === 'tempUp') {
+        setTemperature(deviceId, 'up');
+      } else if (action === 'tempDown') {
+        setTemperature(deviceId, 'down');
+      } else if (action === 'toggleEco') {
+        toggleEco(deviceId);
+      }
+    });
+
+    // Change events (select dropdowns)
+    grid.addEventListener('change', (e) => {
+      const select = e.target.closest('[data-action="setMode"]');
+      if (!select) return;
+      setMode(select.dataset.device, select.value);
+    });
+  }
+
+  // Admin: Test mode toggle
+  document.getElementById('nestTestMode')?.addEventListener('change', async (e) => {
+    const testMode = e.target.checked;
+    try {
+      await supabase.from('nest_config').update({ test_mode: testMode }).eq('id', 1);
+      const badge = document.getElementById('nestModeBadge');
+      if (badge) badge.textContent = testMode ? 'Test Mode' : 'Live';
+      showToast(`Nest ${testMode ? 'test' : 'live'} mode enabled`, 'success');
+    } catch (err) {
+      showToast('Failed to update test mode', 'error');
+      e.target.checked = !testMode;
+    }
+  });
+
+  // Admin: Start OAuth flow
+  document.getElementById('startOAuthBtn')?.addEventListener('click', startOAuthFlow);
+
+  // Admin: Discover devices
+  document.getElementById('discoverDevicesBtn')?.addEventListener('click', discoverDevices);
+}
+
+// =============================================
+// ADMIN: SETTINGS
+// =============================================
+async function loadNestSettings() {
+  try {
+    const { data: config } = await supabase
+      .from('nest_config')
+      .select('test_mode, refresh_token, google_client_id, sdm_project_id')
+      .single();
+
+    if (!config) return;
+
+    // Test mode toggle
+    const toggle = document.getElementById('nestTestMode');
+    if (toggle) toggle.checked = config.test_mode || false;
+
+    const badge = document.getElementById('nestModeBadge');
+    if (badge) badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+
+    // Show OAuth setup if not authorized
+    const oauthSection = document.getElementById('oauthSetupSection');
+    const deviceSection = document.getElementById('deviceManagementSection');
+    if (!config.refresh_token) {
+      oauthSection?.classList.remove('hidden');
+      deviceSection?.classList.add('hidden');
+    } else {
+      oauthSection?.classList.add('hidden');
+      deviceSection?.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Failed to load nest settings:', err);
+  }
+}
+
+// =============================================
+// ADMIN: OAUTH FLOW
+// =============================================
+async function startOAuthFlow() {
+  try {
+    const { data: config } = await supabase
+      .from('nest_config')
+      .select('google_client_id, sdm_project_id')
+      .single();
+
+    if (!config?.google_client_id || !config?.sdm_project_id) {
+      showToast('Google client ID and SDM project ID must be configured first', 'error');
+      return;
+    }
+
+    const redirectUri = window.location.origin + window.location.pathname;
+    const authUrl = `https://nestservices.google.com/partnerconnections/${config.sdm_project_id}/auth?` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&access_type=offline` +
+      `&prompt=consent` +
+      `&client_id=${config.google_client_id}` +
+      `&response_type=code` +
+      `&scope=${encodeURIComponent('https://www.googleapis.com/auth/sdm.service')}`;
+
+    window.location.href = authUrl;
+  } catch (err) {
+    showToast(`OAuth setup failed: ${err.message}`, 'error');
+  }
+}
+
+async function handleOAuthCallback(code) {
+  try {
+    showToast('Completing Google authorization...', 'info', 5000);
+    const redirectUri = window.location.origin + window.location.pathname;
+    await nestApi('oauthCallback', { code, redirectUri });
+    showToast('Google Nest authorized successfully!', 'success');
+  } catch (err) {
+    showToast(`OAuth failed: ${err.message}`, 'error');
+  }
+}
+
+// =============================================
+// ADMIN: DEVICE DISCOVERY
+// =============================================
+async function discoverDevices() {
+  const btn = document.getElementById('discoverDevicesBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Discovering...';
+  }
+
+  try {
+    const result = await nestApi('listDevices');
+    const devices = result.devices || [];
+    const thermostatsFound = devices.filter(d =>
+      d.type === 'sdm.devices.types.THERMOSTAT'
+    );
+
+    if (!thermostatsFound.length) {
+      showToast('No Nest thermostats found', 'warning');
+      return;
+    }
+
+    // Upsert devices into nest_devices table
+    for (let i = 0; i < thermostatsFound.length; i++) {
+      const device = thermostatsFound[i];
+      const deviceId = device.name; // Full SDM path
+      const roomName = device.traits?.['sdm.devices.traits.Info']?.customName
+        || device.parentRelations?.[0]?.displayName
+        || `Thermostat ${i + 1}`;
+
+      // Check if device already exists
+      const { data: existing } = await supabase
+        .from('nest_devices')
+        .select('id')
+        .eq('sdm_device_id', deviceId)
+        .single();
+
+      if (existing) {
+        await supabase.from('nest_devices')
+          .update({ room_name: roomName, updated_at: new Date().toISOString() })
+          .eq('sdm_device_id', deviceId);
+      } else {
+        await supabase.from('nest_devices').insert({
+          sdm_device_id: deviceId,
+          room_name: roomName,
+          device_type: 'thermostat',
+          display_order: i + 1,
+        });
+      }
+    }
+
+    showToast(`Found ${thermostatsFound.length} thermostat(s)`, 'success');
+    await loadThermostats();
+    renderThermostats();
+    await refreshAllStates();
+  } catch (err) {
+    showToast(`Discovery failed: ${err.message}`, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Discover Devices';
+    }
+  }
+}

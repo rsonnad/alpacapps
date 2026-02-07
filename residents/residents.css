@@ -1121,3 +1121,262 @@ body.is-admin .admin-only {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ===== THERMOSTAT GRID ===== */
+.thermostat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.thermostat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+
+.thermostat-card:hover {
+  border-color: var(--accent);
+}
+
+.thermostat-card.heating {
+  border-left-color: #f59e0b;
+}
+
+.thermostat-card.cooling {
+  border-left-color: #3b82f6;
+}
+
+.thermostat-card.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.thermostat-card.disconnected {
+  opacity: 0.6;
+  border-left-color: var(--occupied);
+}
+
+/* Header */
+.thermostat-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.thermostat-card__name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Current Temperature */
+.thermostat-card__current {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.thermostat-card__temp-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+.thermostat-card__temp-unit {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.thermostat-card__humidity {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 0.75rem;
+}
+
+/* Badges */
+.thermostat-card__badges {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.thermostat-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.thermostat-badge.hvac-heating {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.thermostat-badge.hvac-cooling {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.thermostat-badge.hvac-off {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.thermostat-badge.eco-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Target Temperature Controls */
+.thermostat-card__target {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+}
+
+.thermostat-card__target-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.thermostat-card__target-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.thermostat-card__target-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  min-width: 5rem;
+  text-align: center;
+}
+
+.thermostat-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.thermostat-btn:hover {
+  background: var(--accent-light, rgba(59, 130, 246, 0.1));
+  border-color: var(--accent);
+}
+
+/* Mode & Eco Controls */
+.thermostat-card__mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thermostat-card__mode select {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.thermostat-eco-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.thermostat-eco-btn.active {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.thermostat-eco-btn:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+/* Status dot */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.status-live {
+  background: var(--available, #22c55e);
+}
+
+.status-dot.status-offline {
+  background: var(--occupied, #ef4444);
+}
+
+/* Poll status */
+.poll-status {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: right;
+  padding-top: 0.5rem;
+}
+
+/* OAuth setup */
+.oauth-setup {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.oauth-setup h3 {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.oauth-setup p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .thermostat-grid {
+    grid-template-columns: 1fr;
+  }
+  .thermostat-card__temp-value {
+    font-size: 2rem;
+  }
+}
