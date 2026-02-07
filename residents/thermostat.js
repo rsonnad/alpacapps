@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderThermostats();
       setupEventListeners();
       startPolling();
+      // Refresh when PAI changes thermostat settings
+      window.addEventListener('pai-actions', (e) => {
+        const thermoActions = (e.detail?.actions || []).filter(a => a.type === 'control_thermostat');
+        if (thermoActions.length) setTimeout(() => refreshAllStates(), 1500);
+      });
 
       if (currentUserRole === 'admin') {
         await loadNestSettings();

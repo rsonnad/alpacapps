@@ -169,6 +169,13 @@ async function sendMessage() {
 
     appendMessage('ai', data.reply, data.actions_taken);
     conversationHistory.push({ role: 'model', text: data.reply });
+
+    // Notify the page that PAI took actions so it can refresh UI state
+    if (data.actions_taken?.length) {
+      window.dispatchEvent(new CustomEvent('pai-actions', {
+        detail: { actions: data.actions_taken },
+      }));
+    }
   } catch (err) {
     console.error('PAI error:', err);
     appendMessage('ai', `Sorry, something went wrong: ${err.message}`, null, true);

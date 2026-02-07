@@ -92,6 +92,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       setupEventListeners();
       await refreshAllStates();
       startPolling();
+      // Refresh group states when PAI takes light actions
+      window.addEventListener('pai-actions', (e) => {
+        const lightActions = (e.detail?.actions || []).filter(a => a.type === 'control_lights');
+        if (lightActions.length) {
+          // Short delay to let Govee propagate the state change
+          setTimeout(() => refreshAllStates(), 1500);
+        }
+      });
       // Load child device states in background (staggered to respect rate limits)
       loadAllChildrenStates();
       // Auto-load scenes for devices whose panels start expanded
