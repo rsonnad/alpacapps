@@ -2877,27 +2877,50 @@ span.sonos-library-item__star.starred {
   font-weight: 500;
 }
 
-/* Weather alert rows */
+/* Weather alert status rows (matches rain-summary__status style) */
+.weather-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
 .weather-alert__row {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.82rem;
-  padding: 0.2rem 0;
-  font-weight: 500;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.15rem 0;
+}
+
+.weather-alert__icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .weather-alert--red {
   color: #dc2626;
 }
 
+.weather-alert--orange {
+  color: #ea580c;
+}
+
 .weather-alert--blue {
   color: #2563eb;
+}
+
+.weather-alert--green {
+  color: var(--available, #22c55e);
 }
 
 .weather-alert--muted {
   color: var(--text-muted);
   font-weight: 400;
+  font-size: 0.85rem;
 }
 
 /* Hourly detail */

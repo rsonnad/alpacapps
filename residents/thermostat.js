@@ -670,9 +670,18 @@ function renderRainSummary() {
         const diffMs = nextRainDay.time - now;
         const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
         const isUrgent = diffDays <= 2;
-        nextRainNote = `<div class="weather-alert__row ${isUrgent ? 'weather-alert--red' : 'weather-alert--muted'}">Next rain: ~${diffDays} day${diffDays !== 1 ? 's' : ''} (${nextRainDay.pop}% chance ${nextRainDay.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })})</div>`;
+        const dateStr = nextRainDay.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        nextRainNote = `
+          <div class="weather-alert__row ${isUrgent ? 'weather-alert--orange' : 'weather-alert--muted'}">
+            <span class="weather-alert__icon">&#127783;&#65039;</span>
+            <span>Next rain: ~${diffDays} day${diffDays !== 1 ? 's' : ''} (${nextRainDay.pop}% chance ${dateStr})</span>
+          </div>`;
       } else {
-        nextRainNote = `<div class="weather-alert__row weather-alert--muted">Next rain: none in 8-day forecast</div>`;
+        nextRainNote = `
+          <div class="weather-alert__row weather-alert--muted">
+            <span class="weather-alert__icon">&#127783;&#65039;</span>
+            <span>Next rain: none in 8-day forecast</span>
+          </div>`;
       }
     }
     html += `
@@ -702,40 +711,65 @@ function renderRainSummary() {
       <div class="rain-windows">${windowsHtml}</div>`;
   }
 
-  // ---- Temperature warnings (from hourly data) ----
+  // ---- Alerts section (separated visually) ----
+  html += '<div class="weather-alerts">';
+
+  // Temperature warnings
   const maxTemp = Math.max(...hours.map(h => h.temp));
   const minTemp = Math.min(...hours.map(h => h.temp));
 
   if (maxTemp >= 100) {
-    const hotHours = hours.filter(h => h.temp >= 100);
-    const peakTemp = maxTemp;
-    const firstHot = hotHours[0];
+    const firstHot = hours.find(h => h.temp >= 100);
     const timeStr = formatWeatherTime(firstHot.time, now);
-    html += `<div class="weather-alert__row weather-alert--red">&#x1F525; Heat warning: ${peakTemp}&deg;F expected (${timeStr})</div>`;
+    html += `
+      <div class="weather-alert__row weather-alert--red">
+        <span class="weather-alert__icon">&#x1F525;</span>
+        <span>Heat warning: ${maxTemp}&deg;F expected (${timeStr})</span>
+      </div>`;
   } else {
-    html += `<div class="weather-alert__row weather-alert--muted">No heat warnings</div>`;
+    html += `
+      <div class="weather-alert__row weather-alert--green">
+        <span class="weather-alert__icon">&#x2705;</span>
+        <span>No heat warnings</span>
+      </div>`;
   }
 
   if (minTemp <= 32) {
-    const coldHours = hours.filter(h => h.temp <= 32);
-    const lowestTemp = minTemp;
-    const firstCold = coldHours[0];
+    const firstCold = hours.find(h => h.temp <= 32);
     const timeStr = formatWeatherTime(firstCold.time, now);
-    html += `<div class="weather-alert__row weather-alert--blue">&#x1F976; Cold warning: ${lowestTemp}&deg;F expected (${timeStr})</div>`;
+    html += `
+      <div class="weather-alert__row weather-alert--blue">
+        <span class="weather-alert__icon">&#x1F976;</span>
+        <span>Cold warning: ${minTemp}&deg;F expected (${timeStr})</span>
+      </div>`;
   } else {
-    html += `<div class="weather-alert__row weather-alert--muted">No cold warnings</div>`;
+    html += `
+      <div class="weather-alert__row weather-alert--green">
+        <span class="weather-alert__icon">&#x2705;</span>
+        <span>No cold warnings</span>
+      </div>`;
   }
 
-  // ---- Severe weather alerts (from OWM alerts) ----
+  // Severe weather alerts
   if (alerts?.length) {
     for (const a of alerts) {
       const startStr = formatWeatherTime(a.start, now);
       const endStr = formatWeatherTime(a.end, now);
-      html += `<div class="weather-alert__row weather-alert--red">&#x26A0;&#xFE0F; ${escapeHtml(a.event)}: ${startStr} - ${endStr}</div>`;
+      html += `
+        <div class="weather-alert__row weather-alert--red">
+          <span class="weather-alert__icon">&#x26A0;&#xFE0F;</span>
+          <span>${escapeHtml(a.event)}: ${startStr} - ${endStr}</span>
+        </div>`;
     }
   } else {
-    html += `<div class="weather-alert__row weather-alert--muted">No severe weather alerts</div>`;
+    html += `
+      <div class="weather-alert__row weather-alert--green">
+        <span class="weather-alert__icon">&#x2705;</span>
+        <span>No severe weather alerts</span>
+      </div>`;
   }
+
+  html += '</div>';
 
   container.innerHTML = html;
 }
