@@ -38,6 +38,34 @@ body {
   min-height: 100vh;
 }
 
+/* ===== HEADER LOGO (admin + resident pages) ===== */
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-logo__icon {
+  height: 36px;
+  width: auto;
+}
+
+.header-logo__wordmark {
+  height: 50px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .header-logo__icon {
+    height: 28px;
+  }
+  .header-logo__wordmark {
+    height: 40px;
+  }
+}
+
 /* Site-wide Navigation Bar */
 .site-nav {
   display: flex;
@@ -547,9 +575,14 @@ main {
 .badge {
   font-size: 0.7rem;
   font-weight: 500;
-  padding: 0.35rem 0.65rem;
-  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
   letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 .badge.occupied {
