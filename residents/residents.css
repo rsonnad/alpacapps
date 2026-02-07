@@ -1555,7 +1555,7 @@ span.sonos-library-item__star.starred {
   letter-spacing: 0.04em;
 }
 
-/* Summary row: room name + inline B/T sliders */
+/* Summary row: room name + compact B/T balance values */
 .sonos-group-eq__room-summary {
   display: flex;
   align-items: center;
