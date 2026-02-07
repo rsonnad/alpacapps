@@ -1420,46 +1420,104 @@ span.sonos-library-item__star.starred {
   cursor: pointer;
 }
 
-/* ===== GROUP MEMBER ROWS ===== */
+/* ===== GROUP MEMBER CARDS ===== */
 .sonos-group-members {
   margin-top: 0.75rem;
   padding-top: 0.6rem;
   border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .sonos-group-members__label {
   font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-.sonos-member-row {
+.sonos-member-card {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0;
-  min-height: 2rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-height: 2.2rem;
+}
+
+.sonos-member-card.coordinator {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--accent-light, #f0e6d6) 100%);
+}
+
+.sonos-member-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sonos-member-info {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 40%;
 }
 
 .sonos-member-name {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 0 0 7rem;
-  width: 7rem;
+}
+
+.sonos-member-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  background: var(--accent-light, #f0e6d6);
+  border: 1px solid var(--accent);
+  padding: 0.05rem 0.3rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.sonos-member-vol-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .sonos-member-slider {
   flex: 1;
   accent-color: var(--accent);
-  height: 4px;
+  height: 5px;
   cursor: pointer;
-  min-width: 80px;
+  min-width: 60px;
 }
 
 .sonos-member-vol {
@@ -2099,11 +2157,20 @@ span.sonos-library-item__star.starred {
     font-size: 1rem;
   }
 
-  /* Sonos member rows */
+  /* Sonos member cards */
+  .sonos-member-card {
+    padding: 0.35rem 0.45rem;
+  }
+  .sonos-member-info {
+    max-width: 35%;
+  }
   .sonos-member-name {
-    flex: 0 0 5rem;
-    width: 5rem;
     font-size: 0.7rem;
+  }
+  .sonos-member-num {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 0.6rem;
   }
 }
 

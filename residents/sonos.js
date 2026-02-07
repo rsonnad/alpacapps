@@ -263,12 +263,12 @@ function renderZones() {
     const coordName = escapeHtml(group.coordinatorName);
     const isGrouped = group.members.length > 1;
 
-    // Group name: coordinator + all member names
+    // Group name: coordinator name + group indicator
     const memberNames = group.members
       .filter(m => !m.isCoordinator)
       .map(m => m.roomName);
-    const groupTitle = memberNames.length > 0
-      ? `${escapeHtml(group.coordinatorName)} <span class="sonos-group-plus">&</span> ${memberNames.map(n => escapeHtml(n)).join(', ')}`
+    const groupTitle = isGrouped
+      ? `${escapeHtml(group.coordinatorName)} <span class="sonos-group-badge">+${memberNames.length}</span>`
       : escapeHtml(group.coordinatorName);
 
     // Status line
@@ -295,13 +295,19 @@ function renderZones() {
     // Member volume rows (only if group has multiple speakers)
     const memberRows = isGrouped
       ? `<div class="sonos-group-members">
-          <div class="sonos-group-members__label">Speakers</div>
-          ${group.members.map(m => `
-            <div class="sonos-member-row">
-              <span class="sonos-member-name">${escapeHtml(m.roomName)}</span>
-              <span class="sonos-member-vol">${m.volume}%</span>
-              <input type="range" min="0" max="100" value="${m.volume}" class="sonos-member-slider"
-                data-action="memberVolume" data-room="${escapeHtml(m.roomName)}">
+          <div class="sonos-group-members__label">${group.members.length} Speakers Grouped</div>
+          ${group.members.map((m, i) => `
+            <div class="sonos-member-card ${m.isCoordinator ? 'coordinator' : ''}">
+              <span class="sonos-member-num">${i + 1}</span>
+              <div class="sonos-member-info">
+                <span class="sonos-member-name">${escapeHtml(m.roomName)}</span>
+                ${m.isCoordinator ? '<span class="sonos-member-badge">Primary</span>' : ''}
+              </div>
+              <div class="sonos-member-vol-wrap">
+                <input type="range" min="0" max="100" value="${m.volume}" class="sonos-member-slider"
+                  data-action="memberVolume" data-room="${escapeHtml(m.roomName)}">
+                <span class="sonos-member-vol">${m.volume}%</span>
+              </div>
             </div>
           `).join('')}
         </div>`
