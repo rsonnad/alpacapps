@@ -261,9 +261,18 @@ async function loadGoveeSettings() {
 // API CALLS (via Edge Function)
 // =============================================
 async function goveeApi(action, params = {}) {
-  // Always get a fresh session (refreshes JWT if expired)
+  // Get session — getSession() may return a stale/expired JWT from cache,
+  // so check expiry and force refresh if needed
   let { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
+  if (session) {
+    const expiresAt = session.expires_at; // Unix timestamp in seconds
+    const now = Math.floor(Date.now() / 1000);
+    if (!expiresAt || expiresAt - now < 60) {
+      // Token expired or expiring within 60s — force refresh
+      const { data } = await supabase.auth.refreshSession();
+      session = data.session;
+    }
+  } else {
     const { data } = await supabase.auth.refreshSession();
     session = data.session;
   }

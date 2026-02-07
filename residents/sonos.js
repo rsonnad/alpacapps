@@ -61,8 +61,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 // API WRAPPER
 // =============================================
 async function sonosApi(action, params = {}) {
-  const session = await supabase.auth.getSession();
-  const token = session.data.session?.access_token;
+  let { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    const expiresAt = session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+    if (!expiresAt || expiresAt - now < 60) {
+      const { data } = await supabase.auth.refreshSession();
+      session = data.session;
+    }
+  } else {
+    const { data } = await supabase.auth.refreshSession();
+    session = data.session;
+  }
+  const token = session?.access_token;
   if (!token) {
     showToast('Session expired. Please refresh.', 'error');
     throw new Error('No auth token');
