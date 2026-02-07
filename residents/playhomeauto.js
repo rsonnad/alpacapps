@@ -29,10 +29,14 @@ const COLOR_PRESETS = [
 // =============================================
 // STATE
 // =============================================
-let goveeGroups = []; // Loaded from DB
+let goveeGroups = []; // Flat list for backward compat (allOff, refresh)
+let lightingSections = []; // { name, sectionId, groups[] } — grouped by space hierarchy
+let spaceMap = {}; // { spaceId: { id, name, parent_id } }
 let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
+let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
 let pollTimer = null;
 let lastPollTime = null;
+let childrenStateLoaded = {}; // { groupId: true } — tracks which groups have had child states fetched
 
 // Debounce timers
 const brightnessTimers = {};
@@ -48,10 +52,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     onReady: async () => {
       await loadGroupsFromDB();
       await loadGoveeSettings();
-      renderLightingGroups();
+      renderLightingAreas();
       setupEventListeners();
       await refreshAllStates();
       startPolling();
+      // Load child device states in background (staggered to respect rate limits)
+      loadAllChildrenStates();
     },
   });
 });
@@ -61,23 +67,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =============================================
 async function loadGroupsFromDB() {
   try {
-    // Load active groups ordered by display_order
+    // Load active groups with space link, ordered by display_order
     const { data: groups, error: groupErr } = await supabase
       .from('govee_devices')
-      .select('device_id, name, display_order')
+      .select('device_id, name, area, display_order, space_id')
       .eq('is_group', true)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
     if (groupErr) throw groupErr;
 
-    // Load child devices with their SKUs
+    // Load child devices with their SKUs and names
     const { data: children, error: childErr } = await supabase
       .from('govee_devices')
-      .select('device_id, sku, parent_group_id')
+      .select('device_id, name, sku, parent_group_id')
       .eq('is_group', false)
       .eq('is_active', true)
-      .not('parent_group_id', 'is', null);
+      .not('parent_group_id', 'is', null)
+      .order('name', { ascending: true });
 
     if (childErr) throw childErr;
 
@@ -88,17 +95,30 @@ async function loadGroupsFromDB() {
 
     if (modelErr) throw modelErr;
 
+    // Load all spaces for hierarchy resolution (lightweight: id, name, parent_id only)
+    const { data: allSpaces, error: spacesErr } = await supabase
+      .from('spaces')
+      .select('id, name, parent_id')
+      .eq('is_archived', false);
+
+    if (spacesErr) throw spacesErr;
+
+    // Build space lookup map
+    spaceMap = {};
+    for (const s of allSpaces) {
+      spaceMap[s.id] = s;
+    }
+
     const modelMap = {};
     for (const m of models) {
       modelMap[m.sku] = m.model_name;
     }
 
-    // Build goveeGroups array
+    // Build goveeGroups array with children
     goveeGroups = groups.map(g => {
       const groupChildren = children.filter(c => c.parent_group_id === g.device_id);
       const deviceCount = groupChildren.length || null;
 
-      // Get unique model names for this group's children
       const uniqueModels = [...new Set(
         groupChildren.map(c => modelMap[c.sku]).filter(Boolean)
       )];
@@ -107,14 +127,63 @@ async function loadGroupsFromDB() {
       return {
         name: g.name,
         groupId: g.device_id,
+        area: g.area || 'Other',
+        spaceId: g.space_id,
         deviceCount,
         models: modelsStr,
+        children: groupChildren.map(c => ({
+          deviceId: c.device_id,
+          name: c.name,
+          sku: c.sku,
+          modelName: modelMap[c.sku] || c.sku,
+        })),
       };
+    });
+
+    // Build lightingSections grouped by depth-1 space ancestor
+    const sectionMap = new Map();
+
+    for (const group of goveeGroups) {
+      let sectionKey, sectionName;
+
+      if (group.spaceId) {
+        const ancestor = getDepth1Ancestor(group.spaceId);
+        sectionKey = ancestor ? ancestor.id : '__ungrouped__';
+        sectionName = ancestor ? ancestor.name : 'Other';
+      } else {
+        sectionKey = '__ungrouped__';
+        sectionName = 'Other';
+      }
+
+      if (!sectionMap.has(sectionKey)) {
+        sectionMap.set(sectionKey, { name: sectionName, sectionId: sectionKey, groups: [] });
+      }
+      sectionMap.get(sectionKey).groups.push(group);
+    }
+
+    // Sort: named sections alphabetically, "Other" last
+    lightingSections = [...sectionMap.values()].sort((a, b) => {
+      if (a.sectionId === '__ungrouped__') return 1;
+      if (b.sectionId === '__ungrouped__') return -1;
+      return a.name.localeCompare(b.name);
     });
   } catch (err) {
     console.error('Failed to load groups from DB:', err);
     showToast('Failed to load lighting groups', 'error');
   }
+}
+
+// Walk up parent_id chain to find depth-1 ancestor (direct child of root)
+function getDepth1Ancestor(spaceId) {
+  let current = spaceMap[spaceId];
+  if (!current) return null;
+
+  while (current.parent_id) {
+    const parent = spaceMap[current.parent_id];
+    if (!parent || !parent.parent_id) return current; // parent is root
+    current = parent;
+  }
+  return current; // is root itself
 }
 
 // =============================================
@@ -334,6 +403,170 @@ async function allOff() {
 }
 
 // =============================================
+// INDIVIDUAL DEVICE CONTROLS
+// =============================================
+async function toggleDevice(deviceId, sku, on) {
+  const row = document.querySelector(`[data-device-id="${deviceId}"]`);
+  row?.classList.add('loading');
+
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.on_off',
+        instance: 'powerSwitch',
+        value: on ? 1 : 0,
+      },
+    });
+
+    deviceStates[deviceId] = { ...deviceStates[deviceId], on, disconnected: false };
+    updateDeviceUI(deviceId);
+    showToast(`${getDeviceName(deviceId)} turned ${on ? 'on' : 'off'}`, 'success', 2000);
+  } catch (err) {
+    showToast(`Failed: ${err.message}`, 'error');
+    const toggle = row?.querySelector('input[type="checkbox"]');
+    if (toggle) toggle.checked = !on;
+  } finally {
+    row?.classList.remove('loading');
+  }
+}
+
+async function setDeviceBrightness(deviceId, sku, value) {
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.range',
+        instance: 'brightness',
+        value: parseInt(value),
+      },
+    });
+    deviceStates[deviceId] = { ...deviceStates[deviceId], brightness: parseInt(value) };
+  } catch (err) {
+    showToast(`Brightness failed: ${err.message}`, 'error');
+  }
+}
+
+async function setDeviceColor(deviceId, sku, hexColor) {
+  try {
+    const rgb = hexToRgbInt(hexColor);
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.color_setting',
+        instance: 'colorRgb',
+        value: rgb,
+      },
+    });
+    deviceStates[deviceId] = { ...deviceStates[deviceId], color: hexColor };
+    updateDeviceUI(deviceId);
+  } catch (err) {
+    showToast(`Color failed: ${err.message}`, 'error');
+  }
+}
+
+async function setDeviceColorTemp(deviceId, sku, temp) {
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku: sku,
+      capability: {
+        type: 'devices.capabilities.color_setting',
+        instance: 'colorTemperatureK',
+        value: parseInt(temp),
+      },
+    });
+    showToast(`Set to ${temp}K`, 'success', 1500);
+  } catch (err) {
+    showToast(`Color temp failed: ${err.message}`, 'error');
+  }
+}
+
+// =============================================
+// DEVICE STATE LOADING
+// =============================================
+async function refreshDeviceState(deviceId, sku) {
+  try {
+    const result = await goveeApi('getDeviceState', { device: deviceId, sku });
+
+    if (result.payload) {
+      const capabilities = result.payload.capabilities || [];
+      const state = { disconnected: false };
+
+      for (const cap of capabilities) {
+        if (cap.instance === 'powerSwitch') {
+          state.on = cap.state?.value === 1;
+        } else if (cap.instance === 'brightness') {
+          state.brightness = cap.state?.value;
+        } else if (cap.instance === 'colorRgb') {
+          state.color = rgbIntToHex(cap.state?.value);
+        } else if (cap.instance === 'colorTemperatureK') {
+          state.colorTemp = cap.state?.value;
+        }
+      }
+
+      deviceStates[deviceId] = { ...deviceStates[deviceId], ...state };
+      updateDeviceUI(deviceId);
+    }
+  } catch (err) {
+    console.warn(`Failed to get state for device ${deviceId}:`, err.message);
+    deviceStates[deviceId] = { ...deviceStates[deviceId], disconnected: true };
+    updateDeviceUI(deviceId);
+  }
+}
+
+async function loadChildrenStates(groupId) {
+  if (childrenStateLoaded[groupId]) return;
+  childrenStateLoaded[groupId] = true;
+
+  const group = goveeGroups.find(g => g.groupId === groupId);
+  if (!group || !group.children.length) return;
+
+  for (const child of group.children) {
+    await refreshDeviceState(child.deviceId, child.sku);
+    await sleep(150);
+  }
+}
+
+async function loadAllChildrenStates() {
+  for (const group of goveeGroups) {
+    if (group.children.length > 0) {
+      await loadChildrenStates(group.groupId);
+      await sleep(500);
+    }
+  }
+}
+
+function updateDeviceUI(deviceId) {
+  const row = document.querySelector(`[data-device-id="${deviceId}"]`);
+  if (!row) return;
+
+  const state = deviceStates[deviceId] || {};
+
+  // Update toggle
+  const toggle = row.querySelector('input[type="checkbox"]');
+  if (toggle) toggle.checked = !!state.on;
+
+  // Update brightness slider
+  const slider = row.querySelector('input[type="range"]');
+  if (slider && state.brightness != null) {
+    slider.value = state.brightness;
+  }
+
+  // Update color button background
+  const colorBtn = row.querySelector('.child-color-btn');
+  if (colorBtn && state.color) {
+    colorBtn.style.background = state.color;
+  }
+
+  // Dim row if off
+  row.style.opacity = state.on === false ? '0.5' : '';
+}
+
+// =============================================
 // STATE POLLING
 // =============================================
 async function refreshAllStates() {
@@ -425,11 +658,71 @@ function updatePollStatus() {
 // =============================================
 // RENDERING
 // =============================================
-function renderLightingGroups() {
+const COLLAPSE_STORAGE_KEY = 'lighting_collapsed_sections';
+
+function renderLightingAreas() {
   const container = document.getElementById('lightingGroups');
   if (!container) return;
 
-  container.innerHTML = goveeGroups.map(group => `
+  container.innerHTML = lightingSections.map(section => {
+    const isOpen = getSectionOpenState(section.sectionId);
+    return `
+      <details class="lighting-section" ${isOpen ? 'open' : ''} data-section="${section.sectionId}">
+        <summary class="lighting-section__header">
+          <span class="lighting-section__chevron"></span>
+          <h3>${section.name}</h3>
+          <span class="lighting-section__count">${section.groups.length} group${section.groups.length !== 1 ? 's' : ''}</span>
+        </summary>
+        <div class="lighting-section__body">
+          <div class="lighting-area__grid">
+            ${section.groups.map(g => renderGroupCard(g)).join('')}
+          </div>
+        </div>
+      </details>
+    `;
+  }).join('');
+
+  // Attach toggle listeners for persistence (toggle event doesn't bubble)
+  container.querySelectorAll('.lighting-section').forEach(details => {
+    details.addEventListener('toggle', () => {
+      saveSectionState(details.dataset.section, details.open);
+    });
+  });
+}
+
+function getSectionOpenState(sectionId) {
+  try {
+    const collapsed = JSON.parse(localStorage.getItem(COLLAPSE_STORAGE_KEY) || '[]');
+    return !collapsed.includes(sectionId);
+  } catch { return true; }
+}
+
+function saveSectionState(sectionId, isOpen) {
+  try {
+    let collapsed = JSON.parse(localStorage.getItem(COLLAPSE_STORAGE_KEY) || '[]');
+    if (isOpen) {
+      collapsed = collapsed.filter(id => id !== sectionId);
+    } else if (!collapsed.includes(sectionId)) {
+      collapsed.push(sectionId);
+    }
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(collapsed));
+  } catch {}
+}
+
+function renderGroupCard(group) {
+  const childrenHtml = group.children.length > 0
+    ? `<div class="child-devices" data-children-for="${group.groupId}">
+        <div class="child-devices__header">
+          <span class="child-devices__count">${group.children.length} device${group.children.length !== 1 ? 's' : ''}</span>
+          <button class="child-devices__toggle" data-action="toggle-children" data-group="${group.groupId}">Hide</button>
+        </div>
+        <div class="child-devices__list expanded" data-children-list="${group.groupId}">
+          ${group.children.map(c => renderChildDevice(c)).join('')}
+        </div>
+      </div>`
+    : '';
+
+  return `
     <div class="lighting-group-card" data-group-id="${group.groupId}">
       <div class="lighting-group-card__header">
         <div class="lighting-group-card__title">
@@ -466,11 +759,35 @@ function renderLightingGroups() {
         </div>
       </div>
 
+      ${childrenHtml}
+
       <div class="group-status" data-status="${group.groupId}">
         <span>Loading status...</span>
       </div>
     </div>
-  `).join('');
+  `;
+}
+
+function renderChildDevice(child) {
+  return `
+    <div class="child-device-row" data-device-id="${child.deviceId}" data-device-sku="${child.sku}">
+      <div class="child-device-row__info">
+        <span class="child-device-row__name">${child.name}</span>
+        <span class="child-device-row__model">${child.modelName}</span>
+      </div>
+      <div class="child-device-row__controls">
+        <label class="toggle-switch-small">
+          <input type="checkbox" data-action="device-toggle" data-device="${child.deviceId}" data-sku="${child.sku}">
+          <span class="slider"></span>
+        </label>
+        <input type="range" min="1" max="100" value="50" class="child-brightness-slider"
+          data-action="device-brightness" data-device="${child.deviceId}" data-sku="${child.sku}">
+        <button class="child-color-btn" title="Set color"
+          data-action="device-color-btn" data-device="${child.deviceId}" data-sku="${child.sku}"
+          style="background: #FFD4A3;"></button>
+      </div>
+    </div>
+  `;
 }
 
 function updateGroupUI(groupId) {
@@ -553,21 +870,23 @@ function setupEventListeners() {
 
   // Event delegation for all controls
   container.addEventListener('change', (e) => {
-    const { action, group } = e.target.dataset;
-    if (!action || !group) return;
+    const { action, group, device, sku } = e.target.dataset;
 
-    if (action === 'toggle') {
+    if (action === 'toggle' && group) {
       toggleGroup(group, e.target.checked);
-    } else if (action === 'brightness') {
-      // Update label immediately
+    } else if (action === 'brightness' && group) {
       const label = container.querySelector(`[data-brightness-label="${group}"]`);
       if (label) label.textContent = `${e.target.value}%`;
+    } else if (action === 'device-toggle' && device && sku) {
+      toggleDevice(device, sku, e.target.checked);
     }
   });
 
-  // Debounced brightness on input
+  // Debounced brightness/color on input
   container.addEventListener('input', (e) => {
-    const { action, group } = e.target.dataset;
+    const { action, group, device, sku } = e.target.dataset;
+
+    // Group brightness
     if (action === 'brightness' && group) {
       const label = container.querySelector(`[data-brightness-label="${group}"]`);
       if (label) label.textContent = `${e.target.value}%`;
@@ -578,32 +897,75 @@ function setupEventListeners() {
       }, 400);
     }
 
+    // Group color
     if (action === 'color' && group) {
       clearTimeout(colorTimers[group]);
       colorTimers[group] = setTimeout(() => {
         setColor(group, e.target.value);
       }, 400);
     }
+
+    // Device brightness
+    if (action === 'device-brightness' && device && sku) {
+      const key = `dev_${device}`;
+      clearTimeout(brightnessTimers[key]);
+      brightnessTimers[key] = setTimeout(() => {
+        setDeviceBrightness(device, sku, e.target.value);
+      }, 400);
+    }
   });
 
-  // Color preset clicks
+  // Click handlers: presets, child toggle, device color button
   container.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-action="preset"]');
-    if (!btn) return;
+    // Group color presets
+    const presetBtn = e.target.closest('[data-action="preset"]');
+    if (presetBtn) {
+      const { group, hex, temp } = presetBtn.dataset;
+      if (!group) return;
+      const colorInput = container.querySelector(`input[type="color"][data-group="${group}"]`);
+      if (colorInput) colorInput.value = hex;
+      if (temp) {
+        setColorTemp(group, parseInt(temp));
+      } else {
+        setColor(group, hex);
+      }
+      return;
+    }
 
-    const { group, hex, temp } = btn.dataset;
-    if (!group) return;
+    // Toggle children expand/collapse
+    const toggleBtn = e.target.closest('[data-action="toggle-children"]');
+    if (toggleBtn) {
+      const groupId = toggleBtn.dataset.group;
+      const list = container.querySelector(`[data-children-list="${groupId}"]`);
+      if (list) {
+        const isExpanded = list.classList.toggle('expanded');
+        toggleBtn.textContent = isExpanded ? 'Hide' : 'Show';
+      }
+      return;
+    }
 
-    // Update color picker visually
-    const colorInput = container.querySelector(`input[type="color"][data-group="${group}"]`);
-    if (colorInput) colorInput.value = hex;
+    // Device color button -> show popover
+    const colorBtn = e.target.closest('[data-action="device-color-btn"]');
+    if (colorBtn) {
+      showDeviceColorPopover(colorBtn);
+      return;
+    }
 
-    if (temp) {
-      // Temperature-based preset
-      setColorTemp(group, parseInt(temp));
-    } else {
-      // RGB color preset
-      setColor(group, hex);
+    // Device color preset inside popover
+    const devicePreset = e.target.closest('[data-action="device-preset"]');
+    if (devicePreset) {
+      const { device, sku, hex, temp } = devicePreset.dataset;
+      if (temp) {
+        setDeviceColorTemp(device, sku, parseInt(temp));
+      } else {
+        setDeviceColor(device, sku, hex);
+      }
+      // Update color button background
+      const row = container.querySelector(`[data-device-id="${device}"]`);
+      const btn = row?.querySelector('.child-color-btn');
+      if (btn) btn.style.background = hex;
+      hideDeviceColorPopover();
+      return;
     }
   });
 
@@ -656,6 +1018,63 @@ function setupEventListeners() {
 }
 
 // =============================================
+// COLOR POPOVER
+// =============================================
+let activePopover = null;
+
+function showDeviceColorPopover(triggerBtn) {
+  hideDeviceColorPopover();
+
+  const { device, sku } = triggerBtn.dataset;
+  const popover = document.createElement('div');
+  popover.className = 'device-color-popover';
+
+  popover.innerHTML = COLOR_PRESETS.map(p => `
+    <button class="color-preset" title="${p.name}"
+      style="background:${p.hex}"
+      data-action="device-preset" data-device="${device}" data-sku="${sku}"
+      data-hex="${p.hex}" ${p.temp ? `data-temp="${p.temp}"` : ''}>
+    </button>
+  `).join('');
+
+  // Position below the trigger button
+  const rect = triggerBtn.getBoundingClientRect();
+  popover.style.position = 'fixed';
+  popover.style.top = `${rect.bottom + 4}px`;
+  popover.style.left = `${rect.left}px`;
+
+  document.body.appendChild(popover);
+  activePopover = popover;
+
+  // Adjust if overflows right edge
+  requestAnimationFrame(() => {
+    const popRect = popover.getBoundingClientRect();
+    if (popRect.right > window.innerWidth - 8) {
+      popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
+    }
+  });
+
+  // Close on outside click (delayed to avoid immediate close)
+  setTimeout(() => {
+    document.addEventListener('click', handlePopoverOutsideClick);
+  }, 0);
+}
+
+function hideDeviceColorPopover() {
+  if (activePopover) {
+    activePopover.remove();
+    activePopover = null;
+  }
+  document.removeEventListener('click', handlePopoverOutsideClick);
+}
+
+function handlePopoverOutsideClick(e) {
+  if (activePopover && !activePopover.contains(e.target) && !e.target.closest('[data-action="device-color-btn"]')) {
+    hideDeviceColorPopover();
+  }
+}
+
+// =============================================
 // UTILITIES
 // =============================================
 function hexToRgbInt(hex) {
@@ -676,6 +1095,14 @@ function rgbIntToHex(value) {
 
 function getGroupName(groupId) {
   return goveeGroups.find(g => g.groupId === groupId)?.name || groupId;
+}
+
+function getDeviceName(deviceId) {
+  for (const g of goveeGroups) {
+    const child = g.children.find(c => c.deviceId === deviceId);
+    if (child) return child.name;
+  }
+  return deviceId;
 }
 
 function sleep(ms) {

@@ -13,8 +13,8 @@ import { errorLogger } from './error-logger.js';
 const RESIDENT_TABS = [
   { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
   { id: 'homeauto', label: 'Lighting', href: 'playhomeauto.html' },
+  { id: 'music', label: 'Music', href: 'sonos.html' },
   // Future tabs:
-  // { id: 'music', label: 'Music', href: 'music.html' },
   // { id: 'info', label: 'House Info', href: 'info.html' },
 ];
 

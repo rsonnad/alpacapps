@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cameras - Alpaca Playhouse</title>
+  <title>Music - Alpaca Playhouse</title>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="stylesheet" href="../spaces/styles.css?v=5">
@@ -54,22 +54,44 @@
     <div class="manage-tabs" id="tabNav"></div>
 
     <!-- Main Content -->
-    <main class="manage-content cameras-page">
-      <section class="section">
+    <main class="manage-content sonos-page">
+
+      <!-- Favorites Section -->
+      <section class="section" id="favoritesSection">
         <div class="section-header">
-          <h2>Live Camera Feeds</h2>
+          <h2>Favorites</h2>
+          <div class="section-header-actions">
+            <button class="btn-small" id="toggleFavoritesBtn">Hide</button>
+          </div>
         </div>
-        <div class="section-body">
-          <div class="camera-grid" id="cameraGrid">
-            <!-- Rendered by JS -->
+        <div class="section-body" id="favoritesBody">
+          <div class="favorites-list" id="favoritesList">
+            <p class="text-muted" style="font-size: 0.85rem;">Loading favorites...</p>
           </div>
         </div>
       </section>
+
+      <!-- Sonos Zones Section -->
+      <section class="section" id="zonesSection">
+        <div class="section-header">
+          <h2>Sonos Zones</h2>
+          <div class="section-header-actions">
+            <button class="btn-small" id="refreshZonesBtn" title="Refresh all zone states">Refresh</button>
+            <button class="btn-all-off" id="pauseAllBtn" title="Pause all zones">Pause All</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="sonos-zones" id="sonosZones">
+            <p class="text-muted" style="font-size: 0.85rem; padding: 2rem; text-align: center;">Loading zones...</p>
+          </div>
+          <div class="poll-status" id="pollStatus"></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-  <script type="module" src="cameras.js"></script>
+  <script type="module" src="sonos.js"></script>
 </body>
 </html>
