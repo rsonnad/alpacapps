@@ -261,10 +261,15 @@ async function loadGoveeSettings() {
 // API CALLS (via Edge Function)
 // =============================================
 async function goveeApi(action, params = {}) {
-  const session = await supabase.auth.getSession();
-  const token = session.data.session?.access_token;
+  // Always get a fresh session (refreshes JWT if expired)
+  let { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    const { data } = await supabase.auth.refreshSession();
+    session = data.session;
+  }
+  const token = session?.access_token;
   if (!token) {
-    showToast('Session expired. Please refresh.', 'error');
+    showToast('Session expired. Please sign in again.', 'error');
     throw new Error('No auth token');
   }
 
@@ -891,7 +896,7 @@ function renderGroupCard(group) {
     ? `<div class="child-devices" data-children-for="${group.groupId}">
         <div class="child-devices__header">
           <span class="child-devices__count">${group.children.length} device${group.children.length !== 1 ? 's' : ''}</span>
-          <button class="child-devices__toggle" data-action="toggle-children" data-group="${group.groupId}">Show</button>
+          <button class="child-devices__toggle" data-action="toggle-children" data-group="${group.groupId}" title="Show/hide devices">&#9662;</button>
         </div>
         <div class="child-devices__list" data-children-list="${group.groupId}">
           ${group.children.map(c => renderChildDevice(c)).join('')}
@@ -1365,7 +1370,8 @@ function setupEventListeners() {
       const list = container.querySelector(`[data-children-list="${groupId}"]`);
       if (list) {
         const isExpanded = list.classList.toggle('expanded');
-        toggleBtn.textContent = isExpanded ? 'Hide' : 'Show';
+        toggleBtn.innerHTML = isExpanded ? '&#9652;' : '&#9662;';
+        toggleBtn.title = isExpanded ? 'Hide devices' : 'Show devices';
       }
       return;
     }
