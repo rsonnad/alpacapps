@@ -533,19 +533,31 @@ async function loadWeatherForecast() {
     const locEl = document.getElementById('weatherLocation');
     if (locEl) locEl.textContent = config.location_name || '';
 
-    // Fetch 48-hour forecast from OpenWeatherMap One Call API 3.0
-    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${config.latitude}&lon=${config.longitude}&exclude=minutely,daily,alerts&units=imperial&appid=${config.owm_api_key}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      // Try 2.5 API as fallback (free tier)
+    // Try One Call 3.0 first (requires separate subscription), then fall back to 2.5 (free tier)
+    let loaded = false;
+
+    // Attempt One Call 3.0
+    try {
+      const url30 = `https://api.openweathermap.org/data/3.0/onecall?lat=${config.latitude}&lon=${config.longitude}&exclude=minutely,daily,alerts&units=imperial&appid=${config.owm_api_key}`;
+      const resp30 = await fetch(url30);
+      if (resp30.ok) {
+        const data = await resp30.json();
+        weatherData = parseOneCallForecast(data);
+        loaded = true;
+      }
+    } catch (_) { /* fall through to 2.5 */ }
+
+    // Fallback: 2.5 free tier (3-hour intervals, 16 entries = 48 hours)
+    if (!loaded) {
       const url25 = `https://api.openweathermap.org/data/2.5/forecast?lat=${config.latitude}&lon=${config.longitude}&units=imperial&appid=${config.owm_api_key}&cnt=16`;
       const resp25 = await fetch(url25);
-      if (!resp25.ok) throw new Error('Weather API request failed');
+      if (!resp25.ok) {
+        const errBody = await resp25.json().catch(() => ({}));
+        const errMsg = errBody.message || `HTTP ${resp25.status}`;
+        throw new Error(`Weather API: ${errMsg}`);
+      }
       const data25 = await resp25.json();
       weatherData = parse25Forecast(data25);
-    } else {
-      const data = await response.json();
-      weatherData = parseOneCallForecast(data);
     }
 
     renderWeatherForecast();
@@ -553,7 +565,12 @@ async function loadWeatherForecast() {
     console.error('Weather forecast failed:', err);
     const summary = document.getElementById('rainSummary');
     if (summary) {
-      summary.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">Failed to load weather forecast.</p>';
+      const msg = err.message || 'Unknown error';
+      if (msg.includes('Invalid API key')) {
+        summary.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">⚠️ OpenWeatherMap API key is invalid or not yet activated. New keys can take up to 2 hours. <a href="https://home.openweathermap.org/api_keys" target="_blank" style="color:var(--accent);">Check key status</a></p>';
+      } else {
+        summary.innerHTML = `<p class="text-muted" style="font-size: 0.85rem;">Failed to load weather forecast: ${msg}</p>`;
+      }
     }
   }
 }
