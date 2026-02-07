@@ -1538,13 +1538,19 @@ span.sonos-library-item__star.starred {
   border-bottom: 1px solid var(--border);
 }
 
+.sonos-group-eq__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
 .sonos-group-eq__label {
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 0.25rem;
 }
 
 /* Summary row: room name + inline B/T sliders */

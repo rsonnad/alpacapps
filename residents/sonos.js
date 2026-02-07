@@ -23,6 +23,7 @@ let favorites = [];        // Array of favorite name strings
 let playlistTags = [];     // Array of { playlist_name, tag } from DB
 let schedules = [];        // Array of schedule objects from DB
 let pollTimer = null;
+let elapsedTimer = null;
 let volumeTimers = {};
 let dragItem = null;       // { type: 'playlist'|'favorite', name: string }
 let pendingLibraryItem = null;
@@ -311,7 +312,7 @@ function renderZones() {
     if (playMode.repeat === 'all') modeIcons.push('Repeat');
     else if (playMode.repeat === 'one') modeIcons.push('Repeat 1');
 
-    // Ungroup button for grouped zones
+    // Ungroup button for grouped zones (rendered inline with group label)
     const ungroupBtn = isGrouped && isStaffPlus()
       ? `<button class="sonos-ungroup-btn" data-action="ungroup" data-room="${coordName}" title="Ungroup speakers">${UNLINK_SVG} Ungroup</button>`
       : '';
@@ -328,7 +329,10 @@ function renderZones() {
     const groupEqSection = isGrouped
       ? `<div class="sonos-group-eq">
           <div class="sonos-group-eq__summary">
-            <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
+            <div class="sonos-group-eq__label-row">
+              <div class="sonos-group-eq__label">${group.members.length} Speakers Grouped</div>
+              ${ungroupBtn}
+            </div>
             ${group.members.map(m => `
               <div class="sonos-group-eq__room-summary">
                 <span class="sonos-group-eq__name">${escapeHtml(m.roomName)}</span>
@@ -395,12 +399,11 @@ function renderZones() {
 
         <div class="sonos-zone-card__header">
           <div class="sonos-zone-card__title">
-            <span class="sonos-zone-card__name">${isGrouped ? escapeHtml(group.coordinatorName) : groupTitle}</span>
+            ${!isGrouped ? `<span class="sonos-zone-card__name">${groupTitle}</span>` : ''}
             <span class="sonos-zone-card__status">
               ${statusText}${modeIcons.length ? ' &middot; ' + modeIcons.join(', ') : ''}${duration > 0 ? ' &middot; ' + state.elapsedTimeFormatted + ' / ' + formatDuration(duration) : ''}
             </span>
           </div>
-          ${ungroupBtn}
         </div>
 
         <div class="sonos-zone-card__track">
@@ -939,10 +942,22 @@ async function controlWithFeedback(roomName, action, params = {}) {
   const card = document.querySelector(`.sonos-zone-card[data-room="${CSS.escape(roomName)}"]`);
   card?.classList.add('loading');
   try {
+    // Optimistic play/pause icon toggle
+    if (action === 'playpause' && card) {
+      const playBtn = card.querySelector('[data-action="playpause"]');
+      const isCurrentlyPlaying = card.classList.contains('playing');
+      if (playBtn) {
+        playBtn.innerHTML = isCurrentlyPlaying ? PLAY_SVG : PAUSE_SVG;
+        playBtn.title = isCurrentlyPlaying ? 'Play' : 'Pause';
+      }
+      card.classList.toggle('playing');
+    }
     await sonosApi(action, { room: roomName, ...params });
     setTimeout(() => refreshAllZones(), 1000);
   } catch (err) {
     showToast(`Failed: ${err.message}`, 'error');
+    // Revert on error
+    if (action === 'playpause') refreshAllZones();
   } finally {
     card?.classList.remove('loading');
   }
@@ -988,10 +1003,52 @@ function updatePollStatus() {
 function startPolling() {
   stopPolling();
   pollTimer = setInterval(() => refreshAllZones(), POLL_INTERVAL_MS);
+  startElapsedTimer();
 }
 
 function stopPolling() {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  stopElapsedTimer();
+}
+
+// Locally increment elapsed time every 10s for playing zones (no API call)
+function startElapsedTimer() {
+  stopElapsedTimer();
+  elapsedTimer = setInterval(() => tickElapsedTime(), 10000);
+}
+
+function stopElapsedTimer() {
+  if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+}
+
+function tickElapsedTime() {
+  for (const group of zoneGroups) {
+    const state = group.coordinatorState;
+    if (!state || state.playbackState !== 'PLAYING') continue;
+    // Increment elapsed time by 10 seconds
+    if (state.elapsedTime != null) {
+      state.elapsedTime += 10;
+      state.elapsedTimeFormatted = formatDuration(state.elapsedTime);
+    }
+  }
+  // Update just the status elements in the DOM without full re-render
+  for (const group of zoneGroups) {
+    const state = group.coordinatorState;
+    if (!state || state.playbackState !== 'PLAYING') continue;
+    const track = state.currentTrack || {};
+    const duration = track.duration || 0;
+    const coordName = CSS.escape(escapeHtml(group.coordinatorName));
+    const card = document.querySelector(`.sonos-zone-card[data-room="${coordName}"]`);
+    if (!card) continue;
+    const statusEl = card.querySelector('.sonos-zone-card__status');
+    if (!statusEl) continue;
+    const playMode = state.playMode || {};
+    const modeIcons = [];
+    if (playMode.shuffle) modeIcons.push('Shuffle');
+    if (playMode.repeat === 'all') modeIcons.push('Repeat');
+    else if (playMode.repeat === 'one') modeIcons.push('Repeat 1');
+    statusEl.innerHTML = `Playing${modeIcons.length ? ' &middot; ' + modeIcons.join(', ') : ''}${duration > 0 ? ' &middot; ' + state.elapsedTimeFormatted + ' / ' + formatDuration(duration) : ''}`;
+  }
 }
 
 function handleVisibilityChange() {
@@ -1287,7 +1344,7 @@ function renderScenesSection() {
   if (!container) return;
 
   if (!scenes.length) {
-    container.innerHTML = '<p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">No scenes yet.</p>';
+    container.innerHTML = '<p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">No sonic scenes yet.</p>';
     return;
   }
 

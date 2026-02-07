@@ -352,6 +352,63 @@
    DEPOSITS TAB
    ============================================= */
 
+.payment-summary-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: #f8fafc;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.payment-summary-title {
+  margin: 0 0 1rem 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.payment-summary-card .summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.payment-summary-card .summary-row.credit {
+  color: #16a34a;
+}
+
+.payment-summary-card .summary-row.total {
+  font-weight: 700;
+  font-size: 1rem;
+  padding-top: 0.5rem;
+}
+
+.payment-summary-card .summary-divider {
+  border-top: 1px solid var(--border);
+  margin: 0.25rem 0;
+}
+
+.payment-summary-card .summary-checklist {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.payment-summary-card .checklist-item {
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+}
+
+.payment-summary-card .checklist-item.done {
+  color: #16a34a;
+}
+
+.payment-summary-card .checklist-item.pending {
+  color: var(--text-muted);
+}
+
 .deposits-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

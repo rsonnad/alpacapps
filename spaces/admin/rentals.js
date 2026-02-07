@@ -1047,33 +1047,47 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('termAdditionalTerms').value = app.additional_terms || '';
 
   // ===== DOCUMENTS TAB =====
-  document.getElementById('agreementStatusDisplay').textContent =
-    app.agreement_status || 'Pending';
+  const statusDisplay = document.getElementById('agreementStatusDisplay');
+  const agStatusVal = app.agreement_status || 'pending';
+  switch (agStatusVal) {
+    case 'pending':
+      statusDisplay.innerHTML = 'Not started';
+      statusDisplay.className = 'status-badge';
+      break;
+    case 'generated': {
+      const genDate = app.agreement_generated_at
+        ? ` <span class="text-muted" style="font-size:0.8rem;margin-left:0.5rem;">${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric' })}</span>`
+        : '';
+      statusDisplay.innerHTML = `PDF Generated${genDate}`;
+      statusDisplay.className = 'status-badge warning';
+      break;
+    }
+    case 'sent': {
+      const sentDate = app.agreement_sent_at
+        ? ` <span class="text-muted" style="font-size:0.8rem;margin-left:0.5rem;">Sent ${formatDateAustin(app.agreement_sent_at, { month: 'short', day: 'numeric' })} — awaiting signature</span>`
+        : '';
+      statusDisplay.innerHTML = `Sent for Signature${sentDate}`;
+      statusDisplay.className = 'status-badge active';
+      break;
+    }
+    case 'signed': {
+      const signedDate = app.agreement_signed_at
+        ? ` <span class="text-muted" style="font-size:0.8rem;margin-left:0.5rem;">${formatDateAustin(app.agreement_signed_at, { month: 'short', day: 'numeric' })}</span>`
+        : '';
+      statusDisplay.innerHTML = `Signed ✓${signedDate}`;
+      statusDisplay.className = 'status-badge complete';
+      break;
+    }
+    default:
+      statusDisplay.textContent = agStatusVal;
+      statusDisplay.className = 'status-badge';
+  }
   document.getElementById('agreementDocUrl').value = app.agreement_document_url || '';
   await updateDocumentsTabState(app);
   await updateIdentityVerificationUI(app);
 
   // ===== DEPOSITS TAB =====
-  const appFeeSection = document.getElementById('applicationFeeSection');
-  const appFeePaid = app.application_fee_paid && app.application_fee_amount > 0;
-  if (appFeePaid) {
-    appFeeSection.classList.remove('hidden');
-    document.getElementById('applicationFeeAmount').textContent =
-      rentalService.formatCurrency(app.application_fee_amount);
-    const codeSpan = document.getElementById('applicationFeeCode');
-    if (app.application_fee_code) {
-      codeSpan.classList.remove('hidden');
-      document.getElementById('applicationFeeCodeValue').textContent = app.application_fee_code;
-    } else {
-      codeSpan.classList.add('hidden');
-    }
-    const moveInAmount = app.move_in_deposit_amount || app.approved_rate || 0;
-    const firstMonthDue = Math.max(0, moveInAmount - app.application_fee_amount);
-    document.getElementById('firstMonthDueAmount').textContent =
-      rentalService.formatCurrency(firstMonthDue);
-  } else {
-    appFeeSection.classList.add('hidden');
-  }
+  renderPaymentSummary(app);
 
   document.getElementById('moveInDepositAmount').textContent =
     rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
@@ -1167,11 +1181,22 @@ function updateRentalStatusTracker(app) {
   agreementStep.className = 'tracker-step ' + (agStatus === 'signed' ? 'complete' : (agStatus !== 'pending' ? 'active' : 'pending'));
   agreementDetail.textContent = agLabels[agStatus] || agStatus;
 
-  // Deposit step
+  // Deposit step — calculate total due for display
   const depositStep = document.getElementById('detailTrackerDeposit');
   const depositDetail = document.getElementById('detailTrackerDepositDetail');
   const depStatus = app.deposit_status || 'pending';
-  const depLabels = { pending: 'Not started', requested: 'Requested', partial: 'Partial', received: 'Received', confirmed: 'Confirmed ✓' };
+  const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
+  const secAmt = app.security_deposit_amount || 0;
+  const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
+  const totalDueForTracker = Math.max(0, (moveInAmt + secAmt) - appFeeCredit);
+  const amountStr = totalDueForTracker > 0 ? ` — ${rentalService.formatCurrency(totalDueForTracker)} due` : '';
+  const depLabels = {
+    pending: `Not started${amountStr}`,
+    requested: `Requested${amountStr}`,
+    partial: `Partial${amountStr}`,
+    received: 'Received',
+    confirmed: 'Confirmed ✓',
+  };
   depositStep.className = 'tracker-step ' + (depStatus === 'confirmed' ? 'complete' : (depStatus !== 'pending' ? 'active' : 'pending'));
   depositDetail.textContent = depLabels[depStatus] || depStatus;
 
@@ -1188,7 +1213,11 @@ function updateRentalStatusTracker(app) {
     moveInStep.className = 'tracker-step pending';
     const blockers = [];
     if (agStatus !== 'signed') blockers.push('agreement');
-    if (depStatus !== 'confirmed') blockers.push('deposit');
+    if (depStatus !== 'confirmed') {
+      blockers.push(totalDueForTracker > 0
+        ? `${rentalService.formatCurrency(totalDueForTracker)} deposit`
+        : 'deposit');
+    }
     moveInDetail.textContent = blockers.length ? 'Needs ' + blockers.join(' & ') : '—';
   }
 
@@ -1257,9 +1286,10 @@ function updateRentalActions(app) {
 
     case 'contract':
       if (app.agreement_status === 'generated') {
-        buttons.push('<button class="btn-primary" onclick="markAgreementSent()">Mark as Sent</button>');
+        buttons.push('<button class="btn-primary" onclick="sendForSignatureAction()">Send for Signature</button>');
       } else if (app.agreement_status === 'sent') {
-        buttons.push('<button class="btn-primary" onclick="markAgreementSigned()">Mark as Signed</button>');
+        buttons.push('<button class="btn-primary" onclick="resendSignatureAction()">Resend Signing Request</button>');
+        buttons.push('<button class="btn-secondary" onclick="checkSignatureStatusAction()">Check Status</button>');
       } else if (app.agreement_status === 'signed') {
         buttons.push('<span class="tracker-inline-status complete">✓ Agreement Signed</span>');
       }
@@ -1577,6 +1607,54 @@ window.markAgreementSigned = async function() {
 
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+};
+
+window.sendForSignatureAction = async function() {
+  switchDetailTab('documents');
+  setTimeout(() => {
+    const btn = document.getElementById('sendForSignatureBtn');
+    if (btn) btn.click();
+  }, 100);
+};
+
+window.resendSignatureAction = async function() {
+  if (!currentApplicationId) return;
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  if (!app?.signwell_document_id) {
+    showToast('No SignWell document found — use Manual Document Entry to update status', 'error');
+    return;
+  }
+  try {
+    await signwellService.sendReminder(app.signwell_document_id);
+    showToast('Signing reminder sent to tenant', 'success');
+  } catch (error) {
+    console.error('Error sending reminder:', error);
+    showToast('Error: ' + error.message, 'error');
+  }
+};
+
+window.checkSignatureStatusAction = async function() {
+  if (!currentApplicationId) return;
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  if (!app?.signwell_document_id) {
+    showToast('No SignWell document found', 'error');
+    return;
+  }
+  try {
+    const status = await signwellService.getDocumentStatus(app.signwell_document_id);
+    const recipientStatus = status.recipients?.[0]?.status || 'unknown';
+    if (status.completed && !app.signed_pdf_url) {
+      showToast('Document is signed! Refreshing...', 'success');
+      await rentalService.updateAgreementStatus(currentApplicationId, 'signed');
+      await loadApplications();
+      openRentalDetail(currentApplicationId, getActiveDetailTab());
+    } else {
+      showToast(`SignWell status: ${recipientStatus}`, 'info');
+    }
+  } catch (error) {
+    console.error('Error checking status:', error);
     showToast('Error: ' + error.message, 'error');
   }
 };
@@ -1937,6 +2015,68 @@ async function loadRentHistory(assignmentId) {
 }
 
 // =============================================
+// PAYMENT SUMMARY
+// =============================================
+
+function renderPaymentSummary(app) {
+  const card = document.getElementById('paymentSummaryCard');
+  const content = document.getElementById('paymentSummaryContent');
+  if (!card || !content) return;
+
+  const rate = app.approved_rate || 0;
+  const rateTerm = app.approved_rate_term || 'monthly';
+  const termLabel = { monthly: "month's", weekly: "week's", nightly: "night's" }[rateTerm] || "month's";
+  const securityDeposit = app.security_deposit_amount || 0;
+  const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
+
+  // Move-in deposit = first period's rent
+  const moveInDeposit = app.move_in_deposit_amount || rate;
+  const subtotal = moveInDeposit + securityDeposit;
+  const totalDue = Math.max(0, subtotal - appFeeCredit);
+
+  if (!rate && !securityDeposit) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  card.classList.remove('hidden');
+
+  let rows = '';
+  rows += `<div class="summary-row"><span>Move-in deposit (first ${termLabel} rent):</span><span>${rentalService.formatCurrency(moveInDeposit)}</span></div>`;
+  if (securityDeposit > 0) {
+    rows += `<div class="summary-row"><span>Security deposit:</span><span>+ ${rentalService.formatCurrency(securityDeposit)}</span></div>`;
+  }
+  rows += `<div class="summary-divider"></div>`;
+  rows += `<div class="summary-row"><span>Subtotal:</span><span>${rentalService.formatCurrency(subtotal)}</span></div>`;
+
+  if (appFeeCredit > 0) {
+    rows += `<div class="summary-row credit"><span>Application fee credit:</span><span>- ${rentalService.formatCurrency(appFeeCredit)}</span></div>`;
+    rows += `<div class="summary-divider"></div>`;
+  }
+
+  rows += `<div class="summary-row total"><span>TOTAL DUE BEFORE MOVE-IN:</span><span>${rentalService.formatCurrency(totalDue)}</span></div>`;
+
+  // Checklist
+  rows += `<div class="summary-checklist">`;
+  if (appFeeCredit > 0) {
+    rows += `<div class="checklist-item done">&#9745; Application fee (${rentalService.formatCurrency(appFeeCredit)}) — PAID</div>`;
+  }
+
+  const allDepositsPaid = app.move_in_deposit_paid && (app.security_deposit_paid || securityDeposit === 0);
+  if (allDepositsPaid) {
+    rows += `<div class="checklist-item done">&#9745; Move-in balance (${rentalService.formatCurrency(totalDue)}) — PAID</div>`;
+  } else if (app.move_in_deposit_paid && securityDeposit > 0 && !app.security_deposit_paid) {
+    rows += `<div class="checklist-item done">&#9745; Move-in deposit (${rentalService.formatCurrency(moveInDeposit)}) — PAID</div>`;
+    rows += `<div class="checklist-item pending">&#9744; Security deposit (${rentalService.formatCurrency(securityDeposit)}) — DUE</div>`;
+  } else {
+    rows += `<div class="checklist-item pending">&#9744; Remaining balance (${rentalService.formatCurrency(totalDue)}) — DUE</div>`;
+  }
+  rows += `</div>`;
+
+  content.innerHTML = rows;
+}
+
+// =============================================
 // LEASE AGREEMENT GENERATION
 // =============================================
 
@@ -2011,7 +2151,10 @@ async function updateDocumentsTabState(app) {
     generateSection.style.display = 'none';
     pdfSection.style.display = 'block';
     signatureSection.style.display = 'block';
-    document.getElementById('signatureStatusText').textContent = 'Awaiting tenant signature...';
+    const sentDateStr = app.agreement_sent_at
+      ? ` on ${formatDateAustin(app.agreement_sent_at, { month: 'short', day: 'numeric' })}`
+      : '';
+    document.getElementById('signatureStatusText').textContent = `Sent for signature${sentDateStr} — awaiting tenant signature`;
     if (app.generated_pdf_url) {
       document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
       document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
@@ -2622,6 +2765,99 @@ function setupEventListeners() {
   document.getElementById('previewLeaseBtn')?.addEventListener('click', previewLease);
   document.getElementById('generatePdfBtn')?.addEventListener('click', generateLeasePdf);
   document.getElementById('sendForSignatureBtn')?.addEventListener('click', sendForSignature);
+
+  // Signature tracking buttons
+  document.getElementById('checkSignatureStatusBtn')?.addEventListener('click', async () => {
+    const app = allApplications.find(a => a.id === currentApplicationId);
+    if (!app?.signwell_document_id) {
+      showToast('No SignWell document found', 'error');
+      return;
+    }
+    const btn = document.getElementById('checkSignatureStatusBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Checking...';
+    btn.disabled = true;
+    try {
+      const status = await signwellService.getDocumentStatus(app.signwell_document_id);
+      const recipientStatus = status.recipients?.[0]?.status || 'unknown';
+      if (status.completed) {
+        showToast('Document is signed! Refreshing...', 'success');
+        await rentalService.updateAgreementStatus(currentApplicationId, 'signed');
+        await loadApplications();
+        openRentalDetail(currentApplicationId, 'documents');
+      } else {
+        document.getElementById('signatureStatusText').textContent =
+          `Awaiting signature (status: ${recipientStatus})`;
+        showToast(`Status: ${recipientStatus}`, 'info');
+      }
+    } catch (error) {
+      console.error('Error checking signature status:', error);
+      showToast('Error: ' + error.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('resendSignatureBtn')?.addEventListener('click', async () => {
+    const app = allApplications.find(a => a.id === currentApplicationId);
+    if (!app?.signwell_document_id) {
+      showToast('No SignWell document found', 'error');
+      return;
+    }
+    const btn = document.getElementById('resendSignatureBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    try {
+      await signwellService.sendReminder(app.signwell_document_id);
+      showToast('Signing reminder sent to tenant', 'success');
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+      showToast('Error: ' + error.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  });
+
+  // Manual document entry buttons (inside collapsible section)
+  document.getElementById('markAgreementGenerated')?.addEventListener('click', async () => {
+    if (!currentApplicationId) return;
+    const url = document.getElementById('agreementDocUrl')?.value || null;
+    try {
+      await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url);
+      await loadApplications();
+      openRentalDetail(currentApplicationId, 'documents');
+      showToast('Agreement marked as generated', 'success');
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    }
+  });
+
+  document.getElementById('markAgreementSent')?.addEventListener('click', async () => {
+    if (!currentApplicationId) return;
+    try {
+      await rentalService.updateAgreementStatus(currentApplicationId, 'sent');
+      await loadApplications();
+      openRentalDetail(currentApplicationId, 'documents');
+      showToast('Agreement marked as sent (manual)', 'success');
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    }
+  });
+
+  document.getElementById('markAgreementSigned')?.addEventListener('click', async () => {
+    if (!currentApplicationId) return;
+    try {
+      await rentalService.updateAgreementStatus(currentApplicationId, 'signed');
+      await loadApplications();
+      openRentalDetail(currentApplicationId, 'documents');
+      showToast('Agreement marked as signed (manual)', 'success');
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    }
+  });
 
   // Deposit modals
   document.getElementById('recordMoveInDepositBtn')?.addEventListener('click', () => window.openRecordDepositModal('move_in'));

@@ -50,7 +50,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.22</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.24</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -391,15 +391,9 @@
 
           <!-- DEPOSITS TAB -->
           <div id="depositsTab" class="detail-tab-content">
-            <div id="applicationFeeSection" class="application-fee-section hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--success-light); border-radius: var(--radius); border-left: 4px solid var(--success);">
-              <h4 style="margin: 0 0 0.5rem 0; color: var(--success);">Application Fee Received</h4>
-              <p style="margin: 0; font-size: 0.9rem;">
-                <strong id="applicationFeeAmount">$0</strong> application fee paid
-                <span id="applicationFeeCode" class="hidden"> (code: <code id="applicationFeeCodeValue"></code>)</span>
-              </p>
-              <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
-                This will be credited toward the first month's rent. Amount due: <strong id="firstMonthDueAmount">$0</strong>
-              </p>
+            <div id="paymentSummaryCard" class="payment-summary-card hidden">
+              <h4 class="payment-summary-title">Payment Summary — Due Before Move-in</h4>
+              <div id="paymentSummaryContent"></div>
             </div>
             <div class="deposits-grid">
               <div class="deposit-card">
