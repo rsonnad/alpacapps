@@ -888,9 +888,12 @@ serve(async (req) => {
 
       // Send function results back to Gemini
       // Append the model's function call turn + user's function response turn
+      // Strip thoughtSignature and other fields — only keep functionCall
       contents.push({
         role: "model",
-        parts: functionCalls,
+        parts: functionCalls.map((p: any) => ({
+          functionCall: p.functionCall,
+        })),
       });
       contents.push({
         role: "user",
@@ -902,11 +905,14 @@ serve(async (req) => {
 
     // 8. Extract final text
     const finalParts = geminiResult.candidates?.[0]?.content?.parts || [];
+    console.log("PAI final parts:", JSON.stringify(finalParts.map((p: any) => Object.keys(p))));
+    const textParts = finalParts.filter((p: any) => p.text);
     const reply =
-      finalParts
-        .filter((p: any) => p.text)
+      textParts
         .map((p: any) => p.text)
-        .join("") || "I couldn't process that request. Please try again.";
+        .join("") || (actionsTaken.length
+          ? `Done! ${actionsTaken.map(a => a.result).join(". ")}`
+          : "I couldn't process that request. Please try again.");
 
     return jsonResponse({
       reply,
