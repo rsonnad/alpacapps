@@ -558,13 +558,14 @@ window._sendCommand = async function(vehicleId, command) {
       body: { vehicle_id: vehicleId, command },
     });
 
-    if (error) {
-      showToast(`Command failed: ${error.message}`, 'error');
+    if (data?.error) {
+      const detail = data.details ? ` (${data.details})` : '';
+      showToast(`${command.replace(/_/g, ' ')}: ${data.error}${detail}`, 'error');
       return;
     }
 
-    if (data?.error) {
-      showToast(`${command.replace(/_/g, ' ')}: ${data.error}`, 'error');
+    if (error) {
+      showToast(`Command failed: ${error.message}`, 'error');
       return;
     }
 

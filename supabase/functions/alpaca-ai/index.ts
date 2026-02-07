@@ -544,21 +544,28 @@ async function executeToolCall(
             return `Unknown light action: ${args.action}`;
         }
 
+        const goveePayload = {
+          action: "controlDevice",
+          device: args.device_id,
+          sku: args.sku || "SameModeGroup",
+          capability,
+        };
+        console.log("PAI → govee-control payload:", JSON.stringify(goveePayload));
+
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/govee-control`,
           {
             method: "POST",
             headers,
-            body: JSON.stringify({
-              action: "controlDevice",
-              device: args.device_id,
-              sku: args.sku || "SameModeGroup",
-              capability,
-            }),
+            body: JSON.stringify(goveePayload),
           }
         );
         const result = await resp.json();
-        if (result.error) return `Error: ${result.error}`;
+        console.log("PAI ← govee-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error controlling ${args.group_name}: ${errMsg}`;
+        }
         return `OK: ${args.group_name} ${args.action}${args.value ? " " + args.value : ""}`;
       }
 
@@ -572,12 +579,17 @@ async function executeToolCall(
           payload.name = args.value;
         }
 
+        console.log("PAI → sonos-control payload:", JSON.stringify(payload));
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/sonos-control`,
           { method: "POST", headers, body: JSON.stringify(payload) }
         );
         const result = await resp.json();
-        if (result.error) return `Error: ${result.error}`;
+        console.log("PAI ← sonos-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error: ${errMsg}`;
+        }
         return `OK: ${args.action}${args.room ? " in " + args.room : ""}${args.value ? " (" + args.value + ")" : ""}`;
       }
 
@@ -603,12 +615,17 @@ async function executeToolCall(
           payload.ecoMode = args.eco_mode;
         }
 
+        console.log("PAI → nest-control payload:", JSON.stringify(payload));
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/nest-control`,
           { method: "POST", headers, body: JSON.stringify(payload) }
         );
         const result = await resp.json();
-        if (result.error) return `Error: ${result.error}`;
+        console.log("PAI ← nest-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error: ${errMsg}`;
+        }
         return `OK: ${args.room_name} thermostat ${args.action}${
           args.temperature ? " to " + args.temperature + "°F" : ""
         }${args.mode ? " to " + args.mode : ""}${
@@ -624,19 +641,25 @@ async function executeToolCall(
           return `Permission denied: you don't have access to "${args.vehicle_name}"`;
         }
 
+        const teslaPayload = {
+          vehicle_id: args.vehicle_id,
+          command: args.command,
+        };
+        console.log("PAI → tesla-command payload:", JSON.stringify(teslaPayload));
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/tesla-command`,
           {
             method: "POST",
             headers,
-            body: JSON.stringify({
-              vehicle_id: args.vehicle_id,
-              command: args.command,
-            }),
+            body: JSON.stringify(teslaPayload),
           }
         );
         const result = await resp.json();
-        if (result.error) return `Error: ${result.error}`;
+        console.log("PAI ← tesla-command response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error: ${errMsg}`;
+        }
         return `OK: ${args.command.replace(/_/g, " ")} sent to ${args.vehicle_name}`;
       }
 
