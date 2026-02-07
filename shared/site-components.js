@@ -9,17 +9,18 @@
 // CONFIGURATION
 // =============================================
 
-// Image URLs - local branding assets
+// Image URLs - transparent PNGs from Supabase storage
+const LOGO_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos';
 const IMAGES = {
-  // Alpaca head icon
-  icon: '/assets/branding/alpaca-head.jpg',             // green on white - for light backgrounds
-  iconInverted: '/assets/branding/alpaca-head-inverted.jpg', // white on black - for dark backgrounds
-  // Wordmark
-  wordmark: '/assets/branding/wordmark.jpeg',            // dark text on white - for light backgrounds
-  wordmarkInverted: '/assets/branding/wordmark-inverted.jpeg', // light text on black - for dark backgrounds
+  // Alpaca head icon (transparent PNGs)
+  icon: `${LOGO_BASE}/alpaca-head-black-transparent.png`,        // black on transparent - for light backgrounds
+  iconInverted: `${LOGO_BASE}/alpaca-head-white-transparent.png`, // white on transparent - for dark backgrounds
+  // Wordmark (transparent PNGs)
+  wordmark: `${LOGO_BASE}/wordmark-black-transparent.png`,        // black on transparent - for light backgrounds
+  wordmarkInverted: `${LOGO_BASE}/wordmark-white-transparent.png`, // white on transparent - for dark backgrounds
   // Legacy aliases
-  logo: '/assets/branding/alpaca-head-inverted.jpg',
-  logoLight: '/assets/branding/alpaca-head.jpg',
+  logo: `${LOGO_BASE}/alpaca-head-white-transparent.png`,
+  logoLight: `${LOGO_BASE}/alpaca-head-black-transparent.png`,
   heroAlpacas: 'https://images.squarespace-cdn.com/content/v1/6213d804273001551ffe5b8c/4e23696e-623b-4621-8f3a-c223a521131b/P1020387.jpeg',
 };
 
