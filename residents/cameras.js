@@ -126,7 +126,7 @@ function startStream(camIndex, quality) {
     delete activeHls[camIndex];
   }
 
-  const hlsUrl = `${stream.proxy_base_url}/${stream.stream_name}/`;
+  const hlsUrl = `${stream.proxy_base_url}/${stream.stream_name}/index.m3u8`;
 
   overlay.classList.remove('hidden');
   overlay.querySelector('.camera-card__loading').textContent = 'Connecting...';
