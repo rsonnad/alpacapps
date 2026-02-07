@@ -1,6 +1,7 @@
 # Private credentials and operator directives
 CLAUDE.local.md
 HOMEAUTOMATION.local.md
+.mcp.json
 
 # OS files
 .DS_Store
