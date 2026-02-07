@@ -20,7 +20,10 @@ interface SonosRequest {
     | "pauseall"
     | "resumeall"
     | "join"
-    | "leave";
+    | "leave"
+    | "bass"
+    | "treble"
+    | "loudness";
   room?: string;
   value?: number | string;
   name?: string;
@@ -170,6 +173,30 @@ serve(async (req) => {
         if (!room) return jsonResponse({ error: "Missing room" }, 400);
         path = `/${room}/leave`;
         break;
+      case "bass": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const bassVal = body.value;
+        if (bassVal === undefined || bassVal === null)
+          return jsonResponse({ error: "Missing value" }, 400);
+        path = `/${room}/bass/${encodeURIComponent(String(bassVal))}`;
+        break;
+      }
+      case "treble": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const trebleVal = body.value;
+        if (trebleVal === undefined || trebleVal === null)
+          return jsonResponse({ error: "Missing value" }, 400);
+        path = `/${room}/treble/${encodeURIComponent(String(trebleVal))}`;
+        break;
+      }
+      case "loudness": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const loudnessVal = body.value;
+        if (loudnessVal === undefined || loudnessVal === null)
+          return jsonResponse({ error: "Missing value" }, 400);
+        path = `/${room}/loudness/${encodeURIComponent(String(loudnessVal))}`;
+        break;
+      }
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400);
     }

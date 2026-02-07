@@ -222,6 +222,7 @@ const UNLINK_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" heig
 const ALARM_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>';
 const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6.05 8.05c-2.73 2.73-2.73 7.15-.02 9.88a6.985 6.985 0 004.95 2.05c.41 0 .82-.04 1.21-.12-1.44-.44-2.79-1.18-3.95-2.34-2.55-2.55-2.95-6.36-1.2-9.31l.01-.01c.38.23.8.35 1.24.35C9.8 8.55 11 7.35 11 5.84V2.02S4.47 3.66 6.05 8.05z"/><path d="M17.95 8.05c-1.58-4.39-8.11-6.03-8.11-6.03V5.84c0 1.52 1.2 2.72 2.72 2.72.43 0 .84-.12 1.21-.34 1.76 2.96 1.36 6.77-1.2 9.13-1.15 1.15-2.49 1.89-3.92 2.33.39.08.79.12 1.2.12 1.84 0 3.58-.72 4.89-2.03 2.71-2.73 2.71-7.15-.01-9.88l.01.01.02.01-.01.01c.38.23.8.36 1.24.36a2.72 2.72 0 002.72-2.72V2.02s-1.65.82-2.76 2.21"/></svg>';
 const CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>';
+const EQ_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg>';
 
 // =============================================
 // RENDERING - ZONE GROUPS
@@ -365,6 +366,9 @@ function renderZones() {
           <button class="sonos-btn" data-action="next" data-room="${coordName}" title="Next">${NEXT_SVG}</button>
           <button class="sonos-btn sonos-btn--mute ${mainMuted ? 'active' : ''}" data-action="toggleMute" data-room="${coordName}" data-muted="${mainMuted ? '1' : '0'}" title="${mainMuted ? 'Unmute' : 'Mute'}">
             ${mainMuted ? MUTE_SVG : VOL_SVG}
+          </button>
+          <button class="sonos-btn sonos-btn--eq" data-action="openEq" data-room="${coordName}" title="Equalizer">
+            ${EQ_SVG}
           </button>
         </div>
 
@@ -1011,6 +1015,10 @@ function setupEventListeners() {
         controlWithFeedback(room, isMuted ? 'unmute' : 'mute');
         break;
       }
+      case 'openEq': {
+        openEqModal(room);
+        break;
+      }
     }
   });
 
@@ -1024,7 +1032,7 @@ function setupEventListeners() {
       if (label) label.textContent = `${e.target.value}%`;
     }
     if (action === 'memberVolume') {
-      const volLabel = e.target.closest('.sonos-member-row')?.querySelector('.sonos-member-vol');
+      const volLabel = e.target.closest('.sonos-member-card')?.querySelector('.sonos-member-vol');
       if (volLabel) volLabel.textContent = `${e.target.value}%`;
     }
     clearTimeout(volumeTimers[room]);
@@ -1095,4 +1103,132 @@ function setupEventListeners() {
   setupDragAndDrop();
   setupTouchFallback();
   setupSearch();
+}
+
+// =============================================
+// EQUALIZER MODAL
+// =============================================
+let eqTimers = {};
+
+async function openEqModal(roomName) {
+  // Fetch current EQ state
+  let eq = { bass: 0, treble: 0, loudness: false };
+  try {
+    const state = await sonosApi('getState', { room: roomName });
+    if (state.equalizer) {
+      eq = state.equalizer;
+    }
+  } catch (err) {
+    console.error('Failed to get EQ state:', err);
+  }
+
+  // Build modal
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card eq-modal">
+      <div class="eq-modal__header">
+        <h3>${EQ_SVG} ${escapeHtml(roomName)}</h3>
+        <button class="sonos-btn eq-modal__close" title="Close">&times;</button>
+      </div>
+
+      <div class="eq-slider-group">
+        <div class="eq-slider-row">
+          <label class="eq-slider__label">Bass</label>
+          <span class="eq-slider__value" id="eqBassVal">${eq.bass > 0 ? '+' : ''}${eq.bass}</span>
+          <input type="range" min="-10" max="10" value="${eq.bass}" class="eq-slider" id="eqBassSlider">
+          <div class="eq-slider__range"><span>-10</span><span>0</span><span>+10</span></div>
+        </div>
+
+        <div class="eq-slider-row">
+          <label class="eq-slider__label">Treble</label>
+          <span class="eq-slider__value" id="eqTrebleVal">${eq.treble > 0 ? '+' : ''}${eq.treble}</span>
+          <input type="range" min="-10" max="10" value="${eq.treble}" class="eq-slider" id="eqTrebleSlider">
+          <div class="eq-slider__range"><span>-10</span><span>0</span><span>+10</span></div>
+        </div>
+
+        <div class="eq-loudness-row">
+          <span class="eq-slider__label">Loudness</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="eqLoudnessToggle" ${eq.loudness ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="eq-modal__footer">
+        <button class="sonos-btn eq-reset-btn" id="eqResetBtn">Reset to Flat</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Close handlers
+  const close = () => { overlay.remove(); clearAllEqTimers(); };
+  overlay.querySelector('.eq-modal__close').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  // Bass slider
+  const bassSlider = overlay.querySelector('#eqBassSlider');
+  const bassVal = overlay.querySelector('#eqBassVal');
+  bassSlider.addEventListener('input', () => {
+    const v = parseInt(bassSlider.value);
+    bassVal.textContent = (v > 0 ? '+' : '') + v;
+    debouncedEq('bass', roomName, v);
+  });
+
+  // Treble slider
+  const trebleSlider = overlay.querySelector('#eqTrebleSlider');
+  const trebleVal = overlay.querySelector('#eqTrebleVal');
+  trebleSlider.addEventListener('input', () => {
+    const v = parseInt(trebleSlider.value);
+    trebleVal.textContent = (v > 0 ? '+' : '') + v;
+    debouncedEq('treble', roomName, v);
+  });
+
+  // Loudness toggle
+  const loudnessToggle = overlay.querySelector('#eqLoudnessToggle');
+  loudnessToggle.addEventListener('change', async () => {
+    try {
+      await sonosApi('loudness', { room: roomName, value: loudnessToggle.checked ? 'on' : 'off' });
+    } catch (err) {
+      showToast('Loudness not supported on this speaker', 'error');
+      loudnessToggle.checked = !loudnessToggle.checked;
+    }
+  });
+
+  // Reset button
+  overlay.querySelector('#eqResetBtn').addEventListener('click', async () => {
+    bassSlider.value = 0;
+    bassVal.textContent = '0';
+    trebleSlider.value = 0;
+    trebleVal.textContent = '0';
+    try {
+      await Promise.all([
+        sonosApi('bass', { room: roomName, value: 0 }),
+        sonosApi('treble', { room: roomName, value: 0 }),
+      ]);
+      showToast('EQ reset to flat', 'info', 1500);
+    } catch (err) {
+      showToast('Failed to reset EQ', 'error');
+    }
+  });
+}
+
+function debouncedEq(type, room, value) {
+  const key = `${type}_${room}`;
+  clearTimeout(eqTimers[key]);
+  eqTimers[key] = setTimeout(async () => {
+    try {
+      await sonosApi(type, { room, value });
+    } catch (err) {
+      showToast(`Failed to set ${type}`, 'error');
+    }
+  }, 300);
+}
+
+function clearAllEqTimers() {
+  Object.values(eqTimers).forEach(t => clearTimeout(t));
+  eqTimers = {};
 }

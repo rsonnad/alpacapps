@@ -1398,6 +1398,114 @@ span.sonos-library-item__star.starred {
   color: var(--occupied);
 }
 
+.sonos-btn--eq {
+  width: 32px;
+  height: 32px;
+}
+
+/* ===== EQUALIZER MODAL ===== */
+.eq-modal {
+  max-width: 380px;
+}
+
+.eq-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.eq-modal__header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.eq-modal__close {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.eq-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.eq-slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.eq-slider-row > .eq-slider__label {
+  display: flex;
+  align-items: center;
+}
+
+.eq-slider__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.eq-slider__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  margin-left: auto;
+}
+
+.eq-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 6px;
+  cursor: pointer;
+}
+
+.eq-slider__range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 0 0.1rem;
+}
+
+.eq-loudness-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.eq-modal__footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+}
+
+.eq-reset-btn {
+  font-size: 0.78rem !important;
+  border-radius: var(--radius) !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.35rem 1rem !important;
+}
+
 /* Volume Control */
 .sonos-volume-control {
   display: flex;
