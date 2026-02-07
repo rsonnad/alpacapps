@@ -1,8 +1,23 @@
 /**
- * Cars Page - Tesla Fleet overview
+ * Cars Page - Tesla Fleet overview with live data from tesla_vehicles table.
+ * Poller on DO droplet writes vehicle state; this page reads it every 30s.
  */
 
+import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+
+// =============================================
+// CONFIGURATION
+// =============================================
+const POLL_INTERVAL_MS = 30000; // 30s (reads from Supabase, not Tesla API)
+
+// =============================================
+// STATE
+// =============================================
+let vehicles = [];
+let accounts = [];
+let pollTimer = null;
+let currentUserRole = null;
 
 // =============================================
 // SVG ICONS (inline for data rows)
@@ -53,61 +68,104 @@ const CAR_SVG = {
 };
 
 // =============================================
-// FLEET DATA
+// DATA LOADING
 // =============================================
-const FLEET = [
-  {
-    name: 'Casper',
-    model: 'Model 3',
-    year: 2018,
-    color: 'White',
-    colorHex: '#f5f5f5',
-    svgKey: 'model3',
-    svgColor: '#999',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443383830-6r0bxc.jpg',
-  },
-  {
-    name: 'Delphi',
-    model: 'Model Y',
-    year: 2024,
-    color: 'White',
-    colorHex: '#f5f5f5',
-    svgKey: 'modelY',
-    svgColor: '#999',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443394322-ajaz4j.jpg',
-  },
-  {
-    name: 'Sloop',
-    model: 'Model Y',
-    year: 2026,
-    color: 'Grey',
-    colorHex: '#8a8a8a',
-    svgKey: 'modelY',
-    svgColor: '#777',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443406118-zsjutd.jpg',
-  },
-  {
-    name: 'Cygnus',
-    model: 'Model Y',
-    year: 2026,
-    color: 'Grey',
-    colorHex: '#8a8a8a',
-    svgKey: 'modelY',
-    svgColor: '#777',
-    imageUrl: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770443424118-dxo6h4.jpg',
-  },
-];
 
-// Data rows to display per car (label, icon key, value — placeholder for now)
-const DATA_ROWS = [
-  { label: 'Battery', icon: 'battery', value: '--' },
-  { label: 'Odometer', icon: 'odometer', value: '--' },
-  { label: 'Status', icon: 'status', value: '--' },
-  { label: 'Climate', icon: 'climate', value: '--' },
-  { label: 'Location', icon: 'location', value: '--' },
-  { label: 'Tires', icon: 'tires', value: '--' },
-  { label: 'Locked', icon: 'lock', value: '--' },
-];
+async function loadVehicles() {
+  const { data, error } = await supabase
+    .from('tesla_vehicles')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.warn('Failed to load vehicles:', error.message);
+    return;
+  }
+  vehicles = data || [];
+}
+
+async function loadAccounts() {
+  const { data, error } = await supabase
+    .from('tesla_accounts')
+    .select('id, owner_name, tesla_email, is_active, last_error, refresh_token, updated_at')
+    .order('id', { ascending: true });
+
+  if (error) {
+    console.warn('Failed to load accounts:', error.message);
+    return;
+  }
+  accounts = data || [];
+}
+
+// =============================================
+// HELPERS
+// =============================================
+
+function formatSyncTime(lastSyncedAt) {
+  if (!lastSyncedAt) return 'Never synced';
+  const diff = Date.now() - new Date(lastSyncedAt).getTime();
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return `${Math.round(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.round(diff / 3600000)}h ago`;
+  return new Date(lastSyncedAt).toLocaleDateString();
+}
+
+function formatNumber(n) {
+  if (n == null) return '--';
+  return n.toLocaleString();
+}
+
+function getStatusDisplay(car) {
+  const s = car.last_state;
+  if (car.vehicle_state === 'asleep') return { text: 'Asleep', color: 'var(--text-muted)' };
+  if (car.vehicle_state === 'offline') return { text: 'Offline', color: 'var(--occupied, #e74c3c)' };
+  if (!s) return { text: '--', color: 'var(--text-muted)' };
+  if (s.charging_state === 'Charging') return { text: 'Charging', color: 'var(--available, #27ae60)' };
+  if (s.charging_state === 'Complete') return { text: 'Charge Complete', color: 'var(--available, #27ae60)' };
+  return { text: 'Online', color: 'var(--available, #27ae60)' };
+}
+
+function getDataRows(car) {
+  const s = car.last_state;
+  if (!s) {
+    // No data yet — show placeholders
+    return [
+      { label: 'Battery', icon: 'battery', value: '--' },
+      { label: 'Odometer', icon: 'odometer', value: '--' },
+      { label: 'Status', icon: 'status', value: car.vehicle_state === 'unknown' ? 'Not connected' : car.vehicle_state },
+      { label: 'Climate', icon: 'climate', value: '--' },
+      { label: 'Location', icon: 'location', value: '--' },
+      { label: 'Tires', icon: 'tires', value: '--' },
+      { label: 'Locked', icon: 'lock', value: '--' },
+    ];
+  }
+
+  const status = getStatusDisplay(car);
+  const batteryStr = s.battery_level != null
+    ? `${s.battery_level}%${s.battery_range_mi != null ? ` \u00b7 ${Math.round(s.battery_range_mi)} mi` : ''}`
+    : '--';
+  const climateStr = s.climate_on
+    ? `${s.inside_temp_f || '--'}\u00b0F`
+    : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)` : '--';
+  const locationStr = s.latitude != null && s.longitude != null
+    ? `${s.latitude.toFixed(2)}, ${s.longitude.toFixed(2)}`
+    : '--';
+  const tiresStr = s.tpms_fl_psi != null
+    ? `${s.tpms_fl_psi} / ${s.tpms_fr_psi} / ${s.tpms_rl_psi} / ${s.tpms_rr_psi}`
+    : '--';
+  const lockStr = s.locked === true ? 'Locked' : s.locked === false ? 'Unlocked' : '--';
+
+  return [
+    { label: 'Battery', icon: 'battery', value: batteryStr },
+    { label: 'Odometer', icon: 'odometer', value: s.odometer_mi != null ? `${formatNumber(Math.round(s.odometer_mi))} mi` : '--' },
+    { label: 'Status', icon: 'status', value: `<span style="color:${status.color}">${status.text}</span>` },
+    { label: 'Climate', icon: 'climate', value: climateStr },
+    { label: 'Location', icon: 'location', value: locationStr },
+    { label: 'Tires', icon: 'tires', value: tiresStr },
+    { label: 'Locked', icon: 'lock', value: lockStr },
+  ];
+}
 
 // =============================================
 // RENDERING
@@ -117,9 +175,18 @@ function renderFleet() {
   const grid = document.getElementById('carGrid');
   if (!grid) return;
 
-  grid.innerHTML = FLEET.map(car => {
-    const carSvg = CAR_SVG[car.svgKey] || CAR_SVG.modelY;
-    const dataRowsHtml = DATA_ROWS.map(row => `
+  if (!vehicles.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No vehicles configured.</p>';
+    return;
+  }
+
+  grid.innerHTML = vehicles.map(car => {
+    const svgKey = car.svg_key || 'modelY';
+    const carSvg = CAR_SVG[svgKey] || CAR_SVG.modelY;
+    const svgColor = car.color === 'Grey' ? '#777' : '#999';
+    const dataRows = getDataRows(car);
+
+    const dataRowsHtml = dataRows.map(row => `
       <div class="car-data-row">
         <span class="car-data-row__icon">${ICONS[row.icon]}</span>
         <span class="car-data-row__label">${row.label}</span>
@@ -127,13 +194,15 @@ function renderFleet() {
       </div>
     `).join('');
 
-    // Use AI-generated image with SVG fallback
-    const imageContent = car.imageUrl
-      ? `<img src="${car.imageUrl}" alt="${car.name} - ${car.year} ${car.model}"
+    // AI-generated image with SVG fallback
+    const imageContent = car.image_url
+      ? `<img src="${car.image_url}" alt="${car.name} - ${car.year} ${car.model}"
              class="car-card__img"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-         /><div class="car-card__svg-fallback" style="display:none;color:${car.svgColor}">${carSvg}</div>`
-      : `<div class="car-card__svg-fallback" style="color:${car.svgColor}">${carSvg}</div>`;
+         /><div class="car-card__svg-fallback" style="display:none;color:${svgColor}">${carSvg}</div>`
+      : `<div class="car-card__svg-fallback" style="color:${svgColor}">${carSvg}</div>`;
+
+    const syncTime = formatSyncTime(car.last_synced_at);
 
     return `
       <div class="car-card">
@@ -144,18 +213,121 @@ function renderFleet() {
           <div class="car-card__header">
             <div class="car-card__name">${car.name}</div>
             <span class="car-card__color-chip">
-              <span class="car-card__color-dot" style="background:${car.colorHex}"></span>
-              ${car.color}
+              <span class="car-card__color-dot" style="background:${car.color_hex || '#ccc'}"></span>
+              ${car.color || ''}
             </span>
           </div>
           <div class="car-card__model">${car.year} ${car.model}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
           </div>
+          <div class="car-card__sync-time">${syncTime}</div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+// =============================================
+// ADMIN: SETTINGS
+// =============================================
+
+function renderSettings() {
+  const section = document.getElementById('teslaSettingsSection');
+  const list = document.getElementById('teslaAccountsList');
+  if (!section || !list) return;
+
+  if (currentUserRole !== 'admin') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  list.innerHTML = accounts.map(acc => {
+    const hasToken = !!acc.refresh_token;
+    const statusDot = hasToken
+      ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--available, #27ae60);margin-right:0.4rem;"></span>'
+      : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--occupied, #e74c3c);margin-right:0.4rem;"></span>';
+    const statusText = hasToken ? 'Connected' : 'Not connected';
+    const errorHtml = acc.last_error
+      ? `<div style="font-size:0.7rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Error: ${acc.last_error}</div>`
+      : '';
+
+    return `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid var(--border-light, #f0f0f0);">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.85rem;">${statusDot}${acc.owner_name}</div>
+          <div style="font-size:0.7rem;color:var(--text-muted);">${statusText}${acc.tesla_email ? ` \u00b7 ${acc.tesla_email}` : ''}</div>
+          ${errorHtml}
+        </div>
+        <input type="text" id="token_${acc.id}" placeholder="Paste refresh token..."
+               style="width:200px;font-size:0.75rem;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:4px;"
+               value="" />
+        <button class="btn-small" onclick="window._saveToken(${acc.id})">Save</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Save token handler (attached to window for onclick access)
+window._saveToken = async function(accountId) {
+  const input = document.getElementById(`token_${accountId}`);
+  if (!input) return;
+  const token = input.value.trim();
+  if (!token) {
+    showToast('Please paste a refresh token', 'error');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('tesla_accounts')
+    .update({
+      refresh_token: token,
+      last_error: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', accountId);
+
+  if (error) {
+    showToast(`Failed to save: ${error.message}`, 'error');
+    return;
+  }
+
+  input.value = '';
+  showToast('Token saved! Data will appear within 5 minutes.', 'success');
+  await loadAccounts();
+  renderSettings();
+};
+
+// =============================================
+// POLLING (visibility-based)
+// =============================================
+
+function startPolling() {
+  stopPolling();
+  refreshFromDB();
+  pollTimer = setInterval(refreshFromDB, POLL_INTERVAL_MS);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    startPolling();
+  }
+}
+
+async function refreshFromDB() {
+  await loadVehicles();
+  renderFleet();
 }
 
 // =============================================
@@ -166,8 +338,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
     activeTab: 'cars',
     requiredRole: 'resident',
-    onReady: async () => {
+    onReady: async (authState) => {
+      currentUserRole = authState.appUser?.role;
+
+      // Load vehicles and render
+      await loadVehicles();
       renderFleet();
+
+      // Start polling
+      startPolling();
+
+      // Admin: load settings
+      if (currentUserRole === 'admin') {
+        await loadAccounts();
+        renderSettings();
+      }
     },
   });
 });

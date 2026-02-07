@@ -2023,18 +2023,15 @@ function renderPaymentSummary(app) {
   const content = document.getElementById('paymentSummaryContent');
   if (!card || !content) return;
 
-  const rate = app.approved_rate || 0;
-  const rateTerm = app.approved_rate_term || 'monthly';
-  const termLabel = { monthly: "month's", weekly: "week's", nightly: "night's" }[rateTerm] || "month's";
   const securityDeposit = app.security_deposit_amount || 0;
   const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
 
-  // Move-in deposit = first period's rent
-  const moveInDeposit = app.move_in_deposit_amount || rate;
+  // Move-in reservation deposit = up to one month's rent (non-refundable, applied to first month)
+  const moveInDeposit = app.move_in_deposit_amount || app.approved_rate || 0;
   const subtotal = moveInDeposit + securityDeposit;
   const totalDue = Math.max(0, subtotal - appFeeCredit);
 
-  if (!rate && !securityDeposit) {
+  if (!moveInDeposit && !securityDeposit) {
     card.classList.add('hidden');
     return;
   }
@@ -2042,9 +2039,10 @@ function renderPaymentSummary(app) {
   card.classList.remove('hidden');
 
   let rows = '';
-  rows += `<div class="summary-row"><span>Move-in deposit (first ${termLabel} rent):</span><span>${rentalService.formatCurrency(moveInDeposit)}</span></div>`;
+  rows += `<div class="summary-row"><span>Move-in reservation deposit:</span><span>${rentalService.formatCurrency(moveInDeposit)}</span></div>`;
+  rows += `<div class="summary-note">Non-refundable. Applied to first month's rent.</div>`;
   if (securityDeposit > 0) {
-    rows += `<div class="summary-row"><span>Security deposit:</span><span>+ ${rentalService.formatCurrency(securityDeposit)}</span></div>`;
+    rows += `<div class="summary-row"><span>Security deposit (refundable):</span><span>+ ${rentalService.formatCurrency(securityDeposit)}</span></div>`;
   }
   rows += `<div class="summary-divider"></div>`;
   rows += `<div class="summary-row"><span>Subtotal:</span><span>${rentalService.formatCurrency(subtotal)}</span></div>`;
@@ -2066,7 +2064,7 @@ function renderPaymentSummary(app) {
   if (allDepositsPaid) {
     rows += `<div class="checklist-item done">&#9745; Move-in balance (${rentalService.formatCurrency(totalDue)}) — PAID</div>`;
   } else if (app.move_in_deposit_paid && securityDeposit > 0 && !app.security_deposit_paid) {
-    rows += `<div class="checklist-item done">&#9745; Move-in deposit (${rentalService.formatCurrency(moveInDeposit)}) — PAID</div>`;
+    rows += `<div class="checklist-item done">&#9745; Reservation deposit (${rentalService.formatCurrency(moveInDeposit)}) — PAID</div>`;
     rows += `<div class="checklist-item pending">&#9744; Security deposit (${rentalService.formatCurrency(securityDeposit)}) — DUE</div>`;
   } else {
     rows += `<div class="checklist-item pending">&#9744; Remaining balance (${rentalService.formatCurrency(totalDue)}) — DUE</div>`;
