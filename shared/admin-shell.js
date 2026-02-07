@@ -69,9 +69,9 @@ export function renderTabNav(activeTab, userRole) {
     switcher.innerHTML = `
       <a href="/residents/" class="context-switcher-btn">Resident</a>
       <a class="context-switcher-btn active">Staff</a>`;
-    // Insert before the manage-tabs element (or its container)
-    const insertParent = tabsContainer.closest('.manage-container') || tabsContainer.parentElement;
-    insertParent.insertBefore(switcher, tabsContainer.closest('.manage-container') ? tabsContainer : tabsContainer);
+    // Always insert right after <header> for consistent positioning
+    const header = document.querySelector('#appContent > header');
+    if (header) header.after(switcher);
   }
 
   tabsContainer.innerHTML = ADMIN_TABS.map(tab => {

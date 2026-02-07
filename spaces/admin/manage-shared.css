@@ -45,11 +45,6 @@
   cursor: default;
 }
 
-/* When inside manage-container, container already has padding */
-.manage-container > .context-switcher {
-  margin-left: 0;
-}
-
 .manage-tab {
   padding: 1rem 2rem;
   background: none;
@@ -356,10 +351,6 @@
 
   .context-switcher {
     margin-left: 1rem;
-  }
-
-  .manage-container > .context-switcher {
-    margin-left: 0;
   }
 
   .manage-tab {

@@ -68,8 +68,9 @@ function renderResidentTabNav(activeTab, userRole) {
     switcher.innerHTML = `
       <a class="context-switcher-btn active">Resident</a>
       <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>`;
-    // Insert before the manage-tabs element
-    tabsContainer.parentElement.insertBefore(switcher, tabsContainer);
+    // Always insert right after <header> for consistent positioning
+    const header = document.querySelector('#appContent > header');
+    if (header) header.after(switcher);
   }
 
   tabsContainer.innerHTML = RESIDENT_TABS.map(tab => {
