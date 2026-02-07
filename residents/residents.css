@@ -18,7 +18,7 @@
 }
 
 .header-logo__wordmark {
-  height: 20px;
+  height: 50px;
   width: auto;
 }
 
@@ -27,7 +27,7 @@
     height: 28px;
   }
   .header-logo__wordmark {
-    height: 16px;
+    height: 40px;
   }
 }
 
