@@ -30,8 +30,7 @@ const COLOR_PRESETS = [
 // STATE
 // =============================================
 let goveeGroups = []; // Flat list for backward compat (allOff, refresh)
-let lightingSections = []; // { name, sectionId, groups[] } — grouped by space hierarchy
-let spaceMap = {}; // { spaceId: { id, name, parent_id } }
+let lightingSections = []; // { name, sectionId, groups[] } — grouped by area
 let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
 let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
 let pollTimer = null;
@@ -65,12 +64,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =============================================
 // LOAD GROUPS FROM DATABASE
 // =============================================
+const AREA_ORDER = ['Spartan', 'Garage Mahal', 'Outhouse', 'Bedrooms'];
+
 async function loadGroupsFromDB() {
   try {
-    // Load active groups with space link, ordered by display_order
+    // Load active groups ordered by display_order
     const { data: groups, error: groupErr } = await supabase
       .from('govee_devices')
-      .select('device_id, name, area, display_order, space_id')
+      .select('device_id, name, area, display_order')
       .eq('is_group', true)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
@@ -95,20 +96,6 @@ async function loadGroupsFromDB() {
 
     if (modelErr) throw modelErr;
 
-    // Load all spaces for hierarchy resolution (lightweight: id, name, parent_id only)
-    const { data: allSpaces, error: spacesErr } = await supabase
-      .from('spaces')
-      .select('id, name, parent_id')
-      .eq('is_archived', false);
-
-    if (spacesErr) throw spacesErr;
-
-    // Build space lookup map
-    spaceMap = {};
-    for (const s of allSpaces) {
-      spaceMap[s.id] = s;
-    }
-
     const modelMap = {};
     for (const m of models) {
       modelMap[m.sku] = m.model_name;
@@ -128,7 +115,6 @@ async function loadGroupsFromDB() {
         name: g.name,
         groupId: g.device_id,
         area: g.area || 'Other',
-        spaceId: g.space_id,
         deviceCount,
         models: modelsStr,
         children: groupChildren.map(c => ({
@@ -140,50 +126,26 @@ async function loadGroupsFromDB() {
       };
     });
 
-    // Build lightingSections grouped by depth-1 space ancestor
+    // Build lightingSections grouped by area
     const sectionMap = new Map();
-
     for (const group of goveeGroups) {
-      let sectionKey, sectionName;
-
-      if (group.spaceId) {
-        const ancestor = getDepth1Ancestor(group.spaceId);
-        sectionKey = ancestor ? ancestor.id : '__ungrouped__';
-        sectionName = ancestor ? ancestor.name : 'Other';
-      } else {
-        sectionKey = '__ungrouped__';
-        sectionName = 'Other';
+      const area = group.area;
+      if (!sectionMap.has(area)) {
+        sectionMap.set(area, { name: area, sectionId: area, groups: [] });
       }
-
-      if (!sectionMap.has(sectionKey)) {
-        sectionMap.set(sectionKey, { name: sectionName, sectionId: sectionKey, groups: [] });
-      }
-      sectionMap.get(sectionKey).groups.push(group);
+      sectionMap.get(area).groups.push(group);
     }
 
-    // Sort: named sections alphabetically, "Other" last
+    // Sort by AREA_ORDER
     lightingSections = [...sectionMap.values()].sort((a, b) => {
-      if (a.sectionId === '__ungrouped__') return 1;
-      if (b.sectionId === '__ungrouped__') return -1;
-      return a.name.localeCompare(b.name);
+      const ai = AREA_ORDER.indexOf(a.sectionId);
+      const bi = AREA_ORDER.indexOf(b.sectionId);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
   } catch (err) {
     console.error('Failed to load groups from DB:', err);
     showToast('Failed to load lighting groups', 'error');
   }
-}
-
-// Walk up parent_id chain to find depth-1 ancestor (direct child of root)
-function getDepth1Ancestor(spaceId) {
-  let current = spaceMap[spaceId];
-  if (!current) return null;
-
-  while (current.parent_id) {
-    const parent = spaceMap[current.parent_id];
-    if (!parent || !parent.parent_id) return current; // parent is root
-    current = parent;
-  }
-  return current; // is root itself
 }
 
 // =============================================
