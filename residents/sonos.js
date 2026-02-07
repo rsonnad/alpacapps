@@ -289,7 +289,11 @@ function renderZones() {
     const track = state.currentTrack || {};
     const isPlaying = state.playbackState === 'PLAYING';
     const isPaused = state.playbackState === 'PAUSED_PLAYBACK';
+    const isLineIn = track.type === 'line_in';
+    const isTVInput = track.title === 'TV' || track.type === 'tv';
     const hasTrack = track.title && track.title.trim() !== '';
+    const trackTitle = isLineIn ? (track.stationName || 'Line-In Audio') : (track.title || '');
+    const trackArtist = isLineIn ? 'External Source' : (track.artist || '');
     const artUrl = track.absoluteAlbumArtUri;
     const showArt = hasTrack && artUrl && !isLocalArtUrl(artUrl);
     const playMode = state.playMode || {};
@@ -432,8 +436,8 @@ function renderZones() {
             ${MUSIC_NOTE_SVG}
           </div>
           <div class="sonos-track-info">
-            <span class="sonos-track-title">${hasTrack ? escapeHtml(track.title) : 'No track'}</span>
-            <span class="sonos-track-artist">${escapeHtml(track.artist || '')}</span>
+            <span class="sonos-track-title">${hasTrack ? escapeHtml(trackTitle) : 'No track'}</span>
+            <span class="sonos-track-artist">${escapeHtml(trackArtist)}</span>
           </div>
         </div>
 
