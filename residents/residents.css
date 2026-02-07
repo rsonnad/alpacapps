@@ -104,25 +104,60 @@
   gap: 1.5rem;
 }
 
-/* ===== AREA SECTIONS ===== */
-.lighting-area__header {
+/* ===== COLLAPSIBLE SECTIONS ===== */
+.lighting-section {
+  margin-bottom: 1.5rem;
+}
+
+.lighting-section__header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  border-bottom: 1px solid var(--border);
   margin-bottom: 0.75rem;
 }
 
-.lighting-area__header h3 {
+.lighting-section__header::-webkit-details-marker {
+  display: none;
+}
+
+.lighting-section__header h3 {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);
   margin: 0;
 }
 
-.lighting-area__count {
+.lighting-section__count {
   font-size: 0.75rem;
   color: var(--text-muted);
-  font-weight: 400;
+  margin-left: auto;
+}
+
+.lighting-section__chevron {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.lighting-section[open] .lighting-section__chevron {
+  transform: rotate(0deg);
+}
+
+.lighting-section:not([open]) .lighting-section__chevron {
+  transform: rotate(-90deg);
+}
+
+.lighting-section__body {
+  padding: 0 0 0.5rem;
 }
 
 .lighting-area__grid {

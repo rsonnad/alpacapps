@@ -803,12 +803,12 @@ function updateGroupUI(groupId) {
     card.classList.remove('disconnected');
   }
 
-  // Update toggle
-  const toggle = card.querySelector('input[type="checkbox"]');
+  // Update group toggle (specific selector avoids matching child device toggles)
+  const toggle = card.querySelector(`input[data-action="toggle"][data-group="${groupId}"]`);
   if (toggle) toggle.checked = !!state.on;
 
-  // Update brightness
-  const slider = card.querySelector('input[type="range"]');
+  // Update group brightness (specific selector avoids matching child device sliders)
+  const slider = card.querySelector(`input[data-action="brightness"][data-group="${groupId}"]`);
   const label = card.querySelector(`[data-brightness-label="${groupId}"]`);
   if (slider && state.brightness != null) {
     slider.value = state.brightness;
@@ -818,7 +818,7 @@ function updateGroupUI(groupId) {
   }
 
   // Update color picker
-  const colorInput = card.querySelector('input[type="color"]');
+  const colorInput = card.querySelector(`input[data-action="color"][data-group="${groupId}"]`);
   if (colorInput && state.color) {
     colorInput.value = state.color;
   }

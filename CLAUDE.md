@@ -111,7 +111,7 @@ govee_config         - Govee Cloud API configuration (single row, id=1)
 govee_devices        - All Govee/AiDot smart lights (63 devices)
                       (device_id, sku, name, area, device_type, is_group,
                        capabilities, online, last_state, is_active, notes,
-                       parent_group_id, display_order)
+                       parent_group_id, display_order, space_id)
 govee_models         - SKU → friendly model name lookup (16 rows)
                       (sku [PK], model_name, category)
 ```
@@ -368,7 +368,10 @@ git push
    - `govee_devices.display_order` controls group sort order in UI
    - `govee_models` table maps SKU → friendly model name (e.g., H601F → "Recessed Lights Pro")
    - Cloud API base: `https://openapi.api.govee.com/router/api/v1/`
+   - `govee_devices.space_id` links devices to spaces table for hierarchy-based UI grouping
    - Lighting page (`residents/playhomeauto.html`) loads groups dynamically from DB
+   - Groups organized into collapsible `<details>/<summary>` sections by space hierarchy (depth-1 ancestor)
+   - Section collapse state persisted in localStorage
    - Settings (test mode toggle, device inventory) shown to admin users on lighting page
    - Edge function: `govee-control` proxies requests to Govee Cloud API (staff+ auth required)
    - Areas: Garage Mahal (17), Spartan (18), Outdoor (12), Outhouse (7), Interior (5), Bedrooms (4)
