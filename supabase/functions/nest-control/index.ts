@@ -127,7 +127,7 @@ serve(async (req) => {
           grant_type: "authorization_code",
           redirect_uri:
             body.redirectUri ||
-            "https://rsonnad.github.io/alpacapps/residents/thermostat.html",
+            "https://rsonnad.github.io/alpacapps/residents/climate.html",
         }),
       });
 
