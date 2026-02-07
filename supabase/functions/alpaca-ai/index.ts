@@ -52,6 +52,8 @@ const ROLE_LEVEL: Record<string, number> = {
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
+const GOVEE_BASE_URL = "https://openapi.api.govee.com/router/api/v1";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -479,13 +481,17 @@ async function executeToolCall(
   functionCall: { name: string; args: any },
   scope: UserScope,
   userToken: string,
-  supabaseUrl: string
+  supabaseUrl: string,
+  goveeApiKey: string
 ): Promise<string> {
   const { name, args } = functionCall;
-  const headers = {
+  // For edge-function-to-edge-function calls, use service role key as apikey
+  // to ensure Supabase gateway accepts the request. Keep user's Bearer token
+  // for Authorization so downstream functions can verify user role.
+  const edgeFnHeaders = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${userToken}`,
-    apikey: Deno.env.get("SUPABASE_ANON_KEY") || "",
+    apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "",
   };
 
   try {
@@ -544,26 +550,29 @@ async function executeToolCall(
             return `Unknown light action: ${args.action}`;
         }
 
+        // Call Govee Cloud API directly (avoids edge-function-to-edge-function routing issues)
         const goveePayload = {
-          action: "controlDevice",
-          device: args.device_id,
-          sku: args.sku || "SameModeGroup",
-          capability,
+          requestId: `${Date.now()}`,
+          payload: {
+            sku: args.sku || "SameModeGroup",
+            device: args.device_id,
+            capability,
+          },
         };
-        console.log("PAI → govee-control payload:", JSON.stringify(goveePayload));
+        console.log("PAI → Govee API direct:", JSON.stringify(goveePayload));
 
-        const resp = await fetch(
-          `${supabaseUrl}/functions/v1/govee-control`,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify(goveePayload),
-          }
-        );
+        const resp = await fetch(`${GOVEE_BASE_URL}/device/control`, {
+          method: "POST",
+          headers: {
+            "Govee-API-Key": goveeApiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(goveePayload),
+        });
         const result = await resp.json();
-        console.log("PAI ← govee-control response:", resp.status, JSON.stringify(result));
-        if (!resp.ok || result.error) {
-          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+        console.log("PAI ← Govee API response:", resp.status, JSON.stringify(result));
+        if (!resp.ok) {
+          const errMsg = result.message || result.msg || `Govee API error ${resp.status}`;
           return `Error controlling ${args.group_name}: ${errMsg}`;
         }
         return `OK: ${args.group_name} ${args.action}${args.value ? " " + args.value : ""}`;
@@ -582,7 +591,7 @@ async function executeToolCall(
         console.log("PAI → sonos-control payload:", JSON.stringify(payload));
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/sonos-control`,
-          { method: "POST", headers, body: JSON.stringify(payload) }
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(payload) }
         );
         const result = await resp.json();
         console.log("PAI ← sonos-control response:", resp.status, JSON.stringify(result));
@@ -618,7 +627,7 @@ async function executeToolCall(
         console.log("PAI → nest-control payload:", JSON.stringify(payload));
         const resp = await fetch(
           `${supabaseUrl}/functions/v1/nest-control`,
-          { method: "POST", headers, body: JSON.stringify(payload) }
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(payload) }
         );
         const result = await resp.json();
         console.log("PAI ← nest-control response:", resp.status, JSON.stringify(result));
@@ -650,7 +659,7 @@ async function executeToolCall(
           `${supabaseUrl}/functions/v1/tesla-command`,
           {
             method: "POST",
-            headers,
+            headers: edgeFnHeaders,
             body: JSON.stringify(teslaPayload),
           }
         );
@@ -822,6 +831,17 @@ serve(async (req) => {
     // 3. Build scope
     const scope = await buildUserScope(supabase, appUser, userLevel);
 
+    // 3b. Load Govee API key for direct Govee API calls
+    let goveeApiKey = "";
+    if (scope.goveeGroups.length) {
+      const { data: goveeConfig } = await supabase
+        .from("govee_config")
+        .select("api_key")
+        .eq("id", 1)
+        .single();
+      goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
+    }
+
     // 4. Build system prompt
     const systemPrompt = buildSystemPrompt(scope);
 
@@ -886,7 +906,8 @@ serve(async (req) => {
           fc,
           scope,
           userToken,
-          supabaseUrl
+          supabaseUrl,
+          goveeApiKey
         );
 
         actionsTaken.push({
