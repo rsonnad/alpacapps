@@ -538,7 +538,7 @@ async function loadWeatherForecast() {
 
     // Attempt One Call 3.0
     try {
-      const url30 = `https://api.openweathermap.org/data/3.0/onecall?lat=${config.latitude}&lon=${config.longitude}&exclude=minutely,daily,alerts&units=imperial&appid=${config.owm_api_key}`;
+      const url30 = `https://api.openweathermap.org/data/3.0/onecall?lat=${config.latitude}&lon=${config.longitude}&exclude=minutely&units=imperial&appid=${config.owm_api_key}`;
       const resp30 = await fetch(url30);
       if (resp30.ok) {
         const data = await resp30.json();
@@ -587,7 +587,25 @@ function parseOneCallForecast(data) {
     icon: h.weather?.[0]?.icon || '',
     main: h.weather?.[0]?.main || '',
   }));
-  return { hours, current: data.current };
+  // Daily forecast (up to 8 days) for extended rain outlook
+  const daily = (data.daily || []).map(d => ({
+    time: new Date(d.dt * 1000),
+    pop: Math.round((d.pop || 0) * 100),
+    rain: d.rain || 0,
+    tempMax: Math.round(d.temp?.max ?? 0),
+    tempMin: Math.round(d.temp?.min ?? 0),
+    description: d.weather?.[0]?.description || '',
+    main: d.weather?.[0]?.main || '',
+  }));
+  // NWS-style alerts from OWM
+  const alerts = (data.alerts || []).map(a => ({
+    event: a.event,
+    sender: a.sender_name,
+    start: new Date(a.start * 1000),
+    end: new Date(a.end * 1000),
+    description: a.description,
+  }));
+  return { hours, daily, alerts, current: data.current };
 }
 
 function parse25Forecast(data) {
@@ -602,7 +620,7 @@ function parse25Forecast(data) {
     icon: item.weather?.[0]?.icon || '',
     main: item.weather?.[0]?.main || '',
   }));
-  return { hours, current: null };
+  return { hours, daily: [], alerts: [], current: null };
 }
 
 function renderWeatherForecast() {
@@ -616,9 +634,11 @@ function renderRainSummary() {
   const container = document.getElementById('rainSummary');
   if (!container) return;
 
-  const { hours } = weatherData;
+  const { hours, daily, alerts } = weatherData;
+  const now = new Date();
+  let html = '';
 
-  // Find rain windows (contiguous hours where pop >= 30%)
+  // ---- Rain windows (contiguous hours where pop >= 30%) ----
   const windows = [];
   let currentWindow = null;
 
@@ -642,33 +662,82 @@ function renderRainSummary() {
   if (currentWindow) windows.push(currentWindow);
 
   if (!windows.length) {
-    container.innerHTML = `
+    // No rain in 48h — find next rain from daily forecast
+    let nextRainNote = '';
+    if (daily?.length) {
+      const nextRainDay = daily.find(d => d.pop >= 30 && d.time > now);
+      if (nextRainDay) {
+        const diffMs = nextRainDay.time - now;
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const isUrgent = diffDays <= 2;
+        nextRainNote = `<div class="weather-alert__row ${isUrgent ? 'weather-alert--red' : 'weather-alert--muted'}">Next rain: ~${diffDays} day${diffDays !== 1 ? 's' : ''} (${nextRainDay.pop}% chance ${nextRainDay.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })})</div>`;
+      } else {
+        nextRainNote = `<div class="weather-alert__row weather-alert--muted">Next rain: none in 8-day forecast</div>`;
+      }
+    }
+    html += `
       <div class="rain-summary__status rain-summary--clear">
         <span class="rain-summary__icon">&#9728;&#65039;</span>
         <span>No rain expected in the next 48 hours</span>
-      </div>`;
-    return;
+      </div>
+      ${nextRainNote}`;
+  } else {
+    const windowsHtml = windows.map(w => {
+      const startStr = formatWeatherTime(w.start, now);
+      const endStr = formatWeatherTime(w.end, now);
+      const timeRange = startStr === endStr ? startStr : `${startStr} - ${endStr}`;
+      return `
+        <div class="rain-window">
+          <span class="rain-window__icon">&#127783;&#65039;</span>
+          <span class="rain-window__time">${timeRange}</span>
+          <span class="rain-window__chance">${w.maxPop}% chance</span>
+        </div>`;
+    }).join('');
+
+    html += `
+      <div class="rain-summary__status rain-summary--rain">
+        <span class="rain-summary__icon">&#127783;&#65039;</span>
+        <span>Rain expected</span>
+      </div>
+      <div class="rain-windows">${windowsHtml}</div>`;
   }
 
-  const now = new Date();
-  const windowsHtml = windows.map(w => {
-    const startStr = formatWeatherTime(w.start, now);
-    const endStr = formatWeatherTime(w.end, now);
-    const timeRange = startStr === endStr ? startStr : `${startStr} - ${endStr}`;
-    return `
-      <div class="rain-window">
-        <span class="rain-window__icon">&#127783;&#65039;</span>
-        <span class="rain-window__time">${timeRange}</span>
-        <span class="rain-window__chance">${w.maxPop}% chance</span>
-      </div>`;
-  }).join('');
+  // ---- Temperature warnings (from hourly data) ----
+  const maxTemp = Math.max(...hours.map(h => h.temp));
+  const minTemp = Math.min(...hours.map(h => h.temp));
 
-  container.innerHTML = `
-    <div class="rain-summary__status rain-summary--rain">
-      <span class="rain-summary__icon">&#127783;&#65039;</span>
-      <span>Rain expected</span>
-    </div>
-    <div class="rain-windows">${windowsHtml}</div>`;
+  if (maxTemp >= 100) {
+    const hotHours = hours.filter(h => h.temp >= 100);
+    const peakTemp = maxTemp;
+    const firstHot = hotHours[0];
+    const timeStr = formatWeatherTime(firstHot.time, now);
+    html += `<div class="weather-alert__row weather-alert--red">&#x1F525; Heat warning: ${peakTemp}&deg;F expected (${timeStr})</div>`;
+  } else {
+    html += `<div class="weather-alert__row weather-alert--muted">No heat warnings</div>`;
+  }
+
+  if (minTemp <= 32) {
+    const coldHours = hours.filter(h => h.temp <= 32);
+    const lowestTemp = minTemp;
+    const firstCold = coldHours[0];
+    const timeStr = formatWeatherTime(firstCold.time, now);
+    html += `<div class="weather-alert__row weather-alert--blue">&#x1F976; Cold warning: ${lowestTemp}&deg;F expected (${timeStr})</div>`;
+  } else {
+    html += `<div class="weather-alert__row weather-alert--muted">No cold warnings</div>`;
+  }
+
+  // ---- Severe weather alerts (from OWM alerts) ----
+  if (alerts?.length) {
+    for (const a of alerts) {
+      const startStr = formatWeatherTime(a.start, now);
+      const endStr = formatWeatherTime(a.end, now);
+      html += `<div class="weather-alert__row weather-alert--red">&#x26A0;&#xFE0F; ${escapeHtml(a.event)}: ${startStr} - ${endStr}</div>`;
+    }
+  } else {
+    html += `<div class="weather-alert__row weather-alert--muted">No severe weather alerts</div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 function renderHourlyChart() {

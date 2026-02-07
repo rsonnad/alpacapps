@@ -2877,6 +2877,29 @@ span.sonos-library-item__star.starred {
   font-weight: 500;
 }
 
+/* Weather alert rows */
+.weather-alert__row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  padding: 0.2rem 0;
+  font-weight: 500;
+}
+
+.weather-alert--red {
+  color: #dc2626;
+}
+
+.weather-alert--blue {
+  color: #2563eb;
+}
+
+.weather-alert--muted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 /* Hourly detail */
 .weather-detail {
   margin-top: 0.75rem;
