@@ -54,6 +54,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `playhomeauto.html` / `playhomeauto.js` - Govee lighting control
 - `sonos.html` / `sonos.js` - Sonos music control
 - `cameras.html` / `cameras.js` - Camera feeds
+- `laundry.html` / `laundry.js` - LG washer/dryer monitoring
 - `cars.html` / `cars.js` - Vehicle info
 - `residents.css` - Shared CSS for all resident pages
 
@@ -67,6 +68,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
+- `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
 
 **Edge Function Deployment Flags:**
 Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to prevent Supabase's gateway from rejecting valid user tokens before they reach the function code.
@@ -80,6 +82,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `telnyx-webhook` | `supabase functions deploy telnyx-webhook --no-verify-jwt` |
 | `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
+| `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -181,6 +184,20 @@ tesla_vehicles  - Vehicle data + cached state from Tesla Fleet API
 camera_streams  - go2rtc HLS stream configuration (9 rows: 3 cameras × 3 qualities)
                   (camera_name, quality [low/med/high], stream_name,
                    proxy_base_url, location, protect_share_url, is_active)
+```
+
+### LG Laundry System
+```
+lg_config           - LG ThinQ API configuration (single row, id=1)
+                      (pat, api_base, country_code, client_id, is_active, test_mode, last_error)
+lg_appliances       - LG washer/dryer devices with cached state
+                      (lg_device_id, device_type [washer/dryer], name, model, lan_ip,
+                       display_order, is_active, last_state [jsonb], last_synced_at)
+push_tokens         - FCM push notification tokens per user (shared, not LG-specific)
+                      (app_user_id [FK→app_users], token, platform [ios/android],
+                       device_info, is_active)
+laundry_watchers    - Who is watching which appliance for cycle-end notification
+                      (app_user_id [FK→app_users], appliance_id [FK→lg_appliances])
 ```
 
 ### AI Image Generation
@@ -448,6 +465,21 @@ git push
 - **Launchd:** `com.go2rtc` service (KeepAlive + RunAtLoad)
 - **Full docs:** `HOMEAUTOMATION.md`
 
+### LG ThinQ (Washer/Dryer)
+- **API**: LG ThinQ Connect REST API (PAT auth)
+- **PAT Portal**: https://connect-pat.lgthinq.com/
+- **API Base**: `https://api-us.lgthinq.com/`
+- **Worker**: `/opt/lg-poller/worker.js` on DO droplet (systemd: `lg-poller.service`)
+- **Polling**: Every 30s for rapid laundry status updates
+- **DB**: `lg_config` (PAT/API config), `lg_appliances` (cached state in `last_state` JSONB)
+- **Edge Function**: `lg-control` (status, control, watch/unwatch, push token registration)
+- **Push**: FCM push notifications when cycle ends to subscribed watchers
+- **QR**: Deep link QR codes on machines → auto-subscribe to notifications
+- **Devices**: Washer (192.168.1.246), Dryer (192.168.1.22)
+- **Washer states**: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, DRYING, STEAM_SOFTENING, COOL_DOWN, RINSE_HOLD, REFRESHING, PAUSE, RESERVED, END, SLEEP, ERROR
+- **Dryer states**: POWER_OFF, INITIAL, RUNNING, PAUSE, END, ERROR, DIAGNOSIS, RESERVED
+- **Client**: `residents/laundry.js` polls Supabase every 15s with visibility-based pause
+
 ### Google Drive
 - Rental agreements stored in a shared folder
 - Not programmatically accessed
@@ -563,6 +595,16 @@ git push
    - `camera_streams` DB table stores stream config, frontend constructs HLS URL dynamically
    - PTZ controls via UniFi Protect API (continuous move + preset goto)
    - Lightbox mode with camera navigation and quality switching
+22. **LG Laundry Monitoring** - Live washer/dryer status on Laundry resident page
+   - LG ThinQ Connect API with PAT auth from https://connect-pat.lgthinq.com/
+   - Worker: `lg-poller` on DO droplet polls every 30s
+   - Edge function: `lg-control` (status, control, watch/unwatch, push token registration)
+   - Resident page: `residents/laundry.html` with progress bars, time remaining, "Notify When Done"
+   - DB: `lg_config` (PAT), `lg_appliances` (cached state), `push_tokens` (FCM), `laundry_watchers`
+   - Cycle completion detection: worker detects RUNNING→END transition, sends FCM push to watchers
+   - QR codes on machines → deep link → auto-subscribe to notifications (Phase 5-6 pending)
+   - Washer states: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, DRYING, END, ERROR
+   - Dryer states: POWER_OFF, INITIAL, RUNNING, PAUSE, END, ERROR
 
 ## Testing Changes
 
