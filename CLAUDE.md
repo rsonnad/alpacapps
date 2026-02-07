@@ -67,6 +67,19 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 
+**Edge Function Deployment Flags:**
+Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to prevent Supabase's gateway from rejecting valid user tokens before they reach the function code.
+
+| Function | Deploy command |
+|----------|---------------|
+| `sonos-control` | `supabase functions deploy sonos-control --no-verify-jwt` |
+| `govee-control` | `supabase functions deploy govee-control --no-verify-jwt` |
+| `nest-control` | `supabase functions deploy nest-control --no-verify-jwt` |
+| `resend-inbound-webhook` | `supabase functions deploy resend-inbound-webhook --no-verify-jwt` |
+| `telnyx-webhook` | `supabase functions deploy telnyx-webhook --no-verify-jwt` |
+| `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
+| All others | `supabase functions deploy <name>` (default JWT verification) |
+
 ## Database Schema (Supabase)
 
 ### Core Tables
@@ -477,9 +490,13 @@ git push
 15. **Home Automation System** - Sonos + UniFi programmatic control
    - Alpaca Mac (macOS 12.7.6) runs as home server on Black Rock City WiFi
    - node-sonos-http-api discovers and controls 12 Sonos zones
+   - Custom `balance.js` action added for L/R balance control (uses SOAP LF/RF channels)
+   - Proxy chain: Browser → Supabase edge function → nginx on DO droplet (port 8055) → Alpaca Mac via Tailscale
+   - `SONOS_PROXY_URL` and `SONOS_PROXY_SECRET` stored as Supabase secrets
+   - Edge function `sonos-control` MUST be deployed with `--no-verify-jwt`
    - Tailscale mesh VPN connects DO droplet to Alpaca Mac
    - UniFi Network API for firewall/DHCP/WiFi management
-   - `HOMEAUTOMATION.md` for full documentation
+   - `HOMEAUTOMATION.md` for full documentation (proxy chain details, balance action, troubleshooting)
 16. **Govee Lighting Integration** - 63 Govee/AiDot smart lights backed up in Supabase
    - `govee_config` table stores API key, test mode toggle (single row, id=1)
    - `govee_devices` table stores all 63 devices with name, SKU, area, type

@@ -235,7 +235,7 @@ GET /{room}/previous
 GET /{room}/state
 ```
 
-#### Volume
+#### Volume & EQ
 
 ```bash
 GET /{room}/volume/{0-100}        # Set absolute volume
@@ -244,6 +244,10 @@ GET /{room}/volume/-5             # Decrease by 5
 GET /{room}/groupVolume/{0-100}   # Set volume for entire group
 GET /{room}/mute
 GET /{room}/unmute
+GET /{room}/bass/{-10 to 10}      # Set bass EQ
+GET /{room}/treble/{-10 to 10}    # Set treble EQ
+GET /{room}/loudness/{on|off}     # Toggle loudness compensation
+GET /{room}/balance/{-100 to 100} # Set L/R balance (custom action, see below)
 ```
 
 #### Favorites & Playlists
@@ -352,6 +356,94 @@ Config file: `~/node-sonos-http-api/settings.json`
 | **Apple Music** | Requires setup | Needs Apple Developer account ($99/yr) for MusicKit API keys. |
 | **YouTube Music** | Not supported | Sonos doesn't expose YouTube Music via UPnP/HTTP API. |
 | **TuneIn Radio** | Working | Built into Sonos, no config needed. |
+
+### Custom Actions
+
+#### Balance (`balance.js`)
+
+The balance endpoint is a custom action added to node-sonos-http-api. Stock node-sonos-http-api does NOT support balance control (upstream PR #454 was never merged).
+
+**File:** `~/node-sonos-http-api/lib/actions/balance.js` (on Alpaca Mac)
+
+**How it works:**
+- Sends raw SOAP `SetVolume` calls to the speaker's `RenderingControl` endpoint
+- Uses separate `LF` (Left Front) and `RF` (Right Front) UPnP channels
+- Balance value `-100` to `+100`:
+  - `-100` = full left (LF=100%, RF=0%)
+  - `0` = center (LF=100%, RF=100%)
+  - `+100` = full right (LF=0%, RF=100%)
+- The formula: `LF = (bal > 0 ? 100 - bal : 100)`, `RF = (bal < 0 ? 100 + bal : 100)`
+
+**Usage:**
+```bash
+GET /{room}/balance/0      # Center (both channels at 100%)
+GET /{room}/balance/-30    # Slightly left (LF=100%, RF=70%)
+GET /{room}/balance/50     # Right-biased (LF=50%, RF=100%)
+```
+
+**Note:** Sonos does NOT report balance state in its `/state` API response. The frontend persists balance values in `localStorage` and re-applies them when needed. When adjusting balance, the slider shows the locally cached value, not a Sonos-reported value.
+
+### Sonos Proxy Chain (Browser → Supabase → DO Droplet → Alpaca Mac)
+
+The browser doesn't access the Sonos HTTP API directly. Instead, requests flow through a proxy chain:
+
+```
+Browser (sonos.js)
+  → Supabase Edge Function (sonos-control)
+    → Nginx reverse proxy on DO droplet (port 8055)
+      → Alpaca Mac via Tailscale (100.102.122.65:5005)
+        → node-sonos-http-api → Sonos speakers
+```
+
+#### Nginx Config on DO Droplet
+
+**File:** `/etc/nginx/sites-enabled/sonos-proxy`
+
+```nginx
+server {
+    listen 8055;
+    server_name _;
+    location /sonos/ {
+        if ($http_x_sonos_secret != "<secret>") {
+            return 403;
+        }
+        rewrite ^/sonos/(.*)$ /$1 break;
+        proxy_pass http://100.102.122.65:5005;
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 30s;
+        proxy_buffering off;
+    }
+}
+```
+
+- Port 8055 is opened in UFW (`ufw allow 8055/tcp`)
+- Secret is verified via `X-Sonos-Secret` header
+- Path `/sonos/` prefix is stripped before proxying to Alpaca Mac
+- Actual secret value is in `HOMEAUTOMATION.local.md`
+
+#### Supabase Edge Function: `sonos-control`
+
+**Deployment:** `supabase functions deploy sonos-control --no-verify-jwt`
+
+**CRITICAL:** Must deploy with `--no-verify-jwt` flag! The function handles auth internally via `supabase.auth.getUser(token)`. Without this flag, Supabase's gateway-level JWT verification rejects valid user tokens with `{"code":401,"message":"Invalid JWT"}` before the function code even executes.
+
+**Supabase Secrets Required:**
+| Secret | Value | Notes |
+|--------|-------|-------|
+| `SONOS_PROXY_URL` | `http://159.89.157.120:8055/sonos` | DO droplet IP + nginx port + path prefix |
+| `SONOS_PROXY_SECRET` | (see HOMEAUTOMATION.local.md) | Must match nginx `$http_x_sonos_secret` check |
+
+Set with: `supabase secrets set SONOS_PROXY_URL="..." SONOS_PROXY_SECRET="..."`
+
+**Auth flow in the function:**
+1. Extracts Bearer token from `Authorization` header
+2. Calls `supabase.auth.getUser(token)` to verify the user
+3. Checks `app_users.role` is `resident`, `associate`, `staff`, or `admin`
+4. Builds Sonos HTTP API path from the `action` parameter
+5. Fetches `${SONOS_PROXY_URL}${path}` with `X-Sonos-Secret` header
+6. Returns the Sonos API response as JSON
+
+**Supported actions:** `getZones`, `getState`, `play`, `pause`, `playpause`, `next`, `previous`, `volume`, `mute`, `unmute`, `favorite`, `favorites`, `playlists`, `playlist`, `pauseall`, `resumeall`, `join`, `leave`, `bass`, `treble`, `loudness`, `balance`
 
 ### Important Notes
 
@@ -678,6 +770,39 @@ tailscale status
 1. SSH in and check: `launchctl list | grep sonos`
 2. If not running, load it: `launchctl load ~/Library/LaunchAgents/com.sonos.httpapi.plist`
 3. Check logs: `tail -20 ~/node-sonos-http-api/logs/stderr.log`
+
+### Sonos page shows "No Sonos zones found" or "Failed to load Sonos zones"
+
+Debug the proxy chain step by step:
+
+1. **Alpaca Mac → Sonos HTTP API** (from DO droplet via Tailscale):
+   ```bash
+   ssh alpaca@100.102.122.65 "curl -s http://localhost:5005/zones | head -c 200"
+   ```
+
+2. **DO Droplet → Nginx proxy** (from DO droplet):
+   ```bash
+   curl -s -H 'X-Sonos-Secret: <secret>' 'http://localhost:8055/sonos/zones' | head -c 200
+   ```
+
+3. **External → DO Droplet** (from outside):
+   ```bash
+   curl -s -H 'X-Sonos-Secret: <secret>' 'http://159.89.157.120:8055/sonos/zones' | head -c 200
+   ```
+
+4. **Supabase Edge Function** (with valid user token):
+   ```bash
+   curl -s -H "Authorization: Bearer <user_jwt>" -H "apikey: <anon_key>" \
+     -H 'Content-Type: application/json' -d '{"action":"getZones"}' \
+     'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/sonos-control'
+   ```
+
+**Common causes:**
+- Edge function deployed without `--no-verify-jwt` → gateway rejects tokens with `{"code":401,"message":"Invalid JWT"}`
+- `SONOS_PROXY_URL` or `SONOS_PROXY_SECRET` Supabase secrets don't match nginx config
+- Secrets changed but edge function not redeployed (secrets only take effect on next deploy)
+- Port 8055 blocked by UFW on DO droplet
+- Tailscale tunnel down between DO droplet and Alpaca Mac
 
 ### TTS not working
 
