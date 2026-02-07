@@ -12,7 +12,7 @@ import { initPaiWidget } from './pai-widget.js';
 // TAB DEFINITIONS
 // =============================================
 const RESIDENT_TABS = [
-  { id: 'homeauto', label: 'Lighting', href: 'playhomeauto.html' },
+  { id: 'homeauto', label: 'Lighting', href: 'lighting.html' },
   { id: 'music', label: 'Music', href: 'sonos.html' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
   { id: 'climate', label: 'Climate', href: 'climate.html' },

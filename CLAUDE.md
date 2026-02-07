@@ -52,7 +52,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 
 ### Resident View (`/residents/`)
 - `climate.html` / `thermostat.js` - Climate page: Nest thermostats + 48-hour weather forecast
-- `playhomeauto.html` / `playhomeauto.js` - Govee lighting control
+- `lighting.html` / `lighting.js` - Govee lighting control
 - `sonos.html` / `sonos.js` - Sonos music control
 - `cameras.html` / `cameras.js` - Camera feeds
 - `laundry.html` / `laundry.js` - LG washer/dryer monitoring
@@ -548,7 +548,7 @@ git push
    - `govee_models` table maps SKU → friendly model name (e.g., H601F → "Recessed Lights Pro")
    - Cloud API base: `https://openapi.api.govee.com/router/api/v1/`
    - `govee_devices.space_id` links devices to spaces table for hierarchy-based UI grouping
-   - Lighting page (`residents/playhomeauto.html`) loads groups dynamically from DB
+   - Lighting page (`residents/lighting.html`) loads groups dynamically from DB
    - Groups organized into collapsible `<details>/<summary>` sections by space hierarchy (depth-1 ancestor)
    - Section collapse state persisted in localStorage
    - Settings (test mode toggle, device inventory) shown to admin users on lighting page

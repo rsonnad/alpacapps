@@ -168,8 +168,8 @@ alpacapps/
 ├── residents/             # Resident-facing pages (auth required, resident+ role)
 │   ├── climate.html       # Climate page: thermostats + weather forecast
 │   ├── thermostat.js      # Climate page logic (Nest API + OpenWeatherMap)
-│   ├── playhomeauto.html  # Govee lighting control page
-│   ├── playhomeauto.js    # Lighting page logic
+│   ├── lighting.html      # Govee lighting control page
+│   ├── lighting.js        # Lighting page logic
 │   ├── sonos.html         # Sonos music control page
 │   ├── sonos.js           # Music page logic
 │   ├── cameras.html       # Camera feeds page
