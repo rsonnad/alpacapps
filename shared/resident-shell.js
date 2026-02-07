@@ -62,20 +62,20 @@ function renderResidentTabNav(activeTab, userRole) {
 
   // Render context switcher above tabs for staff+ users
   const isStaff = ['staff', 'admin'].includes(userRole);
-  let switcherHtml = '';
-  if (isStaff) {
-    switcherHtml = `<div class="context-switcher">
+  if (isStaff && !document.querySelector('.context-switcher')) {
+    const switcher = document.createElement('div');
+    switcher.className = 'context-switcher';
+    switcher.innerHTML = `
       <a class="context-switcher-btn active">Resident</a>
-      <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
-    </div>`;
+      <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>`;
+    // Insert before the manage-tabs element
+    tabsContainer.parentElement.insertBefore(switcher, tabsContainer);
   }
 
-  const tabsHtml = RESIDENT_TABS.map(tab => {
+  tabsContainer.innerHTML = RESIDENT_TABS.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
-
-  tabsContainer.innerHTML = switcherHtml + `<div class="manage-tabs-row">${tabsHtml}</div>`;
 }
 
 // =============================================

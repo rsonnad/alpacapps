@@ -8,7 +8,8 @@
 
 .manage-tabs {
   display: flex;
-  flex-direction: column;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
   margin-bottom: 2rem;
 }
 
@@ -18,8 +19,7 @@
   background: var(--border);
   border-radius: 6px;
   padding: 3px;
-  margin-bottom: 0.75rem;
-  align-self: flex-start;
+  margin: 0.75rem 0 0.75rem 2rem;
 }
 
 .context-switcher-btn {
@@ -45,10 +45,9 @@
   cursor: default;
 }
 
-.manage-tabs-row {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
+/* When inside manage-container, container already has padding */
+.manage-container > .context-switcher {
+  margin-left: 0;
 }
 
 .manage-tab {
@@ -350,12 +349,17 @@
   }
 
   .manage-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 1rem;
   }
 
-  .manage-tabs-row {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .context-switcher {
+    margin-left: 1rem;
+  }
+
+  .manage-container > .context-switcher {
+    margin-left: 0;
   }
 
   .manage-tab {

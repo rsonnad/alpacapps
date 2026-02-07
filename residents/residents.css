@@ -1523,13 +1523,13 @@ body.is-admin .admin-only {
   }
 
   /* Tabs: fade-hint for scroll */
-  .manage-tabs-row {
+  .manage-tabs {
     -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
     scrollbar-width: none;
   }
 
-  .manage-tabs-row::-webkit-scrollbar {
+  .manage-tabs::-webkit-scrollbar {
     display: none;
   }
 
