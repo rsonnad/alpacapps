@@ -1249,6 +1249,8 @@ span.sonos-library-item__star.starred {
   color: var(--text-muted);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .sonos-ungroup-btn:hover {
@@ -1541,7 +1543,7 @@ span.sonos-library-item__star.starred {
 .sonos-group-eq__label-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.25rem;
 }
 
