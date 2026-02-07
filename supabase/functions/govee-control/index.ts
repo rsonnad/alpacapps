@@ -66,8 +66,14 @@ serve(async (req) => {
       return jsonResponse({ error: "Insufficient permissions" }, 403);
     }
 
-    // Get Govee API key from secrets
-    const goveeApiKey = Deno.env.get("GOVEE_API_KEY");
+    // Get Govee API key from DB config (primary) or env secret (fallback)
+    let goveeApiKey: string | null = null;
+    const { data: goveeConfig } = await supabase
+      .from("govee_config")
+      .select("api_key")
+      .eq("id", 1)
+      .single();
+    goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || null;
     if (!goveeApiKey) {
       return jsonResponse({ error: "Govee API key not configured" }, 500);
     }
