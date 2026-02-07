@@ -170,6 +170,8 @@ function parseVehicleState(data) {
     sentry_mode: vs.sentry_mode ?? null,
     latitude: ds.latitude ?? null,
     longitude: ds.longitude ?? null,
+    speed_mph: ds.speed ?? null,
+    heading: ds.heading ?? null,
     tpms_fl_psi: vs.tpms_pressure_fl != null ? Math.round(vs.tpms_pressure_fl * 14.5038) : null,
     tpms_fr_psi: vs.tpms_pressure_fr != null ? Math.round(vs.tpms_pressure_fr * 14.5038) : null,
     tpms_rl_psi: vs.tpms_pressure_rl != null ? Math.round(vs.tpms_pressure_rl * 14.5038) : null,
@@ -283,7 +285,11 @@ async function pollAccount(account) {
     await new Promise(r => setTimeout(r, API_DELAY_MS));
 
     try {
-      const vehicleData = await teslaApi(accessToken, `/api/1/vehicles/${v.id}/vehicle_data`, apiBase);
+      const vehicleData = await teslaApi(
+        accessToken,
+        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state')}`,
+        apiBase
+      );
 
       if (vehicleData.sleeping) {
         // Vehicle went to sleep between list and data call

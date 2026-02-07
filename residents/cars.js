@@ -149,9 +149,13 @@ function getDataRows(car) {
   const climateStr = s.climate_on
     ? `${s.inside_temp_f || '--'}\u00b0F`
     : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)` : '--';
-  const locationStr = s.latitude != null && s.longitude != null
-    ? `${s.latitude.toFixed(2)}, ${s.longitude.toFixed(2)}`
-    : '--';
+  let locationStr = '--';
+  if (s.latitude != null && s.longitude != null) {
+    locationStr = `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}`;
+    if (s.speed_mph != null && s.speed_mph > 0) {
+      locationStr += ` \u00b7 ${s.speed_mph} mph`;
+    }
+  }
   const tiresStr = s.tpms_fl_psi != null
     ? `${s.tpms_fl_psi} / ${s.tpms_fr_psi} / ${s.tpms_rl_psi} / ${s.tpms_rr_psi}`
     : '--';
