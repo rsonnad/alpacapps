@@ -27,22 +27,17 @@ const COLOR_PRESETS = [
 ];
 
 // H601F segment mapping — Ring (nightlight) vs Main (downlight)
-// Icons: ring = hollow circle, main = filled circle with rays
+// Icons show top-down view of the recessed light:
+//   Ring = outer edge glow (thick colored ring, dim center)
+//   Main = center downlight (dim outer ring, bright filled center)
 const ZONE_ICONS = {
-  Ring: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
-    <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" fill="none"/>
+  Ring: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.9"/>
+    <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1" fill="none" opacity="0.25"/>
   </svg>`,
-  Main: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="5" fill="currentColor"/>
-    <line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="10" y1="16" x2="10" y2="19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="16" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="3.5" y1="3.5" x2="5.6" y2="5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="14.4" y1="14.4" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="3.5" y1="16.5" x2="5.6" y2="14.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="14.4" y1="5.6" x2="16.5" y2="3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  Main: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1" fill="none" opacity="0.25"/>
+    <circle cx="12" cy="12" r="6" fill="currentColor" opacity="0.9"/>
   </svg>`,
 };
 
@@ -59,11 +54,10 @@ const SEGMENT_ZONES = {
 
 function getSegmentZones(sku, segmentCount) {
   if (SEGMENT_ZONES[sku]) return SEGMENT_ZONES[sku];
-  // Generic: All + individual segments
+  // For non-mapped devices, just show "All" — individual segments are too many to display
   const all = Array.from({ length: segmentCount }, (_, i) => i);
   return [
     { name: 'All', segments: all, description: 'All segments' },
-    ...all.map(i => ({ name: `Seg ${i + 1}`, segments: [i], description: `Segment ${i}` })),
   ];
 }
 
@@ -677,6 +671,17 @@ function updateDeviceUI(deviceId) {
     colorBtn.style.background = state.color;
   }
 
+  // Update segment color pickers to reflect current device color
+  if (state.color) {
+    const segPickers = row.querySelectorAll('.segment-color-picker');
+    segPickers.forEach(picker => {
+      // Only set if still at default value
+      if (picker.value === '#ffd4a3') {
+        picker.value = state.color;
+      }
+    });
+  }
+
   // Update status dot
   const dot = row.querySelector('.status-dot');
   if (dot) {
@@ -1089,18 +1094,67 @@ function filterScenes(listSelector, query) {
 }
 
 // Auto-load scenes for devices whose expanded panels start visible
-// (devices with segments have panels expanded by default, and may also have scenes)
+// Fetches once per SKU, then populates all devices of that SKU from cache
 async function autoLoadVisibleScenes() {
+  const skusFetched = new Set();
+  const devicesToPopulate = [];
+
+  // Collect all visible devices that need scenes
   for (const group of goveeGroups) {
     for (const child of group.children) {
       if (child.hasSegments && child.hasScenes) {
-        // Panel starts expanded, so auto-load scenes
-        await expandDeviceScenePanel(child.deviceId, child.sku);
-        // Small delay to avoid hammering the API
-        await sleep(200);
+        devicesToPopulate.push(child);
       }
     }
   }
+
+  if (devicesToPopulate.length === 0) return;
+
+  // Fetch scenes for each unique SKU (only once per SKU)
+  for (const child of devicesToPopulate) {
+    if (!skusFetched.has(child.sku)) {
+      skusFetched.add(child.sku);
+      // Also try reading from DB cache first
+      await fetchScenesWithDbFallback(child.sku, child.deviceId);
+      await sleep(300);
+    }
+  }
+
+  // Now populate all device scene panels from cache
+  for (const child of devicesToPopulate) {
+    await expandDeviceScenePanel(child.deviceId, child.sku);
+  }
+}
+
+// Try edge function first, fall back to reading DB cache directly
+async function fetchScenesWithDbFallback(sku, sampleDeviceId) {
+  if (sceneCache[sku]) return sceneCache[sku];
+
+  try {
+    // Try edge function (which checks its own DB cache)
+    const result = await goveeApi('getScenes', { sku, device: sampleDeviceId });
+    sceneCache[sku] = result.scenes || [];
+    return sceneCache[sku];
+  } catch (err) {
+    console.warn(`Edge function scene fetch failed for ${sku}, trying DB cache:`, err.message);
+  }
+
+  // Fallback: read directly from govee_scene_cache table
+  try {
+    const { data } = await supabase
+      .from('govee_scene_cache')
+      .select('scenes')
+      .eq('sku', sku)
+      .single();
+    if (data?.scenes) {
+      sceneCache[sku] = data.scenes;
+      return sceneCache[sku];
+    }
+  } catch (err) {
+    console.warn(`DB cache fallback failed for ${sku}:`, err.message);
+  }
+
+  return [];
 }
 
 // =============================================
