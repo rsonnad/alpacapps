@@ -221,6 +221,7 @@ const LINK_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height
 const UNLINK_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M17 7h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1 0 1.43-.98 2.63-2.31 2.98l1.46 1.46C20.88 15.61 22 13.95 22 12c0-2.76-2.24-5-5-5zm-1 4h-2.19l2 2H16v-2zM2 4.27l3.11 3.11C3.29 8.12 2 9.91 2 12c0 2.76 2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1 0-1.59 1.21-2.9 2.76-3.07L8.73 11H8v2h2.73L13 15.27V17h1.73l4.01 4.01 1.27-1.27L3.27 3 2 4.27z"/></svg>';
 const ALARM_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>';
 const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6.05 8.05c-2.73 2.73-2.73 7.15-.02 9.88a6.985 6.985 0 004.95 2.05c.41 0 .82-.04 1.21-.12-1.44-.44-2.79-1.18-3.95-2.34-2.55-2.55-2.95-6.36-1.2-9.31l.01-.01c.38.23.8.35 1.24.35C9.8 8.55 11 7.35 11 5.84V2.02S4.47 3.66 6.05 8.05z"/><path d="M17.95 8.05c-1.58-4.39-8.11-6.03-8.11-6.03V5.84c0 1.52 1.2 2.72 2.72 2.72.43 0 .84-.12 1.21-.34 1.76 2.96 1.36 6.77-1.2 9.13-1.15 1.15-2.49 1.89-3.92 2.33.39.08.79.12 1.2.12 1.84 0 3.58-.72 4.89-2.03 2.71-2.73 2.71-7.15-.01-9.88l.01.01.02.01-.01.01c.38.23.8.36 1.24.36a2.72 2.72 0 002.72-2.72V2.02s-1.65.82-2.76 2.21"/></svg>';
+const CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>';
 
 // =============================================
 // RENDERING - ZONE GROUPS
@@ -262,12 +263,12 @@ function renderZones() {
     const coordName = escapeHtml(group.coordinatorName);
     const isGrouped = group.members.length > 1;
 
-    // Group name: coordinator + member names
+    // Group name: coordinator + all member names
     const memberNames = group.members
       .filter(m => !m.isCoordinator)
       .map(m => m.roomName);
     const groupTitle = memberNames.length > 0
-      ? `${escapeHtml(group.coordinatorName)} <span class="sonos-group-badge">+${memberNames.length}</span>`
+      ? `${escapeHtml(group.coordinatorName)} <span class="sonos-group-plus">&</span> ${memberNames.map(n => escapeHtml(n)).join(', ')}`
       : escapeHtml(group.coordinatorName);
 
     // Status line
@@ -318,6 +319,7 @@ function renderZones() {
       'sonos-zone-card',
       isPlaying ? 'playing' : '',
       mainMuted ? 'muted' : '',
+      isGrouped ? 'grouped' : '',
       groupingMode ? 'group-selectable' : '',
       groupingSelected.includes(group.coordinatorName) ? 'group-selected' : '',
     ].filter(Boolean).join(' ');
@@ -403,23 +405,9 @@ function renderMusicLibrary() {
   html += renderLibrarySectionHtml(`Favorites (${favorites.length})`, 'favoritesList', favorites, 'favorite', STAR_SVG, false);
 
   libraryBody.innerHTML = html;
-
-  // Re-bind section toggle buttons
-  libraryBody.querySelectorAll('.sonos-library-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = document.getElementById(btn.dataset.target);
-      if (!target) return;
-      const isHidden = target.classList.toggle('hidden');
-      btn.textContent = isHidden ? 'Show' : 'Hide';
-    });
-  });
 }
 
-function renderLibrarySectionHtml(label, listId, items, type, iconSvg, defaultOpen = false, showStars = false) {
-  const listClass = defaultOpen ? 'sonos-library__list' : 'sonos-library__list';
-  const listHiddenClass = defaultOpen ? '' : ' hidden';
-  const toggleText = defaultOpen ? 'Hide' : 'Show';
-
+function renderLibrarySectionHtml(label, listId, items, type, iconSvg, defaultOpen = true, showStars = false) {
   let itemsHtml = '';
   if (!items.length) {
     itemsHtml = `<p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;">None found.</p>`;
@@ -441,13 +429,15 @@ function renderLibrarySectionHtml(label, listId, items, type, iconSvg, defaultOp
 
   return `
     <div class="sonos-library__section">
-      <div class="sonos-library__section-header">
-        <span>${label}</span>
-        <button class="sonos-library-toggle btn-small" data-target="${listId}">${toggleText}</button>
-      </div>
-      <div id="${listId}" class="${listClass}${listHiddenClass}">
-        ${itemsHtml}
-      </div>
+      <details ${defaultOpen ? 'open' : ''}>
+        <summary class="sonos-library__section-header">
+          <span>${label}</span>
+          <span class="sonos-library__chevron">${CHEVRON_SVG}</span>
+        </summary>
+        <div id="${listId}" class="sonos-library__list">
+          ${itemsHtml}
+        </div>
+      </details>
     </div>
   `;
 }
@@ -500,7 +490,7 @@ function renderSchedules() {
         <div class="sonos-schedule-card__meta">
           <span>${escapeHtml(s.room)}</span>
           <span>${escapeHtml(s.playlist_name)}</span>
-          <span>${recStr}${s.volume != null ? ` &middot; Vol ${s.volume}%` : ''}</span>
+          <span>${recStr}${s.volume != null ? ` &middot; Vol ${s.volume}%` : ''}${s.keep_grouped ? ' &middot; Grouped' : ''}</span>
         </div>
         <div class="sonos-schedule-card__actions">
           <label class="sonos-schedule-toggle" title="${s.is_active ? 'Active' : 'Inactive'}">
@@ -615,6 +605,11 @@ function openScheduleModal(schedule = null) {
           <label>Date</label>
           <input type="date" name="one_time_date" value="${schedule?.one_time_date || ''}">
         </div>
+        <label class="form-checkbox">
+          <input type="checkbox" name="keep_grouped" ${schedule?.keep_grouped ? 'checked' : ''}>
+          <span>Keep rooms grouped</span>
+          <span class="form-checkbox__hint">When fired, also play on any rooms grouped with this room</span>
+        </label>
         <div class="form-actions">
           <button type="button" class="btn-secondary" id="cancelScheduleBtn">Cancel</button>
           <button type="submit" class="btn-primary">${isEdit ? 'Save' : 'Create'}</button>
@@ -655,6 +650,7 @@ function openScheduleModal(schedule = null) {
         ? [...form.querySelectorAll('[name="custom_days"]:checked')].map(c => parseInt(c.value))
         : null,
       one_time_date: form.recurrence.value === 'once' ? form.one_time_date.value || null : null,
+      keep_grouped: form.keep_grouped.checked,
     };
 
     try {
