@@ -467,6 +467,7 @@
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Small toggle switch for child devices */
@@ -1616,10 +1617,6 @@ body.is-admin .admin-only {
 }
 
 @media (max-width: 480px) {
-  .child-device-row {
-    flex-wrap: wrap;
-  }
-
   .child-device-row__controls {
     width: 100%;
     justify-content: space-between;
