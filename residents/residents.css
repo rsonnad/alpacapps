@@ -3158,6 +3158,17 @@ span.sonos-library-item__star.starred {
   to { transform: rotate(360deg); }
 }
 
+.car-cmd-btn--charger-unlock {
+  background: var(--available, #27ae60);
+  border-color: var(--available, #27ae60);
+  color: #fff;
+}
+
+.car-cmd-btn--charger-unlock:hover {
+  background: #219a52;
+  border-color: #219a52;
+}
+
 .car-cmd-btn--secondary {
   border-color: transparent;
   background: transparent;

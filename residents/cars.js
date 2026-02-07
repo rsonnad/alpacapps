@@ -312,9 +312,10 @@ function renderFleet() {
     const syncTime = formatSyncTime(car.last_synced_at);
     const isLocked = car.last_state?.locked;
     const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
-    const lockLabel = isLocked === false ? 'Unlocked' : 'Locked';
     const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
     const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
+    const isCharging = car.last_state?.charging_state === 'Charging' || car.last_state?.charging_state === 'Complete';
+    const showChargerHint = isCharging && isLocked !== false;
 
     // Owner info
     let ownerHtml = '';
@@ -325,6 +326,12 @@ function renderFleet() {
       const numberStr = total > 1 ? ` · ${ownerIndex[oid]} of ${total}` : '';
       ownerHtml = `<div class="car-card__owner">${car.account.owner_name} · ${car.account.tesla_email}${numberStr}</div>`;
     }
+
+    // Lock/unlock button — highlighted when charging + locked
+    const lockBtnClass = showChargerHint
+      ? 'car-cmd-btn car-cmd-btn--charger-unlock'
+      : 'car-cmd-btn';
+    const lockBtnLabel = showChargerHint ? 'Unlock to Move Off Charger' : nextLabel;
 
     return `
       <div class="car-card">
@@ -349,11 +356,11 @@ function renderFleet() {
             <div class="car-card__map" id="map_${car.id}"></div>
           </div>
           <div class="car-card__controls">
-            <button class="car-cmd-btn" id="lockBtn_${car.id}"
+            <button class="${lockBtnClass}" id="lockBtn_${car.id}"
                     onclick="window._sendCommand(${car.id}, '${nextCmd}')"
-                    title="${nextLabel} ${car.name}">
+                    title="${lockBtnLabel}">
               <span class="car-cmd-btn__icon">${lockIcon}</span>
-              <span class="car-cmd-btn__label">${nextLabel}</span>
+              <span class="car-cmd-btn__label">${lockBtnLabel}</span>
             </button>
             <button class="car-cmd-btn car-cmd-btn--secondary" id="flashBtn_${car.id}"
                     onclick="window._sendCommand(${car.id}, 'flash_lights')"
