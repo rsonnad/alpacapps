@@ -79,6 +79,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `resend-inbound-webhook` | `supabase functions deploy resend-inbound-webhook --no-verify-jwt` |
 | `telnyx-webhook` | `supabase functions deploy telnyx-webhook --no-verify-jwt` |
 | `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
+| `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)

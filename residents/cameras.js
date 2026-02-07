@@ -1,7 +1,7 @@
 /**
  * Cameras Page - Live camera feeds via go2rtc + HLS proxy
  * Loads stream config from camera_streams table, plays via HLS.js
- * Features: quality selection, PTZ controls, lightbox with navigation
+ * Features: quality selection, PTZ controls, snapshots, IR/LED/HDR toggles, presets, lightbox
  */
 
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
@@ -9,6 +9,12 @@ import { supabase } from '../shared/supabase.js';
 
 let cameras = []; // grouped by camera_name
 let currentQualities = {}; // track selected quality per cam index
+
+// Camera settings cache (keyed by protectCameraId)
+let cameraSettings = {};
+
+const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
+const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
 
 // =============================================
 // INITIALIZATION
@@ -22,6 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderCameras();
       renderLightbox();
       bindKeyboard();
+      // Load settings for all cameras with PTZ support
+      loadAllCameraSettings();
     },
   });
 });
@@ -61,6 +69,126 @@ async function loadCameras() {
 }
 
 // =============================================
+// CAMERA SETTINGS
+// =============================================
+async function loadAllCameraSettings() {
+  for (const cam of cameras) {
+    if (cam.protectCameraId) {
+      fetchCameraSettings(cam);
+    }
+  }
+}
+
+async function fetchCameraSettings(cam) {
+  if (!cam.protectCameraId) return null;
+  try {
+    const resp = await fetch(`${CAMERA_PROXY_BASE}/${cam.protectCameraId}/settings`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    cameraSettings[cam.protectCameraId] = data;
+    updateToolbarState(cam);
+    return data;
+  } catch (err) {
+    console.error('Failed to fetch camera settings:', err);
+    return null;
+  }
+}
+
+async function updateCameraSetting(cam, settings) {
+  if (!cam.protectCameraId) return false;
+  try {
+    const resp = await fetch(`${CAMERA_PROXY_BASE}/${cam.protectCameraId}/settings`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+    if (!resp.ok) {
+      showToast('Failed to update setting', 'error');
+      return false;
+    }
+    // Refresh settings
+    await fetchCameraSettings(cam);
+    return true;
+  } catch (err) {
+    showToast('Camera settings unavailable', 'error');
+    return false;
+  }
+}
+
+function updateToolbarState(cam) {
+  const s = cameraSettings[cam.protectCameraId];
+  if (!s) return;
+
+  // Find the camera index
+  const camIdx = cameras.indexOf(cam);
+
+  // Update grid toolbar
+  const gridIr = document.querySelector(`.ir-select[data-cam="${camIdx}"]`);
+  if (gridIr) gridIr.value = s.irLedMode || 'auto';
+
+  const gridLed = document.querySelector(`.led-toggle[data-cam="${camIdx}"]`);
+  if (gridLed) gridLed.classList.toggle('active', !!s.statusLightEnabled);
+
+  const gridHdr = document.querySelector(`.hdr-toggle[data-cam="${camIdx}"]`);
+  if (gridHdr) gridHdr.classList.toggle('active', !!s.hdrModeEnabled);
+
+  // Update lightbox toolbar if this camera is currently shown
+  if (lightboxOpen && lightboxCamIndex === camIdx) {
+    const lbIr = document.getElementById('lb-ir-mode');
+    if (lbIr) lbIr.value = s.irLedMode || 'auto';
+
+    const lbLed = document.getElementById('lb-led-toggle');
+    if (lbLed) {
+      lbLed.classList.toggle('active', !!s.statusLightEnabled);
+      lbLed.textContent = s.statusLightEnabled ? 'On' : 'Off';
+    }
+
+    const lbHdr = document.getElementById('lb-hdr-toggle');
+    if (lbHdr) {
+      lbHdr.classList.toggle('active', !!s.hdrModeEnabled);
+      lbHdr.textContent = s.hdrModeEnabled ? 'On' : 'Off';
+    }
+  }
+}
+
+// =============================================
+// SNAPSHOT
+// =============================================
+async function takeSnapshot(cam) {
+  if (!cam.protectCameraId) return;
+  try {
+    showToast('Capturing snapshot...', 'info');
+    const resp = await fetch(`${CAMERA_PROXY_BASE}/${cam.protectCameraId}/snapshot`);
+    if (!resp.ok) {
+      showToast('Snapshot failed', 'error');
+      return;
+    }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${cam.name.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Snapshot saved', 'success');
+  } catch (err) {
+    showToast('Snapshot unavailable', 'error');
+  }
+}
+
+// =============================================
+// SVG ICONS
+// =============================================
+const ICONS = {
+  snapshot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  ir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  led: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+  hdr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none">HDR</text></svg>',
+};
+
+// =============================================
 // RENDER CAMERA GRID
 // =============================================
 function renderCameras() {
@@ -86,6 +214,27 @@ function renderCameras() {
           <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}</span>
         </div>
       </div>
+      ${cam.protectCameraId ? `
+      <div class="camera-card__toolbar" data-cam="${i}">
+        <button class="toolbar-btn snapshot-btn" data-cam="${i}" title="Take Snapshot">${ICONS.snapshot}</button>
+        <span class="toolbar-sep"></span>
+        <select class="toolbar-select ir-select" data-cam="${i}" title="Night Vision">
+          <option value="auto">IR: Auto</option>
+          <option value="on">IR: On</option>
+          <option value="off">IR: Off</option>
+        </select>
+        <button class="toolbar-btn toolbar-toggle led-toggle" data-cam="${i}" title="Status LED">LED</button>
+        <button class="toolbar-btn toolbar-toggle hdr-toggle" data-cam="${i}" title="HDR Mode">HDR</button>
+        <span class="toolbar-sep"></span>
+        <select class="toolbar-select preset-select" data-cam="${i}" title="PTZ Preset">
+          <option value="" disabled selected>Preset</option>
+          <option value="-1">Home</option>
+          <option value="0">Preset 1</option>
+          <option value="1">Preset 2</option>
+          <option value="2">Preset 3</option>
+        </select>
+      </div>
+      ` : ''}
       <div class="camera-card__video" id="video-container-${i}" data-cam="${i}">
         <video id="video-${i}" muted autoplay playsinline></video>
         <div class="camera-card__overlay" id="overlay-${i}">
@@ -138,6 +287,51 @@ function renderCameras() {
   // Bind PTZ buttons (press and hold for continuous, release to stop)
   grid.querySelectorAll('.ptz-btn').forEach(btn => {
     bindPtzButton(btn);
+  });
+
+  // Bind toolbar controls
+  grid.querySelectorAll('.snapshot-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.cam);
+      takeSnapshot(cameras[idx]);
+    });
+  });
+
+  grid.querySelectorAll('.ir-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.dataset.cam);
+      updateCameraSetting(cameras[idx], { irLedMode: e.target.value });
+    });
+  });
+
+  grid.querySelectorAll('.led-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.cam);
+      const cam = cameras[idx];
+      const current = cameraSettings[cam.protectCameraId]?.statusLightEnabled;
+      updateCameraSetting(cam, { statusLightEnabled: !current });
+    });
+  });
+
+  grid.querySelectorAll('.hdr-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.cam);
+      const cam = cameras[idx];
+      const current = cameraSettings[cam.protectCameraId]?.hdrModeEnabled;
+      updateCameraSetting(cam, { hdrModeEnabled: !current });
+    });
+  });
+
+  grid.querySelectorAll('.preset-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.dataset.cam);
+      const slot = parseInt(e.target.value);
+      if (!isNaN(slot)) {
+        sendPtzCommand(idx, 'goto', slot);
+        // Reset dropdown to placeholder
+        e.target.selectedIndex = 0;
+      }
+    });
   });
 
   // Also allow clicking on video container to open lightbox
@@ -301,9 +495,6 @@ function startStream(camIndex, quality, videoElementId) {
 // =============================================
 // PTZ CONTROLS
 // =============================================
-const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
-let activePtzTimers = {};
-
 function bindPtzButton(btn) {
   const dir = btn.dataset.dir;
 
@@ -350,7 +541,7 @@ function bindPtzButton(btn) {
   });
 }
 
-async function sendPtzCommand(camIndex, direction) {
+async function sendPtzCommand(camIndex, direction, slot) {
   const cam = cameras[camIndex];
   if (!cam || !cam.protectCameraId) {
     showToast('PTZ not available for this camera', 'error');
@@ -384,6 +575,9 @@ async function sendPtzCommand(camIndex, direction) {
       break;
     case 'home':
       payload = { action: 'goto', slot: -1 };
+      break;
+    case 'goto':
+      payload = { action: 'goto', slot: slot ?? -1 };
       break;
     default:
       return;
@@ -440,6 +634,37 @@ function renderLightbox() {
           <button class="camera-lightbox__close" id="lb-close" title="Close (Esc)">✕</button>
         </div>
       </div>
+      <div class="camera-lightbox__toolbar" id="lb-toolbar">
+        <button class="toolbar-btn" id="lb-snapshot" title="Take Snapshot">${ICONS.snapshot} Snapshot</button>
+        <span class="toolbar-sep"></span>
+        <div class="toolbar-group">
+          <span class="toolbar-label">Night Vision</span>
+          <select class="toolbar-select" id="lb-ir-mode">
+            <option value="auto">Auto</option>
+            <option value="on">On</option>
+            <option value="off">Off</option>
+          </select>
+        </div>
+        <div class="toolbar-group">
+          <span class="toolbar-label">LED</span>
+          <button class="toolbar-btn toolbar-toggle" id="lb-led-toggle">Off</button>
+        </div>
+        <div class="toolbar-group">
+          <span class="toolbar-label">HDR</span>
+          <button class="toolbar-btn toolbar-toggle" id="lb-hdr-toggle">Off</button>
+        </div>
+        <span class="toolbar-sep"></span>
+        <div class="toolbar-group">
+          <span class="toolbar-label">Preset</span>
+          <select class="toolbar-select" id="lb-preset">
+            <option value="" disabled selected>Go to...</option>
+            <option value="-1">Home</option>
+            <option value="0">Preset 1</option>
+            <option value="1">Preset 2</option>
+            <option value="2">Preset 3</option>
+          </select>
+        </div>
+      </div>
       <div class="camera-lightbox__video-wrap">
         <button class="camera-lightbox__nav camera-lightbox__nav--prev" id="lb-prev" title="Previous camera (←)">‹</button>
         <div class="camera-lightbox__video-container">
@@ -474,6 +699,35 @@ function renderLightbox() {
     lightboxQuality = e.target.value;
     retryCount['lb'] = 0;
     startStream(lightboxCamIndex, lightboxQuality, 'lb-video');
+  });
+
+  // Lightbox toolbar controls
+  document.getElementById('lb-snapshot').addEventListener('click', () => {
+    takeSnapshot(cameras[lightboxCamIndex]);
+  });
+
+  document.getElementById('lb-ir-mode').addEventListener('change', (e) => {
+    updateCameraSetting(cameras[lightboxCamIndex], { irLedMode: e.target.value });
+  });
+
+  document.getElementById('lb-led-toggle').addEventListener('click', () => {
+    const cam = cameras[lightboxCamIndex];
+    const current = cameraSettings[cam.protectCameraId]?.statusLightEnabled;
+    updateCameraSetting(cam, { statusLightEnabled: !current });
+  });
+
+  document.getElementById('lb-hdr-toggle').addEventListener('click', () => {
+    const cam = cameras[lightboxCamIndex];
+    const current = cameraSettings[cam.protectCameraId]?.hdrModeEnabled;
+    updateCameraSetting(cam, { hdrModeEnabled: !current });
+  });
+
+  document.getElementById('lb-preset').addEventListener('change', (e) => {
+    const slot = parseInt(e.target.value);
+    if (!isNaN(slot)) {
+      sendPtzCommand(lightboxCamIndex, 'goto', slot);
+      e.target.selectedIndex = 0;
+    }
   });
 
   // PTZ in lightbox
@@ -531,9 +785,26 @@ function openLightbox(camIndex) {
   if (cam.streams.high) qualitySelect.innerHTML += '<option value="high">High</option>';
   qualitySelect.value = lightboxQuality;
 
-  // Show/hide PTZ
-  const ptzContainer = document.getElementById('lb-ptz');
-  ptzContainer.style.display = cam.protectCameraId ? '' : 'none';
+  // Show/hide PTZ and toolbar based on camera support
+  const hasPtz = !!cam.protectCameraId;
+  document.getElementById('lb-ptz').style.display = hasPtz ? '' : 'none';
+  document.getElementById('lb-toolbar').style.display = hasPtz ? '' : 'none';
+
+  // Update toolbar with current settings
+  if (hasPtz) {
+    const s = cameraSettings[cam.protectCameraId];
+    if (s) {
+      document.getElementById('lb-ir-mode').value = s.irLedMode || 'auto';
+      const ledBtn = document.getElementById('lb-led-toggle');
+      ledBtn.classList.toggle('active', !!s.statusLightEnabled);
+      ledBtn.textContent = s.statusLightEnabled ? 'On' : 'Off';
+      const hdrBtn = document.getElementById('lb-hdr-toggle');
+      hdrBtn.classList.toggle('active', !!s.hdrModeEnabled);
+      hdrBtn.textContent = s.hdrModeEnabled ? 'On' : 'Off';
+    }
+    // Also refresh settings from API
+    fetchCameraSettings(cam);
+  }
 
   // Show/hide nav buttons
   document.getElementById('lb-prev').style.visibility = cameras.length > 1 ? 'visible' : 'hidden';

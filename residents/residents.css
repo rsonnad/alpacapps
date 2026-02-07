@@ -361,6 +361,124 @@
   border-color: var(--accent, #b8860b);
 }
 
+/* ===== CAMERA TOOLBAR (grid card) ===== */
+.camera-card__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.toolbar-btn {
+  background: rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  transition: background 0.15s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.toolbar-btn:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.toolbar-btn.toolbar-toggle.active {
+  background: var(--accent, #b8860b);
+  color: white;
+  border-color: var(--accent, #b8860b);
+}
+
+.toolbar-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.toolbar-select {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ===== LIGHTBOX TOOLBAR ===== */
+.camera-lightbox__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(30,30,30,0.85);
+  border-left: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  flex-wrap: wrap;
+}
+
+.camera-lightbox__toolbar .toolbar-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.camera-lightbox__toolbar .toolbar-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.camera-lightbox__toolbar .toolbar-btn.toolbar-toggle.active {
+  background: var(--accent, #b8860b);
+  border-color: var(--accent, #b8860b);
+}
+
+.camera-lightbox__toolbar .toolbar-select {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.camera-lightbox__toolbar .toolbar-select option {
+  background: #222;
+  color: white;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.toolbar-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.5);
+  white-space: nowrap;
+}
+
+.camera-lightbox__toolbar .toolbar-sep {
+  background: rgba(255,255,255,0.15);
+}
+
 /* ===== CAMERA MOBILE ===== */
 @media (max-width: 768px) {
   .ptz-controls {
@@ -377,9 +495,28 @@
     opacity: 1;
   }
 
+  .camera-card__toolbar {
+    gap: 0.3rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .toolbar-btn {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.3rem;
+  }
+
+  .toolbar-select {
+    font-size: 0.65rem;
+  }
+
   .camera-lightbox__content {
     width: 100vw;
     max-height: 100vh;
+  }
+
+  .camera-lightbox__toolbar {
+    gap: 0.4rem;
+    padding: 0.35rem 0.5rem;
   }
 
   .camera-lightbox__nav {
