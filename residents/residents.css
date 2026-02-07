@@ -597,7 +597,7 @@
 
 /* ===== DISCONNECTED STATE ===== */
 .lighting-group-card.disconnected {
-  opacity: 0.6;
+  opacity: 0.85;
   border-color: var(--occupied);
 }
 

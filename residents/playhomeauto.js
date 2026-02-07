@@ -4,7 +4,7 @@
  * Groups loaded dynamically from govee_devices table
  */
 
-import { supabase } from '../shared/supabase.js';
+import { supabase, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 
 // =============================================
@@ -287,7 +287,7 @@ async function goveeApi(action, params = {}) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc1OTg1NjUsImV4cCI6MjA1MzE3NDU2NX0.RQRRAqp6qEhLDSANOSEaHVLSMDxBIJXzfPfQ3chrcHs',
+      'apikey': SUPABASE_ANON_KEY,
     },
     body: JSON.stringify({ action, ...params }),
   });
