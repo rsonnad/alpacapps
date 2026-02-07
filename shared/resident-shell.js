@@ -15,6 +15,7 @@ const RESIDENT_TABS = [
   { id: 'music', label: 'Music', href: 'sonos.html' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
   { id: 'climate', label: 'Climate', href: 'climate.html' },
+  { id: 'laundry', label: 'Laundry', href: 'laundry.html' },
   { id: 'cars', label: 'Cars', href: 'cars.html' },
   // Future tabs:
   // { id: 'info', label: 'House Info', href: 'info.html' },
