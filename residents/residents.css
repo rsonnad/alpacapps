@@ -1550,11 +1550,19 @@ span.sonos-library-item__star.starred {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.2rem 0;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  background: var(--accent-light, #f0e6d6);
+  margin-bottom: 0.25rem;
 }
 
-.sonos-group-eq__room-summary + .sonos-group-eq__room-summary {
-  border-top: 1px solid var(--border-light, #f0f0f0);
+.sonos-group-eq__room-summary:last-child {
+  margin-bottom: 0;
+}
+
+/* Playing state: light green background for room rows */
+.sonos-zone-card.playing .sonos-group-eq__room-summary {
+  background: #dcfce7;
 }
 
 .sonos-group-eq__name {
