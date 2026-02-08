@@ -552,6 +552,13 @@ function renderInvitations() {
 
   pendingSection.innerHTML = `
     <table class="users-table">
+      <colgroup>
+        <col style="width: 25%">
+        <col style="width: 10%">
+        <col style="width: 15%">
+        <col style="width: 18%">
+        <col style="width: 32%">
+      </colgroup>
       <thead>
         <tr>
           <th>Email</th>
