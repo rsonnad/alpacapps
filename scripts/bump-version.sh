@@ -79,5 +79,45 @@ find . -name "*.html" -not -path "./.git/*" -exec grep -l 'v[0-9]\{6\}\.[0-9]\{2
   fi
 done
 
-# 3. Output new version
+# 3. Generate version.json with commit hash + branch inclusion info
+#    HEAD at this point includes all merged branches (bump commit comes after).
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+FULL_HASH=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+ISO_TIMESTAMP=$(TZ="America/Chicago" date -Iseconds 2>/dev/null || TZ="America/Chicago" date +"%Y-%m-%dT%H:%M:%S%z")
+
+# Fetch latest remote refs so branch lists are current
+git fetch --prune origin 2>/dev/null || true
+
+# Included: remote branches already merged into HEAD
+INCLUDED_JSON="[]"
+if git rev-parse HEAD &>/dev/null; then
+  INCLUDED_JSON=$(git branch -r --merged HEAD 2>/dev/null \
+    | grep -v 'HEAD\|main$\|master$' \
+    | sed 's|origin/||;s|^[[:space:]]*||' \
+    | sort \
+    | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+fi
+
+# Pending: remote branches NOT yet merged into HEAD
+PENDING_JSON="[]"
+if git rev-parse HEAD &>/dev/null; then
+  PENDING_JSON=$(git branch -r --no-merged HEAD 2>/dev/null \
+    | grep -v 'HEAD\|main$\|master$' \
+    | sed 's|origin/||;s|^[[:space:]]*||' \
+    | sort \
+    | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+fi
+
+cat > "$PROJECT_ROOT/version.json" << ENDJSON
+{
+  "version": "$NEW_DISPLAY_VERSION",
+  "commit": "$COMMIT_HASH",
+  "full_commit": "$FULL_HASH",
+  "timestamp": "$ISO_TIMESTAMP",
+  "included": $INCLUDED_JSON,
+  "pending": $PENDING_JSON
+}
+ENDJSON
+
+# 4. Output new version
 echo "$NEW_DISPLAY_VERSION"
