@@ -392,6 +392,7 @@ function uploadWithProgress(bucket, storagePath, file, contentType, onProgress, 
     xhr.timeout = timeout;
     xhr.open('POST', url);
     xhr.setRequestHeader('Content-Type', contentType);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
     xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
     xhr.setRequestHeader('x-upsert', allowUpsert ? 'true' : 'false');
     xhr.send(file);
