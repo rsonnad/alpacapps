@@ -14,11 +14,11 @@ const ADMIN_TABS = [
   { id: 'rentals', label: 'Rentals', href: 'rentals.html' },
   { id: 'events', label: 'Events', href: 'events.html' },
   { id: 'media', label: 'Media', href: 'media.html' },
-  { id: 'users', label: 'Users', href: 'users.html' },
   { id: 'templates', label: 'Templates', href: 'templates.html' },
-  { id: 'settings', label: 'Settings', href: 'settings.html' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
   { id: 'faq', label: 'FAQ & AI', href: 'faq.html' },
+  { id: 'users', label: 'Users', href: 'users.html' },
+  { id: 'settings', label: 'Settings', href: 'settings.html' },
 ];
 
 // =============================================
