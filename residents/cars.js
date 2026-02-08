@@ -1,5 +1,5 @@
 /**
- * Cars Page - Tesla Fleet overview with live data from tesla_vehicles table.
+ * Cars Page - Vehicle fleet overview with live data from tesla_vehicles table.
  * Poller on DO droplet writes vehicle state; this page reads it every 30s.
  */
 
@@ -337,16 +337,6 @@ function renderFleet() {
     return;
   }
 
-  // Count vehicles per owner for numbering
-  const ownerCounts = {};
-  const ownerIndex = {};
-  vehicles.forEach(car => {
-    const oid = car.account?.id;
-    if (oid != null) {
-      ownerCounts[oid] = (ownerCounts[oid] || 0) + 1;
-    }
-  });
-
   grid.innerHTML = vehicles.map(car => {
     const svgKey = car.svg_key || 'modelY';
     const carSvg = CAR_SVG[svgKey] || CAR_SVG.modelY;
@@ -377,14 +367,11 @@ function renderFleet() {
     const isCharging = car.last_state?.charging_state === 'Charging' || car.last_state?.charging_state === 'Complete';
     const showChargerHint = isCharging && isLocked !== false;
 
-    // Owner info
+    // Owner info — prefer per-vehicle owner_name, fall back to account
     let ownerHtml = '';
-    if (car.account) {
-      const oid = car.account.id;
-      ownerIndex[oid] = (ownerIndex[oid] || 0) + 1;
-      const total = ownerCounts[oid];
-      const numberStr = total > 1 ? ` · ${ownerIndex[oid]} of ${total}` : '';
-      ownerHtml = `<div class="car-card__owner">${car.account.owner_name} · ${car.account.tesla_email}${numberStr}</div>`;
+    const ownerName = car.owner_name || car.account?.owner_name;
+    if (ownerName) {
+      ownerHtml = `<div class="car-card__owner">${ownerName}</div>`;
     }
 
     // Lock/unlock button — highlighted when charging + locked
@@ -407,7 +394,7 @@ function renderFleet() {
               ${car.color || ''}
             </span>
           </div>
-          <div class="car-card__model">${car.year} ${car.model}${getConfigSubtitle(car)}</div>
+          <div class="car-card__model">${car.year} ${car.make ? car.make + ' ' : ''}${car.model}${getConfigSubtitle(car)}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
           </div>
