@@ -310,10 +310,34 @@ Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get
   // General info
   parts.push(`\nPROPERTY INFO:
 - Location: 160 Still Forest Drive, Cedar Creek, TX 78612
-- Contact: team@alpacaplayhouse.com
-- WiFi network: Black Rock City
+- Contact email: team@alpacaplayhouse.com
+- Contact SMS: +1 (737) 747-4737
+- WiFi network: Eight Small Eyes, password: iiiiiiii
 - Resident portal: alpacaplayhouse.com/residents/
-- For maintenance requests, email team@alpacaplayhouse.com`);
+- For maintenance requests, email team@alpacaplayhouse.com
+- We are a tech-forward co-living community, 30 minutes east of Austin.
+
+AMENITIES & SMART HOME:
+- Sonos audio system with 12 zones throughout the property
+- Govee smart lighting (63 devices across all spaces)
+- Nest thermostats in Master, Kitchen, and Skyloft
+- Tesla vehicle fleet with charging
+- LG smart washer and dryer
+- Camera security system
+- Sauna with the world's best sound system
+- Cold plunge
+- Swim spa (hot or cold)
+- Outdoor shower
+- The Best Little Outhouse in Texas — Japanese toilets, amazing tile work, shower and changing room
+- Multiple indoor and outdoor living spaces
+
+SPACES:
+- The property has multiple rental spaces including dwellings and amenity/event spaces
+- Spaces include areas like Garage Mahal, Spartan, Skyloft, and others
+- Some spaces are for rent, others for events, others are shared amenities
+- Each space has structured amenities (e.g. hi-fi sound, A/C, jacuzzi tub, fireplace, smart lighting, balcony)
+- Use the search_spaces tool to answer questions about availability, pricing, amenities, or room details — do NOT guess.
+- Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
 
   return parts.join("\n");
 }
@@ -513,6 +537,10 @@ const TOOL_DECLARATIONS = [
         query: {
           type: "string",
           description: "Free-text search term to match against space names",
+        },
+        has_amenity: {
+          type: "string",
+          description: "Filter spaces that have this amenity (e.g. 'hi-fi sound', 'A/C', 'jacuzzi tub', 'fireplace', 'smart lighting', 'balcony'). Matches amenities containing this text (case-insensitive).",
         },
       },
       required: [],
@@ -844,7 +872,7 @@ async function executeToolCall(
 
         let query = supabaseForSearch
           .from("spaces")
-          .select("id, name, parent_id, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret")
+          .select("id, name, description, parent_id, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret, space_amenities(amenity:amenity_id(name, category))")
           .eq("is_archived", false);
 
         // Role-based visibility:
@@ -880,6 +908,12 @@ async function executeToolCall(
         if (args.query) {
           const q = args.query.toLowerCase();
           filtered = filtered.filter((s: any) => s.name?.toLowerCase().includes(q));
+        }
+        if (args.has_amenity) {
+          const amenityQ = args.has_amenity.toLowerCase();
+          filtered = filtered.filter((s: any) =>
+            (s.space_amenities || []).some((sa: any) => sa.amenity?.name?.toLowerCase().includes(amenityQ))
+          );
         }
 
         // Load assignments for availability
@@ -1000,7 +1034,11 @@ async function executeToolCall(
         }
 
         if (!finalList.length) return "No spaces found matching your criteria.";
-        return finalList.map((s: any) => `${s.name}: ${s.availStr} | ${s.rate}${s.details ? " | " + s.details : ""}`).join("\n");
+        return finalList.map((s: any) => {
+          const amenityNames = (s.space_amenities || []).map((sa: any) => sa.amenity?.name).filter(Boolean);
+          const amenityStr = amenityNames.length ? ` | amenities: ${amenityNames.join(", ")}` : "";
+          return `${s.name}: ${s.availStr} | ${s.rate}${s.details ? " | " + s.details : ""}${amenityStr}`;
+        }).join("\n");
       }
 
       default:
@@ -1201,15 +1239,29 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   // Identify caller and build scope
   const { scope, callerName, callerGreeting, callerType } = await buildVoiceUserScope(supabase, callerPhone);
 
-  // Build system prompt: start with voice assistant base prompt
-  let systemPrompt = assistant.system_prompt;
-
-  // Append device-specific context if caller has smart home access
+  // Build system prompt: shared base (identity, devices, property info)
+  // + voice-specific addendum from DB
+  let systemPrompt: string;
   if (scope && scope.userLevel >= 1) {
-    const devicePrompt = buildSystemPrompt(scope);
-    // Extract just the device sections (skip the PAI identity header since voice has its own)
-    const deviceSections = devicePrompt.substring(devicePrompt.indexOf("\nRULES:"));
-    systemPrompt += "\n" + deviceSections;
+    systemPrompt = buildSystemPrompt(scope);
+  } else {
+    // Unknown/low-level caller: build a minimal scope for the shared prompt
+    const minimalScope: UserScope = {
+      role: "associate",
+      userLevel: 0,
+      displayName: callerName || "Unknown Caller",
+      assignedSpaceIds: [],
+      allAccessibleSpaceIds: [],
+      goveeGroups: [],
+      nestDevices: [],
+      teslaVehicles: [],
+    };
+    systemPrompt = buildSystemPrompt(minimalScope);
+  }
+
+  // Append voice-specific instructions from DB
+  if (assistant.system_prompt?.trim()) {
+    systemPrompt += "\n\n" + assistant.system_prompt.trim();
   }
 
   // Personalize for known caller
@@ -1224,8 +1276,6 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   } else {
     systemPrompt += `\n\nThis is an unknown caller. Focus on property questions. Use search_spaces to look up availability when asked. If they're interested in renting, collect their name and contact info.`;
   }
-
-  systemPrompt += `\n\nIMPORTANT: When asked about space availability, pricing, or room details, ALWAYS use the search_spaces tool. Do not guess.`;
 
   if (config.test_mode) {
     systemPrompt += "\n\n[TEST MODE: This is a test call. Mention that this is a test if asked.]";
@@ -1279,7 +1329,22 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
   } else if (callerName) {
     firstMessage = firstMessage.replace("Greetings!", `Greetings ${callerName.split(" ")[0]}!`);
   }
-  let systemPrompt = assistant.system_prompt;
+
+  // Shared base prompt + voice-specific addendum
+  const minimalScope: UserScope = {
+    role: "associate",
+    userLevel: 0,
+    displayName: callerName || "Unknown Caller",
+    assignedSpaceIds: [],
+    allAccessibleSpaceIds: [],
+    goveeGroups: [],
+    nestDevices: [],
+    teslaVehicles: [],
+  };
+  let systemPrompt = buildSystemPrompt(scope || minimalScope);
+  if (assistant.system_prompt?.trim()) {
+    systemPrompt += "\n\n" + assistant.system_prompt.trim();
+  }
   if (testMode) systemPrompt += "\n\n[TEST MODE]";
 
   return jsonResponse({
@@ -1423,9 +1488,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
   }
 
-  // 4. Build system prompt
-  let systemPrompt = buildSystemPrompt(scope);
-  systemPrompt += `\n\nWhen asked about space availability, pricing, or room details, use the search_spaces tool.`;
+  // 4. Build system prompt (shared base — includes identity, devices, property info, amenities)
+  const systemPrompt = buildSystemPrompt(scope);
 
   // 5. Build Gemini conversation
   const contents: any[] = [];
