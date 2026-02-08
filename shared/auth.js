@@ -397,6 +397,9 @@ export async function signInWithGoogle(redirectTo) {
     provider: 'google',
     options: {
       redirectTo: redirectTo || window.location.origin + '/spaces/admin/',
+      queryParams: {
+        prompt: 'select_account',
+      },
     },
   });
 
