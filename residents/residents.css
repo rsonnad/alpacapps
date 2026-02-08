@@ -3487,6 +3487,19 @@ span.sonos-library-item__star.starred {
     padding: 0.25rem 0.5rem;
   }
 
+  /* Laundry */
+  .laundry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .laundry-card {
+    padding: 1rem;
+  }
+
+  .laundry-card__time {
+    font-size: 1.2rem;
+  }
+
   /* Thermostat */
   .thermostat-card {
     padding: 1rem;
