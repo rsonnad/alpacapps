@@ -770,7 +770,8 @@ async function executeToolCall(
 async function callGemini(
   apiKey: string,
   contents: any[],
-  tools: any[] | null
+  tools: any[] | null,
+  systemInstruction?: string
 ): Promise<any> {
   const url = `${GEMINI_URL}?key=${apiKey}`;
   const body: any = {
@@ -778,8 +779,12 @@ async function callGemini(
     generationConfig: {
       temperature: 0.4,
       maxOutputTokens: 1024,
+      thinkingConfig: { thinkingBudget: 0 }, // disable thinking for faster, simpler responses
     },
   };
+  if (systemInstruction) {
+    body.systemInstruction = { parts: [{ text: systemInstruction }] };
+  }
   if (tools) {
     body.tools = [{ functionDeclarations: tools }];
   }
@@ -805,7 +810,16 @@ async function callGemini(
     );
   }
 
-  return await response.json();
+  const result = await response.json();
+  const candidate = result.candidates?.[0];
+  console.log("Gemini response finishReason:", candidate?.finishReason,
+    "parts:", JSON.stringify((candidate?.content?.parts || []).map((p: any) => ({
+      keys: Object.keys(p),
+      thought: p.thought,
+      hasFunctionCall: !!p.functionCall,
+      textLength: p.text?.length,
+    }))));
+  return result;
 }
 
 // =============================================
@@ -873,18 +887,8 @@ serve(async (req) => {
     // 4. Build system prompt
     const systemPrompt = buildSystemPrompt(scope);
 
-    // 5. Build Gemini conversation
-    const contents: any[] = [
-      { role: "user", parts: [{ text: systemPrompt }] },
-      {
-        role: "model",
-        parts: [
-          {
-            text: "Understood. I'm PAI, ready to help with smart home controls and property questions.",
-          },
-        ],
-      },
-    ];
+    // 5. Build Gemini conversation (use systemInstruction instead of fake user/model turn)
+    const contents: any[] = [];
 
     // Add conversation history (last 20 messages)
     const recentHistory = conversationHistory.slice(-20);
@@ -907,7 +911,8 @@ serve(async (req) => {
     let geminiResult = await callGemini(
       GEMINI_API_KEY,
       contents,
-      TOOL_DECLARATIONS
+      TOOL_DECLARATIONS,
+      systemPrompt
     );
 
     // 7. Process function calls (max 3 rounds)
@@ -973,13 +978,15 @@ serve(async (req) => {
         parts: functionResponses,
       });
 
-      geminiResult = await callGemini(GEMINI_API_KEY, contents, TOOL_DECLARATIONS);
+      geminiResult = await callGemini(GEMINI_API_KEY, contents, TOOL_DECLARATIONS, systemPrompt);
     }
 
-    // 8. Extract final text
+    // 8. Extract final text (exclude thinking/thought parts — they're internal reasoning)
     const finalParts = geminiResult.candidates?.[0]?.content?.parts || [];
-    console.log("PAI final parts:", JSON.stringify(finalParts.map((p: any) => Object.keys(p))));
-    const textParts = finalParts.filter((p: any) => p.text);
+    const finishReason = geminiResult.candidates?.[0]?.finishReason;
+    console.log("PAI final parts:", JSON.stringify(finalParts.map((p: any) => ({ keys: Object.keys(p), thought: p.thought }))));
+    console.log("PAI finishReason:", finishReason);
+    const textParts = finalParts.filter((p: any) => p.text && !p.thought);
     const reply =
       textParts
         .map((p: any) => p.text)

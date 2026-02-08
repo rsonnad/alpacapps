@@ -44,9 +44,9 @@ const ICONS = {
 // Maps Tesla firmware version prefixes to FSD version and release date.
 // Longest prefix match wins (e.g., "2025.45.9" matches before "2025.45").
 const TESLA_SW_MAP = [
-  { prefix: '2026.2.3',      fsd: '12.6.4 / 13.2.9', date: 'Jan 27, 2026' },
-  { prefix: '2026.2',        fsd: '12.6.4 / 13.2.9', date: 'Jan 2026' },
-  { prefix: '2025.45.9',     fsd: '14.2.2.4',         date: 'Jan 24, 2026' },
+  { prefix: '2026.2.3',      fsd: '12.6.4 / 13.2.9', date: 'Jan 27, 2026', latest: true },
+  { prefix: '2026.2',        fsd: '12.6.4 / 13.2.9', date: 'Jan 2026',     latest: true },
+  { prefix: '2025.45.9',     fsd: '14.2.2.4',         date: 'Jan 24, 2026', latest: true },
   { prefix: '2025.45.8',     fsd: '14.2.2.3',         date: 'Jan 13, 2026' },
   { prefix: '2025.45.7',     fsd: '14.2.2.2',         date: 'Dec 29, 2025' },
   { prefix: '2025.45.6',     fsd: '14.2.2.1',         date: 'Dec 24, 2025' },
@@ -276,7 +276,10 @@ function getDataRows(car) {
     }
     const fsdInfo = lookupFSD(s.software_version);
     if (fsdInfo) {
-      swStr += `<br><span style="font-size:0.8rem;color:var(--text-muted)">FSD ${fsdInfo.fsd} \u00b7 ${fsdInfo.date}</span>`;
+      const fsdLabel = fsdInfo.latest
+        ? `<span style="font-size:0.85rem;font-weight:700">FSD ${fsdInfo.fsd}</span> <span style="font-size:0.7rem;font-weight:600;color:var(--available,#27ae60);background:rgba(39,174,96,0.1);padding:1px 5px;border-radius:3px;vertical-align:middle">Latest</span>`
+        : `<span style="font-size:0.85rem;font-weight:700">FSD ${fsdInfo.fsd}</span> <span style="font-size:0.7rem;font-weight:600;color:var(--occupied,#e74c3c);background:rgba(231,76,60,0.1);padding:1px 5px;border-radius:3px;vertical-align:middle">Update available</span>`;
+      swStr += `<br>${fsdLabel} <span style="font-size:0.75rem;color:var(--text-muted)">\u00b7 ${fsdInfo.date}</span>`;
     }
     rows.push({ label: 'Software', icon: 'software', value: swStr });
   }
