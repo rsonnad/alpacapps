@@ -38,6 +38,39 @@ const ICONS = {
   software: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
 };
 
+// =============================================
+// TESLA SOFTWARE → FSD VERSION + RELEASE DATE
+// =============================================
+// Maps Tesla firmware version prefixes to FSD version and release date.
+// Longest prefix match wins (e.g., "2025.45.9" matches before "2025.45").
+const TESLA_SW_MAP = [
+  { prefix: '2026.2.3',      fsd: '12.6.4 / 13.2.9', date: 'Jan 27, 2026' },
+  { prefix: '2026.2',        fsd: '12.6.4 / 13.2.9', date: 'Jan 2026' },
+  { prefix: '2025.45.9',     fsd: '14.2.2.4',         date: 'Jan 24, 2026' },
+  { prefix: '2025.45.8',     fsd: '14.2.2.3',         date: 'Jan 13, 2026' },
+  { prefix: '2025.45.7',     fsd: '14.2.2.2',         date: 'Dec 29, 2025' },
+  { prefix: '2025.45.6',     fsd: '14.2.2.1',         date: 'Dec 24, 2025' },
+  { prefix: '2025.45.5',     fsd: '14.2.2',           date: 'Dec 22, 2025' },
+  { prefix: '2025.45',       fsd: '14.2',             date: 'Dec 2025' },
+  { prefix: '2025.47.5',     fsd: '14.1.4',           date: 'Dec 25, 2025' },
+  { prefix: '2025.46.5',     fsd: '13.2.9',           date: 'Dec 23, 2025' },
+  { prefix: '2025.44.25.4',  fsd: '12.6.4 / 13.2.9', date: 'Dec 19, 2025' },
+  { prefix: '2025.44.25',    fsd: '12.6.4 / 13.2.9', date: 'Dec 2025' },
+  { prefix: '2025.44',       fsd: '12.6.4',           date: 'Nov 2025' },
+];
+
+function lookupFSD(softwareVersion) {
+  if (!softwareVersion) return null;
+  // Find longest matching prefix
+  let best = null;
+  for (const entry of TESLA_SW_MAP) {
+    if (softwareVersion.startsWith(entry.prefix)) {
+      if (!best || entry.prefix.length > best.prefix.length) best = entry;
+    }
+  }
+  return best;
+}
+
 // Tesla car SVG silhouettes (fallback when images fail to load)
 const CAR_SVG = {
   model3: `<svg viewBox="0 0 400 160" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -226,7 +259,7 @@ function getDataRows(car) {
     { label: 'Sentry', icon: 'sentry', value: sentryStr },
   ];
 
-  // Software version + update status
+  // Software version + update status + FSD info
   if (s.software_version) {
     let swStr = s.software_version;
     if (s.software_update) {
@@ -240,6 +273,10 @@ function getDataRows(car) {
       } else if (upd.status === 'scheduled') {
         swStr += ' \u00b7 Update scheduled';
       }
+    }
+    const fsdInfo = lookupFSD(s.software_version);
+    if (fsdInfo) {
+      swStr += `<br><span style="font-size:0.8rem;color:var(--text-muted)">FSD ${fsdInfo.fsd} \u00b7 ${fsdInfo.date}</span>`;
     }
     rows.push({ label: 'Software', icon: 'software', value: swStr });
   }

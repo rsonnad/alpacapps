@@ -3,7 +3,7 @@
  * Single-page app orchestrator for the Alpaca Playhouse mobile app.
  */
 
-import { initAuth, getAuthState, signOut, signInWithPassword, onAuthStateChange } from '../../shared/auth.js';
+import { initAuth, getAuthState, signOut, signInWithPassword, signInWithGoogle, onAuthStateChange } from '../../shared/auth.js';
 import { userHasTeslaAccount } from '../../shared/services/cars-data.js';
 
 // =============================================
@@ -99,6 +99,17 @@ function setupLogin() {
   // Enter key on password field
   passwordInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') doLogin();
+  });
+
+  // Google Sign In
+  const googleBtn = document.getElementById('googleSignInBtn');
+  googleBtn?.addEventListener('click', async () => {
+    hideLoginError();
+    try {
+      await signInWithGoogle(window.location.origin + '/mobile/app/index.html');
+    } catch (err) {
+      showLoginError(err.message || 'Google sign in failed');
+    }
   });
 
   function showLoginError(msg) {
