@@ -78,6 +78,36 @@ function renderResidentTabNav(activeTab, userRole) {
 }
 
 // =============================================
+// USER INFO (HEADER AVATAR + NAME)
+// =============================================
+
+function renderUserInfo(el, appUser, profileHref) {
+  if (!el) return;
+  const name = appUser.display_name || appUser.email;
+  const initials = getInitials(name);
+  const avatarUrl = appUser.avatar_url;
+
+  const avatarHtml = avatarUrl
+    ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
+    : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
+
+  el.innerHTML = `<a href="${profileHref}" class="user-profile-link">${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span></a>`;
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name[0].toUpperCase();
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -121,7 +151,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
     if (state.appUser && meetsRoleRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-      document.getElementById('userInfo').textContent = state.appUser.display_name || state.appUser.email;
+      renderUserInfo(document.getElementById('userInfo'), state.appUser, 'profile.html');
 
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');

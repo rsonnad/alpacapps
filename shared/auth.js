@@ -254,7 +254,7 @@ async function handleAuthChange(session) {
       return await withTimeout(
         supabase
           .from('app_users')
-          .select('id, role, display_name, email')
+          .select('id, role, display_name, email, avatar_url')
           .eq('auth_user_id', session.user.id)
           .single(),
         AUTH_TIMEOUT_MS,
