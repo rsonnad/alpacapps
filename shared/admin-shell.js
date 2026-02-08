@@ -140,8 +140,12 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
 
       // Sign out handlers (only bind once)
       if (!pageContentShown) {
-        document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
-        document.getElementById('headerSignOutBtn')?.addEventListener('click', () => signOut());
+        const handleSignOut = async () => {
+          await signOut();
+          window.location.href = '/login/';
+        };
+        document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
+        document.getElementById('headerSignOutBtn')?.addEventListener('click', handleSignOut);
       }
 
       pageContentShown = true;

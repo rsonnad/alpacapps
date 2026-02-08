@@ -141,8 +141,12 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
 
       // Sign out handlers + PAI widget + version info (only bind once)
       if (!pageContentShown) {
-        document.getElementById('signOutBtn')?.addEventListener('click', () => signOut());
-        document.getElementById('headerSignOutBtn')?.addEventListener('click', () => signOut());
+        const handleSignOut = async () => {
+          await signOut();
+          window.location.href = '/login/';
+        };
+        document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
+        document.getElementById('headerSignOutBtn')?.addEventListener('click', handleSignOut);
         initPaiWidget();
         setupVersionInfo();
       }
