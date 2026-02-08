@@ -294,23 +294,16 @@ async function sendInvitationEmail(invitationId, email, role) {
   const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
 
   if (emailResult.success) {
-    // Update email tracking in database
+    // Update email tracking: set sent timestamp and increment send count
+    const invitation = invitations?.find(i => i.id === invitationId);
+    const currentCount = invitation?.email_send_count || 0;
     await supabase
       .from('user_invitations')
       .update({
         email_sent_at: new Date().toISOString(),
-        email_send_count: supabase.rpc ? undefined : 1 // Will use raw SQL increment below
+        email_send_count: currentCount + 1,
       })
       .eq('id', invitationId);
-
-    // Increment send count
-    await supabase.rpc('increment_invitation_email_count', { invitation_id: invitationId }).catch(() => {
-      // Fallback: just set to 1 if RPC doesn't exist
-      supabase
-        .from('user_invitations')
-        .update({ email_send_count: 1 })
-        .eq('id', invitationId);
-    });
 
     return true;
   } else {
