@@ -158,15 +158,26 @@ async function main() {
     fs.mkdirSync(ICAL_DIR, { recursive: true });
   }
 
-  // Fetch spaces
-  const spaces = await fetchFromSupabase('spaces?can_be_dwelling=eq.true&is_archived=eq.false&select=id,name');
+  // Fetch spaces (include parent_id for parent-child deduplication)
+  const spaces = await fetchFromSupabase('spaces?can_be_dwelling=eq.true&is_archived=eq.false&select=id,name,parent_id');
   console.log(`Found ${spaces.length} dwelling spaces`);
 
-  // Fetch all active assignments with space links
+  // Fetch all active assignments with space links (include airbnb_uid for dedup)
   const assignments = await fetchFromSupabase(
-    'assignments?status=in.(active,pending_contract,contract_sent)&select=id,start_date,end_date,status,assignment_spaces(space_id)'
+    'assignments?status=in.(active,pending_contract,contract_sent)&select=id,start_date,end_date,status,airbnb_uid,assignment_spaces(space_id)'
   );
   console.log(`Found ${assignments.length} active assignments`);
+
+  // Build parent→children map
+  const childSpacesByParent = {};
+  for (const s of spaces) {
+    if (s.parent_id) {
+      if (!childSpacesByParent[s.parent_id]) {
+        childSpacesByParent[s.parent_id] = [];
+      }
+      childSpacesByParent[s.parent_id].push(s.id);
+    }
+  }
 
   // Group assignments by space
   const assignmentsBySpace = {};
@@ -188,7 +199,29 @@ async function main() {
       continue;
     }
 
-    const spaceAssignments = assignmentsBySpace[space.id] || [];
+    let spaceAssignments = assignmentsBySpace[space.id] || [];
+
+    // For parent spaces: exclude Airbnb-imported assignments that duplicate
+    // bookings already on a child space (same dates). Prevents child room
+    // bookings from cascading to other Airbnb listings via parent's iCal.
+    const childIds = childSpacesByParent[space.id] || [];
+    if (childIds.length > 0) {
+      const childDatePairs = new Set();
+      for (const childId of childIds) {
+        for (const a of (assignmentsBySpace[childId] || [])) {
+          if (a.airbnb_uid) {
+            childDatePairs.add(`${a.start_date}|${a.end_date}`);
+          }
+        }
+      }
+      if (childDatePairs.size > 0) {
+        spaceAssignments = spaceAssignments.filter(a => {
+          if (!a.airbnb_uid) return true;
+          return !childDatePairs.has(`${a.start_date}|${a.end_date}`);
+        });
+      }
+    }
+
     const icalContent = generateIcal(space.name, slug, spaceAssignments);
     const filePath = path.join(ICAL_DIR, `${slug}.ics`);
 

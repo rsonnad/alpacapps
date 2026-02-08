@@ -62,13 +62,13 @@ serve(async (req) => {
     // Fetch spaces and assignments
     const { data: spaces } = await supabase
       .from('spaces')
-      .select('id, name')
+      .select('id, name, parent_id')
       .eq('can_be_dwelling', true)
       .eq('is_archived', false);
 
     const { data: assignments } = await supabase
       .from('assignments')
-      .select('id, start_date, end_date, status, assignment_spaces(space_id)')
+      .select('id, start_date, end_date, status, airbnb_uid, assignment_spaces(space_id)')
       .in('status', ['prospect', 'active', 'pending_contract', 'contract_sent']);
 
     // Also fetch approved applications (not yet moved in) to block their dates
@@ -78,6 +78,17 @@ serve(async (req) => {
       .eq('application_status', 'approved')
       .not('approved_move_in', 'is', null)
       .is('assignment_id', null); // No assignment yet = not moved in
+
+    // Build parent→children map
+    const childSpacesByParent: Record<string, string[]> = {};
+    for (const s of (spaces || [])) {
+      if (s.parent_id) {
+        if (!childSpacesByParent[s.parent_id]) {
+          childSpacesByParent[s.parent_id] = [];
+        }
+        childSpacesByParent[s.parent_id].push(s.id);
+      }
+    }
 
     // Group assignments by space
     const assignmentsBySpace: Record<string, any[]> = {};
@@ -111,7 +122,33 @@ serve(async (req) => {
       const slug = NAME_TO_SLUG[space.name];
       if (!slug) continue;
 
-      const spaceAssignments = assignmentsBySpace[space.id] || [];
+      let spaceAssignments = assignmentsBySpace[space.id] || [];
+
+      // For parent spaces: exclude Airbnb-imported assignments that duplicate
+      // bookings already on a child space (same dates). This prevents a child
+      // room's booking from appearing in the parent's iCal and cascading to
+      // other Airbnb listings that import the parent's calendar.
+      const childIds = childSpacesByParent[space.id] || [];
+      if (childIds.length > 0) {
+        // Collect date pairs from all child space assignments
+        const childDatePairs = new Set<string>();
+        for (const childId of childIds) {
+          for (const a of (assignmentsBySpace[childId] || [])) {
+            if (a.airbnb_uid) {
+              childDatePairs.add(`${a.start_date}|${a.end_date}`);
+            }
+          }
+        }
+
+        if (childDatePairs.size > 0) {
+          spaceAssignments = spaceAssignments.filter((a: any) => {
+            if (!a.airbnb_uid) return true; // Keep non-Airbnb assignments
+            const key = `${a.start_date}|${a.end_date}`;
+            return !childDatePairs.has(key); // Skip if child has same dates
+          });
+        }
+      }
+
       const icalContent = generateIcal(space.name, spaceAssignments);
 
       // Update file via GitHub API
