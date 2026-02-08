@@ -473,13 +473,13 @@ const TOOL_DECLARATIONS = [
   {
     name: "search_spaces",
     description:
-      "Search for available rental spaces at Alpaca Playhouse. Use this to answer questions about availability, pricing, amenities, and space details. Always use this tool when someone asks about spaces, rooms, or availability — do NOT guess.",
+      "Search for rental spaces at Alpaca Playhouse. Use this to answer questions about availability, pricing, amenities, and space details. Always use this tool when someone asks about spaces, rooms, or availability — do NOT guess.",
     parameters: {
       type: "object",
       properties: {
         available_only: {
           type: "boolean",
-          description: "If true, only return currently available spaces. Default true.",
+          description: "If true, only return currently available spaces. Default true. IMPORTANT: Set to false when the user is asking about room features, amenities, or general property info (e.g. 'which rooms have a private bathroom?', 'how many beds does X have?', 'what rooms do you have?'). Only keep true when the user specifically wants to know what's available right now or for booking.",
         },
         available_after: {
           type: "string",
@@ -849,10 +849,9 @@ async function executeToolCall(
 
         // Role-based visibility:
         // staff+ (level 2+): see all non-archived spaces (unlisted too)
-        // resident/associate (level 1): see listed spaces (including secret)
+        // resident/associate (level 1): see listed + non-secret spaces
         // unknown/prospect/guest (level 0): see only listed + non-secret (public view)
-        if (scope.userLevel < 2) query = query.eq("is_listed", true);
-        if (scope.userLevel < 1) query = query.eq("is_secret", false);
+        if (scope.userLevel < 2) query = query.eq("is_listed", true).eq("is_secret", false);
 
         if (spaceType === "dwelling") query = query.eq("can_be_dwelling", true);
         else if (spaceType === "event") query = query.eq("can_be_event", true);
