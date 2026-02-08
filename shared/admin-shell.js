@@ -112,7 +112,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
     // Check if user meets the required role
     // Role hierarchy: admin > staff > resident = associate
     const userRole = state.appUser?.role;
-    const ROLE_LEVEL = { admin: 3, staff: 2, resident: 1, associate: 1 };
+    const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
     const userLevel = ROLE_LEVEL[userRole] || 0;
     const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
     const meetsRoleRequirement = userLevel >= requiredLevel;

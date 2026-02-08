@@ -141,7 +141,7 @@ export async function initAuth() {
 
     // If we have cached auth, use it to pre-populate state immediately
     // This lets the UI show content instantly while Supabase verifies in background
-    if (cached?.appUser && ['oracle', 'admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
+    if (cached?.appUser && ['oracle', 'admin', 'staff', 'resident', 'associate', 'public'].includes(cached.role)) {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
@@ -372,10 +372,46 @@ async function handleAuthChange(session) {
         currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
       }
     } else {
-      authLog.info('No invitation found - user unauthorized', { email: userEmail });
-      currentAppUser = null;
-      currentRole = 'unauthorized';
-      currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
+      // No invitation found — auto-create as public user
+      authLog.info('No invitation found — auto-creating as public user', { email: userEmail });
+      const displayName = session.user.user_metadata?.full_name || userEmail.split('@')[0];
+
+      let newPublicUser = null;
+      let publicCreateError = null;
+      try {
+        const result = await withTimeout(
+          supabase
+            .from('app_users')
+            .insert({
+              auth_user_id: session.user.id,
+              email: userEmail,
+              display_name: displayName,
+              role: 'public',
+            })
+            .select()
+            .single(),
+          AUTH_TIMEOUT_MS,
+          'Public user creation timed out'
+        );
+        newPublicUser = result.data;
+        publicCreateError = result.error;
+      } catch (timeoutError) {
+        authLog.warn('Public user creation timed out', timeoutError.message);
+        publicCreateError = timeoutError;
+      }
+
+      if (!publicCreateError && newPublicUser) {
+        authLog.info('Created public app_user', { email: userEmail });
+        currentAppUser = newPublicUser;
+        currentRole = 'public';
+        currentUser.displayName = displayName;
+        cacheAuthState(currentUser, newPublicUser, 'public');
+      } else {
+        authLog.error('Error creating public app_user', publicCreateError);
+        currentAppUser = null;
+        currentRole = 'unauthorized';
+        currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
+      }
     }
   }
 
@@ -426,6 +462,23 @@ export async function signInWithPassword(email, password) {
     throw error;
   }
   authLog.info('signInWithPassword() success', { email: data.user?.email });
+  return data;
+}
+
+/**
+ * Sign up with email and password (creates a new Supabase auth user)
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<object>} Session data (user will need to confirm email)
+ */
+export async function signUpWithPassword(email, password) {
+  authLog.info('signUpWithPassword() called', { email });
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    authLog.error('signUpWithPassword() error', error);
+    throw error;
+  }
+  authLog.info('signUpWithPassword() success', { email: data.user?.email, confirmed: !!data.session });
   return data;
 }
 
@@ -492,8 +545,9 @@ export function getAuthState() {
     isAdmin: ['admin', 'oracle'].includes(currentRole),
     isStaff: ['staff', 'admin', 'oracle'].includes(currentRole),
     isResident: ['resident', 'associate', 'staff', 'admin', 'oracle'].includes(currentRole),
+    isPublic: currentRole === 'public',
     // Treat 'pending' as authorized to allow redirect while we verify in background
-    isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'pending'].includes(currentRole),
+    isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'public', 'pending'].includes(currentRole),
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
   };

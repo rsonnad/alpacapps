@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-  <title>Login - AlpacAPPs</title>
+  <title>Sign In - AlpacAPPs</title>
   <style>
     :root {
       --bg: #faf9f7;
@@ -15,6 +15,8 @@
       --border: #e8e9ed;
       --accent: #3d8b7a;
       --accent-light: #e5f4f1;
+      --success: #2d8659;
+      --success-light: #e5f4ed;
       --error: #e07a5f;
       --error-light: #fdf0ec;
       --radius: 8px;
@@ -71,7 +73,38 @@
 
     .subtitle {
       color: var(--text-muted);
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Auth tabs */
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.625rem 0;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .auth-tab:hover {
+      color: var(--text);
+    }
+
+    .auth-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
     }
 
     .input-group {
@@ -223,6 +256,19 @@
       margin: 0;
     }
 
+    .success-box {
+      background: var(--success-light);
+      border: 1px solid var(--success);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      color: var(--success);
+    }
+
+    .success-box p {
+      margin: 0;
+    }
+
     .btn-secondary {
       display: inline-block;
       padding: 0.625rem 1.25rem;
@@ -265,23 +311,50 @@
     <div class="login-card">
       <div class="logo">&#129433;</div>
       <h1>AlpacAPPs</h1>
-      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260208.14 12:25p</span>
-      <p class="subtitle">Staff & Admin Access</p>
+      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">v260208.15 12:30p</span>
+      <p class="subtitle">Welcome to AlpacAPPs</p>
 
-      <!-- Login form -->
+      <!-- Sign In / Sign Up forms -->
       <div id="loginContent">
-        <form id="emailPasswordForm">
-          <div class="input-group">
-            <label for="emailInput">Email</label>
-            <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email">
-          </div>
-          <div class="input-group">
-            <label for="passwordInput">Password</label>
-            <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn-primary">Sign in</button>
-        </form>
-        <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabSignIn" type="button">Sign In</button>
+          <button class="auth-tab" id="tabSignUp" type="button">Sign Up</button>
+        </div>
+
+        <!-- Sign In form -->
+        <div id="signInPane">
+          <form id="emailPasswordForm">
+            <div class="input-group">
+              <label for="emailInput">Email</label>
+              <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <div class="input-group">
+              <label for="passwordInput">Password</label>
+              <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-primary">Sign in</button>
+          </form>
+          <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Sign Up form -->
+        <div id="signUpPane" class="hidden">
+          <form id="signUpForm">
+            <div class="input-group">
+              <label for="signUpEmail">Email</label>
+              <input type="email" id="signUpEmail" placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <div class="input-group">
+              <label for="signUpPassword">Password</label>
+              <input type="password" id="signUpPassword" placeholder="Create a password" required minlength="6" autocomplete="new-password">
+            </div>
+            <div class="input-group">
+              <label for="signUpConfirm">Confirm Password</label>
+              <input type="password" id="signUpConfirm" placeholder="Confirm password" required minlength="6" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn-primary">Create account</button>
+          </form>
+        </div>
 
         <div class="divider">or</div>
 
@@ -292,11 +365,8 @@
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Sign in with Google
+          Continue with Google
         </button>
-        <p class="help-text">
-          Only invited team members can access admin features.
-        </p>
       </div>
 
       <!-- Loading state -->
@@ -307,6 +377,17 @@
         </div>
       </div>
 
+      <!-- Sign-up success state -->
+      <div id="signUpSuccessContent" class="hidden">
+        <div class="success-box">
+          <p>Check your email to verify your account.</p>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+          Once verified, come back here to sign in.
+        </p>
+        <button id="backToSignInBtn" class="btn-secondary">Back to Sign In</button>
+      </div>
+
       <!-- Error state -->
       <div id="errorContent" class="hidden">
         <div class="error-box">
@@ -315,15 +396,15 @@
         <button id="retryBtn" class="btn-secondary">Try Again</button>
       </div>
 
-      <!-- Unauthorized state -->
+      <!-- Unauthorized state (fallback if auto-create fails) -->
       <div id="unauthorizedContent" class="hidden">
         <div class="error-box">
-          <p>Your account is not authorized to access admin features.</p>
-          <p style="margin-top: 0.5rem;">Please contact an administrator to request access.</p>
-          <p style="margin-top: 0.75rem;"><a href="sms:+14242341750" style="color: var(--error); text-decoration: underline;">Text (424) 234-1750</a> for access</p>
+          <p>Something went wrong creating your account.</p>
+          <p style="margin-top: 0.5rem;">Please try again or contact support.</p>
+          <p style="margin-top: 0.75rem;"><a href="sms:+14242341750" style="color: var(--error); text-decoration: underline;">Text (424) 234-1750</a> for help</p>
         </div>
-        <button id="signOutBtn" class="btn-secondary">Sign out & try another account</button>
-        <a href="/spaces/" class="btn-secondary" style="margin-left: 0.5rem;">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign out & try again</button>
+        <a href="/spaces/" class="btn-secondary" style="margin-left: 0.5rem;">View Spaces</a>
       </div>
 
       <a href="/spaces/" class="back-link">&larr; Back to Spaces</a>

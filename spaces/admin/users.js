@@ -379,10 +379,11 @@ function showInvitationModal(email, role) {
     staff: 'staff access (view all spaces and occupant details)',
     resident: 'resident access (cameras, lighting, and house info)',
     associate: 'associate access (cameras, lighting, and house info)',
+    public: 'public access (view available spaces)',
   };
   const roleDescription = roleDescriptions[role] || roleDescriptions.resident;
 
-  const roleLabels = { admin: 'an admin', staff: 'a staff member', resident: 'a resident', associate: 'an associate' };
+  const roleLabels = { admin: 'an admin', staff: 'a staff member', resident: 'a resident', associate: 'an associate', public: 'a public user' };
   const inviteText = `Hi,
 
 You've been invited to access AlpacApp as ${roleLabels[role] || 'a user'}.
@@ -656,6 +657,7 @@ function renderUsers() {
                   ${isCurrentUser ? 'disabled' : ''}
                   onchange="updateUserRole('${u.id}', this.value)"
                 >
+                  <option value="public" ${u.role === 'public' ? 'selected' : ''}>Public</option>
                   <option value="associate" ${u.role === 'associate' ? 'selected' : ''}>Associate</option>
                   <option value="resident" ${u.role === 'resident' ? 'selected' : ''}>Resident</option>
                   <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>Staff</option>
