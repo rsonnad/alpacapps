@@ -4,6 +4,7 @@
  * Cloned from admin-shell.js with resident-specific tab config
  */
 
+import { supabase } from './supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange } from './auth.js';
 import { errorLogger } from './error-logger.js';
 import { initPaiWidget } from './pai-widget.js';
@@ -128,7 +129,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
   let pageContentShown = false;
   let onReadyCalled = false;
 
-  function handleAuthState(state) {
+  async function handleAuthState(state) {
     authState = state;
 
     // Set user context for error logging
@@ -184,6 +185,10 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
       pageContentShown = true;
       if (onReady && !onReadyCalled) {
         onReadyCalled = true;
+        // Ensure Supabase has a real session before onReady queries RLS-protected tables.
+        // Cached auth resolves initAuth() before the JWT is ready, so getSession() forces
+        // the client to establish the actual session first.
+        await supabase.auth.getSession();
         onReady(state);
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
