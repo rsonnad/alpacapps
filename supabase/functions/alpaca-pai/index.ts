@@ -308,7 +308,8 @@ Note: Use room names exactly as the user says them. Common zones: Kitchen, Livin
       parts.push(`- "${v.name}" (${v.make} ${v.model}, id: ${v.id})${battery}`);
     }
     parts.push(`Actions: lock, unlock, flash lights, honk horn
-Note: Sleeping vehicles will be woken automatically (takes ~30 seconds).`);
+Info available: battery, range, lock state, charging state, GPS location (latitude/longitude), speed
+Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get_device_status with device_type "vehicle" to get full details including location.`);
   }
 
   // General info
@@ -523,6 +524,39 @@ const TOOL_DECLARATIONS = [
     },
   },
 ];
+
+// =============================================
+// Reverse Geocoding
+// =============================================
+
+const HOME_LAT = 30.13;
+const HOME_LNG = -97.46;
+const HOME_ADDR = "160 Still Forest Dr, Cedar Creek, TX";
+
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  // Home address override (Nominatim returns wrong house number)
+  if (Math.abs(lat - HOME_LAT) < 0.002 && Math.abs(lng - HOME_LNG) < 0.002) {
+    return HOME_ADDR;
+  }
+  try {
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+      { headers: { "Accept-Language": "en", "User-Agent": "AlpacaPAI/1.0" } }
+    );
+    if (!resp.ok) return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    const data = await resp.json();
+    const a = data.address || {};
+    const parts: string[] = [];
+    const street = a.house_number ? `${a.house_number} ${a.road || ""}` : (a.road || "");
+    if (street.trim()) parts.push(street.trim());
+    const city = a.city || a.town || a.village || a.hamlet || a.county || "";
+    if (city) parts.push(city);
+    if (a.state) parts.push(a.state);
+    return parts.join(", ") || data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  } catch {
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  }
+}
 
 // =============================================
 // Tool Call Executor
@@ -781,18 +815,22 @@ async function executeToolCall(
               )
             : scope.teslaVehicles;
           if (!vehicles.length) return "No matching vehicles found.";
-          return vehicles
-            .map((v) => {
-              if (!v.lastState) return `${v.name} (${v.make} ${v.model}): ${v.vehicleState}`;
-              return `${v.name} (${v.make} ${v.model}): ${v.lastState.battery_level ?? "?"}% battery, ${
-                v.lastState.range_miles ? v.lastState.range_miles + " mi range, " : ""
-              }${v.lastState.locked ? "locked" : "unlocked"}, ${v.vehicleState}${
-                v.lastState.charging_state && v.lastState.charging_state !== "Disconnected"
-                  ? ", charging: " + v.lastState.charging_state
-                  : ""
-              }`;
-            })
-            .join("\n");
+          const lines = await Promise.all(vehicles.map(async (v) => {
+            if (!v.lastState) return `${v.name} (${v.make} ${v.model}): ${v.vehicleState}`;
+            let locationPart = "";
+            if (v.lastState.latitude != null && v.lastState.longitude != null) {
+              const addr = await reverseGeocode(v.lastState.latitude, v.lastState.longitude);
+              locationPart = `location: ${addr}${v.lastState.speed_mph ? ` (${v.lastState.speed_mph} mph)` : ""}, `;
+            }
+            return `${v.name} (${v.make} ${v.model}): ${v.lastState.battery_level ?? "?"}% battery, ${
+              v.lastState.range_miles ? v.lastState.range_miles + " mi range, " : ""
+            }${locationPart}${v.lastState.locked ? "locked" : "unlocked"}, ${v.vehicleState}${
+              v.lastState.charging_state && v.lastState.charging_state !== "Disconnected"
+                ? ", charging: " + v.lastState.charging_state
+                : ""
+            }`;
+          }));
+          return lines.join("\n");
         }
 
         if (args.device_type === "lights") {
