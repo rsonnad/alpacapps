@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProfile() {
   const { data, error } = await supabase
     .from('app_users')
-    .select('id, display_name, email, role, avatar_url, bio, phone, pronouns, birthday, instagram, links')
+    .select('id, display_name, email, role, avatar_url, bio, phone, pronouns, birthday, instagram, links, nationality, location_base')
     .eq('id', currentUser.id)
     .single();
 
@@ -65,6 +65,8 @@ function renderProfile() {
   document.getElementById('fieldDisplayName').value = d.display_name || '';
   document.getElementById('fieldPronouns').value = d.pronouns || '';
   document.getElementById('fieldBio').value = d.bio || '';
+  document.getElementById('fieldNationality').value = d.nationality || '';
+  document.getElementById('fieldLocationBase').value = d.location_base || '';
   document.getElementById('fieldBirthday').value = d.birthday || '';
   document.getElementById('fieldPhone').value = d.phone || '';
   document.getElementById('fieldInstagram').value = d.instagram || '';
@@ -247,6 +249,8 @@ async function saveProfile() {
       display_name: document.getElementById('fieldDisplayName').value.trim() || null,
       pronouns: document.getElementById('fieldPronouns').value.trim() || null,
       bio: document.getElementById('fieldBio').value.trim() || null,
+      nationality: document.getElementById('fieldNationality').value.trim() || null,
+      location_base: document.getElementById('fieldLocationBase').value.trim() || null,
       birthday: document.getElementById('fieldBirthday').value || null,
       phone: document.getElementById('fieldPhone').value.trim() || null,
       instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, '') || null,
