@@ -1615,7 +1615,7 @@ window.sendForSignatureAction = async function() {
   switchDetailTab('documents');
   setTimeout(() => {
     const btn = document.getElementById('sendForSignatureBtn');
-    if (btn) btn.click();
+    if (btn && !btn.disabled) btn.click();
   }, 100);
 };
 
@@ -1626,13 +1626,13 @@ window.resendSignatureAction = async function() {
     showToast('No SignWell document found — use Manual Document Entry to update status', 'error');
     return;
   }
-  try {
-    await signwellService.sendReminder(app.signwell_document_id);
-    showToast('Signing reminder sent to tenant', 'success');
-  } catch (error) {
-    console.error('Error sending reminder:', error);
-    showToast('Error: ' + error.message, 'error');
-  }
+  // Delegate to the documents tab button which has cooldown protection
+  switchDetailTab('documents');
+  setTimeout(() => {
+    const btn = document.getElementById('resendSignatureBtn');
+    if (btn && !btn.disabled) btn.click();
+    else showToast('Please wait before resending', 'warning');
+  }, 100);
 };
 
 window.checkSignatureStatusAction = async function() {
@@ -1661,6 +1661,9 @@ window.checkSignatureStatusAction = async function() {
 
 window.confirmDeposit = async function() {
   if (!currentApplicationId) return;
+  // Prevent double-click — find and disable the clicked button
+  const btns = document.querySelectorAll('[onclick="confirmDeposit()"]');
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Confirming...'; });
   try {
     await rentalService.confirmDeposit(currentApplicationId);
     await loadApplications();
@@ -1681,6 +1684,7 @@ window.confirmDeposit = async function() {
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Confirm Deposit'; });
   }
 };
 
@@ -2234,7 +2238,32 @@ async function updateIdentityVerificationUI(app) {
       const url = e.target.dataset.url;
       navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
     });
-    document.getElementById('resendIdEmailBtn')?.addEventListener('click', () => resendIdEmail(app));
+    document.getElementById('resendIdEmailBtn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('resendIdEmailBtn');
+      if (btn.disabled) return;
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      try {
+        await resendIdEmail(app);
+        // 30s cooldown
+        let seconds = 30;
+        btn.textContent = `Sent (${seconds}s)`;
+        const timer = setInterval(() => {
+          seconds--;
+          if (seconds <= 0) {
+            clearInterval(timer);
+            btn.textContent = originalText;
+            btn.disabled = false;
+          } else {
+            btn.textContent = `Sent (${seconds}s)`;
+          }
+        }, 1000);
+      } catch (e) {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    });
     return;
   }
 
@@ -2818,10 +2847,22 @@ function setupEventListeners() {
     try {
       await signwellService.sendReminder(app.signwell_document_id);
       showToast('Signing reminder sent to tenant', 'success');
+      // 30s cooldown to prevent spamming the tenant
+      let seconds = 30;
+      btn.textContent = `Sent (${seconds}s)`;
+      const timer = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(timer);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        } else {
+          btn.textContent = `Sent (${seconds}s)`;
+        }
+      }, 1000);
     } catch (error) {
       console.error('Error sending reminder:', error);
       showToast('Error: ' + error.message, 'error');
-    } finally {
       btn.textContent = originalText;
       btn.disabled = false;
     }
