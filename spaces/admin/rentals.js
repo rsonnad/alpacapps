@@ -2110,6 +2110,14 @@ async function updateDocumentsTabState(app) {
   noTemplateWarning.style.display = 'none';
   leasePreview.innerHTML = '';
 
+  // Update generate button text based on whether PDF already exists
+  const generateBtn = document.getElementById('generatePdfBtn');
+  if (generateBtn) {
+    generateBtn.textContent = app.agreement_document_url
+      ? 'Regenerate Signable Agreement PDF'
+      : 'Generate Signable Agreement PDF';
+  }
+
   // Load template and agreement data
   try {
     currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
@@ -2130,9 +2138,9 @@ async function updateDocumentsTabState(app) {
 
   if (status === 'signed' && app.signed_pdf_url) {
     // Show signed document - also show the unsigned PDF for reference
-    if (app.generated_pdf_url) {
+    if (app.agreement_document_url) {
       pdfSection.style.display = 'block';
-      document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
+      document.getElementById('pdfDownloadLink').href = app.agreement_document_url;
       document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
       if (app.agreement_generated_at) {
         document.getElementById('pdfGeneratedAt').textContent =
@@ -2153,19 +2161,19 @@ async function updateDocumentsTabState(app) {
       ? ` on ${formatDateAustin(app.agreement_sent_at, { month: 'short', day: 'numeric' })}`
       : '';
     document.getElementById('signatureStatusText').textContent = `Sent for signature${sentDateStr} — awaiting tenant signature`;
-    if (app.generated_pdf_url) {
-      document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
+    if (app.agreement_document_url) {
+      document.getElementById('pdfDownloadLink').href = app.agreement_document_url;
       document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
       if (app.agreement_generated_at) {
         document.getElementById('pdfGeneratedAt').textContent =
           `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
       }
     }
-  } else if ((status === 'generated' || app.generated_pdf_url) && app.generated_pdf_url) {
+  } else if ((status === 'generated' || app.agreement_document_url) && app.agreement_document_url) {
     // Show generated PDF alongside generate section (so user can regenerate with new terms)
     generateSection.style.display = 'block';
     pdfSection.style.display = 'block';
-    document.getElementById('pdfDownloadLink').href = app.generated_pdf_url;
+    document.getElementById('pdfDownloadLink').href = app.agreement_document_url;
     document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
     if (app.agreement_generated_at) {
       document.getElementById('pdfGeneratedAt').textContent =
@@ -2478,7 +2486,7 @@ async function sendForSignature() {
     return;
   }
 
-  if (!app.generated_pdf_url) {
+  if (!app.agreement_document_url) {
     showToast('Please generate a lease agreement PDF first', 'warning');
     return;
   }
@@ -2499,7 +2507,7 @@ async function sendForSignature() {
     const recipientName = `${app.person.first_name} ${app.person.last_name}`;
     const document = await signwellService.sendForSignature(
       currentApplicationId,
-      app.generated_pdf_url,
+      app.agreement_document_url,
       app.person.email,
       recipientName
     );

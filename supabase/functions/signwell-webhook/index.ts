@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       .from('rental_applications')
       .select(`
         id,
-        generated_pdf_url,
+        agreement_document_url,
         approved_rate,
         approved_rate_term,
         security_deposit_amount,
