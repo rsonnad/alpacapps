@@ -118,20 +118,15 @@ async function buildUserScope(
   appUser: any,
   userLevel: number
 ): Promise<UserScope> {
-  // 1. Get assigned space IDs for residents
+  // 1. Get assigned space IDs for residents (uses person_id FK on app_users)
   let assignedSpaceIds: string[] = [];
   if (userLevel < 2) {
-    const { data: people } = await supabase
-      .from("people")
-      .select("id")
-      .eq("email", appUser.email)
-      .limit(1);
-
-    if (people?.length) {
+    const personId = appUser.person_id;
+    if (personId) {
       const { data: assignments } = await supabase
         .from("assignments")
         .select("id, assignment_spaces(space_id)")
-        .eq("person_id", people[0].id)
+        .eq("person_id", personId)
         .in("status", ["active", "pending_contract", "contract_sent"]);
 
       for (const a of assignments || []) {
@@ -1398,7 +1393,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   const { data: appUser } = await supabase
     .from("app_users")
-    .select("id, role, email, display_name")
+    .select("id, role, email, display_name, person_id")
     .eq("auth_user_id", user.id)
     .single();
 

@@ -46,7 +46,6 @@
     <p>Connecting your Tesla account...</p>
   </div>
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script>
     const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY1ODgxNjUsImV4cCI6MjA0MjE2NDE2NX0.vGSLw5PtxKcdRGPQHxNfoHqVvmzWQWFiCZsHaRuIvNw';
@@ -92,20 +91,30 @@
       }
 
       try {
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          global: { headers: { Authorization: 'Bearer ' + supabaseToken } }
-        });
-
-        const { data, error: fnError } = await supabase.functions.invoke('tesla-command', {
-          body: {
+        // Call edge function directly with fetch — supabase.functions.invoke
+        // doesn't reliably forward custom auth headers on standalone pages
+        const fnUrl = SUPABASE_URL + '/functions/v1/tesla-command';
+        const fnRes = await fetch(fnUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + supabaseToken,
+            'apikey': SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
             action: 'exchangeCode',
             code: code,
             account_id: parseInt(accountId),
-          },
+          }),
         });
 
+        const data = await fnRes.json().catch(() => null);
+        const fnError = fnRes.ok ? null : { message: data?.error || `HTTP ${fnRes.status}` };
+
         if (fnError) {
-          throw new Error(fnError.message || 'Function call failed');
+          // Try to extract detailed error from the response body
+          const detail = data?.error || fnError.message || 'Function call failed';
+          throw new Error(detail);
         }
 
         if (data?.error) {

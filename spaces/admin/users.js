@@ -119,7 +119,7 @@ async function loadPeople() {
     const { data, error } = await withTimeout(
       supabase
         .from('people')
-        .select('first_name, last_name, email, phone, type')
+        .select('id, first_name, last_name, email, phone, type')
         .not('email', 'is', null)
         .neq('email', '')
         .order('first_name'),
@@ -558,6 +558,134 @@ async function removeUser(userId) {
   }
 }
 
+// --- Current Resident Management ---
+
+async function refreshResidencyStatus() {
+  try {
+    const { error } = await supabase.rpc('recompute_current_residents');
+    if (error) {
+      showToast('Failed to refresh residency status: ' + error.message, 'error');
+      return;
+    }
+    await loadUsers();
+    render();
+    showToast('Residency status refreshed', 'success');
+  } catch (e) {
+    showToast('Error refreshing: ' + e.message, 'error');
+  }
+}
+
+async function toggleCurrentResident(userId) {
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+
+  // Cycle override: null (auto) → !current (manual opposite) → null (back to auto)
+  let newOverride;
+  if (user.is_current_resident_override === null) {
+    // Auto mode → set manual override to opposite of current effective value
+    newOverride = !user.is_current_resident;
+  } else {
+    // Manual mode → go back to auto
+    newOverride = null;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ is_current_resident_override: newOverride })
+      .eq('id', userId);
+    if (error) throw error;
+
+    // Recompute effective values
+    await supabase.rpc('recompute_current_residents');
+    await loadUsers();
+    render();
+  } catch (e) {
+    showToast('Failed to update: ' + e.message, 'error');
+  }
+}
+
+function getPersonName(personId) {
+  const person = peopleSuggestions.find(p => p.id === personId);
+  if (!person) return '(linked)';
+  return `${person.first_name || ''} ${person.last_name || ''}`.trim() || person.email;
+}
+
+function showLinkPersonModal(userId, userEmail) {
+  const modal = document.getElementById('linkPersonModal');
+  modal.dataset.userId = userId;
+
+  // Filter people suggestions, put email match first
+  const sorted = [...peopleSuggestions].sort((a, b) => {
+    const aMatch = a.email?.toLowerCase() === userEmail?.toLowerCase();
+    const bMatch = b.email?.toLowerCase() === userEmail?.toLowerCase();
+    if (aMatch && !bMatch) return -1;
+    if (!aMatch && bMatch) return 1;
+    return 0;
+  });
+
+  const select = document.getElementById('linkPersonSelect');
+  select.innerHTML = `
+    <option value="">-- Select a person --</option>
+    ${sorted.map(p => `
+      <option value="${p.id}" ${p.email?.toLowerCase() === userEmail?.toLowerCase() ? 'selected' : ''}>
+        ${p.first_name || ''} ${p.last_name || ''} — ${p.email} (${p.type || '?'})
+      </option>
+    `).join('')}
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeLinkPersonModal() {
+  document.getElementById('linkPersonModal').classList.add('hidden');
+}
+
+async function confirmLinkPerson() {
+  const modal = document.getElementById('linkPersonModal');
+  const userId = modal.dataset.userId;
+  const personId = document.getElementById('linkPersonSelect').value;
+
+  if (!personId) {
+    showToast('Please select a person', 'warning');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ person_id: personId })
+      .eq('id', userId);
+    if (error) throw error;
+
+    // Recompute residency after linking
+    await supabase.rpc('recompute_current_residents');
+    await loadUsers();
+    render();
+    closeLinkPersonModal();
+    showToast('Person linked', 'success');
+  } catch (e) {
+    showToast('Failed to link: ' + e.message, 'error');
+  }
+}
+
+async function unlinkPerson(userId) {
+  try {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ person_id: null })
+      .eq('id', userId);
+    if (error) throw error;
+
+    await supabase.rpc('recompute_current_residents');
+    await loadUsers();
+    render();
+    showToast('Person unlinked', 'success');
+  } catch (e) {
+    showToast('Failed to unlink: ' + e.message, 'error');
+  }
+}
+
 function render() {
   renderInvitations();
   renderUsers();
@@ -679,6 +807,8 @@ function renderUsers() {
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
+          <th>Here</th>
+          <th>Person</th>
           <th>Last Login</th>
           <th>Actions</th>
         </tr>
@@ -686,6 +816,11 @@ function renderUsers() {
       <tbody>
         ${users.map(u => {
           const isCurrentUser = u.id === currentUserId;
+          const isHere = u.is_current_resident;
+          const isOverride = u.is_current_resident_override !== null && u.is_current_resident_override !== undefined;
+          const overrideTitle = isOverride
+            ? `Manual override (${u.is_current_resident_override ? 'forced ON' : 'forced OFF'}). Click to reset to auto.`
+            : `Auto-derived from assignments. Click to override.`;
           return `
             <tr>
               <td>
@@ -707,6 +842,20 @@ function renderUsers() {
                   <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                   <option value="oracle" ${u.role === 'oracle' ? 'selected' : ''}>Oracle</option>
                 </select>
+              </td>
+              <td>
+                <button class="residency-toggle ${isHere ? 'is-here' : ''} ${isOverride ? 'manual' : ''}"
+                  onclick="toggleCurrentResident('${u.id}')"
+                  title="${overrideTitle}">
+                  ${isHere ? '&#127968;' : '&mdash;'}${isOverride ? ' &#128274;' : ''}
+                </button>
+              </td>
+              <td class="person-cell">
+                ${u.person_id
+                  ? `<span class="person-link" title="Click to unlink">${getPersonName(u.person_id)}</span>
+                     <button class="btn-unlink" onclick="unlinkPerson('${u.id}')" title="Unlink person">&times;</button>`
+                  : `<button class="btn-text btn-small" onclick="showLinkPersonModal('${u.id}', '${u.email}')">Link</button>`
+                }
               </td>
               <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
               <td>
@@ -732,3 +881,9 @@ window.copyInviteText = copyInviteText;
 window.closeInviteModal = closeInviteModal;
 window.showInvitationModal = showInvitationModal;
 window.sendInviteEmail = sendInviteEmail;
+window.toggleCurrentResident = toggleCurrentResident;
+window.refreshResidencyStatus = refreshResidencyStatus;
+window.showLinkPersonModal = showLinkPersonModal;
+window.closeLinkPersonModal = closeLinkPersonModal;
+window.confirmLinkPerson = confirmLinkPerson;
+window.unlinkPerson = unlinkPerson;

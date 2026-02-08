@@ -37,7 +37,7 @@ async function loadProfile() {
   const [profileRes, ownedRes, driverRes] = await Promise.all([
     supabase
       .from('app_users')
-      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, vehicle_limit')
+      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, vehicle_limit, is_current_resident, person_id')
       .eq('id', currentUser.id)
       .single(),
     supabase
@@ -111,6 +111,19 @@ function renderProfile() {
   const roleEl = document.getElementById('profileRole');
   roleEl.textContent = (d.role || 'resident').charAt(0).toUpperCase() + (d.role || 'resident').slice(1);
   roleEl.className = 'role-badge ' + (d.role || 'resident');
+
+  // Current resident badge
+  const residentStatusEl = document.getElementById('profileResidentStatus');
+  if (residentStatusEl) {
+    if (d.is_current_resident) {
+      residentStatusEl.textContent = '&#127968; Currently here';
+      residentStatusEl.innerHTML = '&#127968; Currently here';
+      residentStatusEl.className = 'resident-status-badge here';
+      residentStatusEl.style.display = '';
+    } else {
+      residentStatusEl.style.display = 'none';
+    }
+  }
 
   // Form fields
   document.getElementById('fieldFirstName').value = d.first_name || '';

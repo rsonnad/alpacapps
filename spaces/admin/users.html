@@ -340,6 +340,78 @@
     .btn-text:hover {
       color: var(--accent-dark);
     }
+
+    /* Current Resident toggle */
+    .residency-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .residency-toggle:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .residency-toggle.is-here {
+      border-color: var(--available);
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .residency-toggle.manual {
+      border-style: dashed;
+    }
+
+    .person-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .person-link {
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+
+    .btn-unlink {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 0.25rem;
+      line-height: 1;
+    }
+
+    .btn-unlink:hover {
+      color: var(--occupied);
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .refresh-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -370,7 +442,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.46 4:15p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.50 4:23p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -437,7 +509,10 @@
       <div class="section">
         <div class="section-header">
           <h2>Active Users</h2>
-          <span id="usersCount" class="role-badge staff">0</span>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <button class="refresh-btn" onclick="refreshResidencyStatus()" title="Recompute residency from assignments">&#8635; Refresh</button>
+            <span id="usersCount" class="role-badge staff">0</span>
+          </div>
         </div>
         <div id="usersSection">
           <!-- Populated by JS -->
@@ -463,6 +538,28 @@
         <button class="btn-secondary" onclick="closeInviteModal()">Close</button>
         <button class="btn-primary" onclick="copyInviteText()">Copy to Clipboard</button>
         <button class="btn-primary" id="sendInviteEmailBtn" style="background: var(--available);" onclick="sendInviteEmail()">Send Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link Person Modal -->
+  <div id="linkPersonModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>Link Person Record</h2>
+        <button class="modal-close" onclick="closeLinkPersonModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem;">
+          Link this app user to a person record from the rental system. This enables auto-deriving residency status from assignments.
+        </p>
+        <select id="linkPersonSelect" style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 0.875rem;">
+          <option value="">-- Select a person --</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeLinkPersonModal()">Cancel</button>
+        <button class="btn-primary" onclick="confirmLinkPerson()">Link</button>
       </div>
     </div>
   </div>
