@@ -66,6 +66,7 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
     test_mode: config.test_mode,
     files: [
       {
+        name: `${options.documentName || 'Lease Agreement'}.pdf`,
         file_url: pdfUrl,
       },
     ],
@@ -79,32 +80,33 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
       },
     ],
     // Add signature field at the bottom of the document
+    // fields is a 2D array — one array of fields per file
     fields: [
-      {
-        type: 'signature',
-        required: true,
-        recipient_id: '1',
-        page: -1, // Last page
-        x: 50,
-        y: 650,
-        width: 200,
-        height: 50,
-      },
-      {
-        type: 'date',
-        required: true,
-        recipient_id: '1',
-        page: -1,
-        x: 50,
-        y: 720,
-        width: 100,
-        height: 20,
-      },
+      [
+        {
+          type: 'signature',
+          required: true,
+          recipient_id: '1',
+          page: 1,
+          x: 50,
+          y: 650,
+          width: 200,
+          height: 50,
+        },
+        {
+          type: 'date',
+          required: true,
+          recipient_id: '1',
+          page: 1,
+          x: 50,
+          y: 720,
+          width: 100,
+          height: 20,
+        },
+      ],
     ],
     // Send email automatically
     delivery: 'email',
-    // Redirect after signing (optional)
-    // redirect_url: 'https://yoursite.com/signed',
   };
 
   const result = await signwellRequest('/documents', {
