@@ -4380,10 +4380,26 @@ span.sonos-library-item__star.starred {
   gap: 1.25rem;
 }
 
+.profile-field-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.profile-field-row .profile-field {
+  flex: 1;
+}
+
 .profile-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+}
+
+.profile-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .profile-field label {
@@ -4392,6 +4408,22 @@ span.sonos-library-item__star.starred {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.profile-privacy-select {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.profile-privacy-select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .profile-field input[type="text"],
@@ -4407,6 +4439,23 @@ span.sonos-library-item__star.starred {
   background: var(--bg-card);
   color: var(--text);
   transition: border-color 0.2s;
+}
+
+.profile-field select {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text);
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.profile-field select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .profile-field input:focus,
@@ -4543,4 +4592,106 @@ span.sonos-library-item__star.starred {
   .profile-link-row .link-label {
     width: 100%;
   }
+
+  .profile-field-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Profile Vehicles */
+.profile-vehicle-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.profile-vehicle-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg);
+  transition: background 0.15s;
+}
+
+.profile-vehicle-header:hover {
+  background: var(--bg-card);
+}
+
+.profile-vehicle-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.profile-vehicle-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.profile-vehicle-model {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.profile-vehicle-chevron {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.profile-vehicle-card[open] .profile-vehicle-chevron {
+  transform: rotate(90deg);
+}
+
+.profile-vehicle-details {
+  display: none;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.profile-vehicle-card[open] .profile-vehicle-details {
+  display: block;
+}
+
+.profile-vehicle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1.5rem;
+}
+
+.profile-vehicle-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.profile-vehicle-detail-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.profile-vehicle-detail-value {
+  font-size: 0.9rem;
+}
+
+.profile-vehicle-role {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  background: var(--accent-light, #f0f7ff);
+  color: var(--accent);
+  font-weight: 600;
 }

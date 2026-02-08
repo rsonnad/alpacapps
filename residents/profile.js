@@ -11,6 +11,7 @@ const AVATAR_MAX_DIM = 512;
 let currentUser = null;
 let profileData = null;
 let savedSnapshot = null; // snapshot of form values after load/save
+let userVehicles = []; // vehicles the user owns or drives
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -29,27 +30,63 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =============================================
 
 async function loadProfile() {
-  const { data, error } = await supabase
-    .from('app_users')
-    .select('id, display_name, email, role, avatar_url, bio, phone, pronouns, birthday, instagram, links, nationality, location_base')
-    .eq('id', currentUser.id)
-    .single();
+  const [profileRes, ownedRes, driverRes] = await Promise.all([
+    supabase
+      .from('app_users')
+      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings')
+      .eq('id', currentUser.id)
+      .single(),
+    supabase
+      .from('vehicles')
+      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url')
+      .eq('owner_id', currentUser.id)
+      .eq('is_active', true)
+      .order('display_order'),
+    supabase
+      .from('vehicle_drivers')
+      .select('vehicle_id, vehicles:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url)')
+      .eq('app_user_id', currentUser.id),
+  ]);
 
-  if (error) {
+  if (profileRes.error) {
     showToast('Failed to load profile', 'error');
     return;
   }
 
-  profileData = data;
+  profileData = profileRes.data;
+
+  // Merge owned + driver vehicles, deduplicate
+  const owned = (ownedRes.data || []).map(v => ({ ...v, relationship: 'Owner' }));
+  const driven = (driverRes.data || [])
+    .map(d => d.vehicles)
+    .filter(Boolean)
+    .map(v => ({ ...v, relationship: 'Driver' }));
+  const seen = new Set();
+  userVehicles = [];
+  for (const v of [...owned, ...driven]) {
+    if (!seen.has(v.id)) {
+      seen.add(v.id);
+      userVehicles.push(v);
+    }
+  }
+
   renderProfile();
+  renderVehicles();
+}
+
+function getDisplayName(d) {
+  if (d.first_name && d.last_name) return `${d.first_name} ${d.last_name}`;
+  if (d.first_name) return d.first_name;
+  return d.display_name || d.email;
 }
 
 function renderProfile() {
   const d = profileData;
+  const displayName = getDisplayName(d);
 
   // Header section
-  renderAvatar(d.avatar_url, d.display_name || d.email);
-  document.getElementById('profileName').textContent = d.display_name || d.email;
+  renderAvatar(d.avatar_url, displayName);
+  document.getElementById('profileName').textContent = displayName;
   const roleEl = document.getElementById('profileRole');
   roleEl.textContent = (d.role || 'resident').charAt(0).toUpperCase() + (d.role || 'resident').slice(1);
   roleEl.className = 'role-badge ' + (d.role || 'resident');
@@ -63,13 +100,17 @@ function renderProfile() {
   }
 
   // Form fields
-  document.getElementById('fieldDisplayName').value = d.display_name || '';
+  document.getElementById('fieldFirstName').value = d.first_name || '';
+  document.getElementById('fieldLastName').value = d.last_name || '';
   document.getElementById('fieldPronouns').value = d.pronouns || '';
+  document.getElementById('fieldGender').value = d.gender || '';
   document.getElementById('fieldBio').value = d.bio || '';
   document.getElementById('fieldNationality').value = d.nationality || '';
   document.getElementById('fieldLocationBase').value = d.location_base || '';
   document.getElementById('fieldBirthday').value = d.birthday || '';
   document.getElementById('fieldPhone').value = d.phone || '';
+  document.getElementById('fieldPhone2').value = d.phone2 || '';
+  document.getElementById('fieldWhatsApp').value = d.whatsapp || '';
   document.getElementById('fieldInstagram').value = d.instagram || '';
 
   // Bio counter
@@ -81,6 +122,9 @@ function renderProfile() {
 
   // Links
   renderLinks(d.links || []);
+
+  // Privacy controls
+  renderPrivacyControls();
 
   // Snapshot for dirty tracking (after all fields are set)
   savedSnapshot = getFormSnapshot();
@@ -255,16 +299,26 @@ async function saveProfile() {
   btn.textContent = 'Saving...';
 
   try {
+    const firstName = document.getElementById('fieldFirstName').value.trim() || null;
+    const lastName = document.getElementById('fieldLastName').value.trim() || null;
+    const displayName = [firstName, lastName].filter(Boolean).join(' ') || null;
+
     const updates = {
-      display_name: document.getElementById('fieldDisplayName').value.trim() || null,
+      first_name: firstName,
+      last_name: lastName,
+      display_name: displayName,
       pronouns: document.getElementById('fieldPronouns').value.trim() || null,
+      gender: document.getElementById('fieldGender').value || null,
       bio: document.getElementById('fieldBio').value.trim() || null,
       nationality: document.getElementById('fieldNationality').value.trim() || null,
       location_base: document.getElementById('fieldLocationBase').value.trim() || null,
       birthday: document.getElementById('fieldBirthday').value || null,
       phone: document.getElementById('fieldPhone').value.trim() || null,
+      phone2: document.getElementById('fieldPhone2').value.trim() || null,
+      whatsapp: document.getElementById('fieldWhatsApp').value.trim() || null,
       instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, '') || null,
       links: collectLinks(),
+      privacy_settings: collectPrivacySettings(),
     };
 
     const { error } = await supabase
@@ -278,8 +332,8 @@ async function saveProfile() {
     Object.assign(profileData, updates);
 
     // Update header name
-    const displayName = updates.display_name || profileData.email;
-    document.getElementById('profileName').textContent = displayName;
+    const headerName = getDisplayName(profileData);
+    document.getElementById('profileName').textContent = headerName;
 
     // Update pronouns display
     const pronounsEl = document.getElementById('profilePronouns');
@@ -291,13 +345,13 @@ async function saveProfile() {
     }
 
     // Update cached auth state so header updates on other pages
-    updateCachedAuth({ display_name: updates.display_name });
+    updateCachedAuth({ display_name: updates.display_name, first_name: updates.first_name, last_name: updates.last_name });
 
     // Update this page's header
     const userInfoEl = document.getElementById('userInfo');
     if (userInfoEl) {
       const nameSpan = userInfoEl.querySelector('.user-profile-name');
-      if (nameSpan) nameSpan.textContent = displayName;
+      if (nameSpan) nameSpan.textContent = headerName;
     }
 
     showToast('Profile saved', 'success');
@@ -501,15 +555,20 @@ function updateLocationFlag() {
 
 function getFormSnapshot() {
   return JSON.stringify({
-    display_name: document.getElementById('fieldDisplayName').value.trim(),
+    first_name: document.getElementById('fieldFirstName').value.trim(),
+    last_name: document.getElementById('fieldLastName').value.trim(),
     pronouns: document.getElementById('fieldPronouns').value.trim(),
+    gender: document.getElementById('fieldGender').value,
     bio: document.getElementById('fieldBio').value.trim(),
     nationality: document.getElementById('fieldNationality').value.trim(),
     location_base: document.getElementById('fieldLocationBase').value.trim(),
     birthday: document.getElementById('fieldBirthday').value,
     phone: document.getElementById('fieldPhone').value.trim(),
+    phone2: document.getElementById('fieldPhone2').value.trim(),
+    whatsapp: document.getElementById('fieldWhatsApp').value.trim(),
     instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, ''),
     links: collectLinks(),
+    privacy: collectPrivacySettings(),
   });
 }
 
@@ -554,13 +613,133 @@ function bindEvents() {
   document.getElementById('fieldLocationBase').addEventListener('input', updateLocationFlag);
 
   // Dirty tracking on all form fields
-  const textFields = ['fieldDisplayName', 'fieldPronouns', 'fieldBio', 'fieldNationality',
-    'fieldLocationBase', 'fieldPhone', 'fieldInstagram'];
+  const textFields = ['fieldFirstName', 'fieldLastName', 'fieldPronouns', 'fieldBio', 'fieldNationality',
+    'fieldLocationBase', 'fieldPhone', 'fieldPhone2', 'fieldWhatsApp', 'fieldInstagram'];
   textFields.forEach(id => {
     document.getElementById(id).addEventListener('input', updateSaveButton);
   });
   document.getElementById('fieldBirthday').addEventListener('change', updateSaveButton);
+  document.getElementById('fieldGender').addEventListener('change', updateSaveButton);
 
   // Links container — listen for input on dynamically added link fields
   document.getElementById('linksContainer').addEventListener('input', updateSaveButton);
+
+  // Privacy dropdowns — listen for changes (delegated since they're in the form)
+  document.querySelector('.profile-form').addEventListener('change', (e) => {
+    if (e.target.classList.contains('profile-privacy-select')) {
+      updateSaveButton();
+    }
+  });
+
+  // Vehicle card expand/collapse
+  document.getElementById('vehiclesContainer').addEventListener('click', (e) => {
+    const header = e.target.closest('.profile-vehicle-header');
+    if (!header) return;
+    const card = header.closest('.profile-vehicle-card');
+    card.toggleAttribute('open');
+  });
+}
+
+// =============================================
+// VEHICLES
+// =============================================
+
+function renderVehicles() {
+  const section = document.getElementById('vehiclesSection');
+  const container = document.getElementById('vehiclesContainer');
+
+  if (!userVehicles.length) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = '';
+  container.innerHTML = userVehicles.map(v => {
+    const make = v.vehicle_make || '';
+    const model = v.vehicle_model || '';
+    const year = v.year || '';
+    const color = v.color || '';
+    const vin = v.vin || '';
+    const colorHex = v.color_hex || '#ccc';
+    const subtitle = [make, model, year].filter(Boolean).join(' ');
+
+    return `
+      <div class="profile-vehicle-card">
+        <div class="profile-vehicle-header">
+          <span class="profile-vehicle-color" style="background:${escapeAttr(colorHex)}"></span>
+          <span class="profile-vehicle-name">${escapeAttr(v.name)}</span>
+          <span class="profile-vehicle-role">${escapeAttr(v.relationship)}</span>
+          <span class="profile-vehicle-model">${escapeAttr(subtitle)}</span>
+          <span class="profile-vehicle-chevron">&#9654;</span>
+        </div>
+        <div class="profile-vehicle-details">
+          <div class="profile-vehicle-grid">
+            <div class="profile-vehicle-detail">
+              <span class="profile-vehicle-detail-label">Make</span>
+              <span class="profile-vehicle-detail-value">${escapeAttr(make) || '—'}</span>
+            </div>
+            <div class="profile-vehicle-detail">
+              <span class="profile-vehicle-detail-label">Model</span>
+              <span class="profile-vehicle-detail-value">${escapeAttr(model) || '—'}</span>
+            </div>
+            <div class="profile-vehicle-detail">
+              <span class="profile-vehicle-detail-label">Year</span>
+              <span class="profile-vehicle-detail-value">${year || '—'}</span>
+            </div>
+            <div class="profile-vehicle-detail">
+              <span class="profile-vehicle-detail-label">Color</span>
+              <span class="profile-vehicle-detail-value">${escapeAttr(color) || '—'}</span>
+            </div>
+            ${vin ? `<div class="profile-vehicle-detail" style="grid-column:1/-1">
+              <span class="profile-vehicle-detail-label">VIN</span>
+              <span class="profile-vehicle-detail-value" style="font-family:monospace;font-size:0.8rem">${escapeAttr(vin)}</span>
+            </div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// =============================================
+// PRIVACY SETTINGS
+// =============================================
+
+const PRIVACY_FIELDS = [
+  { key: 'pronouns', label: 'Pronouns' },
+  { key: 'gender', label: 'Gender' },
+  { key: 'bio', label: 'Bio' },
+  { key: 'nationality', label: 'Nationality' },
+  { key: 'location_base', label: 'Location Base' },
+  { key: 'birthday', label: 'Birthday' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'phone2', label: 'Phone 2' },
+  { key: 'whatsapp', label: 'WhatsApp' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'links', label: 'Links' },
+];
+
+const PRIVACY_OPTIONS = [
+  { value: 'all_guests', label: 'All Guests' },
+  { value: 'residents', label: 'Residents Only' },
+  { value: 'only_me', label: 'Only Me' },
+];
+
+function collectPrivacySettings() {
+  const settings = {};
+  PRIVACY_FIELDS.forEach(f => {
+    const sel = document.getElementById(`privacy_${f.key}`);
+    if (sel) settings[f.key] = sel.value;
+  });
+  return settings;
+}
+
+function renderPrivacyControls() {
+  const saved = profileData.privacy_settings || {};
+  PRIVACY_FIELDS.forEach(f => {
+    const sel = document.getElementById(`privacy_${f.key}`);
+    if (sel) {
+      sel.value = saved[f.key] || 'all_guests';
+    }
+  });
 }
