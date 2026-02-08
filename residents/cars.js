@@ -276,7 +276,7 @@ function getDataRows(car) {
     { label: 'Tires', icon: 'tires', value: tiresStr },
     { label: 'Locked', icon: 'lock', value: lockStr },
     { label: 'Sentry', icon: 'sentry', value: sentryStr },
-  ];
+  );
 
   // Software version + update status + FSD info (Tesla-specific)
   if (s.software_version && car.vehicle_make === 'Tesla') {
