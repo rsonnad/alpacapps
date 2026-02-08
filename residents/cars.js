@@ -18,6 +18,7 @@ let vehicles = [];
 let accounts = [];
 let pollTimer = null;
 let currentUserRole = null;
+let currentUserId = null;
 const leafletMaps = {};       // car.id → Leaflet map instance
 const geocodeCache = {};      // "lat,lng" → address string
 
@@ -106,6 +107,20 @@ const CAR_SVG = {
     <line x1="341" y1="117" x2="368" y2="117" stroke="currentColor" stroke-width="2"/>
   </svg>`,
 };
+
+// Generic car silhouette for non-Tesla vehicles
+const CAR_SVG_GENERIC = `<svg viewBox="0 0 400 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M55 115 C55 110 60 70 95 55 L165 42 C180 38 210 34 250 34 L320 40 C350 48 365 68 370 85 L375 100 C377 106 374 115 370 115" stroke="currentColor" stroke-width="3" fill="none"/>
+  <line x1="165" y1="42" x2="160" y2="82" stroke="currentColor" stroke-width="2"/>
+  <line x1="250" y1="34" x2="253" y2="82" stroke="currentColor" stroke-width="2"/>
+  <circle cx="110" cy="117" r="22" stroke="currentColor" stroke-width="3" fill="none"/>
+  <circle cx="110" cy="117" r="12" stroke="currentColor" stroke-width="2" fill="none"/>
+  <circle cx="320" cy="117" r="22" stroke="currentColor" stroke-width="3" fill="none"/>
+  <circle cx="320" cy="117" r="12" stroke="currentColor" stroke-width="2" fill="none"/>
+  <line x1="55" y1="117" x2="88" y2="117" stroke="currentColor" stroke-width="2"/>
+  <line x1="132" y1="117" x2="298" y2="117" stroke="currentColor" stroke-width="2"/>
+  <line x1="342" y1="117" x2="370" y2="117" stroke="currentColor" stroke-width="2"/>
+</svg>`;
 
 // =============================================
 // DATA LOADING
@@ -339,18 +354,10 @@ function renderFleet() {
 
   grid.innerHTML = vehicles.map(car => {
     const isTesla = car.vehicle_make === 'Tesla';
+    const hasApiConnection = !!car.account_id;
     const svgKey = car.svg_key || 'modelY';
     const carSvg = CAR_SVG[svgKey] || CAR_SVG.modelY;
     const svgColor = car.color === 'Grey' ? '#777' : '#999';
-    const dataRows = getDataRows(car);
-
-    const dataRowsHtml = dataRows.map(row => `
-      <div class="car-data-row">
-        <span class="car-data-row__icon">${ICONS[row.icon]}</span>
-        <span class="car-data-row__label">${row.label}</span>
-        <span class="car-data-row__value">${row.value}</span>
-      </div>
-    `).join('');
 
     // Image with Tesla SVG fallback
     let imageContent;
@@ -365,23 +372,51 @@ function renderFleet() {
     } else if (isTesla) {
       imageContent = `<div class="car-card__svg-fallback" style="color:${svgColor}">${carSvg}</div>`;
     } else {
-      imageContent = '';
+      imageContent = `<div class="car-card__svg-fallback" style="color:#bbb">${CAR_SVG_GENERIC}</div>`;
     }
-
-    const syncTime = formatSyncTime(car.last_synced_at);
 
     // Owner + drivers info
     let ownerHtml = '';
     const ownerName = car.owner?.display_name || car.account?.owner_name;
     if (ownerName) {
       const driverNames = (car.drivers || []).map(d => d.app_user?.display_name).filter(Boolean);
-      const driverStr = driverNames.length ? ` · ${driverNames.join(', ')}` : '';
+      const driverStr = driverNames.length ? ` \u00b7 ${driverNames.join(', ')}` : '';
       ownerHtml = `<div class="car-card__owner">${ownerName}${driverStr}</div>`;
     }
 
-    // Tesla-specific controls (lock/unlock, flash)
+    const configSubtitle = isTesla ? getConfigSubtitle(car) : '';
+
+    // For vehicles with API connection, show full live data grid
+    let dataContentHtml = '';
+    if (hasApiConnection) {
+      const dataRows = getDataRows(car);
+      const dataRowsHtml = dataRows.map(row => `
+        <div class="car-data-row">
+          <span class="car-data-row__icon">${ICONS[row.icon]}</span>
+          <span class="car-data-row__label">${row.label}</span>
+          <span class="car-data-row__value">${row.value}</span>
+        </div>
+      `).join('');
+
+      dataContentHtml = `
+          <div class="car-data-grid">${dataRowsHtml}</div>
+          <div class="car-card__map-panel" id="mapPanel_${car.id}" style="display:none;">
+            <div class="car-card__map-address" id="mapAddr_${car.id}"></div>
+            <div class="car-card__map" id="map_${car.id}"></div>
+          </div>`;
+    } else {
+      // Non-API vehicle — show basic details
+      const details = [];
+      if (car.license_plate) details.push(`<span>Plate: ${car.license_plate}</span>`);
+      if (car.vehicle_length_ft) details.push(`<span>Length: ${car.vehicle_length_ft} ft</span>`);
+      if (details.length) {
+        dataContentHtml = `<div class="car-card__basic-details">${details.join(' \u00b7 ')}</div>`;
+      }
+    }
+
+    // Tesla-specific controls (lock/unlock, flash) — only when API connected
     let controlsHtml = '';
-    if (isTesla) {
+    if (isTesla && hasApiConnection) {
       const isLocked = car.last_state?.locked;
       const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
       const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
@@ -409,7 +444,9 @@ function renderFleet() {
           </div>`;
     }
 
-    const configSubtitle = isTesla ? getConfigSubtitle(car) : '';
+    const syncTimeHtml = hasApiConnection
+      ? `<div class="car-card__sync-time">${formatSyncTime(car.last_synced_at)}</div>`
+      : '';
 
     return `
       <div class="car-card">
@@ -425,16 +462,10 @@ function renderFleet() {
               ${car.color || ''}
             </span>
           </div>
-          <div class="car-card__model">${car.year} ${car.vehicle_make ? car.vehicle_make + ' ' : ''}${car.vehicle_model}${configSubtitle}</div>
-          <div class="car-data-grid">
-            ${dataRowsHtml}
-          </div>
-          <div class="car-card__map-panel" id="mapPanel_${car.id}" style="display:none;">
-            <div class="car-card__map-address" id="mapAddr_${car.id}"></div>
-            <div class="car-card__map" id="map_${car.id}"></div>
-          </div>
+          <div class="car-card__model">${car.year || ''} ${car.vehicle_make ? car.vehicle_make + ' ' : ''}${car.vehicle_model || ''}${configSubtitle}</div>
+          ${dataContentHtml}
           ${controlsHtml}
-          <div class="car-card__sync-time">${syncTime}</div>
+          ${syncTimeHtml}
         </div>
       </div>
     `;
@@ -553,6 +584,17 @@ async function resolveAllAddresses() {
     const speedSuffix = (s.speed_mph != null && s.speed_mph > 0) ? ` \u00b7 ${s.speed_mph} mph` : '';
     el.textContent = `${addr}${speedSuffix}`;
   }
+}
+
+// =============================================
+// ADD VEHICLE CTA
+// =============================================
+
+function updateAddVehicleCta() {
+  const cta = document.getElementById('addVehicleCta');
+  if (!cta) return;
+  const userOwnsAny = vehicles.some(v => v.owner?.id === currentUserId);
+  cta.style.display = userOwnsAny ? 'none' : '';
 }
 
 // =============================================
@@ -702,6 +744,7 @@ function handleVisibilityChange() {
 async function refreshFromDB() {
   await loadVehicles();
   renderFleet();
+  updateAddVehicleCta();
   resolveAllAddresses(); // async — patches DOM when ready
 }
 
@@ -715,10 +758,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'resident',
     onReady: async (authState) => {
       currentUserRole = authState.appUser?.role;
+      currentUserId = authState.appUser?.id;
 
       // Load vehicles and render
       await loadVehicles();
       renderFleet();
+      updateAddVehicleCta();
       resolveAllAddresses(); // async — patches DOM when ready
 
       // Start polling

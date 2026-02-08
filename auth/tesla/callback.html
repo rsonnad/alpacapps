@@ -57,9 +57,11 @@
     const error = params.get('error');
     const stateParam = params.get('state') || '';
 
-    // State format: "accountId:supabaseToken"
-    const [accountId, ...tokenParts] = stateParam.split(':');
-    const supabaseToken = tokenParts.join(':'); // rejoin in case token contains colons
+    // State format: "accountId:supabaseToken" or "profile:accountId:supabaseToken"
+    const stateParts = stateParam.split(':');
+    const isProfileFlow = stateParts[0] === 'profile';
+    const accountId = isProfileFlow ? stateParts[1] : stateParts[0];
+    const supabaseToken = (isProfileFlow ? stateParts.slice(2) : stateParts.slice(1)).join(':');
 
     async function exchangeCode() {
       if (error) {
@@ -110,11 +112,21 @@
           throw new Error(data.error);
         }
 
+        const backUrl = isProfileFlow
+          ? `/residents/profile.html?tesla_connected=${accountId}`
+          : '/residents/cars.html';
+        const backLabel = isProfileFlow ? 'Back to Profile' : 'Back to Cars';
+
         card.innerHTML = `
           <h2 class="success">Tesla Connected!</h2>
           <p>Your Tesla account has been successfully linked. Vehicle data will appear within 5 minutes.</p>
-          <p><a href="/residents/cars.html">Back to Cars</a></p>
+          <p><a href="${backUrl}">${backLabel}</a></p>
         `;
+
+        // Auto-redirect after 2 seconds
+        if (isProfileFlow) {
+          setTimeout(() => { window.location.href = backUrl; }, 2000);
+        }
       } catch (err) {
         console.error('Token exchange failed:', err);
         card.innerHTML = `
