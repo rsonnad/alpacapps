@@ -92,7 +92,7 @@ git fetch --prune origin 2>/dev/null || true
 INCLUDED_JSON="[]"
 if git rev-parse HEAD &>/dev/null; then
   INCLUDED_JSON=$(git branch -r --merged HEAD 2>/dev/null \
-    | grep -v 'HEAD\|main$\|master$' \
+    | grep -v 'HEAD\|main$\|master$' || true \
     | sed 's|origin/||;s|^[[:space:]]*||' \
     | sort \
     | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
@@ -102,7 +102,7 @@ fi
 PENDING_JSON="[]"
 if git rev-parse HEAD &>/dev/null; then
   PENDING_JSON=$(git branch -r --no-merged HEAD 2>/dev/null \
-    | grep -v 'HEAD\|main$\|master$' \
+    | grep -v 'HEAD\|main$\|master$' || true \
     | sed 's|origin/||;s|^[[:space:]]*||' \
     | sort \
     | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')

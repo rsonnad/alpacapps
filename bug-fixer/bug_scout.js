@@ -124,12 +124,17 @@ async function runClaudeCode(report, screenshotPath) {
     report.screenshot_url ? `Screenshot public URL: ${report.screenshot_url}` : '',
     '',
     'Instructions:',
-    '- Read the CLAUDE.md file first for project context',
-    '- View the screenshot file to understand the visual bug',
+    '- You are a focused bug fixer. ONLY fix the specific bug described above. Do NOT:',
+    '  - Add new files or modules',
+    '  - Refactor existing code',
+    '  - Add SEO tags, indexes, logging, or other "improvements"',
+    '  - Fix bugs other than the one described',
+    '  - Install dependencies or run build commands',
     '- Identify the relevant files based on the page URL and description',
-    '- Make the minimal fix needed',
-    '- Do NOT run any git commands — no commits, no branches, no pushes. The bug scout handles all git operations.',
-    '- Do NOT update the version number (the bug scout handles that)',
+    '- Make the MINIMAL change needed to fix this one bug — ideally 1-5 lines',
+    '- Do NOT run any git commands',
+    '- Do NOT update the version number',
+    '- Do NOT read CLAUDE.md — the bug description and page URL are your only context',
     '- Output a JSON object with keys: diagnosis (root cause), fix_summary (what you changed), notes (any caveats)',
   ].filter(Boolean).join('\n');
 
@@ -140,8 +145,8 @@ async function runClaudeCode(report, screenshotPath) {
 
   const args = [
     '-p', prompt,
-    '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash',
-    '--max-turns', '25',
+    '--allowedTools', 'Edit,Read,Glob,Grep',
+    '--max-turns', '10',
     '--output-format', 'json',
     '--dangerously-skip-permissions',
   ];
