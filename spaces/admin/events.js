@@ -540,7 +540,7 @@ async function updateEventDocumentsTabState(req) {
     document.getElementById('eventPdfFilename').textContent = `Event-Agreement-${req.event_name?.substring(0, 20) || 'event'}.pdf`;
     if (req.agreement_generated_at) {
       document.getElementById('eventPdfGeneratedAt').textContent =
-        `Generated ${formatDateAustin(req.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
+        `Generated ${formatDateAustin(req.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}`;
     }
   }
 }
