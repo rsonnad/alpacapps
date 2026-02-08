@@ -39,7 +39,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.53 4:40p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.55 4:47p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -350,35 +350,62 @@
           <div class="form-row">
             <div class="form-group">
               <label for="voiceModelProvider">Model Provider</label>
-              <input type="text" id="voiceModelProvider" placeholder="google">
+              <select id="voiceModelProvider" onchange="onModelProviderChange()">
+                <option value="google">Google</option>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="groq">Groq</option>
+                <option value="deepinfra">DeepInfra</option>
+                <option value="together-ai">TogetherAI</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="perplexity-ai">Perplexity</option>
+                <option value="azure-openai">Azure OpenAI</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="voiceModelName">Model Name</label>
-              <input type="text" id="voiceModelName" placeholder="gemini-2.5-flash-lite">
+              <select id="voiceModelName"></select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label for="voiceVoiceProvider">Voice Provider</label>
-              <input type="text" id="voiceVoiceProvider" placeholder="vapi">
+              <select id="voiceVoiceProvider" onchange="onVoiceProviderChange()">
+                <option value="vapi">Vapi</option>
+                <option value="11labs">ElevenLabs</option>
+                <option value="playht">PlayHT</option>
+                <option value="cartesia">Cartesia</option>
+                <option value="openai">OpenAI</option>
+                <option value="azure">Azure</option>
+                <option value="deepgram">Deepgram</option>
+                <option value="lmnt">LMNT</option>
+                <option value="rime-ai">RimeAI</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="voiceVoiceId">Voice ID</label>
-              <input type="text" id="voiceVoiceId" placeholder="Mia">
+              <select id="voiceVoiceId"></select>
             </div>
           </div>
           <div class="form-row form-row--three">
             <div class="form-group">
-              <label for="voiceTranscriberProvider">Transcriber Provider</label>
-              <input type="text" id="voiceTranscriberProvider" placeholder="deepgram">
+              <label for="voiceTranscriberProvider">Transcriber</label>
+              <select id="voiceTranscriberProvider" onchange="onTranscriberProviderChange()">
+                <option value="deepgram">Deepgram</option>
+                <option value="google">Google</option>
+                <option value="gladia">Gladia</option>
+                <option value="speechmatics">Speechmatics</option>
+                <option value="talkscriber">Talkscriber</option>
+                <option value="assembly-ai">AssemblyAI</option>
+              </select>
             </div>
             <div class="form-group">
-              <label for="voiceTranscriberModel">Transcriber Model</label>
-              <input type="text" id="voiceTranscriberModel" placeholder="nova-2">
+              <label for="voiceTranscriberModel">Model</label>
+              <select id="voiceTranscriberModel"></select>
             </div>
             <div class="form-group form-group--narrow">
               <label for="voiceTranscriberLanguage">Language</label>
-              <input type="text" id="voiceTranscriberLanguage" placeholder="en">
+              <select id="voiceTranscriberLanguage"></select>
             </div>
           </div>
           <div class="form-group form-group--narrow">

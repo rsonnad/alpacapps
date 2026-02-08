@@ -1012,24 +1012,127 @@ function renderVoiceConfig() {
   if (editBtn) editBtn.classList.remove('hidden');
 }
 
-// Voice Assistant Modal
+// Voice Assistant Modal — Vapi provider option maps
+
+const VAPI_MODEL_OPTIONS = {
+  google: [
+    'gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash',
+    'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'
+  ],
+  openai: [
+    'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'
+  ],
+  anthropic: [
+    'claude-sonnet-4-20250514', 'claude-3-7-sonnet-20250219',
+    'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+    'claude-3-haiku-20240307'
+  ],
+  groq: [
+    'llama-3.3-70b-versatile', 'llama-3.1-8b-instant',
+    'llama-3.1-70b-versatile', 'mixtral-8x7b-32768'
+  ],
+  deepinfra: ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-8B-Instruct'],
+  'together-ai': ['meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo', 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'],
+  openrouter: ['openai/gpt-4o', 'anthropic/claude-sonnet-4-20250514', 'google/gemini-2.5-flash'],
+  'perplexity-ai': ['llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-small-128k-online'],
+  'azure-openai': ['gpt-4o', 'gpt-4-turbo']
+};
+
+const VAPI_VOICE_OPTIONS = {
+  vapi: ['Elliot', 'Savannah', 'Mia'],
+  '11labs': ['sarah', 'rachel', 'adam', 'clyde', 'domi', 'elli', 'josh', 'arnold', 'sam'],
+  playht: ['s3://peregrine-voices/donna_parenting_saad/manifest.json', 's3://peregrine-voices/oliver_narrative/manifest.json'],
+  cartesia: ['a0e99841-438c-4a64-b679-ae501e7d6091', '79a125e8-cd45-4c13-8a67-188112f4dd22'],
+  openai: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
+  azure: ['en-US-JennyNeural', 'en-US-GuyNeural', 'en-US-AriaNeural'],
+  deepgram: ['aura-asteria-en', 'aura-luna-en', 'aura-stella-en', 'aura-athena-en', 'aura-hera-en', 'aura-orion-en', 'aura-arcas-en', 'aura-perseus-en', 'aura-angus-en', 'aura-orpheus-en', 'aura-helios-en', 'aura-zeus-en'],
+  lmnt: ['lily', 'daniel'],
+  'rime-ai': ['mist', 'bayou']
+};
+
+const VAPI_TRANSCRIBER_MODELS = {
+  deepgram: ['nova-3', 'nova-3-general', 'nova-3-medical', 'nova-2', 'nova-2-phonecall', 'nova-2-meeting', 'nova-2-voicemail', 'nova-2-medical'],
+  google: ['default', 'latest_long', 'latest_short', 'telephony'],
+  gladia: ['default'],
+  speechmatics: ['default'],
+  talkscriber: ['default'],
+  'assembly-ai': ['nano', 'default']
+};
+
+const VAPI_LANGUAGES = [
+  'en', 'en-US', 'en-GB', 'en-AU', 'en-IN', 'en-NZ',
+  'es', 'es-419', 'es-LATAM',
+  'fr', 'fr-CA',
+  'de', 'de-CH',
+  'pt', 'pt-BR',
+  'it', 'ja', 'ko', 'ko-KR', 'zh', 'zh-CN', 'zh-TW',
+  'ru', 'nl', 'nl-BE', 'pl', 'sv', 'sv-SE', 'da', 'da-DK',
+  'fi', 'no', 'tr', 'hi', 'th', 'th-TH', 'vi', 'id', 'ms',
+  'cs', 'sk', 'ro', 'hu', 'bg', 'ca', 'el', 'et', 'lt', 'lv',
+  'uk', 'ta', 'ar', 'he', 'ur'
+];
+
+function populateSelect(selectId, options, currentValue) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+  let found = false;
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt;
+    if (opt === currentValue) { o.selected = true; found = true; }
+    sel.appendChild(o);
+  });
+  // If current value isn't in the list, add it at top so nothing is lost
+  if (currentValue && !found) {
+    const o = document.createElement('option');
+    o.value = currentValue;
+    o.textContent = currentValue;
+    o.selected = true;
+    sel.insertBefore(o, sel.firstChild);
+  }
+}
+
+function onModelProviderChange() {
+  const provider = document.getElementById('voiceModelProvider').value;
+  populateSelect('voiceModelName', VAPI_MODEL_OPTIONS[provider] || [], '');
+}
+window.onModelProviderChange = onModelProviderChange;
+
+function onVoiceProviderChange() {
+  const provider = document.getElementById('voiceVoiceProvider').value;
+  populateSelect('voiceVoiceId', VAPI_VOICE_OPTIONS[provider] || [], '');
+}
+window.onVoiceProviderChange = onVoiceProviderChange;
+
+function onTranscriberProviderChange() {
+  const provider = document.getElementById('voiceTranscriberProvider').value;
+  populateSelect('voiceTranscriberModel', VAPI_TRANSCRIBER_MODELS[provider] || [], '');
+}
+window.onTranscriberProviderChange = onTranscriberProviderChange;
+
 function openVoiceModal() {
   if (!voiceAssistant) return;
   const a = voiceAssistant;
 
   document.getElementById('voiceAssistantId').value = a.id;
   document.getElementById('voiceName').value = a.name || '';
-  document.getElementById('voiceModelProvider').value = a.model_provider || 'google';
-  document.getElementById('voiceModelName').value = a.model_name || '';
-  document.getElementById('voiceVoiceProvider').value = a.voice_provider || 'vapi';
-  document.getElementById('voiceVoiceId').value = a.voice_id || '';
-  document.getElementById('voiceTranscriberProvider').value = a.transcriber_provider || 'deepgram';
-  document.getElementById('voiceTranscriberModel').value = a.transcriber_model || 'nova-2';
-  document.getElementById('voiceTranscriberLanguage').value = a.transcriber_language || 'en';
   document.getElementById('voiceTemperature').value = a.temperature || 0.7;
   document.getElementById('voiceMaxDuration').value = Math.round((a.max_duration_seconds || 600) / 60);
   document.getElementById('voiceFirstMessage').value = a.first_message || '';
   document.getElementById('voiceSystemPrompt').value = a.system_prompt || '';
+
+  // Set provider selects first, then populate dependent dropdowns with current values
+  document.getElementById('voiceModelProvider').value = a.model_provider || 'google';
+  populateSelect('voiceModelName', VAPI_MODEL_OPTIONS[a.model_provider || 'google'] || [], a.model_name || '');
+
+  document.getElementById('voiceVoiceProvider').value = a.voice_provider || 'vapi';
+  populateSelect('voiceVoiceId', VAPI_VOICE_OPTIONS[a.voice_provider || 'vapi'] || [], a.voice_id || '');
+
+  document.getElementById('voiceTranscriberProvider').value = a.transcriber_provider || 'deepgram';
+  populateSelect('voiceTranscriberModel', VAPI_TRANSCRIBER_MODELS[a.transcriber_provider || 'deepgram'] || [], a.transcriber_model || 'nova-2');
+  populateSelect('voiceTranscriberLanguage', VAPI_LANGUAGES, a.transcriber_language || 'en');
 
   document.getElementById('voiceModal').classList.remove('hidden');
 }
@@ -1051,13 +1154,13 @@ async function saveVoiceAssistant() {
   try {
     const updates = {
       name: document.getElementById('voiceName').value.trim(),
-      model_provider: document.getElementById('voiceModelProvider').value.trim(),
-      model_name: document.getElementById('voiceModelName').value.trim(),
-      voice_provider: document.getElementById('voiceVoiceProvider').value.trim(),
-      voice_id: document.getElementById('voiceVoiceId').value.trim(),
-      transcriber_provider: document.getElementById('voiceTranscriberProvider').value.trim(),
-      transcriber_model: document.getElementById('voiceTranscriberModel').value.trim(),
-      transcriber_language: document.getElementById('voiceTranscriberLanguage').value.trim(),
+      model_provider: document.getElementById('voiceModelProvider').value,
+      model_name: document.getElementById('voiceModelName').value,
+      voice_provider: document.getElementById('voiceVoiceProvider').value,
+      voice_id: document.getElementById('voiceVoiceId').value,
+      transcriber_provider: document.getElementById('voiceTranscriberProvider').value,
+      transcriber_model: document.getElementById('voiceTranscriberModel').value,
+      transcriber_language: document.getElementById('voiceTranscriberLanguage').value,
       temperature: parseFloat(document.getElementById('voiceTemperature').value) || 0.7,
       max_duration_seconds: (parseInt(document.getElementById('voiceMaxDuration').value) || 10) * 60,
       first_message: document.getElementById('voiceFirstMessage').value.trim(),
