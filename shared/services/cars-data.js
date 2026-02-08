@@ -7,12 +7,12 @@
 import { supabase } from '../supabase.js';
 
 /**
- * Load active vehicles from tesla_vehicles table.
+ * Load active vehicles from vehicles table.
  * @returns {Promise<Array>}
  */
 export async function loadVehicles() {
   const { data, error } = await supabase
-    .from('tesla_vehicles')
+    .from('vehicles')
     .select('*')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
@@ -60,7 +60,7 @@ export async function userHasTeslaAccount(appUserId) {
 
 /**
  * Send a command to a Tesla vehicle via edge function.
- * @param {number} vehicleId - tesla_vehicles.id
+ * @param {number} vehicleId - vehicles.id
  * @param {string} command - door_lock, door_unlock, flash_lights, honk_horn
  * @returns {Promise<{vehicle_name?: string, error?: string}>}
  */

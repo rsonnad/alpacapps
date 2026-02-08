@@ -1,5 +1,5 @@
 /**
- * Cars Page - Tesla Fleet overview with live data from tesla_vehicles table.
+ * Cars Page - Vehicle fleet overview with live data from vehicles table.
  * Poller on DO droplet writes vehicle state; this page reads it every 30s.
  */
 
@@ -113,8 +113,8 @@ const CAR_SVG = {
 
 async function loadVehicles() {
   const { data, error } = await supabase
-    .from('tesla_vehicles')
-    .select('*, account:account_id(id, owner_name, tesla_email)')
+    .from('vehicles')
+    .select('*, account:account_id(id, owner_name, tesla_email), owner:owner_id(id, display_name, email), drivers:vehicle_drivers(app_user:app_user_id(id, display_name))')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
@@ -278,8 +278,8 @@ function getDataRows(car) {
     { label: 'Sentry', icon: 'sentry', value: sentryStr },
   ];
 
-  // Software version + update status + FSD info
-  if (s.software_version) {
+  // Software version + update status + FSD info (Tesla-specific)
+  if (s.software_version && car.vehicle_make === 'Tesla') {
     let swStr = s.software_version;
     if (s.software_update) {
       const upd = s.software_update;
@@ -337,17 +337,8 @@ function renderFleet() {
     return;
   }
 
-  // Count vehicles per owner for numbering
-  const ownerCounts = {};
-  const ownerIndex = {};
-  vehicles.forEach(car => {
-    const oid = car.account?.id;
-    if (oid != null) {
-      ownerCounts[oid] = (ownerCounts[oid] || 0) + 1;
-    }
-  });
-
   grid.innerHTML = vehicles.map(car => {
+    const isTesla = car.vehicle_make === 'Tesla';
     const svgKey = car.svg_key || 'modelY';
     const carSvg = CAR_SVG[svgKey] || CAR_SVG.modelY;
     const svgColor = car.color === 'Grey' ? '#777' : '#999';
@@ -361,37 +352,64 @@ function renderFleet() {
       </div>
     `).join('');
 
-    // AI-generated image with SVG fallback
-    const imageContent = car.image_url
-      ? `<img src="${car.image_url}" alt="${car.name} - ${car.year} ${car.model}"
+    // Image with Tesla SVG fallback
+    let imageContent;
+    if (car.image_url) {
+      const fallback = isTesla
+        ? `<div class="car-card__svg-fallback" style="display:none;color:${svgColor}">${carSvg}</div>`
+        : '';
+      imageContent = `<img src="${car.image_url}" alt="${car.name} - ${car.year} ${car.vehicle_model}"
              class="car-card__img"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-         /><div class="car-card__svg-fallback" style="display:none;color:${svgColor}">${carSvg}</div>`
-      : `<div class="car-card__svg-fallback" style="color:${svgColor}">${carSvg}</div>`;
-
-    const syncTime = formatSyncTime(car.last_synced_at);
-    const isLocked = car.last_state?.locked;
-    const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
-    const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
-    const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
-    const isCharging = car.last_state?.charging_state === 'Charging' || car.last_state?.charging_state === 'Complete';
-    const showChargerHint = isCharging && isLocked !== false;
-
-    // Owner info
-    let ownerHtml = '';
-    if (car.account) {
-      const oid = car.account.id;
-      ownerIndex[oid] = (ownerIndex[oid] || 0) + 1;
-      const total = ownerCounts[oid];
-      const numberStr = total > 1 ? ` · ${ownerIndex[oid]} of ${total}` : '';
-      ownerHtml = `<div class="car-card__owner">${car.account.owner_name} · ${car.account.tesla_email}${numberStr}</div>`;
+             onerror="this.style.display='none';${isTesla ? "this.nextElementSibling.style.display='flex';" : ''}"
+         />${fallback}`;
+    } else if (isTesla) {
+      imageContent = `<div class="car-card__svg-fallback" style="color:${svgColor}">${carSvg}</div>`;
+    } else {
+      imageContent = '';
     }
 
-    // Lock/unlock button — highlighted when charging + locked
-    const lockBtnClass = showChargerHint
-      ? 'car-cmd-btn car-cmd-btn--charger-unlock'
-      : 'car-cmd-btn';
-    const lockBtnLabel = showChargerHint ? 'Unlock to Move Off Charger' : nextLabel;
+    const syncTime = formatSyncTime(car.last_synced_at);
+
+    // Owner + drivers info
+    let ownerHtml = '';
+    const ownerName = car.owner?.display_name || car.account?.owner_name;
+    if (ownerName) {
+      const driverNames = (car.drivers || []).map(d => d.app_user?.display_name).filter(Boolean);
+      const driverStr = driverNames.length ? ` · ${driverNames.join(', ')}` : '';
+      ownerHtml = `<div class="car-card__owner">${ownerName}${driverStr}</div>`;
+    }
+
+    // Tesla-specific controls (lock/unlock, flash)
+    let controlsHtml = '';
+    if (isTesla) {
+      const isLocked = car.last_state?.locked;
+      const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
+      const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
+      const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
+      const isCharging = car.last_state?.charging_state === 'Charging' || car.last_state?.charging_state === 'Complete';
+      const showChargerHint = isCharging && isLocked !== false;
+      const lockBtnClass = showChargerHint
+        ? 'car-cmd-btn car-cmd-btn--charger-unlock'
+        : 'car-cmd-btn';
+      const lockBtnLabel = showChargerHint ? 'Unlock to Move Off Charger' : nextLabel;
+
+      controlsHtml = `
+          <div class="car-card__controls">
+            <button class="${lockBtnClass}" id="lockBtn_${car.id}"
+                    onclick="window._sendCommand(${car.id}, '${nextCmd}')"
+                    title="${lockBtnLabel}">
+              <span class="car-cmd-btn__icon">${lockIcon}</span>
+              <span class="car-cmd-btn__label">${lockBtnLabel}</span>
+            </button>
+            <button class="car-cmd-btn car-cmd-btn--secondary" id="flashBtn_${car.id}"
+                    onclick="window._sendCommand(${car.id}, 'flash_lights')"
+                    title="Flash lights">
+              <span class="car-cmd-btn__label">Flash</span>
+            </button>
+          </div>`;
+    }
+
+    const configSubtitle = isTesla ? getConfigSubtitle(car) : '';
 
     return `
       <div class="car-card">
@@ -407,7 +425,7 @@ function renderFleet() {
               ${car.color || ''}
             </span>
           </div>
-          <div class="car-card__model">${car.year} ${car.model}${getConfigSubtitle(car)}</div>
+          <div class="car-card__model">${car.year} ${car.vehicle_make ? car.vehicle_make + ' ' : ''}${car.vehicle_model}${configSubtitle}</div>
           <div class="car-data-grid">
             ${dataRowsHtml}
           </div>
@@ -415,19 +433,7 @@ function renderFleet() {
             <div class="car-card__map-address" id="mapAddr_${car.id}"></div>
             <div class="car-card__map" id="map_${car.id}"></div>
           </div>
-          <div class="car-card__controls">
-            <button class="${lockBtnClass}" id="lockBtn_${car.id}"
-                    onclick="window._sendCommand(${car.id}, '${nextCmd}')"
-                    title="${lockBtnLabel}">
-              <span class="car-cmd-btn__icon">${lockIcon}</span>
-              <span class="car-cmd-btn__label">${lockBtnLabel}</span>
-            </button>
-            <button class="car-cmd-btn car-cmd-btn--secondary" id="flashBtn_${car.id}"
-                    onclick="window._sendCommand(${car.id}, 'flash_lights')"
-                    title="Flash lights">
-              <span class="car-cmd-btn__label">Flash</span>
-            </button>
-          </div>
+          ${controlsHtml}
           <div class="car-card__sync-time">${syncTime}</div>
         </div>
       </div>

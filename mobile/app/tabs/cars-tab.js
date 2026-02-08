@@ -92,7 +92,7 @@ function renderCard(car) {
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
             <div class="m-car-card__name">${esc(car.name)}</div>
-            <div class="m-car-card__model">${esc(car.year + ' ' + car.model)}</div>
+            <div class="m-car-card__model">${esc((car.vehicle_make ? car.vehicle_make + ' ' : '') + car.vehicle_model + ' ' + car.year)}</div>
           </div>
           ${car.color_hex ? `<span style="width:14px;height:14px;border-radius:50%;background:${car.color_hex};border:1px solid var(--m-border)"></span>` : ''}
         </div>
