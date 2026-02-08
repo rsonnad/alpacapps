@@ -329,27 +329,47 @@ async function resendInvitation(invitationId) {
     return;
   }
 
-  // Check if expired
-  if (new Date(invitation.expires_at) < new Date()) {
-    // Extend expiration by 7 days
-    const newExpiry = new Date();
-    newExpiry.setDate(newExpiry.getDate() + 7);
-
-    await supabase
-      .from('user_invitations')
-      .update({ expires_at: newExpiry.toISOString() })
-      .eq('id', invitationId);
+  // Find and disable the button for loading state
+  const btn = document.querySelector(`button[onclick="resendInvitation('${invitationId}')"]`);
+  const originalText = btn?.textContent;
+  if (btn) {
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
   }
 
-  const emailSent = await sendInvitationEmail(invitationId, invitation.email, invitation.role);
+  try {
+    // Check if expired
+    if (new Date(invitation.expires_at) < new Date()) {
+      // Extend expiration by 7 days
+      const newExpiry = new Date();
+      newExpiry.setDate(newExpiry.getDate() + 7);
 
-  if (emailSent) {
-    showToast('Invitation resent to ' + invitation.email, 'success');
-    await loadInvitations();
-    render();
-  } else {
-    showToast('Failed to send email. Try copying the invite text manually.', 'error');
-    showInvitationModal(invitation.email, invitation.role);
+      const { error } = await supabase
+        .from('user_invitations')
+        .update({ expires_at: newExpiry.toISOString() })
+        .eq('id', invitationId);
+
+      if (error) throw error;
+    }
+
+    const emailSent = await sendInvitationEmail(invitationId, invitation.email, invitation.role);
+
+    if (emailSent) {
+      showToast('Invitation resent to ' + invitation.email, 'success');
+      await loadInvitations();
+      render();
+    } else {
+      showToast('Failed to send email. Try copying the invite text manually.', 'error');
+      showInvitationModal(invitation.email, invitation.role);
+    }
+  } catch (error) {
+    console.error('Error resending invitation:', error);
+    showToast('Failed to resend: ' + error.message, 'error');
+  } finally {
+    if (btn) {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   }
 }
 
