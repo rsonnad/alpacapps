@@ -338,6 +338,18 @@ git push
 
 > **If the script can't run** (no DB access, no psql), tell the user and do NOT push without bumping. The version stamp is how users verify they're seeing the latest deploy.
 
+### REQUIRED: Post-Push Testing Link
+
+After every `git push`, you MUST include a clickable testing link to the affected page(s) so the user can verify the change. The live site is at `https://alpacaplayhouse.com`.
+
+Common page URLs:
+- Resident pages: `https://alpacaplayhouse.com/residents/{page}.html` (cameras, climate, lighting, sonos, laundry, cars)
+- Admin pages: `https://alpacaplayhouse.com/spaces/admin/{page}.html` (spaces, rentals, settings, templates, users, sms-messages)
+- Public pages: `https://alpacaplayhouse.com/spaces/`, `https://alpacaplayhouse.com/`
+
+Example post-push message:
+> Pushed. Test it here: https://alpacaplayhouse.com/residents/laundry.html
+
 ## Important Conventions
 
 1. **Use `media_spaces` not `photo_spaces`** - The old photo system is deprecated
