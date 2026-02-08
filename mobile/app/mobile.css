@@ -76,18 +76,28 @@ html, body {
   position: fixed; inset: 0; z-index: 9998;
   display: flex; align-items: center; justify-content: center;
   background: var(--m-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 0;
 }
 .m-unauthorized-card {
   text-align: center; padding: 2rem;
   display: flex; flex-direction: column; align-items: center;
+  margin: auto;
 }
-.m-unauthorized-card h2 { color: var(--m-accent); margin-bottom: 0.5rem; }
-.m-unauthorized-card p { color: var(--m-text-muted); margin-bottom: 1.5rem; }
+.m-unauthorized-card h2 { color: var(--m-accent); margin-bottom: 0.5rem; font-size: 22px; }
+.m-unauthorized-card p { color: var(--m-text-muted); margin-bottom: 1rem; }
 .m-login-logo {
-  width: 120px; height: 120px;
-  border-radius: 28px;
+  width: 100px; height: 100px;
+  border-radius: 24px;
   object-fit: cover;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+@media (max-height: 667px) {
+  .m-login-logo { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 10px; }
+  .m-unauthorized-card h2 { font-size: 18px; }
+  .m-unauthorized-card p { margin-bottom: 8px; }
+  .m-unauthorized-card { padding: 1rem; }
 }
 
 /* ---- HIDDEN UTILITY ---- */

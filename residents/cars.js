@@ -18,7 +18,8 @@ let vehicles = [];
 let accounts = [];
 let pollTimer = null;
 let currentUserRole = null;
-let currentUserId = null;
+let currentUserId = null;    // app_users.id
+let currentPersonId = null;  // people.id (for ownership matching)
 const leafletMaps = {};       // car.id → Leaflet map instance
 const geocodeCache = {};      // "lat,lng" → address string
 
@@ -129,7 +130,7 @@ const CAR_SVG_GENERIC = `<svg viewBox="0 0 400 160" fill="none" xmlns="http://ww
 async function loadVehicles() {
   const { data, error } = await supabase
     .from('vehicles')
-    .select('*, account:account_id(id, owner_name, tesla_email), owner:owner_id(id, display_name, email), drivers:vehicle_drivers(app_user:app_user_id(id, display_name))')
+    .select('*, account:account_id(id, owner_name, tesla_email), owner:owner_id(id, first_name, last_name), drivers:vehicle_drivers(person:person_id(id, first_name, last_name))')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
@@ -377,9 +378,9 @@ function renderFleet() {
 
     // Owner + drivers info
     let ownerHtml = '';
-    const ownerName = car.owner?.display_name || car.account?.owner_name;
+    const ownerName = car.owner ? `${car.owner.first_name || ''} ${car.owner.last_name || ''}`.trim() : car.account?.owner_name;
     if (ownerName) {
-      const driverNames = (car.drivers || []).map(d => d.app_user?.display_name).filter(Boolean);
+      const driverNames = (car.drivers || []).map(d => d.person ? `${d.person.first_name || ''} ${d.person.last_name || ''}`.trim() : null).filter(Boolean);
       const driverStr = driverNames.length ? ` \u00b7 ${driverNames.join(', ')}` : '';
       ownerHtml = `<div class="car-card__owner">${ownerName}${driverStr}</div>`;
     }
@@ -593,7 +594,7 @@ async function resolveAllAddresses() {
 function updateAddVehicleCta() {
   const cta = document.getElementById('addVehicleCta');
   if (!cta) return;
-  const userOwnsAny = vehicles.some(v => v.owner?.id === currentUserId);
+  const userOwnsAny = vehicles.some(v => v.owner?.id === currentPersonId);
   cta.style.display = userOwnsAny ? 'none' : '';
 }
 
@@ -759,6 +760,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     onReady: async (authState) => {
       currentUserRole = authState.appUser?.role;
       currentUserId = authState.appUser?.id;
+      currentPersonId = authState.appUser?.person_id;
 
       // Load vehicles and render
       await loadVehicles();
