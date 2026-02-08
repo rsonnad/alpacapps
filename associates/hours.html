@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hours - AlpacAPPs</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="../spaces/styles.css?v=4">
+  <link rel="stylesheet" href="../spaces/admin/styles.css?v=4">
+  <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=1">
+  <style>
+    :root {
+      --clock-green: #22c55e;
+      --clock-red: #ef4444;
+      --paid-bg: #d1fae5;
+      --paid-text: #065f46;
+      --unpaid-bg: #fef3c7;
+      --unpaid-text: #92400e;
+    }
+
+    body { background: #f9fafb; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    .app-header {
+      background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0.75rem 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .app-header .logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .app-header .logo img { height: 24px; }
+    .app-header .user-area { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; }
+    .app-header .sign-out { background: none; border: 1px solid #d1d5db; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+
+    .app-container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+
+    /* Clock In/Out Section */
+    .clock-section { text-align: center; padding: 1.5rem 1rem; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+    .clock-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 180px; height: 180px; border-radius: 50%; border: none; cursor: pointer;
+      font-size: 1.4rem; font-weight: 700; color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .clock-btn:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .clock-btn.clock-in { background: var(--clock-green); }
+    .clock-btn.clock-out { background: var(--clock-red); }
+    .clock-btn:disabled { opacity: 0.5; cursor: wait; }
+
+    .timer { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: 0.75rem 0 0.25rem; color: var(--text); }
+    .timer-label { font-size: 0.8rem; color: var(--text-muted); }
+    .rate-display { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+    /* Clock-out description prompt */
+    .clockout-prompt { margin-top: 1rem; display: none; }
+    .clockout-prompt.visible { display: block; }
+    .clockout-prompt textarea {
+      width: 100%; box-sizing: border-box; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 0.9rem; min-height: 70px; resize: vertical; font-family: inherit;
+    }
+    .clockout-prompt .prompt-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: center; }
+    .clockout-prompt .btn-submit {
+      background: var(--clock-red); color: #fff; border: none; padding: 0.5rem 1.5rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+    }
+    .clockout-prompt .btn-skip {
+      background: #f3f4f6; color: var(--text); border: 1px solid #d1d5db; padding: 0.5rem 1rem;
+      border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+    }
+
+    /* Tab Switcher */
+    .tabs { display: flex; background: #fff; border-radius: 10px; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tabs button {
+      flex: 1; padding: 0.65rem; background: none; border: none; font-size: 0.85rem;
+      font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative;
+    }
+    .tabs button.active { color: var(--accent); }
+    .tabs button.active::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 3px; background: var(--accent); border-radius: 2px; }
+
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Today Section */
+    .today-card { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
+    .today-card h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .today-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .today-stat { text-align: center; }
+    .today-stat .val { font-size: 1.3rem; font-weight: 700; }
+    .today-stat .lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+    .entry-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; }
+    .entry-row:last-child { border-bottom: none; }
+    .entry-times { color: var(--text); }
+    .entry-duration { font-weight: 600; color: var(--text); }
+
+    /* Photo Upload */
+    .photo-section { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
+    .photo-section h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .photo-upload-area {
+      border: 2px dashed #d1d5db; border-radius: 10px; padding: 1.5rem; text-align: center;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .photo-upload-area:hover { border-color: var(--accent); }
+    .photo-upload-area input[type="file"] { display: none; }
+    .photo-upload-icon { font-size: 2rem; margin-bottom: 0.25rem; }
+    .photo-upload-text { font-size: 0.85rem; color: var(--text-muted); }
+    .photo-type-selector { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .photo-type-selector button {
+      flex: 1; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 6px;
+      background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 500;
+    }
+    .photo-type-selector button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
+    .photo-thumb { border-radius: 6px; overflow: hidden; aspect-ratio: 1; cursor: pointer; }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-thumb .type-tag {
+      position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff;
+      font-size: 0.6rem; padding: 0.1rem 0.3rem; border-radius: 3px;
+    }
+
+    /* History Section */
+    .history-filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .history-filters select, .history-filters input {
+      padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem;
+      flex: 1; min-width: 100px;
+    }
+
+    .day-group { background: #fff; border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .day-header .day-date { font-weight: 700; font-size: 0.95rem; }
+    .day-header .day-total { font-size: 0.85rem; }
+    .day-header .day-amount { font-weight: 700; }
+    .day-badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem; }
+    .day-badge.paid { background: var(--paid-bg); color: var(--paid-text); }
+    .day-badge.unpaid { background: var(--unpaid-bg); color: var(--unpaid-text); }
+    .day-badge.mixed { background: #ede9fe; color: #5b21b6; }
+    .day-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; }
+
+    /* Payment Tab */
+    .pay-card { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
+    .pay-card h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .pay-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .pay-stat { text-align: center; padding: 0.75rem 0.5rem; background: #f9fafb; border-radius: 8px; }
+    .pay-stat .val { font-size: 1.1rem; font-weight: 700; }
+    .pay-stat .val.green { color: var(--clock-green); }
+    .pay-stat .val.red { color: var(--clock-red); }
+    .pay-stat .lbl { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.15rem; }
+
+    .pay-form-row { margin-bottom: 0.75rem; }
+    .pay-form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+    .pay-form-row select, .pay-form-row input {
+      width: 100%; box-sizing: border-box; padding: 0.5rem; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 0.9rem;
+    }
+    .pay-form-row .rate-display { font-size: 1.1rem; font-weight: 700; color: var(--text); padding: 0.5rem 0; }
+    .btn-save-pref {
+      background: var(--accent); color: #fff; border: none; padding: 0.5rem 1.5rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%;
+    }
+
+    /* Loading states */
+    .loading-overlay { display: flex; position: fixed; inset: 0; background: #fff; z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
+    .loading-overlay.hidden { display: none; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Auth screen */
+    .auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 2rem; text-align: center; }
+    .auth-screen h2 { margin-bottom: 0.5rem; }
+    .auth-screen p { color: var(--text-muted); margin-bottom: 1.5rem; }
+    .btn-google {
+      display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid #d1d5db;
+      padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500;
+    }
+    .btn-google:hover { background: #f9fafb; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; background: #1f2937; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.2s; }
+    .toast.success { background: #065f46; }
+    .toast.error { background: #991b1b; }
+    .toast.warning { background: #92400e; }
+    .toast-close { background: none; border: none; color: inherit; cursor: pointer; margin-left: 0.5rem; font-size: 1.1rem; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    @media (max-width: 768px) {
+      .app-container { padding: 0.75rem; }
+      .clock-btn { width: 150px; height: 150px; font-size: 1.2rem; }
+      .timer { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Auth Screen (shown when not logged in) -->
+  <div id="authScreen" class="auth-screen hidden">
+    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" style="height: 48px; margin-bottom: 1rem;">
+    <h2>Hours Tracker</h2>
+    <p>Sign in to track your work hours</p>
+    <button class="btn-google" id="btnGoogleSignIn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.27c-.18 1-.74 1.85-1.58 2.42v2.01h2.56c1.5-1.38 2.37-3.41 2.37-5.83 0-.56-.05-1.1-.14-1.6z"/><path fill="#34A853" d="M8.98 17c2.14 0 3.94-.71 5.25-1.92l-2.56-2.01c-.71.48-1.62.76-2.69.76-2.07 0-3.82-1.4-4.44-3.28H1.87v2.07C3.17 15.34 5.87 17 8.98 17z"/><path fill="#FBBC05" d="M4.54 10.55c-.16-.48-.25-.99-.25-1.52s.09-1.04.25-1.52V5.44H1.87C1.32 6.53 1 7.74 1 9.03s.32 2.5.87 3.59l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.23c1.17 0 2.22.4 3.04 1.19l2.28-2.28C12.91 1.72 11.11 1 8.98 1 5.87 1 3.17 2.66 1.87 5.44l2.67 2.07c.62-1.88 2.37-3.28 4.44-3.28z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- Main App Content -->
+  <div id="appContent" class="hidden">
+    <div class="app-header">
+      <a href="https://alpacaplayhouse.com" class="logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
+        <span style="font-weight:700;font-size:0.95rem;">Hours</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.65 5:26p</span>
+      </a>
+      <div class="user-area">
+        <span id="userName"></span>
+        <button class="sign-out" id="btnSignOut">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="app-container">
+      <!-- Clock In/Out -->
+      <div class="clock-section" id="clockSection">
+        <button class="clock-btn clock-in" id="clockBtn">Clock In</button>
+        <div class="timer" id="timerDisplay" style="display:none;">0:00:00</div>
+        <div class="timer-label" id="timerLabel" style="display:none;">Time this session</div>
+        <div class="rate-display" id="rateDisplay"></div>
+
+        <div class="clockout-prompt" id="clockoutPrompt">
+          <textarea id="clockoutDesc" placeholder="What did you work on? (optional)"></textarea>
+          <div class="prompt-actions">
+            <button class="btn-skip" id="btnClockoutSkip">Skip</button>
+            <button class="btn-submit" id="btnClockoutSubmit">Clock Out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tabs">
+        <button class="active" data-tab="today">Today</button>
+        <button data-tab="history">History</button>
+        <button data-tab="payment">Payment</button>
+      </div>
+
+      <!-- Today Tab -->
+      <div class="tab-content active" id="tabToday">
+        <div class="today-card">
+          <h3>Today's Work</h3>
+          <div class="today-stats">
+            <div class="today-stat"><div class="val" id="todayHours">0:00</div><div class="lbl">Hours</div></div>
+            <div class="today-stat"><div class="val" id="todayAmount">$0.00</div><div class="lbl">Earned</div></div>
+          </div>
+          <div id="todayEntries"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">No entries yet today</p></div>
+        </div>
+
+        <div class="photo-section">
+          <h3>Work Photos</h3>
+          <div class="photo-type-selector">
+            <button class="active" data-photo-type="before">Before</button>
+            <button data-photo-type="progress">Progress</button>
+            <button data-photo-type="after">After</button>
+          </div>
+          <div class="photo-upload-area" id="photoUploadArea">
+            <input type="file" id="photoInput" accept="image/*" capture="environment">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">Tap to take or upload a photo</div>
+          </div>
+          <div class="photo-grid" id="todayPhotos"></div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-content" id="tabHistory">
+        <div class="history-filters">
+          <select id="historyPeriod">
+            <option value="30">Last 30 Days</option>
+            <option value="7">Last 7 Days</option>
+            <option value="60">Last 60 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="all">All Time</option>
+          </select>
+          <select id="historyStatus">
+            <option value="">All</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div id="historyList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading history...</p></div>
+      </div>
+
+      <!-- Payment Tab -->
+      <div class="tab-content" id="tabPayment">
+        <div class="pay-card">
+          <h3>Earnings Summary</h3>
+          <div class="pay-summary">
+            <div class="pay-stat"><div class="val" id="payTotal">$0</div><div class="lbl">Total Earned</div></div>
+            <div class="pay-stat"><div class="val green" id="payPaid">$0</div><div class="lbl">Paid</div></div>
+            <div class="pay-stat"><div class="val red" id="payUnpaid">$0</div><div class="lbl">Outstanding</div></div>
+          </div>
+        </div>
+
+        <div class="pay-card">
+          <h3>Your Rate</h3>
+          <div class="pay-form-row">
+            <label>Hourly Rate (set by admin)</label>
+            <div class="rate-display" id="payRate">$0.00/hr</div>
+          </div>
+        </div>
+
+        <div class="pay-card">
+          <h3>Payment Preference</h3>
+          <div class="pay-form-row">
+            <label>How would you like to be paid?</label>
+            <select id="payMethod">
+              <option value="">Select...</option>
+              <option value="venmo">Venmo</option>
+              <option value="zelle">Zelle</option>
+              <option value="paypal">PayPal</option>
+              <option value="square">Square / Cash App</option>
+              <option value="cash">Cash</option>
+              <option value="check">Check</option>
+              <option value="bank_ach">Bank / ACH</option>
+            </select>
+          </div>
+          <div class="pay-form-row">
+            <label>Username / Email / Phone for payment</label>
+            <input type="text" id="payHandle" placeholder="e.g. @username, email, or phone number">
+          </div>
+          <button class="btn-save-pref" id="btnSavePref">Save Preference</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="hours.js"></script>
+</body>
+</html>
