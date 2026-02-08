@@ -106,6 +106,7 @@ body {
   color: rgba(255, 255, 255, 0.4);
   font-weight: 400;
   margin-left: -0.5rem;
+  cursor: help;
 }
 
 .site-nav__links {
