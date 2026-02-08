@@ -91,18 +91,10 @@ function renderProfile() {
   roleEl.textContent = (d.role || 'resident').charAt(0).toUpperCase() + (d.role || 'resident').slice(1);
   roleEl.className = 'role-badge ' + (d.role || 'resident');
 
-  const pronounsEl = document.getElementById('profilePronouns');
-  if (d.pronouns) {
-    pronounsEl.textContent = d.pronouns;
-    pronounsEl.style.display = '';
-  } else {
-    pronounsEl.style.display = 'none';
-  }
-
   // Form fields
   document.getElementById('fieldFirstName').value = d.first_name || '';
   document.getElementById('fieldLastName').value = d.last_name || '';
-  document.getElementById('fieldPronouns').value = d.pronouns || '';
+  document.getElementById('fieldDisplayName').value = d.display_name || '';
   document.getElementById('fieldGender').value = d.gender || '';
   document.getElementById('fieldBio').value = d.bio || '';
   document.getElementById('fieldNationality').value = d.nationality || '';
@@ -301,13 +293,11 @@ async function saveProfile() {
   try {
     const firstName = document.getElementById('fieldFirstName').value.trim() || null;
     const lastName = document.getElementById('fieldLastName').value.trim() || null;
-    const displayName = [firstName, lastName].filter(Boolean).join(' ') || null;
 
     const updates = {
       first_name: firstName,
       last_name: lastName,
-      display_name: displayName,
-      pronouns: document.getElementById('fieldPronouns').value.trim() || null,
+      display_name: document.getElementById('fieldDisplayName').value.trim() || null,
       gender: document.getElementById('fieldGender').value || null,
       bio: document.getElementById('fieldBio').value.trim() || null,
       nationality: document.getElementById('fieldNationality').value.trim() || null,
@@ -334,15 +324,6 @@ async function saveProfile() {
     // Update header name
     const headerName = getDisplayName(profileData);
     document.getElementById('profileName').textContent = headerName;
-
-    // Update pronouns display
-    const pronounsEl = document.getElementById('profilePronouns');
-    if (updates.pronouns) {
-      pronounsEl.textContent = updates.pronouns;
-      pronounsEl.style.display = '';
-    } else {
-      pronounsEl.style.display = 'none';
-    }
 
     // Update cached auth state so header updates on other pages
     updateCachedAuth({ display_name: updates.display_name, first_name: updates.first_name, last_name: updates.last_name });
@@ -557,7 +538,7 @@ function getFormSnapshot() {
   return JSON.stringify({
     first_name: document.getElementById('fieldFirstName').value.trim(),
     last_name: document.getElementById('fieldLastName').value.trim(),
-    pronouns: document.getElementById('fieldPronouns').value.trim(),
+    display_name: document.getElementById('fieldDisplayName').value.trim(),
     gender: document.getElementById('fieldGender').value,
     bio: document.getElementById('fieldBio').value.trim(),
     nationality: document.getElementById('fieldNationality').value.trim(),
@@ -613,7 +594,7 @@ function bindEvents() {
   document.getElementById('fieldLocationBase').addEventListener('input', updateLocationFlag);
 
   // Dirty tracking on all form fields
-  const textFields = ['fieldFirstName', 'fieldLastName', 'fieldPronouns', 'fieldBio', 'fieldNationality',
+  const textFields = ['fieldFirstName', 'fieldLastName', 'fieldDisplayName', 'fieldBio', 'fieldNationality',
     'fieldLocationBase', 'fieldPhone', 'fieldPhone2', 'fieldWhatsApp', 'fieldInstagram'];
   textFields.forEach(id => {
     document.getElementById(id).addEventListener('input', updateSaveButton);
@@ -624,12 +605,8 @@ function bindEvents() {
   // Links container — listen for input on dynamically added link fields
   document.getElementById('linksContainer').addEventListener('input', updateSaveButton);
 
-  // Privacy dropdowns — listen for changes (delegated since they're in the form)
-  document.querySelector('.profile-form').addEventListener('change', (e) => {
-    if (e.target.classList.contains('profile-privacy-select')) {
-      updateSaveButton();
-    }
-  });
+  // Privacy dropdowns — Facebook-style icon menus
+  initPrivacyDropdowns();
 
   // Vehicle card expand/collapse
   document.getElementById('vehiclesContainer').addEventListener('click', (e) => {
@@ -706,7 +683,6 @@ function renderVehicles() {
 // =============================================
 
 const PRIVACY_FIELDS = [
-  { key: 'pronouns', label: 'Pronouns' },
   { key: 'gender', label: 'Gender' },
   { key: 'bio', label: 'Bio' },
   { key: 'nationality', label: 'Nationality' },
@@ -719,27 +695,102 @@ const PRIVACY_FIELDS = [
   { key: 'links', label: 'Links' },
 ];
 
-const PRIVACY_OPTIONS = [
-  { value: 'all_guests', label: 'All Guests' },
-  { value: 'residents', label: 'Residents Only' },
-  { value: 'only_me', label: 'Only Me' },
-];
+// Facebook-style privacy icons (globe = all guests, people = residents, lock = only me)
+const PRIVACY_ICONS = {
+  all_guests: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm5.9 7H11.1a14.7 14.7 0 0 0-1-4.3A6 6 0 0 1 13.9 7zM8 14c-.6 0-1.8-1.7-2-5h4c-.2 3.3-1.4 5-2 5zM6 7c.2-3.3 1.4-5 2-5s1.8 1.7 2 5H6zM5.9 2.7A14.7 14.7 0 0 0 4.9 7H2.1a6 6 0 0 1 3.8-4.3zM2.1 9h2.8a14.7 14.7 0 0 0 1 4.3A6 6 0 0 1 2.1 9zm8 4.3a14.7 14.7 0 0 0 1-4.3h2.8a6 6 0 0 1-3.8 4.3z"/></svg>',
+  residents: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm0 1C3 8 0 9.8 0 11v1.5c0 .3.2.5.5.5h10c.3 0 .5-.2.5-.5V11c0-1.2-3-3-5.5-3zm5-1a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm1.6 2c.6.6 1.9 1.5 1.9 2v1.5c0 .3-.2.5-.5.5H12V11c0-.7-.4-1.4-.9-2h1z"/></svg>',
+  only_me: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M12 7V5a4 4 0 0 0-8 0v2a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM6 5a2 2 0 1 1 4 0v2H6V5z"/></svg>',
+};
+
+const PRIVACY_LABELS = {
+  all_guests: 'All Guests',
+  residents: 'Residents Only',
+  only_me: 'Only Me',
+};
+
+const PRIVACY_DESCS = {
+  all_guests: 'Anyone visiting the property',
+  residents: 'Only current residents',
+  only_me: 'Hidden from everyone',
+};
 
 function collectPrivacySettings() {
   const settings = {};
   PRIVACY_FIELDS.forEach(f => {
-    const sel = document.getElementById(`privacy_${f.key}`);
-    if (sel) settings[f.key] = sel.value;
+    const widget = document.getElementById(`privacy_${f.key}`);
+    if (widget) settings[f.key] = widget.dataset.value || 'all_guests';
   });
   return settings;
 }
 
 function renderPrivacyControls() {
   const saved = profileData.privacy_settings || {};
+
   PRIVACY_FIELDS.forEach(f => {
-    const sel = document.getElementById(`privacy_${f.key}`);
-    if (sel) {
-      sel.value = saved[f.key] || 'all_guests';
+    const widget = document.getElementById(`privacy_${f.key}`);
+    if (!widget) return;
+
+    const currentValue = saved[f.key] || 'all_guests';
+    widget.dataset.value = currentValue;
+
+    widget.innerHTML = `
+      <button type="button" class="profile-privacy-btn" title="${PRIVACY_LABELS[currentValue]}">
+        ${PRIVACY_ICONS[currentValue]}
+        <svg class="privacy-caret" viewBox="0 0 10 10" fill="currentColor"><path d="M3 4l2 2 2-2"/></svg>
+      </button>
+      <div class="profile-privacy-menu">
+        ${['all_guests', 'residents', 'only_me'].map(val => `
+          <button type="button" class="profile-privacy-option${val === currentValue ? ' selected' : ''}" data-value="${val}">
+            ${PRIVACY_ICONS[val]}
+            <span class="profile-privacy-option-text">
+              <span class="profile-privacy-option-label">${PRIVACY_LABELS[val]}</span>
+              <span class="profile-privacy-option-desc">${PRIVACY_DESCS[val]}</span>
+            </span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  });
+}
+
+// Toggle privacy dropdown menus
+function initPrivacyDropdowns() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.profile-privacy-btn');
+    if (btn) {
+      e.stopPropagation();
+      // Close any other open menus
+      document.querySelectorAll('.profile-privacy-menu.open').forEach(m => {
+        if (m !== btn.nextElementSibling) m.classList.remove('open');
+      });
+      btn.nextElementSibling.classList.toggle('open');
+      return;
     }
+
+    const option = e.target.closest('.profile-privacy-option');
+    if (option) {
+      e.stopPropagation();
+      const menu = option.closest('.profile-privacy-menu');
+      const widget = option.closest('.profile-privacy-widget');
+      const newValue = option.dataset.value;
+      widget.dataset.value = newValue;
+
+      // Update button icon
+      const triggerBtn = widget.querySelector('.profile-privacy-btn');
+      triggerBtn.title = PRIVACY_LABELS[newValue];
+      triggerBtn.innerHTML = `${PRIVACY_ICONS[newValue]}<svg class="privacy-caret" viewBox="0 0 10 10" fill="currentColor"><path d="M3 4l2 2 2-2"/></svg>`;
+
+      // Update selected state in menu
+      menu.querySelectorAll('.profile-privacy-option').forEach(o => {
+        o.classList.toggle('selected', o.dataset.value === newValue);
+      });
+
+      menu.classList.remove('open');
+      updateSaveButton();
+      return;
+    }
+
+    // Close all menus on outside click
+    document.querySelectorAll('.profile-privacy-menu.open').forEach(m => m.classList.remove('open'));
   });
 }

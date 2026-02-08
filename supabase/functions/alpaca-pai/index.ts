@@ -811,7 +811,7 @@ async function executeToolCall(
 
         let query = supabaseForSearch
           .from("spaces")
-          .select("id, name, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret")
+          .select("id, name, parent_id, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret")
           .eq("is_archived", false);
 
         // Role-based visibility:
@@ -831,6 +831,13 @@ async function executeToolCall(
         const { data: spaces } = await query.order("monthly_rate", { ascending: false });
         if (!spaces?.length) return "No spaces found matching your criteria.";
 
+        // Load ALL non-archived spaces (lightweight) for parent/child relationship mapping
+        // Needed to propagate child unavailability to parent spaces
+        const { data: allSpaces } = await supabaseForSearch
+          .from("spaces")
+          .select("id, parent_id")
+          .eq("is_archived", false);
+
         let filtered = spaces;
         if (args.min_beds) {
           filtered = filtered.filter((s: any) => {
@@ -849,7 +856,27 @@ async function executeToolCall(
           .select("id, start_date, end_date, desired_departure_date, desired_departure_listed, status, assignment_spaces(space_id)")
           .in("status", ["active", "pending_contract", "contract_sent"]);
 
+        // Build a set of all space IDs that have active assignments (for child checking)
         const today = new Date();
+        const occupiedSpaceIds = new Set<string>();
+        const spaceAvailDates = new Map<string, Date | null>();
+        (assignments || []).forEach((a: any) => {
+          if (a.status !== "active") return;
+          (a.assignment_spaces || []).forEach((as: any) => {
+            const effectiveEnd = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
+            if (!effectiveEnd || new Date(effectiveEnd) >= today) {
+              occupiedSpaceIds.add(as.space_id);
+              if (effectiveEnd) {
+                const d = new Date(effectiveEnd);
+                const existing = spaceAvailDates.get(as.space_id);
+                if (!existing || d > existing) spaceAvailDates.set(as.space_id, d);
+              } else {
+                spaceAvailDates.set(as.space_id, null); // TBD
+              }
+            }
+          });
+        });
+
         const results = filtered.map((space: any) => {
           const spaceAssignments = (assignments || []).filter((a: any) =>
             a.assignment_spaces?.some((as: any) => as.space_id === space.id)
@@ -860,7 +887,7 @@ async function executeToolCall(
             if (!effectiveEnd) return true;
             return new Date(effectiveEnd) >= today;
           });
-          const isAvailable = !currentAssignment;
+          let isAvailable = !currentAssignment;
           let availDate: Date | null = null;
           let availStr = "Available NOW";
           if (!isAvailable) {
@@ -872,6 +899,35 @@ async function executeToolCall(
               availStr = "Available TBD";
             }
           }
+
+          // Propagate child unavailability to parents:
+          // If this space has children and any child is occupied, mark parent unavailable
+          if (isAvailable && allSpaces) {
+            const childIds = allSpaces.filter((s: any) => s.parent_id === space.id).map((s: any) => s.id);
+            if (childIds.length > 0) {
+              const occupiedChildIds = childIds.filter((id: string) => occupiedSpaceIds.has(id));
+              if (occupiedChildIds.length > 0) {
+                isAvailable = false;
+                // Parent available when ALL children are free — use latest (max) date
+                const childDates = occupiedChildIds
+                  .map((id: string) => spaceAvailDates.get(id))
+                  .filter((d: Date | null | undefined) => d !== undefined);
+                if (childDates.some((d: Date | null) => d === null)) {
+                  availDate = null;
+                  availStr = "Available TBD";
+                } else {
+                  const validDates = childDates.filter((d: Date | null): d is Date => d !== null);
+                  if (validDates.length > 0) {
+                    availDate = new Date(Math.max(...validDates.map((d: Date) => d.getTime())));
+                    availStr = `Available ${availDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+                  } else {
+                    availStr = "Available TBD";
+                  }
+                }
+              }
+            }
+          }
+
           const totalBeds = (space.beds_king || 0) + (space.beds_queen || 0) + (space.beds_double || 0) + (space.beds_twin || 0) + (space.beds_folding || 0);
           const bedBreakdown = [
             space.beds_king ? `${space.beds_king} king` : null,
