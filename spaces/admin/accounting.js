@@ -1001,6 +1001,7 @@ const SERVICE_LABELS = {
   telnyx: 'Telnyx',
   resend: 'Resend',
   signwell: 'SignWell',
+  vapi: 'Vapi',
   other: 'Other',
 };
 
@@ -1013,6 +1014,7 @@ const SERVICE_COLORS = {
   telnyx: '#00c08b',
   resend: '#000',
   signwell: '#6366f1',
+  vapi: '#5b21b6',
   other: '#6b7280',
 };
 

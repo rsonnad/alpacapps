@@ -15,6 +15,7 @@ let cameraSettings = {};
 
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
+const TALKBACK_WS_BASE = 'wss://cam.alpacaplayhouse.com/talkback';
 
 // =============================================
 // INITIALIZATION
@@ -186,6 +187,7 @@ const ICONS = {
   ir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
   led: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
   hdr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none">HDR</text></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
 };
 
 // =============================================
@@ -228,6 +230,10 @@ function renderCameras() {
             <line x1="3" y1="21" x2="10" y2="14"></line>
           </svg>
         </button>
+        ${cam.protectCameraId ? `
+        <!-- Talkback button -->
+        <button class="camera-card__talkback" data-cam="${i}" title="Push to Talk">${ICONS.mic}</button>
+        ` : ''}
         ${cam.protectCameraId ? `
         <!-- PTZ Controls (mobile overlay) -->
         <div class="ptz-controls ptz-controls--mobile" id="ptz-mobile-${i}">
@@ -299,6 +305,12 @@ function renderCameras() {
   // Bind PTZ buttons (press and hold for continuous, release to stop)
   grid.querySelectorAll('.ptz-btn').forEach(btn => {
     bindPtzButton(btn);
+  });
+
+  // Bind talkback buttons
+  grid.querySelectorAll('.camera-card__talkback').forEach(btn => {
+    const idx = parseInt(btn.dataset.cam);
+    bindTalkbackButton(btn, idx);
   });
 
   // Bind toolbar controls
@@ -647,6 +659,8 @@ function renderLightbox() {
         </div>
       </div>
       <div class="camera-lightbox__toolbar" id="lb-toolbar">
+        <button class="toolbar-btn" id="lb-talkback" title="Push to Talk">${ICONS.mic} Talk</button>
+        <span class="toolbar-sep"></span>
         <button class="toolbar-btn" id="lb-snapshot" title="Take Snapshot">${ICONS.snapshot} Snapshot</button>
         <span class="toolbar-sep"></span>
         <div class="toolbar-group">
@@ -741,6 +755,10 @@ function renderLightbox() {
       e.target.selectedIndex = 0;
     }
   });
+
+  // Lightbox talkback button
+  const lbTalkbackBtn = document.getElementById('lb-talkback');
+  bindTalkbackButton(lbTalkbackBtn, null, true); // lightbox mode
 
   // PTZ in lightbox
   lb.querySelectorAll('#lb-ptz .ptz-btn').forEach(btn => {
@@ -869,5 +887,197 @@ function bindKeyboard() {
         navigateLightbox(1);
         break;
     }
+  });
+}
+
+// =============================================
+// CAMERA TALKBACK (Two-Way Audio)
+// =============================================
+class CameraTalkback {
+  constructor(cameraId) {
+    this.cameraId = cameraId;
+    this.ws = null;
+    this.audioContext = null;
+    this.mediaStream = null;
+    this.sourceNode = null;
+    this.processorNode = null;
+    this.isActive = false;
+  }
+
+  async start() {
+    if (this.isActive) return;
+
+    // Request microphone access
+    try {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1,
+        },
+        video: false,
+      });
+    } catch (err) {
+      console.error('[Talkback] Microphone access denied:', err);
+      showToast('Microphone access denied', 'error');
+      return false;
+    }
+
+    // Connect WebSocket
+    const wsUrl = `${TALKBACK_WS_BASE}/${this.cameraId}`;
+    this.ws = new WebSocket(wsUrl);
+    this.ws.binaryType = 'arraybuffer';
+
+    return new Promise((resolve) => {
+      this.ws.onopen = () => {
+        this.ws.send(JSON.stringify({ type: 'start', cameraId: this.cameraId }));
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'started') {
+            this.isActive = true;
+            this._startAudioCapture();
+            resolve(true);
+          } else if (msg.type === 'error') {
+            showToast(msg.message, 'error');
+            this.stop();
+            resolve(false);
+          } else if (msg.type === 'ping') {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+              this.ws.send(JSON.stringify({ type: 'pong' }));
+            }
+          }
+        } catch (err) {
+          // ignore non-JSON
+        }
+      };
+
+      this.ws.onerror = () => {
+        showToast('Talkback connection failed', 'error');
+        this.stop();
+        resolve(false);
+      };
+
+      this.ws.onclose = () => {
+        this.stop();
+      };
+
+      // Timeout if server doesn't respond
+      setTimeout(() => {
+        if (!this.isActive) {
+          showToast('Talkback timeout', 'error');
+          this.stop();
+          resolve(false);
+        }
+      }, 5000);
+    });
+  }
+
+  _startAudioCapture() {
+    this.audioContext = new AudioContext({ sampleRate: 48000 });
+    this.sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
+
+    // Use ScriptProcessorNode (widely supported)
+    this.processorNode = this.audioContext.createScriptProcessor(4096, 1, 1);
+
+    this.processorNode.onaudioprocess = (e) => {
+      if (!this.isActive || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+      const input = e.inputBuffer.getChannelData(0); // Float32 [-1, 1]
+      const pcm = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]));
+        pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      this.ws.send(pcm.buffer);
+    };
+
+    this.sourceNode.connect(this.processorNode);
+    this.processorNode.connect(this.audioContext.destination);
+  }
+
+  stop() {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try { this.ws.send(JSON.stringify({ type: 'stop' })); } catch (e) {}
+      this.ws.close();
+    }
+    this.ws = null;
+
+    if (this.processorNode) {
+      this.processorNode.disconnect();
+      this.processorNode = null;
+    }
+    if (this.sourceNode) {
+      this.sourceNode.disconnect();
+      this.sourceNode = null;
+    }
+    if (this.audioContext) {
+      this.audioContext.close().catch(() => {});
+      this.audioContext = null;
+    }
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(t => t.stop());
+      this.mediaStream = null;
+    }
+    this.isActive = false;
+  }
+}
+
+// Active talkback instance (only one at a time globally)
+let activeTalkback = null;
+
+function bindTalkbackButton(btn, camIndex, isLightbox = false) {
+  let pressing = false;
+
+  const startTalk = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pressing) return;
+
+    const idx = isLightbox ? lightboxCamIndex : camIndex;
+    const cam = cameras[idx];
+    if (!cam || !cam.protectCameraId) return;
+
+    pressing = true;
+    btn.classList.add('active');
+
+    // Stop any existing talkback
+    if (activeTalkback) {
+      activeTalkback.stop();
+      activeTalkback = null;
+    }
+
+    const talkback = new CameraTalkback(cam.protectCameraId);
+    const ok = await talkback.start();
+    if (ok) {
+      activeTalkback = talkback;
+    } else {
+      pressing = false;
+      btn.classList.remove('active');
+    }
+  };
+
+  const stopTalk = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (!pressing) return;
+    pressing = false;
+    btn.classList.remove('active');
+
+    if (activeTalkback) {
+      activeTalkback.stop();
+      activeTalkback = null;
+    }
+  };
+
+  btn.addEventListener('mousedown', startTalk);
+  btn.addEventListener('touchstart', startTalk, { passive: false });
+  document.addEventListener('mouseup', stopTalk);
+  document.addEventListener('touchend', stopTalk);
+  btn.addEventListener('mouseleave', () => {
+    if (pressing) stopTalk();
   });
 }

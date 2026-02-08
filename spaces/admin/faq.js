@@ -8,6 +8,8 @@ let faqEntries = [];
 let contextLinks = [];
 let contextMeta = null;
 let contextEntries = [];
+let voiceAssistant = null;
+let voiceCallStats = null;
 
 // Check if running in embed mode (inside iframe)
 const isEmbed = new URLSearchParams(window.location.search).has('embed');
@@ -49,7 +51,8 @@ async function loadData() {
     loadFaqEntries(),
     loadContextLinks(),
     loadContextMeta(),
-    loadContextEntries()
+    loadContextEntries(),
+    loadVoiceAssistant()
   ]);
   renderAll();
 }
@@ -185,6 +188,7 @@ function renderAll() {
   renderFaqEntries();
   renderContextEntries();
   renderContextLinks();
+  renderVoiceConfig();
 }
 
 function renderContextMeta() {
@@ -886,6 +890,123 @@ function getLinkIcon(url) {
 function truncateUrl(url) {
   if (url.length <= 60) return url;
   return url.substring(0, 57) + '...';
+}
+
+// =============================================
+// VOICE ASSISTANT CONFIG (read-only)
+// =============================================
+
+async function loadVoiceAssistant() {
+  try {
+    // Load default voice assistant
+    const { data: assistant, error } = await supabase
+      .from('voice_assistants')
+      .select('*')
+      .eq('is_active', true)
+      .eq('is_default', true)
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error loading voice assistant:', error);
+      return;
+    }
+    voiceAssistant = assistant;
+
+    // Load call stats
+    const { data: calls, error: callsError } = await supabase
+      .from('voice_calls')
+      .select('duration_seconds, cost_cents, created_at, status')
+      .order('created_at', { ascending: false });
+
+    if (!callsError && calls) {
+      const ended = calls.filter(c => c.status === 'ended');
+      voiceCallStats = {
+        totalCalls: ended.length,
+        totalMinutes: Math.round(ended.reduce((sum, c) => sum + (c.duration_seconds || 0), 0) / 60 * 10) / 10,
+        totalCost: ended.reduce((sum, c) => sum + (parseFloat(c.cost_cents) || 0), 0) / 100,
+        lastCall: calls.length > 0 ? calls[0].created_at : null
+      };
+    }
+  } catch (err) {
+    console.error('Failed to load voice assistant:', err);
+  }
+}
+
+function renderVoiceConfig() {
+  const container = document.getElementById('voiceConfigSection');
+  if (!container) return;
+
+  if (!voiceAssistant) {
+    container.innerHTML = '<div class="empty-state">No voice assistant configured</div>';
+    return;
+  }
+
+  const a = voiceAssistant;
+  const stats = voiceCallStats || { totalCalls: 0, totalMinutes: 0, totalCost: 0, lastCall: null };
+  const maxDurationMin = Math.round((a.max_duration_seconds || 600) / 60);
+
+  container.innerHTML = `
+    <div class="voice-config-display">
+      <div class="voice-config-grid">
+        <div class="voice-config-item">
+          <span class="voice-config-label">Name</span>
+          <span class="voice-config-value">${escapeHtml(a.name)}${a.is_default ? ' <span class="published-badge">Default</span>' : ''}${a.is_active ? '' : ' <span style="color:#999;">Inactive</span>'}</span>
+        </div>
+        <div class="voice-config-item">
+          <span class="voice-config-label">Model</span>
+          <span class="voice-config-value">${escapeHtml((a.model_provider || 'google').charAt(0).toUpperCase() + (a.model_provider || 'google').slice(1))} · ${escapeHtml(a.model_name || 'unknown')}</span>
+        </div>
+        <div class="voice-config-item">
+          <span class="voice-config-label">Voice</span>
+          <span class="voice-config-value">${escapeHtml((a.voice_provider || 'vapi').charAt(0).toUpperCase() + (a.voice_provider || 'vapi').slice(1))} · ${escapeHtml(a.voice_id || 'default')}</span>
+        </div>
+        <div class="voice-config-item">
+          <span class="voice-config-label">Transcriber</span>
+          <span class="voice-config-value">${escapeHtml((a.transcriber_provider || 'deepgram').charAt(0).toUpperCase() + (a.transcriber_provider || 'deepgram').slice(1))} · ${escapeHtml(a.transcriber_model || 'nova-2')} (${escapeHtml(a.transcriber_language || 'en')})</span>
+        </div>
+        <div class="voice-config-item">
+          <span class="voice-config-label">Temperature</span>
+          <span class="voice-config-value">${a.temperature || 0.7}</span>
+        </div>
+        <div class="voice-config-item">
+          <span class="voice-config-label">Max Duration</span>
+          <span class="voice-config-value">${maxDurationMin} min</span>
+        </div>
+      </div>
+
+      <div class="voice-config-stats">
+        <div class="stat">
+          <span class="stat-value">${stats.totalCalls}</span>
+          <span class="stat-label">Calls</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">${stats.totalMinutes}</span>
+          <span class="stat-label">Minutes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">$${stats.totalCost.toFixed(2)}</span>
+          <span class="stat-label">Cost</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">${stats.lastCall ? formatDate(stats.lastCall) : 'Never'}</span>
+          <span class="stat-label">Last Call</span>
+        </div>
+      </div>
+
+      <div class="voice-config-prompt-section">
+        <div class="voice-config-label">First Message</div>
+        <div class="voice-config-prompt-box">${escapeHtml(a.first_message || '(none)')}</div>
+      </div>
+
+      <div class="voice-config-prompt-section">
+        <div class="voice-config-label">System Prompt</div>
+        <div class="voice-config-prompt-box voice-config-prompt-box--long">${escapeHtml(a.system_prompt || '(none)')}</div>
+      </div>
+
+      <p class="voice-config-hint">Use Claude to modify voice assistant settings.</p>
+    </div>
+  `;
 }
 
 // showToast is now imported from admin-shell.js

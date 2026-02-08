@@ -71,7 +71,7 @@ function cacheAuthState(user, appUser, role) {
     const cached = {
       email: user?.email,
       userId: user?.id,
-      appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email } : null,
+      appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email, person_id: appUser.person_id, is_current_resident: appUser.is_current_resident } : null,
       role,
       timestamp: Date.now(),
     };
@@ -254,7 +254,7 @@ async function handleAuthChange(session) {
       return await withTimeout(
         supabase
           .from('app_users')
-          .select('id, role, display_name, email, avatar_url')
+          .select('id, role, display_name, email, avatar_url, person_id, is_current_resident')
           .eq('auth_user_id', session.user.id)
           .single(),
         AUTH_TIMEOUT_MS,
@@ -550,6 +550,7 @@ export function getAuthState() {
     isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'public', 'pending'].includes(currentRole),
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
+    isCurrentResident: currentAppUser?.is_current_resident === true,
   };
 }
 

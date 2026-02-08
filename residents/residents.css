@@ -4945,3 +4945,85 @@ span.sonos-library-item__star.starred {
   padding: 0.75rem;
   background: var(--bg);
 }
+
+/* =============================================
+   CAMERA TALKBACK BUTTON
+   ============================================= */
+.camera-card__talkback {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 20;
+  padding: 0;
+  opacity: 0;
+}
+
+.camera-card__talkback svg {
+  width: 20px;
+  height: 20px;
+}
+
+.camera-card__video:hover .camera-card__talkback,
+.camera-card__talkback.active {
+  opacity: 1;
+}
+
+.camera-card__talkback:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.camera-card__talkback.active {
+  background: #e74c3c;
+  border-color: #ff6b6b;
+  transform: scale(1.1);
+  box-shadow: 0 0 16px rgba(231, 76, 60, 0.7), 0 0 32px rgba(231, 76, 60, 0.4);
+  animation: talkback-pulse 1.5s infinite;
+}
+
+@keyframes talkback-pulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(231, 76, 60, 0.7), 0 0 32px rgba(231, 76, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.9), 0 0 40px rgba(231, 76, 60, 0.6);
+  }
+}
+
+/* Lightbox talkback button */
+#lb-talkback {
+  cursor: pointer;
+}
+#lb-talkback.active {
+  background: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
+}
+
+/* Mobile: larger touch target */
+@media (max-width: 768px) {
+  .camera-card__talkback {
+    width: 52px;
+    height: 52px;
+    bottom: 12px;
+    right: 12px;
+    opacity: 1;
+  }
+
+  .camera-card__talkback svg {
+    width: 24px;
+    height: 24px;
+  }
+}

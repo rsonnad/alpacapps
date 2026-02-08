@@ -474,6 +474,78 @@
   gap: 0.75rem;
 }
 
+/* Voice Assistant Config */
+.voice-config-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.voice-config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 2rem;
+}
+
+.voice-config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.voice-config-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.voice-config-value {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.voice-config-stats {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.voice-config-prompt-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.voice-config-prompt-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.voice-config-prompt-box--long {
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.8rem;
+}
+
+.voice-config-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .faq-container {
@@ -521,5 +593,14 @@
 
   .test-ask-btn {
     align-self: flex-end;
+  }
+
+  .voice-config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-config-stats {
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 }

@@ -233,9 +233,9 @@ function buildAssistantConfig(
       maxDurationSeconds: assistant.max_duration_seconds || 600,
       // Enable transcription and recording
       transcriber: {
-        provider: "deepgram",
-        model: "nova-2",
-        language: "en",
+        provider: assistant.transcriber_provider || "deepgram",
+        model: assistant.transcriber_model || "nova-2",
+        language: assistant.transcriber_language || "en",
       },
       // Analysis settings for end-of-call
       analysisPlan: {

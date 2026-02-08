@@ -58,6 +58,7 @@ serve(async (req) => {
     const isInternalCall = token === supabaseServiceKey;
 
     let userLevel = 3; // default to admin for internal calls
+    let appUser: any = null;
     if (!isInternalCall) {
       const {
         data: { user },
@@ -68,14 +69,16 @@ serve(async (req) => {
       }
 
       // 2. Check user role (resident+)
-      const { data: appUser } = await supabase
+      const { data: appUserData } = await supabase
         .from("app_users")
         .select("role")
         .eq("auth_user_id", user.id)
         .single();
+      appUser = appUserData;
 
       const ROLE_LEVEL: Record<string, number> = {
         admin: 3,
+        oracle: 3,
         staff: 2,
         resident: 1,
         associate: 1,
@@ -91,7 +94,7 @@ serve(async (req) => {
 
     // ---- OAuth Code Exchange (admin-only) ----
     if (body.action === "exchangeCode") {
-      if (!["admin", "oracle"].includes(appUser?.role)) {
+      if (userLevel < 3) {
         return jsonResponse({ error: "Admin required for token exchange" }, 403);
       }
       if (!body.code) {

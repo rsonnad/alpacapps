@@ -1263,7 +1263,11 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       },
       firstMessage,
       maxDurationSeconds: assistant.max_duration_seconds || 600,
-      transcriber: { provider: "deepgram", model: "nova-2", language: "en" },
+      transcriber: {
+        provider: assistant.transcriber_provider || "deepgram",
+        model: assistant.transcriber_model || "nova-2",
+        language: assistant.transcriber_language || "en",
+      },
       analysisPlan: {
         summaryPrompt: "Summarize the call in 2-3 sentences. Include what the caller wanted and the outcome.",
       },
@@ -1299,7 +1303,11 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
       },
       firstMessage,
       maxDurationSeconds: assistant.max_duration_seconds || 600,
-      transcriber: { provider: "deepgram", model: "nova-2", language: "en" },
+      transcriber: {
+        provider: assistant.transcriber_provider || "deepgram",
+        model: assistant.transcriber_model || "nova-2",
+        language: assistant.transcriber_language || "en",
+      },
       analysisPlan: {
         summaryPrompt: "Summarize the call in 2-3 sentences. Include what the caller wanted and the outcome.",
       },
