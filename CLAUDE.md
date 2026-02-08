@@ -315,14 +315,46 @@ const messages = await smsService.getConversation(personId);
 
 This site deploys directly to GitHub Pages from the `main` branch. There is no build step, PR process, or branch protection - just push to main and it's live.
 
+### REQUIRED: Bump Version Before Every Push
+
+**You MUST run `./scripts/bump-version.sh` before committing and pushing.** This is not optional.
+
+The script:
+1. Atomically increments the version in the `site_config` DB table (format: `vYYMMDD.NN H:MMa/p`)
+2. Uses `sed` to find/replace the version string in **all HTML files**
+3. Prints the new version to stdout
+
+**Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the script pattern-matches and updates. If you add a new HTML page, you MUST include a version string in the same format so the bump script catches it.
+
 ```bash
-# Make changes, commit, and push
-git add <files>
+# Full deploy workflow:
+./scripts/bump-version.sh        # MUST run first — bumps version in DB + all HTML files
+git add <files>                   # Stage your changes AND the bumped HTML files
 git commit -m "Description"
 git push
 # Changes are live in 1-2 minutes
 # Hard refresh browser (Cmd+Shift+R) to see changes
 ```
+
+> **If the script can't run** (no DB access, no psql), tell the user and do NOT push without bumping. The version stamp is how users verify they're seeing the latest deploy.
+
+### REQUIRED: Post-Push Status Message
+
+After every `git push`, you MUST include a status message so the user knows what was pushed and whether it's live. The format depends on which branch was pushed.
+
+**If pushed to `main` (live deploy):**
+> **Deployed to main** — version `vYYMMDD.NN H:MMa/p`
+> Test it here: https://alpacaplayhouse.com/residents/laundry.html
+
+**If pushed to a feature/claude branch (NOT yet live):**
+> **Pushed to branch `claude/branch-name`** (not yet deployed)
+> Changed files: `residents/residents.css`, `residents/laundry.html`
+> To deploy: merge to main, run `./scripts/bump-version.sh`, push main
+
+Common page URLs for testing links (use only on main deploys):
+- Resident pages: `https://alpacaplayhouse.com/residents/{page}.html` (cameras, climate, lighting, sonos, laundry, cars)
+- Admin pages: `https://alpacaplayhouse.com/spaces/admin/{page}.html` (spaces, rentals, settings, templates, users, sms-messages)
+- Public pages: `https://alpacaplayhouse.com/spaces/`, `https://alpacaplayhouse.com/`
 
 ## Important Conventions
 
