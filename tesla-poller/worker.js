@@ -1,7 +1,7 @@
 /**
  * Tesla Vehicle Data Poller
  * Polls Tesla Fleet API for vehicle state every 5 minutes.
- * Stores results in tesla_vehicles.last_state (JSONB) via Supabase.
+ * Stores results in vehicles.last_state (JSONB) via Supabase.
  *
  * Each tesla_accounts row represents a separate Tesla account.
  * Fleet API credentials (client_id, client_secret) stored per account.
@@ -254,7 +254,7 @@ async function pollAccount(account) {
   for (const v of vehicles) {
     // Match by Tesla's unique vehicle_api_id (for known vehicles)
     let { data: dbVehicle } = await supabase
-      .from('tesla_vehicles')
+      .from('vehicles')
       .select('*')
       .eq('vehicle_api_id', v.id)
       .eq('is_active', true)
@@ -263,7 +263,7 @@ async function pollAccount(account) {
     // Fallback: match unlinked vehicle by account_id (first poll, before api_id is set)
     if (!dbVehicle) {
       const { data: unlinked } = await supabase
-        .from('tesla_vehicles')
+        .from('vehicles')
         .select('*')
         .eq('account_id', account.id)
         .eq('is_active', true)
@@ -281,7 +281,7 @@ async function pollAccount(account) {
     // Update vehicle_api_id and VIN if not set
     if (!dbVehicle.vehicle_api_id || !dbVehicle.vin) {
       await supabase
-        .from('tesla_vehicles')
+        .from('vehicles')
         .update({
           vehicle_api_id: v.id,
           vin: v.vin,
@@ -301,7 +301,7 @@ async function pollAccount(account) {
         );
         if (configData.response?.vehicle_config) {
           await supabase
-            .from('tesla_vehicles')
+            .from('vehicles')
             .update({
               vehicle_config: configData.response.vehicle_config,
               updated_at: new Date().toISOString(),
@@ -328,7 +328,7 @@ async function pollAccount(account) {
         state: v.state,
       });
       await supabase
-        .from('tesla_vehicles')
+        .from('vehicles')
         .update({
           vehicle_state: v.state,
           last_synced_at: new Date().toISOString(),
@@ -351,7 +351,7 @@ async function pollAccount(account) {
       if (vehicleData.sleeping) {
         // Vehicle went to sleep between list and data call
         await supabase
-          .from('tesla_vehicles')
+          .from('vehicles')
           .update({
             vehicle_state: 'asleep',
             last_synced_at: new Date().toISOString(),
@@ -364,7 +364,7 @@ async function pollAccount(account) {
       const state = parseVehicleState(vehicleData.response);
 
       await supabase
-        .from('tesla_vehicles')
+        .from('vehicles')
         .update({
           vehicle_state: 'online',
           last_state: state,

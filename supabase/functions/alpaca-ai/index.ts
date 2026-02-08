@@ -203,10 +203,10 @@ async function buildUserScope(
     return allAccessibleSpaceIds.includes(d.space_id);
   });
 
-  // 5. Tesla vehicles (all residents can control)
+  // 5. Vehicles (Tesla vehicles controllable by all residents)
   const { data: teslaVehicles } = await supabase
-    .from("tesla_vehicles")
-    .select("id, name, model, vehicle_state, last_state")
+    .from("vehicles")
+    .select("id, name, vehicle_make, vehicle_model, vehicle_state, last_state")
     .eq("is_active", true);
 
   return {
@@ -231,7 +231,8 @@ async function buildUserScope(
     teslaVehicles: (teslaVehicles || []).map((v: any) => ({
       name: v.name,
       id: v.id,
-      model: v.model,
+      make: v.vehicle_make,
+      model: v.vehicle_model,
       vehicleState: v.vehicle_state,
       lastState: v.last_state,
     })),
@@ -303,7 +304,7 @@ Note: Use room names exactly as the user says them. Common zones: Kitchen, Livin
       const battery = v.lastState?.battery_level
         ? ` [${v.lastState.battery_level}%, ${v.lastState.locked ? "locked" : "unlocked"}, ${v.vehicleState}]`
         : ` [${v.vehicleState}]`;
-      parts.push(`- "${v.name}" (${v.model}, id: ${v.id})${battery}`);
+      parts.push(`- "${v.name}" (${v.make} ${v.model}, id: ${v.id})${battery}`);
     }
     parts.push(`Actions: lock, unlock, flash lights, honk horn
 Note: Sleeping vehicles will be woken automatically (takes ~30 seconds).`);
@@ -437,7 +438,7 @@ const TOOL_DECLARATIONS = [
       properties: {
         vehicle_id: {
           type: "number",
-          description: "The tesla_vehicles.id from the vehicle list",
+          description: "The vehicles.id from the vehicle list",
         },
         vehicle_name: {
           type: "string",
@@ -733,8 +734,8 @@ async function executeToolCall(
           if (!vehicles.length) return "No matching vehicles found.";
           return vehicles
             .map((v) => {
-              if (!v.lastState) return `${v.name} (${v.model}): ${v.vehicleState}`;
-              return `${v.name} (${v.model}): ${v.lastState.battery_level ?? "?"}% battery, ${
+              if (!v.lastState) return `${v.name} (${v.make} ${v.model}): ${v.vehicleState}`;
+              return `${v.name} (${v.make} ${v.model}): ${v.lastState.battery_level ?? "?"}% battery, ${
                 v.lastState.range_miles ? v.lastState.range_miles + " mi range, " : ""
               }${v.lastState.locked ? "locked" : "unlocked"}, ${v.vehicleState}${
                 v.lastState.charging_state && v.lastState.charging_state !== "Disconnected"

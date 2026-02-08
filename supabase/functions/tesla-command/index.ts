@@ -8,7 +8,7 @@ const DEFAULT_FLEET_API_BASE =
 
 interface TeslaCommandRequest {
   action?: "exchangeCode"; // OAuth code exchange action
-  vehicle_id?: number; // tesla_vehicles.id (for vehicle commands)
+  vehicle_id?: number; // vehicles.id (for vehicle commands)
   command?: "door_unlock" | "door_lock" | "wake_up" | "flash_lights" | "honk_horn";
   code?: string; // OAuth authorization code
   account_id?: number; // tesla_accounts.id (for exchangeCode)
@@ -175,7 +175,7 @@ serve(async (req) => {
 
     // 4. Load vehicle + account
     const { data: vehicle, error: vehicleError } = await supabase
-      .from("tesla_vehicles")
+      .from("vehicles")
       .select("*, tesla_accounts(*)")
       .eq("id", vehicle_id)
       .eq("is_active", true)
@@ -221,7 +221,7 @@ serve(async (req) => {
       }
       // Update vehicle state in DB
       await supabase
-        .from("tesla_vehicles")
+        .from("vehicles")
         .update({
           vehicle_state: "online",
           updated_at: new Date().toISOString(),
@@ -268,7 +268,7 @@ serve(async (req) => {
       const newLockState = command === "door_lock";
       const currentState = vehicle.last_state || {};
       await supabase
-        .from("tesla_vehicles")
+        .from("vehicles")
         .update({
           last_state: { ...currentState, locked: newLockState },
           updated_at: new Date().toISOString(),
