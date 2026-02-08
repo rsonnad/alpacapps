@@ -74,6 +74,10 @@ function renderProfile() {
   // Bio counter
   updateBioCount();
 
+  // Flags
+  updateNationalityFlag();
+  updateLocationFlag();
+
   // Links
   renderLinks(d.links || []);
 }
@@ -329,6 +333,157 @@ function updateBioCount() {
 }
 
 // =============================================
+// COUNTRY FLAG LOOKUP
+// =============================================
+
+const COUNTRY_FLAGS = {
+  'afghan':'🇦🇫','albanian':'🇦🇱','algerian':'🇩🇿','american':'🇺🇸','andorran':'🇦🇩',
+  'angolan':'🇦🇴','argentine':'🇦🇷','argentinian':'🇦🇷','armenian':'🇦🇲','australian':'🇦🇺',
+  'austrian':'🇦🇹','azerbaijani':'🇦🇿','bahamian':'🇧🇸','bahraini':'🇧🇭','bangladeshi':'🇧🇩',
+  'barbadian':'🇧🇧','belarusian':'🇧🇾','belgian':'🇧🇪','belizean':'🇧🇿','beninese':'🇧🇯',
+  'bhutanese':'🇧🇹','bolivian':'🇧🇴','bosnian':'🇧🇦','brazilian':'🇧🇷','british':'🇬🇧',
+  'bruneian':'🇧🇳','bulgarian':'🇧🇬','burkinabe':'🇧🇫','burmese':'🇲🇲','burundian':'🇧🇮',
+  'cambodian':'🇰🇭','cameroonian':'🇨🇲','canadian':'🇨🇦','cape verdean':'🇨🇻','chadian':'🇹🇩',
+  'chilean':'🇨🇱','chinese':'🇨🇳','colombian':'🇨🇴','comorian':'🇰🇲','congolese':'🇨🇬',
+  'costa rican':'🇨🇷','croatian':'🇭🇷','cuban':'🇨🇺','cypriot':'🇨🇾','czech':'🇨🇿',
+  'danish':'🇩🇰','djiboutian':'🇩🇯','dominican':'🇩🇴','dutch':'🇳🇱','ecuadorian':'🇪🇨',
+  'egyptian':'🇪🇬','emirati':'🇦🇪','english':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','eritrean':'🇪🇷','estonian':'🇪🇪',
+  'ethiopian':'🇪🇹','fijian':'🇫🇯','filipino':'🇵🇭','finnish':'🇫🇮','french':'🇫🇷',
+  'gabonese':'🇬🇦','gambian':'🇬🇲','georgian':'🇬🇪','german':'🇩🇪','ghanaian':'🇬🇭',
+  'greek':'🇬🇷','grenadian':'🇬🇩','guatemalan':'🇬🇹','guinean':'🇬🇳','guyanese':'🇬🇾',
+  'haitian':'🇭🇹','honduran':'🇭🇳','hungarian':'🇭🇺','icelandic':'🇮🇸','indian':'🇮🇳',
+  'indonesian':'🇮🇩','iranian':'🇮🇷','iraqi':'🇮🇶','irish':'🇮🇪','israeli':'🇮🇱',
+  'italian':'🇮🇹','ivorian':'🇨🇮','jamaican':'🇯🇲','japanese':'🇯🇵','jordanian':'🇯🇴',
+  'kazakh':'🇰🇿','kenyan':'🇰🇪','korean':'🇰🇷','south korean':'🇰🇷','north korean':'🇰🇵',
+  'kuwaiti':'🇰🇼','kyrgyz':'🇰🇬','lao':'🇱🇦','latvian':'🇱🇻','lebanese':'🇱🇧',
+  'liberian':'🇱🇷','libyan':'🇱🇾','lithuanian':'🇱🇹','luxembourgish':'🇱🇺','macedonian':'🇲🇰',
+  'malagasy':'🇲🇬','malawian':'🇲🇼','malaysian':'🇲🇾','maldivian':'🇲🇻','malian':'🇲🇱',
+  'maltese':'🇲🇹','mauritanian':'🇲🇷','mauritian':'🇲🇺','mexican':'🇲🇽','moldovan':'🇲🇩',
+  'mongolian':'🇲🇳','montenegrin':'🇲🇪','moroccan':'🇲🇦','mozambican':'🇲🇿','namibian':'🇳🇦',
+  'nepalese':'🇳🇵','nepali':'🇳🇵','new zealander':'🇳🇿','kiwi':'🇳🇿','nicaraguan':'🇳🇮',
+  'nigerien':'🇳🇪','nigerian':'🇳🇬','norwegian':'🇳🇴','omani':'🇴🇲','pakistani':'🇵🇰',
+  'palestinian':'🇵🇸','panamanian':'🇵🇦','paraguayan':'🇵🇾','peruvian':'🇵🇪','polish':'🇵🇱',
+  'portuguese':'🇵🇹','puerto rican':'🇵🇷','qatari':'🇶🇦','romanian':'🇷🇴','russian':'🇷🇺',
+  'rwandan':'🇷🇼','salvadoran':'🇸🇻','saudi':'🇸🇦','scottish':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','senegalese':'🇸🇳',
+  'serbian':'🇷🇸','singaporean':'🇸🇬','slovak':'🇸🇰','slovenian':'🇸🇮','somali':'🇸🇴',
+  'south african':'🇿🇦','spanish':'🇪🇸','sri lankan':'🇱🇰','sudanese':'🇸🇩','surinamese':'🇸🇷',
+  'swedish':'🇸🇪','swiss':'🇨🇭','syrian':'🇸🇾','taiwanese':'🇹🇼','tajik':'🇹🇯',
+  'tanzanian':'🇹🇿','thai':'🇹🇭','togolese':'🇹🇬','trinidadian':'🇹🇹','tunisian':'🇹🇳',
+  'turkish':'🇹🇷','turkmen':'🇹🇲','ugandan':'🇺🇬','ukrainian':'🇺🇦','uruguayan':'🇺🇾',
+  'uzbek':'🇺🇿','venezuelan':'🇻🇪','vietnamese':'🇻🇳','welsh':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','yemeni':'🇾🇪',
+  'zambian':'🇿🇲','zimbabwean':'🇿🇼',
+  // Country names
+  'usa':'🇺🇸','us':'🇺🇸','united states':'🇺🇸','uk':'🇬🇧','united kingdom':'🇬🇧',
+  'brazil':'🇧🇷','mexico':'🇲🇽','canada':'🇨🇦','france':'🇫🇷','germany':'🇩🇪',
+  'italy':'🇮🇹','spain':'🇪🇸','portugal':'🇵🇹','japan':'🇯🇵','china':'🇨🇳',
+  'india':'🇮🇳','australia':'🇦🇺','argentina':'🇦🇷','colombia':'🇨🇴','chile':'🇨🇱',
+  'peru':'🇵🇪','nigeria':'🇳🇬','south africa':'🇿🇦','egypt':'🇪🇬','kenya':'🇰🇪',
+  'israel':'🇮🇱','turkey':'🇹🇷','russia':'🇷🇺','ukraine':'🇺🇦','poland':'🇵🇱',
+  'netherlands':'🇳🇱','sweden':'🇸🇪','norway':'🇳🇴','denmark':'🇩🇰','finland':'🇫🇮',
+  'ireland':'🇮🇪','scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','england':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+  'switzerland':'🇨🇭','austria':'🇦🇹','belgium':'🇧🇪','greece':'🇬🇷','czech republic':'🇨🇿',
+  'czechia':'🇨🇿','hungary':'🇭🇺','romania':'🇷🇴','croatia':'🇭🇷','serbia':'🇷🇸',
+  'thailand':'🇹🇭','vietnam':'🇻🇳','philippines':'🇵🇭','indonesia':'🇮🇩','malaysia':'🇲🇾',
+  'singapore':'🇸🇬','south korea':'🇰🇷','korea':'🇰🇷','taiwan':'🇹🇼','pakistan':'🇵🇰',
+  'bangladesh':'🇧🇩','nepal':'🇳🇵','sri lanka':'🇱🇰','iran':'🇮🇷','iraq':'🇮🇶',
+  'saudi arabia':'🇸🇦','uae':'🇦🇪','qatar':'🇶🇦','kuwait':'🇰🇼','jordan':'🇯🇴',
+  'lebanon':'🇱🇧','morocco':'🇲🇦','tunisia':'🇹🇳','ghana':'🇬🇭','ethiopia':'🇪🇹',
+  'tanzania':'🇹🇿','cuba':'🇨🇺','jamaica':'🇯🇲','puerto rico':'🇵🇷','haiti':'🇭🇹',
+  'new zealand':'🇳🇿','iceland':'🇮🇸','luxembourg':'🇱🇺',
+};
+
+// Location-based flag mapping (city/state → country flag)
+const LOCATION_FLAGS = {
+  // US states & cities
+  'tx':'🇺🇸','texas':'🇺🇸','austin':'🇺🇸','houston':'🇺🇸','dallas':'🇺🇸','san antonio':'🇺🇸',
+  'ca':'🇺🇸','california':'🇺🇸','los angeles':'🇺🇸','san francisco':'🇺🇸','san diego':'🇺🇸',
+  'ny':'🇺🇸','new york':'🇺🇸','nyc':'🇺🇸','brooklyn':'🇺🇸','manhattan':'🇺🇸',
+  'fl':'🇺🇸','florida':'🇺🇸','miami':'🇺🇸','orlando':'🇺🇸','tampa':'🇺🇸',
+  'il':'🇺🇸','illinois':'🇺🇸','chicago':'🇺🇸',
+  'wa':'🇺🇸','washington':'🇺🇸','seattle':'🇺🇸',
+  'co':'🇺🇸','colorado':'🇺🇸','denver':'🇺🇸','boulder':'🇺🇸',
+  'ma':'🇺🇸','massachusetts':'🇺🇸','boston':'🇺🇸',
+  'ga':'🇺🇸','georgia':'🇺🇸','atlanta':'🇺🇸',
+  'pa':'🇺🇸','pennsylvania':'🇺🇸','philadelphia':'🇺🇸','pittsburgh':'🇺🇸',
+  'az':'🇺🇸','arizona':'🇺🇸','phoenix':'🇺🇸','scottsdale':'🇺🇸',
+  'nc':'🇺🇸','north carolina':'🇺🇸','charlotte':'🇺🇸','raleigh':'🇺🇸',
+  'oh':'🇺🇸','ohio':'🇺🇸','columbus':'🇺🇸','cleveland':'🇺🇸',
+  'or':'🇺🇸','oregon':'🇺🇸','portland':'🇺🇸',
+  'nv':'🇺🇸','nevada':'🇺🇸','las vegas':'🇺🇸',
+  'tn':'🇺🇸','tennessee':'🇺🇸','nashville':'🇺🇸','memphis':'🇺🇸',
+  'mi':'🇺🇸','michigan':'🇺🇸','detroit':'🇺🇸',
+  'mn':'🇺🇸','minnesota':'🇺🇸','minneapolis':'🇺🇸',
+  'hi':'🇺🇸','hawaii':'🇺🇸','honolulu':'🇺🇸',
+  'cedar creek':'🇺🇸',
+  // International cities
+  'london':'🇬🇧','manchester':'🇬🇧','birmingham':'🇬🇧','edinburgh':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'paris':'🇫🇷','lyon':'🇫🇷','marseille':'🇫🇷',
+  'berlin':'🇩🇪','munich':'🇩🇪','hamburg':'🇩🇪','frankfurt':'🇩🇪',
+  'rome':'🇮🇹','milan':'🇮🇹','florence':'🇮🇹','naples':'🇮🇹',
+  'madrid':'🇪🇸','barcelona':'🇪🇸','seville':'🇪🇸',
+  'lisbon':'🇵🇹','porto':'🇵🇹',
+  'amsterdam':'🇳🇱','rotterdam':'🇳🇱',
+  'tokyo':'🇯🇵','osaka':'🇯🇵','kyoto':'🇯🇵',
+  'beijing':'🇨🇳','shanghai':'🇨🇳','shenzhen':'🇨🇳',
+  'mumbai':'🇮🇳','delhi':'🇮🇳','bangalore':'🇮🇳','bengaluru':'🇮🇳',
+  'sydney':'🇦🇺','melbourne':'🇦🇺','brisbane':'🇦🇺',
+  'toronto':'🇨🇦','vancouver':'🇨🇦','montreal':'🇨🇦',
+  'mexico city':'🇲🇽','guadalajara':'🇲🇽','cancun':'🇲🇽',
+  'são paulo':'🇧🇷','sao paulo':'🇧🇷','rio de janeiro':'🇧🇷','rio':'🇧🇷',
+  'buenos aires':'🇦🇷','bogota':'🇨🇴','bogotá':'🇨🇴','medellín':'🇨🇴','medellin':'🇨🇴',
+  'lima':'🇵🇪','santiago':'🇨🇱',
+  'seoul':'🇰🇷','bangkok':'🇹🇭','singapore':'🇸🇬','hong kong':'🇭🇰',
+  'taipei':'🇹🇼','kuala lumpur':'🇲🇾','jakarta':'🇮🇩','manila':'🇵🇭',
+  'dubai':'🇦🇪','abu dhabi':'🇦🇪','tel aviv':'🇮🇱','jerusalem':'🇮🇱',
+  'istanbul':'🇹🇷','cairo':'🇪🇬','nairobi':'🇰🇪','cape town':'🇿🇦',
+  'johannesburg':'🇿🇦','lagos':'🇳🇬','accra':'🇬🇭',
+  'stockholm':'🇸🇪','oslo':'🇳🇴','copenhagen':'🇩🇰','helsinki':'🇫🇮',
+  'dublin':'🇮🇪','zurich':'🇨🇭','geneva':'🇨🇭','vienna':'🇦🇹',
+  'brussels':'🇧🇪','prague':'🇨🇿','budapest':'🇭🇺','warsaw':'🇵🇱',
+  'bucharest':'🇷🇴','athens':'🇬🇷','zagreb':'🇭🇷','belgrade':'🇷🇸',
+  'havana':'🇨🇺','kingston':'🇯🇲','auckland':'🇳🇿','reykjavik':'🇮🇸',
+};
+
+function getFlagForNationality(text) {
+  if (!text) return '🏳️';
+  const lower = text.trim().toLowerCase();
+  // Try exact match first, then first word
+  return COUNTRY_FLAGS[lower] || COUNTRY_FLAGS[lower.split(/[,\/]/)[0].trim()] || '🏳️';
+}
+
+function getFlagForLocation(text) {
+  if (!text) return '📍';
+  const lower = text.trim().toLowerCase();
+  // Try full text, then each comma-separated part, then individual words
+  if (LOCATION_FLAGS[lower]) return LOCATION_FLAGS[lower];
+  if (COUNTRY_FLAGS[lower]) return COUNTRY_FLAGS[lower];
+  const parts = lower.split(',').map(s => s.trim());
+  for (const part of parts) {
+    if (LOCATION_FLAGS[part]) return LOCATION_FLAGS[part];
+    if (COUNTRY_FLAGS[part]) return COUNTRY_FLAGS[part];
+  }
+  // Try individual words (for "Austin, TX" → "austin" or "tx")
+  for (const part of parts) {
+    const words = part.split(/\s+/);
+    for (const w of words) {
+      if (LOCATION_FLAGS[w]) return LOCATION_FLAGS[w];
+      if (COUNTRY_FLAGS[w]) return COUNTRY_FLAGS[w];
+    }
+  }
+  return '📍';
+}
+
+function updateNationalityFlag() {
+  const val = document.getElementById('fieldNationality').value;
+  document.getElementById('nationalityFlag').textContent = getFlagForNationality(val);
+}
+
+function updateLocationFlag() {
+  const val = document.getElementById('fieldLocationBase').value;
+  document.getElementById('locationFlag').textContent = getFlagForLocation(val);
+}
+
+// =============================================
 // EVENT BINDINGS
 // =============================================
 
@@ -356,4 +511,8 @@ function bindEvents() {
 
   // Bio character counter
   document.getElementById('fieldBio').addEventListener('input', updateBioCount);
+
+  // Flag updates on typing
+  document.getElementById('fieldNationality').addEventListener('input', updateNationalityFlag);
+  document.getElementById('fieldLocationBase').addEventListener('input', updateLocationFlag);
 }
