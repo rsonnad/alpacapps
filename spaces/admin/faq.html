@@ -39,7 +39,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.50 4:23p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.52 4:35p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -180,6 +180,7 @@
         <div class="section-header">
           <h2>Voice Assistant</h2>
           <span class="test-ai-label">Vapi · Inbound Calls</span>
+          <button id="editVoiceBtn" class="btn-secondary btn-small hidden" style="margin-left: auto;" onclick="openVoiceModal()">Edit</button>
         </div>
         <div id="voiceConfigSection" class="section-body">
           <div class="empty-state">Loading voice config...</div>
@@ -322,6 +323,81 @@
           </div>
         </div>
         <div id="recompileError" class="error-message hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Assistant Edit Modal -->
+  <div id="voiceModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2>Edit Voice Assistant</h2>
+        <button class="modal-close" onclick="closeVoiceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="voiceForm">
+          <input type="hidden" id="voiceAssistantId">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="voiceName">Name</label>
+              <input type="text" id="voiceName" placeholder="AI Concierge" required>
+            </div>
+            <div class="form-group form-group--narrow">
+              <label for="voiceTemperature">Temperature</label>
+              <input type="number" id="voiceTemperature" min="0" max="2" step="0.1" value="0.7">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="voiceModelProvider">Model Provider</label>
+              <input type="text" id="voiceModelProvider" placeholder="google">
+            </div>
+            <div class="form-group">
+              <label for="voiceModelName">Model Name</label>
+              <input type="text" id="voiceModelName" placeholder="gemini-2.5-flash-lite">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="voiceVoiceProvider">Voice Provider</label>
+              <input type="text" id="voiceVoiceProvider" placeholder="vapi">
+            </div>
+            <div class="form-group">
+              <label for="voiceVoiceId">Voice ID</label>
+              <input type="text" id="voiceVoiceId" placeholder="Mia">
+            </div>
+          </div>
+          <div class="form-row form-row--three">
+            <div class="form-group">
+              <label for="voiceTranscriberProvider">Transcriber Provider</label>
+              <input type="text" id="voiceTranscriberProvider" placeholder="deepgram">
+            </div>
+            <div class="form-group">
+              <label for="voiceTranscriberModel">Transcriber Model</label>
+              <input type="text" id="voiceTranscriberModel" placeholder="nova-2">
+            </div>
+            <div class="form-group form-group--narrow">
+              <label for="voiceTranscriberLanguage">Language</label>
+              <input type="text" id="voiceTranscriberLanguage" placeholder="en">
+            </div>
+          </div>
+          <div class="form-group form-group--narrow">
+            <label for="voiceMaxDuration">Max Duration (min)</label>
+            <input type="number" id="voiceMaxDuration" min="1" max="60" value="10">
+          </div>
+          <div class="form-group">
+            <label for="voiceFirstMessage">First Message</label>
+            <textarea id="voiceFirstMessage" rows="2" placeholder="Hello! Thanks for calling..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="voiceSystemPrompt">System Prompt</label>
+            <textarea id="voiceSystemPrompt" rows="10" placeholder="You are..." class="mono-textarea"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeVoiceModal()">Cancel</button>
+        <button class="btn-primary" id="saveVoiceBtn" onclick="saveVoiceAssistant()">Save</button>
       </div>
     </div>
   </div>

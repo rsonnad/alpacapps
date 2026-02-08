@@ -546,6 +546,34 @@
   margin: 0;
 }
 
+/* Voice Modal Form Layout */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row > .form-group {
+  flex: 1;
+}
+
+.form-row > .form-group--narrow {
+  flex: 0 0 120px;
+}
+
+.form-row--three > .form-group {
+  flex: 1;
+}
+
+.form-row--three > .form-group--narrow {
+  flex: 0 0 80px;
+}
+
+.mono-textarea {
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .faq-container {
@@ -602,5 +630,14 @@
   .voice-config-stats {
     flex-wrap: wrap;
     gap: 1rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-row > .form-group--narrow {
+    flex: unset;
   }
 }

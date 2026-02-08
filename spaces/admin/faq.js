@@ -893,7 +893,7 @@ function truncateUrl(url) {
 }
 
 // =============================================
-// VOICE ASSISTANT CONFIG (read-only)
+// VOICE ASSISTANT CONFIG
 // =============================================
 
 async function loadVoiceAssistant() {
@@ -1004,9 +1004,87 @@ function renderVoiceConfig() {
         <div class="voice-config-prompt-box voice-config-prompt-box--long">${escapeHtml(a.system_prompt || '(none)')}</div>
       </div>
 
-      <p class="voice-config-hint">Use Claude to modify voice assistant settings.</p>
     </div>
   `;
+
+  // Show edit button
+  const editBtn = document.getElementById('editVoiceBtn');
+  if (editBtn) editBtn.classList.remove('hidden');
 }
+
+// Voice Assistant Modal
+function openVoiceModal() {
+  if (!voiceAssistant) return;
+  const a = voiceAssistant;
+
+  document.getElementById('voiceAssistantId').value = a.id;
+  document.getElementById('voiceName').value = a.name || '';
+  document.getElementById('voiceModelProvider').value = a.model_provider || 'google';
+  document.getElementById('voiceModelName').value = a.model_name || '';
+  document.getElementById('voiceVoiceProvider').value = a.voice_provider || 'vapi';
+  document.getElementById('voiceVoiceId').value = a.voice_id || '';
+  document.getElementById('voiceTranscriberProvider').value = a.transcriber_provider || 'deepgram';
+  document.getElementById('voiceTranscriberModel').value = a.transcriber_model || 'nova-2';
+  document.getElementById('voiceTranscriberLanguage').value = a.transcriber_language || 'en';
+  document.getElementById('voiceTemperature').value = a.temperature || 0.7;
+  document.getElementById('voiceMaxDuration').value = Math.round((a.max_duration_seconds || 600) / 60);
+  document.getElementById('voiceFirstMessage').value = a.first_message || '';
+  document.getElementById('voiceSystemPrompt').value = a.system_prompt || '';
+
+  document.getElementById('voiceModal').classList.remove('hidden');
+}
+window.openVoiceModal = openVoiceModal;
+
+function closeVoiceModal() {
+  document.getElementById('voiceModal').classList.add('hidden');
+}
+window.closeVoiceModal = closeVoiceModal;
+
+async function saveVoiceAssistant() {
+  const id = document.getElementById('voiceAssistantId').value;
+  if (!id) return;
+
+  const btn = document.getElementById('saveVoiceBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const updates = {
+      name: document.getElementById('voiceName').value.trim(),
+      model_provider: document.getElementById('voiceModelProvider').value.trim(),
+      model_name: document.getElementById('voiceModelName').value.trim(),
+      voice_provider: document.getElementById('voiceVoiceProvider').value.trim(),
+      voice_id: document.getElementById('voiceVoiceId').value.trim(),
+      transcriber_provider: document.getElementById('voiceTranscriberProvider').value.trim(),
+      transcriber_model: document.getElementById('voiceTranscriberModel').value.trim(),
+      transcriber_language: document.getElementById('voiceTranscriberLanguage').value.trim(),
+      temperature: parseFloat(document.getElementById('voiceTemperature').value) || 0.7,
+      max_duration_seconds: (parseInt(document.getElementById('voiceMaxDuration').value) || 10) * 60,
+      first_message: document.getElementById('voiceFirstMessage').value.trim(),
+      system_prompt: document.getElementById('voiceSystemPrompt').value.trim(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from('voice_assistants')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Refresh data
+    await loadVoiceAssistant();
+    renderVoiceConfig();
+    closeVoiceModal();
+    showToast('Voice assistant updated', 'success');
+  } catch (err) {
+    console.error('Error saving voice assistant:', err);
+    showToast('Failed to save: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save';
+  }
+}
+window.saveVoiceAssistant = saveVoiceAssistant;
 
 // showToast is now imported from admin-shell.js
