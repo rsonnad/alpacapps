@@ -279,6 +279,9 @@ async function processRentalAgreement(
       application.approved_rate, application.approved_rate_term,
       paymentMethodsHtml, paymentMethodsText
     );
+
+    // Send vehicle registration email (separate email so it's not buried)
+    await sendVehicleRegistrationEmail(person);
   }
 
   return new Response(
@@ -643,5 +646,84 @@ Alpaca Playhouse`,
     }
   } catch (emailErr) {
     console.error('Error sending event email:', emailErr);
+  }
+}
+
+// Send vehicle registration email after lease signing
+async function sendVehicleRegistrationEmail(
+  person: { first_name: string; last_name: string; email: string }
+) {
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  if (!RESEND_API_KEY) {
+    console.log('RESEND_API_KEY not configured, skipping vehicle registration email');
+    return;
+  }
+
+  const profileUrl = 'https://alpacaplayhouse.com/residents/profile.html#vehicles';
+
+  try {
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        to: [person.email],
+        reply_to: 'team@alpacaplayhouse.com',
+        subject: 'Register Your Vehicle - Alpaca Playhouse',
+        html: `
+          <h2>Register Your Vehicle</h2>
+          <p>Hi ${person.first_name},</p>
+          <p>Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.</p>
+
+          <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #3d8b7a;">Add Your Vehicle</h3>
+            <p>Visit your profile to add your vehicle details (make, model, color, license plate):</p>
+            <p style="text-align: center; margin: 20px 0;">
+              <a href="${profileUrl}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.05em;">Register My Vehicle</a>
+            </p>
+          </div>
+
+          <div style="background: #eef6ff; border-left: 4px solid #4a90d9; padding: 15px; margin: 20px 0;">
+            <strong>🚗 Drive a Tesla?</strong><br>
+            <p style="margin-bottom: 0;">If your vehicle is a Tesla, you can connect it to our smart charging system. This enables lock/unlock for charger rotation and lets you monitor your car's battery and charging status right from the resident dashboard. Just select "Tesla" as the make when registering, and you'll be guided through the quick connection process.</p>
+          </div>
+
+          <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Register Your Vehicle
+
+Hi ${person.first_name},
+
+Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.
+
+ADD YOUR VEHICLE
+----------------
+Visit your profile to add your vehicle details (make, model, color, license plate):
+
+${profileUrl}
+
+DRIVE A TESLA?
+--------------
+If your vehicle is a Tesla, you can connect it to our smart charging system. This enables lock/unlock for charger rotation and lets you monitor your car's battery and charging status right from the resident dashboard. Just select "Tesla" as the make when registering, and you'll be guided through the quick connection process.
+
+Questions? Reply to this email or contact us at team@alpacaplayhouse.com
+
+Best regards,
+Alpaca Playhouse`,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      console.log('Vehicle registration email sent to', person.email);
+    } else {
+      const emailError = await emailResponse.json();
+      console.error('Failed to send vehicle registration email:', emailError);
+    }
+  } catch (emailErr) {
+    console.error('Error sending vehicle registration email:', emailErr);
   }
 }
