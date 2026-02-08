@@ -71,7 +71,7 @@ serve(async (req) => {
       // 2. Check user role (resident+)
       const { data: appUserData } = await supabase
         .from("app_users")
-        .select("role")
+        .select("id, role")
         .eq("auth_user_id", user.id)
         .single();
       appUser = appUserData;
@@ -92,11 +92,8 @@ serve(async (req) => {
     // 3. Parse request
     const body: TeslaCommandRequest = await req.json();
 
-    // ---- OAuth Code Exchange (admin-only) ----
+    // ---- OAuth Code Exchange (account owner or admin) ----
     if (body.action === "exchangeCode") {
-      if (userLevel < 3) {
-        return jsonResponse({ error: "Admin required for token exchange" }, 403);
-      }
       if (!body.code) {
         return jsonResponse({ error: "Missing authorization code" }, 400);
       }
@@ -113,6 +110,13 @@ serve(async (req) => {
 
       if (acctErr || !acct) {
         return jsonResponse({ error: "Account not found" }, 404);
+      }
+
+      // Allow admin OR account owner
+      if (userLevel < 3) {
+        if (!appUser?.id || acct.app_user_id !== appUser.id) {
+          return jsonResponse({ error: "Not authorized for this account" }, 403);
+        }
       }
       if (!acct.fleet_client_id || !acct.fleet_client_secret) {
         return jsonResponse({ error: "Fleet API credentials not configured on account" }, 400);

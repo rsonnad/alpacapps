@@ -127,10 +127,38 @@ const CAR_SVG_GENERIC = `<svg viewBox="0 0 400 160" fill="none" xmlns="http://ww
 // DATA LOADING
 // =============================================
 
+function isNearHome(car) {
+  const s = car.last_state;
+  if (!s?.latitude || !s?.longitude) return false;
+  return Math.abs(s.latitude - HOME_LAT) < 0.002 && Math.abs(s.longitude - HOME_LNG) < 0.002;
+}
+
+function isChargingAtHome(car) {
+  const s = car.last_state;
+  if (!s) return false;
+  const isCharging = s.charging_state === 'Charging' || s.charging_state === 'Complete';
+  return isCharging && isNearHome(car);
+}
+
+function filterVehiclesForUser(allVehicles) {
+  // Admins see everything
+  if (['admin', 'oracle'].includes(currentUserRole)) return allVehicles;
+
+  return allVehicles.filter(car => {
+    // User owns this vehicle
+    if (car.owner_id === currentUserId) return true;
+    // User is a driver (match via person_id)
+    if (currentPersonId && (car.drivers || []).some(d => d.person?.id === currentPersonId)) return true;
+    // Vehicle is charging at the house
+    if (isChargingAtHome(car)) return true;
+    return false;
+  });
+}
+
 async function loadVehicles() {
   const { data, error } = await supabase
     .from('vehicles')
-    .select('*, account:account_id(id, owner_name, tesla_email), owner:owner_id(id, first_name, last_name), drivers:vehicle_drivers(person:person_id(id, first_name, last_name))')
+    .select('*, account:account_id(id, owner_name, tesla_email, app_user_id), owner:owner_id(id, first_name, last_name), drivers:vehicle_drivers(person:person_id(id, first_name, last_name))')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
@@ -138,15 +166,21 @@ async function loadVehicles() {
     console.warn('Failed to load vehicles:', error.message);
     return;
   }
-  vehicles = data || [];
+  vehicles = filterVehiclesForUser(data || []);
 }
 
 async function loadAccounts() {
-  const { data, error } = await supabase
+  let query = supabase
     .from('tesla_accounts')
-    .select('id, owner_name, tesla_email, is_active, last_error, refresh_token, updated_at')
+    .select('id, owner_name, tesla_email, is_active, last_error, refresh_token, updated_at, app_user_id')
     .order('id', { ascending: true });
 
+  // Non-admins only see their own accounts
+  if (!['admin', 'oracle'].includes(currentUserRole)) {
+    query = query.eq('app_user_id', currentUserId);
+  }
+
+  const { data, error } = await query;
   if (error) {
     console.warn('Failed to load accounts:', error.message);
     return;
@@ -607,7 +641,8 @@ function renderSettings() {
   const list = document.getElementById('teslaAccountsList');
   if (!section || !list) return;
 
-  if (!['admin', 'oracle'].includes(currentUserRole)) {
+  // Show if user has any tesla accounts (or is admin)
+  if (!accounts.length) {
     section.style.display = 'none';
     return;
   }
@@ -630,8 +665,8 @@ function renderSettings() {
     let connectBtn;
     if (hasError) {
       connectBtn = `<button class="btn-primary" onclick="window._connectTesla(${acc.id})" style="background:var(--occupied,#e74c3c);border-color:var(--occupied,#e74c3c);">Reconnect</button>`;
-    } else if (hasToken) {
-      connectBtn = `<button class="btn-secondary" onclick="window._connectTesla(${acc.id})">Reconnect</button>`;
+    } else if (isHealthy) {
+      connectBtn = `<button class="btn-secondary" onclick="window._disconnectTesla(${acc.id})" style="color:var(--occupied,#e74c3c);border-color:var(--occupied,#e74c3c);">Disconnect</button>`;
     } else {
       connectBtn = `<button class="btn-primary" onclick="window._connectTesla(${acc.id})">Connect Tesla Account</button>`;
     }
@@ -691,6 +726,31 @@ window._sendCommand = async function(vehicleId, command) {
       btn.classList.remove('car-cmd-btn--loading');
     }
   }
+};
+
+// Disconnect Tesla account — clear tokens
+window._disconnectTesla = async function(accountId) {
+  if (!confirm('Disconnect this Tesla account? Vehicle data will stop updating until you reconnect.')) return;
+
+  const { error } = await supabase
+    .from('tesla_accounts')
+    .update({
+      refresh_token: null,
+      access_token: null,
+      token_expires_at: null,
+      last_error: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', accountId);
+
+  if (error) {
+    showToast(`Failed to disconnect: ${error.message}`, 'error');
+    return;
+  }
+
+  showToast('Tesla account disconnected', 'success');
+  await loadAccounts();
+  renderSettings();
 };
 
 // Connect Tesla account via OAuth flow
@@ -776,11 +836,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (carActions.length) setTimeout(() => refreshFromDB(), 3000);
       });
 
-      // Admin: load settings
-      if (['admin', 'oracle'].includes(currentUserRole)) {
-        await loadAccounts();
-        renderSettings();
-      }
+      // Load Tesla account settings (self-service for all users)
+      await loadAccounts();
+      renderSettings();
     },
   });
 });
