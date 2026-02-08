@@ -10,6 +10,7 @@ const AVATAR_MAX_DIM = 512;
 
 let currentUser = null;
 let profileData = null;
+let savedSnapshot = null; // snapshot of form values after load/save
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -80,6 +81,10 @@ function renderProfile() {
 
   // Links
   renderLinks(d.links || []);
+
+  // Snapshot for dirty tracking (after all fields are set)
+  savedSnapshot = getFormSnapshot();
+  updateSaveButton();
 }
 
 function renderAvatar(avatarUrl, name) {
@@ -130,6 +135,7 @@ function renderLinks(links) {
   container.querySelectorAll('.profile-link-remove').forEach(btn => {
     btn.addEventListener('click', () => {
       btn.closest('.profile-link-row').remove();
+      updateSaveButton();
     });
   });
 }
@@ -295,12 +301,18 @@ async function saveProfile() {
     }
 
     showToast('Profile saved', 'success');
+
+    // Re-snapshot so button becomes disabled again
+    savedSnapshot = getFormSnapshot();
+    updateSaveButton();
   } catch (err) {
     console.error('Save failed:', err);
     showToast('Failed to save: ' + err.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Save Profile';
+    if (btn.textContent === 'Saving...') {
+      btn.textContent = 'Save Profile';
+    }
+    updateSaveButton();
   }
 }
 
@@ -484,6 +496,30 @@ function updateLocationFlag() {
 }
 
 // =============================================
+// DIRTY TRACKING
+// =============================================
+
+function getFormSnapshot() {
+  return JSON.stringify({
+    display_name: document.getElementById('fieldDisplayName').value.trim(),
+    pronouns: document.getElementById('fieldPronouns').value.trim(),
+    bio: document.getElementById('fieldBio').value.trim(),
+    nationality: document.getElementById('fieldNationality').value.trim(),
+    location_base: document.getElementById('fieldLocationBase').value.trim(),
+    birthday: document.getElementById('fieldBirthday').value,
+    phone: document.getElementById('fieldPhone').value.trim(),
+    instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, ''),
+    links: collectLinks(),
+  });
+}
+
+function updateSaveButton() {
+  const btn = document.getElementById('saveProfileBtn');
+  const dirty = getFormSnapshot() !== savedSnapshot;
+  btn.disabled = !dirty;
+}
+
+// =============================================
 // EVENT BINDINGS
 // =============================================
 
@@ -507,6 +543,7 @@ function bindEvents() {
     const links = collectLinks();
     links.push({ label: '', url: '' });
     renderLinks(links);
+    updateSaveButton();
   });
 
   // Bio character counter
@@ -515,4 +552,15 @@ function bindEvents() {
   // Flag updates on typing
   document.getElementById('fieldNationality').addEventListener('input', updateNationalityFlag);
   document.getElementById('fieldLocationBase').addEventListener('input', updateLocationFlag);
+
+  // Dirty tracking on all form fields
+  const textFields = ['fieldDisplayName', 'fieldPronouns', 'fieldBio', 'fieldNationality',
+    'fieldLocationBase', 'fieldPhone', 'fieldInstagram'];
+  textFields.forEach(id => {
+    document.getElementById(id).addEventListener('input', updateSaveButton);
+  });
+  document.getElementById('fieldBirthday').addEventListener('change', updateSaveButton);
+
+  // Links container — listen for input on dynamically added link fields
+  document.getElementById('linksContainer').addEventListener('input', updateSaveButton);
 }

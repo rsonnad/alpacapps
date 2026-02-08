@@ -1070,6 +1070,11 @@ tr:last-child td {
   background: #d48835;
 }
 
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   padding: 0.625rem 1.25rem;
   background: var(--bg);
