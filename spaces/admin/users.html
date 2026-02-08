@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="manage-shared.css?v=5">
   <style>
     .users-container {
-      max-width: 900px;
+      max-width: 1150px;
       margin: 0 auto;
       padding: 2rem;
     }
@@ -21,7 +21,6 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       margin-bottom: 1.5rem;
-      overflow-x: auto;
     }
 
     .section-header {
@@ -140,6 +139,7 @@
     .users-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     .users-table th,
@@ -147,6 +147,14 @@
       padding: 0.75rem 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .users-table td:first-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .users-table th {
@@ -339,7 +347,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.80 10:22p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.82 10:35p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
