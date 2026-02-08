@@ -16,7 +16,7 @@ const ADMIN_TABS = [
   { id: 'media', label: 'Media', href: 'media.html' },
   { id: 'templates', label: 'Templates', href: 'templates.html' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
-  { id: 'faq', label: 'FAQ & AI', href: 'faq.html' },
+  { id: 'faq', label: 'FAQ/AI', href: 'faq.html' },
   { id: 'voice', label: 'Voice', href: 'voice.html' },
   { id: 'users', label: 'Users', href: 'users.html' },
   { id: 'settings', label: 'Settings', href: 'settings.html' },
