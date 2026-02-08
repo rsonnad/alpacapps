@@ -55,12 +55,54 @@ async function gitHasChanges() {
   return stdout.trim().length > 0;
 }
 
-async function gitCommitAndPush(description) {
-  const shortDesc = description.substring(0, 72);
-  const commitMsg = `fix: ${shortDesc}\n\nAutomated fix from bug report.\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>`;
+function generateBranchName(reportId) {
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  return `bugfix/${date}-${reportId}`;
+}
 
+async function gitCreateBranchAndCommit(description, reportId) {
+  const branchName = generateBranchName(reportId);
+  const shortDesc = description.substring(0, 72);
+  const commitMsg = `fix: ${shortDesc}\n\nAutomated fix from bug report #${reportId}.\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>`;
+
+  // Create and switch to fix branch
+  await execAsync(`git checkout -b ${branchName}`, { cwd: REPO_DIR });
+  log('info', 'Created branch', { branch: branchName });
+
+  // Stage and commit
   await execAsync('git add -A', { cwd: REPO_DIR });
   await execAsync(`git commit -m ${JSON.stringify(commitMsg)}`, { cwd: REPO_DIR });
+
+  // Push the branch
+  await execAsync(`git push origin ${branchName}`, { cwd: REPO_DIR });
+  log('info', 'Pushed branch', { branch: branchName });
+
+  const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
+  return { commitSha: stdout.trim(), branchName };
+}
+
+async function gitMergeBranchToMain(branchName) {
+  // Switch to main
+  await execAsync('git checkout main', { cwd: REPO_DIR });
+  await execAsync('git pull origin main', { cwd: REPO_DIR });
+
+  // Merge the fix branch
+  await execAsync(`git merge ${branchName} --no-ff -m "Merge ${branchName} into main"`, { cwd: REPO_DIR });
+
+  // Bump version before pushing (atomic DB increment + HTML update)
+  let version = 'unknown';
+  try {
+    const { stdout: versionOut } = await execAsync('bash scripts/bump-version.sh', { cwd: REPO_DIR });
+    version = versionOut.trim();
+    log('info', 'Version bumped', { version });
+    // Commit the version bump
+    await execAsync('git add -A', { cwd: REPO_DIR });
+    await execAsync(`git commit -m "chore: bump version to ${version}"`, { cwd: REPO_DIR });
+  } catch (err) {
+    log('warn', 'Version bump failed, continuing without version update', { error: err.message });
+  }
+
+  // Push main
   await execAsync('git push origin main', { cwd: REPO_DIR });
 
   const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
@@ -71,25 +113,13 @@ async function gitCommitAndPush(description) {
 // Claude Code execution
 // ============================================
 async function runClaudeCode(report, screenshotPath) {
-  // Build browser environment context if available
-  const envLines = [];
-  if (report.browser_name) envLines.push(`Browser: ${report.browser_name} ${report.browser_version || ''}`);
-  if (report.os_name) envLines.push(`OS: ${report.os_name} ${report.os_version || ''}`);
-  if (report.device_type) envLines.push(`Device: ${report.device_type}`);
-  if (report.screen_resolution) envLines.push(`Screen: ${report.screen_resolution}`);
-  if (report.viewport_size) envLines.push(`Viewport: ${report.viewport_size}`);
-  if (report.extension_platform) envLines.push(`Reported via: ${report.extension_platform} extension v${report.extension_version || '?'}`);
-  const envBlock = envLines.length > 0
-    ? `\nReporter Environment:\n${envLines.join('\n')}\n`
-    : '';
-
   const prompt = [
-    `Fix this bug reported by ${report.reporter_name} (${report.reporter_email}):`,
+    `Fix this bug reported by ${report.reporter_name}:`,
     '',
     `Description: ${report.description}`,
     '',
     report.page_url ? `Page URL: ${report.page_url}` : '',
-    envBlock,
+    '',
     report.screenshot_url ? `Screenshot of the bug (downloaded locally, use Read tool to view): ${screenshotPath}` : '',
     report.screenshot_url ? `Screenshot public URL: ${report.screenshot_url}` : '',
     '',
@@ -98,13 +128,9 @@ async function runClaudeCode(report, screenshotPath) {
     '- View the screenshot file to understand the visual bug',
     '- Identify the relevant files based on the page URL and description',
     '- Make the minimal fix needed',
-    '- Do NOT push to git (the worker handles that)',
-    '- Do NOT update the version number (the worker handles that)',
-    '',
-    'IMPORTANT: Your final output MUST be a JSON object with these fields:',
-    '- "diagnosis": A clear explanation of what was wrong (root cause analysis). What was the bug and why did it happen?',
-    '- "fix_summary": What you changed to fix it (files modified, approach taken)',
-    '- "notes": Any additional observations, caveats, or things to watch out for (or empty string if none)',
+    '- Do NOT run any git commands — no commits, no branches, no pushes. The bug scout handles all git operations.',
+    '- Do NOT update the version number (the bug scout handles that)',
+    '- Output a JSON object with keys: diagnosis (root cause), fix_summary (what you changed), notes (any caveats)',
   ].filter(Boolean).join('\n');
 
   // Write prompt to temp file to avoid shell escaping issues
@@ -114,7 +140,7 @@ async function runClaudeCode(report, screenshotPath) {
 
   const args = [
     '-p', prompt,
-    '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash(git:*)',
+    '--allowedTools', 'Edit,Write,Read,Glob,Grep,Bash',
     '--max-turns', '25',
     '--output-format', 'json',
     '--dangerously-skip-permissions',
@@ -182,32 +208,20 @@ async function runClaudeCode(report, screenshotPath) {
         return;
       }
 
-      // Try to parse JSON output for summary, diagnosis, and notes
-      let result = { fix_summary: 'Fix applied.', diagnosis: '', notes: '' };
+      // Try to parse JSON output for summary
+      let summary = 'Fix applied.';
       try {
         const output = JSON.parse(stdout);
-        const text = output.result || stdout;
-        // Try to extract structured JSON from Claude's response
-        const jsonMatch = text.match(/\{[\s\S]*"diagnosis"[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-            result.fix_summary = parsed.fix_summary || parsed.summary || text.substring(0, 500);
-            result.diagnosis = parsed.diagnosis || '';
-            result.notes = parsed.notes || '';
-          } catch {
-            result.fix_summary = text.substring(0, 500);
-          }
-        } else {
-          result.fix_summary = text.substring(0, 500);
+        if (output.result) {
+          summary = output.result;
         }
       } catch {
         if (stdout) {
-          result.fix_summary = stdout.substring(0, 500);
+          summary = stdout.substring(0, 500);
         }
       }
 
-      resolve(result);
+      resolve(summary);
     });
 
     child.on('error', async (err) => {
@@ -488,40 +502,40 @@ async function processBugReport(report) {
     }
 
     // 4. Run Claude Code
-    const fixResult = await runClaudeCode(report, screenshotPath);
-    log('info', 'Claude Code finished', {
-      summary: fixResult.fix_summary.substring(0, 200),
-      diagnosis: fixResult.diagnosis.substring(0, 200),
-    });
+    const fixSummary = await runClaudeCode(report, screenshotPath);
+    log('info', 'Claude Code finished', { summary: fixSummary.substring(0, 200) });
 
     // 5. Check if changes were made
     const hasChanges = await gitHasChanges();
 
     if (hasChanges) {
-      // 6. Commit and push
-      const commitSha = await gitCommitAndPush(report.description);
-      log('info', 'Fix pushed', { commit: commitSha });
+      // 6. Create branch, commit, and push branch
+      const { commitSha, branchName } = await gitCreateBranchAndCommit(report.description, report.id);
+      log('info', 'Fix pushed to branch', { branch: branchName, commit: commitSha });
 
-      // 7. Update report with fix details, diagnosis, and notes
+      // 7. Merge branch to main (with version bump)
+      const mainSha = await gitMergeBranchToMain(branchName);
+      log('info', 'Merged to main', { branch: branchName, mainSha });
+
+      // 8. Update report
       await supabase
         .from('bug_reports')
         .update({
           status: 'fixed',
-          fix_summary: fixResult.fix_summary,
-          diagnosis: fixResult.diagnosis,
-          notes: fixResult.notes,
-          fix_commit_sha: commitSha,
+          fix_summary: fixSummary,
+          fix_commit_sha: mainSha,
+          fix_branch: branchName,
           processed_at: new Date().toISOString(),
         })
         .eq('id', report.id);
 
-      // 8. Email reporter
+      // 9. Email reporter
       await sendEmail('bug_report_fixed', report, {
-        fix_summary: fixResult.fix_summary,
-        fix_commit_sha: commitSha,
+        fix_summary: fixSummary,
+        fix_commit_sha: mainSha,
       });
 
-      // 9. Take verification screenshot and send follow-up email
+      // 10. Take verification screenshot and send follow-up email
       const verificationUrl = await takeVerificationScreenshot(report.page_url);
       if (verificationUrl) {
         await supabase
@@ -530,14 +544,14 @@ async function processBugReport(report) {
           .eq('id', report.id);
 
         await sendEmail('bug_report_verified', report, {
-          fix_summary: fixResult.fix_summary,
-          fix_commit_sha: commitSha,
+          fix_summary: fixSummary,
+          fix_commit_sha: mainSha,
           verification_screenshot_url: verificationUrl,
         });
         log('info', 'Verification screenshot email sent', { id: report.id });
       }
 
-      log('info', '=== Bug report fixed ===', { id: report.id, commit: commitSha });
+      log('info', '=== Bug report fixed ===', { id: report.id, branch: branchName, commit: mainSha });
     } else {
       // Claude Code ran but made no changes
       const msg = 'Claude Code analyzed the report but determined no code changes were needed. The issue may not be reproducible or may require manual investigation.';
@@ -546,9 +560,7 @@ async function processBugReport(report) {
         .from('bug_reports')
         .update({
           status: 'failed',
-          fix_summary: fixResult.fix_summary,
-          diagnosis: fixResult.diagnosis,
-          notes: fixResult.notes,
+          fix_summary: fixSummary,
           error_message: msg,
           processed_at: new Date().toISOString(),
         })
@@ -580,9 +592,9 @@ async function processBugReport(report) {
     // Email reporter about failure
     await sendEmail('bug_report_failed', report, { error_message: errorMsg });
 
-    // Clean up any dirty git state
+    // Clean up any dirty git state and return to main
     try {
-      await execAsync('git checkout -- . && git clean -fd', { cwd: REPO_DIR });
+      await execAsync('git checkout main 2>/dev/null; git checkout -- . && git clean -fd', { cwd: REPO_DIR });
     } catch {
       // ignore cleanup errors
     }
@@ -637,7 +649,7 @@ async function pollForReports() {
 // Startup
 // ============================================
 async function main() {
-  log('info', 'Bug fixer worker starting', {
+  log('info', 'Bug Scout starting', {
     repo: REPO_DIR,
     poll_interval: POLL_INTERVAL_MS,
     max_timeout: MAX_FIX_TIMEOUT_MS,

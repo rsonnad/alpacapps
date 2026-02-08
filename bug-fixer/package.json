@@ -1,11 +1,11 @@
 {
   "name": "genalpaca-bug-fixer",
   "version": "1.0.0",
-  "description": "Autonomous bug fix worker - polls Supabase for bug reports, uses Claude Code to fix them",
+  "description": "Bug Scout - autonomous bug fixer that polls Supabase for bug reports, uses Claude Code to fix them",
   "type": "module",
   "scripts": {
-    "start": "node worker.js",
-    "dev": "node --watch worker.js"
+    "start": "node bug_scout.js",
+    "dev": "node --watch bug_scout.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

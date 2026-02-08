@@ -66,7 +66,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `send-email/` - Outbound email via Resend API (43 templates)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards
 - `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
-- `alpaca-ai/` - PAI chat assistant: Gemini-powered natural language smart home control + property Q&A (resident+ auth)
+- `alpaca-pai/` - PAI chat + voice assistant: Gemini-powered natural language smart home control + property Q&A + Vapi voice calling (resident+ auth)
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
@@ -85,7 +85,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
-| `alpaca-ai` | `supabase functions deploy alpaca-ai --no-verify-jwt` |
+| `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -424,7 +424,8 @@ Common page URLs for testing links (use only on main deploys):
 - Admin UI: Settings tab has test mode toggle, compose SMS, bulk SMS, inbound SMS view
 
 ### DigitalOcean Droplet
-- Runs OpenClaw Discord bot and bug fixer worker
+- Runs OpenClaw Discord bot and Bug Scout (`bug_scout.js`)
+- Bug Scout: polls `bug_reports` for pending bugs → runs Claude Code to fix → commits to `bugfix/` branch → merges to main
 - Bug fixer repo is a clone of this repo, used for verification screenshots
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info

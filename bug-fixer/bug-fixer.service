@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca Bug Fixer Worker
+Description=GenAlpaca Bug Scout
 After=network.target
 
 [Service]
@@ -8,7 +8,7 @@ User=bugfixer
 Environment=HOME=/home/bugfixer
 WorkingDirectory=/opt/bug-fixer
 EnvironmentFile=/opt/bug-fixer/.env
-ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
+ExecStart=/usr/bin/node /opt/bug-fixer/bug_scout.js
 Restart=always
 RestartSec=10
 StandardOutput=journal

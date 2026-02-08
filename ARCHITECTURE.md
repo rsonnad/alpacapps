@@ -87,8 +87,8 @@ alpacapps/
 │   ├── install.html        # Tester installation guide
 │   └── icons/              # Extension icons (16, 48, 128px)
 │
-├── bug-fixer/              # Server-side bug fix worker (for DO droplet)
-│   ├── worker.js           # Main polling loop & Claude Code execution
+├── bug-fixer/              # Bug Scout - autonomous bug fixer (runs on DO droplet)
+│   ├── bug_scout.js        # Main polling loop & Claude Code execution
 │   ├── package.json        # Dependencies
 │   ├── install.sh          # Server setup script
 │   └── bug-fixer.service   # systemd unit file
@@ -184,8 +184,8 @@ alpacapps/
 │   ├── icons/              # Extension icons
 │   └── install.html        # Tester installation guide
 │
-└── bug-fixer/              # Autonomous bug fix worker (runs on DO)
-    ├── worker.js           # Main worker: poll → Claude Code → git push
+└── bug-fixer/              # Bug Scout - autonomous bug fixer (runs on DO)
+    ├── bug_scout.js        # Main: poll → Claude Code → branch → merge → deploy
     ├── package.json        # Dependencies
     ├── install.sh          # Server setup script
     └── bug-fixer.service   # systemd unit file
@@ -1178,27 +1178,28 @@ CREATE TABLE bug_reports (
 
 **Storage Bucket:** `bug-screenshots` (public read, anon insert)
 
-### Worker Service (`bug-fixer/`)
+### Bug Scout Service (`bug-fixer/`)
 
 **Location:** DigitalOcean droplet (same as OpenClaw bot)
 
 **Files:**
-- `worker.js` - Main polling loop and Claude Code execution
+- `bug_scout.js` - Main polling loop and Claude Code execution
 - `package.json` - Dependencies (@supabase/supabase-js)
 - `install.sh` - Server setup script
 - `bug-fixer.service` - systemd unit file
 
-**Worker Flow:**
+**Bug Scout Flow:**
 1. Poll Supabase every 30s for `status = 'pending'` reports (oldest first)
 2. Mark report as `processing`
 3. Send confirmation email to reporter
 4. `git pull` latest code
 5. Download screenshot from Supabase Storage
-6. Run Claude Code CLI with the bug description and screenshot path
-7. If changes were made: `git commit && git push`
-8. Update report: `status = 'fixed'`, `fix_summary`, `fix_commit_sha`
+6. Run Claude Code CLI with the bug description and screenshot path (no git access — Claude only edits files)
+7. If changes were made: create `bugfix/YYYYMMDD-{id}` branch → commit → push branch → merge to main (with version bump)
+8. Update report: `status = 'fixed'`, `fix_summary`, `fix_commit_sha`, `fix_branch`
 9. Email reporter with fix details
-10. If failed: `status = 'failed'`, `error_message`, email failure notice
+10. Take verification screenshot after GitHub Pages deploy (90s wait)
+11. If failed: `status = 'failed'`, `error_message`, email failure notice
 
 **Claude Code Invocation:**
 Uses `spawn` (not `exec` or `execFile`) for proper argument handling with multiline prompts:
@@ -1291,10 +1292,10 @@ const child = spawn('claude', args, {
 
 10. **Supabase prerequisites:** The `bug_reports` table and `bug-screenshots` storage bucket must exist. Create them via the Supabase dashboard or SQL editor. The `send-email` Edge Function must have the `bug_report_received`, `bug_report_fixed`, and `bug_report_failed` email templates.
 
-11. **Deploying worker updates:** After editing worker.js locally, scp and restart:
+11. **Deploying Bug Scout updates:** After editing bug_scout.js locally, scp and restart:
     ```bash
-    scp -i ~/.ssh/do_bugfixer bug-fixer/worker.js root@159.89.157.120:/opt/bug-fixer/worker.js
-    ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 "chown bugfixer:bugfixer /opt/bug-fixer/worker.js && systemctl restart bug-fixer"
+    scp -i ~/.ssh/do_bugfixer bug-fixer/bug_scout.js root@159.89.157.120:/opt/bug-fixer/bug_scout.js
+    ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 "chown bugfixer:bugfixer /opt/bug-fixer/bug_scout.js && systemctl restart bug-fixer"
     ```
 
 **Full Setup Script (`install.sh`):**
@@ -1349,7 +1350,7 @@ User=bugfixer
 Environment=HOME=/home/bugfixer
 WorkingDirectory=/opt/bug-fixer
 EnvironmentFile=/opt/bug-fixer/.env
-ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
+ExecStart=/usr/bin/node /opt/bug-fixer/bug_scout.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
