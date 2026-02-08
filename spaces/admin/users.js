@@ -55,7 +55,10 @@ function setupEventListeners() {
     e.preventDefault();
     const email = document.getElementById('inviteEmail').value.trim().toLowerCase();
     const role = document.getElementById('inviteRole').value;
-    await inviteUser(email, role);
+    const firstName = document.getElementById('inviteFirstName').value.trim();
+    const lastName = document.getElementById('inviteLastName').value.trim();
+    const phone = document.getElementById('invitePhone').value.trim();
+    await inviteUser(email, role, { firstName, lastName, phone });
   });
 
   // Typeahead for email input
@@ -116,7 +119,7 @@ async function loadPeople() {
     const { data, error } = await withTimeout(
       supabase
         .from('people')
-        .select('first_name, last_name, email, type')
+        .select('first_name, last_name, email, phone, type')
         .not('email', 'is', null)
         .neq('email', '')
         .order('first_name'),
@@ -234,10 +237,16 @@ function selectTypeaheadItem(person) {
   dropdown.classList.add('hidden');
   typeaheadFiltered = [];
   typeaheadIndex = -1;
+
+  // Auto-fill optional fields from people record
+  document.getElementById('inviteFirstName').value = person.first_name || '';
+  document.getElementById('inviteLastName').value = person.last_name || '';
+  document.getElementById('invitePhone').value = person.phone || '';
+
   input.focus();
 }
 
-async function inviteUser(email, role) {
+async function inviteUser(email, role, personInfo = {}) {
   // Validate email
   if (!email || !email.includes('@')) {
     showToast('Please enter a valid email address', 'warning');
@@ -259,6 +268,35 @@ async function inviteUser(email, role) {
   }
 
   try {
+    // If name or phone provided, upsert into people table
+    const { firstName, lastName, phone } = personInfo;
+    if (firstName || lastName || phone) {
+      const personData = { email };
+      if (firstName) personData.first_name = firstName;
+      if (lastName) personData.last_name = lastName;
+      if (phone) personData.phone = phone;
+
+      // Check if person already exists with this email
+      const { data: existingPerson } = await supabase
+        .from('people')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingPerson) {
+        // Update existing person with any new info
+        const updates = {};
+        if (firstName) updates.first_name = firstName;
+        if (lastName) updates.last_name = lastName;
+        if (phone) updates.phone = phone;
+        await supabase.from('people').update(updates).eq('id', existingPerson.id);
+      } else {
+        // Create new person record
+        personData.first_name = firstName || 'Unknown';
+        await supabase.from('people').insert(personData);
+      }
+    }
+
     // Create invitation record
     const { data: newInvite, error } = await supabase
       .from('user_invitations')
@@ -272,9 +310,14 @@ async function inviteUser(email, role) {
 
     if (error) throw error;
 
+    // Clear form fields
     document.getElementById('inviteEmail').value = '';
+    document.getElementById('inviteFirstName').value = '';
+    document.getElementById('inviteLastName').value = '';
+    document.getElementById('invitePhone').value = '';
 
     await loadInvitations();
+    await loadPeople(); // Refresh typeahead suggestions
     render();
 
     // Show invitation text modal (email not sent yet)

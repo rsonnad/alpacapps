@@ -42,8 +42,28 @@
 
     .invite-form {
       display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .invite-form-row {
+      display: flex;
       gap: 0.75rem;
       flex-wrap: wrap;
+    }
+
+    .invite-optional {
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .invite-optional:focus-within {
+      opacity: 1;
+    }
+
+    .invite-optional input {
+      flex: 1;
+      min-width: 120px;
     }
 
     .invite-form .email-typeahead-wrap {
@@ -53,7 +73,8 @@
     }
 
     .invite-form input[type="text"],
-    .invite-form input[type="email"] {
+    .invite-form input[type="email"],
+    .invite-form input[type="tel"] {
       width: 100%;
       padding: 0.625rem 0.875rem;
       border: 1px solid var(--border);
@@ -349,7 +370,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.44 3:34p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260208.46 4:15p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -375,18 +396,25 @@
         </div>
         <div class="section-body">
           <form id="inviteForm" class="invite-form">
-            <div class="email-typeahead-wrap">
-              <input type="text" id="inviteEmail" placeholder="Search by name or type an email..." autocomplete="off" required>
-              <div id="typeaheadDropdown" class="typeahead-dropdown hidden"></div>
+            <div class="invite-form-row">
+              <div class="email-typeahead-wrap">
+                <input type="text" id="inviteEmail" placeholder="Search by name or type an email..." autocomplete="off" required>
+                <div id="typeaheadDropdown" class="typeahead-dropdown hidden"></div>
+              </div>
+              <select id="inviteRole">
+                <option value="public">Public (view spaces)</option>
+                <option value="resident">Resident (cameras & lighting)</option>
+                <option value="associate">Associate (cameras & lighting)</option>
+                <option value="staff">Staff (full read access)</option>
+                <option value="admin">Admin (full access)</option>
+              </select>
+              <button type="submit" class="btn-primary">Send Invitation</button>
             </div>
-            <select id="inviteRole">
-              <option value="public">Public (view spaces)</option>
-              <option value="resident">Resident (cameras & lighting)</option>
-              <option value="associate">Associate (cameras & lighting)</option>
-              <option value="staff">Staff (full read access)</option>
-              <option value="admin">Admin (full access)</option>
-            </select>
-            <button type="submit" class="btn-primary">Send Invitation</button>
+            <div class="invite-form-row invite-optional">
+              <input type="text" id="inviteFirstName" placeholder="First name (optional)">
+              <input type="text" id="inviteLastName" placeholder="Last name (optional)">
+              <input type="tel" id="invitePhone" placeholder="Phone (optional)">
+            </div>
           </form>
           <p class="invite-note">
             Users must sign in with the exact email address you invite.
