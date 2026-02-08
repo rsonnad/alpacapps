@@ -23,7 +23,8 @@ let currentLocation = null;
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    authState = await initAuth();
+    await initAuth();
+    authState = getAuthState();
     if (!authState?.appUser) {
       showAuthScreen();
       return;
