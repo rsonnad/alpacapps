@@ -41,7 +41,9 @@ type EmailType =
   // Identity verification
   | "dl_upload_link"
   | "dl_verified"
-  | "dl_mismatch";
+  | "dl_mismatch"
+  // Feature builder
+  | "feature_review";
 
 interface EmailRequest {
   type: EmailType;
@@ -1041,6 +1043,72 @@ ${data.fix_summary ? `WHAT WAS FIXED:\n${data.fix_summary}` : ''}
 If the fix doesn't look right, submit another bug report and we'll take another look.`
       };
 
+    // ===== FEATURE BUILDER =====
+    case "feature_review": {
+      const riskAss = data.risk_assessment || {};
+      const filesStr = (data.files_created || []).join(', ');
+      const filesModStr = (data.files_modified || []).join(', ');
+      const compareUrl = data.branch_name ? `https://github.com/rsonnad/alpacapps/compare/${data.branch_name}` : '';
+      return {
+        subject: `PAI Feature Review: ${(data.description || 'New Feature').substring(0, 60)}`,
+        html: `
+          <h2 style="color: #e67e22;">Feature Ready for Review</h2>
+          <p><strong>${data.requester_name}</strong> (${data.requester_role}) asked PAI to build:</p>
+          <p style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #e67e22;">${data.description}</p>
+
+          <h3>Build Summary</h3>
+          <p>${data.build_summary || 'No summary available.'}</p>
+
+          ${filesStr ? `<p><strong>Files created:</strong> ${filesStr}</p>` : ''}
+          ${filesModStr ? `<p><strong>Files modified:</strong> <span style="color: #e74c3c;">${filesModStr}</span></p>` : ''}
+          ${data.branch_name ? `<p><strong>Branch:</strong> <code>${data.branch_name}</code></p>` : ''}
+
+          <h3>Risk Assessment</h3>
+          <table style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Reason</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.reason || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Touches existing functionality</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.touches_existing_functionality ? 'Yes' : 'No'}</td></tr>
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Could confuse users</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.could_confuse_users ? 'Yes' : 'No'}</td></tr>
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Removes or changes features</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.removes_or_changes_features ? 'Yes' : 'No'}</td></tr>
+          </table>
+
+          ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
+
+          <div style="margin: 20px 0;">
+            ${compareUrl ? `<a href="${compareUrl}" style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; margin-right: 10px;">Review Changes on GitHub</a>` : ''}
+          </div>
+
+          <p style="color: #666; font-size: 13px; margin-top: 20px;">
+            <strong>To deploy:</strong> merge the branch to main, run bump-version.sh, push.<br>
+            <strong>To reject:</strong> delete the branch on GitHub.
+          </p>
+        `,
+        text: `PAI Feature Ready for Review
+
+${data.requester_name} (${data.requester_role}) asked PAI to build:
+${data.description}
+
+BUILD SUMMARY:
+${data.build_summary || 'No summary available.'}
+
+${filesStr ? `Files created: ${filesStr}` : ''}
+${filesModStr ? `Files modified: ${filesModStr}` : ''}
+${data.branch_name ? `Branch: ${data.branch_name}` : ''}
+
+RISK ASSESSMENT:
+- Reason: ${riskAss.reason || 'N/A'}
+- Touches existing functionality: ${riskAss.touches_existing_functionality ? 'Yes' : 'No'}
+- Could confuse users: ${riskAss.could_confuse_users ? 'Yes' : 'No'}
+- Removes or changes features: ${riskAss.removes_or_changes_features ? 'Yes' : 'No'}
+
+${data.notes ? `Notes: ${data.notes}` : ''}
+
+${compareUrl ? `Review: ${compareUrl}` : ''}
+
+To deploy: merge the branch to main, run bump-version.sh, push.
+To reject: delete the branch on GitHub.`
+      };
+    }
+
     // ===== IDENTITY VERIFICATION =====
     case "dl_upload_link":
       return {
@@ -1183,6 +1251,7 @@ serve(async (req) => {
       "bug_report_received", "bug_report_fixed", "bug_report_failed", "bug_report_verified",
       "dl_upload_link", "dl_verified", "dl_mismatch",
       "faq_unanswered",
+      "feature_review",
     ];
 
     const isAutoType = AUTO_TYPES.includes(type);

@@ -14,6 +14,7 @@ interface UserScope {
   role: string;
   userLevel: number;
   displayName: string;
+  appUserId: string;
   assignedSpaceIds: string[];
   allAccessibleSpaceIds: string[];
   goveeGroups: Array<{
@@ -228,6 +229,7 @@ async function buildUserScope(
     role: appUser.role,
     userLevel,
     displayName: appUser.display_name || appUser.email,
+    appUserId: appUser.id || "",
     assignedSpaceIds,
     allAccessibleSpaceIds,
     goveeGroups: accessibleGovee.map((g: any) => ({
@@ -371,6 +373,15 @@ SPACES:
 - Each space has structured amenities (e.g. hi-fi sound, A/C, jacuzzi tub, fireplace, smart lighting, balcony)
 - Use the search_spaces tool to answer questions about availability, pricing, amenities, or room details — do NOT guess.
 - Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
+
+  // Feature building (staff+ only)
+  if (scope.userLevel >= 2) {
+    parts.push(`\nFEATURE BUILDING (staff+ only):
+You can build new pages and features on request. Use the build_feature tool when someone asks you to create a new page, dashboard, or feature.
+Examples: "build me a page that shows Tesla battery levels", "create a dashboard with camera feeds and vehicle info"
+Safe changes (new standalone pages) deploy automatically. Changes that touch existing functionality go to a branch for team review.
+Use check_feature_status to report on the progress of the most recent build.`);
+  }
 
   return parts.join("\n");
 }
@@ -576,6 +587,43 @@ const TOOL_DECLARATIONS = [
           description: "Filter spaces that have this amenity (e.g. 'hi-fi sound', 'A/C', 'jacuzzi tub', 'fireplace', 'smart lighting', 'balcony'). Matches amenities containing this text (case-insensitive).",
         },
       },
+      required: [],
+    },
+  },
+  {
+    name: "build_feature",
+    description:
+      "Request PAI to build a new feature, page, or dashboard. Only available to staff/admin/oracle users. Creates a feature request that will be built by Claude Code on the server. Safe changes (new standalone pages) deploy automatically. Changes that touch existing functionality go to a branch for team review.",
+    parameters: {
+      type: "object",
+      properties: {
+        description: {
+          type: "string",
+          description:
+            "Detailed description of what to build. Include: what data to show, what it should look like, who it's for, and any specific requirements.",
+        },
+        page_name: {
+          type: "string",
+          description:
+            "Suggested filename for the page (e.g., 'dashboard', 'vehicle-tracker'). Will be created as residents/{page_name}.html",
+        },
+        data_sources: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Supabase tables or data the page should read from (e.g., 'vehicles', 'camera_streams', 'spaces')",
+        },
+      },
+      required: ["description"],
+    },
+  },
+  {
+    name: "check_feature_status",
+    description:
+      "Check the status of the most recent feature build request. Returns progress information including whether it was auto-deployed or sent for team review.",
+    parameters: {
+      type: "object",
+      properties: {},
       required: [],
     },
   },
@@ -1074,6 +1122,87 @@ async function executeToolCall(
         }).join("\n");
       }
 
+      case "build_feature": {
+        // Permission check: staff+ only
+        if (scope.userLevel < 2) {
+          return "Permission denied: only staff, admin, and oracle users can request new features.";
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+        // Rate limit: check for active builds
+        const { data: active } = await supabaseAdmin
+          .from("feature_requests")
+          .select("id, status")
+          .in("status", ["pending", "processing", "building"])
+          .limit(1);
+
+        if (active?.length) {
+          return "There's already a feature being built. Please wait for it to complete. Ask me 'What's the status of my feature?' to check progress.";
+        }
+
+        // Daily limit: 3 per day per user
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const { count } = await supabaseAdmin
+          .from("feature_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("requester_name", scope.displayName)
+          .gte("created_at", todayStr + "T00:00:00Z");
+
+        if ((count || 0) >= 3) {
+          return "Daily limit reached (3 feature requests per day). Try again tomorrow.";
+        }
+
+        // Insert feature request
+        const { error: insertError } = await supabaseAdmin
+          .from("feature_requests")
+          .insert({
+            requester_user_id: scope.appUserId || null,
+            requester_name: scope.displayName,
+            requester_role: scope.role,
+            description: args.description,
+            structured_spec: {
+              page_name: args.page_name || null,
+              data_sources: args.data_sources || [],
+            },
+            status: "pending",
+          });
+
+        if (insertError) {
+          return `Error creating feature request: ${insertError.message}`;
+        }
+
+        return `Feature request submitted! I'll build "${args.description.substring(0, 80)}..." for you. Safe changes deploy automatically; changes that touch existing pages go to a branch for team review. This typically takes 3-8 minutes. Ask me "What's the status of my feature?" to check progress.`;
+      }
+
+      case "check_feature_status": {
+        if (scope.userLevel < 2) {
+          return "Feature building is only available to staff, admin, and oracle users.";
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const { data: latest } = await supabaseAdmin
+          .from("feature_requests")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (!latest) return "No feature requests found.";
+
+        const statusMessages: Record<string, string> = {
+          pending: `Queued and waiting to be picked up by the builder... (requested ${new Date(latest.created_at).toLocaleTimeString()})`,
+          processing: latest.progress_message || "Getting started...",
+          building: latest.progress_message || "Claude Code is building your feature...",
+          completed: `Deployed! ${latest.build_summary || ''}\nFiles: ${(latest.files_created || []).join(', ')}\nVisit: https://alpacaplayhouse.com${latest.build_summary ? '' : '/residents/'}`,
+          review: `Built and waiting for team review on branch \`${latest.branch_name}\`.\n${latest.build_summary || ''}\nThe team has been notified. They'll review and merge it when ready.`,
+          failed: `Failed: ${latest.error_message || 'Unknown error'}`,
+          cancelled: "This request was cancelled.",
+        };
+
+        return statusMessages[latest.status] || `Status: ${latest.status}`;
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -1199,6 +1328,7 @@ async function buildVoiceUserScope(
   const userLevel = ROLE_LEVEL[effectiveRole] || 0;
 
   const fakeAppUser = {
+    id: "",
     role: effectiveRole,
     email: person.email,
     display_name: callerName,
@@ -1283,11 +1413,13 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       role: "associate",
       userLevel: 0,
       displayName: callerName || "Unknown Caller",
+      appUserId: "",
       assignedSpaceIds: [],
       allAccessibleSpaceIds: [],
       goveeGroups: [],
       nestDevices: [],
       teslaVehicles: [],
+      cameras: [],
     };
     systemPrompt = buildSystemPrompt(minimalScope);
   }
@@ -1368,11 +1500,13 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
     role: "associate",
     userLevel: 0,
     displayName: callerName || "Unknown Caller",
+    appUserId: "",
     assignedSpaceIds: [],
     allAccessibleSpaceIds: [],
     goveeGroups: [],
     nestDevices: [],
     teslaVehicles: [],
+    cameras: [],
   };
   let systemPrompt = buildSystemPrompt(scope || minimalScope);
   if (assistant.system_prompt?.trim()) {

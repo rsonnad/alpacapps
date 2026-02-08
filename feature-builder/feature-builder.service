@@ -1,0 +1,19 @@
+[Unit]
+Description=PAI Feature Builder
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/feature-builder
+EnvironmentFile=/opt/feature-builder/.env
+ExecStart=/usr/bin/node /opt/feature-builder/feature_builder.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=feature-builder
+
+[Install]
+WantedBy=multi-user.target
