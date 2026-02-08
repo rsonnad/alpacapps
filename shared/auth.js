@@ -141,7 +141,7 @@ export async function initAuth() {
 
     // If we have cached auth, use it to pre-populate state immediately
     // This lets the UI show content instantly while Supabase verifies in background
-    if (cached?.appUser && ['admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
+    if (cached?.appUser && ['oracle', 'admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
@@ -489,11 +489,11 @@ export function getAuthState() {
     appUser: currentAppUser,
     role: currentRole,
     isAuthenticated: currentUser !== null,
-    isAdmin: currentRole === 'admin',
-    isStaff: ['staff', 'admin'].includes(currentRole),
-    isResident: ['resident', 'associate', 'staff', 'admin'].includes(currentRole),
+    isAdmin: ['admin', 'oracle'].includes(currentRole),
+    isStaff: ['staff', 'admin', 'oracle'].includes(currentRole),
+    isResident: ['resident', 'associate', 'staff', 'admin', 'oracle'].includes(currentRole),
     // Treat 'pending' as authorized to allow redirect while we verify in background
-    isAuthorized: ['admin', 'staff', 'resident', 'associate', 'pending'].includes(currentRole),
+    isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'pending'].includes(currentRole),
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
   };

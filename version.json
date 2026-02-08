@@ -1,8 +1,8 @@
 {
-  "version": "v260208.04 11:43a",
-  "commit": "0ce86be",
-  "full_commit": "0ce86bee7887393d6614bf1e0ec0aae190b23bbb",
-  "timestamp": "2026-02-08T11:43:44-06:00",
+  "version": "v260208.05 12:06p",
+  "commit": "5a693c5",
+  "full_commit": "5a693c569178da4add8f082cd0f86306c81c1d47",
+  "timestamp": "2026-02-08T12:06:33-06:00",
   "included": ["main"],
-  "pending": ["claude/add-vehicle-owner-details-9ycwy","claude/codebase-review-optimization-7revy","claude/fix-upload-issues-nkgjc","gallant-ellis","vibrant-mclaren"]
+  "pending": ["claude/add-vehicle-owner-details-9ycwy"]
 }

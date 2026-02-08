@@ -62,7 +62,7 @@ serve(async (req) => {
       .eq("auth_user_id", user.id)
       .single();
 
-    if (!appUser || !["resident", "associate", "staff", "admin"].includes(appUser.role)) {
+    if (!appUser || !["resident", "associate", "staff", "admin", "oracle"].includes(appUser.role)) {
       return jsonResponse({ error: "Insufficient permissions" }, 403);
     }
 

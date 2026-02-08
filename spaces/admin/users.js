@@ -660,6 +660,7 @@ function renderUsers() {
                   <option value="resident" ${u.role === 'resident' ? 'selected' : ''}>Resident</option>
                   <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>Staff</option>
                   <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                  <option value="oracle" ${u.role === 'oracle' ? 'selected' : ''}>Oracle</option>
                 </select>
               </td>
               <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>

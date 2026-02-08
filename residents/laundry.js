@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentAppUserId = appUser?.id;
 
       // Show admin settings
-      if (role === 'admin') {
+      if (['admin', 'oracle'].includes(role)) {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         await renderAdminSettings();
       }

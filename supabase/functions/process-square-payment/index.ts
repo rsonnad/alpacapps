@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
         .eq('auth_user_id', user.id)
         .single();
 
-      if (roleError || !appUser || !['admin', 'staff'].includes(appUser.role)) {
+      if (roleError || !appUser || !['oracle', 'admin', 'staff'].includes(appUser.role)) {
         console.error('Test mode override denied — not staff/admin:', user.email);
         return new Response(
           JSON.stringify({ success: false, error: 'Staff or admin role required for test mode override' }),

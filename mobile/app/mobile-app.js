@@ -133,7 +133,7 @@ async function checkCarsVisibility(authState) {
   if (!carsBtn) return;
 
   // Staff/admin always see cars tab
-  if (['staff', 'admin'].includes(role)) {
+  if (['staff', 'admin', 'oracle'].includes(role)) {
     carsBtn.classList.remove('hidden');
     return;
   }

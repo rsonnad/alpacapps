@@ -21,6 +21,7 @@
   <!-- LOADING OVERLAY                          -->
   <!-- ======================================= -->
   <div id="loadingOverlay" class="m-loading-overlay">
+    <img src="/assets/branding/alpaca-head.jpg" alt="" class="m-loading-logo">
     <div class="m-loading-spinner"></div>
     <div class="m-loading-text">Loading...</div>
   </div>
@@ -30,6 +31,7 @@
   <!-- ======================================= -->
   <div id="loginOverlay" class="m-unauthorized-overlay hidden">
     <div class="m-unauthorized-card">
+      <img src="/assets/branding/alpaca-head.jpg" alt="Alpaca Playhouse" class="m-login-logo">
       <h2>Alpaca Playhouse</h2>
       <p>Sign in to continue</p>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;width:280px">
@@ -70,7 +72,10 @@
 
     <!-- Top bar -->
     <header class="m-header">
-      <span class="m-header__title">Alpaca Playhouse</span>
+      <div class="m-header__brand">
+        <img src="/assets/branding/alpaca-head-inverted.jpg" alt="" class="m-header__logo">
+        <span class="m-header__title">Alpaca Playhouse</span>
+      </div>
       <div class="m-header__right">
         <span id="userInfo" class="m-header__user"></span>
       </div>

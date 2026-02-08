@@ -51,6 +51,12 @@ html, body {
   align-items: center; justify-content: center;
   background: var(--m-bg);
 }
+.m-loading-logo {
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  object-fit: cover;
+  margin-bottom: 16px;
+}
 .m-loading-spinner {
   width: 32px; height: 32px;
   border: 3px solid var(--m-border);
@@ -73,9 +79,16 @@ html, body {
 }
 .m-unauthorized-card {
   text-align: center; padding: 2rem;
+  display: flex; flex-direction: column; align-items: center;
 }
 .m-unauthorized-card h2 { color: var(--m-accent); margin-bottom: 0.5rem; }
 .m-unauthorized-card p { color: var(--m-text-muted); margin-bottom: 1.5rem; }
+.m-login-logo {
+  width: 120px; height: 120px;
+  border-radius: 28px;
+  object-fit: cover;
+  margin-bottom: 20px;
+}
 
 /* ---- HIDDEN UTILITY ---- */
 .hidden { display: none !important; }
@@ -96,6 +109,14 @@ html, body {
   background: var(--m-bg);
   border-bottom: 1px solid var(--m-border);
   flex-shrink: 0;
+}
+.m-header__brand {
+  display: flex; align-items: center; gap: 8px;
+}
+.m-header__logo {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 .m-header__title {
   font-size: 16px; font-weight: 700;

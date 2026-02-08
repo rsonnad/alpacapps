@@ -43,6 +43,7 @@ interface UserScope {
 // =============================================
 
 const ROLE_LEVEL: Record<string, number> = {
+  oracle: 4,
   admin: 3,
   staff: 2,
   resident: 1,
@@ -472,6 +473,54 @@ const TOOL_DECLARATIONS = [
       required: ["device_type"],
     },
   },
+  {
+    name: "search_spaces",
+    description:
+      "Search for available rental spaces at Alpaca Playhouse. Use this to answer questions about availability, pricing, amenities, and space details. Always use this tool when someone asks about spaces, rooms, or availability — do NOT guess.",
+    parameters: {
+      type: "object",
+      properties: {
+        available_only: {
+          type: "boolean",
+          description: "If true, only return currently available spaces. Default true.",
+        },
+        available_after: {
+          type: "string",
+          description: "ISO date (YYYY-MM-DD). Only return spaces available on or after this date. Use for 'available in March' or 'available starting June 1' queries.",
+        },
+        available_before: {
+          type: "string",
+          description: "ISO date (YYYY-MM-DD). Only return spaces available before this date. Use with available_after for date range queries.",
+        },
+        min_beds: {
+          type: "number",
+          description: "Minimum number of beds required (counts all bed types: king, queen, double, twin, folding)",
+        },
+        has_private_bath: {
+          type: "boolean",
+          description: "If true, only return spaces with a private bathroom. If false, only shared bath.",
+        },
+        max_price: {
+          type: "number",
+          description: "Maximum monthly rate in dollars",
+        },
+        min_price: {
+          type: "number",
+          description: "Minimum monthly rate in dollars",
+        },
+        space_type: {
+          type: "string",
+          enum: ["dwelling", "event", "any"],
+          description: "Type of space. Default 'dwelling'.",
+        },
+        query: {
+          type: "string",
+          description: "Free-text search term to match against space names",
+        },
+      },
+      required: [],
+    },
+  },
 ];
 
 // =============================================
@@ -754,6 +803,117 @@ async function executeToolCall(
         return `Unknown device type: ${args.device_type}`;
       }
 
+      case "search_spaces": {
+        const supabaseForSearch = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const availableOnly = args.available_only !== false;
+        const spaceType = args.space_type || "dwelling";
+
+        let query = supabaseForSearch
+          .from("spaces")
+          .select("id, name, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret")
+          .eq("is_archived", false);
+
+        // Role-based visibility:
+        // staff+ (level 2+): see all non-archived spaces (unlisted too)
+        // resident/associate (level 1): see listed spaces (including secret)
+        // unknown/prospect/guest (level 0): see only listed + non-secret (public view)
+        if (scope.userLevel < 2) query = query.eq("is_listed", true);
+        if (scope.userLevel < 1) query = query.eq("is_secret", false);
+
+        if (spaceType === "dwelling") query = query.eq("can_be_dwelling", true);
+        else if (spaceType === "event") query = query.eq("can_be_event", true);
+        if (args.max_price) query = query.lte("monthly_rate", args.max_price);
+        if (args.min_price) query = query.gte("monthly_rate", args.min_price);
+        if (args.has_private_bath === true) query = query.eq("bath_privacy", "private");
+        else if (args.has_private_bath === false) query = query.eq("bath_privacy", "shared");
+
+        const { data: spaces } = await query.order("monthly_rate", { ascending: false });
+        if (!spaces?.length) return "No spaces found matching your criteria.";
+
+        let filtered = spaces;
+        if (args.min_beds) {
+          filtered = filtered.filter((s: any) => {
+            const totalBeds = (s.beds_king || 0) + (s.beds_queen || 0) + (s.beds_double || 0) + (s.beds_twin || 0) + (s.beds_folding || 0);
+            return totalBeds >= args.min_beds;
+          });
+        }
+        if (args.query) {
+          const q = args.query.toLowerCase();
+          filtered = filtered.filter((s: any) => s.name?.toLowerCase().includes(q));
+        }
+
+        // Load assignments for availability
+        const { data: assignments } = await supabaseForSearch
+          .from("assignments")
+          .select("id, start_date, end_date, desired_departure_date, desired_departure_listed, status, assignment_spaces(space_id)")
+          .in("status", ["active", "pending_contract", "contract_sent"]);
+
+        const today = new Date();
+        const results = filtered.map((space: any) => {
+          const spaceAssignments = (assignments || []).filter((a: any) =>
+            a.assignment_spaces?.some((as: any) => as.space_id === space.id)
+          );
+          const currentAssignment = spaceAssignments.find((a: any) => {
+            if (a.status !== "active") return false;
+            const effectiveEnd = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
+            if (!effectiveEnd) return true;
+            return new Date(effectiveEnd) >= today;
+          });
+          const isAvailable = !currentAssignment;
+          let availDate: Date | null = null;
+          let availStr = "Available NOW";
+          if (!isAvailable) {
+            const effectiveEnd = (currentAssignment.desired_departure_listed && currentAssignment.desired_departure_date) || currentAssignment.end_date;
+            if (effectiveEnd) {
+              availDate = new Date(effectiveEnd);
+              availStr = `Available ${availDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+            } else {
+              availStr = "Available TBD";
+            }
+          }
+          const totalBeds = (space.beds_king || 0) + (space.beds_queen || 0) + (space.beds_double || 0) + (space.beds_twin || 0) + (space.beds_folding || 0);
+          const bedBreakdown = [
+            space.beds_king ? `${space.beds_king} king` : null,
+            space.beds_queen ? `${space.beds_queen} queen` : null,
+            space.beds_double ? `${space.beds_double} double` : null,
+            space.beds_twin ? `${space.beds_twin} twin` : null,
+            space.beds_folding ? `${space.beds_folding} folding` : null,
+          ].filter(Boolean).join(", ");
+          const bathStr = space.bath_privacy === "private" ? "private bath" : space.bath_privacy === "shared" ? "shared bath" : null;
+          const rate = space.monthly_rate ? `$${space.monthly_rate}/mo` : space.weekly_rate ? `$${space.weekly_rate}/wk` : space.nightly_rate ? `$${space.nightly_rate}/night` : "Contact for pricing";
+          const details = [
+            totalBeds ? `${totalBeds} bed (${bedBreakdown})` : null,
+            bathStr,
+            space.sq_footage ? `${space.sq_footage} sqft` : null,
+          ].filter(Boolean).join(", ");
+          return { ...space, isAvailable, availDate, availStr, rate, details };
+        });
+
+        // Apply availability filters
+        let finalList = availableOnly ? results.filter((s: any) => s.isAvailable) : results;
+
+        // Date range filtering: available_after means "show spaces available on/after this date"
+        if (args.available_after) {
+          const afterDate = new Date(args.available_after);
+          finalList = finalList.filter((s: any) => {
+            if (s.isAvailable) return true; // already available
+            if (!s.availDate) return false; // TBD — can't confirm
+            return s.availDate <= afterDate; // becomes available by the requested date
+          });
+        }
+        if (args.available_before) {
+          const beforeDate = new Date(args.available_before);
+          finalList = finalList.filter((s: any) => {
+            if (s.isAvailable) return true;
+            if (!s.availDate) return false;
+            return s.availDate <= beforeDate;
+          });
+        }
+
+        if (!finalList.length) return "No spaces found matching your criteria.";
+        return finalList.map((s: any) => `${s.name}: ${s.availStr} | ${s.rate}${s.details ? " | " + s.details : ""}`).join("\n");
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -823,7 +983,461 @@ async function callGemini(
 }
 
 // =============================================
-// Main Handler
+// Voice: Phone-to-Scope Bridge
+// =============================================
+
+const PEOPLE_TYPE_TO_ROLE: Record<string, string> = {
+  owner: "oracle",
+  staff: "staff",
+  tenant: "resident",
+  airbnb_guest: "resident",
+  associate: "associate",
+  prospect: "associate",
+  event_client: "associate",
+  house_guest: "associate",
+};
+
+async function buildVoiceUserScope(
+  supabase: any,
+  callerPhone: string | null
+): Promise<{
+  scope: UserScope | null;
+  callerName: string | null;
+  callerGreeting: string | null;
+  callerType: string | null;
+}> {
+  if (!callerPhone) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+
+  const digits = callerPhone.replace(/\D/g, "");
+  const last10 = digits.slice(-10);
+  if (last10.length < 10) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+
+  const { data: people } = await supabase
+    .from("people")
+    .select("id, first_name, last_name, phone, phone2, voice_greeting, type, email")
+    .not("phone", "is", null);
+
+  let person: any = null;
+  if (people) {
+    for (const p of people) {
+      const p1 = p.phone?.replace(/\D/g, "").slice(-10) || "";
+      const p2 = p.phone2?.replace(/\D/g, "").slice(-10) || "";
+      if (p1 === last10 || p2 === last10) {
+        person = p;
+        break;
+      }
+    }
+  }
+
+  if (!person) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+
+  const callerName = `${person.first_name || ""} ${person.last_name || ""}`.trim();
+  const callerGreeting = person.voice_greeting || null;
+  const callerType = person.type || null;
+
+  const effectiveRole = PEOPLE_TYPE_TO_ROLE[callerType || ""] || "associate";
+  const userLevel = ROLE_LEVEL[effectiveRole] || 0;
+
+  const fakeAppUser = {
+    role: effectiveRole,
+    email: person.email,
+    display_name: callerName,
+  };
+
+  const scope = await buildUserScope(supabase, fakeAppUser, userLevel);
+  return { scope, callerName, callerGreeting, callerType };
+}
+
+// =============================================
+// Voice: Vapi Tool List Builder
+// =============================================
+
+function vapiToolWrapper(decl: any): any {
+  return {
+    type: "function",
+    function: {
+      name: decl.name,
+      description: decl.description,
+      parameters: decl.parameters,
+    },
+  };
+}
+
+function buildVapiToolsList(scope: UserScope): any[] {
+  const tools: any[] = [];
+  if (scope.goveeGroups.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[0])); // control_lights
+  if (scope.userLevel >= 1) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[1])); // control_sonos
+  if (scope.nestDevices.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[2])); // control_thermostat
+  if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[3])); // control_vehicle
+  tools.push(vapiToolWrapper(TOOL_DECLARATIONS[4])); // get_device_status
+  tools.push(vapiToolWrapper(TOOL_DECLARATIONS[5])); // search_spaces
+  return tools;
+}
+
+// =============================================
+// Voice: Handle assistant-request from Vapi
+// =============================================
+
+async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Response> {
+  const callerPhone = body.message?.call?.customer?.number || body.call?.customer?.number || null;
+  console.log("Vapi assistant-request from:", callerPhone);
+
+  // Check if voice system is active
+  const { data: config } = await supabase.from("vapi_config").select("*").eq("id", 1).single();
+  if (!config?.is_active) {
+    return jsonResponse({ error: "Voice system is disabled" }, 503);
+  }
+
+  // Load default active assistant
+  const { data: assistant } = await supabase
+    .from("voice_assistants")
+    .select("*")
+    .eq("is_active", true)
+    .eq("is_default", true)
+    .limit(1)
+    .single();
+
+  if (!assistant) {
+    const { data: fallback } = await supabase
+      .from("voice_assistants")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+    if (!fallback) return jsonResponse({ error: "No voice assistant configured" }, 503);
+    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(TOOL_DECLARATIONS[5])]);
+  }
+
+  // Identify caller and build scope
+  const { scope, callerName, callerGreeting, callerType } = await buildVoiceUserScope(supabase, callerPhone);
+
+  // Build system prompt: start with voice assistant base prompt
+  let systemPrompt = assistant.system_prompt;
+
+  // Append device-specific context if caller has smart home access
+  if (scope && scope.userLevel >= 1) {
+    const devicePrompt = buildSystemPrompt(scope);
+    // Extract just the device sections (skip the PAI identity header since voice has its own)
+    const deviceSections = devicePrompt.substring(devicePrompt.indexOf("\nRULES:"));
+    systemPrompt += "\n" + deviceSections;
+  }
+
+  // Personalize for known caller
+  if (callerName) {
+    const roleLabel = callerType === "staff" ? "staff member" :
+                      callerType === "tenant" ? "resident" :
+                      callerType === "airbnb_guest" ? "guest" :
+                      callerType === "associate" ? "associate" :
+                      callerType === "prospect" ? "prospective resident" :
+                      "contact";
+    systemPrompt += `\n\nThe caller is ${callerName} (${roleLabel}).`;
+  } else {
+    systemPrompt += `\n\nThis is an unknown caller. Focus on property questions. Use search_spaces to look up availability when asked. If they're interested in renting, collect their name and contact info.`;
+  }
+
+  systemPrompt += `\n\nIMPORTANT: When asked about space availability, pricing, or room details, ALWAYS use the search_spaces tool. Do not guess.`;
+
+  if (config.test_mode) {
+    systemPrompt += "\n\n[TEST MODE: This is a test call. Mention that this is a test if asked.]";
+  }
+
+  // Build tools based on caller's scope
+  const vapiTools = scope ? buildVapiToolsList(scope) : [vapiToolWrapper(TOOL_DECLARATIONS[5])];
+
+  // Personalize greeting
+  let firstMessage = assistant.first_message;
+  if (callerName && callerGreeting) {
+    firstMessage = `Hey ${callerName.split(" ")[0]}! ${callerGreeting}`;
+  } else if (callerName) {
+    firstMessage = firstMessage.replace("Greetings!", `Greetings ${callerName.split(" ")[0]}!`);
+  }
+
+  return jsonResponse({
+    assistant: {
+      model: {
+        provider: assistant.model_provider === "google" ? "google" : "openai",
+        model: assistant.model_name,
+        temperature: parseFloat(assistant.temperature) || 0.7,
+        messages: [{ role: "system", content: systemPrompt }],
+        tools: vapiTools,
+      },
+      voice: {
+        provider: assistant.voice_provider || "vapi",
+        voiceId: assistant.voice_id || "Savannah",
+      },
+      firstMessage,
+      maxDurationSeconds: assistant.max_duration_seconds || 600,
+      transcriber: { provider: "deepgram", model: "nova-2", language: "en" },
+      analysisPlan: {
+        summaryPrompt: "Summarize the call in 2-3 sentences. Include what the caller wanted and the outcome.",
+      },
+      silenceTimeoutSeconds: 30,
+      responseDelaySeconds: 0.5,
+      ...(assistant.metadata || {}),
+    },
+  });
+}
+
+function buildVapiResponse(assistant: any, callerName: string | null, callerGreeting: string | null, callerType: string | null, scope: UserScope | null, testMode: boolean, tools: any[]): Response {
+  let firstMessage = assistant.first_message;
+  if (callerName && callerGreeting) {
+    firstMessage = `Hey ${callerName.split(" ")[0]}! ${callerGreeting}`;
+  } else if (callerName) {
+    firstMessage = firstMessage.replace("Greetings!", `Greetings ${callerName.split(" ")[0]}!`);
+  }
+  let systemPrompt = assistant.system_prompt;
+  if (testMode) systemPrompt += "\n\n[TEST MODE]";
+
+  return jsonResponse({
+    assistant: {
+      model: {
+        provider: assistant.model_provider === "google" ? "google" : "openai",
+        model: assistant.model_name,
+        temperature: parseFloat(assistant.temperature) || 0.7,
+        messages: [{ role: "system", content: systemPrompt }],
+        tools,
+      },
+      voice: {
+        provider: assistant.voice_provider || "vapi",
+        voiceId: assistant.voice_id || "Savannah",
+      },
+      firstMessage,
+      maxDurationSeconds: assistant.max_duration_seconds || 600,
+      transcriber: { provider: "deepgram", model: "nova-2", language: "en" },
+      analysisPlan: {
+        summaryPrompt: "Summarize the call in 2-3 sentences. Include what the caller wanted and the outcome.",
+      },
+      silenceTimeoutSeconds: 30,
+      responseDelaySeconds: 0.5,
+      ...(assistant.metadata || {}),
+    },
+  });
+}
+
+// =============================================
+// Voice: Handle tool-calls from Vapi
+// =============================================
+
+async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> {
+  const callerPhone = body.message?.call?.customer?.number || body.call?.customer?.number || null;
+  const toolCallList = body.message?.toolCallList || body.toolCallList || [];
+  console.log("Vapi tool-calls from:", callerPhone, "tools:", toolCallList.length);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // Re-identify caller and rebuild scope (stateless)
+  const { scope } = await buildVoiceUserScope(supabase, callerPhone);
+
+  if (!scope) {
+    const results = toolCallList.map((tc: any) => ({
+      toolCallId: tc.id,
+      result: "Error: Could not identify caller. Smart home controls unavailable.",
+    }));
+    return jsonResponse({ results });
+  }
+
+  // Load Govee API key if needed
+  let goveeApiKey = "";
+  if (scope.goveeGroups.length) {
+    const { data: gc } = await supabase.from("govee_config").select("api_key").eq("id", 1).single();
+    goveeApiKey = gc?.api_key || "";
+  }
+
+  const results = [];
+  for (const tc of toolCallList) {
+    const fnName = tc.function?.name;
+    const fnArgs = typeof tc.function?.arguments === "string"
+      ? JSON.parse(tc.function.arguments)
+      : tc.function?.arguments || {};
+
+    console.log(`Vapi tool call: ${fnName}`, JSON.stringify(fnArgs));
+
+    const result = await executeToolCall(
+      { name: fnName, args: fnArgs },
+      scope,
+      serviceKey, // Use service key for downstream edge function calls
+      supabaseUrl,
+      goveeApiKey
+    );
+
+    results.push({
+      toolCallId: tc.id,
+      result,
+    });
+  }
+
+  return jsonResponse({ results });
+}
+
+// =============================================
+// Chat: Handle PAI chat widget requests
+// =============================================
+
+async function handleChatRequest(req: Request, body: any, supabase: any): Promise<Response> {
+  // 1. Auth
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return jsonResponse({ error: "Unauthorized" }, 401);
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+
+  const userToken = authHeader.replace("Bearer ", "");
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(userToken);
+  if (authError || !user) {
+    return jsonResponse({ error: "Invalid token" }, 401);
+  }
+
+  const { data: appUser } = await supabase
+    .from("app_users")
+    .select("id, role, email, display_name")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  const userLevel = ROLE_LEVEL[appUser?.role] || 0;
+  if (userLevel < 1) {
+    return jsonResponse({ error: "Insufficient permissions" }, 403);
+  }
+
+  // 2. Parse request
+  const { message, conversationHistory = [] }: PaiRequest = body;
+  if (!message?.trim()) {
+    return jsonResponse({ error: "Message is required" }, 400);
+  }
+
+  console.log(`PAI chat from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
+
+  // 3. Build scope
+  const scope = await buildUserScope(supabase, appUser, userLevel);
+
+  // 3b. Load Govee API key for direct Govee API calls
+  let goveeApiKey = "";
+  if (scope.goveeGroups.length) {
+    const { data: goveeConfig } = await supabase
+      .from("govee_config")
+      .select("api_key")
+      .eq("id", 1)
+      .single();
+    goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
+  }
+
+  // 4. Build system prompt
+  let systemPrompt = buildSystemPrompt(scope);
+  systemPrompt += `\n\nWhen asked about space availability, pricing, or room details, use the search_spaces tool.`;
+
+  // 5. Build Gemini conversation
+  const contents: any[] = [];
+
+  const recentHistory = conversationHistory.slice(-20);
+  for (const msg of recentHistory) {
+    contents.push({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.text }],
+    });
+  }
+  contents.push({ role: "user", parts: [{ text: message }] });
+
+  // 6. Call Gemini
+  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY not configured");
+  }
+
+  let geminiResult = await callGemini(
+    GEMINI_API_KEY,
+    contents,
+    TOOL_DECLARATIONS,
+    systemPrompt
+  );
+
+  // 7. Process function calls (max 3 rounds)
+  const actionsTaken: Array<{
+    type: string;
+    target: string;
+    result: string;
+  }> = [];
+
+  for (let round = 0; round < 3; round++) {
+    const candidate = geminiResult.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+    const functionCalls = parts.filter((p: any) => p.functionCall);
+
+    if (!functionCalls.length) break;
+
+    const functionResponses: any[] = [];
+    for (const part of functionCalls) {
+      const fc = part.functionCall;
+      console.log(`PAI tool call: ${fc.name}`, JSON.stringify(fc.args));
+
+      const result = await executeToolCall(
+        fc,
+        scope,
+        userToken,
+        supabaseUrl,
+        goveeApiKey
+      );
+
+      actionsTaken.push({
+        type: fc.name,
+        target:
+          fc.args.group_name ||
+          fc.args.room ||
+          fc.args.room_name ||
+          fc.args.vehicle_name ||
+          fc.args.device_type ||
+          "unknown",
+        result,
+        args: fc.args,
+      });
+
+      functionResponses.push({
+        functionResponse: {
+          name: fc.name,
+          response: { result },
+        },
+      });
+    }
+
+    contents.push({
+      role: "model",
+      parts: functionCalls.map((p: any) => ({
+        functionCall: p.functionCall,
+      })),
+    });
+    contents.push({
+      role: "user",
+      parts: functionResponses,
+    });
+
+    geminiResult = await callGemini(GEMINI_API_KEY, contents, TOOL_DECLARATIONS, systemPrompt);
+  }
+
+  // 8. Extract final text
+  const finalParts = geminiResult.candidates?.[0]?.content?.parts || [];
+  const finishReason = geminiResult.candidates?.[0]?.finishReason;
+  console.log("PAI final parts:", JSON.stringify(finalParts.map((p: any) => ({ keys: Object.keys(p), thought: p.thought }))));
+  console.log("PAI finishReason:", finishReason);
+  const textParts = finalParts.filter((p: any) => p.text && !p.thought);
+  const reply =
+    textParts
+      .map((p: any) => p.text)
+      .join("") || (actionsTaken.length
+        ? `Done! ${actionsTaken.map(a => a.result).join(". ")}`
+        : "I couldn't process that request. Please try again.");
+
+  return jsonResponse({
+    reply,
+    actions_taken: actionsTaken.length ? actionsTaken : undefined,
+  });
+}
+
+// =============================================
+// Main Handler (Request Router)
 // =============================================
 
 serve(async (req) => {
@@ -831,173 +1445,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
   try {
-    // 1. Auth
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+    const body = await req.json();
+
+    // Detect Vapi message types vs chat requests
+    const vapiMessageType = body.message?.type || body.type;
+
+    if (vapiMessageType === "assistant-request") {
+      return await handleVapiAssistantRequest(body, supabase);
+    } else if (vapiMessageType === "tool-calls") {
+      return await handleVapiToolCalls(body, supabase);
+    } else if (typeof body.message === "string") {
+      // Chat mode — has message string + optional conversationHistory
+      return await handleChatRequest(req, body, supabase);
+    } else {
+      // Unknown Vapi event type (status updates, etc.) — return empty 200
+      return jsonResponse({});
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const userToken = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(userToken);
-    if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
-    }
-
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("id, role, email, display_name")
-      .eq("auth_user_id", user.id)
-      .single();
-
-    const userLevel = ROLE_LEVEL[appUser?.role] || 0;
-    if (userLevel < 1) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
-    }
-
-    // 2. Parse request
-    const { message, conversationHistory = [] }: PaiRequest = await req.json();
-    if (!message?.trim()) {
-      return jsonResponse({ error: "Message is required" }, 400);
-    }
-
-    console.log(`PAI request from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
-
-    // 3. Build scope
-    const scope = await buildUserScope(supabase, appUser, userLevel);
-
-    // 3b. Load Govee API key for direct Govee API calls
-    let goveeApiKey = "";
-    if (scope.goveeGroups.length) {
-      const { data: goveeConfig } = await supabase
-        .from("govee_config")
-        .select("api_key")
-        .eq("id", 1)
-        .single();
-      goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
-    }
-
-    // 4. Build system prompt
-    const systemPrompt = buildSystemPrompt(scope);
-
-    // 5. Build Gemini conversation (use systemInstruction instead of fake user/model turn)
-    const contents: any[] = [];
-
-    // Add conversation history (last 20 messages)
-    const recentHistory = conversationHistory.slice(-20);
-    for (const msg of recentHistory) {
-      contents.push({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.text }],
-      });
-    }
-
-    // Add current message
-    contents.push({ role: "user", parts: [{ text: message }] });
-
-    // 6. Call Gemini
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY not configured");
-    }
-
-    let geminiResult = await callGemini(
-      GEMINI_API_KEY,
-      contents,
-      TOOL_DECLARATIONS,
-      systemPrompt
-    );
-
-    // 7. Process function calls (max 3 rounds)
-    const actionsTaken: Array<{
-      type: string;
-      target: string;
-      result: string;
-    }> = [];
-
-    for (let round = 0; round < 3; round++) {
-      const candidate = geminiResult.candidates?.[0];
-      const parts = candidate?.content?.parts || [];
-      const functionCalls = parts.filter((p: any) => p.functionCall);
-
-      if (!functionCalls.length) break;
-
-      // Execute all function calls
-      const functionResponses: any[] = [];
-      for (const part of functionCalls) {
-        const fc = part.functionCall;
-        console.log(`PAI tool call: ${fc.name}`, JSON.stringify(fc.args));
-
-        const result = await executeToolCall(
-          fc,
-          scope,
-          userToken,
-          supabaseUrl,
-          goveeApiKey
-        );
-
-        actionsTaken.push({
-          type: fc.name,
-          target:
-            fc.args.group_name ||
-            fc.args.room ||
-            fc.args.room_name ||
-            fc.args.vehicle_name ||
-            fc.args.device_type ||
-            "unknown",
-          result,
-          args: fc.args,
-        });
-
-        functionResponses.push({
-          functionResponse: {
-            name: fc.name,
-            response: { result },
-          },
-        });
-      }
-
-      // Send function results back to Gemini
-      // Append the model's function call turn + user's function response turn
-      // Strip thoughtSignature and other fields — only keep functionCall
-      contents.push({
-        role: "model",
-        parts: functionCalls.map((p: any) => ({
-          functionCall: p.functionCall,
-        })),
-      });
-      contents.push({
-        role: "user",
-        parts: functionResponses,
-      });
-
-      geminiResult = await callGemini(GEMINI_API_KEY, contents, TOOL_DECLARATIONS, systemPrompt);
-    }
-
-    // 8. Extract final text (exclude thinking/thought parts — they're internal reasoning)
-    const finalParts = geminiResult.candidates?.[0]?.content?.parts || [];
-    const finishReason = geminiResult.candidates?.[0]?.finishReason;
-    console.log("PAI final parts:", JSON.stringify(finalParts.map((p: any) => ({ keys: Object.keys(p), thought: p.thought }))));
-    console.log("PAI finishReason:", finishReason);
-    const textParts = finalParts.filter((p: any) => p.text && !p.thought);
-    const reply =
-      textParts
-        .map((p: any) => p.text)
-        .join("") || (actionsTaken.length
-          ? `Done! ${actionsTaken.map(a => a.result).join(". ")}`
-          : "I couldn't process that request. Please try again.");
-
-    return jsonResponse({
-      reply,
-      actions_taken: actionsTaken.length ? actionsTaken : undefined,
-    });
   } catch (error) {
     console.error("PAI error:", error.message);
     return jsonResponse(

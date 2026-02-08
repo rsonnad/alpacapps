@@ -1660,7 +1660,7 @@ function handlePopoverOutsideClick(e) {
 // UTILITIES
 // =============================================
 
-// Map PAI color names to hex (mirrors COLOR_MAP in alpaca-ai)
+// Map PAI color names to hex (mirrors COLOR_MAP in alpaca-pai)
 function paiColorToHex(value) {
   if (!value) return null;
   const lower = value.toLowerCase().trim();

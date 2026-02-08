@@ -61,7 +61,7 @@ async function init() {
     if (raw) {
       const cached = JSON.parse(raw);
       const age = Date.now() - (cached.timestamp || 0);
-      if (age < 90 * 24 * 60 * 60 * 1000 && ['admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
+      if (age < 90 * 24 * 60 * 60 * 1000 && ['oracle', 'admin', 'staff', 'resident', 'associate'].includes(cached.role)) {
         // Resident/associate users go to resident area by default
         let targetUrl = redirectUrl;
         if (targetUrl === '/spaces/admin/' && ['resident', 'associate'].includes(cached.role)) {

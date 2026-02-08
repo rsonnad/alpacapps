@@ -91,11 +91,14 @@ serve(async (req) => {
         );
       }
 
-      return jsonResponse(buildAssistantConfig(fallback, callerPhone, null));
+      const availInfo = await getSpaceAvailability(supabase);
+      return jsonResponse(buildAssistantConfig(fallback, callerPhone, null, null, null, availInfo));
     }
 
     // Try to identify the caller
     let callerName: string | null = null;
+    let callerGreeting: string | null = null;
+    let callerType: string | null = null;
     if (callerPhone) {
       const digits = callerPhone.replace(/\D/g, "");
       const last10 = digits.slice(-10);
@@ -103,17 +106,19 @@ serve(async (req) => {
       if (last10.length === 10) {
         const { data: people } = await supabase
           .from("people")
-          .select("id, first_name, last_name, phone")
+          .select("id, first_name, last_name, phone, phone2, voice_greeting, type")
           .not("phone", "is", null);
 
         if (people) {
           for (const person of people) {
-            if (!person.phone) continue;
-            const personLast10 = person.phone.replace(/\D/g, "").slice(-10);
-            if (personLast10 === last10) {
+            const phone1Last10 = person.phone ? person.phone.replace(/\D/g, "").slice(-10) : "";
+            const phone2Last10 = person.phone2 ? person.phone2.replace(/\D/g, "").slice(-10) : "";
+            if (phone1Last10 === last10 || phone2Last10 === last10) {
               callerName =
                 `${person.first_name || ""} ${person.last_name || ""}`.trim();
-              console.log(`Identified caller: ${callerName}`);
+              callerGreeting = person.voice_greeting || null;
+              callerType = person.type || null;
+              console.log(`Identified caller: ${callerName} (${callerType})`);
               break;
             }
           }
@@ -121,10 +126,16 @@ serve(async (req) => {
       }
     }
 
+    // Load live space availability for the prompt
+    const availabilityInfo = await getSpaceAvailability(supabase);
+
     const assistantConfig = buildAssistantConfig(
       assistant,
       callerPhone,
-      callerName
+      callerName,
+      callerGreeting,
+      callerType,
+      availabilityInfo
     );
 
     // In test mode, add a note to the system prompt
@@ -147,18 +158,52 @@ serve(async (req) => {
 function buildAssistantConfig(
   assistant: any,
   callerPhone: string | null,
-  callerName: string | null
+  callerName: string | null,
+  callerGreeting: string | null,
+  callerType: string | null,
+  availabilityInfo: string
 ) {
   // Personalize the prompt if we know the caller
   let systemPrompt = assistant.system_prompt;
   if (callerName) {
-    systemPrompt += `\n\nThe caller has been identified as ${callerName}. You may greet them by name.`;
+    const roleLabel = callerType === 'staff' ? 'staff member' :
+                      callerType === 'tenant' ? 'resident' :
+                      callerType === 'airbnb_guest' ? 'guest' :
+                      callerType === 'prospect' ? 'prospective resident' :
+                      callerType === 'associate' ? 'associate' :
+                      'contact';
+    systemPrompt += `\n\nThe caller has been identified as ${callerName} (${roleLabel}).`;
+
+    // Role-based permissions for smart home control
+    if (callerType === 'staff') {
+      systemPrompt += `\nAs staff/admin, ${callerName} has FULL access to all smart home controls — lights, thermostats, music, vehicles, everything in every area. Help them with any request.`;
+    } else if (callerType === 'tenant') {
+      systemPrompt += `\nAs a resident, ${callerName} can control smart home features in common areas (Kitchen, Living Room, Front Porch, Back Yard, Garage Mahal). They cannot control devices in other residents' private spaces. Help them with common area requests.`;
+    } else if (callerType === 'associate') {
+      systemPrompt += `\nAs an associate, ${callerName} is a trusted friend of the property. They can ask about the property, spaces, and availability. They don't have smart home access but should be treated warmly and given helpful information.`;
+    } else if (callerType === 'airbnb_guest') {
+      systemPrompt += `\nAs a guest, ${callerName} does NOT have access to smart home controls. If they ask about lights, thermostats, or music, politely let them know those features are available through the resident portal and suggest they contact the property manager for help.`;
+    } else {
+      systemPrompt += `\nThis caller does not have smart home access. Focus on answering property questions and directing them to team@alpacaplayhouse.com for further help.`;
+    }
+  } else {
+    // Unknown caller
+    systemPrompt += `\n\nThis is an unknown caller. They do not have smart home access. Focus on answering property questions, and if they are interested in renting, collect their name and contact info and let them know the property manager will follow up.`;
+  }
+
+  // Inject live availability data
+  if (availabilityInfo) {
+    systemPrompt += `\n\n${availabilityInfo}`;
   }
 
   // Personalize the greeting
   let firstMessage = assistant.first_message;
-  if (callerName) {
-    firstMessage = `Hi ${callerName.split(" ")[0]}! Thanks for calling. How can I help you today?`;
+  if (callerName && callerGreeting) {
+    // Custom per-person greeting
+    firstMessage = `Hey ${callerName.split(" ")[0]}! ${callerGreeting}`;
+  } else if (callerName) {
+    // Insert name into the default first message after "Greetings"
+    firstMessage = firstMessage.replace('Greetings!', `Greetings ${callerName.split(" ")[0]}!`);
   }
 
   // Map model provider to Vapi model config
@@ -203,4 +248,68 @@ function buildAssistantConfig(
       ...(assistant.metadata || {}),
     },
   };
+}
+
+/**
+ * Query live space availability from the database.
+ * Returns a text summary for injection into the system prompt.
+ */
+async function getSpaceAvailability(supabase: any): Promise<string> {
+  try {
+    // Get listed dwelling spaces
+    const { data: spaces } = await supabase
+      .from("spaces")
+      .select("id, name, monthly_rate, weekly_rate, nightly_rate, beds, baths, type, square_feet")
+      .eq("can_be_dwelling", true)
+      .eq("is_listed", true)
+      .eq("is_archived", false)
+      .order("monthly_rate", { ascending: false });
+
+    if (!spaces || spaces.length === 0) {
+      return "AVAILABILITY: No spaces are currently listed.";
+    }
+
+    // Get active assignments to determine occupancy
+    const { data: assignments } = await supabase
+      .from("assignments")
+      .select("id, start_date, end_date, desired_departure_date, desired_departure_listed, status, assignment_spaces(space_id)")
+      .in("status", ["active", "pending_contract", "contract_sent"]);
+
+    const today = new Date();
+    const lines: string[] = ["CURRENT SPACE AVAILABILITY (live data):"];
+
+    for (const space of spaces) {
+      const spaceAssignments = (assignments || []).filter((a: any) =>
+        a.assignment_spaces?.some((as: any) => as.space_id === space.id)
+      );
+
+      const currentAssignment = spaceAssignments.find((a: any) => {
+        if (a.status !== "active") return false;
+        const effectiveEnd = (a.desired_departure_listed && a.desired_departure_date) || a.end_date;
+        if (!effectiveEnd) return true;
+        return new Date(effectiveEnd) >= today;
+      });
+
+      const isAvailable = !currentAssignment;
+      let availStr = "Available NOW";
+      if (!isAvailable) {
+        const effectiveEnd = (currentAssignment.desired_departure_listed && currentAssignment.desired_departure_date) || currentAssignment.end_date;
+        availStr = effectiveEnd ? `Available ${new Date(effectiveEnd).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : "Available TBD";
+      }
+
+      const rate = space.monthly_rate ? `$${space.monthly_rate}/mo` : space.weekly_rate ? `$${space.weekly_rate}/wk` : space.nightly_rate ? `$${space.nightly_rate}/night` : "Contact for pricing";
+      const details = [
+        space.beds ? `${space.beds} bed` : null,
+        space.baths ? `${space.baths} bath` : null,
+        space.square_feet ? `${space.square_feet} sqft` : null,
+      ].filter(Boolean).join(", ");
+
+      lines.push(`- ${space.name}: ${availStr} | ${rate}${details ? ` | ${details}` : ""}`);
+    }
+
+    return lines.join("\n");
+  } catch (err) {
+    console.error("Failed to load availability:", err);
+    return "";
+  }
 }

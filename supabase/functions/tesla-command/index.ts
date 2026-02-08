@@ -53,28 +53,35 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
+
+    // Allow trusted internal calls from PAI (service role key = already permission-checked)
+    const isInternalCall = token === supabaseServiceKey;
+
+    let userLevel = 3; // default to admin for internal calls
+    if (!isInternalCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return jsonResponse({ error: "Invalid token" }, 401);
+      }
+
+      // 2. Check user role (resident+)
+      const { data: appUser } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      const ROLE_LEVEL: Record<string, number> = {
+        admin: 3,
+        staff: 2,
+        resident: 1,
+        associate: 1,
+      };
+      userLevel = ROLE_LEVEL[appUser?.role] || 0;
     }
-
-    // 2. Check user role (resident+)
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("role")
-      .eq("auth_user_id", user.id)
-      .single();
-
-    const ROLE_LEVEL: Record<string, number> = {
-      admin: 3,
-      staff: 2,
-      resident: 1,
-      associate: 1,
-    };
-    const userLevel = ROLE_LEVEL[appUser?.role] || 0;
     if (userLevel < 1) {
       return jsonResponse({ error: "Insufficient permissions" }, 403);
     }
@@ -84,7 +91,7 @@ serve(async (req) => {
 
     // ---- OAuth Code Exchange (admin-only) ----
     if (body.action === "exchangeCode") {
-      if (appUser?.role !== "admin") {
+      if (!["admin", "oracle"].includes(appUser?.role)) {
         return jsonResponse({ error: "Admin required for token exchange" }, 403);
       }
       if (!body.code) {

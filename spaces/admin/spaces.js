@@ -458,7 +458,7 @@ function getParentSpaceId(parentName) {
 
 function renderCards(spacesToRender) {
   const cardView = document.getElementById('cardView');
-  const isAdmin = authState?.appUser?.role === 'admin';
+  const isAdmin = ['admin', 'oracle'].includes(authState?.appUser?.role);
 
   cardView.innerHTML = spacesToRender.map(space => {
     const occupant = space.currentAssignment?.person;
@@ -841,7 +841,7 @@ function showSpaceDetail(spaceId) {
   const space = allSpaces.find(s => s.id === spaceId);
   if (!space) return;
 
-  const isAdmin = authState?.appUser?.role === 'admin';
+  const isAdmin = ['admin', 'oracle'].includes(authState?.appUser?.role);
   const spaceDetailModal = document.getElementById('spaceDetailModal');
 
   const headerHtml = space.parent?.name
@@ -1062,7 +1062,7 @@ function showSpaceDetail(spaceId) {
 // EDIT SPACE MODAL
 // =============================================
 async function openEditSpace(spaceId) {
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can edit spaces', 'warning');
     return;
   }
@@ -1241,7 +1241,7 @@ async function savePhotoOrder(spaceId, mediaIds) {
 async function handleEditSpaceSubmit() {
   if (isSavingSpace) return;
 
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can edit spaces', 'warning');
     return;
   }
@@ -1344,7 +1344,7 @@ async function handleEditSpaceSubmit() {
 }
 
 async function handleArchiveSpace() {
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can archive spaces', 'warning');
     return;
   }
@@ -1375,7 +1375,7 @@ async function handleArchiveSpace() {
 }
 
 async function removePhotoFromSpace(spaceId, mediaId) {
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can remove photos', 'warning');
     return;
   }
@@ -1398,7 +1398,7 @@ async function removePhotoFromSpace(spaceId, mediaId) {
 // PHOTO UPLOAD MODAL
 // =============================================
 async function openPhotoUpload(spaceId, spaceName, context = 'dwelling', initialTab = 'library') {
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can upload photos', 'warning');
     return;
   }
@@ -1815,7 +1815,7 @@ window.updateFileCaption = function(fileId, caption) {
 async function handlePhotoUpload() {
   if (isPhotoUploading) return;
 
-  if (authState?.appUser?.role !== 'admin') {
+  if (!['admin', 'oracle'].includes(authState?.appUser?.role)) {
     showToast('Only admins can upload photos', 'warning');
     return;
   }

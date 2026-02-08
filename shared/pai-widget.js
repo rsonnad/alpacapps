@@ -6,7 +6,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
-const PAI_URL = `${SUPABASE_URL}/functions/v1/alpaca-ai`;
+const PAI_URL = `${SUPABASE_URL}/functions/v1/alpaca-pai`;
 const MAX_HISTORY = 20;
 
 let conversationHistory = [];

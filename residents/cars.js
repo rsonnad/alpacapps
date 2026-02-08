@@ -558,7 +558,7 @@ function renderSettings() {
   const list = document.getElementById('teslaAccountsList');
   if (!section || !list) return;
 
-  if (currentUserRole !== 'admin') {
+  if (!['admin', 'oracle'].includes(currentUserRole)) {
     section.style.display = 'none';
     return;
   }
@@ -724,7 +724,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       // Admin: load settings
-      if (currentUserRole === 'admin') {
+      if (['admin', 'oracle'].includes(currentUserRole)) {
         await loadAccounts();
         renderSettings();
       }

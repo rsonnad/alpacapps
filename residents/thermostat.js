@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Check for OAuth callback code in URL params
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      if (code && currentUserRole === 'admin') {
+      if (code && ['admin', 'oracle'].includes(currentUserRole)) {
         await handleOAuthCallback(code);
         window.history.replaceState({}, '', window.location.pathname);
       }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (thermoActions.length) setTimeout(() => refreshAllStates(), 1500);
       });
 
-      if (currentUserRole === 'admin') {
+      if (['admin', 'oracle'].includes(currentUserRole)) {
         await loadNestSettings();
       }
     },

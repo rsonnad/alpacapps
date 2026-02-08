@@ -61,26 +61,32 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
-    }
 
-    // Verify user has resident+ role
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("role")
-      .eq("auth_user_id", user.id)
-      .single();
+    // Allow trusted internal calls from PAI (service role key = already permission-checked)
+    const isInternalCall = token === supabaseServiceKey;
 
-    if (
-      !appUser ||
-      !["resident", "associate", "staff", "admin"].includes(appUser.role)
-    ) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+    if (!isInternalCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return jsonResponse({ error: "Invalid token" }, 401);
+      }
+
+      // Verify user has resident+ role
+      const { data: appUser } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (
+        !appUser ||
+        !["resident", "associate", "staff", "admin", "oracle"].includes(appUser.role)
+      ) {
+        return jsonResponse({ error: "Insufficient permissions" }, 403);
+      }
     }
 
     // Get proxy config from env
