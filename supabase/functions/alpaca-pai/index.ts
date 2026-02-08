@@ -36,6 +36,10 @@ interface UserScope {
     vehicleState: string;
     lastState: any;
   }>;
+  cameras: Array<{
+    name: string;
+    location: string;
+  }>;
 }
 
 // =============================================
@@ -205,6 +209,21 @@ async function buildUserScope(
     .select("id, name, vehicle_make, vehicle_model, vehicle_state, last_state")
     .eq("is_active", true);
 
+  // 6. Cameras (distinct camera names + locations from camera_streams)
+  const { data: cameraStreams } = await supabase
+    .from("camera_streams")
+    .select("camera_name, location")
+    .eq("is_active", true)
+    .order("camera_name");
+
+  // Deduplicate (multiple quality rows per camera)
+  const seenCameras = new Set<string>();
+  const uniqueCameras = (cameraStreams || []).filter((c: any) => {
+    if (seenCameras.has(c.camera_name)) return false;
+    seenCameras.add(c.camera_name);
+    return true;
+  });
+
   return {
     role: appUser.role,
     userLevel,
@@ -231,6 +250,10 @@ async function buildUserScope(
       model: v.vehicle_model,
       vehicleState: v.vehicle_state,
       lastState: v.last_state,
+    })),
+    cameras: uniqueCameras.map((c: any) => ({
+      name: c.camera_name,
+      location: c.location,
     })),
   };
 }
@@ -307,6 +330,16 @@ Info available: battery, range, lock state, charging state, GPS location (latitu
 Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get_device_status with device_type "vehicle" to get full details including location.`);
   }
 
+  // Cameras
+  if (scope.cameras.length) {
+    parts.push(`\nCAMERAS (live feeds available to all residents):`);
+    for (const c of scope.cameras) {
+      parts.push(`- "${c.name}" (${c.location})`);
+    }
+    parts.push(`View live feeds at: https://alpacaplayhouse.com/residents/cameras.html
+When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.`);
+  }
+
   // General info
   parts.push(`\nPROPERTY INFO:
 - Location: 160 Still Forest Drive, Cedar Creek, TX 78612
@@ -323,7 +356,7 @@ AMENITIES & SMART HOME:
 - Nest thermostats in Master, Kitchen, and Skyloft
 - Tesla vehicle fleet with charging
 - LG smart washer and dryer
-- Camera security system
+- Camera security system (see CAMERAS section for live feed links)
 - Sauna with the world's best sound system
 - Cold plunge
 - Swim spa (hot or cold)
