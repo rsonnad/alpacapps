@@ -188,7 +188,15 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
         // Ensure Supabase has a real session before onReady queries RLS-protected tables.
         // Cached auth resolves initAuth() before the JWT is ready, so getSession() forces
         // the client to establish the actual session first.
-        await supabase.auth.getSession();
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) {
+          // Session expired — cached auth kept the UI alive but we have no JWT.
+          // Force re-login so RLS-protected queries work.
+          console.warn('[resident-shell] No active session despite cached auth — redirecting to login');
+          try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
+          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+          return;
+        }
         onReady(state);
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
