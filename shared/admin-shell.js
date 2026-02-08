@@ -151,6 +151,9 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
       document.getElementById('loadingOverlay').classList.add('hidden');
+      const emailEl = document.getElementById('unauthorizedEmail');
+      const email = state.user?.email || state.appUser?.email;
+      if (emailEl && email) emailEl.textContent = `Signed in as ${email}`;
       document.getElementById('unauthorizedOverlay').classList.remove('hidden');
     } else if (!state.isAuthenticated && !pageContentShown) {
       // Only redirect to login if we haven't already shown page content.
