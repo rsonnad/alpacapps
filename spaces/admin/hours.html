@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hours - Alpaca Playhouse Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="manage-shared.css?v=1">
+  <style>
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .summary-card { background: var(--bg-card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; text-align: center; }
+    .summary-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .summary-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
+    .summary-card .value.green { color: var(--available); }
+    .summary-card .value.red { color: var(--occupied); }
+    .summary-card .value.blue { color: var(--accent); }
+
+    .filters-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 1.5rem; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .filter-group label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .filter-group select, .filter-group input { padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; }
+
+    .entries-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .entries-table th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid #e5e7eb; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+    .entries-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    .entries-table tr:hover { background: #f9fafb; }
+    .entries-table .cb { width: 30px; text-align: center; }
+
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+    .badge.paid { background: #d1fae5; color: #065f46; }
+    .badge.unpaid { background: #fef3c7; color: #92400e; }
+    .badge.active { background: #dbeafe; color: #1e40af; }
+
+    .btn-mark-paid { background: var(--available); color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .btn-mark-paid:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-add { background: var(--accent); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+
+    .loc-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; }
+    .loc-link:hover { text-decoration: underline; }
+    .photo-count { color: var(--accent); cursor: pointer; font-weight: 600; }
+
+    .associate-config { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .assoc-card { background: var(--bg-card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; }
+    .assoc-card h4 { margin: 0 0 0.5rem; }
+    .assoc-card .detail { font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0; }
+    .assoc-card input, .assoc-card select { padding: 0.35rem 0.5rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+    .assoc-card .rate-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    .assoc-card .rate-row input { width: 100px; }
+    .assoc-card .save-btn { background: var(--accent); color: #fff; border: none; padding: 0.35rem 0.75rem; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; }
+
+    /* Modal */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { margin: 0 0 1rem; }
+    .modal .form-row { margin-bottom: 0.75rem; }
+    .modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+    .modal .form-row input, .modal .form-row select, .modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; }
+    .modal .form-row textarea { resize: vertical; min-height: 60px; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal-actions button { padding: 0.4rem 1rem; border-radius: var(--radius); font-size: 0.85rem; cursor: pointer; }
+    .modal-actions .btn-cancel { background: #f3f4f6; border: 1px solid #d1d5db; color: var(--text); }
+    .modal-actions .btn-confirm { background: var(--accent); border: none; color: #fff; font-weight: 600; }
+
+    .table-scroll { overflow-x: auto; }
+    .presets { display: flex; gap: 0.5rem; }
+    .presets button { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 0.25rem 0.6rem; border-radius: var(--radius); cursor: pointer; font-size: 0.75rem; }
+    .presets button:hover { background: #e5e7eb; }
+
+    .section-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+    @media (max-width: 768px) {
+      .summary-cards { grid-template-columns: repeat(2, 1fr); }
+      .filters-bar { flex-direction: column; }
+      .entries-table { font-size: 0.75rem; }
+      .entries-table th, .entries-table td { padding: 0.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Only administrators can access hours management.</p>
+      <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
+    </div>
+  </div>
+
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="https://alpacaplayhouse.com" class="header-logo">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
+        </a>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.63 5:23p</span>
+      </div>
+      <div class="header-controls">
+        <a href="/spaces/admin/" class="btn-small">Dashboard</a>
+        <span id="userInfo" class="user-info"></span>
+        <span id="roleBadge" class="role-badge"></span>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-container">
+      <div class="manage-tabs"></div>
+
+      <!-- Summary Cards -->
+      <div class="summary-cards" id="summaryCards">
+        <div class="summary-card"><div class="label">Total Hours</div><div class="value blue" id="sumHours">--</div></div>
+        <div class="summary-card"><div class="label">Total Earned</div><div class="value" id="sumEarned">--</div></div>
+        <div class="summary-card"><div class="label">Paid</div><div class="value green" id="sumPaid">--</div></div>
+        <div class="summary-card"><div class="label">Unpaid</div><div class="value red" id="sumUnpaid">--</div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label>Associate</label>
+          <select id="filterAssociate"><option value="">All Associates</option></select>
+        </div>
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="filterFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="filterTo">
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="filterStatus">
+            <option value="">All</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="presets">
+          <button data-preset="week">This Week</button>
+          <button data-preset="month">This Month</button>
+          <button data-preset="last-month">Last Month</button>
+          <button data-preset="all">All Time</button>
+        </div>
+      </div>
+
+      <!-- Time Entries -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Time Entries</h2>
+          <div class="section-actions">
+            <button class="btn-mark-paid" id="btnMarkPaid" disabled>Mark Selected as Paid</button>
+            <button class="btn-add" id="btnAddEntry">+ Add Entry</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="table-scroll">
+            <table class="entries-table">
+              <thead>
+                <tr>
+                  <th class="cb"><input type="checkbox" id="selectAll"></th>
+                  <th>Associate</th>
+                  <th>Date</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                  <th>Hours</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Description</th>
+                  <th>Loc</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="entriesBody">
+                <tr><td colspan="12" class="empty-state">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Associate Management -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Associate Settings</h2>
+        </div>
+        <div class="section-body">
+          <div class="associate-config" id="associateConfig">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mark Paid Modal -->
+  <div class="modal-backdrop" id="paidModal">
+    <div class="modal">
+      <h3>Mark as Paid</h3>
+      <p id="paidModalSummary" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;"></p>
+      <div class="form-row">
+        <label>Payment Method</label>
+        <select id="paidMethod">
+          <option value="venmo">Venmo</option>
+          <option value="zelle">Zelle</option>
+          <option value="paypal">PayPal</option>
+          <option value="square">Square</option>
+          <option value="cash">Cash</option>
+          <option value="check">Check</option>
+          <option value="bank_ach">Bank/ACH</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Notes (optional)</label>
+        <textarea id="paidNotes" placeholder="e.g. Venmo confirmation #123"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="paidCancel">Cancel</button>
+        <button class="btn-confirm" id="paidConfirm">Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Entry Modal -->
+  <div class="modal-backdrop" id="addEntryModal">
+    <div class="modal">
+      <h3 id="addEntryTitle">Add Manual Entry</h3>
+      <div class="form-row">
+        <label>Associate</label>
+        <select id="entryAssociate"></select>
+      </div>
+      <div class="form-row">
+        <label>Date</label>
+        <input type="date" id="entryDate">
+      </div>
+      <div class="form-row">
+        <label>Clock In Time</label>
+        <input type="time" id="entryClockIn">
+      </div>
+      <div class="form-row">
+        <label>Clock Out Time</label>
+        <input type="time" id="entryClockOut">
+      </div>
+      <div class="form-row">
+        <label>Description</label>
+        <textarea id="entryDescription" placeholder="What work was done?"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="entryCancel">Cancel</button>
+        <button class="btn-confirm" id="entryConfirm">Save Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="hours.js"></script>
+</body>
+</html>

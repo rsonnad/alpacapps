@@ -24,6 +24,7 @@ export const CATEGORY = {
   REFUND: 'refund',
   DAMAGE_DEDUCTION: 'damage_deduction',
   LATE_FEE: 'late_fee',
+  ASSOCIATE_PAYMENT: 'associate_payment',
   OTHER: 'other'
 };
 
@@ -40,6 +41,7 @@ export const CATEGORY_LABELS = {
   refund: 'Refund',
   damage_deduction: 'Damage Deduction',
   late_fee: 'Late Fee',
+  associate_payment: 'Associate Payment',
   other: 'Other'
 };
 
