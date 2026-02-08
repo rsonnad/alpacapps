@@ -2919,7 +2919,6 @@ span.sonos-library-item__star.starred {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
   box-shadow: var(--shadow);
   transition: border-color 0.15s;
   display: flex;
@@ -2939,6 +2938,7 @@ span.sonos-library-item__star.starred {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-radius: var(--radius) 0 0 var(--radius);
 }
 
 .car-card__img {

@@ -36,6 +36,7 @@ const ICONS = {
   doors: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h7l2-2v8l-2-2H3"/></svg>',
   sentry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   software: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+  charging: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
 };
 
 // =============================================
@@ -220,8 +221,23 @@ function getDataRows(car) {
 
   const status = getStatusDisplay(car);
   const batteryStr = s.battery_level != null
-    ? `${s.battery_level}%${s.charge_limit_soc != null ? ` / ${s.charge_limit_soc}%` : ''}${s.battery_range_mi != null ? ` \u00b7 ${Math.round(s.battery_range_mi)} mi` : ''}${getChargingDetail(s)}`
+    ? `${s.battery_level}%${s.charge_limit_soc != null ? ` / ${s.charge_limit_soc}%` : ''}${s.battery_range_mi != null ? ` \u00b7 ${Math.round(s.battery_range_mi)} mi` : ''}`
     : '--';
+  // Charging row — only when actively charging or complete
+  let chargingStr = null;
+  if (s.charging_state === 'Charging') {
+    const cp = [];
+    if (s.charger_power_kw != null && s.charger_power_kw > 0) cp.push(`${s.charger_power_kw} kW`);
+    if (s.charge_rate_mph != null && s.charge_rate_mph > 0) cp.push(`${s.charge_rate_mph} mi/hr`);
+    if (s.minutes_to_full != null && s.minutes_to_full > 0) {
+      const hrs = Math.floor(s.minutes_to_full / 60);
+      const mins = s.minutes_to_full % 60;
+      cp.push(hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`);
+    }
+    chargingStr = cp.length ? cp.join(' \u00b7 ') : 'Charging';
+  } else if (s.charging_state === 'Complete') {
+    chargingStr = 'Complete';
+  }
   const climateStr = s.climate_on
     ? `${s.inside_temp_f || '--'}\u00b0F (on)${s.outside_temp_f != null ? ` \u00b7 ${s.outside_temp_f}\u00b0F outside` : ''}`
     : s.inside_temp_f != null ? `${s.inside_temp_f}\u00b0F (off)${s.outside_temp_f != null ? ` \u00b7 ${s.outside_temp_f}\u00b0F outside` : ''}` : '--';
@@ -249,6 +265,9 @@ function getDataRows(car) {
 
   const rows = [
     { label: 'Battery', icon: 'battery', value: batteryStr },
+  ];
+  if (chargingStr) rows.push({ label: 'Charging', icon: 'charging', value: `<span style="color:var(--available,#27ae60)">${chargingStr}</span>` });
+  rows.push(
     { label: 'Odometer', icon: 'odometer', value: s.odometer_mi != null ? `${formatNumber(Math.round(s.odometer_mi))} mi` : '--' },
     { label: 'Status', icon: 'status', value: `<span style="color:${status.color}">${status.text}</span>` },
     { label: 'Climate', icon: 'climate', value: climateStr },
