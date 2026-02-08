@@ -22,6 +22,7 @@ function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation time
 let authState = null;
 let users = [];
 let invitations = [];
+let peopleSuggestions = []; // For typeahead
 
 // DOM elements (set after DOM ready)
 let pendingSection, usersSection, pendingCount, usersCount;
@@ -41,8 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       usersCount = document.getElementById('usersCount');
 
       // Load data
-      await loadUsers();
-      await loadInvitations();
+      await Promise.all([loadUsers(), loadInvitations(), loadPeople()]);
       render();
       setupEventListeners();
     }
@@ -57,6 +57,9 @@ function setupEventListeners() {
     const role = document.getElementById('inviteRole').value;
     await inviteUser(email, role);
   });
+
+  // Typeahead for email input
+  setupTypeahead();
 }
 
 async function loadUsers() {
@@ -106,6 +109,132 @@ async function loadInvitations() {
     console.error('Invitations load timeout:', timeoutError.message);
     showToast('Loading invitations timed out. Please refresh the page.', 'error');
   }
+}
+
+async function loadPeople() {
+  try {
+    const { data, error } = await withTimeout(
+      supabase
+        .from('people')
+        .select('first_name, last_name, email, type')
+        .not('email', 'is', null)
+        .neq('email', '')
+        .order('first_name'),
+      DB_TIMEOUT_MS,
+      'Loading people timed out'
+    );
+
+    if (error) {
+      console.error('Error loading people:', error);
+      return;
+    }
+
+    // Deduplicate by email (keep first occurrence which has latest name)
+    const seen = new Set();
+    peopleSuggestions = (data || []).filter(p => {
+      const key = p.email.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  } catch (e) {
+    console.error('People load timeout:', e.message);
+  }
+}
+
+// Typeahead state
+let typeaheadIndex = -1;
+let typeaheadFiltered = [];
+
+function setupTypeahead() {
+  const input = document.getElementById('inviteEmail');
+  const dropdown = document.getElementById('typeaheadDropdown');
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    typeaheadIndex = -1;
+
+    if (q.length < 1) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    typeaheadFiltered = peopleSuggestions.filter(p => {
+      const full = `${p.first_name} ${p.last_name} ${p.email}`.toLowerCase();
+      return full.includes(q);
+    }).slice(0, 8);
+
+    if (typeaheadFiltered.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    renderTypeahead();
+    dropdown.classList.remove('hidden');
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (dropdown.classList.contains('hidden')) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      typeaheadIndex = Math.min(typeaheadIndex + 1, typeaheadFiltered.length - 1);
+      renderTypeahead();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      typeaheadIndex = Math.max(typeaheadIndex - 1, -1);
+      renderTypeahead();
+    } else if (e.key === 'Enter' && typeaheadIndex >= 0) {
+      e.preventDefault();
+      selectTypeaheadItem(typeaheadFiltered[typeaheadIndex]);
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.email-typeahead-wrap')) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Re-show on focus if there's text
+  input.addEventListener('focus', () => {
+    if (input.value.trim().length >= 1 && typeaheadFiltered.length > 0) {
+      dropdown.classList.remove('hidden');
+    }
+  });
+}
+
+function renderTypeahead() {
+  const dropdown = document.getElementById('typeaheadDropdown');
+  dropdown.innerHTML = typeaheadFiltered.map((p, i) => `
+    <div class="typeahead-item ${i === typeaheadIndex ? 'active' : ''}" data-index="${i}">
+      <span>
+        <span class="ta-name">${p.first_name} ${p.last_name}</span>
+        <span class="ta-type">${p.type}</span>
+      </span>
+      <span class="ta-email">${p.email}</span>
+    </div>
+  `).join('');
+
+  dropdown.querySelectorAll('.typeahead-item').forEach(item => {
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      selectTypeaheadItem(typeaheadFiltered[parseInt(item.dataset.index)]);
+    });
+  });
+}
+
+function selectTypeaheadItem(person) {
+  const input = document.getElementById('inviteEmail');
+  const dropdown = document.getElementById('typeaheadDropdown');
+  input.value = person.email;
+  dropdown.classList.add('hidden');
+  typeaheadFiltered = [];
+  typeaheadIndex = -1;
+  input.focus();
 }
 
 async function inviteUser(email, role) {

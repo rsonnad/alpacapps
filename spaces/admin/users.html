@@ -47,19 +47,85 @@
       flex-wrap: wrap;
     }
 
-    .invite-form input[type="email"] {
+    .invite-form .email-typeahead-wrap {
       flex: 1;
       min-width: 200px;
+      position: relative;
+    }
+
+    .invite-form input[type="text"],
+    .invite-form input[type="email"] {
+      width: 100%;
       padding: 0.625rem 0.875rem;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       font-family: inherit;
       font-size: 0.875rem;
+      box-sizing: border-box;
     }
 
     .invite-form input:focus {
       outline: none;
       border-color: var(--accent);
+    }
+
+    .typeahead-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .typeahead-dropdown.hidden {
+      display: none;
+    }
+
+    .typeahead-item {
+      padding: 0.5rem 0.875rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .typeahead-item:last-child {
+      border-bottom: none;
+    }
+
+    .typeahead-item:hover,
+    .typeahead-item.active {
+      background: var(--accent-light);
+    }
+
+    .typeahead-item .ta-name {
+      font-weight: 500;
+    }
+
+    .typeahead-item .ta-email {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .typeahead-item .ta-type {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: var(--bg);
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+      white-space: nowrap;
     }
 
     .invite-form select {
@@ -272,7 +338,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.76 10:00p</span>
+        <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;align-self:center;margin-left:-0.25rem">v260207.77 10:06p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -298,7 +364,10 @@
         </div>
         <div class="section-body">
           <form id="inviteForm" class="invite-form">
-            <input type="email" id="inviteEmail" placeholder="user@gmail.com" required>
+            <div class="email-typeahead-wrap">
+              <input type="text" id="inviteEmail" placeholder="Search by name or type an email..." autocomplete="off" required>
+              <div id="typeaheadDropdown" class="typeahead-dropdown hidden"></div>
+            </div>
             <select id="inviteRole">
               <option value="resident">Resident (cameras & lighting)</option>
               <option value="associate">Associate (cameras & lighting)</option>
