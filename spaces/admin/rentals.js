@@ -1056,7 +1056,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
       break;
     case 'generated': {
       const genDate = app.agreement_generated_at
-        ? ` <span class="text-muted" style="font-size:0.8rem;margin-left:0.5rem;">${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric' })}</span>`
+        ? ` <span class="text-muted" style="font-size:0.8rem;margin-left:0.5rem;">${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>`
         : '';
       statusDisplay.innerHTML = `PDF Generated${genDate}`;
       statusDisplay.className = 'status-badge warning';
@@ -2144,7 +2144,7 @@ async function updateDocumentsTabState(app) {
       document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
       if (app.agreement_generated_at) {
         document.getElementById('pdfGeneratedAt').textContent =
-          `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
       }
     }
     signatureSection.style.display = 'block';
@@ -2166,7 +2166,7 @@ async function updateDocumentsTabState(app) {
       document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
       if (app.agreement_generated_at) {
         document.getElementById('pdfGeneratedAt').textContent =
-          `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
       }
     }
   } else if ((status === 'generated' || app.agreement_document_url) && app.agreement_document_url) {
@@ -2177,7 +2177,7 @@ async function updateDocumentsTabState(app) {
     document.getElementById('pdfFilename').textContent = getLeaseDisplayFilename(app, false);
     if (app.agreement_generated_at) {
       document.getElementById('pdfGeneratedAt').textContent =
-        `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        `Generated ${formatDateAustin(app.agreement_generated_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
     }
   }
   // Otherwise show generate section (default)
