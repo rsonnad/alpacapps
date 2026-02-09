@@ -1120,6 +1120,19 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     document.getElementById('prorationDetails').innerHTML = '<p class="text-muted">Set move-in date and rate to calculate proration.</p>';
   }
 
+  // Deposit request info
+  const depositRequestedInfo = document.getElementById('depositRequestedInfo');
+  if (app.deposit_requested_at) {
+    const moveIn = app.move_in_deposit_amount || app.approved_rate || 0;
+    const sec = app.security_deposit_amount || 0;
+    const dt = new Date(app.deposit_requested_at);
+    const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    depositRequestedInfo.innerHTML = `<span style="color: #666; font-size: 0.85rem;">Deposit request sent <strong>${dateStr} ${timeStr}</strong> — Move-in: $${moveIn}, Security: $${sec}, Total: $${moveIn + sec}</span>`;
+  } else {
+    depositRequestedInfo.innerHTML = '<span style="color: #999; font-size: 0.85rem;">Deposit request not yet sent</span>';
+  }
+
   // ===== RENT TAB =====
   document.getElementById('rentMonthlyAmount').textContent =
     rentalService.formatCurrency(app.approved_rate);
@@ -2544,13 +2557,30 @@ async function sendForSignature() {
     // Also send a notification email via Resend
     const emailResult = await emailService.sendLeaseSent({ person: app.person });
 
+    // Automatically send deposit request email with payment instructions
+    const depositApp = {
+      person: app.person,
+      move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
+      security_deposit: app.security_deposit_amount || 0,
+    };
+    const depositEmailResult = await emailService.sendDepositRequested(depositApp);
+
+    // Mark deposit as requested in the database
+    if (depositEmailResult.success) {
+      await supabase.from('rental_applications').update({
+        deposit_requested_at: new Date().toISOString()
+      }).eq('id', currentApplicationId);
+    }
+
     await loadApplications();
     openRentalDetail(currentApplicationId, getActiveDetailTab());
 
-    if (emailResult.success) {
-      showToast('Lease sent for signature & notification email sent', 'success');
+    if (emailResult.success && depositEmailResult.success) {
+      showToast('Lease sent for signature, notification & deposit request emails sent', 'success');
+    } else if (emailResult.success) {
+      showToast('Lease sent for signature & notification sent (deposit email failed)', 'warning');
     } else {
-      showToast('Lease sent for signature (notification email failed)', 'warning');
+      showToast('Lease sent for signature (some notification emails failed)', 'warning');
     }
   } catch (error) {
     console.error('Error sending for signature:', error);
@@ -2559,6 +2589,72 @@ async function sendForSignature() {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+}
+
+// =============================================
+// DEPOSIT REQUEST
+// =============================================
+
+async function sendDepositRequestEmail() {
+  if (!currentApplicationId) return;
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  if (!app) return;
+
+  if (!app.person?.email) {
+    showToast('Applicant has no email address on file', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('sendDepositRequestBtn');
+  const originalText = btn.textContent;
+
+  try {
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    const depositApp = {
+      person: app.person,
+      move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
+      security_deposit: app.security_deposit_amount || 0,
+    };
+    const result = await emailService.sendDepositRequested(depositApp);
+
+    if (result.success) {
+      await supabase.from('rental_applications').update({
+        deposit_requested_at: new Date().toISOString()
+      }).eq('id', currentApplicationId);
+
+      await loadApplications();
+      openRentalDetail(currentApplicationId, getActiveDetailTab());
+      showToast('Deposit request email sent', 'success');
+    } else {
+      showToast('Failed to send deposit request email', 'error');
+    }
+  } catch (error) {
+    console.error('Error sending deposit request:', error);
+    showToast('Error: ' + error.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+function copyPaymentInstructions() {
+  if (!currentApplicationId) return;
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  if (!app) return;
+
+  const moveIn = app.move_in_deposit_amount || app.approved_rate || 0;
+  const sec = app.security_deposit_amount || 0;
+  const total = moveIn + sec;
+
+  const text = `Deposit Payment Instructions - Alpaca Playhouse\n\nMove-in Reservation Deposit: $${moveIn}\nSecurity Deposit: $${sec}\nTotal Due: $${total}\n\nPayment Methods:\n• Venmo: @AlpacaPlayhouse\n• Zelle: payments@alpacaplayhouse.com\n\nPlease include your name in the payment memo.`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Payment instructions copied to clipboard', 'success');
+  }).catch(() => {
+    showToast('Failed to copy to clipboard', 'error');
+  });
 }
 
 // =============================================
@@ -2920,6 +3016,8 @@ function setupEventListeners() {
   });
 
   // Deposit request section buttons
+  document.getElementById('sendDepositRequestBtn')?.addEventListener('click', sendDepositRequestEmail);
+  document.getElementById('copyDepositRequestBtn')?.addEventListener('click', copyPaymentInstructions);
   document.getElementById('confirmDepositBtn')?.addEventListener('click', () => window.confirmDeposit());
 
   // Rent modals
