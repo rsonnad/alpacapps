@@ -183,15 +183,15 @@ ul, ol {
 }
 
 .aap-header__wordmark {
-  height: 40px;
+  height: 32px;
   width: auto;
 }
 
 .aap-header__version {
-  font-size: 0.75rem;
+  font-size: 0.375rem;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
-  margin-left: -0.5rem;
+  margin-left: 0.5rem;
   cursor: pointer;
 }
 
