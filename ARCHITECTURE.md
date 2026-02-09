@@ -9,36 +9,41 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 ## Components
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USERS                                   │
-│                           │                                     │
-│              ┌────────────┼────────────┐                        │
-│              ▼            ▼            ▼                        │
-│         Browser       Discord      Mobile                       │
-│              │            │            │                        │
-└──────────────┼────────────┼────────────┼────────────────────────┘
-               │            │            │
-               ▼            ▼            │
-┌──────────────────┐  ┌──────────────┐   │
-│  GitHub Pages    │  │  OpenClaw    │   │
-│  (Admin UI)      │  │  (Discord)   │   │
-│                  │  │              │   │
-│  HTML/CSS/JS     │  │  DO Droplet  │   │
-│  No backend      │  │              │   │
-└────────┬─────────┘  └──────┬───────┘   │
-         │                   │           │
-         └─────────┬─────────┘           │
-                   ▼                     ▼
-         ┌─────────────────────────────────┐
-         │           SUPABASE              │
-         │                                 │
-         │  ┌───────────┐ ┌─────────────┐  │
-         │  │ PostgreSQL│ │   Storage   │  │
-         │  │ Database  │ │ (housephotos)│  │
-         │  └───────────┘ └─────────────┘  │
-         │                                 │
-         │  Project: aphrrfprbixmhissnjfn  │
-         └─────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                          USERS                                    │
+│                            │                                      │
+│          ┌─────────────────┼──────────────────┐                   │
+│          ▼                 ▼                  ▼                   │
+│      Browser           Discord       iOS / Android               │
+│          │                 │                  │                   │
+└──────────┼─────────────────┼──────────────────┼───────────────────┘
+           │                 │                  │
+           ▼                 ▼                  ▼
+┌────────────────┐  ┌──────────────┐  ┌──────────────────────┐
+│ GitHub Pages   │  │  OpenClaw    │  │  Capacitor App       │
+│ (Web UI)       │  │  (Discord)   │  │  (Mobile SPA)        │
+│                │  │              │  │                      │
+│ HTML/CSS/JS    │  │  DO Droplet  │  │  Native shell wraps  │
+│ No backend     │  │              │  │  same shared/ code   │
+└──────┬─────────┘  └──────┬───────┘  └──────────┬───────────┘
+       │                   │                     │
+       └──────────┬────────┘─────────────────────┘
+                  ▼
+        ┌─────────────────────────────────┐
+        │           SUPABASE              │
+        │                                 │
+        │  ┌───────────┐ ┌─────────────┐  │
+        │  │ PostgreSQL│ │   Storage   │  │
+        │  │ Database  │ │ (housephotos)│  │
+        │  └───────────┘ └─────────────┘  │
+        │                                 │
+        │  ┌─────────────────────────┐    │
+        │  │    Edge Functions       │    │
+        │  │  (29 serverless funcs)  │    │
+        │  └─────────────────────────┘    │
+        │                                 │
+        │  Project: aphrrfprbixmhissnjfn  │
+        └─────────────────────────────────┘
 ```
 
 ## Hosting Locations
@@ -77,6 +82,9 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | PayPal Payouts | PayPal Payouts API | Config in `paypal_config` table |
 | Identity Verification | Claude Vision API | `verify-identity` Edge Function |
 | Airbnb Calendar Sync | Airbnb iCal | `airbnb-sync` Edge Function |
+| Mobile App (iOS) | App Store (pending) | Capacitor 8, app ID: `com.alpacaplayhouse.app` |
+| Mobile App (Android) | Play Store (pending) | Capacitor 8, same codebase as iOS |
+| OTA Updates | Capgo | `@capgo/capacitor-updater` for live web asset pushes |
 
 ## Repository Structure
 
@@ -221,6 +229,34 @@ alpacapps/
 │   │   └── go2rtc.yaml    # Stream definitions (3 cameras × 3 qualities)
 │   └── talkback-relay/    # Camera two-way audio relay
 │       └── talkback-relay.js  # WebSocket → FFmpeg → UDP to camera
+│
+├── mobile/                # iOS & Android mobile app (Capacitor)
+│   ├── capacitor.config.ts  # App config (ID, plugins, platform settings)
+│   ├── package.json         # Capacitor dependencies
+│   ├── scripts/
+│   │   └── copy-web.js      # Build: web assets → www/, inject capacitor.js
+│   ├── app/                 # Mobile-first SPA source
+│   │   ├── index.html       # App shell (overlays + tabs + bottom nav)
+│   │   ├── mobile.css       # Dark theme stylesheet
+│   │   ├── mobile-app.js    # Orchestrator (auth, tabs, lazy loading)
+│   │   └── tabs/            # Tab modules (lazy-loaded)
+│   │       ├── cameras-tab.js
+│   │       ├── music-tab.js
+│   │       ├── lights-tab.js
+│   │       ├── climate-tab.js
+│   │       └── cars-tab.js
+│   ├── android/             # Android native project (Android Studio)
+│   ├── ios/                 # iOS native project (Xcode)
+│   └── www/                 # Built output (gitignored)
+│
+├── shared/services/       # Data service modules (shared between web + mobile)
+│   ├── poll-manager.js      # Reusable polling with visibility pause
+│   ├── camera-data.js       # Camera stream config from DB
+│   ├── sonos-data.js        # Sonos zone state + control
+│   ├── lighting-data.js     # Govee device groups + control
+│   ├── climate-data.js      # Nest thermostat state + control
+│   ├── cars-data.js         # Tesla vehicle data + commands
+│   └── laundry-data.js      # LG washer/dryer state + control
 │
 ├── feature-builder/       # PAI Feature Builder (runs on DO droplet)
 │   ├── feature_builder.js # Poll DB → Claude Code → branch → merge
@@ -1743,6 +1779,183 @@ All background workers run on the DO droplet as systemd services:
 | `tesla-poller` | bugfixer | `/opt/tesla-poller/` | Tesla Fleet API vehicle data | 5 min |
 | `image-gen` | bugfixer | `/opt/image-gen/` | Gemini image generation queue | 10s |
 | `lg-poller` | bugfixer | `/opt/lg-poller/` | LG ThinQ laundry status | 30s |
+
+## Mobile App (iOS & Android)
+
+Native mobile apps for residents, built with Capacitor wrapping a mobile-first single-page web app.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    MOBILE APP STACK                          │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  Native Shell (Capacitor 8)                         │    │
+│  │  iOS: Swift/Xcode   Android: Kotlin/Android Studio  │    │
+│  │  ─────────────────────────────────────────────────  │    │
+│  │  WebView loads: mobile/app/index.html               │    │
+│  │                                                     │    │
+│  │  ┌───────────────────────────────────────────────┐  │    │
+│  │  │  Mobile SPA (vanilla HTML/CSS/JS)             │  │    │
+│  │  │                                               │  │    │
+│  │  │  mobile-app.js (orchestrator)                 │  │    │
+│  │  │    ├── Auth (inline login, Google OAuth)      │  │    │
+│  │  │    ├── Tab navigation (CSS-based switching)   │  │    │
+│  │  │    └── Lazy-loaded tab modules:               │  │    │
+│  │  │        ├── cameras-tab.js → camera-data.js    │  │    │
+│  │  │        ├── music-tab.js   → sonos-data.js     │  │    │
+│  │  │        ├── lights-tab.js  → lighting-data.js  │  │    │
+│  │  │        ├── climate-tab.js → climate-data.js   │  │    │
+│  │  │        └── cars-tab.js    → cars-data.js      │  │    │
+│  │  │                                               │  │    │
+│  │  │  shared/services/ (data layer, shared w/ web) │  │    │
+│  │  │  shared/auth.js, shared/supabase.js           │  │    │
+│  │  └───────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                           │                                  │
+│                           ▼                                  │
+│                    Supabase + Edge Functions                  │
+│                    (same backend as web)                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tech Stack
+
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| Native shell | Capacitor 8 | Wraps web content in native WebView |
+| UI | Vanilla HTML/CSS/JS | Dark theme, bottom tab bar, no framework |
+| Auth | Supabase Auth | Email/password + Google OAuth (inline form, no redirects) |
+| Data | Supabase JS SDK | Same client as web app (`shared/supabase.js`) |
+| OTA Updates | @capgo/capacitor-updater | Live updates without App Store resubmission |
+| Push | @capacitor/push-notifications | FCM (Android) + APNs (iOS) |
+| Status bar | @capacitor/status-bar | Dark style, matches app theme |
+| Splash screen | @capacitor/splash-screen | 2s auto-hide |
+
+### Configuration
+
+**`mobile/capacitor.config.ts`:**
+- App ID: `com.alpacaplayhouse.app`
+- App name: "Alpaca Playhouse"
+- Web directory: `www/` (built by `copy-web.js`)
+- iOS scheme: "Alpaca Playhouse"
+- Android: mixed content allowed (for camera HLS streams)
+
+### Key Design Decisions
+
+1. **No page redirects** — Capacitor WebView can't handle multi-page redirects. The mobile app uses an inline login form instead of redirecting to `/login/`. The build script (`copy-web.js`) patches the root `index.html` to serve the mobile SPA directly.
+
+2. **Lazy-loaded tabs** — Tab modules are loaded via dynamic `import()` only when first switched to, keeping initial load fast. Each tab exports an `init(appUser)` function.
+
+3. **Shared data services** — The `shared/services/` directory contains pure data-fetching modules extracted from the web resident pages. Both the web pages and mobile tabs import from the same service modules, ensuring API parity.
+
+4. **CSS-based tab switching** — No router or framework. Tabs are `<section>` elements toggled via `.active` class. Only one tab is visible at a time.
+
+5. **Visibility-based polling** — All polling (cameras, thermostats, cars, etc.) pauses when the app is backgrounded and resumes on foreground, using the `PollManager` class from `shared/services/poll-manager.js`.
+
+### File Structure
+
+```
+mobile/
+├── capacitor.config.ts          # Capacitor configuration
+├── package.json                 # Dependencies (Capacitor plugins)
+├── tsconfig.json                # TypeScript config
+│
+├── scripts/
+│   └── copy-web.js              # Build: copies web assets → www/, injects capacitor.js
+│
+├── app/                         # Mobile-first SPA source
+│   ├── index.html               # App shell (overlays + tab sections + bottom nav)
+│   ├── mobile.css               # Dark theme styles (all CSS in one file)
+│   ├── mobile-app.js            # Orchestrator (auth, tab switching, lazy loading)
+│   └── tabs/
+│       ├── cameras-tab.js       # HLS camera feeds, quality switching, auto-reconnect
+│       ├── music-tab.js         # Sonos zones, play/pause/volume, scenes, favorites
+│       ├── lights-tab.js        # Govee groups, on/off, brightness, color presets
+│       ├── climate-tab.js       # Nest thermostats, temp +/-, mode, eco toggle
+│       └── cars-tab.js          # Tesla vehicles, battery, lock/unlock, flash
+│
+├── android/                     # Android native project (Android Studio)
+│   └── app/src/main/assets/public/  # ← www/ contents synced here
+│
+├── ios/                         # iOS native project (Xcode)
+│   └── App/App/public/          # ← www/ contents synced here
+│
+└── www/                         # Built output (gitignored, generated by copy-web.js)
+```
+
+### Shared Service Modules
+
+The data layer lives in `shared/services/` and is used by both mobile and web:
+
+| Module | Purpose | Used By |
+|--------|---------|---------|
+| `poll-manager.js` | Reusable polling with visibility-based pause/resume | All tabs |
+| `camera-data.js` | Camera stream URLs from `camera_streams` table | Cameras tab |
+| `sonos-data.js` | Sonos zone state + control via `sonos-control` edge function | Music tab |
+| `lighting-data.js` | Govee device groups + control via `govee-control` edge function | Lights tab |
+| `climate-data.js` | Nest thermostat state + control via `nest-control` edge function | Climate tab |
+| `cars-data.js` | Tesla vehicle data from `tesla_vehicles` + commands via `tesla-command` | Cars tab |
+| `laundry-data.js` | LG washer/dryer state via `lg-control` edge function | (web only, not in mobile yet) |
+
+### Build & Development
+
+**Prerequisites:**
+- Node.js 18+
+- Xcode 15+ (for iOS)
+- Android Studio (for Android)
+- CocoaPods (iOS, installed via `npx cap sync ios`)
+
+**Build commands (from `mobile/` directory):**
+```bash
+# Full build: copy web assets → sync to native platforms
+npm run sync              # Both platforms
+npm run sync:ios          # iOS only
+npm run sync:android      # Android only
+
+# Open in IDE
+npm run open:ios          # Opens Xcode
+npm run open:android      # Opens Android Studio
+
+# Build web assets only (no native sync)
+npm run build             # Runs copy-web.js
+```
+
+**What `copy-web.js` does:**
+1. Cleans `www/` directory
+2. Copies 19 directories from project root (shared, residents, assets/branding, mobile/app, etc.)
+3. Copies 8 individual files (index.html, favicon, etc.)
+4. Injects `<script src="/capacitor.js"></script>` into all HTML files
+5. Replaces root `index.html` with the mobile app HTML (fixes relative paths)
+6. Patches `login/app.js` redirect target to `/mobile/app/index.html`
+7. Skips sensitive files (CLAUDE.md, credentials, documentation)
+
+**Running on device:**
+1. `cd mobile && npm run sync`
+2. iOS: `npm run open:ios` → Select team in Signing & Capabilities → Press Play (▶)
+3. Android: `npm run open:android` → Run on emulator or connected device
+
+### App Store Deployment
+
+| Platform | Status | Details |
+|----------|--------|---------|
+| Apple App Store | Pending | Apple Developer Program enrollment pending |
+| Google Play Store | Not started | $25 one-time registration fee required |
+
+**OTA Updates (Capgo):**
+Once published, code-only updates can be pushed without App Store review:
+- `@capgo/capacitor-updater` plugin configured with `autoUpdate: true`
+- Push web asset updates (HTML/CSS/JS) instantly to all installed apps
+- Native plugin changes still require a store submission
+
+### Branding
+
+The mobile app uses the green alpaca head logo:
+- **Login screen**: 100px logo with rounded corners above "Alpaca Playhouse" title
+- **Loading overlay**: 80px logo above spinner
+- **Header bar**: 28px inverted (white) logo next to title text
+- **Logo sources**: `/assets/branding/alpaca-head.jpg` (color), `/assets/branding/alpaca-head-inverted.jpg` (white)
 
 ## Related Documentation
 

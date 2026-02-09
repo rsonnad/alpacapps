@@ -11,16 +11,20 @@ GenAlpaca is a property management system for GenAlpaca Residency. It manages re
 
 **Tech Stack:**
 - Frontend: Vanilla HTML/CSS/JavaScript (no framework)
-- Backend: Supabase (PostgreSQL + Storage + Auth)
+- Mobile: Capacitor 8 (iOS + Android) wrapping mobile-first SPA
+- Backend: Supabase (PostgreSQL + Storage + Auth + Edge Functions)
 - Hosting: GitHub Pages (static site)
 - Bot: OpenClaw Discord bot (separate DigitalOcean droplet)
 
 ## Architecture
 
 ```
-Browser → GitHub Pages (static HTML/JS) → Supabase (database + storage)
-                                       ↗
-Discord → OpenClaw Bot (DO Droplet) ──┘
+Browser → GitHub Pages (static HTML/JS) ──→ Supabase (database + storage + edge functions)
+                                          ↗
+Discord → OpenClaw Bot (DO Droplet) ────┘
+                                          ↗
+Mobile  → Capacitor App (iOS/Android) ──┘
+            (same shared/ code as web)
 ```
 
 No server-side code - all logic runs client-side. Supabase handles data persistence.
@@ -54,6 +58,27 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `site-components.js` - Shared site UI components
 - `version-info.js` - Version badge click handler
 - `timezone.js` - Timezone utilities (Austin/Chicago)
+
+### Shared Data Services (`/shared/services/`)
+- `poll-manager.js` - Reusable polling class with visibility-based pause/resume
+- `camera-data.js` - Camera stream config from `camera_streams` table
+- `sonos-data.js` - Sonos zone state + control via `sonos-control` edge function
+- `lighting-data.js` - Govee device groups + control via `govee-control` edge function
+- `climate-data.js` - Nest thermostat state + control via `nest-control` edge function
+- `cars-data.js` - Tesla vehicle data + commands via `tesla-command` edge function
+- `laundry-data.js` - LG washer/dryer state + control via `lg-control` edge function
+
+### Mobile App (`/mobile/`)
+- `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)
+- `scripts/copy-web.js` - Build script: copies web assets → www/, injects capacitor.js, patches redirects
+- `app/index.html` - App shell (loading overlay, login overlay, tab sections, bottom nav bar)
+- `app/mobile.css` - Dark theme stylesheet (all mobile CSS in one file)
+- `app/mobile-app.js` - Orchestrator (auth, tab switching, lazy loading via dynamic import())
+- `app/tabs/cameras-tab.js` - HLS camera feeds with quality switching, auto-reconnect
+- `app/tabs/music-tab.js` - Sonos zones: play/pause, volume, scenes, favorites
+- `app/tabs/lights-tab.js` - Govee groups: on/off, brightness, color presets
+- `app/tabs/climate-tab.js` - Nest thermostats: temp +/-, mode, eco toggle
+- `app/tabs/cars-tab.js` - Tesla vehicles: battery, lock/unlock, flash lights
 
 ### Consumer View (`/spaces/`)
 - `app.js` - Public listing with real availability from assignments
@@ -409,6 +434,41 @@ const media = await mediaService.uploadMedia(file, {
 
 // Link to space
 await mediaService.linkMediaToSpace(media.id, spaceId, displayOrder);
+```
+
+### Building Mobile App
+```bash
+# From mobile/ directory:
+cd mobile
+
+# Full rebuild + sync to both platforms
+npm run sync
+
+# Sync to one platform only
+npm run sync:ios
+npm run sync:android
+
+# Open in IDE to run on device/emulator
+npm run open:ios       # Opens Xcode — press Play (▶) to run
+npm run open:android   # Opens Android Studio — press Run
+```
+
+### Adding a New Mobile Tab Module
+```javascript
+// mobile/app/tabs/example-tab.js
+import { ExampleService } from '../../../shared/services/example-data.js';
+import { PollManager } from '../../../shared/services/poll-manager.js';
+
+let poll;
+
+export async function init(appUser) {
+  const container = document.getElementById('exampleContent');
+  // Render UI into container...
+
+  // Start polling with visibility-based pause
+  poll = new PollManager(() => refreshData(), 30000);
+  poll.start();
+}
 ```
 
 ### Sending SMS
@@ -888,12 +948,25 @@ Common page URLs for testing links (use only on main deploys):
    - Stores keypad/door codes for each space
 35. **UP-SENSE Smart Sensors** - UniFi Protect sensor installation guide
    - `residents/sensorinstallation.html` — step-by-step installation instructions
+36. **Mobile App (iOS & Android)** - Native mobile apps via Capacitor 8
+   - App ID: `com.alpacaplayhouse.app`, Capacitor 8 wrapping mobile-first SPA
+   - 5 tabs: Cameras, Music, Lights, Climate, Cars (bottom tab bar)
+   - Dark theme, inline login (email/password + Google OAuth), no page redirects
+   - `mobile/app/` — SPA source (index.html, mobile.css, mobile-app.js, tabs/)
+   - `mobile/scripts/copy-web.js` — Build script: web assets → www/, inject capacitor.js
+   - `shared/services/` — Data layer modules shared between web and mobile
+   - Lazy-loaded tab modules via dynamic `import()` on first tab switch
+   - `PollManager` class for visibility-based polling (pauses when backgrounded)
+   - OTA updates via `@capgo/capacitor-updater` (no App Store resubmission for code changes)
+   - Build: `cd mobile && npm run sync` → open in Xcode/Android Studio → Run
 
 ## Testing Changes
 
 1. Check both card view and table view in consumer and admin views
-2. Test on mobile (responsive breakpoint at 768px)
+2. Test on mobile web (responsive breakpoint at 768px)
 3. Verify availability badges show correct dates
+4. **Mobile app**: After changing `shared/services/` or `mobile/app/` files, rebuild with `cd mobile && npm run sync`, then run in Xcode or Android Studio
+5. **Mobile app login**: Test both email/password and Google Sign In on both platforms
 
 ## Helpful Documentation
 
