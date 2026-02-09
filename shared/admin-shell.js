@@ -21,6 +21,7 @@ const ADMIN_TABS = [
   { id: 'voice', label: 'Voice', href: 'voice.html' },
   { id: 'users', label: 'Users', href: 'users.html' },
   { id: 'settings', label: 'Settings', href: 'settings.html' },
+  { id: 'todo', label: 'Todo', href: 'todo.html' },
 ];
 
 // =============================================

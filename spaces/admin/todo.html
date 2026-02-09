@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Todo - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="rentals.css?v=5">
+  <style>
+    .todo-page { max-width: 900px; }
+
+    .todo-category {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .todo-category-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.25rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .todo-category-header:hover { background: var(--border); }
+
+    .todo-category-header svg {
+      color: var(--accent);
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+    }
+
+    .todo-category-header h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0;
+      flex: 1;
+    }
+
+    .todo-category-progress {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .todo-category-progress .done { color: var(--success); }
+
+    .todo-category-chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .todo-category.collapsed .todo-category-chevron { transform: rotate(-90deg); }
+    .todo-category.collapsed .todo-items { display: none; }
+
+    .todo-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .todo-item:last-child { border-bottom: none; }
+    .todo-item:hover { background: var(--bg); }
+
+    .todo-item.checked { opacity: 0.55; }
+    .todo-item.checked .todo-item-title { text-decoration: line-through; }
+
+    .todo-checkbox {
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .todo-item-content { flex: 1; min-width: 0; }
+
+    .todo-item-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .todo-item-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 0.2rem;
+    }
+
+    .todo-item-desc a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .todo-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .todo-badge.critical { background: #fee2e2; color: #991b1b; }
+    .todo-badge.important { background: #fef3c7; color: #92400e; }
+    .todo-badge.nice { background: #e0e7ff; color: #3730a3; }
+    .todo-badge.blocked { background: #f3e8ff; color: #6b21a8; }
+
+    /* Summary bar */
+    .todo-summary {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .todo-summary-stat {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1.25rem;
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .todo-summary-value {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    .todo-summary-value.total { color: var(--text); }
+    .todo-summary-value.done { color: var(--success); }
+    .todo-summary-value.remaining { color: var(--accent); }
+
+    .todo-summary-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .todo-progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .todo-progress-fill {
+      height: 100%;
+      background: var(--success);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .todo-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .todo-summary { gap: 0.75rem; }
+      .todo-summary-stat { padding: 0.75rem; min-width: 80px; }
+      .todo-summary-value { font-size: 1.25rem; }
+      .todo-item { padding: 0.6rem 1rem; }
+      .todo-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="https://alpacaplayhouse.com" class="header-logo">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
+        </a>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.05 12:35a</span>
+        <span id="roleBadge" class="role-badge">Admin</span>
+      </div>
+      <div class="header-controls">
+        <span id="userInfo" class="user-info"></span>
+        <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content todo-page">
+
+      <!-- Summary -->
+      <div class="todo-summary" id="todoSummary"></div>
+      <div class="todo-progress-bar"><div class="todo-progress-fill" id="todoProgressFill"></div></div>
+
+      <!-- Actions -->
+      <div class="todo-actions">
+        <button class="btn-small btn-secondary" id="resetAllBtn">Reset All</button>
+      </div>
+
+      <!-- Todo categories rendered by JS -->
+      <div id="todoContainer"></div>
+
+    </main>
+  </div>
+
+  <script type="module" src="../../shared/version-info.js"></script>
+  <script type="module" src="todo.js"></script>
+</body>
+</html>

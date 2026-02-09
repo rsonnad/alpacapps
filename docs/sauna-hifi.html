@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <title>Sauna HiFi System — Alpaca Playhouse</title>
+  <link rel="stylesheet" href="/styles/site.css">
+  <style>
+    .hifi-content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .hifi-content h2 {
+      margin-top: 2.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--aap-border);
+    }
+    .hifi-content h3 {
+      margin-top: 1.5rem;
+    }
+    .hifi-content p, .hifi-content ul, .hifi-content ol {
+      line-height: 1.7;
+      margin-top: 0.75rem;
+    }
+    .hifi-content ul, .hifi-content ol {
+      padding-left: 1.5rem;
+    }
+    .hifi-content li {
+      margin-bottom: 0.4rem;
+    }
+    .info-box {
+      background: var(--aap-bg-muted);
+      padding: 1.25rem;
+      border-radius: var(--aap-radius-lg);
+      margin: 1.25rem 0;
+    }
+    .info-box--warning {
+      background: #fff3e0;
+      border-left: 4px solid var(--aap-accent);
+    }
+    .info-box--green {
+      background: #e8f4e8;
+    }
+    .signal-flow {
+      background: var(--aap-bg-dark);
+      color: var(--aap-text-light);
+      padding: 1.5rem;
+      border-radius: var(--aap-radius-lg);
+      margin: 1.25rem 0;
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .signal-flow .arrow { color: var(--aap-accent); }
+    .equipment-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    .equipment-table th, .equipment-table td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--aap-border);
+    }
+    .equipment-table th {
+      font-weight: 600;
+      background: var(--aap-bg-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .equipment-table td:last-child {
+      color: var(--aap-text-muted);
+      font-size: 0.9rem;
+    }
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (min-width: 640px) {
+      .config-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .config-card {
+      background: #fff;
+      border: 1px solid var(--aap-border);
+      border-radius: var(--aap-radius);
+      padding: 1rem;
+    }
+    .config-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--aap-accent);
+    }
+    .config-card ul {
+      padding-left: 1.25rem;
+      margin: 0;
+    }
+    .config-card li {
+      font-size: 0.9rem;
+    }
+    .toc {
+      background: var(--aap-bg-muted);
+      padding: 1.5rem;
+      border-radius: var(--aap-radius-lg);
+      margin-bottom: 2rem;
+    }
+    .toc p {
+      margin: 0 0 0.75rem 0;
+      font-weight: 600;
+    }
+    .toc ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+    .toc a {
+      color: var(--aap-link);
+      text-decoration: none;
+    }
+    .toc a:hover {
+      color: var(--aap-link-hover);
+    }
+    @media (max-width: 480px) {
+      .toc ul { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="aap-header aap-header--transparent aap-header--light" id="aap-header">
+    <div class="aap-header__inner">
+      <a href="/" class="aap-header__logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
+        <span title="Site version" class="aap-header__version">v260209.05 12:35a</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
+    <div class="aap-hero__content">
+      <h1 class="aap-hero__title">Sauna HiFi System</h1>
+      <p class="aap-hero__subtitle">Immersive sound system design for the Redwood Sauna</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <div class="hifi-content">
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+      <p>On This Page</p>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#sauna-structure">Sauna Structure</a></li>
+        <li><a href="#equipment">Equipment List</a></li>
+        <li><a href="#signal-flow">Signal Flow</a></li>
+        <li><a href="#configuration">Device Configuration</a></li>
+        <li><a href="#wiring">Speaker & Transducer Wiring</a></li>
+        <li><a href="#setup-procedure">Initial Setup Procedure</a></li>
+        <li><a href="#environment">Sauna Environment Tips</a></li>
+        <li><a href="#dsp-future">Future: miniDSP Flex 8</a></li>
+        <li><a href="#jbl-dsp">JBL Speaker DSP Config</a></li>
+      </ul>
+    </nav>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>1. Overview</h2>
+      <p>The sauna features a multi-channel immersive audio system designed for sublimely amazing sound, with a special emphasis on low frequencies and tactile bass. The system combines traditional speakers with bass shaker transducers mounted to the seating, so you physically <em>feel</em> the music.</p>
+
+      <div class="info-box info-box--green">
+        <strong>How to play music:</strong> Use <strong>Spotify Connect</strong> or the <strong>Sonos S1 app</strong> while connected to the Black Rock City WiFi network. Select the "Sauna" room in Sonos. You can also use AirPlay via the WiiM Pro receiver.
+      </div>
+
+      <p>The system is driven by a Behringer Flow 8 digital mixer with four output paths: stereo mains, a dedicated subwoofer channel, and tactile bass transducers. Settings can be adjusted in real time via the Flow 8 mobile app from inside the sauna.</p>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Sauna Structure -->
+    <section id="sauna-structure">
+      <h2>2. Sauna Structure</h2>
+      <p>The <strong>Redwood Outdoors Thermowood Garden 8-Person Sauna</strong> has a spacious interior with an average height of 8 feet, sloping up to 10 feet. The Thermowood construction creates a livelier acoustic environment. The sloped ceiling may introduce challenges in achieving even sound distribution, potentially leading to uneven sound levels or altered frequency response in different seating positions.</p>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Equipment List -->
+    <section id="equipment">
+      <h2>3. Equipment List</h2>
+
+      <h3>Mixing &amp; Source</h3>
+      <table class="equipment-table">
+        <thead><tr><th>Device</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Sonos Connect Gen 2</td><td>Signal input source (discontinued)</td></tr>
+          <tr><td>WiiM Pro AirPlay 2 Receiver</td><td>AirPlay input source</td></tr>
+          <tr><td>Behringer Flow 8 Mixer</td><td>Main mixer &amp; DSP, 4 outputs (L/R + 2 monitors)</td></tr>
+          <tr><td>MiniDSP Flex 8</td><td>Advanced 8-channel DSP (future upgrade)</td></tr>
+          <tr><td>Dirac UMIK-1 Microphone</td><td>Room measurement &amp; calibration mic</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Amplification</h3>
+      <table class="equipment-table">
+        <thead><tr><th>Device</th><th>Drives</th></tr></thead>
+        <tbody>
+          <tr><td>Yamaha RX-V871 AV Receiver</td><td>Main stereo speakers (Polk Atrium 8)</td></tr>
+          <tr><td>LAB Gruppen E8:2</td><td>JBL subwoofer</td></tr>
+          <tr><td>Buttkicker BKA-300-4</td><td>Aurasound bass shakers</td></tr>
+          <tr><td>Buttkicker BKA-1000P</td><td>Buttkicker Concert + Advance transducers</td></tr>
+          <tr><td>LAB Gruppen E4:2</td><td>Spare/expansion</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Speakers &amp; Transducers</h3>
+      <table class="equipment-table">
+        <thead><tr><th>Device</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Polk Audio Atrium 8 SDI (x2)</td><td>Main stereo outdoor speakers (L/R)</td></tr>
+          <tr><td>JBL C29AV-1 Professional 8"</td><td>Subwoofer</td></tr>
+          <tr><td>Buttkicker Concert Transducer</td><td>Tactile bass (mounted to seating platform)</td></tr>
+          <tr><td>Buttkicker Advance Transducer</td><td>Tactile bass (mounted to seating platform)</td></tr>
+          <tr><td>Aurasound AST-2B-4 Pro (x2)</td><td>Tactile bass shakers (mounted to bench)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Signal Flow -->
+    <section id="signal-flow">
+      <h2>4. Signal Flow</h2>
+      <p>The Behringer Flow 8 mixer has 4 outputs that drive 4 separate audio paths:</p>
+
+      <div class="signal-flow">
+Sonos / WiiM <span class="arrow">&rarr;</span> Flow 8 Mixer<br>
+<br>
+Flow 8 MAIN OUT (L/R) <span class="arrow">&rarr;</span> Yamaha RX-V871 <span class="arrow">&rarr;</span> Polk Atrium 8 speakers<br>
+&nbsp;&nbsp;Cable: 1/4" TRS to RCA<br>
+&nbsp;&nbsp;Purpose: Full-range stereo<br>
+<br>
+Flow 8 MONITOR 1 <span class="arrow">&rarr;</span> LAB Gruppen E8:2 <span class="arrow">&rarr;</span> JBL C29AV-1 subwoofer<br>
+&nbsp;&nbsp;Cable: 1/4" TRS to XLR (balanced)<br>
+&nbsp;&nbsp;Purpose: Low frequency for sub<br>
+<br>
+Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&boxvr; Line Out <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
+&nbsp;&nbsp;Cable: 1/4" TRS to RCA, then RCA daisy-chain<br>
+&nbsp;&nbsp;Purpose: Low frequency for tactile transducers
+      </div>
+
+      <div class="info-box">
+        <strong>Key design principle:</strong> The BKA-300-4 and BKA-1000P are daisy-chained via the Line Out on the BKA-300-4. This eliminates signal splitting and maintains signal integrity. Each amp still has its own gain and filter settings.
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Device Configuration -->
+    <section id="configuration">
+      <h2>5. Device Configuration</h2>
+
+      <div class="config-grid">
+        <div class="config-card">
+          <h4>Flow 8 &mdash; Main Out (to Yamaha)</h4>
+          <ul>
+            <li>High-pass filter: 80 Hz</li>
+            <li>EQ: Flat/neutral</li>
+            <li>Output level: 75% (-7.5 dB)</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>Flow 8 &mdash; Monitor 1 (to LAB Gruppen)</h4>
+          <ul>
+            <li>Low-pass filter: 100 Hz</li>
+            <li>High-pass filter: 20 Hz</li>
+            <li>Output level: 100% (0 dB)</li>
+            <li>Pan: Center</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>Flow 8 &mdash; Monitor 2 (to BKA chain)</h4>
+          <ul>
+            <li>Low-pass filter: 100 Hz</li>
+            <li>High-pass filter: 25 Hz</li>
+            <li>Output level: 85% (-3 dB)</li>
+            <li>Pan: Center</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>Yamaha RX-V871</h4>
+          <ul>
+            <li>Mode: Pure Direct</li>
+            <li>Speaker Size: Small</li>
+            <li>Crossover: 80 Hz</li>
+            <li>Volume: Start at -20 dB</li>
+            <li>EQ: Off/Bypassed</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>LAB Gruppen E8:2 (Sub)</h4>
+          <ul>
+            <li>Mode: Normal stereo (not bridged)</li>
+            <li>Input sensitivity: 0.775V</li>
+            <li>Impedance: 4 ohm</li>
+            <li>HPF: 25 Hz</li>
+            <li>LPF: 100 Hz</li>
+            <li>Slope: -24 dB/octave</li>
+            <li>Input: Mono</li>
+            <li>Power: Start at 50%</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>BKA-300-4 (Aura Shakers)</h4>
+          <ul>
+            <li>Input: Line input</li>
+            <li>High cut: 80 Hz</li>
+            <li>Low cut: 25 Hz</li>
+            <li>Slope: -12 dB/octave</li>
+            <li>Gain: Start at 40%</li>
+            <li>Line Out: Enabled (feeds BKA-1000P)</li>
+          </ul>
+        </div>
+
+        <div class="config-card">
+          <h4>BKA-1000P (Buttkickers)</h4>
+          <ul>
+            <li>Input: Line input</li>
+            <li>High cut: 80 Hz</li>
+            <li>Low cut: 25 Hz</li>
+            <li>Input sensitivity: 1.4V</li>
+            <li>Bridge mode: Enabled</li>
+            <li>Gain: Start at 50%</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Wiring -->
+    <section id="wiring">
+      <h2>6. Speaker &amp; Transducer Wiring</h2>
+
+      <h3>Polk Atrium 8 (Main Speakers)</h3>
+      <ul>
+        <li>Connected to Yamaha amp via 12 AWG speaker wire</li>
+        <li>Observe proper polarity (+/-)</li>
+        <li>Mounted securely with proper ventilation</li>
+      </ul>
+
+      <h3>JBL C29AV-1 (Subwoofer)</h3>
+      <ul>
+        <li>Connected to LAB Gruppen E8:2 via 12 AWG speaker wire</li>
+        <li>Observe proper polarity (+/-)</li>
+        <li>Channel 1 output only (mono setting)</li>
+      </ul>
+
+      <h3>Aurasound AST-2B-4 Bass Shakers (x2)</h3>
+      <ul>
+        <li>Wired in <strong>true parallel</strong> for 2 ohm load</li>
+        <li>12 AWG speaker wire</li>
+        <li>Pay careful attention to phasing</li>
+        <li>Securely mounted to seating structure</li>
+      </ul>
+
+      <h3>Buttkicker Concert + Advance</h3>
+      <ul>
+        <li>Wired in <strong>series</strong> for 6 ohm total load</li>
+        <li>12 AWG speaker wire minimum</li>
+        <li>Verify phase alignment</li>
+        <li>Securely mounted to seating platform</li>
+      </ul>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Setup Procedure -->
+    <section id="setup-procedure">
+      <h2>7. Initial Setup Procedure</h2>
+      <ol>
+        <li>Start with all amp gains at minimum</li>
+        <li>Set Flow 8 output levels as specified above</li>
+        <li>Gradually increase each amp's gain:
+          <ul>
+            <li>Start with main speakers (Yamaha)</li>
+            <li>Add subwoofer (LAB Gruppen)</li>
+            <li>Finally bring in tactile transducers (Buttkickers, Auras)</li>
+          </ul>
+        </li>
+        <li>Fine-tune crossover points if needed</li>
+        <li>Adjust relative levels for balanced effect</li>
+        <li>Use the UMIK-1 mic with REW software for room measurement and correction</li>
+      </ol>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Environment Tips -->
+    <section id="environment">
+      <h2>8. Sauna Environment Tips</h2>
+
+      <div class="info-box info-box--warning">
+        <strong>Heat &amp; Moisture Warning:</strong> Electronics in a sauna are exposed to extreme heat and humidity. All amps, the mixer, and the Yamaha receiver should be placed <strong>outside the sauna</strong> or in a well-ventilated, humidity-controlled equipment area. Only speaker wire should run inside.
+      </div>
+
+      <ul>
+        <li><strong>Equipment placement:</strong> Keep all amps and the Flow 8 in a lower-temperature zone with fan or ventilation. Heat kills electronics and can trigger thermal protection mid-session.</li>
+        <li><strong>Moisture-proofing:</strong> Use marine-grade or outdoor-rated cables and connectors. Consider silicone boot covers on exposed jacks.</li>
+        <li><strong>Cable management:</strong> Keep unbalanced cable runs as short as possible (&lt;10-15 ft). Use balanced (TRS-to-XLR) for longer distances, especially for the sub signal. Label and route cables away from high-heat surfaces.</li>
+        <li><strong>Calibration:</strong> Use the UMIK-1 for real-time RTA measurement. Expect big lumps or dips in mid-bass due to reflective wood surfaces and sloped ceiling. Correct gently&mdash;too much EQ sounds unnatural.</li>
+        <li><strong>Vibration check:</strong> Tactile transducers can shake loose items or cause unexpected resonances. Check for rattles in benches after installation.</li>
+      </ul>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- miniDSP Future -->
+    <section id="dsp-future">
+      <h2>9. Future Upgrade: miniDSP Flex 8</h2>
+      <p>The miniDSP Flex 8 provides up to 8 input + 8 output channels of digital signal processing, including EQ, crossovers, time alignment, and Dirac room correction. It would replace the Flow 8's limited DSP capabilities while the Flow 8 remains useful as the front-end mixer.</p>
+
+      <h3>Recommended Signal Flow with Flex 8</h3>
+      <div class="signal-flow">
+Sonos / WiiM <span class="arrow">&rarr;</span> Flow 8 (mixer/volume) <span class="arrow">&rarr;</span> miniDSP Flex 8<br>
+<br>
+Flex 8 Out 1 (L main) <span class="arrow">&rarr;</span> Yamaha <span class="arrow">&rarr;</span> Left Polk Atrium 8<br>
+Flex 8 Out 2 (R main) <span class="arrow">&rarr;</span> Yamaha <span class="arrow">&rarr;</span> Right Polk Atrium 8<br>
+Flex 8 Out 3 (Sub)    <span class="arrow">&rarr;</span> LAB Gruppen E8:2 <span class="arrow">&rarr;</span> JBL sub<br>
+Flex 8 Out 4 (Tactile 1) <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
+Flex 8 Out 5 (Tactile 2) <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
+Outs 6-8: Future expansion
+      </div>
+
+      <h3>Benefits of Centralizing DSP</h3>
+      <ul>
+        <li><strong>Consistent phase response</strong> &mdash; one device handles all crossovers, no guessing what each amp is doing</li>
+        <li><strong>Independent output processing</strong> &mdash; unique crossover, EQ, and delay per channel</li>
+        <li><strong>Simpler amp settings</strong> &mdash; set each amp to "full-range" mode, only adjust gain</li>
+        <li><strong>Room correction</strong> &mdash; measure with UMIK-1, apply corrections in Flex 8</li>
+      </ul>
+
+      <div class="info-box">
+        <strong>Key principle:</strong> Avoid double or triple filtering. When using the Flex 8, disable crossovers/filters on all downstream amps (Yamaha, LAB Gruppen, Buttkicker amps). Let one device own all frequency routing.
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- JBL DSP -->
+    <section id="jbl-dsp">
+      <h2>10. JBL C29AV-1 DSP Configuration</h2>
+      <p>Recommended DSP settings for the JBL subwoofer in the sauna application:</p>
+
+      <h3>High-Pass Filter</h3>
+      <ul>
+        <li>Frequency: 50-60 Hz</li>
+        <li>Type: Butterworth 24 dB/octave</li>
+        <li>Protects speaker from over-excursion, cleans up room modes</li>
+      </ul>
+
+      <h3>Low-Pass Filter</h3>
+      <ul>
+        <li>Frequency: ~120 Hz (when used with tactile transducers for sub-bass)</li>
+        <li>Type: Linkwitz-Riley 24 dB/octave</li>
+        <li>Provides better phase alignment with transducers</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <footer style="text-align: center; padding: 2rem; color: var(--aap-text-muted); font-size: 0.8rem;">
+    <span class="aap-header__version">v260209.05 12:35a</span>
+  </footer>
+
+  <script src="/shared/site-components.js"></script>
+  <script src="/shared/version-info.js"></script>
+</body>
+</html>
