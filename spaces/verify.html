@@ -561,9 +561,9 @@
         <div class="whats-next">
           <h3>What Happens Next</h3>
           <ol>
-            <li>Your ID verification has been added to your application file</li>
-            <li>We'll review your full application and be in touch shortly</li>
-            <li>If approved, we'll send you a lease agreement to sign electronically</li>
+            <li>Your ID verification has been added to your file</li>
+            <li>You're all set — no further action needed on your end</li>
+            <li>If you have any questions, don't hesitate to reach out</li>
           </ol>
         </div>
 
@@ -617,14 +617,14 @@
       <div id="reviewResult" class="result result-review">
         <div class="icon">&#129433;</div>
         <h2>Submitted for Review</h2>
-        <p>Your ID has been uploaded and is being reviewed by our team. We will add the confirmation of your identity to your application file.</p>
+        <p>Your ID has been uploaded and is being reviewed by our team. We'll confirm your identity shortly.</p>
 
         <div class="whats-next">
           <h3>What Happens Next</h3>
           <ol>
             <li>Our team will review your ID (usually within 1 business day)</li>
-            <li>Once verified, we'll continue processing your application</li>
-            <li>If approved, we'll send you a lease agreement to sign electronically</li>
+            <li>Once verified, we'll update your file and be in touch</li>
+            <li>If you have questions, feel free to reach out below</li>
           </ol>
         </div>
 
@@ -731,7 +731,7 @@
       try {
         const { data: token, error } = await sb
           .from('upload_tokens')
-          .select('*, person:person_id(first_name, last_name)')
+          .select('*, person:person_id(first_name, last_name), app_user:app_user_id(first_name, last_name)')
           .eq('token', tokenValue)
           .single();
 
@@ -750,8 +750,8 @@
           return;
         }
 
-        // Show the form
-        const person = token.person;
+        // Show the form — use person (rental) or app_user (associate) for name
+        const person = token.person || token.app_user;
         if (person) {
           applicantName.textContent = person.first_name || 'there';
         }

@@ -137,6 +137,145 @@ export const identityService = {
     if (error) throw error;
     return data;
   },
+
+  // =============================================
+  // ASSOCIATE VERIFICATION
+  // =============================================
+
+  /**
+   * Generate an upload token for an associate and return the upload URL
+   * @param {string} appUserId - app_users.id
+   * @param {string} createdBy - Admin who triggered it (or 'self')
+   * @returns {Promise<{token: string, uploadUrl: string}>}
+   */
+  async requestAssociateVerification(appUserId, createdBy = null) {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const { data: token, error } = await supabase
+      .from('upload_tokens')
+      .insert({
+        app_user_id: appUserId,
+        token_type: 'identity_verification',
+        expires_at: expiresAt.toISOString(),
+        created_by: createdBy,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const uploadUrl = `https://alpacaplayhouse.com/spaces/verify.html?token=${token.token}`;
+
+    // Update associate profile status
+    await supabase
+      .from('associate_profiles')
+      .update({
+        identity_verification_status: 'link_sent',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('app_user_id', appUserId);
+
+    return { token: token.token, uploadUrl };
+  },
+
+  /**
+   * Get the latest verification for an associate
+   * @param {string} appUserId - app_users.id
+   * @returns {Promise<object|null>}
+   */
+  async getAssociateVerification(appUserId) {
+    const { data, error } = await supabase
+      .from('identity_verifications')
+      .select('*')
+      .eq('app_user_id', appUserId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  /**
+   * Get the upload token for an associate
+   * @param {string} appUserId - app_users.id
+   * @returns {Promise<object|null>}
+   */
+  async getAssociateUploadToken(appUserId) {
+    const { data, error } = await supabase
+      .from('upload_tokens')
+      .select('*')
+      .eq('app_user_id', appUserId)
+      .eq('token_type', 'identity_verification')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  /**
+   * Manually approve a flagged associate verification
+   */
+  async approveAssociateVerification(verificationId, appUserId, reviewedBy, notes = null) {
+    const { data, error } = await supabase
+      .from('identity_verifications')
+      .update({
+        verification_status: 'manually_approved',
+        reviewed_by: reviewedBy,
+        reviewed_at: new Date().toISOString(),
+        review_notes: notes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', verificationId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await supabase
+      .from('associate_profiles')
+      .update({
+        identity_verification_status: 'verified',
+        identity_verification_id: verificationId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('app_user_id', appUserId);
+
+    return data;
+  },
+
+  /**
+   * Manually reject a flagged associate verification
+   */
+  async rejectAssociateVerification(verificationId, appUserId, reviewedBy, notes = null) {
+    const { data, error } = await supabase
+      .from('identity_verifications')
+      .update({
+        verification_status: 'manually_rejected',
+        reviewed_by: reviewedBy,
+        reviewed_at: new Date().toISOString(),
+        review_notes: notes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', verificationId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await supabase
+      .from('associate_profiles')
+      .update({
+        identity_verification_status: 'rejected',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('app_user_id', appUserId);
+
+    return data;
+  },
 };
 
 export default identityService;
