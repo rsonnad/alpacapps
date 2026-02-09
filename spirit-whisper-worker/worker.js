@@ -190,38 +190,58 @@ async function pickWhisperTemplate(chapter, availableKeys) {
   return eligible[eligible.length - 1];
 }
 
-async function maybeTriggerDeviceInteraction(chapter, config) {
+// Zones physically near the Tesla charging area (driveway / garage)
+const TESLA_ZONES = ['Front Outside Sound', 'garage outdoors'];
+
+async function maybeTriggerDeviceInteraction(chapter, config, targetZone) {
   if (!config.device_interaction_enabled || chapter < 2) return null;
   if (Math.random() > (config.device_interaction_chance || 0)) return null;
 
   const results = [];
 
-  // Tesla flash lights
-  try {
-    const { data: vehicles } = await supabase
-      .from('vehicles')
-      .select('id, name, is_active')
-      .eq('is_active', true);
-    const vehicle = vehicles?.length ? randomItem(vehicles) : null;
-    if (vehicle) {
-      const resp = await fetch(TESLA_COMMAND_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'apikey': SUPABASE_SERVICE_KEY,
-        },
-        body: JSON.stringify({ vehicle_id: vehicle.id, command: 'flash_lights' }),
+  // Tesla flash — only when whisper plays on a zone near the charging cars
+  const isTeslaZone = TESLA_ZONES.some(z => z.toLowerCase() === (targetZone || '').toLowerCase());
+  if (isTeslaZone) {
+    try {
+      const { data: vehicles } = await supabase
+        .from('vehicles')
+        .select('id, name, last_state')
+        .eq('is_active', true);
+
+      // Flash all cars that are currently charging (plugged in at the house)
+      const charging = (vehicles || []).filter(v => {
+        const cs = v.last_state?.charging_state;
+        return cs && cs !== 'Disconnected' && cs !== 'NoPower';
       });
-      const result = await resp.json().catch(() => ({}));
-      if (resp.ok) {
-        results.push(`Tesla flash (${vehicle.name})`);
+
+      if (charging.length) {
+        for (const vehicle of charging) {
+          try {
+            const resp = await fetch(TESLA_COMMAND_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                'apikey': SUPABASE_SERVICE_KEY,
+              },
+              body: JSON.stringify({ vehicle_id: vehicle.id, command: 'flash_lights' }),
+            });
+            const result = await resp.json().catch(() => ({}));
+            if (resp.ok) {
+              results.push(`Tesla flash (${vehicle.name}, ${vehicle.last_state?.charging_state})`);
+            } else {
+              results.push(`Tesla flash failed (${vehicle.name}): ${result.error || 'unknown'}`);
+            }
+          } catch (err) {
+            results.push(`Tesla flash error (${vehicle.name}): ${err.message}`);
+          }
+        }
       } else {
-        results.push(`Tesla flash failed (${vehicle.name}): ${result.error || 'unknown'}`);
+        log('debug', 'Tesla zone but no charging vehicles', { zone: targetZone });
       }
+    } catch (err) {
+      results.push(`Tesla flash error: ${err.message}`);
     }
-  } catch (err) {
-    results.push(`Tesla flash error: ${err.message}`);
   }
 
   // Govee pulse (best-effort: set amber then restore)
@@ -449,7 +469,7 @@ async function deliverWhisper() {
     errorMsg = err.message;
   }
 
-  const deviceInteraction = await maybeTriggerDeviceInteraction(config.current_chapter, config);
+  const deviceInteraction = await maybeTriggerDeviceInteraction(config.current_chapter, config, targetZone);
 
   await supabase.from('spirit_whisper_log').insert({
     chapter: config.current_chapter,
