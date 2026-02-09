@@ -579,11 +579,19 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border-radius: 50%;
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
   letter-spacing: 0.02em;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Circle badges in admin table view (single letter: A, O, S, etc.) */
+.badge.badge-circle {
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border-radius: 50%;
 }
 
 .badge.occupied {

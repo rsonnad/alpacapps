@@ -604,12 +604,12 @@ function renderTable(spacesToRender) {
     const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
 
     let statusBadge = space.isAvailable
-      ? '<span class="badge available" title="Available">A</span>'
-      : '<span class="badge occupied" title="Occupied">O</span>';
+      ? '<span class="badge badge-circle available" title="Available">A</span>'
+      : '<span class="badge badge-circle occupied" title="Occupied">O</span>';
 
     let visBadge = '';
-    if (space.is_secret) visBadge = '<span class="badge secret" title="Secret">S</span>';
-    else if (!space.is_listed) visBadge = '<span class="badge unlisted" title="Unlisted">U</span>';
+    if (space.is_secret) visBadge = '<span class="badge badge-circle secret" title="Secret">S</span>';
+    else if (!space.is_listed) visBadge = '<span class="badge badge-circle unlisted" title="Unlisted">U</span>';
 
     const thumbnail = space.photos.length > 0
       ? `<img src="${space.photos[0].url}" alt="" class="table-thumbnail" onclick="event.stopPropagation(); openLightboxForSpace('${space.id}', '${space.photos[0].url}')" style="cursor: zoom-in;">`
