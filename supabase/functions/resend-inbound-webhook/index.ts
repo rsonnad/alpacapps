@@ -682,6 +682,7 @@ async function sendTenantReceipt(
       body: JSON.stringify({
         from: "GenAlpaca <noreply@alpacaplayhouse.com>",
         to: [details.tenantEmail],
+        bcc: ["alpacaautomatic@gmail.com"],
         subject,
         html,
       }),

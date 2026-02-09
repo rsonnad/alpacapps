@@ -27,8 +27,10 @@ async function initPaiAdmin(authState) {
   // Bind events (admin only)
   if (isAdmin) {
     document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+    document.getElementById('savePromptsBtn').addEventListener('click', savePrompts);
     document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
     document.getElementById('testPreviewBtn').addEventListener('click', previewTestWhisper);
+    document.getElementById('regenWhispersBtn').addEventListener('click', regenerateWhispers);
   }
 
   // Player close button
@@ -106,6 +108,10 @@ async function loadConfig() {
     document.getElementById('cfgActiveLabel').textContent = e.target.checked ? 'On' : 'Off';
   });
 
+  // Populate AI prompts
+  document.getElementById('promptSystemPrompt').value = data.story_system_prompt || '';
+  document.getElementById('promptGenPrompt').value = data.whisper_gen_prompt || '';
+
   // Highlight current chapter in story arc
   updateStoryArcHighlight(data.current_chapter);
 }
@@ -165,6 +171,110 @@ async function saveConfig() {
   updateStoryArcHighlight(updates.current_chapter);
   await loadStats();
 }
+
+// ============================================
+// AI Prompts — save & regenerate
+// ============================================
+
+async function savePrompts() {
+  const systemPrompt = document.getElementById('promptSystemPrompt').value.trim();
+  const genPrompt = document.getElementById('promptGenPrompt').value.trim();
+
+  if (!systemPrompt) {
+    showToast('System prompt cannot be empty', 'warning');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('spirit_whisper_config')
+    .update({
+      story_system_prompt: systemPrompt,
+      whisper_gen_prompt: genPrompt,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', 1);
+
+  if (error) {
+    showToast(`Save failed: ${error.message}`, 'error');
+    return;
+  }
+
+  config = { ...config, story_system_prompt: systemPrompt, whisper_gen_prompt: genPrompt };
+  showToast('Prompts saved', 'success');
+}
+
+async function regenerateWhispers() {
+  const chapter = parseInt(document.getElementById('regenChapter').value);
+  const replace = document.getElementById('regenReplace').checked;
+  const statusEl = document.getElementById('regenStatus');
+  const btn = document.getElementById('regenWhispersBtn');
+
+  // Confirm if replacing
+  if (replace) {
+    const ok = confirm(`This will deactivate ALL existing whispers for Chapter ${chapter} and generate new ones. Continue?`);
+    if (!ok) return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  statusEl.textContent = `Calling AI to generate whispers for Chapter ${chapter}...`;
+  statusEl.className = 'regen-status';
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      showToast('Not authenticated', 'error');
+      return;
+    }
+
+    // First save prompts in case they were edited
+    await savePrompts();
+
+    const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/generate-whispers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': supabase.supabaseKey,
+      },
+      body: JSON.stringify({
+        chapter,
+        count: 30,
+        replace
+      })
+    });
+
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      statusEl.textContent = `Error: ${result.error || 'Unknown error'}`;
+      statusEl.className = 'regen-status error';
+      showToast(`Generation failed: ${result.error}`, 'error');
+      return;
+    }
+
+    const costStr = result.cost > 0 ? ` | Cost: $${result.cost.toFixed(4)}` : ' | Free';
+    statusEl.textContent = `Generated ${result.count} whispers for Chapter ${chapter} using ${result.model}${costStr}`;
+    statusEl.className = 'regen-status success';
+    showToast(`Generated ${result.count} whispers`, 'success');
+
+    // Refresh the whisper pool if viewing the same chapter
+    if (currentPoolChapter === chapter) {
+      await loadWhisperPool(chapter);
+    }
+  } catch (err) {
+    statusEl.textContent = `Error: ${err.message}`;
+    statusEl.className = 'regen-status error';
+    showToast(`Generation error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Regenerate Whispers';
+  }
+}
+
+// ============================================
+// Stats
+// ============================================
 
 async function loadStats() {
   // Current volume calculation
