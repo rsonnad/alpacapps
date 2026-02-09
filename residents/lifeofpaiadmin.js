@@ -997,7 +997,8 @@ function getAuditionText() {
     showToast('Enter sample whisper text', 'warning');
     return null;
   }
-  return raw;
+  // Resolve any {template_variables} in the text
+  return resolveForPreview(raw);
 }
 
 function getAuditionChapter() {
