@@ -322,6 +322,103 @@ function setupGlobalHandlers() {
 }
 
 // =============================================
+// FETCH MONITORING
+// =============================================
+
+/**
+ * Wrap a fetch call to automatically log errors.
+ * Use this for edge function calls, API calls, etc.
+ *
+ * @param {string} url - The URL being fetched
+ * @param {RequestInit} options - Fetch options
+ * @param {Object} context - Additional context for error logging
+ * @param {string} context.category - Error category (default: 'fetch')
+ * @param {string} context.operation - What this fetch is doing (e.g., 'generate_fact', 'send_sms')
+ * @returns {Promise<Response>} The fetch response
+ */
+async function monitorFetch(url, options = {}, context = {}) {
+  const category = context.category || 'fetch';
+  const operation = context.operation || 'unknown';
+
+  try {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      // Try to get error body for context
+      let errorBody = '';
+      try {
+        errorBody = await response.clone().text();
+        errorBody = errorBody.substring(0, 500);
+      } catch (e) {
+        // ignore
+      }
+
+      // Determine if this is an edge function call
+      const isEdgeFunction = url.includes('/functions/v1/');
+      const code = isEdgeFunction ? 'EDGE_FUNCTION_ERROR' : 'FETCH_ERROR';
+      const severity = response.status >= 500 ? 'critical' : 'error';
+
+      logError(
+        category,
+        code,
+        `${options.method || 'GET'} ${url} returned ${response.status}`,
+        {
+          status: response.status,
+          statusText: response.statusText,
+          operation,
+          responseBody: errorBody,
+          requestUrl: url,
+        },
+        severity
+      );
+    }
+
+    return response;
+  } catch (err) {
+    // Network error, CORS error, etc.
+    logError(
+      category,
+      'NETWORK_ERROR',
+      `${options.method || 'GET'} ${url} failed: ${err.message}`,
+      {
+        operation,
+        errorName: err.name,
+        requestUrl: url,
+      },
+      'error'
+    );
+
+    throw err; // Re-throw so caller still handles it
+  }
+}
+
+/**
+ * Monitor Supabase query errors. Call after any supabase query.
+ *
+ * @param {Object} result - Supabase query result { data, error }
+ * @param {string} operation - What this query is doing (e.g., 'load_spaces', 'update_assignment')
+ * @param {string} category - Error category (default: 'supabase')
+ * @returns {Object} The same result, passed through
+ */
+function monitorSupabase(result, operation, category = 'supabase') {
+  if (result.error) {
+    logError(
+      category,
+      `SUPABASE_${result.error.code || 'ERROR'}`,
+      `${operation}: ${result.error.message}`,
+      {
+        operation,
+        code: result.error.code,
+        hint: result.error.hint,
+        details: result.error.details,
+      },
+      'error'
+    );
+  }
+  return result;
+}
+
+// =============================================
 // FLUSH ON PAGE UNLOAD
 // =============================================
 
@@ -353,6 +450,10 @@ export const errorLogger = {
   critical: logCritical,
   warning: logWarning,
   info: logInfo,
+
+  // Monitored operations (auto-log errors from fetch/supabase calls)
+  monitorFetch,
+  monitorSupabase,
 
   // Context
   setUserContext,
