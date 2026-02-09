@@ -180,11 +180,11 @@ img {
 }
 
 .mistiq-header__version {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 400;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
   margin-left: 0.25rem;
-  cursor: help;
+  cursor: pointer;
 }
 
 .mistiq-header--scrolled .mistiq-header__version {

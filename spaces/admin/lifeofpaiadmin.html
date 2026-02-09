@@ -213,6 +213,64 @@
       margin-top: 0.1rem;
     }
 
+    /* Prompt editor styles */
+    .prompt-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 0.75rem;
+      font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      resize: vertical;
+      color: var(--text);
+    }
+    .prompt-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .prompt-section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .prompt-section-label .badge {
+      font-size: 0.65rem;
+      font-weight: 400;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      background: rgba(107, 143, 191, 0.15);
+      color: var(--accent);
+    }
+    .prompt-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .regen-controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .regen-status {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      flex: 1;
+      min-width: 200px;
+    }
+    .regen-status.error { color: #f44336; }
+    .regen-status.success { color: #4caf50; }
+
     .btn-play {
       background: none;
       border: 1px solid var(--border);
@@ -294,7 +352,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.46 2:14a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.49 2:25a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -438,6 +496,49 @@
             <span class="config-label">Interaction Chance</span>
             <input type="number" class="config-input" id="cfgDeviceChance" min="0" max="1" step="0.05">
             <span class="config-value">probability per whisper (0-1)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Prompts (admin only) -->
+      <section class="section admin-only">
+        <div class="section-header">
+          <h2>AI Prompts</h2>
+          <div class="section-header-actions">
+            <button class="btn-small" id="savePromptsBtn">Save Prompts</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:1.25rem;">
+            <div class="prompt-section-label">
+              Backstory / System Prompt <span class="badge">Used by worker + whisper generation</span>
+            </div>
+            <p class="prompt-hint">This is PAI's identity. The worker sends this as the system prompt when enhancing each whisper with AI. It's also used when generating new whisper batches. Edit to change PAI's personality, backstory, and knowledge of the house.</p>
+            <textarea class="prompt-textarea" id="promptSystemPrompt" rows="10"></textarea>
+          </div>
+
+          <div>
+            <div class="prompt-section-label">
+              Whisper Generation Prompt <span class="badge">Used when regenerating whispers</span>
+            </div>
+            <p class="prompt-hint">This prompt is sent as the user message when generating new whisper batches. Use <code>{chapter}</code> and <code>{count}</code> as placeholders. The AI will return a JSON array of whisper templates.</p>
+            <textarea class="prompt-textarea" id="promptGenPrompt" rows="12"></textarea>
+          </div>
+
+          <!-- Regenerate Whispers -->
+          <div class="regen-controls">
+            <label style="font-size:0.8rem; font-weight:500;">Generate whispers for:</label>
+            <select class="config-select" id="regenChapter">
+              <option value="1">Chapter 1</option>
+              <option value="2">Chapter 2</option>
+              <option value="3">Chapter 3</option>
+              <option value="4">Chapter 4</option>
+            </select>
+            <label style="font-size:0.8rem; display:flex; align-items:center; gap:0.3rem;">
+              <input type="checkbox" id="regenReplace"> Replace existing
+            </label>
+            <button class="btn-small" id="regenWhispersBtn" style="background:#E99C48; color:#fff; border-color:#E99C48;">Regenerate Whispers</button>
+            <span class="regen-status" id="regenStatus"></span>
           </div>
         </div>
       </section>

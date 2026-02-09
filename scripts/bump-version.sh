@@ -91,21 +91,87 @@ git fetch --prune origin 2>/dev/null || true
 # Included: remote branches already merged into HEAD
 INCLUDED_JSON="[]"
 if git rev-parse HEAD &>/dev/null; then
-  INCLUDED_JSON=$(git branch -r --merged HEAD 2>/dev/null \
-    | grep -v 'HEAD\|main$\|master$' || true \
-    | sed 's|origin/||;s|^[[:space:]]*||' \
-    | sort \
-    | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+  INCLUDED_RAW=$(git branch -r --merged HEAD 2>/dev/null | grep -v 'HEAD\|main$\|master$' || true)
+  if [ -n "$INCLUDED_RAW" ]; then
+    INCLUDED_JSON=$(echo "$INCLUDED_RAW" \
+      | sed 's|^[[:space:]]*||;s|^origin/||' \
+      | sort \
+      | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+  fi
 fi
 
 # Pending: remote branches NOT yet merged into HEAD
 PENDING_JSON="[]"
 if git rev-parse HEAD &>/dev/null; then
-  PENDING_JSON=$(git branch -r --no-merged HEAD 2>/dev/null \
-    | grep -v 'HEAD\|main$\|master$' || true \
-    | sed 's|origin/||;s|^[[:space:]]*||' \
-    | sort \
-    | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+  PENDING_RAW=$(git branch -r --no-merged HEAD 2>/dev/null | grep -v 'HEAD\|main$\|master$' || true)
+  if [ -n "$PENDING_RAW" ]; then
+    PENDING_JSON=$(echo "$PENDING_RAW" \
+      | sed 's|^[[:space:]]*||;s|^origin/||' \
+      | sort \
+      | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+  fi
+fi
+
+# 4. Gather recent changes (non-merge, non-bump commits from last 48h)
+CHANGES_JSON=$(git log --oneline --no-merges --since="48 hours ago" 2>/dev/null \
+  | grep -v "chore: bump version\|Bump version\|fix: \[Follow-up\]" \
+  | head -15 \
+  | awk -F' ' '{
+    hash=$1; $1=""; msg=substr($0,2);
+    gsub(/"/, "\\\"", msg);
+    printf "%s{\"hash\":\"%s\",\"msg\":\"%s\"}", (NR>1?",":""), hash, msg
+  }' \
+  | awk 'BEGIN{printf "["} {printf "%s", $0} END{printf "]"}')
+[ -z "$CHANGES_JSON" ] && CHANGES_JSON="[]"
+
+# 5. Gather bug fix details from DB — map branch UUID prefix → diagnosis
+#    Extract diagnosis from fix_summary JSON embedded in Claude Code output
+BUGFIXES_JSON="{}"
+if [ "$INCLUDED_JSON" != "[]" ]; then
+  # Extract bugfix branch UUIDs (first 8 chars of the UUID in branch name)
+  BUGFIX_IDS=$(echo "$INCLUDED_JSON" | tr ',' '\n' | grep 'bugfix/' \
+    | sed 's/.*bugfix\/[0-9]*-//;s/-.*//' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+  if [ -n "$BUGFIX_IDS" ]; then
+    SQL_IN=$(echo "$BUGFIX_IDS" | tr ',' '\n' | awk '{printf "%s\x27%s%%\x27", (NR>1?",":""), $0}')
+    BUGFIXES_JSON=$($PSQL "$DB_URL" -t -A -c "
+      SELECT json_object_agg(
+        left(id::text, 8),
+        json_build_object(
+          'desc', COALESCE(
+            left(regexp_replace(
+              substring(fix_summary from '\"diagnosis\":\s*\"([^\"]+)\"'),
+              '\s+', ' ', 'g'
+            ), 120),
+            left(regexp_replace(fix_summary, '\s+', ' ', 'g'), 120)
+          ),
+          'status', status,
+          'page', page_url
+        )
+      ) FROM bug_reports
+      WHERE id::text LIKE ANY(ARRAY[$SQL_IN])
+    " 2>/dev/null | head -1)
+    [ -z "$BUGFIXES_JSON" ] && BUGFIXES_JSON="{}"
+  fi
+fi
+
+# 6. Gather feature branch details (pending features)
+FEATURES_JSON="{}"
+# Feature branches have format: feature/YYYYMMDD-UUID
+# We can get their commit messages
+if [ "$PENDING_JSON" != "[]" ]; then
+  FEAT_ENTRIES=""
+  for branch in $(echo "$PENDING_JSON" | tr -d '[]"' | tr ',' '\n' | grep 'feature/'); do
+    # Branch name already has origin/ stripped by sed, so add it back for git log
+    FEAT_MSG=$(git log "origin/$branch" --oneline -1 2>/dev/null | cut -d' ' -f2- || true)
+    if [ -n "$FEAT_MSG" ]; then
+      SAFE_MSG=$(echo "$FEAT_MSG" | sed 's/"/\\"/g' | head -c 120)
+      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
+      [ -n "$FEAT_ENTRIES" ] && FEAT_ENTRIES="$FEAT_ENTRIES,"
+      FEAT_ENTRIES="$FEAT_ENTRIES\"$SAFE_BRANCH\":\"$SAFE_MSG\""
+    fi
+  done
+  [ -n "$FEAT_ENTRIES" ] && FEATURES_JSON="{$FEAT_ENTRIES}"
 fi
 
 cat > "$PROJECT_ROOT/version.json" << ENDJSON
@@ -115,9 +181,12 @@ cat > "$PROJECT_ROOT/version.json" << ENDJSON
   "full_commit": "$FULL_HASH",
   "timestamp": "$ISO_TIMESTAMP",
   "included": $INCLUDED_JSON,
-  "pending": $PENDING_JSON
+  "pending": $PENDING_JSON,
+  "changes": $CHANGES_JSON,
+  "bugfixes": $BUGFIXES_JSON,
+  "features": $FEATURES_JSON
 }
 ENDJSON
 
-# 4. Output new version
+# 7. Output new version
 echo "$NEW_DISPLAY_VERSION"
