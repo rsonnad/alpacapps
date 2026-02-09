@@ -342,12 +342,37 @@ serve(async (req) => {
 
         // 5. Proxy to Sonos custom action (pass just filename, action constructs full URL)
         const announceVolume = 40;
+        const encodedFilename = encodeURIComponent(filename);
+
         if (room) {
-          path = `/${room}/announceurl/${encodeURIComponent(filename)}/${announceVolume}/${durationSecs}`;
+          // Single room
+          path = `/${room}/announceurl/${encodedFilename}/${announceVolume}/${durationSecs}`;
+          console.log(`Announce: proxying to ${room}, duration=${durationSecs}s`);
         } else {
-          path = `/announceurlall/${encodeURIComponent(filename)}/${announceVolume}/${durationSecs}`;
+          // All rooms: fire announceurl on each zone in parallel
+          // (announceurlall/sayall broken due to bridge device issue)
+          console.log(`Announce: broadcasting to all zones, duration=${durationSecs}s`);
+          const zonesResp = await fetch(`${proxyUrl}/zones`, {
+            headers: { "X-Sonos-Secret": proxySecret },
+          });
+          if (!zonesResp.ok) {
+            return jsonResponse({ error: "Failed to fetch Sonos zones" }, 500);
+          }
+          const zones = await zonesResp.json();
+          const announcePromises = zones
+            .filter((z: any) => z.coordinator && !z.coordinator.roomName.toLowerCase().includes("bridge"))
+            .map((z: any) => {
+              const zoneRoom = encodeURIComponent(z.coordinator.roomName);
+              return fetch(`${proxyUrl}/${zoneRoom}/announceurl/${encodedFilename}/${announceVolume}/${durationSecs}`, {
+                headers: { "X-Sonos-Secret": proxySecret },
+              });
+            });
+          const results = await Promise.allSettled(announcePromises);
+          const succeeded = results.filter((r) => r.status === "fulfilled").length;
+          const failed = results.filter((r) => r.status === "rejected").length;
+          console.log(`Announce: broadcast complete, ${succeeded} succeeded, ${failed} failed`);
+          return jsonResponse({ status: "success", zones: succeeded, failed });
         }
-        console.log(`Announce: proxying to Sonos, duration=${durationSecs}s`);
         break;
       }
 

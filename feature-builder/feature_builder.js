@@ -446,17 +446,38 @@ async function runClaudeCode(request) {
 
       try {
         const output = JSON.parse(stdout);
+        // Capture turns from top-level output
+        if (output.num_turns) result.num_turns = output.num_turns;
+        if (output.total_cost_usd) result.cost_usd = output.total_cost_usd;
         // Claude Code --output-format json wraps in { result: "..." }
         let inner = output.result || output;
         if (typeof inner === 'string') {
+          // Strip markdown code fences if present (```json ... ```)
+          const fenceMatch = inner.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+          if (fenceMatch) {
+            inner = fenceMatch[1].trim();
+          }
           // Try parsing the result string as JSON
           try {
             inner = JSON.parse(inner);
           } catch {
-            // Not JSON, use as summary
-            result.summary = inner.substring(0, 500);
-            resolve(result);
-            return;
+            // Maybe the JSON is embedded in a longer text response — try to find it
+            const jsonMatch = inner.match(/\{[\s\S]*"summary"[\s\S]*"files_created"[\s\S]*\}/);
+            if (jsonMatch) {
+              try {
+                inner = JSON.parse(jsonMatch[0]);
+              } catch {
+                // Not JSON, use as summary
+                result.summary = inner.substring(0, 500);
+                resolve(result);
+                return;
+              }
+            } else {
+              // Not JSON at all, use as summary
+              result.summary = inner.substring(0, 500);
+              resolve(result);
+              return;
+            }
           }
         }
         if (inner.summary) result.summary = inner.summary;
@@ -561,6 +582,7 @@ async function processFeatureRequest(request) {
         files_created: buildResult.files_created || [],
         build_summary: buildResult.summary,
         risk_assessment: buildResult.risk_assessment || { decision: 'auto_merge', reason: 'New files only' },
+        claude_turns_used: buildResult.num_turns || null,
         completed_at: new Date().toISOString(),
         progress_message: `Deployed! Version ${version}. Visit: https://alpacaplayhouse.com${buildResult.page_url || '/residents/'}`,
       });
@@ -590,6 +612,7 @@ async function processFeatureRequest(request) {
           ...(buildResult.risk_assessment || {}),
           hard_rule_reasons: reasons,
         },
+        claude_turns_used: buildResult.num_turns || null,
         completed_at: new Date().toISOString(),
         review_notified_at: new Date().toISOString(),
         progress_message: `Built on branch ${branchName}. Sent for team review.`,

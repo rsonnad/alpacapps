@@ -1545,7 +1545,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       .limit(1)
       .single();
     if (!fallback) return jsonResponse({ error: "No voice assistant configured" }, 503);
-    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(TOOL_DECLARATIONS[5])]);
+    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces"))]);
   }
 
   // Identify caller and build scope
@@ -1599,7 +1599,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   }
 
   // Build tools based on caller's scope
-  const vapiTools = scope ? buildVapiToolsList(scope) : [vapiToolWrapper(TOOL_DECLARATIONS[5])];
+  const vapiTools = scope ? buildVapiToolsList(scope) : [vapiToolWrapper(findTool("search_spaces"))];
 
   // Personalize greeting
   let firstMessage = assistant.first_message;

@@ -328,13 +328,19 @@ async function matchByName(
     }
   }
 
-  // 4. Fuzzy: check if first+last name parts both appear in sender name
+  // 4. Fuzzy: check if all parts of person's name appear in sender name parts
+  //    Handles multi-word first names like "Maya Nicole" matching "MAYA WHITE"
+  //    by checking if first-name parts AND last-name parts all exist in sender parts
   const parts = normalized.split(/\s+/);
   if (parts.length >= 2) {
     for (const person of people) {
-      const pFirst = (person.first_name || "").toLowerCase().trim();
-      const pLast = (person.last_name || "").toLowerCase().trim();
-      if (pFirst && pLast && parts.includes(pFirst) && parts.includes(pLast)) {
+      const firstParts = (person.first_name || "").toLowerCase().trim().split(/\s+/).filter(Boolean);
+      const lastParts = (person.last_name || "").toLowerCase().trim().split(/\s+/).filter(Boolean);
+      if (firstParts.length === 0 || lastParts.length === 0) continue;
+      // At minimum, first part of first name AND last part of last name must appear
+      const firstMatch = firstParts.some((fp: string) => parts.includes(fp));
+      const lastMatch = lastParts.some((lp: string) => parts.includes(lp));
+      if (firstMatch && lastMatch) {
         await supabase.from("payment_sender_mappings").upsert(
           {
             sender_name: senderName,
@@ -554,6 +560,7 @@ async function matchByAmount(supabase: any, amount: number): Promise<any[]> {
 
     if (
       (totalDue > 0 && Math.abs(amount - totalDue) < 0.01) ||
+      (totalDue > 0 && amount > totalDue && amount <= totalDue * 3) ||  // Mild overpayment (up to 3x)
       (moveInDue > 0 && Math.abs(amount - moveInDue) < 0.01) ||
       (securityDue > 0 && Math.abs(amount - securityDue) < 0.01)
     ) {
