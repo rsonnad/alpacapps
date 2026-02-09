@@ -334,28 +334,54 @@ async function refreshHistory() {
 
     const container = document.getElementById('historyList');
     if (!days.length) {
-      container.innerHTML = '<p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">No entries found for this period.</p>';
+      container.innerHTML = `<div class="history-empty">
+        <div class="he-icon">📋</div>
+        <div class="he-text">No entries found</div>
+        <div class="he-sub">Try adjusting your filters or clock in to start tracking</div>
+      </div>`;
       return;
     }
 
-    container.innerHTML = days.map(day => {
+    // Compute period totals
+    let periodMins = 0, periodAmt = 0, periodDayCount = days.length;
+    for (const day of days) {
+      periodMins += day.totalMinutes;
+      periodAmt += day.totalAmount;
+    }
+
+    const summaryHtml = `<div class="history-summary">
+      <div><div class="hs-val">${periodDayCount}</div><div class="hs-lbl">Days</div></div>
+      <div><div class="hs-val">${HoursService.formatHoursDecimal(periodMins)}h</div><div class="hs-lbl">Total Hours</div></div>
+      <div><div class="hs-val">${HoursService.formatCurrency(periodAmt)}</div><div class="hs-lbl">Total Earned</div></div>
+    </div>`;
+
+    const daysHtml = days.map(day => {
       const badgeClass = day.hasPaid && day.hasUnpaid ? 'mixed' : (day.hasPaid ? 'paid' : 'unpaid');
       const badgeText = day.hasPaid && day.hasUnpaid ? 'Partial' : (day.hasPaid ? 'Paid' : 'Unpaid');
 
       const entriesHtml = day.entries.map(e => {
         const ci = HoursService.formatTime(e.clock_in);
         const co = e.clock_out ? HoursService.formatTime(e.clock_out) : 'Active';
-        const dur = e.duration_minutes ? HoursService.formatDuration(e.duration_minutes) : '...';
-        return `<div class="entry-row">
-          <span class="entry-times">${ci} — ${co}</span>
-          <span class="entry-duration">${dur}</span>
+        const mins = parseFloat(e.duration_minutes) || 0;
+        const dur = e.clock_out ? HoursService.formatDuration(mins) : '...';
+        const earned = mins > 0 ? HoursService.formatCurrency((mins / 60) * parseFloat(e.hourly_rate)) : '';
+        const desc = e.description ? `<div class="ed-desc" title="${escapeHtml(e.description)}">${escapeHtml(e.description)}</div>` : '';
+        const paidClass = e.is_paid ? 'paid' : 'unpaid';
+
+        return `<div class="history-entry">
+          <div class="entry-time-block">
+            <span class="etb-in">${ci}</span>
+            <span class="etb-divider">▾</span>
+            <span class="etb-out">${co}</span>
+          </div>
+          <div class="entry-detail">
+            <div class="ed-duration">${dur}</div>
+            ${desc}
+          </div>
+          ${earned ? `<div class="entry-earned">${earned}</div>` : ''}
+          <div class="entry-paid-dot ${paidClass}" title="${e.is_paid ? 'Paid' : 'Unpaid'}"></div>
         </div>`;
       }).join('');
-
-      const descriptions = day.entries
-        .filter(e => e.description)
-        .map(e => escapeHtml(e.description))
-        .join('; ');
 
       return `<div class="day-group">
         <div class="day-header">
@@ -363,15 +389,16 @@ async function refreshHistory() {
             <span class="day-date">${HoursService.formatDate(day.date)}</span>
             <span class="day-badge ${badgeClass}">${badgeText}</span>
           </div>
-          <div class="day-total">
-            ${HoursService.formatDuration(day.totalMinutes)} —
-            <span class="day-amount">${HoursService.formatCurrency(day.totalAmount)}</span>
+          <div class="day-totals">
+            <div class="day-hours">${HoursService.formatDuration(day.totalMinutes)}</div>
+            <div class="day-amount">${HoursService.formatCurrency(day.totalAmount)}</div>
           </div>
         </div>
-        ${entriesHtml}
-        ${descriptions ? `<div class="day-desc">${descriptions}</div>` : ''}
+        <div class="day-entries">${entriesHtml}</div>
       </div>`;
     }).join('');
+
+    container.innerHTML = summaryHtml + daysHtml;
   } catch (err) {
     console.error('Failed to load history:', err);
     showToast('Failed to load history', 'error');
