@@ -1,0 +1,13 @@
+{
+  "name": "genalpaca-spirit-whisper-worker",
+  "version": "1.0.0",
+  "description": "Life of PAI whisper scheduler and delivery worker",
+  "type": "module",
+  "scripts": {
+    "start": "node worker.js",
+    "dev": "node --watch worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

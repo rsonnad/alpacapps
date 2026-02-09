@@ -47,23 +47,27 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
-    }
+    const isInternalCall = token === supabaseServiceKey;
 
-    // Verify user has resident+ role
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("role")
-      .eq("auth_user_id", user.id)
-      .single();
+    if (!isInternalCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return jsonResponse({ error: "Invalid token" }, 401);
+      }
 
-    if (!appUser || !["resident", "associate", "staff", "admin", "oracle"].includes(appUser.role)) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+      // Verify user has resident+ role
+      const { data: appUser } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (!appUser || !["resident", "associate", "staff", "admin", "oracle"].includes(appUser.role)) {
+        return jsonResponse({ error: "Insufficient permissions" }, 403);
+      }
     }
 
     // Get Govee API key from DB config (primary) or env secret (fallback)

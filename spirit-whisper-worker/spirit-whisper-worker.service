@@ -1,0 +1,19 @@
+[Unit]
+Description=GenAlpaca Spirit Whisper Worker
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/spirit-whisper-worker
+EnvironmentFile=/opt/spirit-whisper-worker/.env
+ExecStart=/usr/bin/node /opt/spirit-whisper-worker/worker.js
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=spirit-whisper-worker
+
+[Install]
+WantedBy=multi-user.target

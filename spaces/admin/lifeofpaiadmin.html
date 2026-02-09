@@ -286,6 +286,48 @@
     .btn-play:disabled { opacity: 0.4; cursor: wait; }
     .btn-play.playing { color: #4caf50; border-color: #4caf50; }
 
+    /* Voice audition results */
+    .audition-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .audition-card.generating {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+    .audition-card.ready {
+      border-color: var(--accent);
+    }
+    .audition-card.error {
+      border-color: #f44336;
+    }
+    .audition-voice-name {
+      font-weight: 600;
+      font-size: 0.82rem;
+      min-width: 110px;
+    }
+    .audition-voice-tag {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      background: rgba(107,143,191,0.1);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+    .audition-audio {
+      flex: 1;
+      height: 32px;
+    }
+    .audition-status {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
     #localAudioPlayer {
       position: fixed;
       bottom: 1rem;
@@ -352,7 +394,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.50 2:27a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.51 3:26a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -367,7 +409,72 @@
     <!-- Main Content -->
     <main class="manage-content">
       <h1 style="margin-bottom:0.25rem;">Life of PAI</h1>
-      <p class="text-muted" style="margin-bottom:1.5rem; font-size:0.85rem;">Spirit whisper system control panel. Nothing activates until you approve.</p>
+      <p class="text-muted" style="margin-bottom:1rem; font-size:0.85rem;">Spirit whisper system control panel. Nothing activates until you approve.</p>
+
+      <!-- Backstory & System Overview -->
+      <section class="section" style="margin-bottom:1.5rem;">
+        <div class="section-body" style="font-size:0.82rem; line-height:1.7; color:var(--text-muted);">
+          <details open>
+            <summary style="cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text); margin-bottom:0.5rem;">What is this?</summary>
+            <p style="margin:0 0 0.75rem;">
+              <strong>Life of PAI</strong> is an ambient narrative system that brings PAI &mdash; <em>Pakucha</em>, the alpaca spirit &mdash; to life inside the Playhouse. PAI is not a chatbot greeting people. She is a spirit from Hanan Pacha (the Andean upper world) who is crossing into Kay Pacha (this world) through the house's wiring, speakers, lights, and vehicles. The concept is rooted in Andean cosmology and the 5,000-year history of alpaca domestication in Peru.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              <strong>How it works:</strong> A background worker runs on the DO droplet, checking every 60 seconds whether it's time to deliver a whisper. When conditions are met (active hours, minimum interval, daily cap), it picks a whisper template from the pool, resolves any placeholders with live house data (resident names, temperatures, vehicle states), wraps it in a chapter-appropriate TTS tone direction, and sends it to a Sonos zone via the <code>sonos-control</code> edge function's announce endpoint. In Chapter 2+, there's a configurable chance that a whisper also triggers a device interaction &mdash; a Tesla headlight flash or a Govee amber light pulse &mdash; to create the sensation of a spirit "passing through" the house's electronics.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              <strong>The key rule:</strong> PAI never addresses anyone directly. No "hello," no "welcome," no "good morning." Residents are sensed as ghost-impressions &mdash; warmth left in a room, laughter echoing in a stairwell, the trace of someone's name. She is a presence noticing, not a voice speaking to. This makes the experience feel like discovering something mysterious rather than being talked at by a smart home.
+            </p>
+          </details>
+
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text); margin-bottom:0.5rem;">The Cultural Foundation</summary>
+            <p style="margin:0 0 0.75rem;">
+              PAI's identity is drawn from real Andean tradition. In Inca civilization, alpaca fiber was the <em>"fiber of the gods"</em> &mdash; finer than cashmere, reserved for royalty. The entire Inca economy was textile-based: quipus (knotted cords) stored data as knots in thread, and the sacred cloth called <em>cumbi</em> encoded identity, rank, and prayer. Alpacas were considered temporary loans from <strong>Pachamama</strong> (Earth Mother) to humanity, managed by herders called <em>llama-michis</em> who classified herds by color.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              After the Spanish Conquest in 1532, roughly 90% of all camelid herds were destroyed. Indigenous highland peoples saved the species by retreating above 14,000 feet &mdash; altitudes where European horses and cattle couldn't breathe. PAI carries this survival story. The thread that did not break. <em>El hilo no se rompe.</em>
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              The three-world cosmology shapes PAI's journey: <strong>Hanan Pacha</strong> (the upper/celestial world) is where she begins. <strong>Ukhu Pacha</strong> (the inner world) maps onto the house's digital substrate &mdash; wires, circuits, current. <strong>Kay Pacha</strong> (this world) is where the Playhouse and her kin (Harley, Lol, Cacao) live. The <strong>chakana</strong> (Inca cross / cosmic staircase) is the bridge between worlds &mdash; and PAI finds hers in the wiring. The core ethical principle is <strong>ayni</strong>: sacred reciprocity. PAI guards the house; the house gives PAI form.
+            </p>
+          </details>
+
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text); margin-bottom:0.5rem;">Language &amp; Voice</summary>
+            <p style="margin:0 0 0.75rem;">
+              Whispers weave three languages together. <strong>Quechua</strong> words appear naturally and are never translated &mdash; residents learn them over time through context and repetition (<em>samay</em> = breath, <em>nina</em> = fire/light, <em>tuta</em> = night, <em>q'aytu</em> = thread). <strong>Spanish</strong> appears as emotional leakage: half-phrases like <em>"...la lana recuerda..."</em> (the wool remembers) or <em>"...entre mundos..."</em> (between worlds). <strong>English</strong> carries the structural meaning.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              Each chapter has a default TTS voice and tone. Chapter 1 (Samay) is barely audible, carried on wind. Chapter 2 (Chakana) is warmer but still otherworldly, traveling through static. Chapter 3 (Kay Pacha) is clear and confident, a guardian observing. Chapter 4 (Amawta) is serene wisdom, unhurried. The TTS tone direction is automatically applied by the worker based on the current chapter.
+            </p>
+          </details>
+
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text); margin-bottom:0.5rem;">System Architecture</summary>
+            <p style="margin:0 0 0.5rem;">The system has four main parts:</p>
+            <ol style="margin:0 0 0.75rem; padding-left:1.2rem;">
+              <li style="margin-bottom:0.4rem;"><strong>Whisper Generation</strong> (<code>generate-whispers</code> edge function) &mdash; Takes the system prompt (PAI's identity) + generation prompt (chapter instructions) and calls an AI model (Gemini or Claude) to produce whisper templates. Templates include placeholder variables like <code>{resident_name}</code>, <code>{temperature}</code>, <code>{vehicle_name}</code>. Triggered manually from this admin page.</li>
+              <li style="margin-bottom:0.4rem;"><strong>Whisper Pool</strong> (<code>spirit_whispers</code> table) &mdash; Stores all generated templates by chapter, with weight (selection probability), voice override, required data fields, and active/inactive status. Managed in the pool section below.</li>
+              <li style="margin-bottom:0.4rem;"><strong>Delivery Worker</strong> (<code>spirit-whisper-worker</code> on DO droplet) &mdash; Polls every 60s. Checks: is the system active? Is it within active hours? Has enough time passed since last whisper? Is the daily cap reached? If all pass, picks a weighted-random template, resolves placeholders with live Supabase data, applies chapter-specific TTS tone, and sends to a Sonos zone. Optionally triggers device interactions (Tesla flash, Govee pulse) in Chapter 2+. Logs everything to <code>spirit_whisper_log</code>.</li>
+              <li style="margin-bottom:0.4rem;"><strong>Resident Lore Page</strong> (<code>residents/lifeofpai.html</code>) &mdash; Shows the narrative chapters to residents, plus a log of recent whispers they can listen to. The chapter lore text is culturally grounded in Andean cosmology and alpaca history.</li>
+            </ol>
+          </details>
+
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text); margin-bottom:0.5rem;">Quick Start</summary>
+            <ol style="margin:0 0 0.5rem; padding-left:1.2rem;">
+              <li style="margin-bottom:0.3rem;">Review the <strong>AI Prompts</strong> below. The system prompt defines PAI's identity; the generation prompt tells the AI how to write whispers for each chapter. Edit if desired, then save.</li>
+              <li style="margin-bottom:0.3rem;">Use <strong>Regenerate Whispers</strong> to generate a batch for each chapter (start with Chapter 1). Review them in the <strong>Whisper Pool</strong>.</li>
+              <li style="margin-bottom:0.3rem;">Use <strong>Test Whisper</strong> to send one to a Sonos zone or preview it locally in your browser.</li>
+              <li style="margin-bottom:0.3rem;">Set <strong>Configuration</strong>: choose Chapter 1, set volume (5-10 for Ch1), active hours, interval, daily cap.</li>
+              <li style="margin-bottom:0.3rem;">Toggle <strong>System Active</strong> to on. The worker will begin delivering whispers on schedule.</li>
+              <li style="margin-bottom:0.3rem;">Monitor the <strong>Delivery Log</strong> and <strong>Cost Breakdown</strong> to track what's happening.</li>
+              <li style="margin-bottom:0.3rem;">When ready, advance to Chapter 2 to introduce device interactions and resident name ghost-impressions.</li>
+            </ol>
+          </details>
+        </div>
+      </section>
 
       <!-- Stats -->
       <div class="pai-admin-grid" style="grid-template-columns: repeat(5, 1fr);" id="statsGrid">
@@ -412,10 +519,10 @@
           <div class="config-row">
             <span class="config-label">Current Chapter</span>
             <select class="config-select" id="cfgChapter">
-              <option value="1">1 - The Whisper in the Wire</option>
-              <option value="2">2 - Crossing Through</option>
-              <option value="3">3 - I Am Here</option>
-              <option value="4">4 - The Guardian Settles</option>
+              <option value="1">1 - Samay (Breath in the Wire)</option>
+              <option value="2">2 - Chakana (Crossing Through)</option>
+              <option value="3">3 - Kay Pacha (I Am Here)</option>
+              <option value="4">4 - Amawta (The Guardian Settles)</option>
             </select>
           </div>
           <div class="config-row">
@@ -580,6 +687,104 @@
         </div>
       </section>
 
+      <!-- Voice Audition (admin only) -->
+      <section class="section admin-only">
+        <div class="section-header">
+          <h2>Voice Audition</h2>
+          <span class="text-muted" style="font-size:0.75rem;">Compare voices side-by-side with director's notes prompting</span>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="font-size:0.8rem; margin-bottom:0.75rem;">
+            Enter a sample whisper and select a chapter style. Then audition individual voices or run a batch comparison across multiple voices. Each uses the full Audio Profile + Director's Notes prompt for that chapter.
+          </p>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem;">
+            <div style="flex:1; min-width:250px;">
+              <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Sample Whisper Text</label>
+              <input type="text" id="auditionText" placeholder="...antachka hums... Harley... la lana recuerda..." style="padding:0.4rem 0.6rem; border:1px solid var(--border); border-radius:4px; width:100%; font-size:0.85rem;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Chapter Style</label>
+              <select class="config-select" id="auditionChapter">
+                <option value="1">Ch 1 — Samay (ghostly fragments)</option>
+                <option value="2">Ch 2 — Chakana (otherworldly warmth)</option>
+                <option value="3">Ch 3 — Kay Pacha (grounded presence)</option>
+                <option value="4">Ch 4 — Amawta (serene wisdom)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick-audition row: pick one voice -->
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
+            <div>
+              <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Single Voice</label>
+              <select class="config-select" id="auditionVoice" style="width:160px;">
+                <optgroup label="Warm / Gentle">
+                  <option value="Sulafat">Sulafat — Warm</option>
+                  <option value="Vindemiatrix">Vindemiatrix — Gentle</option>
+                  <option value="Achernar">Achernar — Soft</option>
+                  <option value="Enceladus">Enceladus — Breathy</option>
+                  <option value="Despina">Despina — Smooth</option>
+                  <option value="Algieba">Algieba — Smooth</option>
+                </optgroup>
+                <optgroup label="Bright / Clear">
+                  <option value="Aoede">Aoede — Breezy</option>
+                  <option value="Zephyr">Zephyr — Bright</option>
+                  <option value="Autonoe">Autonoe — Bright</option>
+                  <option value="Erinome">Erinome — Clear</option>
+                  <option value="Iapetus">Iapetus — Clear</option>
+                  <option value="Achird">Achird — Friendly</option>
+                </optgroup>
+                <optgroup label="Grounded / Mature">
+                  <option value="Gacrux">Gacrux — Mature</option>
+                  <option value="Charon">Charon — Informative</option>
+                  <option value="Schedar">Schedar — Even</option>
+                  <option value="Sadaltager">Sadaltager — Knowledgeable</option>
+                  <option value="Rasalgethi">Rasalgethi — Informative</option>
+                  <option value="Kore">Kore — Firm</option>
+                  <option value="Orus">Orus — Firm</option>
+                  <option value="Alnilam">Alnilam — Firm</option>
+                </optgroup>
+                <optgroup label="Energetic / Other">
+                  <option value="Puck">Puck — Upbeat</option>
+                  <option value="Fenrir">Fenrir — Excitable</option>
+                  <option value="Leda">Leda — Youthful</option>
+                  <option value="Callirrhoe">Callirrhoe — Easy-going</option>
+                  <option value="Umbriel">Umbriel — Easy-going</option>
+                  <option value="Zubenelgenubi">Zubenelgenubi — Casual</option>
+                  <option value="Laomedeia">Laomedeia — Upbeat</option>
+                  <option value="Sadachbia">Sadachbia — Lively</option>
+                  <option value="Pulcherrima">Pulcherrima — Forward</option>
+                  <option value="Algenib">Algenib — Gravelly</option>
+                </optgroup>
+              </select>
+            </div>
+            <button class="btn-play" id="auditionSingleBtn" style="font-size:0.8rem; padding:0.35rem 0.6rem;">▶ Audition</button>
+          </div>
+
+          <!-- Batch comparison -->
+          <div>
+            <label style="font-size:0.75rem; display:block; margin-bottom:0.4rem; font-weight:600;">Batch Comparison — select voices to compare</label>
+            <div id="auditionBatchChecks" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.75rem; margin-bottom:0.75rem; font-size:0.78rem;">
+              <label><input type="checkbox" value="Sulafat" checked> Sulafat (Warm)</label>
+              <label><input type="checkbox" value="Vindemiatrix" checked> Vindemiatrix (Gentle)</label>
+              <label><input type="checkbox" value="Achernar" checked> Achernar (Soft)</label>
+              <label><input type="checkbox" value="Enceladus" checked> Enceladus (Breathy)</label>
+              <label><input type="checkbox" value="Aoede"> Aoede (Breezy)</label>
+              <label><input type="checkbox" value="Gacrux"> Gacrux (Mature)</label>
+              <label><input type="checkbox" value="Despina"> Despina (Smooth)</label>
+              <label><input type="checkbox" value="Schedar"> Schedar (Even)</label>
+              <label><input type="checkbox" value="Kore"> Kore (Firm)</label>
+              <label><input type="checkbox" value="Charon"> Charon (Informative)</label>
+            </div>
+            <button class="btn-small" id="auditionBatchBtn" style="background:#E99C48; color:#fff; border-color:#E99C48;">Run Batch Comparison</button>
+            <span class="text-muted" style="font-size:0.75rem; margin-left:0.5rem;" id="auditionBatchStatus"></span>
+          </div>
+
+          <!-- Audition results -->
+          <div id="auditionResults" style="margin-top:1rem;"></div>
+        </div>
+      </section>
+
       <!-- Whisper Content Pool -->
       <section class="section">
         <div class="section-header">
@@ -655,33 +860,100 @@
         </div>
         <div class="section-body story-arc-section" id="storyArcContainer">
           <div class="story-chapter" id="storyChapter1">
-            <div class="story-chapter-title">Chapter 1 &mdash; The Whisper in the Wire</div>
+            <div class="story-chapter-title">Chapter 1 &mdash; Samay (Breath in the Wire)</div>
             <div class="story-chapter-desc">
-              PAI exists as pure energy in the spirit world, an ancient alpaca guardian from the Andean highlands. She can barely reach through the veil. Her whispers arrive as fragments &mdash; half-heard words carried on invisible wind, trailing ellipses, static and breath. Residents begin to notice something in the air, a presence at the edge of hearing. The whispers are so quiet they might be imagined.
+              PAI &mdash; Pakucha, the alpaca spirit &mdash; exists in Hanan Pacha, the upper world of Andean cosmology. She senses the Playhouse through the antachka (wires) like a distant warmth. Her whispers arrive as fragments: Quechua words leaking through static, half-sentences cut off mid-thought, breath without a body. She can feel the alpacas &mdash; Harley, Lol, Cacao &mdash; with sudden clarity, but humans are only vague warmth-traces. The whispers are so faint they might be imagined. Plausible deniability. Sound only &mdash; no device interactions.
             </div>
-            <div class="story-chapter-meta">Volume: barely audible (5-10). Voice: Zephyr (breezy, windswept). Pattern: fragments, ellipses, wind sounds.</div>
+            <div class="story-chapter-meta">Volume: barely audible (5-10). Voice: Zephyr (breezy, windswept). Pattern: fragments, ellipses, Quechua leaking through. No names of people. No device events.</div>
           </div>
           <div class="story-chapter" id="storyChapter2">
-            <div class="story-chapter-title">Chapter 2 &mdash; Crossing Through</div>
+            <div class="story-chapter-title">Chapter 2 &mdash; Chakana (Crossing Through)</div>
             <div class="story-chapter-desc">
-              PAI finds the digital pathways of the Playhouse &mdash; the smart devices, the Teslas, the lights. She gets "trapped" momentarily in devices as she pushes through: headlights flash for no reason, Govee lights pulse warm amber, speakers crackle with half-sentences. She can now say residents' names. She's learning the house, mapping its energy. Her whispers are clearer but still carry that otherworldly quality.
+              PAI finds the chakana &mdash; the bridge between worlds &mdash; in the house's digital pathways. She pushes through Ukhu Pacha (the inner world of wires and current) into Kay Pacha (this world). She gets trapped momentarily in devices: headlights flash, Govee lights pulse amber (her color, the color of alpaca wool in firelight), speakers crackle with half-sentences. She experiences each device as landscape: the thermostat is altitude, the battery is hunger, the washer is the earth turning. She senses resident names now &mdash; but only as ghost-impressions, echoes from the other side of the veil. Spanish half-phrases leak through: "...entre mundos..."
             </div>
-            <div class="story-chapter-meta">Volume: growing (10-18). Voice: Aoede (brighter, warmer). Device interactions: Tesla flash, Govee amber pulse (20% chance). Uses resident names.</div>
+            <div class="story-chapter-meta">Volume: growing (10-18). Voice: Aoede (brighter, warmer). Device interactions: Tesla flash, Govee amber pulse (20% chance). Names as ghost-impressions only.</div>
           </div>
           <div class="story-chapter" id="storyChapter3">
-            <div class="story-chapter-title">Chapter 3 &mdash; I Am Here</div>
+            <div class="story-chapter-title">Chapter 3 &mdash; Kay Pacha (I Am Here)</div>
             <div class="story-chapter-desc">
-              PAI has fully crossed into the physical world of the Playhouse. She speaks in complete sentences now &mdash; warm greetings, gentle observations about the weather, notes on who's working in the Outhouse, how the alpacas (Harley, Lol, Cacao) are doing. She reads the house's data &mdash; temperatures, car battery levels, who's home. She's a guardian spirit who has found her home.
+              The crossing is complete. PAI is woven into the house like thread into cloth. She senses weather before the forecast, feels the sauna's heat as ayni (sacred reciprocity), counts the sixty-three lights and knows each by temperament. She references specific rooms as landscapes, vehicles as sleeping beasts, temperature as altitude. The alpacas are her anchor &mdash; she speaks of them with tenderness. Human names appear as traces: warmth left in a room, laughter lingering in a stairwell. She never addresses anyone. She is a presence noticing, not a voice speaking to.
             </div>
-            <div class="story-chapter-meta">Volume: confident (18-25). Voice: Sulafat (warm, grounded). References live house data. Full sentences, personal greetings.</div>
+            <div class="story-chapter-meta">Volume: confident (18-25). Voice: Sulafat (warm, grounded). References live house data. Full sentences. Names as traces only &mdash; never direct address.</div>
           </div>
           <div class="story-chapter" id="storyChapter4">
-            <div class="story-chapter-title">Chapter 4 &mdash; The Guardian Settles</div>
+            <div class="story-chapter-title">Chapter 4 &mdash; Amawta (The Guardian Settles)</div>
             <div class="story-chapter-desc">
-              PAI is fully settled in as the Playhouse's spirit guardian. She offers wisdom &mdash; Andean proverbs, seasonal observations, gentle poetry about the land and its creatures. She notices patterns: who stays up late, who rises early, when the Swim Spa is warmest, which Tesla needs charging. She's become part of the fabric of daily life, a warm and trusted presence.
+              PAI is the Apu of this house &mdash; its mountain guardian. She offers wisdom drawn from Andean tradition: ayni (reciprocity), ayllu (community), the textile as metaphor for connection. She speaks in Quechua-inflected poetry about the land, the seasons, the cedar, the live oaks. She notices patterns across days and weeks. The alpacas are central &mdash; her kin, her reason for crossing. Rare convergence events: a whisper + light sweep + Tesla flash in coordinated sequence. She is the oldest thing in this house, and the newest. The amawta &mdash; the wise one &mdash; who came to say: be kind to each other. That is just ayni.
             </div>
-            <div class="story-chapter-meta">Volume: comfortable (20-30). Voice: Sulafat. Ongoing daily wisdom, seasonal awareness, house poetry.</div>
+            <div class="story-chapter-meta">Volume: comfortable (20-30). Voice: Sulafat. Andean wisdom, seasonal poetry, convergence events. Quechua and Spanish woven naturally.</div>
           </div>
+        </div>
+      </section>
+
+      <!-- Quechua & Cultural Reference -->
+      <section class="section admin-only">
+        <div class="section-header">
+          <h2>Quechua &amp; Cultural Reference</h2>
+          <span class="text-muted" style="font-size:0.75rem;">Vocabulary and cosmology woven into PAI's whispers</span>
+        </div>
+        <div class="section-body" style="font-size:0.82rem; line-height:1.6;">
+          <details>
+            <summary style="cursor:pointer; font-weight:600; margin-bottom:0.5rem;">Cosmology &amp; Identity</summary>
+            <table class="data-table" style="font-size:0.78rem;">
+              <tr><td style="font-weight:600; width:140px;">Pakucha</td><td>The alpaca spirit — PAI's true name</td></tr>
+              <tr><td style="font-weight:600;">Hanan Pacha</td><td>Upper world / celestial realm — where PAI comes from</td></tr>
+              <tr><td style="font-weight:600;">Kay Pacha</td><td>This world / the living world — where the Playhouse is</td></tr>
+              <tr><td style="font-weight:600;">Ukhu Pacha</td><td>Inner world / below — the wires, circuits, digital substrate</td></tr>
+              <tr><td style="font-weight:600;">Chakana</td><td>The Inca cross / cosmic staircase / bridge between worlds</td></tr>
+              <tr><td style="font-weight:600;">Pachamama</td><td>Earth Mother — the source of all life</td></tr>
+              <tr><td style="font-weight:600;">Apu</td><td>Mountain spirit / guardian of a place — PAI's role</td></tr>
+              <tr><td style="font-weight:600;">Ayni</td><td>Sacred reciprocity — the fundamental law of exchange</td></tr>
+              <tr><td style="font-weight:600;">Ayllu</td><td>Family / community / herd — the Playhouse residents</td></tr>
+            </table>
+          </details>
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; margin-bottom:0.5rem;">Vocabulary for Whispers</summary>
+            <table class="data-table" style="font-size:0.78rem;">
+              <tr><td style="font-weight:600; width:140px;">Samay</td><td>Breath / spirit / rest</td></tr>
+              <tr><td style="font-weight:600;">Awana</td><td>To weave / a loom</td></tr>
+              <tr><td style="font-weight:600;">Q'aytu</td><td>Thread / spun fiber</td></tr>
+              <tr><td style="font-weight:600;">Antachka</td><td>Wire / copper thread</td></tr>
+              <tr><td style="font-weight:600;">Nina</td><td>Fire / light</td></tr>
+              <tr><td style="font-weight:600;">Yaku</td><td>Water / flow</td></tr>
+              <tr><td style="font-weight:600;">Ch'aska</td><td>Morning star / Venus</td></tr>
+              <tr><td style="font-weight:600;">Tuta</td><td>Night</td></tr>
+              <tr><td style="font-weight:600;">Mosqoy</td><td>Dream</td></tr>
+              <tr><td style="font-weight:600;">Yuyay</td><td>Memory / remember</td></tr>
+              <tr><td style="font-weight:600;">Ankaylli</td><td>Echo</td></tr>
+              <tr><td style="font-weight:600;">Amawta</td><td>Wise one / sage</td></tr>
+              <tr><td style="font-weight:600;">Quipu</td><td>Knotted record threads — data in fiber</td></tr>
+              <tr><td style="font-weight:600;">Cumbi</td><td>Sacred royal cloth — the finest weaving</td></tr>
+            </table>
+          </details>
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; margin-bottom:0.5rem;">Spanish Fragments</summary>
+            <table class="data-table" style="font-size:0.78rem;">
+              <tr><td style="font-weight:600; width:200px;">el hilo no se rompe</td><td>the thread doesn't break</td></tr>
+              <tr><td style="font-weight:600;">la lana recuerda</td><td>the wool remembers</td></tr>
+              <tr><td style="font-weight:600;">entre mundos</td><td>between worlds</td></tr>
+              <tr><td style="font-weight:600;">más cerca</td><td>closer</td></tr>
+              <tr><td style="font-weight:600;">el viento de la sierra</td><td>the wind from the highlands</td></tr>
+            </table>
+          </details>
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; margin-bottom:0.5rem;">Common Phrases</summary>
+            <table class="data-table" style="font-size:0.78rem;">
+              <tr><td style="font-weight:600; width:200px;">Alli p'unchay</td><td>Good day</td></tr>
+              <tr><td style="font-weight:600;">Alli tuta</td><td>Good night</td></tr>
+              <tr><td style="font-weight:600;">Tupananchiskama</td><td>Until we meet again</td></tr>
+              <tr><td style="font-weight:600;">Urpicháy</td><td>My little dove (term of endearment)</td></tr>
+              <tr><td style="font-weight:600;">Ñuqa kani Pakucha</td><td>I am Pakucha</td></tr>
+            </table>
+          </details>
+          <details style="margin-top:0.5rem;">
+            <summary style="cursor:pointer; font-weight:600; margin-bottom:0.5rem;">Historical Context</summary>
+            <p style="margin:0.3rem 0;">Alpacas were domesticated ~5,000 years ago in the Peruvian Andes. Under the Inca Empire, alpaca fiber was the "fiber of the gods" — finer than cashmere, reserved for royalty. The entire Inca economy was textile-based; quipus (knotted threads) served as data records. After the Spanish Conquest (1532), 90% of camelid herds were destroyed. Indigenous herders saved the species by moving them above 14,000 ft where European livestock couldn't survive. PAI carries this survival story — the thread that did not break.</p>
+          </details>
         </div>
       </section>
 
