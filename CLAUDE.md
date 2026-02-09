@@ -86,6 +86,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
 | `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
+| `verify-identity` | `supabase functions deploy verify-identity --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
