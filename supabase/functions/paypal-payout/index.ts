@@ -177,6 +177,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Identity verification gate — must be verified before payout
+    if (associate.identity_verification_status !== 'verified') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Identity verification required before payout. The associate must upload and verify their ID first.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Determine PayPal email
     const paypalEmail = payment_handle || associate.payment_handle;
     if (!paypalEmail) {

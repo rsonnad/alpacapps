@@ -7,6 +7,7 @@ import { initAuth, getAuthState, signOut, onAuthStateChange } from '../shared/au
 import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-service.js';
 import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
+import { identityService } from '../shared/identity-service.js';
 
 // =============================================
 // STATE
@@ -477,8 +478,59 @@ async function refreshPaymentTab() {
     document.getElementById('payTotal').textContent = HoursService.formatCurrency(summary.totalAmount);
     document.getElementById('payPaid').textContent = HoursService.formatCurrency(summary.paidAmount);
     document.getElementById('payUnpaid').textContent = HoursService.formatCurrency(summary.unpaidAmount);
+
+    // Show ID verification banner
+    renderIdVerificationBanner(profile.identity_verification_status);
   } catch (err) {
     console.error('Failed to refresh payment tab:', err);
+  }
+}
+
+function renderIdVerificationBanner(status) {
+  const banner = document.getElementById('idVerificationBanner');
+  if (!banner) return;
+
+  if (status === 'verified') {
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="id-banner ok"><strong>Identity Verified</strong>Your ID has been verified. You're all set to receive payments.</div>`;
+    return;
+  }
+
+  if (status === 'link_sent') {
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="id-banner info"><strong>ID Verification Pending</strong>A verification link has been sent. Complete it to receive payments.<button class="btn-verify" id="btnVerifyId">Verify My ID</button></div>`;
+    document.getElementById('btnVerifyId')?.addEventListener('click', handleSelfVerify);
+    return;
+  }
+
+  if (status === 'flagged') {
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="id-banner info"><strong>ID Under Review</strong>Your ID is being reviewed by our team. We'll update you shortly.</div>`;
+    return;
+  }
+
+  if (status === 'rejected') {
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="id-banner error"><strong>ID Verification Issue</strong>There was an issue with your ID. Please upload a new one.<button class="btn-verify" id="btnVerifyId">Upload New ID</button></div>`;
+    document.getElementById('btnVerifyId')?.addEventListener('click', handleSelfVerify);
+    return;
+  }
+
+  // pending or null — not yet requested
+  banner.style.display = 'block';
+  banner.innerHTML = `<div class="id-banner warn"><strong>ID Verification Required</strong>Upload your driver's license or state ID to receive payments.<button class="btn-verify" id="btnVerifyId">Verify My ID</button></div>`;
+  document.getElementById('btnVerifyId')?.addEventListener('click', handleSelfVerify);
+}
+
+async function handleSelfVerify() {
+  const btn = document.getElementById('btnVerifyId');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating link...'; }
+  try {
+    const { uploadUrl } = await identityService.requestAssociateVerification(authState.appUser.id, 'self');
+    window.location.href = uploadUrl;
+  } catch (err) {
+    showToast('Failed to start verification: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Verify My ID'; }
   }
 }
 

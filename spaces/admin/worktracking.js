@@ -6,6 +6,7 @@ import { supabase } from '../../shared/supabase.js';
 import { hoursService, HoursService } from '../../shared/hours-service.js';
 import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
 import { payoutService } from '../../shared/payout-service.js';
+import { identityService } from '../../shared/identity-service.js';
 
 // State
 let associates = [];
@@ -225,6 +226,9 @@ function renderAssociateConfig() {
     const method = a.payment_method ? (PAYMENT_METHOD_LABELS[a.payment_method] || a.payment_method) : 'Not set';
     const handle = a.payment_handle || '';
     const rate = parseFloat(a.hourly_rate) || 0;
+    const idStatus = a.identity_verification_status || 'pending';
+    const idBadge = renderIdBadge(idStatus);
+    const idActions = renderIdActions(a, idStatus);
 
     return `<div class="assoc-card" data-profile-id="${a.id}">
       <h4>
@@ -233,6 +237,7 @@ function renderAssociateConfig() {
       </h4>
       <p class="detail">${escapeHtml(a.app_user?.email || '')}</p>
       <p class="detail">Payment: ${escapeHtml(method)}${handle ? ' — ' + escapeHtml(handle) : ''}</p>
+      <div class="detail" style="margin-top:0.25rem;">ID: ${idBadge} ${idActions}</div>
       <div class="rate-highlight">
         <span class="rate-value">$${rate.toFixed(2)}</span>
         <span class="rate-unit">/ hour</span>
@@ -245,6 +250,66 @@ function renderAssociateConfig() {
     </div>`;
   }).join('');
 }
+
+// =============================================
+// ID VERIFICATION HELPERS
+// =============================================
+function renderIdBadge(status) {
+  const map = {
+    pending: '<span class="badge" style="background:#f3f4f6;color:#6b7280;">Not verified</span>',
+    link_sent: '<span class="badge" style="background:#fef3c7;color:#92400e;">Link sent</span>',
+    verified: '<span class="badge" style="background:#d1fae5;color:#065f46;">Verified</span>',
+    flagged: '<span class="badge" style="background:#fee2e2;color:#991b1b;">Flagged</span>',
+    rejected: '<span class="badge" style="background:#fee2e2;color:#991b1b;">Rejected</span>',
+  };
+  return map[status] || map.pending;
+}
+
+function renderIdActions(assoc, status) {
+  const appUserId = assoc.app_user_id;
+  if (status === 'verified') return '';
+  if (status === 'flagged') {
+    return `<button class="btn-small" onclick="handleRequestIdVerification('${appUserId}')" style="font-size:0.65rem;margin-left:0.25rem;">Resend Link</button>`
+      + `<button class="btn-small" onclick="handleApproveId('${appUserId}')" style="font-size:0.65rem;margin-left:0.25rem;background:#059669;color:#fff;">Approve</button>`
+      + `<button class="btn-small" onclick="handleRejectId('${appUserId}')" style="font-size:0.65rem;margin-left:0.25rem;background:#dc2626;color:#fff;">Reject</button>`;
+  }
+  return `<button class="btn-small" onclick="handleRequestIdVerification('${appUserId}')" style="font-size:0.65rem;margin-left:0.25rem;">Request ID</button>`;
+}
+
+window.handleRequestIdVerification = async function(appUserId) {
+  try {
+    const { token, uploadUrl } = await identityService.requestAssociateVerification(appUserId, 'admin');
+    await navigator.clipboard.writeText(uploadUrl);
+    showToast('ID verification link copied to clipboard!', 'success');
+    await loadAssociates();
+  } catch (err) {
+    showToast('Failed to request verification: ' + err.message, 'error');
+  }
+};
+
+window.handleApproveId = async function(appUserId) {
+  try {
+    const verification = await identityService.getAssociateVerification(appUserId);
+    if (!verification) { showToast('No verification found', 'error'); return; }
+    await identityService.approveAssociateVerification(verification.id, appUserId, 'admin');
+    showToast('Identity approved!', 'success');
+    await loadAssociates();
+  } catch (err) {
+    showToast('Failed to approve: ' + err.message, 'error');
+  }
+};
+
+window.handleRejectId = async function(appUserId) {
+  try {
+    const verification = await identityService.getAssociateVerification(appUserId);
+    if (!verification) { showToast('No verification found', 'error'); return; }
+    await identityService.rejectAssociateVerification(verification.id, appUserId, 'admin');
+    showToast('Identity rejected', 'success');
+    await loadAssociates();
+  } catch (err) {
+    showToast('Failed to reject: ' + err.message, 'error');
+  }
+};
 
 // =============================================
 // EVENT LISTENERS
@@ -371,8 +436,21 @@ function openPaidModal() {
     totalAmt += (mins / 60) * parseFloat(e.hourly_rate);
   }
 
-  // Pre-select payment method from associate's preference if all same associate
+  // Check ID verification status for all associates with selected entries
   const assocIds = new Set(selectedEntries.map(e => e.associate_id));
+  const unverifiedAssocs = [];
+  for (const assocId of assocIds) {
+    const assoc = associates.find(a => a.id === assocId);
+    if (assoc && assoc.identity_verification_status !== 'verified') {
+      unverifiedAssocs.push(getAssocName(assoc));
+    }
+  }
+  if (unverifiedAssocs.length > 0) {
+    showToast(`Cannot pay — ID not verified: ${unverifiedAssocs.join(', ')}. Request ID verification first.`, 'error', 6000);
+    return;
+  }
+
+  // Pre-select payment method from associate's preference if all same associate
   if (assocIds.size === 1) {
     const assoc = associates.find(a => a.id === [...assocIds][0]);
     if (assoc?.payment_method) {

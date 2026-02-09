@@ -257,6 +257,19 @@
     }
     .space-tag { font-size: 0.6rem; font-weight: 600; color: #6366f1; background: #eef2ff; padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.3rem; }
 
+    /* ID Verification banner */
+    .id-banner { border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.75rem; font-size: 0.85rem; line-height: 1.4; }
+    .id-banner.warn { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
+    .id-banner.info { background: #e0f2fe; border: 1px solid #38bdf8; color: #0c4a6e; }
+    .id-banner.ok { background: #d1fae5; border: 1px solid #34d399; color: #065f46; }
+    .id-banner.error { background: #fee2e2; border: 1px solid #f87171; color: #991b1b; }
+    .id-banner strong { display: block; margin-bottom: 0.25rem; }
+    .id-banner .btn-verify {
+      display: inline-block; margin-top: 0.5rem; padding: 0.45rem 1rem; background: #3d8b7a; color: #fff;
+      border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none;
+    }
+    .id-banner .btn-verify:hover { background: #2d7a6a; }
+
     /* Loading states */
     .loading-overlay { display: flex; position: fixed; inset: 0; background: #fff; z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
     .loading-overlay.hidden { display: none; }
@@ -314,7 +327,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.86 10:53p</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.87 10:56p</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
@@ -407,6 +420,7 @@
 
       <!-- Payment Tab -->
       <div class="tab-content" id="tabPayment">
+        <div id="idVerificationBanner" style="display:none;"></div>
         <div class="pay-card">
           <h3>Earnings Summary</h3>
           <div class="pay-summary">
