@@ -190,6 +190,37 @@ class HoursService {
   }
 
   /**
+   * Create a manual time entry (not from live clock in/out)
+   */
+  async createManualEntry(associateId, { clockIn, clockOut, description, manualReason, hourlyRate }) {
+    const ciDate = new Date(clockIn);
+    const coDate = new Date(clockOut);
+    const durationMs = coDate - ciDate;
+    if (durationMs <= 0) throw new Error('Clock out must be after clock in');
+    const durationMinutes = Math.round(durationMs / 60000);
+
+    const entry = {
+      associate_id: associateId,
+      clock_in: ciDate.toISOString(),
+      clock_out: coDate.toISOString(),
+      duration_minutes: durationMinutes,
+      hourly_rate: hourlyRate,
+      description: description || null,
+      is_manual: true,
+      manual_reason: manualReason || null
+    };
+
+    const { data, error } = await supabase
+      .from('time_entries')
+      .insert(entry)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
    * Get the currently active (clocked-in, not clocked-out) entry for an associate
    */
   async getActiveEntry(associateId) {

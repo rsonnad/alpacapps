@@ -197,6 +197,54 @@
       border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%;
     }
 
+    /* Manual entry link */
+    .manual-entry-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.8rem; color: #6366f1; cursor: pointer; margin-top: 0.75rem;
+      background: none; border: none; font-weight: 500;
+    }
+    .manual-entry-link:hover { text-decoration: underline; }
+
+    /* Manual entry modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; justify-content: center; align-items: flex-end; }
+    .modal-overlay.visible { display: flex; }
+    @media (min-width: 500px) { .modal-overlay.visible { align-items: center; } }
+    .modal-sheet {
+      background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; max-height: 90vh;
+      overflow-y: auto; padding: 1.25rem; animation: slideUp 0.25s ease-out;
+    }
+    @media (min-width: 500px) { .modal-sheet { border-radius: 16px; } }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .modal-header h3 { margin: 0; font-size: 1.05rem; }
+    .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b; padding: 0.25rem; }
+    .modal-field { margin-bottom: 0.85rem; }
+    .modal-field label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.3rem; }
+    .modal-field input, .modal-field textarea, .modal-field select {
+      width: 100%; box-sizing: border-box; padding: 0.55rem 0.65rem; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 0.9rem; font-family: inherit;
+    }
+    .modal-field textarea { min-height: 60px; resize: vertical; }
+    .modal-field .field-hint { font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem; }
+    .modal-field.required label::after { content: ' *'; color: #ef4444; }
+    .modal-row { display: flex; gap: 0.75rem; }
+    .modal-row .modal-field { flex: 1; }
+    .modal-field .computed-duration {
+      font-size: 0.85rem; font-weight: 600; color: #0f766e; padding: 0.4rem 0; min-height: 1.3em;
+    }
+    .btn-modal-submit {
+      background: #6366f1; color: #fff; border: none; padding: 0.6rem; border-radius: 8px;
+      font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%; margin-top: 0.25rem;
+    }
+    .btn-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Manual badge in history */
+    .manual-badge {
+      display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.55rem; font-weight: 700;
+      color: #6366f1; background: #eef2ff; padding: 0.1rem 0.35rem; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.03em; margin-left: 0.35rem; cursor: default;
+    }
+
     /* Loading states */
     .loading-overlay { display: flex; position: fixed; inset: 0; background: #fff; z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
     .loading-overlay.hidden { display: none; }
@@ -254,7 +302,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.74 6:54p</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.75 7:10p</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
@@ -277,6 +325,8 @@
             <button class="btn-submit" id="btnClockoutSubmit">Clock Out</button>
           </div>
         </div>
+
+        <button class="manual-entry-link" id="btnManualEntry">+ Add manual entry</button>
       </div>
 
       <!-- Tab Navigation -->
@@ -373,6 +423,44 @@
           <button class="btn-save-pref" id="btnSavePref">Save Preference</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Manual Entry Modal -->
+  <div class="modal-overlay" id="manualEntryModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>Add Manual Entry</h3>
+        <button class="modal-close" id="btnManualClose">&times;</button>
+      </div>
+      <div class="modal-field">
+        <label>Date</label>
+        <input type="date" id="manualDate">
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Clock In</label>
+          <input type="time" id="manualClockIn">
+        </div>
+        <div class="modal-field">
+          <label>Clock Out</label>
+          <input type="time" id="manualClockOut">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Duration</label>
+        <div class="computed-duration" id="manualDuration">—</div>
+      </div>
+      <div class="modal-field">
+        <label>Work Description</label>
+        <textarea id="manualDesc" placeholder="What did you work on?"></textarea>
+      </div>
+      <div class="modal-field required">
+        <label>Reason for manual entry</label>
+        <input type="text" id="manualReason" placeholder="e.g. Forgot to clock in, phone died, worked offline">
+        <div class="field-hint">Manual entries are tracked separately for transparency</div>
+      </div>
+      <button class="btn-modal-submit" id="btnManualSubmit">Add Entry</button>
     </div>
   </div>
 

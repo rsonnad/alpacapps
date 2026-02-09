@@ -253,8 +253,9 @@ async function refreshToday() {
       const co = e.clock_out ? HoursService.formatTime(e.clock_out) : 'Active';
       const dur = e.duration_minutes ? HoursService.formatDuration(e.duration_minutes) : '...';
       const desc = e.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">${escapeHtml(e.description)}</div>` : '';
+      const manual = e.is_manual ? '<span class="manual-badge" style="margin-left:0.3rem;">Manual</span>' : '';
       return `<div class="entry-row">
-        <div><span class="entry-times">${ci} — ${co}</span>${desc}</div>
+        <div><span class="entry-times">${ci} — ${co}</span>${manual}${desc}</div>
         <span class="entry-duration">${dur}</span>
       </div>`;
     }).join('');
@@ -367,6 +368,7 @@ async function refreshHistory() {
         const earned = mins > 0 ? HoursService.formatCurrency((mins / 60) * parseFloat(e.hourly_rate)) : '';
         const desc = e.description ? `<div class="ed-desc" title="${escapeHtml(e.description)}">${escapeHtml(e.description)}</div>` : '';
         const paidClass = e.is_paid ? 'paid' : 'unpaid';
+        const manualHtml = e.is_manual ? `<span class="manual-badge" title="${escapeHtml(e.manual_reason || 'Manual entry')}">Manual</span>` : '';
 
         return `<div class="history-entry">
           <div class="entry-time-block">
@@ -375,7 +377,7 @@ async function refreshHistory() {
             <span class="etb-out">${co}</span>
           </div>
           <div class="entry-detail">
-            <div class="ed-duration">${dur}</div>
+            <div class="ed-duration">${dur}${manualHtml}</div>
             ${desc}
           </div>
           ${earned ? `<div class="entry-earned">${earned}</div>` : ''}
@@ -509,6 +511,97 @@ function setupEventListeners() {
 
   // Save payment preference
   document.getElementById('btnSavePref').addEventListener('click', savePaymentPref);
+
+  // Manual entry modal
+  document.getElementById('btnManualEntry').addEventListener('click', openManualModal);
+  document.getElementById('btnManualClose').addEventListener('click', closeManualModal);
+  document.getElementById('manualEntryModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeManualModal();
+  });
+  document.getElementById('btnManualSubmit').addEventListener('click', handleManualSubmit);
+
+  // Live duration computation
+  const computeDuration = () => {
+    const date = document.getElementById('manualDate').value;
+    const ci = document.getElementById('manualClockIn').value;
+    const co = document.getElementById('manualClockOut').value;
+    const durEl = document.getElementById('manualDuration');
+    if (!ci || !co) { durEl.textContent = '—'; return; }
+    const ciDate = new Date(`${date || new Date().toISOString().split('T')[0]}T${ci}`);
+    const coDate = new Date(`${date || new Date().toISOString().split('T')[0]}T${co}`);
+    const diffMs = coDate - ciDate;
+    if (diffMs <= 0) { durEl.textContent = 'Invalid (out must be after in)'; durEl.style.color = '#ef4444'; return; }
+    const mins = Math.round(diffMs / 60000);
+    const earned = (mins / 60) * parseFloat(profile.hourly_rate || 0);
+    durEl.style.color = '#0f766e';
+    durEl.textContent = `${HoursService.formatDuration(mins)} — ${HoursService.formatCurrency(earned)}`;
+  };
+  document.getElementById('manualClockIn').addEventListener('input', computeDuration);
+  document.getElementById('manualClockOut').addEventListener('input', computeDuration);
+}
+
+// =============================================
+// MANUAL ENTRY
+// =============================================
+function openManualModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('manualDate').value = today;
+  document.getElementById('manualClockIn').value = '';
+  document.getElementById('manualClockOut').value = '';
+  document.getElementById('manualDesc').value = '';
+  document.getElementById('manualReason').value = '';
+  document.getElementById('manualDuration').textContent = '—';
+  document.getElementById('manualEntryModal').classList.add('visible');
+}
+
+function closeManualModal() {
+  document.getElementById('manualEntryModal').classList.remove('visible');
+}
+
+async function handleManualSubmit() {
+  const date = document.getElementById('manualDate').value;
+  const clockIn = document.getElementById('manualClockIn').value;
+  const clockOut = document.getElementById('manualClockOut').value;
+  const description = document.getElementById('manualDesc').value.trim();
+  const manualReason = document.getElementById('manualReason').value.trim();
+
+  if (!date || !clockIn || !clockOut) {
+    showToast('Please fill in date, clock in, and clock out times', 'error');
+    return;
+  }
+  if (!manualReason) {
+    showToast('Please provide a reason for the manual entry', 'error');
+    return;
+  }
+
+  const ciDateTime = `${date}T${clockIn}`;
+  const coDateTime = `${date}T${clockOut}`;
+  if (new Date(coDateTime) <= new Date(ciDateTime)) {
+    showToast('Clock out must be after clock in', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnManualSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+
+  try {
+    await hoursService.createManualEntry(profile.id, {
+      clockIn: ciDateTime,
+      clockOut: coDateTime,
+      description: description || null,
+      manualReason,
+      hourlyRate: profile.hourly_rate
+    });
+    showToast('Manual entry added!', 'success');
+    closeManualModal();
+    await Promise.all([refreshToday(), refreshHistory()]);
+  } catch (err) {
+    showToast('Failed to add entry: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add Entry';
+  }
 }
 
 // =============================================
