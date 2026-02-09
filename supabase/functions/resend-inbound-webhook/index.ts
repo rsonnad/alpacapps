@@ -870,8 +870,9 @@ async function handleAutoReply(
 
     // Strip email reply chains — try to get just the new message
     let replyBody = body;
-    // Remove common reply markers
+    // Remove common reply markers AND automated email content
     const replyMarkers = [
+      /YOUR REPORT:/i,  // Strip automated bug report email content
       /On .+ wrote:/i,
       /-----Original Message-----/i,
       /From:.*\nSent:.*\nTo:/i,
