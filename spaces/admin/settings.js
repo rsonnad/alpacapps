@@ -55,6 +55,7 @@ async function loadSettingsPanel() {
     loadFeeSettings(),
     loadFeeCodes(),
     loadSquareConfig(),
+    loadPayPalConfig(),
     loadTelnyxConfig(),
     loadInboundSms(),
     loadForwardingRules()
@@ -491,6 +492,140 @@ async function toggleSquareTestMode(testMode) {
     console.error('Error updating Square mode:', error);
     showToast('Failed to update Square mode', 'error');
     document.getElementById('squareTestMode').checked = !testMode; // Revert
+  }
+}
+
+// =============================================
+// PAYPAL CONFIG
+// =============================================
+
+async function loadPayPalConfig() {
+  try {
+    const { data: config, error } = await supabase
+      .from('paypal_config')
+      .select('*')
+      .single();
+
+    if (error) throw error;
+
+    const testCheckbox = document.getElementById('paypalTestMode');
+    const activeCheckbox = document.getElementById('paypalIsActive');
+    const badge = document.getElementById('paypalModeBadge');
+
+    if (testCheckbox) testCheckbox.checked = config.test_mode;
+    if (activeCheckbox) activeCheckbox.checked = config.is_active;
+    if (badge) {
+      if (!config.is_active) {
+        badge.textContent = 'Inactive';
+        badge.classList.remove('live');
+      } else {
+        badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !config.test_mode);
+      }
+    }
+
+    // Populate credential fields
+    document.getElementById('paypalSandboxClientId').value = config.sandbox_client_id || '';
+    document.getElementById('paypalSandboxClientSecret').value = config.sandbox_client_secret || '';
+    document.getElementById('paypalClientId').value = config.client_id || '';
+    document.getElementById('paypalClientSecret').value = config.client_secret || '';
+
+  } catch (error) {
+    console.error('Error loading PayPal config:', error);
+  }
+}
+
+async function savePayPalConfig() {
+  try {
+    const updates = {
+      sandbox_client_id: document.getElementById('paypalSandboxClientId').value.trim() || null,
+      sandbox_client_secret: document.getElementById('paypalSandboxClientSecret').value.trim() || null,
+      client_id: document.getElementById('paypalClientId').value.trim() || null,
+      client_secret: document.getElementById('paypalClientSecret').value.trim() || null,
+      test_mode: document.getElementById('paypalTestMode').checked,
+      is_active: document.getElementById('paypalIsActive').checked,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('paypal_config')
+      .update(updates)
+      .eq('id', 1);
+
+    if (error) throw error;
+
+    // Update badge
+    const badge = document.getElementById('paypalModeBadge');
+    if (badge) {
+      if (!updates.is_active) {
+        badge.textContent = 'Inactive';
+        badge.classList.remove('live');
+      } else {
+        badge.textContent = updates.test_mode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !updates.test_mode);
+      }
+    }
+
+    showToast('PayPal configuration saved', 'success');
+  } catch (error) {
+    console.error('Error saving PayPal config:', error);
+    showToast('Failed to save PayPal config', 'error');
+  }
+}
+
+async function testPayPalConnection() {
+  const resultEl = document.getElementById('paypalTestResult');
+  const btn = document.getElementById('testPaypalConnection');
+  resultEl.textContent = 'Testing...';
+  resultEl.style.color = 'var(--text-muted)';
+  btn.disabled = true;
+
+  try {
+    const config = {
+      test_mode: document.getElementById('paypalTestMode').checked,
+      sandbox_client_id: document.getElementById('paypalSandboxClientId').value.trim(),
+      sandbox_client_secret: document.getElementById('paypalSandboxClientSecret').value.trim(),
+      client_id: document.getElementById('paypalClientId').value.trim(),
+      client_secret: document.getElementById('paypalClientSecret').value.trim(),
+    };
+
+    const clientId = config.test_mode ? config.sandbox_client_id : config.client_id;
+    const clientSecret = config.test_mode ? config.sandbox_client_secret : config.client_secret;
+
+    if (!clientId || !clientSecret) {
+      resultEl.textContent = `Missing ${config.test_mode ? 'sandbox' : 'production'} credentials`;
+      resultEl.style.color = 'var(--error, #ef4444)';
+      return;
+    }
+
+    const baseUrl = config.test_mode
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com';
+
+    const credentials = btoa(`${clientId}:${clientSecret}`);
+    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      resultEl.textContent = `Connected! Mode: ${config.test_mode ? 'Sandbox' : 'Production'}. Token expires in ${data.expires_in}s.`;
+      resultEl.style.color = 'var(--success, #22c55e)';
+    } else {
+      const errorText = await response.text();
+      resultEl.textContent = `Auth failed: ${response.status}`;
+      resultEl.style.color = 'var(--error, #ef4444)';
+    }
+  } catch (error) {
+    resultEl.textContent = 'Connection test failed: ' + error.message;
+    resultEl.style.color = 'var(--error, #ef4444)';
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -977,6 +1112,37 @@ function setupEventListeners() {
   // Square test mode toggle
   document.getElementById('squareTestMode')?.addEventListener('change', (e) => {
     toggleSquareTestMode(e.target.checked);
+  });
+
+  // PayPal config
+  document.getElementById('savePaypalConfig')?.addEventListener('click', savePayPalConfig);
+  document.getElementById('testPaypalConnection')?.addEventListener('click', testPayPalConnection);
+  document.getElementById('paypalTestMode')?.addEventListener('change', () => {
+    const badge = document.getElementById('paypalModeBadge');
+    const isActive = document.getElementById('paypalIsActive')?.checked;
+    const testMode = document.getElementById('paypalTestMode')?.checked;
+    if (badge) {
+      if (!isActive) {
+        badge.textContent = 'Inactive';
+      } else {
+        badge.textContent = testMode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !testMode);
+      }
+    }
+  });
+  document.getElementById('paypalIsActive')?.addEventListener('change', () => {
+    const badge = document.getElementById('paypalModeBadge');
+    const isActive = document.getElementById('paypalIsActive')?.checked;
+    const testMode = document.getElementById('paypalTestMode')?.checked;
+    if (badge) {
+      if (!isActive) {
+        badge.textContent = 'Inactive';
+        badge.classList.remove('live');
+      } else {
+        badge.textContent = testMode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !testMode);
+      }
+    }
   });
 
   // Telnyx test mode toggle

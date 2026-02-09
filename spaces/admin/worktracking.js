@@ -5,6 +5,7 @@ import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { supabase } from '../../shared/supabase.js';
 import { hoursService, HoursService } from '../../shared/hours-service.js';
 import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
+import { payoutService } from '../../shared/payout-service.js';
 
 // State
 let associates = [];
@@ -382,7 +383,45 @@ function openPaidModal() {
   document.getElementById('paidModalSummary').textContent =
     `${selectedIds.size} entries — ${HoursService.formatDuration(totalMins)} — ${HoursService.formatCurrency(totalAmt)}`;
   document.getElementById('paidNotes').value = '';
+  updatePaypalPayoutInfo();
   document.getElementById('paidModal').classList.add('open');
+
+  // Listen for payment method changes to toggle PayPal info
+  document.getElementById('paidMethod').addEventListener('change', updatePaypalPayoutInfo);
+}
+
+/**
+ * Show/hide PayPal payout info box based on selected method
+ */
+function updatePaypalPayoutInfo() {
+  const method = document.getElementById('paidMethod').value;
+  const paypalInfo = document.getElementById('paypalPayoutInfo');
+  const confirmBtn = document.getElementById('paidConfirm');
+
+  if (method === 'paypal') {
+    // Find associate's PayPal email
+    const selectedEntries = entries.filter(e => selectedIds.has(e.id));
+    const assocIds = new Set(selectedEntries.map(e => e.associate_id));
+
+    if (assocIds.size === 1) {
+      const assoc = associates.find(a => a.id === [...assocIds][0]);
+      const handle = assoc?.payment_handle;
+      if (handle) {
+        document.getElementById('paypalRecipientInfo').textContent = `Sends instantly to ${handle}`;
+      } else {
+        document.getElementById('paypalRecipientInfo').innerHTML =
+          '<span style="color:var(--error,#ef4444);">No PayPal email configured for this associate. Set it in their profile first.</span>';
+      }
+    } else {
+      document.getElementById('paypalRecipientInfo').textContent =
+        'Multiple associates selected — PayPal payouts will be sent to each associate\'s configured email.';
+    }
+    paypalInfo.style.display = 'block';
+    confirmBtn.textContent = 'Send via PayPal';
+  } else {
+    paypalInfo.style.display = 'none';
+    confirmBtn.textContent = 'Confirm Payment';
+  }
 }
 
 async function confirmMarkPaid() {
@@ -390,8 +429,59 @@ async function confirmMarkPaid() {
   const notes = document.getElementById('paidNotes').value.trim();
   const btn = document.getElementById('paidConfirm');
   btn.disabled = true;
-  btn.textContent = 'Processing...';
 
+  // If PayPal selected, send real payout via PayPal Payouts API
+  if (method === 'paypal') {
+    btn.textContent = 'Sending via PayPal...';
+    try {
+      // Group entries by associate for multi-associate payouts
+      const selectedEntries = entries.filter(e => selectedIds.has(e.id));
+      const byAssociate = {};
+      for (const entry of selectedEntries) {
+        if (!byAssociate[entry.associate_id]) {
+          byAssociate[entry.associate_id] = { entries: [], totalMins: 0, totalAmt: 0 };
+        }
+        const mins = parseFloat(entry.duration_minutes) || 0;
+        byAssociate[entry.associate_id].entries.push(entry);
+        byAssociate[entry.associate_id].totalMins += mins;
+        byAssociate[entry.associate_id].totalAmt += (mins / 60) * parseFloat(entry.hourly_rate);
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const [assocId, data] of Object.entries(byAssociate)) {
+        const amount = Math.round(data.totalAmt * 100) / 100;
+        const entryIds = data.entries.map(e => e.id);
+
+        const result = await payoutService.sendPayPalPayout(assocId, amount, entryIds, notes);
+
+        if (result.success) {
+          // Mark entries as paid in hours service (creates ledger entry too)
+          await hoursService.markPaid(entryIds, { paymentMethod: 'paypal', notes: `PayPal payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          successCount++;
+          showToast(result.message || `Sent $${amount.toFixed(2)} via PayPal`, 'success');
+        } else {
+          failCount++;
+          showToast(`PayPal payout failed: ${result.error}`, 'error');
+        }
+      }
+
+      if (successCount > 0) {
+        document.getElementById('paidModal').classList.remove('open');
+        await loadEntries();
+      }
+    } catch (err) {
+      showToast('PayPal payout failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send via PayPal';
+    }
+    return;
+  }
+
+  // Non-PayPal: standard mark-as-paid flow (manual recording)
+  btn.textContent = 'Processing...';
   try {
     const result = await hoursService.markPaid([...selectedIds], { paymentMethod: method, notes });
     showToast(`Marked ${result.entriesUpdated} entries as paid — ${HoursService.formatCurrency(result.totalAmount)}`, 'success');

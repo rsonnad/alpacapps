@@ -15,6 +15,7 @@ let cameraSettings = {};
 
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
+const SENSORS_PROXY_BASE = 'https://cam.alpacaplayhouse.com/sensors';
 const TALKBACK_WS_BASE = 'wss://cam.alpacaplayhouse.com/talkback';
 
 // =============================================
@@ -31,6 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       bindKeyboard();
       // Load settings for all cameras with PTZ support
       loadAllCameraSettings();
+      // Load and display sensors
+      await loadSensors();
+      renderSensors();
+      startSensorPolling();
     },
   });
 });
@@ -1080,4 +1085,183 @@ function bindTalkbackButton(btn, camIndex, isLightbox = false) {
   btn.addEventListener('mouseleave', () => {
     if (pressing) stopTalk();
   });
+}
+
+// =============================================
+// ENVIRONMENT SENSORS (UP-SENSE)
+// =============================================
+const SENSOR_ICONS = {
+  temperature: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+  humidity: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+  light: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  door: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><circle cx="14" cy="12" r="1"/></svg>',
+  motion: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v8"/><path d="M13 8v12"/><path d="M7 16v4"/><path d="M4 12v8"/></svg>',
+  alarm: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  battery: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>',
+};
+
+let sensors = [];
+let sensorPollTimer = null;
+let lastSensorPollTime = null;
+
+async function loadSensors() {
+  // Load metadata from DB
+  const { data, error } = await supabase
+    .from('protect_sensors')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order');
+
+  if (error || !data?.length) {
+    sensors = [];
+    return;
+  }
+
+  // Fetch live state from proxy
+  try {
+    const resp = await fetch(SENSORS_PROXY_BASE);
+    if (!resp.ok) throw new Error(`Sensor fetch failed: ${resp.status}`);
+    const sensorStates = await resp.json();
+
+    sensors = data.map(meta => {
+      const state = sensorStates.find(s => s.id === meta.protect_sensor_id);
+      return { meta, state: state || null };
+    });
+  } catch (err) {
+    console.warn('Failed to load sensor states:', err.message);
+    sensors = data.map(meta => ({ meta, state: null }));
+  }
+}
+
+async function refreshSensorStates() {
+  if (!sensors.length) return;
+  try {
+    const resp = await fetch(SENSORS_PROXY_BASE);
+    if (!resp.ok) return;
+    const sensorStates = await resp.json();
+    for (const s of sensors) {
+      const state = sensorStates.find(st => st.id === s.meta.protect_sensor_id);
+      if (state) s.state = state;
+    }
+  } catch (err) {
+    console.warn('Sensor refresh failed:', err.message);
+  }
+  lastSensorPollTime = new Date();
+  updateSensorPollStatus();
+}
+
+function startSensorPolling() {
+  if (!sensors.length) return;
+  sensorPollTimer = setInterval(async () => {
+    if (document.hidden) return;
+    await refreshSensorStates();
+    renderSensors();
+  }, 30000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && sensors.length) {
+      refreshSensorStates().then(renderSensors);
+    }
+  });
+}
+
+function updateSensorPollStatus() {
+  const el = document.getElementById('sensorPollStatus');
+  if (!el || !lastSensorPollTime) return;
+  const timeStr = lastSensorPollTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  el.textContent = `Last updated: ${timeStr}`;
+}
+
+function getSensorTemp(state) {
+  // Try stats.temperature.value (Celsius) first, then top-level temperatureLevel
+  const tempC = state?.stats?.temperature?.value ?? state?.temperatureLevel ?? null;
+  if (tempC == null) return '--';
+  return ((tempC * 9 / 5) + 32).toFixed(1);
+}
+
+function getSensorHumidity(state) {
+  return state?.stats?.humidity?.value ?? state?.humidityLevel ?? '--';
+}
+
+function getSensorLight(state) {
+  return state?.stats?.light?.value ?? state?.lightLevel ?? '--';
+}
+
+function renderSensors() {
+  const section = document.getElementById('sensorsSection');
+  const container = document.getElementById('sensorGrid');
+  if (!section || !container) return;
+
+  if (!sensors.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  container.innerHTML = sensors.map(({ meta, state }) => {
+    if (!state) {
+      return `<div class="sensor-card sensor-card--offline">
+        <div class="sensor-card__header">
+          <span class="status-dot status-offline"></span>
+          <span class="sensor-card__name">${meta.name}</span>
+        </div>
+        <div class="sensor-card__body">
+          <span class="text-muted" style="font-size:0.85rem">Sensor offline</span>
+        </div>
+      </div>`;
+    }
+
+    const tempF = getSensorTemp(state);
+    const humidity = getSensorHumidity(state);
+    const light = getSensorLight(state);
+    const isOpen = state.isOpened;
+    const isMotion = state.isMotionDetected;
+    const batteryPct = state.batteryStatus?.percentage ?? '--';
+    const batteryLow = state.batteryStatus?.isLow;
+    const isConnected = state.isConnected !== false;
+    const hasAlarm = state.alarmTriggeredAt &&
+      (Date.now() - new Date(state.alarmTriggeredAt).getTime()) < 300000;
+
+    // Only show door status if mount type suggests a contact sensor
+    const showDoor = meta.mount_type === 'door' || meta.mount_type === 'window' || isOpen != null;
+
+    return `<div class="sensor-card ${hasAlarm ? 'sensor-card--alarm' : ''} ${!isConnected ? 'sensor-card--offline' : ''}">
+      <div class="sensor-card__header">
+        <span class="status-dot ${isConnected ? 'status-live' : 'status-offline'}"></span>
+        <span class="sensor-card__name">${meta.name}</span>
+        ${meta.location ? `<span class="sensor-card__location">${meta.location}</span>` : ''}
+        <span class="sensor-card__battery ${batteryLow ? 'battery-low' : ''}">
+          ${SENSOR_ICONS.battery} ${batteryPct}%
+        </span>
+      </div>
+      <div class="sensor-card__body">
+        <div class="sensor-card__readings">
+          <div class="sensor-reading">
+            <span class="sensor-reading__icon">${SENSOR_ICONS.temperature}</span>
+            <span class="sensor-reading__value">${tempF}</span>
+            <span class="sensor-reading__unit">&deg;F</span>
+          </div>
+          <div class="sensor-reading">
+            <span class="sensor-reading__icon">${SENSOR_ICONS.humidity}</span>
+            <span class="sensor-reading__value">${humidity}</span>
+            <span class="sensor-reading__unit">%</span>
+          </div>
+          <div class="sensor-reading">
+            <span class="sensor-reading__icon">${SENSOR_ICONS.light}</span>
+            <span class="sensor-reading__value">${light}</span>
+            <span class="sensor-reading__unit">lux</span>
+          </div>
+        </div>
+        <div class="sensor-card__statuses">
+          ${showDoor ? `<span class="sensor-status ${isOpen ? 'sensor-status--open' : 'sensor-status--closed'}">
+            ${SENSOR_ICONS.door} ${isOpen ? 'Open' : 'Closed'}
+          </span>` : ''}
+          <span class="sensor-status ${isMotion ? 'sensor-status--active' : ''}">
+            ${SENSOR_ICONS.motion} ${isMotion ? 'Motion' : 'Clear'}
+          </span>
+          ${hasAlarm ? `<span class="sensor-status sensor-status--alarm">${SENSOR_ICONS.alarm} Alarm</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }

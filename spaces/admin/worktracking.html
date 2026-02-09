@@ -126,7 +126,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.78 7:53p</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.80 8:12p</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/admin/" class="btn-small">Dashboard</a>
@@ -262,6 +262,16 @@
           <option value="bank_ach">Bank/ACH</option>
           <option value="other">Other</option>
         </select>
+      </div>
+      <!-- PayPal payout info (shown when PayPal selected) -->
+      <div id="paypalPayoutInfo" class="paypal-payout-info" style="display:none;">
+        <div style="background:var(--surface-alt, #f0f4ff);border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.5rem;font-size:0.85rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #3b82f6)" stroke-width="2"><path d="M7 11l5 5L20 4"/></svg>
+            <strong style="color:var(--primary, #3b82f6);">Send via PayPal</strong>
+          </div>
+          <p id="paypalRecipientInfo" style="margin:0;color:var(--text-muted);">Sends instantly to associate's PayPal.</p>
+        </div>
       </div>
       <div class="form-row">
         <label>Notes (optional)</label>

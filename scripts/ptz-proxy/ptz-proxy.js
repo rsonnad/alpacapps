@@ -8,6 +8,8 @@
  *   GET  /camera/{cameraId}/snapshot   — returns JPEG snapshot
  *   GET  /camera/{cameraId}/settings   — returns filtered camera settings JSON
  *   PATCH /camera/{cameraId}/settings  — update whitelisted camera settings
+ *   GET  /sensors                      — returns all Protect sensors from bootstrap
+ *   GET  /sensor/{sensorId}            — returns individual sensor state
  *
  * Auth to UniFi Protect:
  *   Cookie-based with CSRF token from JWT. Caches session for reuse.
@@ -35,6 +37,11 @@ const snapshotTimestamps = {};
 
 // Settings PATCH whitelist
 const SETTINGS_WHITELIST = ['irLedMode', 'statusLightEnabled', 'hdrModeEnabled', 'micVolume'];
+
+// Bootstrap cache (heavy response, cache for 10s)
+let bootstrapCache = null;
+let bootstrapCacheExpiry = 0;
+const BOOTSTRAP_CACHE_TTL = 10000;
 
 // =============================================
 // HTTPS helpers (ignores self-signed cert)
@@ -234,6 +241,81 @@ async function getSnapshot(cameraId) {
 }
 
 // =============================================
+// Sensors (via Bootstrap API)
+// =============================================
+async function fetchBootstrapRaw() {
+  await ensureAuth();
+  return httpsRequest({
+    hostname: UDM_HOST,
+    port: 443,
+    path: '/proxy/protect/api/bootstrap',
+    method: 'GET',
+    headers: {
+      'Cookie': sessionCookie,
+      'X-CSRF-Token': csrfToken,
+    },
+  });
+}
+
+async function getBootstrap() {
+  if (bootstrapCache && Date.now() < bootstrapCacheExpiry) {
+    return bootstrapCache;
+  }
+
+  const res = await withAuthRetry(fetchBootstrapRaw);
+
+  if (res.status !== 200) {
+    throw new Error(`Bootstrap fetch failed: ${res.status}`);
+  }
+
+  bootstrapCache = JSON.parse(res.body);
+  bootstrapCacheExpiry = Date.now() + BOOTSTRAP_CACHE_TTL;
+  return bootstrapCache;
+}
+
+function filterSensorFields(sensor) {
+  return {
+    id: sensor.id,
+    name: sensor.name,
+    type: sensor.type || sensor.modelKey,
+    model: sensor.model,
+    mac: sensor.mac,
+    firmwareVersion: sensor.firmwareVersion,
+    isConnected: sensor.isConnected,
+    batteryStatus: sensor.batteryStatus || null,
+    stats: sensor.stats || null,
+    isMotionDetected: sensor.isMotionDetected ?? false,
+    isOpened: sensor.isOpened ?? null,
+    openStatusChangedAt: sensor.openStatusChangedAt ?? null,
+    motionDetectedAt: sensor.motionDetectedAt ?? null,
+    alarmTriggeredAt: sensor.alarmTriggeredAt ?? null,
+    tamperingDetectedAt: sensor.tamperingDetectedAt ?? null,
+    mountType: sensor.mountType ?? null,
+    ledSettings: sensor.ledSettings ?? null,
+    lightLevel: sensor.lightLevel ?? null,
+    humidityLevel: sensor.humidityLevel ?? null,
+    temperatureLevel: sensor.temperatureLevel ?? null,
+  };
+}
+
+async function getSensorState(sensorId) {
+  await ensureAuth();
+
+  const res = await httpsRequest({
+    hostname: UDM_HOST,
+    port: 443,
+    path: `/proxy/protect/api/sensors/${sensorId}`,
+    method: 'GET',
+    headers: {
+      'Cookie': sessionCookie,
+      'X-CSRF-Token': csrfToken,
+    },
+  });
+
+  return res;
+}
+
+// =============================================
 // HTTP Server
 // =============================================
 function getCorsHeaders(origin) {
@@ -420,9 +502,47 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // ---- Route: GET /sensors ----
+    if ((req.url === '/sensors' || req.url === '/sensors/') && req.method === 'GET') {
+      const bootstrap = await getBootstrap();
+      const sensors = (bootstrap.sensors || []).map(filterSensorFields);
+      console.log(`[Sensors] Returning ${sensors.length} sensor(s)`);
+
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(sensors));
+      return;
+    }
+
+    // ---- Route: GET /sensor/{sensorId} ----
+    const sensorMatch = req.url.match(/^\/sensor\/([a-f0-9]+)/i);
+    if (sensorMatch && req.method === 'GET') {
+      const sensorId = sensorMatch[1];
+
+      const result = await withAuthRetry(() => getSensorState(sensorId));
+
+      if (result.status !== 200) {
+        res.writeHead(result.status, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Sensor fetch failed: ${result.status}` }));
+        return;
+      }
+
+      let sensor;
+      try {
+        sensor = JSON.parse(result.body);
+      } catch {
+        res.writeHead(500, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid response from Protect API' }));
+        return;
+      }
+
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(filterSensorFields(sensor)));
+      return;
+    }
+
     // ---- 404 ----
     res.writeHead(404, { ...cors, 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings' }));
+    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}' }));
 
   } catch (err) {
     console.error('[Proxy] Error:', err.message);
@@ -434,7 +554,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Camera Control Proxy listening on 127.0.0.1:${PORT}`);
   console.log(`UDM Host: ${UDM_HOST}`);
-  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings`);
+  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}`);
   // Pre-auth on startup
   authenticate().catch(err => console.error('[Auth] Startup auth failed:', err.message));
 });

@@ -5027,3 +5027,169 @@ span.sonos-library-item__star.starred {
     height: 24px;
   }
 }
+
+/* ===== ENVIRONMENT SENSORS (UP-SENSE) ===== */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.sensor-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--available);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+
+.sensor-card:hover {
+  border-color: var(--accent);
+}
+
+.sensor-card--offline {
+  opacity: 0.6;
+  border-left-color: var(--occupied);
+}
+
+.sensor-card--alarm {
+  border-left-color: #ef4444;
+  animation: pulse-alarm 1.5s infinite;
+}
+
+@keyframes pulse-alarm {
+  0%, 100% { box-shadow: var(--shadow); }
+  50% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+}
+
+.sensor-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sensor-card__name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.sensor-card__location {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sensor-card__battery {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.sensor-card__battery svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sensor-card__battery.battery-low {
+  color: var(--occupied);
+  font-weight: 600;
+}
+
+.sensor-card__readings {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sensor-reading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+}
+
+.sensor-reading__icon {
+  display: flex;
+  align-items: center;
+  margin-right: 0.25rem;
+}
+
+.sensor-reading__icon svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.sensor-reading__value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sensor-reading__unit {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sensor-card__statuses {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sensor-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--bg);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sensor-status svg {
+  width: 12px;
+  height: 12px;
+}
+
+.sensor-status--open {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sensor-status--closed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sensor-status--active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.sensor-status--alarm {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 768px) {
+  .sensor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-card__readings {
+    gap: 1rem;
+  }
+
+  .sensor-reading__value {
+    font-size: 1.2rem;
+  }
+}

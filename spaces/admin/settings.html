@@ -42,7 +42,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.78 7:53p</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.80 8:12p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -128,6 +128,53 @@
               <span class="settings-toggle-label">Test Mode</span>
               <span class="settings-toggle-hint">Use sandbox credentials for testing</span>
             </label>
+          </div>
+        </div>
+
+        <!-- PayPal Config -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>PayPal Configuration <span class="settings-badge" id="paypalModeBadge">Test Mode</span></h3>
+              <p>PayPal Payouts API for sending payments to associates. <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener">Developer Dashboard</a></p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <label class="settings-toggle">
+              <input type="checkbox" id="paypalTestMode">
+              <span class="settings-toggle-label">Test Mode</span>
+              <span class="settings-toggle-hint">Use sandbox credentials for testing</span>
+            </label>
+            <label class="settings-toggle" style="margin-top:0.5rem;">
+              <input type="checkbox" id="paypalIsActive">
+              <span class="settings-toggle-label">Active</span>
+              <span class="settings-toggle-hint">Enable PayPal payouts</span>
+            </label>
+            <div style="margin-top:1rem;">
+              <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Sandbox Credentials</h4>
+              <div class="form-row" style="margin-bottom:0.5rem;">
+                <label style="font-size:0.8rem;">Client ID</label>
+                <input type="text" id="paypalSandboxClientId" placeholder="Sandbox Client ID" style="font-size:0.85rem;">
+              </div>
+              <div class="form-row" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem;">Client Secret</label>
+                <input type="password" id="paypalSandboxClientSecret" placeholder="Sandbox Client Secret" style="font-size:0.85rem;">
+              </div>
+              <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Production Credentials</h4>
+              <div class="form-row" style="margin-bottom:0.5rem;">
+                <label style="font-size:0.8rem;">Client ID</label>
+                <input type="text" id="paypalClientId" placeholder="Production Client ID" style="font-size:0.85rem;">
+              </div>
+              <div class="form-row" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem;">Client Secret</label>
+                <input type="password" id="paypalClientSecret" placeholder="Production Client Secret" style="font-size:0.85rem;">
+              </div>
+              <div style="display:flex;gap:0.5rem;">
+                <button class="btn-small btn-primary" id="savePaypalConfig">Save PayPal Config</button>
+                <button class="btn-small" id="testPaypalConnection" style="background:var(--surface-alt,#f0f4ff);border:1px solid var(--border);color:var(--text);">Test Connection</button>
+              </div>
+              <p id="paypalTestResult" style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-muted);"></p>
+            </div>
           </div>
         </div>
       </div>
