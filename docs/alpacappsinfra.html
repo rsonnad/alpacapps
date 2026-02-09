@@ -836,6 +836,7 @@
       <a href="#domain"><span class="num">11</span> Custom Domain</a>
       <a href="#template"><span class="num">12</span> CLAUDE.md Templates</a>
       <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
+      <a href="#mobile"><span class="num">14</span> Mobile App (iOS &amp; Android)</a>
     </div>
   </nav>
 
@@ -1519,6 +1520,82 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
   </div>
 
+  <!-- 14. Mobile App -->
+  <div class="section" id="mobile">
+    <h2>14. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2>
+    <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
+
+    <h3>How It Works</h3>
+    <div class="arch-diagram">Web App (HTML/CSS/JS) &rarr; Capacitor WebView &rarr; Native iOS / Android App
+                                    &darr;
+                          Same Supabase backend as web</div>
+    <p>Capacitor takes your existing web code, loads it inside a native WebView, and gives you access to native device APIs (push notifications, camera, status bar) through JavaScript plugins. There's no need to learn Swift or Kotlin &mdash; your web skills are all you need.</p>
+
+    <h3>Tech Stack</h3>
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Native shell</td><td>Capacitor 8</td><td>Wraps web content in native WebView</td></tr>
+        <tr><td>UI</td><td>Vanilla HTML/CSS/JS</td><td>Dark theme, bottom tab bar, no framework needed</td></tr>
+        <tr><td>Auth</td><td>Supabase Auth</td><td>Inline email/password + Google OAuth</td></tr>
+        <tr><td>Data</td><td>Supabase JS SDK</td><td>Same client as web app</td></tr>
+        <tr><td>OTA Updates</td><td>@capgo/capacitor-updater</td><td>Push code updates without App Store review</td></tr>
+        <tr><td>Push Notifications</td><td>@capacitor/push-notifications</td><td>FCM (Android) + APNs (iOS)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Development Tools</h3>
+    <table>
+      <thead><tr><th>Platform</th><th>IDE</th><th>Requirements</th></tr></thead>
+      <tbody>
+        <tr><td>iOS</td><td>Xcode 15+</td><td>macOS only, free from App Store. Apple Developer account ($99/year) for App Store distribution</td></tr>
+        <tr><td>Android</td><td>Android Studio</td><td>macOS, Windows, or Linux. Google Play Console ($25 one-time) for Play Store distribution</td></tr>
+      </tbody>
+    </table>
+
+    <h3>On the Phone</h3>
+    <table>
+      <thead><tr><th>Platform</th><th>Runtime</th><th>Min Version</th></tr></thead>
+      <tbody>
+        <tr><td>iPhone / iPad</td><td>WKWebView (Safari engine)</td><td>iOS 16+</td></tr>
+        <tr><td>Android</td><td>Android WebView (Chromium engine)</td><td>Android 6.0+ (API 23)</td></tr>
+      </tbody>
+    </table>
+    <p>On iOS, the app runs inside Apple's WKWebView (same engine as Safari). On Android, it uses the system WebView powered by Chromium. Both provide near-native performance for web content.</p>
+
+    <h3>Build &amp; Deploy</h3>
+    <div class="step-label step-claude">Claude does this</div>
+    <p>Claude Code handles the build process. The workflow is:</p>
+    <ol>
+      <li><strong>Build web assets</strong> &mdash; A script (<code>copy-web.js</code>) copies your web files into the mobile project, injects <code>capacitor.js</code>, and patches any redirect-based navigation</li>
+      <li><strong>Sync to native</strong> &mdash; <code>npm run sync</code> from the <code>mobile/</code> directory copies web assets into the iOS and Android native projects</li>
+      <li><strong>Run on device</strong> &mdash; Open Xcode (iOS) or Android Studio (Android) and press Play</li>
+    </ol>
+<pre><code># From the mobile/ directory:
+npm run sync          # Build + sync to both platforms
+npm run open:ios      # Open Xcode &mdash; press Play to run
+npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
+
+    <h3>Key Design Decisions</h3>
+    <ul>
+      <li><strong>Single codebase</strong> &mdash; Web and mobile share the same data services (<code>shared/services/</code>). Write once, runs on web + iOS + Android</li>
+      <li><strong>No framework required</strong> &mdash; Vanilla JS with CSS-based tab switching. No React Native, no Flutter, no Swift/Kotlin to learn</li>
+      <li><strong>Lazy-loaded tabs</strong> &mdash; Each tab module loads on first visit via dynamic <code>import()</code>, keeping startup fast</li>
+      <li><strong>OTA updates</strong> &mdash; After the initial App Store submission, code changes (HTML/CSS/JS) can be pushed live instantly via Capgo &mdash; no App Store review wait</li>
+      <li><strong>Inline login</strong> &mdash; Capacitor WebView can't handle multi-page redirects, so the mobile app uses an inline login form instead of a separate login page</li>
+    </ul>
+
+    <h3>App Store Costs</h3>
+    <table>
+      <thead><tr><th>Platform</th><th>Cost</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Apple App Store</td><td>$99/year</td><td>Apple Developer Program membership</td></tr>
+        <tr><td>Google Play Store</td><td>$25 one-time</td><td>Google Play Console registration</td></tr>
+        <tr><td>Capgo OTA</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 devices, 4 GB bandwidth</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- Cost Summary -->
   <div class="section">
     <h2>Cost Summary</h2>
@@ -1533,6 +1610,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         <tr><td>SignWell</td><td><span class="cost-badge cost-free">$0</span></td><td>3&ndash;25 docs/month free</td></tr>
         <tr><td>Google Gemini</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier available</td></tr>
         <tr><td>Custom domain</td><td><span class="cost-badge cost-payg">~$1</span></td><td>~$10/year, optional</td></tr>
+        <tr><td>Mobile App (Capacitor)</td><td><span class="cost-badge cost-free">$0</span></td><td>Free to develop. App Store: $99/yr (Apple) + $25 one-time (Google)</td></tr>
         <tr><td><strong>Claude Code</strong></td><td><span class="cost-badge cost-payg">$0&ndash;$200</span></td><td>Free tier available. Pro $20, Max $100, Max+ $200 for intensive development</td></tr>
       </tbody>
     </table>
