@@ -1621,6 +1621,7 @@ function showDeviceColorPopover(triggerBtn) {
 
   // Position below the trigger button
   const rect = triggerBtn.getBoundingClientRect();
+  if (!popover || !popover.style) return; // Safety check
   popover.style.position = 'fixed';
   popover.style.top = `${rect.bottom + 4}px`;
   popover.style.left = `${rect.left}px`;
