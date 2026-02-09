@@ -731,10 +731,8 @@ function updateDeviceUI(deviceId) {
 
   // Update color button background
   const colorBtn = row.querySelector('.child-color-btn');
-  if (colorBtn) {
-    if (state.color) {
-      colorBtn.style.background = state.color;
-    }
+  if (colorBtn && colorBtn.style && state.color) {
+    colorBtn.style.background = state.color;
   }
 
   // Update segment color pickers to reflect current device color
@@ -1632,11 +1630,15 @@ function showDeviceColorPopover(triggerBtn) {
 
   // Adjust if overflows right edge
   requestAnimationFrame(() => {
+    // Double-check popover is still valid and connected before AND during style access
     if (!popover || !popover.isConnected) return;
     try {
       const popRect = popover.getBoundingClientRect();
       if (popRect.right > window.innerWidth - 8) {
-        popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
+        // Re-check before style access to prevent race condition
+        if (popover && popover.isConnected && popover.style) {
+          popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
+        }
       }
     } catch (err) {
       // Popover was removed before RAF callback executed
