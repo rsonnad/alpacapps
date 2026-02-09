@@ -1,12 +1,13 @@
 {
-  "version": "v260209.19 1:10a",
-  "commit": "a956804a",
-  "full_commit": "a956804ac015973785f0649dd0c9ad2fe9dff585",
-  "timestamp": "2026-02-09T01:10:55-06:00",
+  "version": "v260209.22 1:13a",
+  "commit": "8cdfe93f",
+  "full_commit": "8cdfe93f3e435d5713fefca39aed1db79463c820",
+  "timestamp": "2026-02-09T01:13:19-06:00",
   "included":   origin/bugfix/20260209-78b7c6fe-1d23-455c-bdd8-c92afcef68da
+  origin/bugfix/20260209-afc95840-f0fb-4def-a371-034087f2e9f7
+  origin/bugfix/20260209-b1bbccb9-7579-4e82-9d7a-9bb85d2dfbd0
   origin/bugfix/20260209-d8bcafd5-f92f-417a-b8e9-c3ada1e8e8aa
-  origin/claude/add-vehicle-owner-details-9ycwy,
-  "pending":   origin/bugfix/20260209-b1bbccb9-7579-4e82-9d7a-9bb85d2dfbd0
-  origin/feature/20260209-4692a387
-  origin/main
+  origin/claude/add-vehicle-owner-details-9ycwy
+  origin/main,
+  "pending":   origin/feature/20260209-4692a387
 }
