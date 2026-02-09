@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <title>Install AlpacApps Bug Reporter</title>
+  <link rel="stylesheet" href="/styles/site.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -175,7 +178,48 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Header -->
+  <header class="aap-header aap-header--solid aap-header--dark" id="aap-header">
+    <div class="aap-header__inner">
+      <a href="/" class="aap-header__logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="Alpaca Playhouse" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
+        <span title="Site version" class="aap-header__version">v260209.10 12:55a</span>
+      </a>
+
+      <nav class="aap-nav" id="aap-nav">
+        <ul class="aap-nav__list">
+          <li><a href="/visiting/" class="aap-nav__link">Visiting</a></li>
+          <li><a href="/spaces/" class="aap-nav__link">Rentals</a></li>
+          <li><a href="/events/" class="aap-nav__link">Events</a></li>
+          <li><a href="/community/" class="aap-nav__link">Community</a></li>
+          <li><a href="/photos/" class="aap-nav__link">Photos</a></li>
+          <li><a href="/contact/" class="aap-nav__link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">
+        <span class="aap-menu-toggle__bar"></span>
+        <span class="aap-menu-toggle__bar"></span>
+        <span class="aap-menu-toggle__bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation -->
+  <div class="aap-mobile-nav" id="aap-mobile-nav">
+    <button class="aap-mobile-nav__close" id="aap-mobile-nav-close" aria-label="Close menu">×</button>
+    <ul class="aap-mobile-nav__list">
+      <li class="aap-mobile-nav__item"><a href="/visiting/" class="aap-mobile-nav__link">Visiting</a></li>
+      <li class="aap-mobile-nav__item"><a href="/spaces/" class="aap-mobile-nav__link">Rentals</a></li>
+      <li class="aap-mobile-nav__item"><a href="/events/" class="aap-mobile-nav__link">Events</a></li>
+      <li class="aap-mobile-nav__item"><a href="/community/" class="aap-mobile-nav__link">Community</a></li>
+      <li class="aap-mobile-nav__item"><a href="/photos/" class="aap-mobile-nav__link">Photos</a></li>
+      <li class="aap-mobile-nav__item"><a href="/contact/" class="aap-mobile-nav__link">Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="container" style="padding-top: 100px;">
     <h1>AlpacApps Bug Reporter</h1>
     <p class="subtitle">Browser extension for reporting bugs with annotated screenshots</p>
 
@@ -333,6 +377,8 @@
     </div>
   </div>
 
+  <script src="/shared/site-components.js"></script>
+  <script src="/shared/version-info.js"></script>
   <script>
     // Platform tab switching
     document.querySelectorAll('.platform-tab').forEach(tab => {
@@ -343,6 +389,17 @@
         document.getElementById('platform-' + tab.dataset.platform).classList.add('active');
       });
     });
+
+    // Mobile menu
+    const menuToggle = document.getElementById('aap-menu-toggle');
+    const mobileNav = document.getElementById('aap-mobile-nav');
+    const mobileNavClose = document.getElementById('aap-mobile-nav-close');
+    if (menuToggle && mobileNav) {
+      menuToggle.addEventListener('click', () => { mobileNav.classList.add('aap-mobile-nav--open'); document.body.style.overflow = 'hidden'; });
+    }
+    if (mobileNavClose && mobileNav) {
+      mobileNavClose.addEventListener('click', () => { mobileNav.classList.remove('aap-mobile-nav--open'); document.body.style.overflow = ''; });
+    }
   </script>
 </body>
 </html>
