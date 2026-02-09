@@ -1633,7 +1633,7 @@ function showDeviceColorPopover(triggerBtn) {
   // Adjust if overflows right edge
   requestAnimationFrame(() => {
     // Double-check popover is still valid and connected before AND during style access
-    if (!popover || !popover.isConnected) return;
+    if (!popover || !popover.isConnected || !popover.style) return;
     try {
       const popRect = popover.getBoundingClientRect();
       if (popRect.right > window.innerWidth - 8) {
