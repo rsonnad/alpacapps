@@ -257,7 +257,7 @@ Alpaca Playhouse`
           <p><strong>Payment Methods:</strong></p>
           <ul>
             <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: payments@alpacaplayhouse.com</li>
+            <li>Zelle: alpacaplayhouse@gmail.com</li>
           </ul>
           <p>Please include your name in the payment memo.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
@@ -275,7 +275,7 @@ ${data.due_date ? `Due Date: ${data.due_date}` : ''}
 
 Payment Methods:
 - Venmo: @AlpacaPlayhouse
-- Zelle: payments@alpacaplayhouse.com
+- Zelle: alpacaplayhouse@gmail.com
 
 Please include your name in the payment memo.
 
@@ -352,7 +352,7 @@ Alpaca Playhouse`
           <p><strong>Payment Methods:</strong></p>
           <ul>
             <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: payments@alpacaplayhouse.com</li>
+            <li>Zelle: alpacaplayhouse@gmail.com</li>
           </ul>
           <p>If you have any questions or need anything, don't hesitate to reach out!</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
@@ -371,7 +371,7 @@ Your Rental Details:
 
 Payment Methods:
 - Venmo: @AlpacaPlayhouse
-- Zelle: payments@alpacaplayhouse.com
+- Zelle: alpacaplayhouse@gmail.com
 
 If you have any questions or need anything, don't hesitate to reach out!
 
@@ -390,7 +390,7 @@ Alpaca Playhouse`
           <p><strong>Payment Methods:</strong></p>
           <ul>
             <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: payments@alpacaplayhouse.com</li>
+            <li>Zelle: alpacaplayhouse@gmail.com</li>
           </ul>
           <p>Please include your name and "${data.period || 'rent'}" in the payment memo.</p>
           <p>Thank you!</p>
@@ -404,7 +404,7 @@ This is a friendly reminder that your rent payment of $${data.amount} is due on 
 
 Payment Methods:
 - Venmo: @AlpacaPlayhouse
-- Zelle: payments@alpacaplayhouse.com
+- Zelle: alpacaplayhouse@gmail.com
 
 Please include your name and "${data.period || 'rent'}" in the payment memo.
 
@@ -426,7 +426,7 @@ Alpaca Playhouse`
           <p><strong>Payment Methods:</strong></p>
           <ul>
             <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: payments@alpacaplayhouse.com</li>
+            <li>Zelle: alpacaplayhouse@gmail.com</li>
           </ul>
           <p>If you're experiencing difficulties, please reach out to discuss options.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
@@ -442,7 +442,7 @@ Please submit payment as soon as possible to avoid any additional fees or action
 
 Payment Methods:
 - Venmo: @AlpacaPlayhouse
-- Zelle: payments@alpacaplayhouse.com
+- Zelle: alpacaplayhouse@gmail.com
 
 If you're experiencing difficulties, please reach out to discuss options.
 

@@ -33,7 +33,7 @@ interface TelnyxConfig {
 function getSmsBody(type: SmsType, data: Record<string, any>): string {
   switch (type) {
     case "payment_reminder":
-      return `Hi ${data.first_name}, friendly reminder: your ${data.period || 'rent'} of $${data.amount} is due ${data.due_date}. Pay via Venmo @AlpacaPlayhouse or Zelle payments@alpacaplayhouse.com - Alpaca Playhouse`;
+      return `Hi ${data.first_name}, friendly reminder: your ${data.period || 'rent'} of $${data.amount} is due ${data.due_date}. Pay via Venmo @AlpacaPlayhouse or Zelle alpacaplayhouse@gmail.com - Alpaca Playhouse`;
 
     case "payment_overdue":
       return `Hi ${data.first_name}, your rent of $${data.amount} was due ${data.due_date} and is ${data.days_overdue} day(s) overdue.${data.late_fee ? ` Late fee: $${data.late_fee}. Total: $${data.total_due}.` : ''} Please pay ASAP. - Alpaca Playhouse`;
@@ -42,7 +42,7 @@ function getSmsBody(type: SmsType, data: Record<string, any>): string {
       return `Hi ${data.first_name}, we received your $${data.amount} payment${data.period ? ` for ${data.period}` : ''}. Thank you! - Alpaca Playhouse`;
 
     case "deposit_requested":
-      return `Hi ${data.first_name}, your deposit of $${data.total_due} is due${data.due_date ? ` by ${data.due_date}` : ''}. Pay via Venmo @AlpacaPlayhouse or Zelle payments@alpacaplayhouse.com - Alpaca Playhouse`;
+      return `Hi ${data.first_name}, your deposit of $${data.total_due} is due${data.due_date ? ` by ${data.due_date}` : ''}. Pay via Venmo @AlpacaPlayhouse or Zelle alpacaplayhouse@gmail.com - Alpaca Playhouse`;
 
     case "deposit_received":
       return `Hi ${data.first_name}, we received your $${data.amount} deposit.${data.remaining_balance > 0 ? ` Remaining: $${data.remaining_balance}.` : ' All deposits received!'} Thank you! - Alpaca Playhouse`;
