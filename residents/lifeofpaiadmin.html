@@ -395,7 +395,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.54 3:41a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.55 3:55a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -748,6 +748,26 @@
               </select>
             </div>
           </div>
+
+          <!-- Director's Notes (editable) -->
+          <details id="directorNotesDetails" style="margin-bottom:1rem; border:1px solid var(--border); border-radius:6px; background:var(--bg);">
+            <summary style="cursor:pointer; padding:0.6rem 0.8rem; font-weight:600; font-size:0.82rem; display:flex; align-items:center; gap:0.5rem;">
+              Director's Notes
+              <span class="text-muted" style="font-weight:400; font-size:0.72rem;">(the full TTS prompt sent to Gemini — editable)</span>
+            </summary>
+            <div style="padding:0 0.8rem 0.8rem;">
+              <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; align-items:center; flex-wrap:wrap;">
+                <span class="text-muted" style="font-size:0.72rem;">Showing prompt for the selected chapter. Edit to fine-tune voice direction.</span>
+                <span id="directorNotesStatus" style="font-size:0.7rem; font-weight:500;"></span>
+              </div>
+              <textarea class="prompt-textarea" id="directorNotesTextarea" rows="16" style="min-height:220px; font-size:0.75rem; line-height:1.55;"></textarea>
+              <div style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center; flex-wrap:wrap;">
+                <button class="btn-small" id="directorNotesResetBtn" style="font-size:0.75rem;">Reset to Default</button>
+                <button class="btn-small" id="directorNotesSaveBtn" style="background:#E99C48; color:#fff; border-color:#E99C48; font-size:0.75rem;">Save to Production</button>
+                <span class="text-muted" style="font-size:0.7rem; flex:1;">Saving writes these notes to the database. The worker will use them for all future whisper deliveries.</span>
+              </div>
+            </div>
+          </details>
 
           <!-- Quick-audition row: pick one voice -->
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">

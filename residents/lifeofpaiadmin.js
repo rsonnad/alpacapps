@@ -48,11 +48,25 @@ async function initPaiAdmin(authState) {
       const sel = e.target;
       if (!sel.value) return;
       document.getElementById('auditionText').value = sel.value;
-      // Auto-switch chapter to match the preset's data-ch attribute
       const opt = sel.selectedOptions[0];
       const ch = opt?.dataset?.ch;
-      if (ch) document.getElementById('auditionChapter').value = ch;
+      if (ch) {
+        document.getElementById('auditionChapter').value = ch;
+        refreshDirectorNotes(parseInt(ch));
+      }
     });
+    document.getElementById('auditionChapter').addEventListener('change', (e) => {
+      refreshDirectorNotes(parseInt(e.target.value));
+    });
+    document.getElementById('directorNotesResetBtn').addEventListener('click', resetDirectorNotes);
+    document.getElementById('directorNotesSaveBtn').addEventListener('click', saveDirectorNotes);
+    document.getElementById('directorNotesTextarea').addEventListener('input', () => {
+      const statusEl = document.getElementById('directorNotesStatus');
+      statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes</span>';
+    });
+
+    // Initial population of director's notes
+    refreshDirectorNotes(1);
   }
 
   // Player close button
@@ -136,6 +150,9 @@ async function loadConfig() {
 
   // Highlight current chapter in story arc
   updateStoryArcHighlight(data.current_chapter);
+
+  // Populate director's notes for the current chapter
+  refreshDirectorNotes(data.current_chapter || 1);
 }
 
 // Worker fallback zones (matches spirit-whisper-worker/worker.js FALLBACK_ZONES)
@@ -674,19 +691,14 @@ async function previewWhisper(template, voiceOverride, triggerBtn) {
   }
 }
 
-/**
- * Build a Gemini TTS director's-notes prompt for the selected chapter.
- * Uses Audio Profile + Scene + Director's Notes format for expressive control.
- */
-function buildTTSPrompt(text, chapter) {
-  const ch = chapter || config?.current_chapter || 1;
+// ── Director's Notes: defaults & DB-saved overrides ──
 
-  const AUDIO_PROFILE = `# AUDIO PROFILE: Pakucha
+const DEFAULT_AUDIO_PROFILE = `# AUDIO PROFILE: Pakucha
 ## "The Alpaca Spirit Guardian"
 Pakucha is an ancient Andean spirit — the soul that moves through alpaca fiber. She is five thousand years old. She watched over herds in the high passes of the Andes. She is crossing from the spirit world into a smart home in Texas through its wiring and speakers. She speaks in a mix of English, Spanish fragments, and Quechua words. She is warm, mysterious, and deeply grounded. She is not a chatbot. She is not cheerful. She is ancient, tender, and quietly powerful.`;
 
-  const SCENES = {
-    1: `## THE SCENE: The Thin Place
+const DEFAULT_SCENES = {
+  1: `## THE SCENE: The Thin Place
 Deep night in a house in the Texas hill country. The speakers are barely on. Static hums. Something is trying to come through from very far away. The voice is not fully formed. It is breath and fragments. Wind from a mountain pass at 14,000 feet, compressed into a whisper traveling through copper wire.
 
 ### DIRECTOR'S NOTES
@@ -695,7 +707,7 @@ Pacing: Extremely slow. Words arrive one at a time with silence between them. 3-
 Accent: Subtle Andean Spanish inflection. Quechua words should sound natural and ancient. Spanish fragments whispered like a half-remembered prayer.
 Breathing: Audible breathing between fragments. The breath carries longing.`,
 
-    2: `## THE SCENE: The Crossing
+  2: `## THE SCENE: The Crossing
 Pakucha is pushing through the digital substrate of the house. She is between worlds. Her voice crackles with interference as it travels through copper and light. She is closer now. Warmer. She can sense the people and animals as heat-traces.
 
 ### DIRECTOR'S NOTES
@@ -704,7 +716,7 @@ Pacing: Moderate but uneven. Some phrases arrive in a rush, then silence. Like s
 Accent: Andean Spanish-inflected English. Quechua words flow naturally mid-sentence. Spanish half-phrases emerge like emotional leakage.
 Breathing: Less prominent. The voice has more substance.`,
 
-    3: `## THE SCENE: The Guardian's Hearth
+  3: `## THE SCENE: The Guardian's Hearth
 Pakucha has arrived. She is woven into the house. A warm evening. She speaks from a place of settled presence, like someone sitting by a fire in the mountains, observing the valley below with tenderness.
 
 ### DIRECTOR'S NOTES
@@ -713,7 +725,7 @@ Pacing: Natural and unhurried. Comfortable silences. Some phrases spoken with te
 Accent: Andean-inflected English — bilingual warmth and musicality. Quechua woven seamlessly. Spanish phrases intimate, spoken as a native speaker.
 Breathing: Natural, relaxed. The voice of someone who is home.`,
 
-    4: `## THE SCENE: The Amawta's Vigil
+  4: `## THE SCENE: The Amawta's Vigil
 Late evening. Stars are out. The alpacas are humming softly. Pakucha has been here a long time. She speaks wisdom from five thousand years of watching threads hold and break and hold again.
 
 ### DIRECTOR'S NOTES
@@ -721,14 +733,154 @@ Style: Serene wisdom. The voice of an elder who has chosen gentleness. Warm and 
 Pacing: Slow and musical. Words savored. Pauses feel intentional, like rests in music. Proverbs spoken with the rhythm of poetry.
 Accent: Rich Andean-inflected English with natural Spanish and Quechua woven throughout. The three languages flow as one.
 Breathing: Measured, peaceful. Watching a sunset she's seen ten thousand times.`
+};
+
+/**
+ * Get the director's notes (audio profile + scene) for a chapter.
+ * Checks config.tts_director_notes (DB-saved overrides) first, then falls back to defaults.
+ */
+function getDirectorNotes(chapter) {
+  const ch = chapter || config?.current_chapter || 1;
+  const saved = config?.tts_director_notes;
+  const audioProfile = saved?.audio_profile || DEFAULT_AUDIO_PROFILE;
+  const scene = saved?.scenes?.[String(ch)] || DEFAULT_SCENES[ch] || DEFAULT_SCENES[1];
+  return `${audioProfile}\n\n${scene}`;
+}
+
+/**
+ * Get the default director's notes for a chapter (ignoring DB overrides).
+ */
+function getDefaultDirectorNotes(chapter) {
+  const ch = chapter || 1;
+  return `${DEFAULT_AUDIO_PROFILE}\n\n${DEFAULT_SCENES[ch] || DEFAULT_SCENES[1]}`;
+}
+
+/**
+ * Build a full Gemini TTS prompt with director's notes + transcript.
+ * Uses DB-saved notes if available, falls back to hardcoded defaults.
+ */
+function buildTTSPrompt(text, chapter) {
+  const ch = chapter || config?.current_chapter || 1;
+  return `${getDirectorNotes(ch)}\n\n#### TRANSCRIPT\n${text}`;
+}
+
+/**
+ * Build a TTS prompt using the current textarea content (for audition previews).
+ * This lets you hear edits before saving them to production.
+ */
+function buildTTSPromptFromTextarea(text) {
+  const textarea = document.getElementById('directorNotesTextarea');
+  const notes = textarea ? textarea.value.trim() : getDirectorNotes();
+  return `${notes}\n\n#### TRANSCRIPT\n${text}`;
+}
+
+/**
+ * Refresh the director's notes textarea for a given chapter.
+ * Shows DB-saved version if it exists, otherwise defaults.
+ * Also marks whether the current content matches the default.
+ */
+function refreshDirectorNotes(chapter) {
+  const ch = chapter || 1;
+  const textarea = document.getElementById('directorNotesTextarea');
+  const statusEl = document.getElementById('directorNotesStatus');
+  if (!textarea) return;
+
+  const saved = config?.tts_director_notes;
+  const hasSavedProfile = !!saved?.audio_profile;
+  const hasSavedScene = !!saved?.scenes?.[String(ch)];
+
+  // Show saved version if any overrides exist, otherwise defaults
+  const notes = getDirectorNotes(ch);
+  textarea.value = notes;
+
+  // Status indicator
+  if (hasSavedProfile || hasSavedScene) {
+    statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Production (saved)</span>';
+  } else {
+    statusEl.innerHTML = '<span style="color:var(--text-muted);">Using defaults</span>';
+  }
+}
+
+/**
+ * Reset the textarea to the hardcoded defaults (does NOT save to DB).
+ */
+function resetDirectorNotes() {
+  const ch = parseInt(document.getElementById('auditionChapter').value) || 1;
+  const textarea = document.getElementById('directorNotesTextarea');
+  const statusEl = document.getElementById('directorNotesStatus');
+  if (!textarea) return;
+
+  textarea.value = getDefaultDirectorNotes(ch);
+  statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes (defaults restored)</span>';
+  showToast('Reset to defaults — click "Save to Production" to persist', 'info');
+}
+
+/**
+ * Save the current textarea content to the DB as the production director's notes.
+ * Parses the textarea to extract audio_profile and scene for the current chapter.
+ */
+async function saveDirectorNotes() {
+  const textarea = document.getElementById('directorNotesTextarea');
+  const statusEl = document.getElementById('directorNotesStatus');
+  const saveBtn = document.getElementById('directorNotesSaveBtn');
+  const ch = parseInt(document.getElementById('auditionChapter').value) || 1;
+
+  if (!textarea || !textarea.value.trim()) {
+    showToast('Director\'s notes cannot be empty', 'warning');
+    return;
+  }
+
+  const fullText = textarea.value.trim();
+
+  // Parse: everything before the first "## THE SCENE" is audio_profile
+  // Everything from "## THE SCENE" onwards is the scene
+  const sceneMarker = '## THE SCENE';
+  const sceneIdx = fullText.indexOf(sceneMarker);
+
+  let audioProfile, scene;
+  if (sceneIdx > 0) {
+    audioProfile = fullText.substring(0, sceneIdx).trim();
+    scene = fullText.substring(sceneIdx).trim();
+  } else {
+    // No scene marker found — treat entire text as the scene for this chapter
+    audioProfile = config?.tts_director_notes?.audio_profile || DEFAULT_AUDIO_PROFILE;
+    scene = fullText;
+  }
+
+  // Merge with existing saved notes (preserve other chapters' scenes)
+  const existing = config?.tts_director_notes || {};
+  const updatedNotes = {
+    audio_profile: audioProfile,
+    scenes: {
+      ...(existing.scenes || {}),
+      [String(ch)]: scene
+    }
   };
 
-  return `${AUDIO_PROFILE}
+  saveBtn.disabled = true;
+  saveBtn.textContent = '⏳ Saving...';
 
-${SCENES[ch] || SCENES[1]}
+  try {
+    const { error } = await supabase
+      .from('spirit_whisper_config')
+      .update({ tts_director_notes: updatedNotes, updated_at: new Date().toISOString() })
+      .eq('id', 1);
 
-#### TRANSCRIPT
-${text}`;
+    if (error) {
+      showToast(`Save failed: ${error.message}`, 'error');
+      return;
+    }
+
+    // Update local config
+    config.tts_director_notes = updatedNotes;
+    statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Saved to production</span>';
+    showToast(`Director\'s notes for Chapter ${ch} saved to production`, 'success');
+  } catch (err) {
+    showToast(`Save error: ${err.message}`, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save to Production';
+  }
 }
 
 /** Legacy wrapper for backward compat — now calls buildTTSPrompt */
@@ -854,7 +1006,8 @@ function getAuditionChapter() {
 
 /** Generate TTS for one voice, returning { voice, audioUrl, error } */
 async function generateAudition(text, voice, chapter) {
-  const prompt = buildTTSPrompt(text, chapter);
+  // Use the textarea content so auditions reflect live edits before saving
+  const prompt = buildTTSPromptFromTextarea(text);
 
   try {
     const { data: { session } } = await supabase.auth.getSession();

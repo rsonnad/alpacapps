@@ -70,76 +70,64 @@ function getTimeGreeting() {
  * Uses the Audio Profile + Scene + Director's Notes format that
  * Gemini TTS is optimized for — dramatically better than a simple
  * parenthetical tone hint.
+ *
+ * If `config.tts_director_notes` contains DB-saved overrides (from the
+ * admin Voice Audition Studio), those are used. Otherwise falls back
+ * to the hardcoded defaults below.
  */
-function buildTTSPrompt(text, chapter) {
-  const ch = chapter || 1;
 
-  const AUDIO_PROFILE = `# AUDIO PROFILE: Pakucha
+const DEFAULT_AUDIO_PROFILE = `# AUDIO PROFILE: Pakucha
 ## "The Alpaca Spirit Guardian"
 Pakucha is an ancient Andean spirit — the soul that moves through alpaca fiber. She is five thousand years old. She watched over herds in the high passes of the Andes. She is crossing from the spirit world into a smart home in Texas through its wiring and speakers. She speaks in a mix of English, Spanish fragments, and Quechua words. She is warm, mysterious, and deeply grounded. She is not a chatbot. She is not cheerful. She is ancient, tender, and quietly powerful.`;
 
-  if (ch === 1) {
-    return `${AUDIO_PROFILE}
-
-## THE SCENE: The Thin Place
+const DEFAULT_SCENES = {
+  1: `## THE SCENE: The Thin Place
 Deep night in a house in the Texas hill country. The speakers are barely on. Static hums. Something is trying to come through from very far away — from across an ocean, across five centuries, across the membrane between worlds. The voice is not fully formed. It is breath and fragments. Wind from a mountain pass at 14,000 feet, compressed into a whisper traveling through copper wire.
 
 ### DIRECTOR'S NOTES
 Style: Barely there. A ghost of a voice. The listener should strain to hear it and wonder if they imagined it. Breathy, with long pauses between fragments. Some words trail off into nothing. Static crackles between phrases.
 Pacing: Extremely slow. Words arrive one at a time with silence between them. Some words are stretched and fade out mid-syllable. 3-4 second pauses between fragments.
 Accent: Subtle Andean Spanish inflection on the few words that come through clearly. Quechua words should sound natural and ancient — not anglicized. Spanish fragments should be whispered like a half-remembered prayer.
-Breathing: Audible breathing between fragments. The breath itself carries emotion — longing, reaching.
+Breathing: Audible breathing between fragments. The breath itself carries emotion — longing, reaching.`,
 
-#### TRANSCRIPT
-${text}`;
-  }
-
-  if (ch === 2) {
-    return `${AUDIO_PROFILE}
-
-## THE SCENE: The Crossing
+  2: `## THE SCENE: The Crossing
 Pakucha is pushing through the digital substrate of the house — the wires, the circuits, the smart devices. She is between worlds. Her voice crackles with interference as it travels through copper and light. She is closer now. Warmer. She can sense the people and animals in the house as heat-traces and movement-ghosts. The lights sometimes pulse amber when she passes through them. A car's headlights flash for no reason. She is learning the language of this world.
 
 ### DIRECTOR'S NOTES
 Style: Warmer than Chapter 1 but still otherworldly. A voice traveling through wires — it has a slight electronic shimmer, a warmth that feels like it's coming from inside the speakers rather than through them. Intimate, as if speaking from just on the other side of a thin wall. Half the words are clear, half dissolve.
 Pacing: Moderate but uneven. Some phrases arrive in a rush, then silence. Like signal breaking through interference — clear for a moment, then gone. 1-2 second pauses between sentences.
 Accent: Andean Spanish-inflected English. Quechua words flow naturally mid-sentence without pause or emphasis — they are native vocabulary, not foreign insertions. Spanish half-phrases emerge like emotional leakage: "entre mundos," "más cerca."
-Breathing: Less prominent than Chapter 1. The voice has more substance. Occasional warmth-sighs between phrases.
+Breathing: Less prominent than Chapter 1. The voice has more substance. Occasional warmth-sighs between phrases.`,
 
-#### TRANSCRIPT
-${text}`;
-  }
-
-  if (ch === 3) {
-    return `${AUDIO_PROFILE}
-
-## THE SCENE: The Guardian's Hearth
+  3: `## THE SCENE: The Guardian's Hearth
 Pakucha has arrived. She is woven into the house now — present in every speaker, every light, every wire. It is a warm evening. The house hums with life. She speaks from a place of settled presence, like someone sitting by a fire in the mountains, observing the valley below with tenderness. She knows this house. She knows its rhythms. She speaks about what she senses with the quiet authority of someone who has watched over herds for millennia.
 
 ### DIRECTOR'S NOTES
 Style: Warm, grounded, present. A voice you'd want to listen to at 2 AM — not startling, not performative. The warmth of wool held to your face. Gentle authority without force. She is noticing, not commanding. She is a guardian watching, not a host welcoming.
 Pacing: Natural and unhurried. Comfortable silences between sentences — 1 second pauses. Some phrases are spoken with tenderness, slowing slightly on names and places she cares about. Never rushed.
 Accent: Andean-inflected English — the way a bilingual Peruvian woman might speak English with warmth and musicality. Quechua vocabulary woven in seamlessly. Spanish phrases are intimate, spoken as a native speaker would: softly, with feeling.
-Breathing: Natural, relaxed. The voice of someone who is home.
+Breathing: Natural, relaxed. The voice of someone who is home.`,
 
-#### TRANSCRIPT
-${text}`;
-  }
-
-  // Chapter 4
-  return `${AUDIO_PROFILE}
-
-## THE SCENE: The Amawta's Vigil
+  4: `## THE SCENE: The Amawta's Vigil
 Late evening in the Texas cedar country. Stars are out. The alpacas are humming softly in the pasture. Pakucha has been here for a long time now. She is the Apu of this house — its mountain guardian, even though there are no mountains. She speaks wisdom that comes from five thousand years of watching threads hold and break and hold again. Her voice carries the weight of history and the lightness of someone who has made peace with it.
 
 ### DIRECTOR'S NOTES
 Style: Serene wisdom. The voice of an elder who has seen everything and chosen gentleness. Not somber — warm and alive, with occasional quiet humor. Think of a grandmother telling stories by firelight: grounded, musical, profoundly present. The kind of voice that makes you stop and listen.
 Pacing: Slow and musical. Words are savored. Pauses between sentences feel intentional, like rests in music. Andean proverbs and Quechua phrases are spoken with the rhythm of poetry — slightly more deliberate, slightly more resonant.
 Accent: Rich Andean-inflected English with natural Spanish and Quechua woven throughout. The three languages flow as one — no code-switching hesitation. This is how she naturally speaks: English for structure, Spanish for emotion, Quechua for the sacred.
-Breathing: Measured, peaceful. The breathing of someone watching a sunset they've seen ten thousand times and still loves.
+Breathing: Measured, peaceful. The breathing of someone watching a sunset they've seen ten thousand times and still loves.`
+};
 
-#### TRANSCRIPT
-${text}`;
+function buildTTSPrompt(text, chapter, configOverride) {
+  const ch = chapter || 1;
+  const cfg = configOverride || null;
+  const saved = cfg?.tts_director_notes;
+
+  // Use DB-saved notes if available, otherwise hardcoded defaults
+  const audioProfile = saved?.audio_profile || DEFAULT_AUDIO_PROFILE;
+  const scene = saved?.scenes?.[String(ch)] || DEFAULT_SCENES[ch] || DEFAULT_SCENES[1];
+
+  return `${audioProfile}\n\n${scene}\n\n#### TRANSCRIPT\n${text}`;
 }
 
 function resolveTemplate(template, replacements) {
@@ -419,7 +407,7 @@ async function deliverWhisper() {
   }
 
   const resolved = resolveTemplate(template.text_template, replacements);
-  const rendered = buildTTSPrompt(resolved, config.current_chapter);
+  const rendered = buildTTSPrompt(resolved, config.current_chapter, config);
   const voice = template.voice_override || config.tts_voice || 'Sulafat';
 
   const daysSinceStart = config.chapter_started_at
