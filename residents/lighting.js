@@ -731,8 +731,10 @@ function updateDeviceUI(deviceId) {
 
   // Update color button background
   const colorBtn = row.querySelector('.child-color-btn');
-  if (colorBtn && state.color) {
-    colorBtn.style.background = state.color;
+  if (colorBtn) {
+    if (state.color) {
+      colorBtn.style.background = state.color;
+    }
   }
 
   // Update segment color pickers to reflect current device color
@@ -1630,6 +1632,7 @@ function showDeviceColorPopover(triggerBtn) {
 
   // Adjust if overflows right edge
   requestAnimationFrame(() => {
+    if (!popover || !popover.isConnected) return;
     const popRect = popover.getBoundingClientRect();
     if (popRect.right > window.innerWidth - 8) {
       popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
