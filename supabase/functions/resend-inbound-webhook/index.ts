@@ -824,13 +824,19 @@ async function handleAutoReply(
 
   // Ignore emails FROM or TO auto@ or noreply@ (automated system emails looping back)
   const toAddr = emailRecord.to_address || "";
-  // Extract email address from "Name <email>" format
-  const fromEmail = from.match(/<(.+)>/)?.[1] || from;
-  const toEmail = toAddr.match(/<(.+)>/)?.[1] || toAddr;
+  // Extract email address from "Name <email>" format, normalize to lowercase
+  const fromEmail = (from.match(/<(.+)>/)?.[1] || from).toLowerCase().trim();
+  const toEmail = (toAddr.match(/<(.+)>/)?.[1] || toAddr).toLowerCase().trim();
 
   if (fromEmail.includes("auto@alpacaplayhouse.com") || fromEmail.includes("noreply@alpacaplayhouse.com") ||
       toEmail.includes("auto@alpacaplayhouse.com") || toEmail.includes("noreply@alpacaplayhouse.com")) {
     console.log("Ignoring automated email reply loop", { from: fromEmail, to: toEmail });
+    return;
+  }
+
+  // Additional safety: ignore if body starts with automated email template markers
+  if (body && (body.startsWith("YOUR REPORT:") || body.includes("Your bug report has been automatically"))) {
+    console.log("Ignoring automated bug notification email (body template detected)", { subject });
     return;
   }
 
