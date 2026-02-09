@@ -533,8 +533,64 @@ async function autoRecordDeposit(
       .eq("id", application.id);
   }
 
-  // Notify admin
+  // Record any overpayment as rent credit
   const overpayment = remaining > 0 ? remaining : 0;
+  if (overpayment > 0) {
+    const { data: rpData } = await supabase
+      .from("rental_payments")
+      .insert({
+        rental_application_id: application.id,
+        payment_type: "rent_credit",
+        amount_due: 0,
+        amount_paid: overpayment,
+        paid_date: today,
+        payment_method: "zelle",
+        transaction_id: parsed.confirmationNumber,
+        notes: `Overpayment credit from $${parsed.amount.toFixed(2)} Zelle payment (deposits totaled $${(parsed.amount - overpayment).toFixed(2)})`,
+      })
+      .select()
+      .single();
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "rent",
+      amount: overpayment,
+      payment_method: "zelle",
+      transaction_date: today,
+      person_id: application.person_id,
+      person_name: personName,
+      rental_application_id: application.id,
+      rental_payment_id: rpData?.id,
+      status: "completed",
+      description: `Rent prepayment / overpayment credit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
+      recorded_by: "system:zelle-email",
+    });
+
+    console.log(`Recorded overpayment credit: $${overpayment.toFixed(2)} for ${personName}`);
+  }
+
+  // Build payment summary for receipt email
+  const chargeLines: { label: string; amount: number }[] = [];
+  if (moveInUnpaid) chargeLines.push({ label: "Move-in Deposit", amount: application.move_in_deposit_amount || 0 });
+  if (securityUnpaid) chargeLines.push({ label: "Security Deposit", amount: application.security_deposit_amount || 0 });
+  const totalCharges = chargeLines.reduce((sum, l) => sum + l.amount, 0);
+  const balance = totalCharges - parsed.amount; // Negative = credit, positive = still owed
+
+  // Send receipt email to the tenant
+  if (application.person?.email) {
+    await sendTenantReceipt(resendApiKey, {
+      tenantEmail: application.person.email,
+      tenantName: application.person.first_name,
+      paymentAmount: parsed.amount,
+      confirmationNumber: parsed.confirmationNumber,
+      chargeLines,
+      totalCharges,
+      balance,
+      overpayment,
+    });
+  }
+
+  // Notify admin
   await sendPaymentNotification(resendApiKey, "auto_recorded", {
     parsed,
     personName,
@@ -543,6 +599,101 @@ async function autoRecordDeposit(
     moveInRecorded: moveInUnpaid,
     securityRecorded: securityUnpaid,
   });
+}
+
+/**
+ * Send a payment receipt email to the tenant.
+ */
+async function sendTenantReceipt(
+  resendApiKey: string,
+  details: {
+    tenantEmail: string;
+    tenantName: string;
+    paymentAmount: number;
+    confirmationNumber: string | null;
+    chargeLines: { label: string; amount: number }[];
+    totalCharges: number;
+    balance: number;
+    overpayment: number;
+  }
+): Promise<void> {
+  const chargeRowsHtml = details.chargeLines
+    .map(
+      (l) =>
+        `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;">${l.label}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">$${l.amount.toFixed(2)}</td></tr>`
+    )
+    .join("");
+
+  const balanceColor = details.balance > 0 ? "#e74c3c" : details.balance < 0 ? "#2d7d46" : "#333";
+  const balanceLabel =
+    details.balance > 0
+      ? `$${details.balance.toFixed(2)} remaining`
+      : details.balance < 0
+      ? `$${Math.abs(details.balance).toFixed(2)} credit on account`
+      : "$0.00 — Paid in full";
+
+  const subject = `Payment Received — $${details.paymentAmount.toFixed(2)}`;
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;">
+      <div style="background:#2d7d46;color:white;padding:20px 24px;border-radius:8px 8px 0 0;">
+        <h2 style="margin:0;font-size:20px;">&#x2705; Payment Received</h2>
+        <p style="margin:8px 0 0;opacity:0.9;">Thank you, ${details.tenantName}!</p>
+      </div>
+      <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:24px;">
+        <table style="border-collapse:collapse;width:100%;margin-bottom:16px;">
+          <tr style="background:#f8f9fa;">
+            <td style="padding:10px 12px;font-weight:bold;border-bottom:2px solid #ddd;">Description</td>
+            <td style="padding:10px 12px;font-weight:bold;border-bottom:2px solid #ddd;text-align:right;">Amount</td>
+          </tr>
+          ${chargeRowsHtml}
+          <tr style="background:#f8f9fa;">
+            <td style="padding:10px 12px;font-weight:bold;border-top:2px solid #ddd;">Total Charges</td>
+            <td style="padding:10px 12px;font-weight:bold;border-top:2px solid #ddd;text-align:right;">$${details.totalCharges.toFixed(2)}</td>
+          </tr>
+        </table>
+
+        <table style="border-collapse:collapse;width:100%;margin-bottom:16px;">
+          <tr>
+            <td style="padding:8px 12px;border-bottom:1px solid #eee;">Payment Received (Zelle)</td>
+            <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#2d7d46;font-weight:bold;">-$${details.paymentAmount.toFixed(2)}</td>
+          </tr>
+          ${details.confirmationNumber ? `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#999;font-size:0.85rem;">Confirmation #${details.confirmationNumber}</td><td></td></tr>` : ""}
+        </table>
+
+        <div style="background:#f8f9fa;border-radius:6px;padding:14px 16px;text-align:center;">
+          <span style="font-size:0.85rem;color:#666;">Balance</span><br/>
+          <span style="font-size:1.4rem;font-weight:bold;color:${balanceColor};">${balanceLabel}</span>
+        </div>
+
+        <p style="color:#999;font-size:0.8rem;margin-top:20px;text-align:center;">
+          GenAlpaca Residency &bull; This is an automated receipt.
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "GenAlpaca <noreply@alpacaplayhouse.com>",
+        to: [details.tenantEmail],
+        subject,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      console.error("Failed to send tenant receipt:", await res.text());
+    } else {
+      console.log(`Sent payment receipt to ${details.tenantEmail}`);
+    }
+  } catch (err) {
+    console.error("Error sending tenant receipt:", err.message);
+  }
 }
 
 /**
