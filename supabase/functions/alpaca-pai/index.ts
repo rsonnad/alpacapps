@@ -318,6 +318,7 @@ IMPORTANT: Lights must be ON to change color or brightness. If the user asks to 
   // Sonos
   parts.push(`\nSONOS MUSIC (all zones accessible):
 Actions: play, pause, next, previous, set volume (0-100), play a favorite by name, pause all zones
+ANNOUNCEMENTS: Use the "announce" tool to make spoken announcements on Sonos speakers via high-quality TTS. You can announce to a specific room or all speakers (omit room for whole-house). Voices: Kore (default, clear), Puck (energetic), Charon (warm), Fenrir (bold), Leda (cheerful), Orus (firm), Aoede (bright), Zephyr (breezy).
 Note: Use room names exactly as the user says them. Common zones: Kitchen, Living Room, Master, Skyloft, Garage Mahal, Front Porch, Back Yard.`);
 
   // Tesla
@@ -456,6 +457,41 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["action"],
+    },
+  },
+  {
+    name: "announce",
+    description:
+      "Make a spoken announcement on Sonos speakers using high-quality text-to-speech. Use this when someone asks to announce something, make a PA announcement, or broadcast a message to the house.",
+    parameters: {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "The text to announce",
+        },
+        room: {
+          type: "string",
+          description:
+            "Sonos room/zone to announce in. Omit for whole-house announcement.",
+        },
+        voice: {
+          type: "string",
+          enum: [
+            "Kore",
+            "Puck",
+            "Charon",
+            "Fenrir",
+            "Leda",
+            "Orus",
+            "Aoede",
+            "Zephyr",
+          ],
+          description:
+            "TTS voice. Default: Kore. Puck=energetic, Charon=warm, Fenrir=bold, Leda=cheerful, Orus=firm, Aoede=bright, Zephyr=breezy.",
+        },
+      },
+      required: ["message"],
     },
   },
   {
@@ -837,6 +873,29 @@ async function executeToolCall(
           return `Error: ${errMsg}`;
         }
         return `OK: ${args.action}${args.room ? " in " + args.room : ""}${args.value ? " (" + args.value + ")" : ""}`;
+      }
+
+      case "announce": {
+        const payload: any = {
+          action: "announce",
+          text: args.message,
+          voice: args.voice || "Kore",
+        };
+        if (args.room) payload.room = args.room;
+
+        console.log("PAI → sonos-control announce:", JSON.stringify(payload));
+        const resp = await fetch(
+          `${supabaseUrl}/functions/v1/sonos-control`,
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(payload) }
+        );
+        const result = await resp.json();
+        console.log("PAI ← sonos-control announce response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error announcing: ${errMsg}`;
+        }
+        const target = args.room || "all speakers";
+        return `OK: Announced "${args.message.substring(0, 80)}" on ${target}`;
       }
 
       case "control_thermostat": {
@@ -1439,6 +1498,7 @@ function buildVapiToolsList(scope: UserScope): any[] {
   const tools: any[] = [];
   if (scope.goveeGroups.length) tools.push(vapiToolWrapper(findTool("control_lights")));
   if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("control_sonos")));
+  if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("announce")));
   if (scope.nestDevices.length) tools.push(vapiToolWrapper(findTool("control_thermostat")));
   if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(findTool("control_vehicle")));
   tools.push(vapiToolWrapper(findTool("get_device_status")));
