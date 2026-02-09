@@ -822,6 +822,12 @@ async function handleAutoReply(
   const body = emailRecord.body_text || emailRecord.body_html || "";
   const from = emailRecord.from_address || "";
 
+  // Ignore emails FROM auto@ or noreply@ (automated system emails looping back)
+  if (from.includes("auto@alpacaplayhouse.com") || from.includes("noreply@alpacaplayhouse.com")) {
+    console.log("Ignoring automated email reply loop from:", from);
+    return;
+  }
+
   // Check if this is a reply to a bug report email
   // Bug report subjects look like: "Re: Bug by John: Something is broken..."
   // or "Re: Screenshot of the Fix" etc.
