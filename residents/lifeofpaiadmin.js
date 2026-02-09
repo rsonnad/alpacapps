@@ -2,8 +2,8 @@
  * Life of PAI Admin - Control panel for spirit whisper system
  */
 
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { supabase } from '../../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
 
 let config = null;
 let currentPoolChapter = 1;
@@ -30,6 +30,7 @@ async function initPaiAdmin(authState) {
   await loadStats();
   if (isAdmin) {
     await loadPreviewData();
+    loadSonosZones();
   }
   await loadWhisperPool(1);
   await loadDeliveryLog();
@@ -126,6 +127,44 @@ async function loadConfig() {
 
   // Highlight current chapter in story arc
   updateStoryArcHighlight(data.current_chapter);
+}
+
+// Worker fallback zones (matches spirit-whisper-worker/worker.js FALLBACK_ZONES)
+const WORKER_FALLBACK_ZONES = ['Living Sound', 'Dining Sound', 'Front Outside Sound', 'Backyard Sound', 'DJ', 'garage outdoors', 'Outhouse'];
+
+async function loadSonosZones() {
+  const container = document.getElementById('cfgSonosZones');
+  if (!container) return;
+
+  // Try to get zones that have actually been used in delivery log
+  const { data: logZones } = await supabase
+    .from('spirit_whisper_log')
+    .select('target_zone')
+    .not('target_zone', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  // Unique zones from logs
+  const usedZones = new Set();
+  if (logZones) {
+    logZones.forEach(l => { if (l.target_zone) usedZones.add(l.target_zone); });
+  }
+
+  // Merge with fallback list
+  const allZones = [...new Set([...WORKER_FALLBACK_ZONES, ...usedZones])];
+
+  container.innerHTML = allZones.map(z => {
+    const used = usedZones.has(z);
+    return `<span style="
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid ${used ? 'rgba(76,175,80,0.3)' : 'var(--border)'};
+      background: ${used ? 'rgba(76,175,80,0.08)' : 'var(--bg)'};
+      color: ${used ? '#4caf50' : 'var(--text-muted)'};
+      white-space: nowrap;
+    " title="${used ? 'Active — has received whispers' : 'Configured but no deliveries yet'}">${z}${used ? ' &#x2713;' : ''}</span>`;
+  }).join('');
 }
 
 function updateAiModelCost() {
