@@ -981,13 +981,14 @@ function closePlayer() {
 // Voice Audition
 // ============================================
 
-// Female Gemini TTS voices only
+// Female Gemini TTS voices — ⭐ = best for fairy/child/ethereal quality
 const VOICE_TAGS = {
-  Sulafat: 'Warm', Vindemiatrix: 'Gentle', Achernar: 'Soft',
-  Despina: 'Smooth', Algieba: 'Smooth', Aoede: 'Breezy', Zephyr: 'Bright',
-  Autonoe: 'Bright', Erinome: 'Clear', Kore: 'Firm',
-  Leda: 'Youthful', Callirrhoe: 'Easy-going', Laomedeia: 'Upbeat',
-  Sadachbia: 'Lively', Pulcherrima: 'Forward',
+  Leda: '⭐ Youthful', Zephyr: '⭐ Bright', Achernar: '⭐ Soft',
+  Vindemiatrix: '⭐ Gentle', Aoede: '⭐ Breezy', Despina: '⭐ Smooth',
+  Laomedeia: '⭐ Upbeat',
+  Sulafat: 'Warm', Algieba: 'Smooth', Kore: 'Firm',
+  Pulcherrima: 'Forward', Autonoe: 'Bright', Erinome: 'Clear',
+  Callirrhoe: 'Easy-going', Sadachbia: 'Lively',
 };
 
 function getAuditionText() {
@@ -1195,13 +1196,18 @@ async function auditionBatchVoices() {
   document.getElementById('auditionMatrixBtn').disabled = false;
 }
 
-// ── Matrix Generation (pipelined) ──
+// ── Matrix Generation (two-phase: audition → drill-down) ──
 
 const CH_NAMES = { 1: 'Samay', 2: 'Chakana', 3: 'Kay Pacha', 4: 'Amawta' };
+const CHAPTERS = [1, 2, 3, 4];
+
+// Persistent state so drill-down can reuse cells/text
+let matrixState = null;
 
 /**
  * Build the empty matrix table in the results container.
  * Returns a map of cellId → td element for fast updates.
+ * Voice labels are clickable after Phase 1 completes.
  */
 function renderMatrixSkeleton(voices, chapters) {
   const container = document.getElementById('auditionResults');
@@ -1226,11 +1232,14 @@ function renderMatrixSkeleton(voices, chapters) {
   // Body rows (one per voice)
   const tbody = document.createElement('tbody');
   const cells = {};
+  const voiceLabelEls = {};
   voices.forEach(voice => {
     const tr = document.createElement('tr');
+    tr.id = `matrix-row-${voice}`;
     const voiceTd = document.createElement('td');
     voiceTd.className = 'voice-label';
     voiceTd.innerHTML = `${voice}<span class="vtag">${VOICE_TAGS[voice] || ''}</span>`;
+    voiceLabelEls[voice] = voiceTd;
     tr.appendChild(voiceTd);
 
     chapters.forEach(ch => {
@@ -1246,7 +1255,7 @@ function renderMatrixSkeleton(voices, chapters) {
   table.appendChild(tbody);
   container.appendChild(table);
 
-  return cells;
+  return { cells, voiceLabelEls };
 }
 
 /** Update a single matrix cell with a result */
@@ -1276,28 +1285,50 @@ function markChapterHeader(chapter, state) {
 }
 
 /**
- * Generate one chapter's column of the matrix. Returns a Promise that
- * resolves when all voices for this chapter are complete.
+ * Make a voice label clickable to generate all 4 chapters for it.
  */
-async function generateMatrixColumn(text, voices, chapter, cells, statusEl, counter) {
-  markChapterHeader(chapter, 'generating');
-
-  for (const voice of voices) {
-    markMatrixCellGenerating(cells, voice, chapter);
-    const result = await generateAuditionForChapter(text, voice, chapter);
-    updateMatrixCell(cells, voice, chapter, result);
-    counter.done++;
-    statusEl.textContent = `Generating ${counter.done}/${counter.total}...`;
-  }
-
-  markChapterHeader(chapter, 'done');
+function enableVoiceDrillDown(voice) {
+  if (!matrixState) return;
+  const el = matrixState.voiceLabelEls[voice];
+  if (!el) return;
+  el.classList.add('voice-clickable');
+  el.title = 'Click to generate all 4 chapter styles for this voice';
+  el.addEventListener('click', () => drillDownVoice(voice), { once: true });
 }
 
 /**
- * Pipelined matrix: generates chapters 1→4, but starts chapter N+1
- * as soon as chapter N finishes, so audio is playable while the next
- * batch generates. We run one TTS call at a time (sequential within
- * each chapter) to avoid Gemini rate limits.
+ * Drill-down: generate Ch 2, 3, 4 for a single voice the user clicked.
+ */
+async function drillDownVoice(voice) {
+  if (!matrixState) return;
+  const { cells, text, voiceLabelEls } = matrixState;
+  const el = voiceLabelEls[voice];
+  const statusEl = document.getElementById('auditionBatchStatus');
+
+  // Visual feedback — highlight the active row
+  el.classList.remove('voice-clickable');
+  el.classList.add('voice-active');
+  const row = document.getElementById(`matrix-row-${voice}`);
+  if (row) row.classList.add('row-active');
+
+  const remaining = CHAPTERS.filter(ch => !cells[`${voice}-${ch}`]?.querySelector('audio'));
+  statusEl.textContent = `Generating ${voice}: ${remaining.length} chapters...`;
+
+  for (const ch of remaining) {
+    markMatrixCellGenerating(cells, voice, ch);
+    const result = await generateAuditionForChapter(text, voice, ch);
+    updateMatrixCell(cells, voice, ch, result);
+  }
+
+  el.classList.remove('voice-active');
+  el.classList.add('voice-done');
+  if (row) row.classList.remove('row-active');
+  statusEl.textContent = `${voice}: all 4 chapter styles ready`;
+}
+
+/**
+ * Phase 1: Generate Ch 1 for all selected voices.
+ * After completion, voice names become clickable for drill-down.
  */
 async function auditionMatrix() {
   const text = getAuditionText();
@@ -1311,9 +1342,6 @@ async function auditionMatrix() {
     return;
   }
 
-  const chapters = [1, 2, 3, 4];
-  const total = voices.length * chapters.length;
-
   const btn = document.getElementById('auditionMatrixBtn');
   const batchBtn = document.getElementById('auditionBatchBtn');
   const statusEl = document.getElementById('auditionBatchStatus');
@@ -1322,21 +1350,30 @@ async function auditionMatrix() {
   batchBtn.disabled = true;
   document.getElementById('auditionSingleBtn').disabled = true;
 
-  const counter = { done: 0, total };
-  statusEl.textContent = `Generating 0/${total} (Ch 1 of 4)...`;
+  statusEl.textContent = `Generating Ch 1 — ${CH_NAMES[1]} for ${voices.length} voices...`;
 
-  // Build the skeleton table
-  const cells = renderMatrixSkeleton(voices, chapters);
+  // Build skeleton with all 4 columns visible
+  const { cells, voiceLabelEls } = renderMatrixSkeleton(voices, CHAPTERS);
 
-  // Generate columns sequentially (pipelined: each column becomes
-  // playable as soon as it completes while the next column generates)
-  for (let i = 0; i < chapters.length; i++) {
-    const ch = chapters[i];
-    statusEl.textContent = `Generating ${counter.done}/${total} — Ch ${ch} ${CH_NAMES[ch]}...`;
-    await generateMatrixColumn(text, voices, ch, cells, statusEl, counter);
+  // Save state for drill-down
+  matrixState = { cells, voiceLabelEls, text, voices };
+
+  // Phase 1: generate only Chapter 1 for all voices
+  markChapterHeader(1, 'generating');
+  let done = 0;
+  for (const voice of voices) {
+    markMatrixCellGenerating(cells, voice, 1);
+    const result = await generateAuditionForChapter(text, voice, 1);
+    updateMatrixCell(cells, voice, 1, result);
+    done++;
+    statusEl.textContent = `Ch 1: ${done}/${voices.length} voices...`;
   }
+  markChapterHeader(1, 'done');
 
-  statusEl.textContent = `Done — ${total} samples across ${chapters.length} chapters × ${voices.length} voices`;
+  // Enable drill-down: voice names become clickable
+  voices.forEach(v => enableVoiceDrillDown(v));
+
+  statusEl.textContent = `Ch 1 done — click a voice name to generate all 4 chapter styles for it`;
   btn.disabled = false;
   batchBtn.disabled = false;
   document.getElementById('auditionSingleBtn').disabled = false;
