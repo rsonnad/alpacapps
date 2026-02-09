@@ -834,8 +834,9 @@ async function handleAutoReply(
     return;
   }
 
-  // Additional safety: ignore if body starts with automated email template markers
-  if (body && (body.startsWith("YOUR REPORT:") || body.includes("Your bug report has been automatically"))) {
+  // Additional safety: ignore if body contains automated email template markers
+  // Check for nested "YOUR REPORT:" which appears in forwarded/replied automated emails
+  if (body && (body.includes("YOUR REPORT:") || body.includes("Your bug report has been automatically"))) {
     console.log("Ignoring automated bug notification email (body template detected)", { subject });
     return;
   }
