@@ -44,6 +44,7 @@ async function initPaiAdmin(authState) {
     document.getElementById('regenWhispersBtn').addEventListener('click', regenerateWhispers);
     document.getElementById('auditionSingleBtn').addEventListener('click', auditionSingleVoice);
     document.getElementById('auditionBatchBtn').addEventListener('click', auditionBatchVoices);
+    document.getElementById('auditionMatrixBtn').addEventListener('click', auditionMatrix);
     document.getElementById('auditionPreset').addEventListener('change', (e) => {
       const sel = e.target;
       if (!sel.value) return;
@@ -1004,11 +1005,15 @@ function getAuditionChapter() {
   return parseInt(document.getElementById('auditionChapter').value) || 1;
 }
 
-/** Generate TTS for one voice, returning { voice, audioUrl, error } */
-async function generateAudition(text, voice, chapter) {
-  // Use the textarea content so auditions reflect live edits before saving
-  const prompt = buildTTSPromptFromTextarea(text);
-
+/**
+ * Generate TTS for one voice with an explicit prompt string.
+ * Returns { voice, chapter, audioUrl, error }.
+ *
+ * @param {string} prompt  Full TTS prompt (director's notes + transcript)
+ * @param {string} voice   Gemini voice name
+ * @param {number} [chapter] Optional chapter number (for tagging the result)
+ */
+async function generateAuditionRaw(prompt, voice, chapter) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
@@ -1020,21 +1025,30 @@ async function generateAudition(text, voice, chapter) {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': supabase.supabaseKey,
       },
-      body: JSON.stringify({
-        action: 'tts_preview',
-        text: prompt,
-        voice,
-      })
+      body: JSON.stringify({ action: 'tts_preview', text: prompt, voice })
     });
 
     const result = await resp.json();
     if (!resp.ok) {
-      return { voice, error: result.error || `HTTP ${resp.status}` };
+      return { voice, chapter, error: result.error || `HTTP ${resp.status}` };
     }
-    return { voice, audioUrl: result.audio_url };
+    return { voice, chapter, audioUrl: result.audio_url };
   } catch (err) {
-    return { voice, error: err.message };
+    return { voice, chapter, error: err.message };
   }
+}
+
+/** Generate TTS using the current textarea director's notes (for single / batch auditions) */
+async function generateAudition(text, voice, chapter) {
+  const prompt = buildTTSPromptFromTextarea(text);
+  return generateAuditionRaw(prompt, voice, chapter);
+}
+
+/** Generate TTS using a specific chapter's director's notes (for matrix) */
+async function generateAuditionForChapter(text, voice, chapter) {
+  const notes = getDirectorNotes(chapter);
+  const prompt = `${notes}\n\n#### TRANSCRIPT\n${text}`;
+  return generateAuditionRaw(prompt, voice, chapter);
 }
 
 /** Render an audition card in the results container */
@@ -1078,13 +1092,11 @@ async function auditionSingleVoice() {
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
 
-  // Show generating card
   container.innerHTML = '';
   container.appendChild(renderAuditionCard(voice, 'generating'));
 
   const result = await generateAudition(text, voice, chapter);
 
-  // Replace with result
   container.innerHTML = '';
   if (result.audioUrl) {
     container.appendChild(renderAuditionCard(voice, 'ready', result.audioUrl));
@@ -1109,44 +1121,182 @@ async function auditionBatchVoices() {
     return;
   }
 
-  if (voices.length > 8) {
-    showToast('Select 8 or fewer voices to avoid rate limits', 'warning');
-    return;
-  }
-
   const btn = document.getElementById('auditionBatchBtn');
   const statusEl = document.getElementById('auditionBatchStatus');
   const container = document.getElementById('auditionResults');
 
   btn.disabled = true;
+  document.getElementById('auditionMatrixBtn').disabled = true;
   statusEl.textContent = `Generating 0/${voices.length}...`;
   container.innerHTML = '';
 
-  // Render all as "generating"
   voices.forEach(v => container.appendChild(renderAuditionCard(v, 'generating')));
 
-  // Generate sequentially to avoid rate-limiting the Gemini TTS API
   let done = 0;
   for (const voice of voices) {
     const result = await generateAudition(text, voice, chapter);
     done++;
     statusEl.textContent = `Generating ${done}/${voices.length}...`;
 
-    // Replace the generating card with the result
     const existing = document.getElementById(`audition-card-${voice}`);
     const newCard = result.audioUrl
       ? renderAuditionCard(voice, 'ready', result.audioUrl)
       : renderAuditionCard(voice, 'error', null, result.error);
 
-    if (existing) {
-      existing.replaceWith(newCard);
-    } else {
-      container.appendChild(newCard);
-    }
+    if (existing) existing.replaceWith(newCard);
+    else container.appendChild(newCard);
   }
 
   statusEl.textContent = `Done — ${done} voice${done !== 1 ? 's' : ''} generated`;
   btn.disabled = false;
+  document.getElementById('auditionMatrixBtn').disabled = false;
+}
+
+// ── Matrix Generation (pipelined) ──
+
+const CH_NAMES = { 1: 'Samay', 2: 'Chakana', 3: 'Kay Pacha', 4: 'Amawta' };
+
+/**
+ * Build the empty matrix table in the results container.
+ * Returns a map of cellId → td element for fast updates.
+ */
+function renderMatrixSkeleton(voices, chapters) {
+  const container = document.getElementById('auditionResults');
+  container.innerHTML = '';
+
+  const table = document.createElement('table');
+  table.className = 'matrix-table';
+
+  // Header row
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = '<th class="voice-col">Voice</th>';
+  chapters.forEach(ch => {
+    const th = document.createElement('th');
+    th.id = `matrix-ch-header-${ch}`;
+    th.textContent = `Ch ${ch} — ${CH_NAMES[ch]}`;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Body rows (one per voice)
+  const tbody = document.createElement('tbody');
+  const cells = {};
+  voices.forEach(voice => {
+    const tr = document.createElement('tr');
+    const voiceTd = document.createElement('td');
+    voiceTd.className = 'voice-label';
+    voiceTd.innerHTML = `${voice}<span class="vtag">${VOICE_TAGS[voice] || ''}</span>`;
+    tr.appendChild(voiceTd);
+
+    chapters.forEach(ch => {
+      const td = document.createElement('td');
+      td.className = 'matrix-cell';
+      td.id = `matrix-${voice}-ch${ch}`;
+      td.innerHTML = '<span class="cell-pending">—</span>';
+      cells[`${voice}-${ch}`] = td;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+
+  return cells;
+}
+
+/** Update a single matrix cell with a result */
+function updateMatrixCell(cells, voice, chapter, result) {
+  const td = cells[`${voice}-${chapter}`];
+  if (!td) return;
+  if (result.audioUrl) {
+    td.innerHTML = `<audio controls src="${result.audioUrl}"></audio>`;
+  } else {
+    td.innerHTML = `<span class="cell-error" title="${result.error || 'Failed'}">&#x2717;</span>`;
+  }
+}
+
+/** Mark a matrix cell as generating */
+function markMatrixCellGenerating(cells, voice, chapter) {
+  const td = cells[`${voice}-${chapter}`];
+  if (!td) return;
+  td.innerHTML = '<span class="cell-generating">&#x23F3;</span>';
+}
+
+/** Mark a column header as in-progress or done */
+function markChapterHeader(chapter, state) {
+  const th = document.getElementById(`matrix-ch-header-${chapter}`);
+  if (!th) return;
+  th.className = state === 'done' ? 'ch-done' : state === 'generating' ? 'ch-generating' : '';
+  if (state === 'done') th.textContent += ' ✓';
+}
+
+/**
+ * Generate one chapter's column of the matrix. Returns a Promise that
+ * resolves when all voices for this chapter are complete.
+ */
+async function generateMatrixColumn(text, voices, chapter, cells, statusEl, counter) {
+  markChapterHeader(chapter, 'generating');
+
+  for (const voice of voices) {
+    markMatrixCellGenerating(cells, voice, chapter);
+    const result = await generateAuditionForChapter(text, voice, chapter);
+    updateMatrixCell(cells, voice, chapter, result);
+    counter.done++;
+    statusEl.textContent = `Generating ${counter.done}/${counter.total}...`;
+  }
+
+  markChapterHeader(chapter, 'done');
+}
+
+/**
+ * Pipelined matrix: generates chapters 1→4, but starts chapter N+1
+ * as soon as chapter N finishes, so audio is playable while the next
+ * batch generates. We run one TTS call at a time (sequential within
+ * each chapter) to avoid Gemini rate limits.
+ */
+async function auditionMatrix() {
+  const text = getAuditionText();
+  if (!text) return;
+
+  const checkboxes = document.querySelectorAll('#auditionBatchChecks input[type="checkbox"]:checked');
+  const voices = Array.from(checkboxes).map(cb => cb.value);
+
+  if (voices.length === 0) {
+    showToast('Select at least one voice', 'warning');
+    return;
+  }
+
+  const chapters = [1, 2, 3, 4];
+  const total = voices.length * chapters.length;
+
+  const btn = document.getElementById('auditionMatrixBtn');
+  const batchBtn = document.getElementById('auditionBatchBtn');
+  const statusEl = document.getElementById('auditionBatchStatus');
+
+  btn.disabled = true;
+  batchBtn.disabled = true;
+  document.getElementById('auditionSingleBtn').disabled = true;
+
+  const counter = { done: 0, total };
+  statusEl.textContent = `Generating 0/${total} (Ch 1 of 4)...`;
+
+  // Build the skeleton table
+  const cells = renderMatrixSkeleton(voices, chapters);
+
+  // Generate columns sequentially (pipelined: each column becomes
+  // playable as soon as it completes while the next column generates)
+  for (let i = 0; i < chapters.length; i++) {
+    const ch = chapters[i];
+    statusEl.textContent = `Generating ${counter.done}/${total} — Ch ${ch} ${CH_NAMES[ch]}...`;
+    await generateMatrixColumn(text, voices, ch, cells, statusEl, counter);
+  }
+
+  statusEl.textContent = `Done — ${total} samples across ${chapters.length} chapters × ${voices.length} voices`;
+  btn.disabled = false;
+  batchBtn.disabled = false;
+  document.getElementById('auditionSingleBtn').disabled = false;
 }
 
 // ============================================
