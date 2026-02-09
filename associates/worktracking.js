@@ -19,6 +19,9 @@ let timerInterval = null;
 let selectedPhotoType = 'before';
 let currentLocation = null;
 let spacesMap = {};
+let scheduleData = [];
+let scheduleActuals = {};
+let scheduleLoaded = false;
 
 // =============================================
 // INITIALIZATION
@@ -626,6 +629,12 @@ function setupEventListeners() {
   });
   document.getElementById('btnManualSubmit').addEventListener('click', handleManualSubmit);
 
+  // Scheduling — lazy load on first open
+  document.getElementById('scheduleDetails').addEventListener('toggle', (e) => {
+    if (e.target.open && !scheduleLoaded) loadSchedule();
+  });
+  document.getElementById('btnSaveSchedule').addEventListener('click', saveSchedule);
+
   // Live duration computation
   const computeDuration = () => {
     const date = document.getElementById('manualDate').value;
@@ -708,6 +717,158 @@ async function handleManualSubmit() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Add Entry';
+  }
+}
+
+// =============================================
+// SCHEDULING
+// =============================================
+function getScheduleDates() {
+  const dates = [];
+  const today = new Date();
+  for (let i = 0; i < 10; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+  return dates;
+}
+
+async function loadSchedule() {
+  if (!profile) return;
+  try {
+    const dates = getScheduleDates();
+    scheduleData = await hoursService.getSchedule(profile.id, dates[0], dates[9]);
+
+    // Load actuals for the same period
+    const entries = await hoursService.getEntries(profile.id, { dateFrom: dates[0], dateTo: dates[9] });
+    scheduleActuals = {};
+    for (const e of entries) {
+      if (!e.duration_minutes) continue;
+      const date = e.clock_in.split('T')[0];
+      scheduleActuals[date] = (scheduleActuals[date] || 0) + parseFloat(e.duration_minutes);
+    }
+
+    scheduleLoaded = true;
+    renderSchedule();
+  } catch (err) {
+    console.error('Failed to load schedule:', err);
+  }
+}
+
+function renderSchedule() {
+  const dates = getScheduleDates();
+  const today = new Date().toISOString().split('T')[0];
+
+  // Build lookup from existing schedule data
+  const schedMap = {};
+  let totalModifications = 0;
+  for (const row of scheduleData) {
+    schedMap[row.schedule_date] = row;
+    totalModifications += row.modification_count;
+  }
+
+  // Compute totals
+  let totalScheduledMins = 0;
+  let totalActualMins = 0;
+  for (const date of dates) {
+    const sched = schedMap[date];
+    if (sched) totalScheduledMins += sched.scheduled_minutes;
+    totalActualMins += (scheduleActuals[date] || 0);
+  }
+
+  // Summary
+  const summaryEl = document.getElementById('scheduleSummary');
+  const pctRaw = totalScheduledMins > 0 ? Math.round((totalActualMins / totalScheduledMins) * 100) : 0;
+  const pctClass = pctRaw >= 90 ? 'green' : (pctRaw >= 50 ? 'yellow' : 'red');
+  const scheduledH = HoursService.formatHoursDecimal(totalScheduledMins);
+  const actualH = HoursService.formatHoursDecimal(totalActualMins);
+
+  let summaryHtml = `<span><span class="ss-val">${scheduledH}h</span> planned</span>`;
+  summaryHtml += `<span><span class="ss-val">${actualH}h</span> worked</span>`;
+  if (totalScheduledMins > 0) {
+    summaryHtml += `<span class="ss-pct ${pctClass}">${pctRaw}%</span>`;
+  }
+  if (totalModifications > 0) {
+    summaryHtml += `<span class="ss-mods">${totalModifications} modification${totalModifications !== 1 ? 's' : ''}</span>`;
+  }
+  summaryEl.innerHTML = summaryHtml;
+
+  // Grid rows
+  const gridEl = document.getElementById('scheduleGrid');
+  gridEl.innerHTML = dates.map(date => {
+    const sched = schedMap[date];
+    const isToday = date === today;
+    const dayLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const startVal = sched ? sched.start_time.slice(0, 5) : '';
+    const endVal = sched ? sched.end_time.slice(0, 5) : '';
+    const plannedMins = sched ? sched.scheduled_minutes : 0;
+    const actualMins = scheduleActuals[date] || 0;
+    const plannedLabel = plannedMins > 0 ? HoursService.formatDuration(plannedMins) : '';
+    const actualLabel = actualMins > 0 ? HoursService.formatDuration(actualMins) : (plannedMins > 0 ? '0m' : '');
+    const actualClass = plannedMins > 0
+      ? (actualMins >= plannedMins ? 'met' : (actualMins > 0 ? 'partial' : 'none'))
+      : 'none';
+
+    return `<div class="schedule-row">
+      <span class="sr-date${isToday ? ' today' : ''}">${dayLabel}</span>
+      <input type="time" data-date="${date}" data-field="start" value="${startVal}">
+      <span class="sr-arrow">&rarr;</span>
+      <input type="time" data-date="${date}" data-field="end" value="${endVal}">
+      <span class="sr-planned">${plannedLabel}</span>
+      <span class="sr-actual ${actualClass}">${actualLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+async function saveSchedule() {
+  const btn = document.getElementById('btnSaveSchedule');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const dates = getScheduleDates();
+    const rows = [];
+
+    for (const date of dates) {
+      const startInput = document.querySelector(`input[data-date="${date}"][data-field="start"]`);
+      const endInput = document.querySelector(`input[data-date="${date}"][data-field="end"]`);
+      const startTime = startInput?.value || '';
+      const endTime = endInput?.value || '';
+
+      if (startTime && endTime) {
+        // Compute minutes
+        const [sh, sm] = startTime.split(':').map(Number);
+        const [eh, em] = endTime.split(':').map(Number);
+        const scheduledMinutes = (eh * 60 + em) - (sh * 60 + sm);
+
+        if (scheduledMinutes <= 0) {
+          showToast(`Invalid times for ${HoursService.formatDate(date)} — end must be after start`, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Save Schedule';
+          return;
+        }
+
+        rows.push({
+          schedule_date: date,
+          start_time: startTime + ':00',
+          end_time: endTime + ':00',
+          scheduled_minutes: scheduledMinutes
+        });
+      } else {
+        // Clear row
+        rows.push({ schedule_date: date, start_time: '', end_time: '', scheduled_minutes: 0 });
+      }
+    }
+
+    await hoursService.upsertSchedule(profile.id, rows);
+    showToast('Schedule saved!', 'success');
+    await loadSchedule();
+  } catch (err) {
+    showToast('Failed to save schedule: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Schedule';
   }
 }
 

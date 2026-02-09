@@ -295,10 +295,73 @@
     .toast-close { background: none; border: none; color: inherit; cursor: pointer; margin-left: 0.5rem; font-size: 1.1rem; }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+    /* Scheduling Section */
+    .schedule-details {
+      margin-bottom: 1rem;
+    }
+    .schedule-details summary {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: #fff; border-radius: 10px; padding: 0.75rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer;
+      font-weight: 600; font-size: 0.9rem; color: #1e293b;
+      list-style: none;
+    }
+    .schedule-details summary::-webkit-details-marker { display: none; }
+    .schedule-details summary::before {
+      content: '\25B6'; font-size: 0.65rem; color: #94a3b8; transition: transform 0.2s;
+    }
+    .schedule-details[open] summary::before { transform: rotate(90deg); }
+
+    .schedule-body {
+      background: #fff; border-radius: 0 0 10px 10px; margin-top: -0.25rem;
+      padding: 0.75rem 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .schedule-summary {
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+      margin-bottom: 0.75rem; font-size: 0.8rem; color: #64748b;
+    }
+    .schedule-summary .ss-val { font-weight: 700; color: #1e293b; }
+    .schedule-summary .ss-pct { font-weight: 700; }
+    .schedule-summary .ss-pct.green { color: #16a34a; }
+    .schedule-summary .ss-pct.yellow { color: #ca8a04; }
+    .schedule-summary .ss-pct.red { color: #dc2626; }
+    .schedule-summary .ss-mods { font-size: 0.7rem; color: #94a3b8; margin-left: auto; }
+
+    .schedule-grid { display: flex; flex-direction: column; gap: 0.35rem; }
+    .schedule-row {
+      display: grid; grid-template-columns: 90px 1fr 12px 1fr 50px 50px;
+      align-items: center; gap: 0.4rem; padding: 0.35rem 0;
+      border-bottom: 1px solid #f5f5f5; font-size: 0.82rem;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-row .sr-date { font-weight: 600; color: #334155; white-space: nowrap; }
+    .schedule-row .sr-date.today { color: #6366f1; }
+    .schedule-row .sr-arrow { color: #94a3b8; text-align: center; font-size: 0.7rem; }
+    .schedule-row input[type="time"] {
+      padding: 0.3rem 0.25rem; border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size: 0.8rem; width: 100%; box-sizing: border-box;
+      background: #f9fafb; text-align: center;
+    }
+    .schedule-row input[type="time"]:focus { border-color: #6366f1; outline: none; background: #fff; }
+    .schedule-row .sr-planned { text-align: right; font-size: 0.75rem; color: #64748b; font-weight: 500; }
+    .schedule-row .sr-actual { text-align: right; font-size: 0.75rem; font-weight: 600; }
+    .schedule-row .sr-actual.met { color: #16a34a; }
+    .schedule-row .sr-actual.partial { color: #ca8a04; }
+    .schedule-row .sr-actual.none { color: #94a3b8; }
+
+    .btn-save-schedule {
+      background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.5rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem;
+      width: 100%; margin-top: 0.75rem;
+    }
+    .btn-save-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
+
     @media (max-width: 768px) {
       .app-container { padding: 0.75rem; }
       .clock-btn { width: 150px; height: 150px; font-size: 1.2rem; }
       .timer { font-size: 1.6rem; }
+      .schedule-row { grid-template-columns: 72px 1fr 10px 1fr 40px 40px; gap: 0.25rem; }
+      .schedule-row .sr-date { font-size: 0.75rem; }
     }
   </style>
 </head>
@@ -327,7 +390,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.01 12:02a</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.02 12:05a</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
@@ -364,6 +427,16 @@
 
         <button class="manual-entry-link" id="btnManualEntry">+ Add manual entry</button>
       </div>
+
+      <!-- Scheduling -->
+      <details class="schedule-details" id="scheduleDetails">
+        <summary>Scheduling</summary>
+        <div class="schedule-body">
+          <div class="schedule-summary" id="scheduleSummary"></div>
+          <div class="schedule-grid" id="scheduleGrid"></div>
+          <button class="btn-save-schedule" id="btnSaveSchedule">Save Schedule</button>
+        </div>
+      </details>
 
       <!-- Tab Navigation -->
       <div class="tabs">

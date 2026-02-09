@@ -30,13 +30,30 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 ### Shared Modules (`/shared/`)
 - `supabase.js` - Supabase client singleton (anon key embedded)
 - `auth.js` - Authentication module for admin access
+- `admin-shell.js` - Admin page shell (auth, nav, role checks)
+- `resident-shell.js` - Resident page shell (auth, tab nav, PAI widget injection)
 - `media-service.js` - Media upload, compression, tagging service
 - `rental-service.js` - Rental application workflow management
+- `event-service.js` - Event hosting request workflow
 - `lease-template-service.js` - Lease template parsing and placeholder substitution
+- `event-template-service.js` - Event agreement template parsing
+- `worktrade-template-service.js` - Work trade agreement template parsing
 - `pdf-service.js` - PDF generation from markdown using jsPDF
 - `signwell-service.js` - SignWell e-signature API integration
+- `email-service.js` - Email sending via Resend
 - `sms-service.js` - SMS sending via Telnyx (mirrors email-service.js pattern)
+- `square-service.js` - Square payment processing (client-side tokenization)
+- `hours-service.js` - Associate hours tracking (clock in/out, time entries)
+- `identity-service.js` - Identity verification (upload tokens, DL verification)
+- `payout-service.js` - PayPal payouts for associate payments
+- `accounting-service.js` - Accounting/ledger service (Zelle auto-recording, payment tracking)
+- `voice-service.js` - Vapi voice assistant configuration
 - `pai-widget.js` - PAI floating chat widget (injected on all resident pages via resident-shell.js)
+- `chat-widget.js` - Chat widget component
+- `error-logger.js` - Client-side error capture and reporting
+- `site-components.js` - Shared site UI components
+- `version-info.js` - Version badge click handler
+- `timezone.js` - Timezone utilities (Austin/Chicago)
 
 ### Consumer View (`/spaces/`)
 - `app.js` - Public listing with real availability from assignments
@@ -48,29 +65,62 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `app.js` - Full admin dashboard with all spaces
 - `manage.html` - Management tabs (Spaces, Rentals, Media, Users, Settings)
 - `media.js` - Media library with tagging and filtering
+- `rentals.html` / `rentals.js` - Rental application pipeline (Kanban)
+- `events.html` / `events.js` - Event hosting request pipeline
+- `accounting.html` / `accounting.js` - Accounting/ledger dashboard
+- `voice.html` / `voice.js` - Voice assistant config + call logs
+- `faq.html` / `faq.js` - FAQ/AI configuration page
+- `worktracking.html` / `worktracking.js` - Admin hours management for associates
+- `sms-messages.html` / `sms-messages.js` - SMS conversation viewer
+- `templates.html` / `templates.js` - Lease/event template editor
+- `settings.html` / `settings.js` - System settings (SignWell, Telnyx, fees, etc.)
+- `users.html` / `users.js` - User management + invitations
 - Shows occupant info, visibility controls, edit capabilities
 
 ### Resident View (`/residents/`)
 - `climate.html` / `thermostat.js` - Climate page: Nest thermostats + 48-hour weather forecast
 - `lighting.html` / `lighting.js` - Govee lighting control
 - `sonos.html` / `sonos.js` - Sonos music control
-- `cameras.html` / `cameras.js` - Camera feeds
+- `cameras.html` / `cameras.js` - Camera feeds + two-way talkback audio
 - `laundry.html` / `laundry.js` - LG washer/dryer monitoring
-- `cars.html` / `cars.js` - Vehicle info
+- `cars.html` / `cars.js` - Vehicle info + Tesla commands
+- `profile.html` / `profile.js` - User profile (avatar, bio, social, privacy settings)
+- `sensorinstallation.html` - UP-SENSE smart sensor installation guide
 - `residents.css` - Shared CSS for all resident pages
+
+### Associate View (`/associates/`)
+- `worktracking.html` / `worktracking.js` - Clock in/out, timesheets, work photos, payment preferences
 
 ### Supabase Edge Functions (`/supabase/functions/`)
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
-- `send-email/` - Outbound email via Resend API (43 templates)
-- `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards
+- `send-email/` - Outbound email via Resend API (43+ templates)
+- `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards, auto-records Zelle payments
 - `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
 - `alpaca-pai/` - PAI chat + voice assistant: Gemini-powered natural language smart home control + property Q&A + Vapi voice calling (resident+ auth)
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
+- `nest-token-refresh/` - Standalone Nest OAuth token refresher (cron)
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
+- `verify-identity/` - Driver's license photo → Claude Vision API → auto-verify applicants/associates
+- `paypal-payout/` - Sends PayPal payouts to associates
+- `paypal-webhook/` - Receives PayPal payout status updates
+- `vapi-server/` - Returns dynamic assistant config to Vapi on incoming calls
+- `vapi-webhook/` - Receives Vapi call lifecycle events (end, transcript)
+- `airbnb-sync/` - Fetches Airbnb iCal feeds → creates blocking assignments
+- `ical/` - Generates iCal feeds per space for external calendar sync
+- `regenerate-ical/` - Regenerates iCal feeds when assignments change
+- `process-square-payment/` - Server-side Square payment processing
+- `refund-square-payment/` - Square payment refunds
+- `record-payment/` - AI-assisted payment matching (Gemini)
+- `resolve-payment/` - Manual payment resolution for pending matches
+- `confirm-deposit-payment/` - Deposit payment confirmation workflow
+- `error-report/` - Error logging and daily digest emails
+- `contact-form/` - Public contact form submission handler
+- `event-payment-reminder/` - Daily cron: 10-day payment reminders for events
+- `ask-question/` - PAI Q&A backend
 
 **Edge Function Deployment Flags:**
 Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to prevent Supabase's gateway from rejecting valid user tokens before they reach the function code.
@@ -87,6 +137,9 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
 | `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
 | `verify-identity` | `supabase functions deploy verify-identity --no-verify-jwt` |
+| `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
+| `vapi-webhook` | `supabase functions deploy vapi-webhook --no-verify-jwt` |
+| `paypal-webhook` | `supabase functions deploy paypal-webhook --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -169,18 +222,21 @@ weather_config       - OpenWeatherMap API configuration (single row, id=1)
                       (owm_api_key, latitude, longitude, location_name, is_active)
 ```
 
-### Tesla Vehicle Data
+### Tesla & Vehicle System
 ```
 tesla_accounts  - Tesla account credentials + Fleet API config
                   (owner_name, tesla_email, refresh_token, access_token,
                    token_expires_at, is_active, last_error,
                    last_token_refresh_at, fleet_client_id, fleet_client_secret,
                    fleet_api_base, created_at, updated_at)
-tesla_vehicles  - Vehicle data + cached state from Tesla Fleet API
+vehicles        - All vehicles (renamed from tesla_vehicles)
                   (account_id [FK→tesla_accounts], vehicle_api_id, vin,
-                   name, model, year, color, color_hex, svg_key, image_url,
-                   display_order, is_active, vehicle_state [online/asleep/offline/unknown],
+                   name, make, model, year, color, color_hex, svg_key, image_url,
+                   owner_name, display_order, is_active,
+                   vehicle_state [online/asleep/offline/unknown],
                    last_state [jsonb], last_synced_at, created_at, updated_at)
+vehicle_drivers - Junction: vehicles ↔ people (who can drive which vehicle)
+                  (vehicle_id [FK→vehicles], person_id [FK→people])
 ```
 
 ### Camera Streaming System
@@ -212,6 +268,80 @@ image_gen_jobs  - Async image generation job queue
                    input_tokens, output_tokens, estimated_cost_usd,
                    batch_id, batch_label, attempt_count, max_attempts,
                    priority, created_at, started_at, completed_at)
+```
+
+### User & Auth System
+```
+app_users       - Application users with roles and profiles
+                  (supabase_auth_id, email, role [admin/staff/resident/associate],
+                   display_name, first_name, last_name, phone, phone2,
+                   avatar_url, bio, person_id [FK→people],
+                   nationality, location_base, gender,
+                   privacy_phone, privacy_email, privacy_bio [public/residents/private],
+                   facebook_url, instagram_url, linkedin_url, x_url,
+                   created_at, last_sign_in_at)
+user_invitations - Pending user invitations (email, role, invited_by, expires_at)
+```
+
+### Associate Hours & Payouts
+```
+associate_profiles   - Associate metadata
+                      (app_user_id [FK→app_users], person_id [FK→people],
+                       hourly_rate, payment_method, payment_handle,
+                       identity_verification_status [pending/link_sent/verified/flagged/rejected],
+                       setup_completed_at)
+time_entries         - Clock in/out records
+                      (associate_id [FK→associate_profiles], space_id [FK→spaces],
+                       clock_in, clock_out, duration_minutes,
+                       is_manual, manual_reason, notes,
+                       latitude, longitude, status [active/completed/paid],
+                       paid_at, payout_id [FK→payouts])
+work_photos          - Before/during/after work photos
+                      (time_entry_id [FK→time_entries], associate_id,
+                       photo_url, photo_type [before/progress/after], caption)
+paypal_config        - PayPal API credentials (single row, id=1)
+                      (client_id, client_secret, sandbox_client_id, sandbox_client_secret,
+                       webhook_id, sandbox_webhook_id, is_active, test_mode)
+payouts              - Payout records for associate payments
+                      (associate_id, person_id, amount, payment_method,
+                       external_payout_id, status [pending/processing/completed/failed/returned],
+                       time_entry_ids [uuid[]], created_at, completed_at)
+```
+
+### Identity Verification
+```
+upload_tokens        - Secure tokenized upload links for ID verification
+                      (token, person_id [FK→people], app_user_id [FK→app_users],
+                       purpose, expires_at, used_at)
+identity_verifications - Extracted DL data from Claude Vision API
+                      (person_id, app_user_id, photo_url,
+                       extracted_name, extracted_dob, extracted_dl_number,
+                       extracted_address, match_status [auto_approved/flagged/rejected],
+                       verified_at, reviewed_by)
+```
+
+### Vapi Voice Calling System
+```
+vapi_config          - Vapi API configuration (single row, id=1)
+                      (api_key, phone_number_id, is_active, test_mode)
+voice_assistants     - Configurable AI voice assistants
+                      (name, system_prompt, model, voice, temperature,
+                       tools [jsonb], is_active)
+voice_calls          - Call log
+                      (vapi_call_id, caller_phone, person_id [FK→people],
+                       assistant_id [FK→voice_assistants], duration_seconds,
+                       cost_usd, transcript [jsonb], recording_url,
+                       status, created_at)
+```
+
+### Airbnb iCal Sync
+```
+(Uses existing spaces + assignments tables)
+Key columns on spaces:
+  airbnb_ical_url    - Inbound iCal feed URL from Airbnb listing
+  airbnb_link        - Public Airbnb listing URL
+  airbnb_rate        - Airbnb listing price
+  airbnb_blocked_dates - JSONB array of blocked date ranges
 ```
 
 ### Legacy (Deprecated - don't use for new features)
@@ -427,9 +557,11 @@ Common page URLs for testing links (use only on main deploys):
 ### DigitalOcean Droplet
 - Runs OpenClaw Discord bot and Bug Scout (`bug_scout.js`)
 - Bug Scout: polls `bug_reports` for pending bugs → runs Claude Code to fix → commits to `bugfix/` branch → merges to main
+- Feature Builder: `feature-builder/feature_builder.js` — polls PAI feature requests → runs Claude Code to implement
 - Bug fixer repo is a clone of this repo, used for verification screenshots
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info
+- **Workers on droplet:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`)
 
 ### Home Automation (Sonos, UniFi, Cameras)
 - Full documentation in `HOMEAUTOMATION.md`
@@ -480,7 +612,7 @@ Common page URLs for testing links (use only on main deploys):
 - **Fleet creds:** `fleet_client_id`, `fleet_client_secret`, `fleet_api_base` stored per account in `tesla_accounts` table
 - **Token rotation:** Refresh tokens may rotate — new token saved immediately after exchange
 - **Polling:** Every 5 min, sleep-aware (doesn't wake sleeping cars)
-- **DB:** `tesla_accounts` (credentials + Fleet API config), `tesla_vehicles` (cached state in `last_state` JSONB)
+- **DB:** `tesla_accounts` (credentials + Fleet API config), `vehicles` (cached state in `last_state` JSONB), `vehicle_drivers` (vehicle ↔ person junction)
 - **Client:** `residents/cars.js` polls Supabase every 30s with visibility-based pause
 - **Vehicles:** 6 cars on 1 account: Casper (Model 3 2019), Delphi (Model Y 2023), Sloop (Model Y 2026), Cygnus (Model Y 2026), Kimba (Model Y 2022), Brisa Branca (Model 3 2022)
 - **Data tracked:** battery, range, charging state, odometer, climate, location, tire pressure, lock state
@@ -517,8 +649,45 @@ Common page URLs for testing links (use only on main deploys):
 - **Dryer states**: POWER_OFF, INITIAL, RUNNING, PAUSE, END, ERROR, DIAGNOSIS, RESERVED
 - **Client**: `residents/laundry.js` polls Supabase every 15s with visibility-based pause
 
+### Vapi (AI Voice Calling)
+- **API**: Vapi.ai (voice AI platform)
+- **Pattern**: Server URL — Vapi calls `vapi-server` edge function on each incoming call to get assistant config dynamically
+- **Webhook**: `vapi-webhook` edge function receives call lifecycle events
+- **Caller ID**: Matches caller phone → `people` table for personalized greeting
+- **Dynamic prompt**: Injects current occupants, availability, caller name into system prompt
+- **Tools**: Routes tool calls to PAI (smart home control, property Q&A, send links)
+- **DB**: `vapi_config`, `voice_assistants`, `voice_calls`
+- **Admin UI**: `spaces/admin/voice.html` — manage assistants, view call logs, configure settings
+- **Cost**: ~$0.10-$0.30 per call
+
+### PayPal (Associate Payouts)
+- **API**: PayPal Payouts API (batch payments)
+- **Auth**: OAuth client credentials flow
+- **Edge functions**: `paypal-payout` (send) + `paypal-webhook` (status updates)
+- **Config**: `paypal_config` table (client_id, client_secret, sandbox variants, test_mode)
+- **DB**: `payouts` table (amount, status, time_entry_ids linkage)
+- **Supports**: Sandbox + production environments
+- **Gated on**: Associate identity verification status
+
+### Camera Talkback (Two-Way Audio via FFmpeg)
+- **Relay server**: `scripts/talkback-relay/talkback-relay.js` on Alpaca Mac
+- **Protocol**: WebSocket (port 8902) → FFmpeg → UDP to camera:7004
+- **Audio pipeline**: Browser PCM S16LE 48kHz mono → FFmpeg → AAC-ADTS 22.05kHz mono 32kbps
+- **Cameras**: Alpacamera (192.168.1.173), Front Of House (.182), Side Yard (.110)
+- **Health check**: Port 8903
+- **LaunchAgent**: `com.talkback-relay.plist`
+- **Requires**: FFmpeg installed on Alpaca Mac (`FFMPEG_PATH` env var, defaults to `ffmpeg`)
+- **Client**: `residents/cameras.js` CameraTalkback class — Web Audio API microphone capture, push-to-talk UI
+
+### Airbnb (iCal Sync)
+- **Edge functions**: `airbnb-sync` (fetch iCal), `ical` (export iCal), `regenerate-ical` (on changes)
+- **Inbound**: Fetches Airbnb iCal feeds from `spaces.airbnb_ical_url`
+- **Outbound**: Exports assignments per space as iCal (GET `/functions/v1/ical?space={slug}`)
+- **Parent cascade**: Blocking parent space blocks all child spaces
+- **DB columns on spaces**: `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`, `airbnb_blocked_dates`
+
 ### Google Drive
-- Rental agreements stored in a shared folder
+- Rental agreements stored in a shared folder (legacy)
 - Not programmatically accessed
 
 ## Recent Changes to Be Aware Of
@@ -642,6 +811,83 @@ Common page URLs for testing links (use only on main deploys):
    - QR codes on machines → deep link → auto-subscribe to notifications (Phase 5-6 pending)
    - Washer states: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, DRYING, END, ERROR
    - Dryer states: POWER_OFF, INITIAL, RUNNING, PAUSE, END, ERROR
+23. **Camera Two-Way Talkback Audio** - Push-to-talk on camera feeds via FFmpeg relay
+   - `scripts/talkback-relay/talkback-relay.js` — WebSocket relay server on Alpaca Mac
+   - Browser captures microphone (Web Audio API, 48kHz mono PCM)
+   - FFmpeg transcodes PCM → AAC-ADTS 22.05kHz mono, streams UDP to camera:7004
+   - WebSocket protocol on port 8902, health check on port 8903
+   - 3 cameras supported: Alpacamera (.173), Front Of House (.182), Side Yard (.110)
+   - Push-to-talk UI in both grid and lightbox views
+   - LaunchAgent: `com.talkback-relay.plist` on Alpaca Mac
+   - Requires FFmpeg installed on Alpaca Mac
+24. **Vapi Voice Calling System** - AI phone assistant for property inquiries
+   - Vapi handles phone calls → `vapi-server` edge function returns assistant config dynamically
+   - Caller identification by phone number → personalized greeting
+   - Dynamic prompt injection with current occupants, availability, caller name
+   - Tool integration via PAI (smart home control, property Q&A)
+   - `vapi-webhook` edge function logs call data (duration, cost, transcript)
+   - Admin UI: `spaces/admin/voice.html` for managing assistants + viewing call logs
+   - DB: `vapi_config`, `voice_assistants`, `voice_calls`
+   - `send_link` tool: PAI can send clickable URLs via SMS instead of reading URLs aloud
+25. **User Profile Page** - Self-service profile editor at `residents/profile.html`
+   - Avatar upload, display name, first/last name, phone, email
+   - Social links (Facebook, Instagram, LinkedIn, X)
+   - Privacy controls: per-field visibility (public/residents/private)
+   - Nationality + Location Base fields with flag emojis
+   - Role + resident status badges
+26. **Associate Hours Tracking** - Clock in/out system for property associates
+   - Associate page: `associates/worktracking.html` (mobile-optimized)
+   - Admin page: `spaces/admin/worktracking.html`
+   - Clock in/out with GPS location, running timer, work photos (before/progress/after)
+   - Manual entry with required justification (tracked for transparency)
+   - Payment preferences: PayPal, Venmo, Zelle, Square, Cash, Check, Bank/ACH
+   - Hourly rate per associate, space association
+   - DB: `associate_profiles`, `time_entries`, `work_photos`
+   - Service: `shared/hours-service.js`
+27. **Identity Verification** - Driver's license verification via Claude Vision API
+   - `verify-identity` edge function: photo → Claude Vision → extract name/DOB/DL#/address
+   - Auto-compares to applicant or associate profile data
+   - Auto-approves exact matches, flags mismatches for admin review
+   - Tokenized secure upload links (expire after 7 days)
+   - Storage: `identity-documents` bucket
+   - Associates can self-initiate from Hours page Payment tab
+   - DB: `upload_tokens`, `identity_verifications`
+28. **PayPal Payouts** - Instant associate payments via PayPal
+   - Edge functions: `paypal-payout` (send) + `paypal-webhook` (status updates)
+   - OAuth client credentials flow for API auth
+   - Sandbox + production mode support
+   - DB: `paypal_config`, `payouts`
+   - Linked to specific `time_entry_ids` for audit trail
+   - Gate payouts on identity verification status
+29. **Zelle Auto-Recording from Inbound Email** - Automatic payment detection
+   - `resend-inbound-webhook` detects Zelle payment confirmation emails
+   - Parses sender name, amount, date from email body
+   - Auto-creates ledger entry for the payment
+   - Fixes Zelle email address: `alpacaplayhouse@gmail.com` (not payments@)
+30. **Airbnb iCal Sync** - Two-way calendar sync with Airbnb
+   - `airbnb-sync` edge function: fetch Airbnb iCal → create blocking assignments
+   - `ical` edge function: export assignments as iCal per space
+   - `regenerate-ical`: regenerates on assignment changes
+   - Parent/child space cascade: blocking parent blocks all children
+   - 21 pre-configured space slugs
+31. **Vehicle Management Overhaul** - Renamed `tesla_vehicles` → `vehicles` table
+   - Added `owner_name`, `make` fields for non-Tesla vehicles
+   - `vehicle_drivers` junction table (vehicles ↔ people)
+   - Self-service Tesla OAuth connect/disconnect per vehicle
+   - Vehicle visibility filtering by role
+   - Vehicle registration email sent automatically after lease signing
+32. **PAI Feature Builder** - Autonomous feature implementation from PAI chat
+   - `feature-builder/feature_builder.js` on DO droplet
+   - PAI can submit feature requests → worker polls DB → runs Claude Code
+   - Git workflow: pull → feature branch → commit → merge to main with version bump
+   - Systemd service: `feature-builder.service`
+33. **Emergency Contacts Page** - `lost.html` for lockout scenarios
+   - Phone numbers displayed reversed (obfuscation against scraping)
+   - Clean card UI with Haydn, Rahulio, Sonia contacts
+34. **Space Access Codes** - `access_code` text field on spaces table
+   - Stores keypad/door codes for each space
+35. **UP-SENSE Smart Sensors** - UniFi Protect sensor installation guide
+   - `residents/sensorinstallation.html` — step-by-step installation instructions
 
 ## Testing Changes
 

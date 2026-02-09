@@ -234,10 +234,14 @@ function normalizeName(name: string): string {
  * Parse Zelle payment details from email body text.
  */
 function parseZellePayment(bodyText: string): ZellePayment | null {
+  // Normalize: collapse all whitespace (newlines, tabs, multiple spaces) into single spaces
+  // Gmail forwarding and email clients insert line breaks mid-sentence
+  const normalized = bodyText.replace(/\s+/g, " ");
+
   // Charles Schwab format:
   // "deposited the $130.00 payment from MAYA WHITE (confirmation number 4864859525)"
   const schwabPattern = /deposited the \$([\d,]+\.\d{2}) payment from (.+?) \(confirmation number (\d+)\)/i;
-  const schwabMatch = bodyText.match(schwabPattern);
+  const schwabMatch = normalized.match(schwabPattern);
   if (schwabMatch) {
     return {
       amount: parseFloat(schwabMatch[1].replace(/,/g, "")),
@@ -249,7 +253,7 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
 
   // Chase format: "sent you $X.XX" or "You received $X.XX from NAME"
   const chasePattern = /(?:received|sent you) \$([\d,]+\.\d{2}).*?(?:from|by)\s+(.+?)(?:\s*\.|$)/im;
-  const chaseMatch = bodyText.match(chasePattern);
+  const chaseMatch = normalized.match(chasePattern);
   if (chaseMatch) {
     return {
       amount: parseFloat(chaseMatch[1].replace(/,/g, "")),
@@ -261,7 +265,7 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
 
   // Bank of America format: "A Zelle payment of $X.XX was received from NAME"
   const boaPattern = /Zelle payment of \$([\d,]+\.\d{2}) was received from (.+?)(?:\s*\.|$)/im;
-  const boaMatch = bodyText.match(boaPattern);
+  const boaMatch = normalized.match(boaPattern);
   if (boaMatch) {
     return {
       amount: parseFloat(boaMatch[1].replace(/,/g, "")),

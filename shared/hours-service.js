@@ -579,6 +579,97 @@ class HoursService {
     if (error) throw error;
   }
 
+  // ---- Scheduling ----
+
+  /**
+   * Get schedule rows for an associate within a date range
+   */
+  async getSchedule(associateId, dateFrom, dateTo) {
+    let query = supabase
+      .from('associate_schedules')
+      .select('*')
+      .eq('associate_id', associateId)
+      .order('schedule_date', { ascending: true });
+
+    if (dateFrom) query = query.gte('schedule_date', dateFrom);
+    if (dateTo) query = query.lte('schedule_date', dateTo);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Upsert schedule rows for an associate.
+   * Each row: { schedule_date, start_time, end_time, scheduled_minutes }
+   * Increments modification_count if the row already exists and times changed.
+   * Deletes rows that are cleared (no times).
+   */
+  async upsertSchedule(associateId, scheduleRows) {
+    // Fetch existing rows to detect changes
+    const dates = scheduleRows.map(r => r.schedule_date);
+    const { data: existing, error: fetchErr } = await supabase
+      .from('associate_schedules')
+      .select('*')
+      .eq('associate_id', associateId)
+      .in('schedule_date', dates);
+
+    if (fetchErr) throw fetchErr;
+
+    const existingMap = {};
+    for (const row of (existing || [])) {
+      existingMap[row.schedule_date] = row;
+    }
+
+    const toUpsert = [];
+    const toDelete = [];
+
+    for (const row of scheduleRows) {
+      const ex = existingMap[row.schedule_date];
+
+      if (!row.start_time || !row.end_time) {
+        // Clear — delete if exists
+        if (ex) toDelete.push(ex.id);
+        continue;
+      }
+
+      const modCount = ex
+        ? (ex.start_time !== row.start_time || ex.end_time !== row.end_time
+          ? ex.modification_count + 1
+          : ex.modification_count)
+        : 0;
+
+      toUpsert.push({
+        associate_id: associateId,
+        schedule_date: row.schedule_date,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        scheduled_minutes: row.scheduled_minutes,
+        modification_count: modCount,
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    // Delete cleared rows
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supabase
+        .from('associate_schedules')
+        .delete()
+        .in('id', toDelete);
+      if (delErr) throw delErr;
+    }
+
+    // Upsert rows with times
+    if (toUpsert.length > 0) {
+      const { error: upsertErr } = await supabase
+        .from('associate_schedules')
+        .upsert(toUpsert, { onConflict: 'associate_id,schedule_date' });
+      if (upsertErr) throw upsertErr;
+    }
+
+    return { upserted: toUpsert.length, deleted: toDelete.length };
+  }
+
   // ---- Utility ----
 
   /**

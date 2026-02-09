@@ -1,8 +1,8 @@
 {
-  "version": "v260209.01 12:02a",
-  "commit": "86487749",
-  "full_commit": "86487749718de944b19f3c4e2b9ae24025336860",
-  "timestamp": "2026-02-09T00:03:02-06:00",
+  "version": "v260209.02 12:05a",
+  "commit": "6398621e",
+  "full_commit": "6398621e83164ddc39c9b82b0f1d441bee55cc27",
+  "timestamp": "2026-02-09T00:05:12-06:00",
   "included":   origin/claude/add-vehicle-owner-details-9ycwy
   origin/main,
   "pending":   origin/feature/20260209-4692a387

@@ -64,11 +64,19 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
 | Home Server (Alpaca Mac) | On-premise Mac | LAN: 192.168.1.74, Tailscale: see HOMEAUTOMATION.local.md |
 | Sonos Control API | Alpaca Mac | node-sonos-http-api on port 5005 |
+| Camera Talkback Relay | Alpaca Mac | FFmpeg WebSocket relay on port 8902 |
 | Network Management | UDM Pro | UniFi Network API on https://192.168.1.1 |
-| Camera Streaming | UDM Pro | UniFi Protect RTSP on port 7441 |
+| Camera Streaming | go2rtc on Alpaca Mac | RTSP→HLS via Caddy proxy at cam.alpacaplayhouse.com |
 | Nest Thermostats | Google SDM API | OAuth tokens in `nest_config` table |
 | Weather Forecast | OpenWeatherMap | API key in `weather_config` table |
 | Govee Lighting | Govee Cloud API | API key as Supabase secret `GOVEE_API_KEY` |
+| Tesla Fleet API | Tesla Developer | Fleet API creds in `tesla_accounts` table |
+| LG ThinQ | LG ThinQ Connect API | PAT auth in `lg_config` table |
+| AI Image Gen | Gemini 2.5 Flash | Worker on DO droplet, Nano Banana MCP locally |
+| Voice Calling | Vapi.ai | Config in `vapi_config` table |
+| PayPal Payouts | PayPal Payouts API | Config in `paypal_config` table |
+| Identity Verification | Claude Vision API | `verify-identity` Edge Function |
+| Airbnb Calendar Sync | Airbnb iCal | `airbnb-sync` Edge Function |
 
 ## Repository Structure
 
@@ -96,51 +104,62 @@ alpacapps/
 ├── shared/                 # Shared modules
 │   ├── supabase.js         # Supabase client singleton
 │   ├── auth.js             # Authentication module
+│   ├── admin-shell.js      # Admin page shell (auth, nav, role checks)
+│   ├── resident-shell.js   # Resident page shell (auth, tab nav, PAI widget)
 │   ├── media-service.js    # Media upload/management service
 │   ├── rental-service.js   # Rental application workflow
 │   ├── event-service.js    # Event hosting request workflow
 │   ├── lease-template-service.js  # Lease template parsing
 │   ├── event-template-service.js  # Event agreement template parsing
+│   ├── worktrade-template-service.js  # Work trade agreement template parsing
 │   ├── pdf-service.js      # PDF generation (jsPDF)
 │   ├── signwell-service.js # SignWell e-signature API
 │   ├── square-service.js   # Square payment processing (client-side)
 │   ├── email-service.js    # Email sending via Resend
 │   ├── sms-service.js      # SMS sending via Telnyx
-│   └── error-logger.js     # Client-side error capture and reporting
+│   ├── hours-service.js    # Associate hours tracking
+│   ├── identity-service.js # Identity verification
+│   ├── payout-service.js   # PayPal payouts
+│   ├── accounting-service.js # Accounting/ledger service
+│   ├── voice-service.js    # Vapi voice assistant config
+│   ├── pai-widget.js       # PAI floating chat widget
+│   ├── chat-widget.js      # Chat widget component
+│   ├── error-logger.js     # Client-side error capture and reporting
+│   ├── site-components.js  # Shared site UI components
+│   ├── version-info.js     # Version badge click handler
+│   └── timezone.js         # Timezone utilities (Austin/Chicago)
 │
-├── supabase/               # Supabase Edge Functions
+├── supabase/               # Supabase Edge Functions (29 functions)
 │   └── functions/
 │       ├── signwell-webhook/  # E-signature completion webhook
-│       │   └── index.ts
 │       ├── event-payment-reminder/  # Daily cron: 10-day payment reminders
-│       │   └── index.ts
-│       ├── process-square-payment/  # Square payment processing (server-side)
-│       │   └── index.ts
+│       ├── process-square-payment/  # Square payment processing
+│       ├── refund-square-payment/   # Square payment refunds
 │       ├── record-payment/    # Smart payment recording with AI matching
-│       │   ├── index.ts           # Main handler
-│       │   ├── payment-parser.ts  # Bank string parsing
-│       │   ├── tenant-matcher.ts  # Matching logic (cache → exact → AI)
-│       │   └── gemini-client.ts   # Google Gemini API integration
 │       ├── resolve-payment/   # Manual payment resolution
-│       │   └── index.ts
+│       ├── confirm-deposit-payment/ # Deposit payment confirmation
 │       ├── error-report/      # Error logging and daily digest emails
-│       │   └── index.ts
-│       ├── send-email/        # Generic email sending
-│       │   └── index.ts
+│       ├── send-email/        # Email sending via Resend (43+ templates)
 │       ├── send-sms/          # Outbound SMS via Telnyx
-│       │   └── index.ts
 │       ├── telnyx-webhook/    # Inbound SMS receiver
-│       │   └── index.ts
-│       ├── resend-inbound-webhook/  # Inbound email receiver & router
-│       │   └── index.ts
+│       ├── resend-inbound-webhook/  # Inbound email receiver & router + Zelle auto-recording
 │       ├── contact-form/      # Contact form submission handler
-│       │   └── index.ts
-│       ├── govee-control/     # Govee Cloud API proxy (staff+ auth)
-│       │   └── index.ts
+│       ├── govee-control/     # Govee Cloud API proxy (resident+ auth)
 │       ├── sonos-control/     # Sonos HTTP API proxy via Alpaca Mac (resident+ auth)
-│       │   └── index.ts
-│       └── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
-│           └── index.ts
+│       ├── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
+│       ├── nest-token-refresh/ # Standalone Nest OAuth token refresher
+│       ├── tesla-command/     # Tesla Fleet API commands (lock, unlock, wake, flash, honk)
+│       ├── lg-control/        # LG ThinQ laundry control
+│       ├── alpaca-pai/        # PAI chat + voice assistant (Gemini-powered)
+│       ├── ask-question/      # PAI Q&A backend
+│       ├── verify-identity/   # DL photo → Claude Vision → auto-verify
+│       ├── paypal-payout/     # PayPal payouts for associates
+│       ├── paypal-webhook/    # PayPal payout status webhooks
+│       ├── vapi-server/       # Vapi voice assistant server URL handler
+│       ├── vapi-webhook/      # Vapi call lifecycle events
+│       ├── airbnb-sync/       # Airbnb iCal → blocking assignments
+│       ├── ical/              # Export assignments as iCal per space
+│       └── regenerate-ical/   # Regenerate iCal on assignment changes
 │
 ├── login/                  # Login page
 │   ├── index.html
@@ -158,12 +177,19 @@ alpacapps/
 │
 ├── spaces/admin/           # Admin dashboard
 │   ├── index.html          # Admin spaces view
-│   ├── app.js              # Admin spaces logic
+│   ├── spaces.html/.js     # Space management
 │   ├── manage.html         # Management dashboard (tabs)
-│   ├── media.html          # Media library page
-│   ├── media.js            # Media library logic
-│   ├── users.html          # User management
-│   └── users.js            # User management logic
+│   ├── rentals.html/.js    # Rental application pipeline (Kanban)
+│   ├── events.html/.js     # Event hosting request pipeline
+│   ├── accounting.html/.js # Accounting/ledger dashboard
+│   ├── media.html/.js      # Media library with tagging
+│   ├── voice.html/.js      # Voice assistant config + call logs
+│   ├── faq.html/.js        # FAQ/AI configuration
+│   ├── worktracking.html/.js # Admin hours management
+│   ├── sms-messages.html/.js # SMS conversation viewer
+│   ├── templates.html/.js  # Lease/event template editor
+│   ├── settings.html/.js   # System settings
+│   └── users.html/.js      # User management + invitations
 │
 ├── residents/             # Resident-facing pages (auth required, resident+ role)
 │   ├── climate.html       # Climate page: thermostats + weather forecast
@@ -172,11 +198,35 @@ alpacapps/
 │   ├── lighting.js        # Lighting page logic
 │   ├── sonos.html         # Sonos music control page
 │   ├── sonos.js           # Music page logic
-│   ├── cameras.html       # Camera feeds page
-│   ├── cameras.js         # Camera page logic
-│   ├── cars.html          # Vehicle info page
+│   ├── cameras.html       # Camera feeds page + two-way talkback
+│   ├── cameras.js         # Camera page logic + CameraTalkback class
+│   ├── cars.html          # Vehicle info page + Tesla commands
 │   ├── cars.js            # Cars page logic
+│   ├── laundry.html       # LG washer/dryer monitoring
+│   ├── laundry.js         # Laundry page logic
+│   ├── profile.html       # User profile (avatar, bio, social, privacy)
+│   ├── profile.js         # Profile page logic
+│   ├── sensorinstallation.html  # UP-SENSE sensor installation guide
 │   └── residents.css      # Shared CSS for all resident pages
+│
+├── associates/            # Associate-facing pages (auth required, associate+ role)
+│   ├── worktracking.html  # Clock in/out, timesheets, payment prefs
+│   └── worktracking.js    # Work tracking logic
+│
+├── lost.html              # Emergency contacts page (reversed phone numbers)
+│
+├── scripts/               # Server-side scripts and configs
+│   ├── bump-version.sh    # Version bumper (DB + all HTML files)
+│   ├── go2rtc/            # go2rtc camera streaming config
+│   │   └── go2rtc.yaml    # Stream definitions (3 cameras × 3 qualities)
+│   └── talkback-relay/    # Camera two-way audio relay
+│       └── talkback-relay.js  # WebSocket → FFmpeg → UDP to camera
+│
+├── feature-builder/       # PAI Feature Builder (runs on DO droplet)
+│   ├── feature_builder.js # Poll DB → Claude Code → branch → merge
+│   ├── package.json       # Dependencies
+│   ├── install.sh         # Server setup script
+│   └── feature-builder.service  # systemd unit file
 │
 ├── bug-reporter-extension/ # Chrome extension for bug reporting
 │   ├── manifest.json       # Manifest V3
@@ -476,6 +526,130 @@ Acknowledgments (boolean flags for each policy):
 - `processing_log_id` (FK)
 - `resolved_at`, `resolved_by`, `resolution` ('matched', 'ignored')
 - `created_at`
+
+### User & Auth System
+
+**app_users** - Application users with roles and profiles
+- `id` (uuid, PK)
+- `supabase_auth_id` - Supabase Auth user ID
+- `email`, `display_name`, `first_name`, `last_name`
+- `role` - admin, staff, resident, associate
+- `phone`, `phone2`, `avatar_url`, `bio`
+- `person_id` (FK → people)
+- `nationality`, `location_base`, `gender`
+- `privacy_phone`, `privacy_email`, `privacy_bio` - public/residents/private
+- `facebook_url`, `instagram_url`, `linkedin_url`, `x_url`
+- `created_at`, `last_sign_in_at`
+
+**user_invitations** - Pending invitations
+- `email`, `role`, `invited_by`, `expires_at`, `accepted_at`
+
+### Associate Hours & Payouts
+
+**associate_profiles** - Associate metadata
+- `app_user_id` (FK → app_users), `person_id` (FK → people)
+- `hourly_rate`, `payment_method`, `payment_handle`
+- `identity_verification_status` - pending, link_sent, verified, flagged, rejected
+- `setup_completed_at`
+
+**time_entries** - Clock in/out records
+- `associate_id` (FK → associate_profiles), `space_id` (FK → spaces)
+- `clock_in`, `clock_out`, `duration_minutes`
+- `is_manual`, `manual_reason`, `notes`
+- `latitude`, `longitude`
+- `status` - active, completed, paid
+- `paid_at`, `payout_id` (FK → payouts)
+
+**work_photos** - Before/during/after work photos
+- `time_entry_id` (FK), `associate_id`
+- `photo_url`, `photo_type` (before/progress/after), `caption`
+
+**paypal_config** - PayPal API credentials (single row, id=1)
+- `client_id`, `client_secret`, `sandbox_client_id`, `sandbox_client_secret`
+- `webhook_id`, `sandbox_webhook_id`, `is_active`, `test_mode`
+
+**payouts** - Payout records
+- `associate_id`, `person_id`, `amount`, `payment_method`
+- `external_payout_id`, `status`, `time_entry_ids` (uuid[])
+
+### Identity Verification
+
+**upload_tokens** - Secure tokenized upload links
+- `token`, `person_id` (FK), `app_user_id` (FK)
+- `purpose`, `expires_at`, `used_at`
+
+**identity_verifications** - Extracted DL data from Claude Vision
+- `person_id`, `app_user_id`, `photo_url`
+- `extracted_name`, `extracted_dob`, `extracted_dl_number`, `extracted_address`
+- `match_status` - auto_approved, flagged, rejected
+
+### Vapi Voice Calling
+
+**vapi_config** - Vapi API configuration (single row, id=1)
+- `api_key`, `phone_number_id`, `is_active`, `test_mode`
+
+**voice_assistants** - Configurable AI voice assistants
+- `name`, `system_prompt`, `model`, `voice`, `temperature`
+- `tools` (jsonb), `is_active`
+
+**voice_calls** - Call log
+- `vapi_call_id`, `caller_phone`, `person_id` (FK)
+- `duration_seconds`, `cost_usd`, `transcript` (jsonb)
+- `recording_url`, `status`
+
+### Vehicle System
+
+**tesla_accounts** - Tesla account credentials + Fleet API config
+- `owner_name`, `tesla_email`, `refresh_token`, `access_token`
+- `fleet_client_id`, `fleet_client_secret`, `fleet_api_base`
+
+**vehicles** - All vehicles (renamed from tesla_vehicles)
+- `account_id` (FK → tesla_accounts), `vehicle_api_id`, `vin`
+- `name`, `make`, `model`, `year`, `color`, `owner_name`
+- `vehicle_state`, `last_state` (jsonb), `last_synced_at`
+
+**vehicle_drivers** - Junction: vehicles ↔ people
+- `vehicle_id` (FK), `person_id` (FK)
+
+### Camera & Sensor Systems
+
+**camera_streams** - go2rtc HLS stream configuration
+- `camera_name`, `quality`, `stream_name`, `proxy_base_url`, `location`
+
+### LG Laundry System
+
+**lg_config** - LG ThinQ API configuration (single row, id=1)
+- `pat`, `api_base`, `country_code`, `client_id`, `is_active`, `test_mode`
+
+**lg_appliances** - LG washer/dryer devices with cached state
+- `lg_device_id`, `device_type`, `name`, `model`, `last_state` (jsonb)
+
+**push_tokens** - FCM push notification tokens per user
+- `app_user_id` (FK), `token`, `platform`, `device_info`
+
+**laundry_watchers** - Cycle-end notification subscriptions
+- `app_user_id` (FK), `appliance_id` (FK)
+
+### Nest & Weather
+
+**nest_config** - Google SDM API OAuth credentials (single row, id=1)
+**nest_devices** - Cached thermostat info (3 devices)
+**thermostat_rules** - Future rules engine (schema only)
+**weather_config** - OpenWeatherMap API configuration (single row, id=1)
+
+### Govee Lighting
+
+**govee_config** - Govee Cloud API configuration (single row, id=1)
+**govee_devices** - All Govee/AiDot smart lights (63 devices)
+**govee_models** - SKU → friendly model name lookup
+
+### AI Image Generation
+
+**image_gen_jobs** - Async image generation job queue
+- `prompt`, `job_type`, `status`, `metadata` (jsonb)
+- `result_media_id` (FK → media), `result_url`
+- `input_tokens`, `output_tokens`, `estimated_cost_usd`
+- `batch_id`, `batch_label`, `attempt_count`, `max_attempts`
 
 ## Authentication & Security
 
@@ -937,11 +1111,20 @@ Located at `/spaces/admin/manage.html` with tabs for:
   - Stages: Applications → Approved → Contract → Deposit → Ready
   - Click card to open detail modal with tabs: Applicant, Terms, Documents, Deposits, Rent, History
   - Documents tab: Preview/Generate lease PDF, send for signature, track signing status
+- **Events**: Event hosting request pipeline (parallel to Rentals)
+  - Stages: Submitted → Approved → Contract → Deposit → Confirmed
+- **Accounting**: Ledger dashboard with Zelle auto-recording
 - **Media**: Full media library with tagging and filtering
-- **Users**: User management (future)
+- **Users**: User management + invitations (name, email, phone, role assignment)
+- **Voice**: Voice assistant config + call logs (Vapi integration)
+- **FAQ/AI**: FAQ configuration + PAI settings
+- **Hours**: Associate work tracking management (view entries, set rates, process payouts)
+- **SMS**: SMS conversation viewer for tenant communications
+- **Templates**: Lease and event agreement template editor (Markdown + {{placeholders}})
 - **Settings**: System configuration
   - Lease Template Editor: Markdown with {{placeholders}}, validation, version history
   - SignWell Configuration: API key, test mode toggle
+  - Telnyx SMS: test/live mode toggle, phone number display
 
 ### Smart Payment Recording (AI-Assisted)
 Intelligent payment matching using Google Gemini AI:
@@ -1415,22 +1598,28 @@ DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
                                           │
                                     LAN (192.168.1.0/24)
                                           │
-                            ┌─────────────┼─────────────┐
-                            ▼             ▼             ▼
-                      Sonos (12)    UDM Pro       Cameras
-                      :5005 API     :443 API      :7441 RTSP
+                       ┌──────────┬───────┼───────┬───────────┐
+                       ▼          ▼       ▼       ▼           ▼
+                 Sonos (12)   UDM Pro  Cameras  Nest (3)  LG Laundry
+                 :5005 API    :443 API :7441     SDM API   ThinQ API
+                                       RTSP
+                 go2rtc :1984 (HLS restream)
+                 talkback-relay :8902 (FFmpeg audio)
 ```
 
 ### Components
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Alpaca Mac | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming |
+| Alpaca Mac | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming + talkback |
 | node-sonos-http-api | Alpaca Mac :5005 | REST API for 12 Sonos speaker zones |
-| MediaMTX | Alpaca Mac :8554 | RTSP restreaming from UniFi Protect |
+| go2rtc | Alpaca Mac :1984 | RTSP→HLS restreaming from UniFi Protect |
+| talkback-relay | Alpaca Mac :8902 | WebSocket→FFmpeg→UDP two-way camera audio |
 | Tailscale | DO Droplet + Alpaca Mac | Encrypted mesh VPN for remote access |
+| Caddy | DO Droplet | Reverse proxy: cam.alpacaplayhouse.com → go2rtc |
 | UniFi Network API | UDM Pro :443 | Firewall, DHCP, WiFi management |
 | UniFi Protect | UDM Pro :7441 | Camera RTSP streams + snapshot API |
+| Uptime Kuma | Alpaca Mac :3001 | Service health monitoring |
 
 ### Sonos Rooms (12 zones)
 
@@ -1511,11 +1700,28 @@ Browser → OpenWeatherMap API (client-side, no edge function)
 ## Resident Pages
 
 All resident pages live in `/residents/` and share:
-- `shared/resident-shell.js` — Auth flow, tab navigation (Cameras, Climate, Lighting, Music, Cars), toast notifications
+- `shared/resident-shell.js` — Auth flow, tab navigation (Cameras, Climate, Lighting, Music, Laundry, Cars), toast notifications, PAI widget injection
 - `residents/residents.css` — Shared CSS for all resident pages
 - Tab nav auto-rendered by `initResidentPage({ activeTab, requiredRole, onReady })`
 - Role hierarchy: admin > staff > resident = associate
 - Admin-only sections use `.admin-only` CSS class, shown when `body.is-admin`
+
+### Resident Page Tabs
+| Tab | Page | Key Features |
+|-----|------|-------------|
+| Cameras | `cameras.html` | Live HLS feeds, PTZ controls, lightbox, two-way talkback |
+| Climate | `climate.html` | Nest thermostat controls, 48-hour weather forecast |
+| Lighting | `lighting.html` | Govee light groups, on/off/brightness/color |
+| Music | `sonos.html` | Sonos zone playback, volume, favorites, grouping |
+| Laundry | `laundry.html` | LG washer/dryer status, progress bars, push notifications |
+| Cars | `cars.html` | Tesla vehicle data, lock/unlock, flash, battery status |
+| Profile | `profile.html` | Avatar, bio, social links, privacy settings |
+
+### Associate Pages
+
+Associate pages live in `/associates/`:
+- `worktracking.html` — Clock in/out, running timer, work photos, manual entry, payment preferences
+- Uses same auth pattern as resident pages but with `associate+` role
 
 ### Edge Function Pattern (resident pages)
 
@@ -1525,6 +1731,18 @@ All resident-facing edge functions follow the same pattern:
 3. Read config from single-row config table
 4. Proxy request to external API
 5. Return response
+
+## DigitalOcean Droplet Workers
+
+All background workers run on the DO droplet as systemd services:
+
+| Service | User | Location | Purpose | Poll Interval |
+|---------|------|----------|---------|---------------|
+| `bug-fixer` | bugfixer | `/opt/bug-fixer/` | Auto-fix bug reports via Claude Code | 30s |
+| `feature-builder` | bugfixer | `/opt/feature-builder/` | PAI feature requests via Claude Code | 10s |
+| `tesla-poller` | bugfixer | `/opt/tesla-poller/` | Tesla Fleet API vehicle data | 5 min |
+| `image-gen` | bugfixer | `/opt/image-gen/` | Gemini image generation queue | 10s |
+| `lg-poller` | bugfixer | `/opt/lg-poller/` | LG ThinQ laundry status | 30s |
 
 ## Related Documentation
 
