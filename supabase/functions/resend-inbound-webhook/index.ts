@@ -834,6 +834,12 @@ async function handleAutoReply(
     return;
   }
 
+  // Ignore replies to automated bug fix/update notifications (these are NOT user bug reports)
+  if (subject.match(/Re:\s*(?:\[Follow-up\]|Bug Fixed|Bug Report Update|Screenshot of the Fix)/i)) {
+    console.log("Ignoring reply to automated bug notification", { subject });
+    return;
+  }
+
   // Check if this is a reply to a bug report email
   // Bug report subjects look like: "Re: Bug by John: Something is broken..."
   // or "Re: Screenshot of the Fix" etc.
