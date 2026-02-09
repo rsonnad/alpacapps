@@ -53,21 +53,25 @@ async function initPaiAdmin(authState) {
       const ch = opt?.dataset?.ch;
       if (ch) {
         document.getElementById('auditionChapter').value = ch;
-        refreshDirectorNotes(parseInt(ch));
+        refreshDirectorNotes(ch);
       }
     });
     document.getElementById('auditionChapter').addEventListener('change', (e) => {
-      refreshDirectorNotes(parseInt(e.target.value));
+      refreshDirectorNotes(e.target.value);
     });
     document.getElementById('directorNotesResetBtn').addEventListener('click', resetDirectorNotes);
     document.getElementById('directorNotesSaveBtn').addEventListener('click', saveDirectorNotes);
+    document.getElementById('directorNotesDuplicateBtn').addEventListener('click', duplicateDirectorNotes);
+    document.getElementById('directorNotesRenameBtn').addEventListener('click', renameDirectorNotes);
+    document.getElementById('directorNotesDeleteBtn').addEventListener('click', deleteDirectorNotes);
     document.getElementById('directorNotesTextarea').addEventListener('input', () => {
       const statusEl = document.getElementById('directorNotesStatus');
       statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes</span>';
     });
 
-    // Initial population of director's notes
-    refreshDirectorNotes(1);
+    // Initial population of director's notes (dropdown includes custom styles)
+    populateDirectorNotesDropdown();
+    refreshDirectorNotes(document.getElementById('auditionChapter')?.value || '1');
   }
 
   // Player close button
@@ -153,7 +157,8 @@ async function loadConfig() {
   updateStoryArcHighlight(data.current_chapter);
 
   // Populate director's notes for the current chapter
-  refreshDirectorNotes(data.current_chapter || 1);
+  populateDirectorNotesDropdown();
+  refreshDirectorNotes(document.getElementById('auditionChapter')?.value || 1);
 }
 
 // Worker fallback zones (matches spirit-whisper-worker/worker.js FALLBACK_ZONES)
@@ -736,13 +741,21 @@ Accent: Rich Andean-inflected English with natural Spanish and Quechua woven thr
 Breathing: Measured, peaceful. Watching a sunset she's seen ten thousand times.`
 };
 
+const CUSTOM_PREFIX = 'custom:';
+
 /**
- * Get the director's notes (audio profile + scene) for a chapter.
- * Checks config.tts_director_notes (DB-saved overrides) first, then falls back to defaults.
+ * Get the director's notes (audio profile + scene) for a chapter or custom style.
+ * chapterOrKey: number 1–4 or string "custom:Style Name".
  */
-function getDirectorNotes(chapter) {
-  const ch = chapter || config?.current_chapter || 1;
+function getDirectorNotes(chapterOrKey) {
   const saved = config?.tts_director_notes;
+  if (typeof chapterOrKey === 'string' && chapterOrKey.startsWith(CUSTOM_PREFIX)) {
+    const name = chapterOrKey.slice(CUSTOM_PREFIX.length);
+    const custom = saved?.custom_styles?.[name];
+    if (custom?.content) return custom.content;
+    return getDirectorNotes(1);
+  }
+  const ch = typeof chapterOrKey === 'number' ? chapterOrKey : (parseInt(chapterOrKey, 10) || config?.current_chapter || 1);
   const audioProfile = saved?.audio_profile || DEFAULT_AUDIO_PROFILE;
   const scene = saved?.scenes?.[String(ch)] || DEFAULT_SCENES[ch] || DEFAULT_SCENES[1];
   return `${audioProfile}\n\n${scene}`;
@@ -776,25 +789,30 @@ function buildTTSPromptFromTextarea(text) {
 }
 
 /**
- * Refresh the director's notes textarea for a given chapter.
- * Shows DB-saved version if it exists, otherwise defaults.
- * Also marks whether the current content matches the default.
+ * Refresh the director's notes textarea for the current chapter or custom style selection.
  */
-function refreshDirectorNotes(chapter) {
-  const ch = chapter || 1;
+function refreshDirectorNotes(chapterOrCustomKey) {
   const textarea = document.getElementById('directorNotesTextarea');
   const statusEl = document.getElementById('directorNotesStatus');
   if (!textarea) return;
 
   const saved = config?.tts_director_notes;
+  const isCustom = typeof chapterOrCustomKey === 'string' && chapterOrCustomKey.startsWith(CUSTOM_PREFIX);
+  const customName = isCustom ? chapterOrCustomKey.slice(CUSTOM_PREFIX.length) : null;
+
+  if (isCustom && customName && saved?.custom_styles?.[customName]) {
+    textarea.value = saved.custom_styles[customName].content || '';
+    statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Custom style</span>';
+    return;
+  }
+
+  const ch = typeof chapterOrCustomKey === 'number' ? chapterOrCustomKey : (parseInt(chapterOrCustomKey, 10) || 1);
   const hasSavedProfile = !!saved?.audio_profile;
   const hasSavedScene = !!saved?.scenes?.[String(ch)];
 
-  // Show saved version if any overrides exist, otherwise defaults
   const notes = getDirectorNotes(ch);
   textarea.value = notes;
 
-  // Status indicator
   if (hasSavedProfile || hasSavedScene) {
     statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Production (saved)</span>';
   } else {
@@ -803,28 +821,206 @@ function refreshDirectorNotes(chapter) {
 }
 
 /**
- * Reset the textarea to the hardcoded defaults (does NOT save to DB).
+ * Reset the textarea to the hardcoded defaults for the selected chapter (does NOT save to DB).
+ * For custom styles, resets to the default of that style's base chapter.
  */
 function resetDirectorNotes() {
-  const ch = parseInt(document.getElementById('auditionChapter').value) || 1;
+  const selectEl = document.getElementById('auditionChapter');
+  const value = selectEl?.value || '1';
   const textarea = document.getElementById('directorNotesTextarea');
   const statusEl = document.getElementById('directorNotesStatus');
   if (!textarea) return;
 
+  const ch = value.startsWith(CUSTOM_PREFIX)
+    ? (config?.tts_director_notes?.custom_styles?.[value.slice(CUSTOM_PREFIX.length)]?.baseChapter ?? 1)
+    : (parseInt(value, 10) || 1);
   textarea.value = getDefaultDirectorNotes(ch);
   statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes (defaults restored)</span>';
   showToast('Reset to defaults — click "Save to Production" to persist', 'info');
 }
 
 /**
- * Save the current textarea content to the DB as the production director's notes.
- * Parses the textarea to extract audio_profile and scene for the current chapter.
+ * Populate the Chapter Style dropdown: built-in Ch 1–4 plus any custom styles.
+ */
+function populateDirectorNotesDropdown() {
+  const selectEl = document.getElementById('auditionChapter');
+  if (!selectEl) return;
+
+  const saved = config?.tts_director_notes;
+  const customStyles = saved?.custom_styles || {};
+  const customNames = Object.keys(customStyles).filter(Boolean).sort();
+
+  const builtIn = [
+    { value: '1', label: 'Ch 1 — Samay (ghostly fragments)' },
+    { value: '2', label: 'Ch 2 — Chakana (otherworldly warmth)' },
+    { value: '3', label: 'Ch 3 — Kay Pacha (grounded presence)' },
+    { value: '4', label: 'Ch 4 — Amawta (serene wisdom)' }
+  ];
+
+  selectEl.innerHTML = '';
+  builtIn.forEach(({ value: v, label }) => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = label;
+    selectEl.appendChild(opt);
+  });
+  if (customNames.length) {
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '——— Custom styles ———';
+    selectEl.appendChild(sep);
+    customNames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = CUSTOM_PREFIX + name;
+      opt.textContent = 'Custom: ' + name;
+      selectEl.appendChild(opt);
+    });
+  }
+}
+
+/**
+ * Duplicate current director's notes into a new custom style (prompt for name, then save).
+ */
+async function duplicateDirectorNotes() {
+  const selectEl = document.getElementById('auditionChapter');
+  const textarea = document.getElementById('directorNotesTextarea');
+  if (!selectEl || !textarea) return;
+
+  const name = prompt('Name for the new style (e.g. "Samay - Dark", "Whisper Variant 2"):');
+  if (!name || !name.trim()) return;
+
+  const trimmed = name.trim();
+  const existing = config?.tts_director_notes?.custom_styles || {};
+  if (existing[trimmed]) {
+    showToast('A custom style with that name already exists. Use Rename or pick another name.', 'warning');
+    return;
+  }
+
+  const currentValue = selectEl.value;
+  const baseChapter = currentValue.startsWith(CUSTOM_PREFIX)
+    ? (config?.tts_director_notes?.custom_styles?.[currentValue.slice(CUSTOM_PREFIX.length)]?.baseChapter ?? 1)
+    : (parseInt(currentValue, 10) || 1);
+
+  const updatedNotes = {
+    ...(config?.tts_director_notes || {}),
+    custom_styles: {
+      ...existing,
+      [trimmed]: { content: textarea.value.trim(), baseChapter }
+    }
+  };
+
+  const { error } = await supabase
+    .from('spirit_whisper_config')
+    .update({ tts_director_notes: updatedNotes, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+
+  if (error) {
+    showToast(`Duplicate failed: ${error.message}`, 'error');
+    return;
+  }
+
+  config.tts_director_notes = updatedNotes;
+  populateDirectorNotesDropdown();
+  selectEl.value = CUSTOM_PREFIX + trimmed;
+  refreshDirectorNotes(selectEl.value);
+  showToast(`"${trimmed}" created. Edit and save to keep changes.`, 'success');
+}
+
+/**
+ * Rename the currently selected custom style.
+ */
+async function renameDirectorNotes() {
+  const selectEl = document.getElementById('auditionChapter');
+  const value = selectEl?.value || '';
+  if (!value.startsWith(CUSTOM_PREFIX)) {
+    showToast('Select a custom style first, then click Rename.', 'info');
+    return;
+  }
+
+  const oldName = value.slice(CUSTOM_PREFIX.length);
+  const newName = prompt('New name for this style:', oldName);
+  if (!newName || !newName.trim() || newName.trim() === oldName) return;
+
+  const trimmed = newName.trim();
+  const existing = config?.tts_director_notes?.custom_styles || {};
+  if (existing[trimmed]) {
+    showToast('A custom style with that name already exists.', 'warning');
+    return;
+  }
+
+  const { [oldName]: style, ...rest } = existing;
+  if (!style) return;
+
+  const updatedNotes = {
+    ...config.tts_director_notes,
+    custom_styles: { ...rest, [trimmed]: style }
+  };
+
+  const { error } = await supabase
+    .from('spirit_whisper_config')
+    .update({ tts_director_notes: updatedNotes, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+
+  if (error) {
+    showToast(`Rename failed: ${error.message}`, 'error');
+    return;
+  }
+
+  config.tts_director_notes = updatedNotes;
+  populateDirectorNotesDropdown();
+  selectEl.value = CUSTOM_PREFIX + trimmed;
+  refreshDirectorNotes(selectEl.value);
+  showToast(`Renamed to "${trimmed}"`, 'success');
+}
+
+/**
+ * Delete the currently selected custom style.
+ */
+async function deleteDirectorNotes() {
+  const selectEl = document.getElementById('auditionChapter');
+  const value = selectEl?.value || '';
+  if (!value.startsWith(CUSTOM_PREFIX)) {
+    showToast('Select a custom style first, then click Delete.', 'info');
+    return;
+  }
+
+  const name = value.slice(CUSTOM_PREFIX.length);
+  if (!confirm(`Delete custom style "${name}"? This cannot be undone.`)) return;
+
+  const existing = config?.tts_director_notes?.custom_styles || {};
+  const { [name]: removed, ...rest } = existing;
+
+  const updatedNotes = {
+    ...config.tts_director_notes,
+    custom_styles: rest
+  };
+
+  const { error } = await supabase
+    .from('spirit_whisper_config')
+    .update({ tts_director_notes: updatedNotes, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+
+  if (error) {
+    showToast(`Delete failed: ${error.message}`, 'error');
+    return;
+  }
+
+  config.tts_director_notes = updatedNotes;
+  populateDirectorNotesDropdown();
+  selectEl.value = '1';
+  refreshDirectorNotes(1);
+  showToast(`"${name}" deleted`, 'success');
+}
+
+/**
+ * Save the current textarea content: to production (ch 1–4) or to the selected custom style.
  */
 async function saveDirectorNotes() {
   const textarea = document.getElementById('directorNotesTextarea');
   const statusEl = document.getElementById('directorNotesStatus');
   const saveBtn = document.getElementById('directorNotesSaveBtn');
-  const ch = parseInt(document.getElementById('auditionChapter').value) || 1;
+  const selectEl = document.getElementById('auditionChapter');
+  const value = selectEl?.value || '1';
 
   if (!textarea || !textarea.value.trim()) {
     showToast('Director\'s notes cannot be empty', 'warning');
@@ -832,31 +1028,36 @@ async function saveDirectorNotes() {
   }
 
   const fullText = textarea.value.trim();
-
-  // Parse: everything before the first "## THE SCENE" is audio_profile
-  // Everything from "## THE SCENE" onwards is the scene
-  const sceneMarker = '## THE SCENE';
-  const sceneIdx = fullText.indexOf(sceneMarker);
-
-  let audioProfile, scene;
-  if (sceneIdx > 0) {
-    audioProfile = fullText.substring(0, sceneIdx).trim();
-    scene = fullText.substring(sceneIdx).trim();
-  } else {
-    // No scene marker found — treat entire text as the scene for this chapter
-    audioProfile = config?.tts_director_notes?.audio_profile || DEFAULT_AUDIO_PROFILE;
-    scene = fullText;
-  }
-
-  // Merge with existing saved notes (preserve other chapters' scenes)
   const existing = config?.tts_director_notes || {};
-  const updatedNotes = {
-    audio_profile: audioProfile,
-    scenes: {
-      ...(existing.scenes || {}),
-      [String(ch)]: scene
+  let updatedNotes;
+
+  if (value.startsWith(CUSTOM_PREFIX)) {
+    const name = value.slice(CUSTOM_PREFIX.length);
+    updatedNotes = {
+      ...existing,
+      custom_styles: {
+        ...(existing.custom_styles || {}),
+        [name]: { content: fullText, baseChapter: existing.custom_styles?.[name]?.baseChapter ?? 1 }
+      }
+    };
+  } else {
+    const ch = parseInt(value, 10) || 1;
+    const sceneMarker = '## THE SCENE';
+    const sceneIdx = fullText.indexOf(sceneMarker);
+    let audioProfile, scene;
+    if (sceneIdx > 0) {
+      audioProfile = fullText.substring(0, sceneIdx).trim();
+      scene = fullText.substring(sceneIdx).trim();
+    } else {
+      audioProfile = existing.audio_profile || DEFAULT_AUDIO_PROFILE;
+      scene = fullText;
     }
-  };
+    updatedNotes = {
+      ...existing,
+      audio_profile: audioProfile,
+      scenes: { ...(existing.scenes || {}), [String(ch)]: scene }
+    };
+  }
 
   saveBtn.disabled = true;
   saveBtn.textContent = '⏳ Saving...';
@@ -872,10 +1073,13 @@ async function saveDirectorNotes() {
       return;
     }
 
-    // Update local config
     config.tts_director_notes = updatedNotes;
-    statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Saved to production</span>';
-    showToast(`Director\'s notes for Chapter ${ch} saved to production`, 'success');
+    statusEl.innerHTML = '<span style="color:#4caf50;">&#x2713; Saved</span>';
+    if (value.startsWith(CUSTOM_PREFIX)) {
+      showToast('Custom style saved', 'success');
+    } else {
+      showToast(`Chapter ${value} saved to production`, 'success');
+    }
   } catch (err) {
     showToast(`Save error: ${err.message}`, 'error');
   } finally {
