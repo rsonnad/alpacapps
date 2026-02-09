@@ -159,7 +159,7 @@
   <div id="unauthorizedOverlay" class="loading-overlay hidden">
     <div class="unauthorized-card">
       <h2>Access Denied</h2>
-      <p>This page is restricted to admin users.</p>
+      <p>You need a resident account to view this page.</p>
       <div class="unauthorized-actions">
         <a href="/spaces/" class="btn-secondary">View Spaces</a>
         <button id="signOutBtn" class="btn-secondary">Sign Out</button>
@@ -175,7 +175,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.89 11:45p</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.01 12:02a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -212,8 +212,8 @@
         </div>
       </div>
 
-      <!-- Configuration -->
-      <section class="section">
+      <!-- Configuration (admin only) -->
+      <section class="section admin-only">
         <div class="section-header">
           <h2>Configuration</h2>
           <div class="section-header-actions">
@@ -297,8 +297,8 @@
         </div>
       </section>
 
-      <!-- Test Whisper -->
-      <section class="section">
+      <!-- Test Whisper (admin only) -->
+      <section class="section admin-only">
         <div class="section-header">
           <h2>Test Whisper</h2>
         </div>

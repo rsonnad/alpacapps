@@ -7,16 +7,27 @@ import { supabase } from '../../shared/supabase.js';
 
 let config = null;
 let currentPoolChapter = 1;
+let isAdmin = false;
 
 async function initPaiAdmin(authState) {
+  const role = authState.appUser?.role;
+  isAdmin = ['admin', 'oracle'].includes(role);
+
+  // Hide admin-only sections for non-admins
+  if (!isAdmin) {
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+  }
+
   await loadConfig();
   await loadStats();
   await loadWhisperPool(1);
   await loadDeliveryLog();
 
-  // Bind events
-  document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
-  document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
+  // Bind events (admin only)
+  if (isAdmin) {
+    document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+    document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
+  }
 
   // Pool chapter tabs
   document.getElementById('whisperPoolTabs').addEventListener('click', (e) => {
@@ -286,6 +297,6 @@ function escapeHtml(s) {
 // Initialize
 initAdminPage({
   activeTab: null,
-  requiredRole: 'admin',
+  requiredRole: 'resident',
   onReady: initPaiAdmin
 });
