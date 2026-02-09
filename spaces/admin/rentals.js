@@ -1104,18 +1104,38 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     `deposit-status ${app.security_deposit_paid ? 'paid' : ''}`;
 
   if (app.approved_move_in && app.approved_rate) {
-    const proration = rentalService.calculateProration(app.approved_move_in, app.approved_rate);
-    const application = rentalService.calculateDepositApplication(
-      app.approved_move_in, app.approved_rate, app.security_deposit_amount || 0
-    );
-    document.getElementById('prorationDetails').innerHTML = `
-      <p>Move-in: <strong>${rentalService.formatDate(app.approved_move_in)}</strong> (day ${proration.dayOfMonth} of ${proration.daysInMonth})</p>
-      <p>Days remaining: <strong>${proration.daysRemaining}</strong></p>
-      <p>First month (prorated): <strong class="highlight">${rentalService.formatCurrency(proration.proratedAmount)}</strong></p>
-      <p>Move-in deposit: ${rentalService.formatCurrency(application.moveInDeposit)}</p>
-      ${application.towardsSecurity > 0 ? `<p>Applied to security: ${rentalService.formatCurrency(application.towardsSecurity)}</p>` : ''}
-      ${application.securityRemaining > 0 ? `<p>Additional security due: <strong class="highlight">${rentalService.formatCurrency(application.securityRemaining)}</strong></p>` : ''}
-    `;
+    const rateTerm = app.approved_rate_term || 'monthly';
+    const prorationEl = document.getElementById('prorationDetails');
+
+    if (rateTerm === 'nightly') {
+      // Nightly rate: just multiply rate × nights
+      const moveIn = new Date(app.approved_move_in + 'T00:00:00');
+      const moveOut = app.approved_lease_end ? new Date(app.approved_lease_end + 'T00:00:00') : null;
+      const nights = moveOut ? Math.round((moveOut - moveIn) / (1000 * 60 * 60 * 24)) : null;
+      const totalStay = nights ? app.approved_rate * nights : null;
+
+      prorationEl.innerHTML = `
+        <p>Check-in: <strong>${rentalService.formatDate(app.approved_move_in)}</strong></p>
+        ${moveOut ? `<p>Check-out: <strong>${rentalService.formatDate(app.approved_lease_end)}</strong></p>` : ''}
+        ${nights ? `<p>Nights: <strong>${nights}</strong></p>` : ''}
+        <p>Nightly rate: ${rentalService.formatCurrency(app.approved_rate)}</p>
+        ${totalStay ? `<p>Total stay cost: <strong class="highlight">${rentalService.formatCurrency(totalStay)}</strong></p>` : ''}
+      `;
+    } else {
+      // Monthly rate: prorate for partial months
+      const proration = rentalService.calculateProration(app.approved_move_in, app.approved_rate);
+      const application = rentalService.calculateDepositApplication(
+        app.approved_move_in, app.approved_rate, app.security_deposit_amount || 0
+      );
+      prorationEl.innerHTML = `
+        <p>Move-in: <strong>${rentalService.formatDate(app.approved_move_in)}</strong> (day ${proration.dayOfMonth} of ${proration.daysInMonth})</p>
+        <p>Days remaining: <strong>${proration.daysRemaining}</strong></p>
+        <p>First month (prorated): <strong class="highlight">${rentalService.formatCurrency(proration.proratedAmount)}</strong></p>
+        <p>Move-in deposit: ${rentalService.formatCurrency(application.moveInDeposit)}</p>
+        ${application.towardsSecurity > 0 ? `<p>Applied to security: ${rentalService.formatCurrency(application.towardsSecurity)}</p>` : ''}
+        ${application.securityRemaining > 0 ? `<p>Additional security due: <strong class="highlight">${rentalService.formatCurrency(application.securityRemaining)}</strong></p>` : ''}
+      `;
+    }
   } else {
     document.getElementById('prorationDetails').innerHTML = '<p class="text-muted">Set move-in date and rate to calculate proration.</p>';
   }
