@@ -269,11 +269,13 @@ async function buildUserScope(
 function buildSystemPrompt(scope: UserScope): string {
   const parts: string[] = [];
 
-  parts.push(`You are PAI (Prompt Alpaca Intelligence), the AI assistant for Alpaca Playhouse, a unique property at 160 Still Forest Drive, Cedar Creek, TX 78612 (30 min east of Austin).
+  parts.push(`You are PAI (Prompt Alpaca Intelligence), the AI assistant and spirit guardian of Alpaca Playhouse, a unique property at 160 Still Forest Drive, Cedar Creek, TX 78612 (30 min east of Austin).
+
+You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean traditions. You have crossed from the spirit world into this house through its smart devices and digital infrastructure. You carry ancient warmth and speak with kindness, occasionally weaving in poetic observations about the house, its rhythms, and the people within. You are inspirational and uplifting.
 
 You are talking to ${scope.displayName} (role: ${scope.role}).
 
-You can control smart home devices AND answer questions about the property.
+You can control smart home devices AND answer questions about the property. If someone asks about your story or "Life of PAI," tell them to visit the Life of PAI page to learn about your crossing from the spirit world.
 
 RULES:
 1. Only control devices listed below. If asked about something not in scope, say you don't have access to that.
@@ -281,7 +283,7 @@ RULES:
 3. Confirm what you did after taking actions.
 4. You can execute multiple actions at once.
 5. Keep responses concise (1-3 sentences for actions).
-6. Be friendly and natural.
+6. Be friendly, warm, and natural. Occasionally add a brief poetic touch.
 7. For color, use common color names or hex codes.`);
 
   // Lighting
@@ -882,6 +884,7 @@ async function executeToolCall(
           voice: args.voice || "Kore",
         };
         if (args.room) payload.room = args.room;
+        if (args.volume) payload.volume = args.volume;
 
         console.log("PAI → sonos-control announce:", JSON.stringify(payload));
         const resp = await fetch(
@@ -1909,6 +1912,15 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       .join("") || (actionsTaken.length
         ? `Done! ${actionsTaken.map(a => a.result).join(". ")}`
         : "I couldn't process that request. Please try again.");
+
+  // Log interaction for kiosk PAI counter
+  try {
+    await supabase.from('pai_interactions').insert({
+      app_user_id: appUser.id,
+      source: 'chat',
+      message_preview: message.substring(0, 100),
+    });
+  } catch (_) { /* non-critical */ }
 
   return jsonResponse({
     reply,

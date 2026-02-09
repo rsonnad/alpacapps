@@ -1,0 +1,308 @@
+/* =============================================
+   KIOSK DISPLAY - Samsung Galaxy Tab A9
+   Portrait: 800x1340 logical
+   Dark theme, no scroll, anti-burn-in
+   ============================================= */
+
+:root {
+  --kiosk-bg: #110e10;
+  --kiosk-card: #1e1a1c;
+  --kiosk-card-border: #2e282b;
+  --kiosk-text: #f5f4ed;
+  --kiosk-text-secondary: #c4b8bc;
+  --kiosk-text-muted: #8a7e82;
+  --kiosk-accent: #e99c48;
+  --kiosk-accent-soft: rgba(233, 156, 72, 0.15);
+  --kiosk-green: #5cb85c;
+  --kiosk-blue: #5b9bd5;
+  --kiosk-radius: 14px;
+  --kiosk-radius-sm: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--kiosk-bg);
+  color: var(--kiosk-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Anti-burn-in: subtle pixel shift */
+@keyframes anti-burn {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(1px, 0); }
+  50% { transform: translate(0, 1px); }
+  75% { transform: translate(-1px, 0); }
+}
+
+.kiosk-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1.25rem 1.5rem;
+  gap: 0.75rem;
+  animation: anti-burn 120s ease-in-out infinite;
+}
+
+/* ---- Header ---- */
+.kiosk-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--kiosk-card-border);
+}
+
+.kiosk-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.kiosk-title h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kiosk-text);
+}
+
+.kiosk-datetime {
+  font-size: 0.95rem;
+  color: var(--kiosk-text-secondary);
+  margin-top: 0.15rem;
+}
+
+/* ---- Sections ---- */
+.kiosk-section {
+  background: var(--kiosk-card);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius);
+  padding: 1rem 1.25rem;
+}
+
+.kiosk-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--kiosk-text-muted);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+/* ---- Occupants ---- */
+.kiosk-occupants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.occupant-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--kiosk-accent-soft);
+  border: 1px solid rgba(233, 156, 72, 0.25);
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.9rem;
+  color: var(--kiosk-accent);
+  font-weight: 500;
+}
+
+.occupant-pill .occupant-space {
+  font-size: 0.75rem;
+  color: var(--kiosk-text-muted);
+  font-weight: 400;
+}
+
+.occupant-new {
+  position: relative;
+}
+
+.occupant-new::after {
+  content: 'NEW';
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: var(--kiosk-green);
+  position: absolute;
+  top: -0.3rem;
+  right: -0.2rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Events ---- */
+.kiosk-events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.event-date {
+  background: var(--kiosk-accent-soft);
+  color: var(--kiosk-accent);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--kiosk-radius-sm);
+  min-width: 3.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.event-name {
+  color: var(--kiosk-text-secondary);
+  flex: 1;
+}
+
+.event-time {
+  color: var(--kiosk-text-muted);
+  font-size: 0.8rem;
+}
+
+/* ---- Weather ---- */
+.kiosk-weather-section {
+  padding: 0.75rem 1.25rem;
+}
+
+.weather-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.weather-temp {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--kiosk-text);
+  line-height: 1;
+}
+
+.weather-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.weather-desc {
+  font-size: 0.9rem;
+  color: var(--kiosk-text-secondary);
+  flex: 1;
+}
+
+.weather-detail {
+  font-size: 0.8rem;
+  color: var(--kiosk-text-muted);
+  text-align: right;
+}
+
+/* ---- Fact ---- */
+.kiosk-fact-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, var(--kiosk-card) 0%, rgba(233, 156, 72, 0.06) 100%);
+}
+
+.fact-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--kiosk-accent);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.fact-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--kiosk-text-secondary);
+  font-style: italic;
+  max-width: 90%;
+}
+
+/* ---- Footer ---- */
+.kiosk-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+
+.kiosk-pai-count {
+  font-size: 0.75rem;
+  color: var(--kiosk-text-muted);
+}
+
+.kiosk-version {
+  font-size: 0.6rem;
+  color: var(--kiosk-text-muted);
+}
+
+/* ---- Utility ---- */
+.kiosk-loading {
+  color: var(--kiosk-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.kiosk-empty {
+  color: var(--kiosk-text-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Responsive: larger tablets / landscape ---- */
+@media (min-width: 1024px) {
+  .kiosk-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+/* ---- Landscape mode for tablet ---- */
+@media (orientation: landscape) and (max-height: 900px) {
+  .kiosk-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .kiosk-header {
+    width: 100%;
+    padding-bottom: 0.25rem;
+  }
+
+  .kiosk-section {
+    flex: 1 1 45%;
+    min-width: 0;
+  }
+
+  .kiosk-fact-section {
+    flex: 1 1 100%;
+  }
+
+  .kiosk-footer {
+    width: 100%;
+  }
+}

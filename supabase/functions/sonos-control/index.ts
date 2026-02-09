@@ -32,6 +32,7 @@ interface SonosRequest {
   other?: string;
   text?: string;
   voice?: string;
+  volume?: number;
 }
 
 // =============================================
@@ -341,7 +342,7 @@ serve(async (req) => {
         const durationSecs = Math.ceil(pcmBytes.length / (24000 * 2)) + 2;
 
         // 5. Proxy to Sonos custom action (pass just filename, action constructs full URL)
-        const announceVolume = 40;
+        const announceVolume = body.volume ?? 40;
         const encodedFilename = encodeURIComponent(filename);
 
         if (room) {

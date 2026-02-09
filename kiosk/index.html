@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Alpaca Playhouse - Welcome</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="kiosk.css">
+</head>
+<body>
+  <div class="kiosk-container">
+    <!-- Header -->
+    <header class="kiosk-header">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
+           alt="" class="kiosk-logo">
+      <div class="kiosk-title">
+        <h1>Alpaca Playhouse</h1>
+        <div class="kiosk-datetime" id="datetime"></div>
+      </div>
+    </header>
+
+    <!-- Current Herd -->
+    <section class="kiosk-section" id="occupantsSection">
+      <h2 class="kiosk-section-title">Current Herd</h2>
+      <div class="kiosk-occupants" id="occupantsGrid">
+        <div class="kiosk-loading">Loading...</div>
+      </div>
+    </section>
+
+    <!-- Upcoming Events -->
+    <section class="kiosk-section" id="eventsSection" style="display:none">
+      <h2 class="kiosk-section-title">Upcoming</h2>
+      <div class="kiosk-events" id="eventsList"></div>
+    </section>
+
+    <!-- Weather -->
+    <section class="kiosk-section kiosk-weather-section" id="weatherSection">
+      <div class="weather-row" id="weatherSummary">
+        <div class="kiosk-loading">Loading weather...</div>
+      </div>
+    </section>
+
+    <!-- Alpaca Fact of the Day -->
+    <section class="kiosk-section kiosk-fact-section" id="factSection">
+      <div class="fact-label">Alpaca Fact of the Day</div>
+      <p class="fact-text" id="factText">Loading...</p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="kiosk-footer">
+      <span class="kiosk-pai-count" id="paiCount"></span>
+      <span class="kiosk-version">v260208.89 11:45p</span>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="kiosk.js"></script>
+</body>
+</html>

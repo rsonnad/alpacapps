@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpaca Playhouse - Display</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="stylesheet" href="tv.css">
+</head>
+<body>
+  <div class="tv-container" id="tvContainer">
+
+    <!-- Dashboard mode -->
+    <div class="tv-mode" id="dashboardMode" style="display:none">
+      <div class="tv-dashboard">
+        <div class="tv-left">
+          <div class="tv-brand">
+            <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
+                 alt="" class="tv-logo">
+            <h1>Alpaca Playhouse</h1>
+          </div>
+          <div class="tv-section">
+            <h2 class="tv-section-title">Current Herd</h2>
+            <div class="tv-occupants" id="tvOccupants">
+              <span class="tv-loading">Loading...</span>
+            </div>
+          </div>
+          <div class="tv-section" id="tvEventsSection" style="display:none">
+            <h2 class="tv-section-title">Upcoming Events</h2>
+            <div class="tv-events" id="tvEvents"></div>
+          </div>
+        </div>
+        <div class="tv-center">
+          <div class="tv-clock" id="tvClock"></div>
+          <div class="tv-date" id="tvDate"></div>
+          <div class="tv-weather" id="tvWeather">
+            <span class="tv-loading">Loading weather...</span>
+          </div>
+        </div>
+        <div class="tv-right">
+          <div class="tv-section tv-fact-card">
+            <div class="tv-fact-label">Alpaca Fact of the Day</div>
+            <p class="tv-fact-text" id="tvFact">Loading...</p>
+          </div>
+          <div class="tv-pai" id="tvPaiCount"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camera mode -->
+    <div class="tv-mode" id="camerasMode" style="display:none">
+      <div class="tv-camera-grid" id="tvCameraGrid"></div>
+    </div>
+
+    <!-- Signage mode -->
+    <div class="tv-mode" id="signageMode" style="display:none">
+      <div class="tv-signage">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
+             alt="" class="tv-signage-logo">
+        <h1 class="tv-signage-message" id="signageMessage">Welcome to Alpaca Playhouse</h1>
+        <p class="tv-signage-subtitle" id="signageSubtitle"></p>
+      </div>
+    </div>
+
+    <!-- Slideshow mode -->
+    <div class="tv-mode" id="slideshowMode" style="display:none">
+      <div class="tv-slideshow">
+        <img class="tv-slideshow-img" id="slideshowImage" src="" alt="">
+        <div class="tv-slideshow-caption" id="slideshowCaption"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tv-version">v260208.89 11:45p</div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <script type="module" src="tv.js"></script>
+</body>
+</html>

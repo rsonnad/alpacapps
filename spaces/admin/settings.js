@@ -16,6 +16,8 @@ let editingFeeCodeId = null;
 let editingPaymentMethodId = null;
 let editingForwardingRuleId = null;
 let allForwardingRules = [];
+let allDisplays = [];
+let editingDisplayId = null;
 
 const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
 
@@ -58,7 +60,9 @@ async function loadSettingsPanel() {
     loadPayPalConfig(),
     loadTelnyxConfig(),
     loadInboundSms(),
-    loadForwardingRules()
+    loadForwardingRules(),
+    loadDisplays(),
+    loadTodayFact()
   ]);
 }
 
@@ -1235,8 +1239,234 @@ function setupEventListeners() {
       closeFeeCodeModal();
       closePaymentMethodModal();
       closeForwardingRuleModal();
+      closeDisplayModal();
       document.getElementById('composeSmsModal')?.classList.add('hidden');
       document.getElementById('bulkSmsModal')?.classList.add('hidden');
     }
   });
+
+  // Display management
+  document.getElementById('addDisplayBtn')?.addEventListener('click', () => openDisplayModal());
+  document.getElementById('closeDisplayModal')?.addEventListener('click', closeDisplayModal);
+  document.getElementById('cancelDisplayBtn')?.addEventListener('click', closeDisplayModal);
+  document.getElementById('saveDisplayBtn')?.addEventListener('click', handleSaveDisplay);
+  document.getElementById('deleteDisplayBtn')?.addEventListener('click', handleDeleteDisplay);
+  document.getElementById('regenerateFactBtn')?.addEventListener('click', handleRegenerateFact);
+}
+
+// =============================================
+// DISPLAYS & KIOSKS
+// =============================================
+
+async function loadDisplays() {
+  const container = document.getElementById('displaysList');
+  if (!container) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('displays')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    allDisplays = data || [];
+
+    if (allDisplays.length === 0) {
+      container.innerHTML = '<p class="text-muted">No displays configured. Click "Add Display" to set one up.</p>';
+      renderTvDisplayLinks([]);
+      return;
+    }
+
+    container.innerHTML = allDisplays.map(d => {
+      const modeLabels = { dashboard: 'Dashboard', cameras: 'Cameras', signage: 'Signage', slideshow: 'Slideshow' };
+      const typeLabels = { tv: 'TV', tablet: 'Tablet' };
+      const url = d.display_type === 'tablet' ? '/kiosk/' : `/kiosk/tv.html?display=${d.id}`;
+      return `<div class="forwarding-rule-item" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;">
+          <strong>${escapeHtml(d.name)}</strong>
+          <span class="settings-badge" style="margin-left:0.5rem;">${typeLabels[d.display_type] || d.display_type}</span>
+          <span class="settings-badge" style="margin-left:0.25rem;">${modeLabels[d.mode] || d.mode}</span>
+          ${!d.is_active ? '<span class="settings-badge" style="margin-left:0.25rem;background:#f8d7da;color:#721c24;">Inactive</span>' : ''}
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
+            <a href="${url}" target="_blank" style="color:var(--accent);">${url}</a>
+          </div>
+        </div>
+        <button class="btn-small" onclick="window._editDisplay('${d.id}')">Edit</button>
+      </div>`;
+    }).join('');
+
+    renderTvDisplayLinks(allDisplays);
+  } catch (err) {
+    console.error('Failed to load displays:', err);
+    container.innerHTML = '<p class="text-muted">Failed to load displays.</p>';
+  }
+}
+
+function renderTvDisplayLinks(displays) {
+  const container = document.getElementById('tvDisplayLinks');
+  if (!container) return;
+  const tvDisplays = displays.filter(d => d.display_type === 'tv' && d.is_active);
+  if (tvDisplays.length === 0) {
+    container.innerHTML = '<div><strong>TV Display:</strong> <span class="text-muted">No TV displays configured</span></div>';
+    return;
+  }
+  container.innerHTML = tvDisplays.map(d => {
+    const url = `/kiosk/tv.html?display=${d.id}`;
+    return `<div><strong>${escapeHtml(d.name)}:</strong> <a href="${url}" target="_blank">${url}</a></div>`;
+  }).join('');
+}
+
+function openDisplayModal(id) {
+  const modal = document.getElementById('displayModal');
+  const title = document.getElementById('displayModalTitle');
+  const deleteBtn = document.getElementById('deleteDisplayBtn');
+
+  if (id) {
+    const display = allDisplays.find(d => d.id === id);
+    if (!display) return;
+    editingDisplayId = id;
+    title.textContent = 'Edit Display';
+    deleteBtn.style.display = '';
+    document.getElementById('displayId').value = id;
+    document.getElementById('displayName').value = display.name;
+    document.getElementById('displayType').value = display.display_type;
+    document.getElementById('displayMode').value = display.mode;
+    document.getElementById('displayConfig').value = JSON.stringify(display.config || {}, null, 2);
+    document.getElementById('displayActive').checked = display.is_active;
+  } else {
+    editingDisplayId = null;
+    title.textContent = 'Add Display';
+    deleteBtn.style.display = 'none';
+    document.getElementById('displayId').value = '';
+    document.getElementById('displayName').value = '';
+    document.getElementById('displayType').value = 'tv';
+    document.getElementById('displayMode').value = 'dashboard';
+    document.getElementById('displayConfig').value = '{}';
+    document.getElementById('displayActive').checked = true;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+// Global handler for edit button onclick
+window._editDisplay = (id) => openDisplayModal(id);
+
+function closeDisplayModal() {
+  document.getElementById('displayModal')?.classList.add('hidden');
+  editingDisplayId = null;
+}
+
+async function handleSaveDisplay() {
+  const name = document.getElementById('displayName').value.trim();
+  if (!name) {
+    showToast('Name is required', 'error');
+    return;
+  }
+
+  let config = {};
+  try {
+    const configText = document.getElementById('displayConfig').value.trim();
+    if (configText) config = JSON.parse(configText);
+  } catch (e) {
+    showToast('Invalid JSON in configuration', 'error');
+    return;
+  }
+
+  const record = {
+    name,
+    display_type: document.getElementById('displayType').value,
+    mode: document.getElementById('displayMode').value,
+    config,
+    is_active: document.getElementById('displayActive').checked,
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    if (editingDisplayId) {
+      const { error } = await supabase.from('displays').update(record).eq('id', editingDisplayId);
+      if (error) throw error;
+      showToast('Display updated', 'success');
+    } else {
+      const { error } = await supabase.from('displays').insert(record);
+      if (error) throw error;
+      showToast('Display added', 'success');
+    }
+    closeDisplayModal();
+    await loadDisplays();
+  } catch (err) {
+    console.error('Failed to save display:', err);
+    showToast('Failed to save display', 'error');
+  }
+}
+
+async function handleDeleteDisplay() {
+  if (!editingDisplayId) return;
+  if (!confirm('Delete this display?')) return;
+
+  try {
+    const { error } = await supabase.from('displays').delete().eq('id', editingDisplayId);
+    if (error) throw error;
+    showToast('Display deleted', 'success');
+    closeDisplayModal();
+    await loadDisplays();
+  } catch (err) {
+    console.error('Failed to delete display:', err);
+    showToast('Failed to delete display', 'error');
+  }
+}
+
+async function loadTodayFact() {
+  const el = document.getElementById('todayFact');
+  if (!el) return;
+
+  try {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const { data } = await supabase
+      .from('kiosk_facts')
+      .select('fact_text')
+      .eq('generated_date', today)
+      .single();
+
+    if (data?.fact_text) {
+      el.textContent = data.fact_text;
+    } else {
+      el.textContent = 'No fact generated yet today. Click "Regenerate" to create one.';
+    }
+  } catch (err) {
+    el.textContent = 'No fact generated yet today.';
+  }
+}
+
+async function handleRegenerateFact() {
+  const el = document.getElementById('todayFact');
+  const btn = document.getElementById('regenerateFactBtn');
+  if (!el || !btn) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  el.textContent = 'Generating new fact...';
+
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-daily-fact?force=true`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const { fact } = await resp.json();
+    el.textContent = fact || 'Failed to generate fact';
+    showToast('Fact regenerated', 'success');
+  } catch (err) {
+    console.error('Failed to regenerate fact:', err);
+    showToast('Failed to regenerate fact', 'error');
+    el.textContent = 'Error generating fact';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Regenerate';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

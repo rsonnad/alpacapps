@@ -42,7 +42,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.87 10:56p</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.89 11:45p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -249,7 +249,110 @@
         </div>
       </div>
 
+      <!-- ===== DISPLAYS & KIOSKS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <h2>Displays & Kiosks</h2>
+        </div>
+
+        <!-- Display List -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Configured Displays</h3>
+              <p>Manage tablet kiosks and TV displays. Each display gets a unique URL.</p>
+            </div>
+            <button class="btn-small btn-primary" id="addDisplayBtn">+ Add Display</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="displaysList"></div>
+          </div>
+        </div>
+
+        <!-- Today's Fact -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Alpaca Fact of the Day</h3>
+              <p>AI-generated daily fact displayed on the kiosk.</p>
+            </div>
+            <button class="btn-small" id="regenerateFactBtn">Regenerate</button>
+          </div>
+          <div class="settings-card-body">
+            <p id="todayFact" class="text-muted" style="font-style: italic;">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Kiosk Links -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Quick Links</h3>
+              <p>Open these URLs on your display devices.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.85rem;">
+              <div><strong>Tablet Kiosk:</strong> <a href="/kiosk/" target="_blank">/kiosk/</a></div>
+              <div id="tvDisplayLinks"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- Display Modal -->
+  <div id="displayModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 id="displayModalTitle">Add Display</h2>
+        <button class="modal-close" id="closeDisplayModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="displayForm" onsubmit="return false;">
+          <input type="hidden" id="displayId">
+          <div class="form-group">
+            <label for="displayName">Name</label>
+            <input type="text" id="displayName" placeholder="e.g., Living Room TCL" required>
+          </div>
+          <div class="form-group">
+            <label for="displayType">Type</label>
+            <select id="displayType">
+              <option value="tv">TV</option>
+              <option value="tablet">Tablet</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="displayMode">Mode</label>
+            <select id="displayMode">
+              <option value="dashboard">Dashboard</option>
+              <option value="cameras">Cameras</option>
+              <option value="signage">Signage</option>
+              <option value="slideshow">Slideshow</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="displayConfig">Configuration (JSON)</label>
+            <textarea id="displayConfig" rows="6" placeholder='{"show_weather": true}' style="font-family: monospace; font-size: 0.8rem;"></textarea>
+            <p class="form-hint" id="displayConfigHint">Dashboard: show_weather, show_events, show_fact, show_occupants. Cameras: cameras[], quality, layout. Signage: message, subtitle. Slideshow: media_tag, slideshow_interval_ms.</p>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="displayActive" checked>
+              Active
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="deleteDisplayBtn" style="margin-right: auto; display: none;">Delete</button>
+        <button class="btn-secondary" id="cancelDisplayBtn">Cancel</button>
+        <button class="btn-primary" id="saveDisplayBtn">Save</button>
+      </div>
+    </div>
   </div>
 
   <!-- Forwarding Rule Modal -->
