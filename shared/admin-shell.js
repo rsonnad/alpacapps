@@ -9,19 +9,23 @@ import { errorLogger } from './error-logger.js';
 // =============================================
 // TAB DEFINITIONS
 // =============================================
-const ADMIN_TABS = [
+const STAFF_TABS = [
   { id: 'spaces', label: 'Spaces', href: 'spaces.html' },
   { id: 'rentals', label: 'Rentals', href: 'rentals.html' },
   { id: 'events', label: 'Events', href: 'events.html' },
   { id: 'media', label: 'Media', href: 'media.html' },
-  { id: 'templates', label: 'Templates', href: 'templates.html' },
-  { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
+  { id: 'sms', label: 'SMS', href: 'sms-messages.html' },
   { id: 'hours', label: 'Hours', href: 'worktracking.html' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html' },
   { id: 'voice', label: 'Voice', href: 'voice.html' },
+  { id: 'todo', label: 'Todo', href: 'todo.html' },
+];
+
+const ADMIN_TABS = [
   { id: 'users', label: 'Users', href: 'users.html' },
   { id: 'settings', label: 'Settings', href: 'settings.html' },
-  { id: 'todo', label: 'Todo', href: 'todo.html' },
+  { id: 'templates', label: 'Templates', href: 'templates.html' },
+  { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
 ];
 
 // =============================================
@@ -60,7 +64,7 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-export function renderTabNav(activeTab, userRole) {
+export function renderTabNav(activeTab, userRole, section = 'staff') {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
@@ -72,7 +76,8 @@ export function renderTabNav(activeTab, userRole) {
     }
   }
 
-  tabsContainer.innerHTML = ADMIN_TABS.map(tab => {
+  const tabs = section === 'admin' ? ADMIN_TABS : STAFF_TABS;
+  tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
@@ -109,6 +114,37 @@ function escapeHtml(s) {
 }
 
 // =============================================
+// CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
+// =============================================
+function renderContextSwitcher(userRole, activeSection = 'staff') {
+  const switcher = document.getElementById('contextSwitcher');
+  if (!switcher) return;
+
+  if (!['staff', 'admin', 'oracle'].includes(userRole)) {
+    switcher.classList.add('hidden');
+    return;
+  }
+
+  const isAdmin = ['admin', 'oracle'].includes(userRole);
+  const tabs = [
+    { id: 'resident', label: 'Resident', href: '/residents/' },
+    { id: 'associate', label: 'Associate', href: '/associates/' },
+    { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
+    { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
+  ];
+
+  const safeSection = isAdmin && activeSection === 'admin' ? 'admin' : 'staff';
+  switcher.innerHTML = tabs.map(tab => {
+    if (tab.id === 'admin' && !isAdmin) {
+      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
+    }
+    const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
+    const activeClass = isActive ? ' active' : '';
+    return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
+  }).join('');
+}
+
+// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -120,7 +156,7 @@ function escapeHtml(s) {
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady }) {
+export async function initAdminPage({ activeTab, requiredRole = 'staff', section = 'staff', onReady }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -167,8 +203,12 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', onReady
         document.body.classList.remove('is-admin');
       }
 
+      const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
+      const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
+
+      renderContextSwitcher(state.appUser?.role, resolvedSection);
       // Render tab navigation
-      renderTabNav(activeTab, state.appUser?.role);
+      renderTabNav(activeTab, state.appUser?.role, resolvedSection);
 
       // Sign out handlers (only bind once)
       if (!pageContentShown) {

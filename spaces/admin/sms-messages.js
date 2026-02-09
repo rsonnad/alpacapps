@@ -21,8 +21,9 @@ const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
 
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
-    activeTab: 'settings',
-    requiredRole: 'admin',
+    activeTab: 'sms',
+    requiredRole: 'staff',
+    section: 'staff',
     onReady: async (state) => {
       await loadAllData();
       setupEventListeners();

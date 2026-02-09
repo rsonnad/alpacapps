@@ -51,9 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function showAuthScreen() {
-  document.getElementById('loadingOverlay').classList.add('hidden');
-  document.getElementById('appContent').classList.add('hidden');
-  document.getElementById('authScreen').classList.remove('hidden');
+  window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
 }
 
 async function initApp() {
@@ -632,19 +630,6 @@ function setupEventListeners() {
   document.getElementById('btnSignOut').addEventListener('click', async () => {
     await signOut();
     showAuthScreen();
-  });
-
-  // Google sign in
-  document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.href }
-      });
-      if (error) showToast(error.message, 'error');
-    } catch (err) {
-      showToast('Sign in failed', 'error');
-    }
   });
 
   // Tab switching

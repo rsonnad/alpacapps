@@ -45,6 +45,13 @@
   cursor: default;
 }
 
+.context-switcher-btn.disabled {
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
 .manage-tab {
   padding: 1rem 2rem;
   background: none;

@@ -63,6 +63,7 @@ let currentMediaId = null;
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
     activeTab: 'spaces',
+    section: 'staff',
     onReady: (state) => {
       authState = state;
       loadSpacesData();

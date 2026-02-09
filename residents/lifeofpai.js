@@ -228,6 +228,6 @@ function renderWhisperLog(logs) {
 
 // Initialize
 initResidentPage({
-  activeTab: null,
+  activeTab: 'pai',
   onReady: initLifeOfPai
 });

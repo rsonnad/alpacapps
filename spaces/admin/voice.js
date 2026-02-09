@@ -13,7 +13,8 @@ let allCalls = [];
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
     activeTab: 'voice',
-    requiredRole: 'admin',
+    requiredRole: 'staff',
+    section: 'staff',
     onReady: async (state) => {
       setupWebhookUrls();
       await Promise.all([loadConfig(), loadAssistants(), loadCalls(), loadStats()]);

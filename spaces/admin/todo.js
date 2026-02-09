@@ -288,7 +288,8 @@ function handleResetAll() {
 document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
     activeTab: 'todo',
-    requiredRole: 'admin',
+    requiredRole: 'staff',
+    section: 'staff',
     onReady: async () => {
       loadState();
       render();

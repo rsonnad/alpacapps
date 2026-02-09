@@ -488,12 +488,8 @@
   </style>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../" class="site-nav__logo">
-      <img src="../images/icon-padded-white.png" alt="" class="site-nav__icon">
-      <span>Alpaca Playhouse</span>
-    </a>
-  </nav>
+  <span data-site-version style="display:none;">v260209.66 6:05a</span>
+  <div id="siteHeader"></div>
 
   <div class="container">
     <div class="card">
@@ -1010,6 +1006,12 @@
         alert('Something went wrong. Please email us directly.');
       }
     };
+  </script>
+  <script type="module" src="../shared/version-info.js"></script>
+  <script type="module">
+    import { initPublicPage } from '../shared/public-shell.js';
+
+    initPublicPage({ transparent: false, light: false, activePage: '/spaces/' });
   </script>
 </body>
 </html>

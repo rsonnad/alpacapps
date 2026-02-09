@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
     activeTab: 'templates',
     requiredRole: 'admin', // Templates require admin access
+    section: 'admin',
     onReady: async (state) => {
       // Load templates panel
       await loadTemplatesPanel();

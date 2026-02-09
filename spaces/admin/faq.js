@@ -18,6 +18,7 @@ const isEmbed = new URLSearchParams(window.location.search).has('embed');
 document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
     activeTab: 'faq',
+    section: 'staff',
     onReady: async (state) => {
       // Hide header and tabs in embed mode
       if (isEmbed) {

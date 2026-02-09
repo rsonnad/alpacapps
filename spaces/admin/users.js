@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize auth and admin page (requires admin role)
   authState = await initAdminPage({
     activeTab: 'users',
+    requiredRole: 'admin',
+    section: 'admin',
     onReady: async (state) => {
       authState = state;
 

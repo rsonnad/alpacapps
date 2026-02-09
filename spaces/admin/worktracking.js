@@ -21,6 +21,7 @@ let initialized = false;
 // =============================================
 initAdminPage({
   activeTab: 'hours',
+  section: 'staff',
   onReady: async () => {
     if (initialized) return;
     initialized = true;

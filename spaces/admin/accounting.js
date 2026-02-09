@@ -28,6 +28,8 @@ const isEmbed = new URLSearchParams(window.location.search).has('embed');
 // =============================================
 initAdminPage({
   activeTab: 'accounting',
+  requiredRole: 'admin',
+  section: 'admin',
   onReady: async () => {
     if (initialized) return;
     initialized = true;

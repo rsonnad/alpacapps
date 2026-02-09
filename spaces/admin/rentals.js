@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
     activeTab: 'rentals',
     requiredRole: 'staff',
+    section: 'staff',
     onReady: async (state) => {
       authState = state;
       setupLightbox();

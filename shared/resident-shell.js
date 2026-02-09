@@ -20,8 +20,9 @@ const RESIDENT_TABS = [
   { id: 'climate', label: 'Climate', href: 'climate.html' },
   { id: 'laundry', label: 'Laundry', href: 'laundry.html' },
   { id: 'cars', label: 'Cars', href: 'cars.html' },
-  // Future tabs:
-  // { id: 'info', label: 'House Info', href: 'info.html' },
+  { id: 'profile', label: 'Profile', href: 'profile.html' },
+  { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html' },
+  { id: 'pai', label: 'Life of PAI', href: 'lifeofpai.html' },
 ];
 
 // =============================================
@@ -75,6 +76,36 @@ function renderResidentTabNav(activeTab, userRole) {
   tabsContainer.innerHTML = RESIDENT_TABS.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
+  }).join('');
+}
+
+// =============================================
+// CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
+// =============================================
+function renderContextSwitcher(userRole) {
+  const switcher = document.getElementById('contextSwitcher');
+  if (!switcher) return;
+
+  if (!['staff', 'admin', 'oracle'].includes(userRole)) {
+    switcher.classList.add('hidden');
+    return;
+  }
+
+  const isAdmin = ['admin', 'oracle'].includes(userRole);
+  const tabs = [
+    { id: 'resident', label: 'Resident', href: '/residents/' },
+    { id: 'associate', label: 'Associate', href: '/associates/' },
+    { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
+    { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
+  ];
+
+  switcher.innerHTML = tabs.map(tab => {
+    if (tab.id === 'admin' && !isAdmin) {
+      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
+    }
+    const isActive = tab.id === 'resident';
+    const activeClass = isActive ? ' active' : '';
+    return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');
 }
 
@@ -167,6 +198,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
         document.body.classList.remove('is-admin');
       }
 
+      renderContextSwitcher(state.appUser?.role);
       // Render tab navigation
       renderResidentTabNav(activeTab, state.appUser?.role);
 
