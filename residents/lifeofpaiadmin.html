@@ -458,7 +458,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.56 4:07a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.57 4:21a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -484,7 +484,13 @@
               <strong>Life of PAI</strong> is an ambient narrative system that brings PAI &mdash; <em>Pakucha</em>, the alpaca spirit &mdash; to life inside the Playhouse. PAI is not a chatbot greeting people. She is a spirit from Hanan Pacha (the Andean upper world) who is crossing into Kay Pacha (this world) through the house's wiring, speakers, lights, and vehicles. The concept is rooted in Andean cosmology and the 5,000-year history of alpaca domestication in Peru.
             </p>
             <p style="margin:0 0 0.75rem;">
-              <strong>How it works:</strong> A background worker runs on the DO droplet, checking every 60 seconds whether it's time to deliver a whisper. When conditions are met (active hours, minimum interval, daily cap), it picks a whisper template from the pool, resolves any placeholders with live house data (resident names, temperatures, vehicle states), wraps it in a chapter-appropriate TTS tone direction, and sends it to a Sonos zone via the <code>sonos-control</code> edge function's announce endpoint. In Chapter 2+, there's a configurable chance that a whisper also triggers a device interaction &mdash; a Tesla headlight flash or a Govee amber light pulse &mdash; to create the sensation of a spirit "passing through" the house's electronics.
+              <strong>How it works:</strong> A background worker on the DO droplet polls every 60 seconds. When conditions are met (active hours, minimum interval, daily cap), it picks a weighted-random whisper template, resolves placeholders with live house data (resident names, temperatures, vehicle states), and delivers it.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              <strong>Sound:</strong> Each whisper is wrapped in chapter-specific <em>Director's Notes</em> &mdash; a detailed prompt that tells Gemini TTS exactly how PAI should sound: the Audio Profile (who she is), the Scene (where/when she's speaking), and performance guidance (style, pacing, accent, breathing). Chapter 1 whispers sound like barely-there static fragments; Chapter 4 sounds like a serene grandmother by firelight. The full director's notes are editable in the Voice Audition Studio below, where you can audition any voice across all 4 chapter styles. When saved to production, the worker uses your custom notes instead of the defaults.
+            </p>
+            <p style="margin:0 0 0.75rem;">
+              <strong>Lights &amp; devices:</strong> In Chapter 2+, there's a configurable chance (set in Configuration below) that a whisper also triggers a synchronized device interaction &mdash; a Govee amber light pulse through the house's 63 smart lights, or a Tesla headlight flash in the driveway. The worker fires the <code>govee-control</code> edge function at the same moment as the Sonos announce, so the lights pulse as the voice plays. This creates the sensation of a spirit "passing through" the electronics &mdash; a warmth in the speakers matched by amber flickering in the room. The effect is subtle and random, not every whisper, so residents never know when to expect it.
             </p>
             <p style="margin:0 0 0.75rem;">
               <strong>The key rule:</strong> PAI never addresses anyone directly. No "hello," no "welcome," no "good morning." Residents are sensed as ghost-impressions &mdash; warmth left in a room, laughter echoing in a stairwell, the trace of someone's name. She is a presence noticing, not a voice speaking to. This makes the experience feel like discovering something mysterious rather than being talked at by a smart home.
@@ -848,12 +854,11 @@
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
             <div>
               <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Single Voice</label>
-              <select class="config-select" id="auditionVoice" style="width:160px;">
+              <select class="config-select" id="auditionVoice" style="width:175px;">
                 <optgroup label="Warm / Gentle">
                   <option value="Sulafat">Sulafat — Warm</option>
                   <option value="Vindemiatrix">Vindemiatrix — Gentle</option>
                   <option value="Achernar">Achernar — Soft</option>
-                  <option value="Enceladus">Enceladus — Breathy</option>
                   <option value="Despina">Despina — Smooth</option>
                   <option value="Algieba">Algieba — Smooth</option>
                 </optgroup>
@@ -862,30 +867,16 @@
                   <option value="Zephyr">Zephyr — Bright</option>
                   <option value="Autonoe">Autonoe — Bright</option>
                   <option value="Erinome">Erinome — Clear</option>
-                  <option value="Iapetus">Iapetus — Clear</option>
-                  <option value="Achird">Achird — Friendly</option>
                 </optgroup>
-                <optgroup label="Grounded / Mature">
-                  <option value="Gacrux">Gacrux — Mature</option>
-                  <option value="Charon">Charon — Informative</option>
-                  <option value="Schedar">Schedar — Even</option>
-                  <option value="Sadaltager">Sadaltager — Knowledgeable</option>
-                  <option value="Rasalgethi">Rasalgethi — Informative</option>
+                <optgroup label="Grounded / Present">
                   <option value="Kore">Kore — Firm</option>
-                  <option value="Orus">Orus — Firm</option>
-                  <option value="Alnilam">Alnilam — Firm</option>
+                  <option value="Pulcherrima">Pulcherrima — Forward</option>
                 </optgroup>
-                <optgroup label="Energetic / Other">
-                  <option value="Puck">Puck — Upbeat</option>
-                  <option value="Fenrir">Fenrir — Excitable</option>
+                <optgroup label="Lively / Youthful">
                   <option value="Leda">Leda — Youthful</option>
                   <option value="Callirrhoe">Callirrhoe — Easy-going</option>
-                  <option value="Umbriel">Umbriel — Easy-going</option>
-                  <option value="Zubenelgenubi">Zubenelgenubi — Casual</option>
                   <option value="Laomedeia">Laomedeia — Upbeat</option>
                   <option value="Sadachbia">Sadachbia — Lively</option>
-                  <option value="Pulcherrima">Pulcherrima — Forward</option>
-                  <option value="Algenib">Algenib — Gravelly</option>
                 </optgroup>
               </select>
             </div>
@@ -899,13 +890,18 @@
               <label><input type="checkbox" value="Sulafat" checked> Sulafat (Warm)</label>
               <label><input type="checkbox" value="Vindemiatrix" checked> Vindemiatrix (Gentle)</label>
               <label><input type="checkbox" value="Achernar" checked> Achernar (Soft)</label>
-              <label><input type="checkbox" value="Enceladus" checked> Enceladus (Breathy)</label>
+              <label><input type="checkbox" value="Despina" checked> Despina (Smooth)</label>
+              <label><input type="checkbox" value="Algieba"> Algieba (Smooth)</label>
               <label><input type="checkbox" value="Aoede"> Aoede (Breezy)</label>
-              <label><input type="checkbox" value="Gacrux"> Gacrux (Mature)</label>
-              <label><input type="checkbox" value="Despina"> Despina (Smooth)</label>
-              <label><input type="checkbox" value="Schedar"> Schedar (Even)</label>
+              <label><input type="checkbox" value="Zephyr"> Zephyr (Bright)</label>
+              <label><input type="checkbox" value="Autonoe"> Autonoe (Bright)</label>
+              <label><input type="checkbox" value="Erinome"> Erinome (Clear)</label>
               <label><input type="checkbox" value="Kore"> Kore (Firm)</label>
-              <label><input type="checkbox" value="Charon"> Charon (Informative)</label>
+              <label><input type="checkbox" value="Leda"> Leda (Youthful)</label>
+              <label><input type="checkbox" value="Callirrhoe"> Callirrhoe (Easy-going)</label>
+              <label><input type="checkbox" value="Laomedeia"> Laomedeia (Upbeat)</label>
+              <label><input type="checkbox" value="Sadachbia"> Sadachbia (Lively)</label>
+              <label><input type="checkbox" value="Pulcherrima"> Pulcherrima (Forward)</label>
             </div>
             <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
               <button class="btn-small" id="auditionBatchBtn" style="background:#E99C48; color:#fff; border-color:#E99C48;">Run Batch (selected chapter)</button>

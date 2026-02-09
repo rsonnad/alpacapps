@@ -981,15 +981,13 @@ function closePlayer() {
 // Voice Audition
 // ============================================
 
+// Female Gemini TTS voices only
 const VOICE_TAGS = {
-  Sulafat: 'Warm', Vindemiatrix: 'Gentle', Achernar: 'Soft', Enceladus: 'Breathy',
+  Sulafat: 'Warm', Vindemiatrix: 'Gentle', Achernar: 'Soft',
   Despina: 'Smooth', Algieba: 'Smooth', Aoede: 'Breezy', Zephyr: 'Bright',
-  Autonoe: 'Bright', Erinome: 'Clear', Iapetus: 'Clear', Achird: 'Friendly',
-  Gacrux: 'Mature', Charon: 'Informative', Schedar: 'Even', Sadaltager: 'Knowledgeable',
-  Rasalgethi: 'Informative', Kore: 'Firm', Orus: 'Firm', Alnilam: 'Firm',
-  Puck: 'Upbeat', Fenrir: 'Excitable', Leda: 'Youthful', Callirrhoe: 'Easy-going',
-  Umbriel: 'Easy-going', Zubenelgenubi: 'Casual', Laomedeia: 'Upbeat',
-  Sadachbia: 'Lively', Pulcherrima: 'Forward', Algenib: 'Gravelly',
+  Autonoe: 'Bright', Erinome: 'Clear', Kore: 'Firm',
+  Leda: 'Youthful', Callirrhoe: 'Easy-going', Laomedeia: 'Upbeat',
+  Sadachbia: 'Lively', Pulcherrima: 'Forward',
 };
 
 function getAuditionText() {
@@ -1005,19 +1003,17 @@ function getAuditionChapter() {
   return parseInt(document.getElementById('auditionChapter').value) || 1;
 }
 
-/**
- * Generate TTS for one voice with an explicit prompt string.
- * Returns { voice, chapter, audioUrl, error }.
- *
- * @param {string} prompt  Full TTS prompt (director's notes + transcript)
- * @param {string} voice   Gemini voice name
- * @param {number} [chapter] Optional chapter number (for tagging the result)
- */
-async function generateAuditionRaw(prompt, voice, chapter) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
+const TTS_TIMEOUT_MS = 90_000; // 90s — Supabase edge functions timeout at ~60s
+const TTS_MAX_RETRIES = 2;     // retry once on 500/timeout
 
+/**
+ * Single TTS fetch attempt with timeout. Returns parsed result or throws.
+ */
+async function ttsFetchOnce(prompt, voice, session) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
+
+  try {
     const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/sonos-control`, {
       method: 'POST',
       headers: {
@@ -1025,16 +1021,60 @@ async function generateAuditionRaw(prompt, voice, chapter) {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': supabase.supabaseKey,
       },
-      body: JSON.stringify({ action: 'tts_preview', text: prompt, voice })
+      body: JSON.stringify({ action: 'tts_preview', text: prompt, voice }),
+      signal: controller.signal,
     });
 
+    clearTimeout(timer);
     const result = await resp.json();
+
     if (!resp.ok) {
-      return { voice, chapter, error: result.error || `HTTP ${resp.status}` };
+      const detail = result.detail ? ` — ${result.detail.substring(0, 120)}` : '';
+      const err = new Error(`${result.error || `HTTP ${resp.status}`}${detail}`);
+      err.status = resp.status;
+      throw err;
     }
-    return { voice, chapter, audioUrl: result.audio_url };
+    return result;
   } catch (err) {
-    return { voice, chapter, error: err.message };
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      const e = new Error(`Timed out after ${Math.round(TTS_TIMEOUT_MS / 1000)}s`);
+      e.status = 408;
+      throw e;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Generate TTS for one voice with an explicit prompt string.
+ * Retries once on 500/timeout errors (Gemini transient failures).
+ * Returns { voice, chapter, audioUrl, error, elapsedMs }.
+ */
+async function generateAuditionRaw(prompt, voice, chapter) {
+  const t0 = Date.now();
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    let lastErr;
+    for (let attempt = 0; attempt <= TTS_MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`TTS retry ${attempt}/${TTS_MAX_RETRIES} for ${voice}`);
+          await new Promise(r => setTimeout(r, 2000 * attempt)); // backoff
+        }
+        const result = await ttsFetchOnce(prompt, voice, session);
+        return { voice, chapter, audioUrl: result.audio_url, elapsedMs: Date.now() - t0 };
+      } catch (err) {
+        lastErr = err;
+        // Only retry on 500 (server error) or timeout
+        if (err.status !== 500 && err.status !== 408) break;
+      }
+    }
+    return { voice, chapter, error: lastErr.message, elapsedMs: Date.now() - t0 };
+  } catch (err) {
+    return { voice, chapter, error: err.message, elapsedMs: Date.now() - t0 };
   }
 }
 
@@ -1052,11 +1092,12 @@ async function generateAuditionForChapter(text, voice, chapter) {
 }
 
 /** Render an audition card in the results container */
-function renderAuditionCard(voice, status, audioUrl, error) {
+function renderAuditionCard(voice, status, audioUrl, error, elapsedMs) {
   const tag = VOICE_TAGS[voice] || '';
   const card = document.createElement('div');
   card.className = `audition-card ${status}`;
   card.id = `audition-card-${voice}`;
+  const timeStr = elapsedMs ? `<span class="audition-status" style="opacity:0.5;">${(elapsedMs / 1000).toFixed(1)}s</span>` : '';
 
   if (status === 'generating') {
     card.innerHTML = `
@@ -1069,12 +1110,14 @@ function renderAuditionCard(voice, status, audioUrl, error) {
       <span class="audition-voice-name">${voice}</span>
       <span class="audition-voice-tag">${tag}</span>
       <audio class="audition-audio" controls src="${audioUrl}"></audio>
+      ${timeStr}
     `;
   } else {
     card.innerHTML = `
       <span class="audition-voice-name">${voice}</span>
       <span class="audition-voice-tag">${tag}</span>
-      <span class="audition-status" style="color:#f44336;">${error || 'Failed'}</span>
+      <span class="audition-status" style="color:#f44336;" title="${escapeHtml(error || 'Failed')}">${(error || 'Failed').substring(0, 60)}</span>
+      ${timeStr}
     `;
   }
   return card;
@@ -1099,9 +1142,9 @@ async function auditionSingleVoice() {
 
   container.innerHTML = '';
   if (result.audioUrl) {
-    container.appendChild(renderAuditionCard(voice, 'ready', result.audioUrl));
+    container.appendChild(renderAuditionCard(voice, 'ready', result.audioUrl, null, result.elapsedMs));
   } else {
-    container.appendChild(renderAuditionCard(voice, 'error', null, result.error));
+    container.appendChild(renderAuditionCard(voice, 'error', null, result.error, result.elapsedMs));
   }
 
   btn.disabled = false;
@@ -1140,8 +1183,8 @@ async function auditionBatchVoices() {
 
     const existing = document.getElementById(`audition-card-${voice}`);
     const newCard = result.audioUrl
-      ? renderAuditionCard(voice, 'ready', result.audioUrl)
-      : renderAuditionCard(voice, 'error', null, result.error);
+      ? renderAuditionCard(voice, 'ready', result.audioUrl, null, result.elapsedMs)
+      : renderAuditionCard(voice, 'error', null, result.error, result.elapsedMs);
 
     if (existing) existing.replaceWith(newCard);
     else container.appendChild(newCard);
