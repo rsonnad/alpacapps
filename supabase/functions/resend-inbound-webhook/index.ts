@@ -822,9 +822,11 @@ async function handleAutoReply(
   const body = emailRecord.body_text || emailRecord.body_html || "";
   const from = emailRecord.from_address || "";
 
-  // Ignore emails FROM auto@ or noreply@ (automated system emails looping back)
-  if (from.includes("auto@alpacaplayhouse.com") || from.includes("noreply@alpacaplayhouse.com")) {
-    console.log("Ignoring automated email reply loop from:", from);
+  // Ignore emails FROM or TO auto@ or noreply@ (automated system emails looping back)
+  const toAddr = emailRecord.to_address || "";
+  if (from.includes("auto@alpacaplayhouse.com") || from.includes("noreply@alpacaplayhouse.com") ||
+      toAddr.includes("auto@alpacaplayhouse.com") || toAddr.includes("noreply@alpacaplayhouse.com")) {
+    console.log("Ignoring automated email reply loop", { from, to: toAddr });
     return;
   }
 
