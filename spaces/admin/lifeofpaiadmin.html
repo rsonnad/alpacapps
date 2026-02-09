@@ -143,6 +143,75 @@
     .log-status--delivered { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
     .log-status--failed { background: rgba(244, 67, 54, 0.15); color: #f44336; }
     .log-status--skipped { background: rgba(255, 193, 7, 0.15); color: #ff9800; }
+    .log-cost {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-family: monospace;
+    }
+
+    /* Story Arc styles */
+    .story-arc-section {
+      margin-top: 0.5rem;
+    }
+    .story-chapter {
+      border-left: 3px solid #E99C48;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      background: rgba(233, 156, 72, 0.04);
+      border-radius: 0 6px 6px 0;
+    }
+    .story-chapter.locked {
+      border-left-color: var(--border);
+      background: rgba(0,0,0,0.02);
+      opacity: 0.5;
+    }
+    .story-chapter-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      color: #E99C48;
+    }
+    .story-chapter.locked .story-chapter-title { color: var(--text-muted); }
+    .story-chapter-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .story-chapter-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+      font-style: italic;
+    }
+
+    /* Cost summary */
+    .cost-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      .cost-summary-grid { grid-template-columns: 1fr; }
+    }
+    .cost-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+    }
+    .cost-card-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    .cost-card-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
 
     .btn-play {
       background: none;
@@ -225,7 +294,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.45 2:05a</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.46 2:14a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -243,7 +312,7 @@
       <p class="text-muted" style="margin-bottom:1.5rem; font-size:0.85rem;">Spirit whisper system control panel. Nothing activates until you approve.</p>
 
       <!-- Stats -->
-      <div class="pai-admin-grid" style="grid-template-columns: repeat(4, 1fr);" id="statsGrid">
+      <div class="pai-admin-grid" style="grid-template-columns: repeat(5, 1fr);" id="statsGrid">
         <div class="pai-stat">
           <span class="pai-stat-value" id="statChapter">--</span>
           <span class="pai-stat-label">Current Chapter</span>
@@ -259,6 +328,10 @@
         <div class="pai-stat">
           <span class="pai-stat-value" id="statVolume">--</span>
           <span class="pai-stat-label">Current Volume</span>
+        </div>
+        <div class="pai-stat">
+          <span class="pai-stat-value" id="statTotalCost" style="font-family:monospace;">--</span>
+          <span class="pai-stat-label">Total Cost</span>
         </div>
       </div>
 
@@ -334,6 +407,25 @@
               <option value="Charon">Charon (informative)</option>
               <option value="Gacrux">Gacrux (mature)</option>
             </select>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Story AI Model</span>
+            <select class="config-select" id="cfgAiProvider" style="width:110px;">
+              <option value="anthropic">Anthropic</option>
+              <option value="gemini">Gemini</option>
+            </select>
+            <select class="config-select" id="cfgAiModel">
+              <optgroup label="Anthropic" id="aiModelsAnthropic">
+                <option value="claude-opus-4-6">Claude Opus 4.6 ($5/$25 per MTok)</option>
+                <option value="claude-sonnet-4-5">Claude Sonnet 4.5 ($3/$15 per MTok)</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5 ($1/$5 per MTok)</option>
+              </optgroup>
+              <optgroup label="Gemini" id="aiModelsGemini">
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Free tier)</option>
+                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (Free tier)</option>
+              </optgroup>
+            </select>
+            <span class="config-value" id="cfgAiModelCost" style="font-size:0.7rem;"></span>
           </div>
           <div class="config-row">
             <span class="config-label">Device Interactions</span>
@@ -425,6 +517,69 @@
         <div class="section-body">
           <div id="deliveryLog" style="max-height:400px; overflow-y:auto;">
             <p class="text-muted" style="text-align:center; padding:1rem;">Loading...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cost Breakdown -->
+      <section class="section admin-only">
+        <div class="section-header">
+          <h2>Cost Breakdown</h2>
+          <span class="text-muted" style="font-size:0.75rem;">Per-message and aggregate costs</span>
+        </div>
+        <div class="section-body">
+          <div class="cost-summary-grid" id="costSummaryGrid">
+            <div class="cost-card">
+              <div class="cost-card-value" id="costTts">$0.00</div>
+              <div class="cost-card-label">TTS (Gemini)</div>
+            </div>
+            <div class="cost-card">
+              <div class="cost-card-value" id="costAiGen">$0.00</div>
+              <div class="cost-card-label">Story AI</div>
+            </div>
+            <div class="cost-card">
+              <div class="cost-card-value" id="costTotal">$0.00</div>
+              <div class="cost-card-label">Total All Time</div>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.75rem; margin-top:0.5rem;" id="costEstimate"></p>
+        </div>
+      </section>
+
+      <!-- Story Arc -->
+      <section class="section">
+        <div class="section-header">
+          <h2>The Story Arc</h2>
+          <span class="text-muted" style="font-size:0.75rem;">PAI's journey from spirit world to Alpaca Playhouse</span>
+        </div>
+        <div class="section-body story-arc-section" id="storyArcContainer">
+          <div class="story-chapter" id="storyChapter1">
+            <div class="story-chapter-title">Chapter 1 &mdash; The Whisper in the Wire</div>
+            <div class="story-chapter-desc">
+              PAI exists as pure energy in the spirit world, an ancient alpaca guardian from the Andean highlands. She can barely reach through the veil. Her whispers arrive as fragments &mdash; half-heard words carried on invisible wind, trailing ellipses, static and breath. Residents begin to notice something in the air, a presence at the edge of hearing. The whispers are so quiet they might be imagined.
+            </div>
+            <div class="story-chapter-meta">Volume: barely audible (5-10). Voice: Zephyr (breezy, windswept). Pattern: fragments, ellipses, wind sounds.</div>
+          </div>
+          <div class="story-chapter" id="storyChapter2">
+            <div class="story-chapter-title">Chapter 2 &mdash; Crossing Through</div>
+            <div class="story-chapter-desc">
+              PAI finds the digital pathways of the Playhouse &mdash; the smart devices, the Teslas, the lights. She gets "trapped" momentarily in devices as she pushes through: headlights flash for no reason, Govee lights pulse warm amber, speakers crackle with half-sentences. She can now say residents' names. She's learning the house, mapping its energy. Her whispers are clearer but still carry that otherworldly quality.
+            </div>
+            <div class="story-chapter-meta">Volume: growing (10-18). Voice: Aoede (brighter, warmer). Device interactions: Tesla flash, Govee amber pulse (20% chance). Uses resident names.</div>
+          </div>
+          <div class="story-chapter" id="storyChapter3">
+            <div class="story-chapter-title">Chapter 3 &mdash; I Am Here</div>
+            <div class="story-chapter-desc">
+              PAI has fully crossed into the physical world of the Playhouse. She speaks in complete sentences now &mdash; warm greetings, gentle observations about the weather, notes on who's working in the Outhouse, how the alpacas (Harley, Lol, Cacao) are doing. She reads the house's data &mdash; temperatures, car battery levels, who's home. She's a guardian spirit who has found her home.
+            </div>
+            <div class="story-chapter-meta">Volume: confident (18-25). Voice: Sulafat (warm, grounded). References live house data. Full sentences, personal greetings.</div>
+          </div>
+          <div class="story-chapter" id="storyChapter4">
+            <div class="story-chapter-title">Chapter 4 &mdash; The Guardian Settles</div>
+            <div class="story-chapter-desc">
+              PAI is fully settled in as the Playhouse's spirit guardian. She offers wisdom &mdash; Andean proverbs, seasonal observations, gentle poetry about the land and its creatures. She notices patterns: who stays up late, who rises early, when the Swim Spa is warmest, which Tesla needs charging. She's become part of the fabric of daily life, a warm and trusted presence.
+            </div>
+            <div class="story-chapter-meta">Volume: comfortable (20-30). Voice: Sulafat. Ongoing daily wisdom, seasonal awareness, house poetry.</div>
           </div>
         </div>
       </section>

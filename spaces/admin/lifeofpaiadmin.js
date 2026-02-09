@@ -82,10 +82,53 @@ async function loadConfig() {
   document.getElementById('cfgDeviceInteraction').checked = data.device_interaction_enabled;
   document.getElementById('cfgDeviceChance').value = data.device_interaction_chance;
 
+  // AI Model config
+  document.getElementById('cfgAiProvider').value = data.story_ai_provider || 'anthropic';
+  document.getElementById('cfgAiModel').value = data.story_ai_model || 'claude-opus-4-6';
+  updateAiModelCost();
+
+  // AI provider change handler
+  document.getElementById('cfgAiProvider').addEventListener('change', (e) => {
+    const provider = e.target.value;
+    const modelSelect = document.getElementById('cfgAiModel');
+    // Select first option matching provider
+    const optgroup = document.getElementById(provider === 'anthropic' ? 'aiModelsAnthropic' : 'aiModelsGemini');
+    if (optgroup && optgroup.children.length) {
+      modelSelect.value = optgroup.children[0].value;
+    }
+    updateAiModelCost();
+  });
+
+  document.getElementById('cfgAiModel').addEventListener('change', updateAiModelCost);
+
   // Toggle label
   document.getElementById('cfgActive').addEventListener('change', (e) => {
     document.getElementById('cfgActiveLabel').textContent = e.target.checked ? 'On' : 'Off';
   });
+
+  // Highlight current chapter in story arc
+  updateStoryArcHighlight(data.current_chapter);
+}
+
+function updateAiModelCost() {
+  const model = document.getElementById('cfgAiModel').value;
+  const costEl = document.getElementById('cfgAiModelCost');
+  const costs = {
+    'claude-opus-4-6': 'Est. ~$0.003/whisper',
+    'claude-sonnet-4-5': 'Est. ~$0.002/whisper',
+    'claude-haiku-4-5': 'Est. ~$0.0006/whisper',
+    'gemini-2.5-flash': 'Free tier (1K req/day)',
+    'gemini-2.5-flash-lite': 'Free tier (1K req/day)',
+  };
+  costEl.textContent = costs[model] || '';
+}
+
+function updateStoryArcHighlight(currentChapter) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('storyChapter' + i);
+    if (!el) continue;
+    el.classList.toggle('locked', i > currentChapter);
+  }
 }
 
 async function saveConfig() {
@@ -102,6 +145,8 @@ async function saveConfig() {
     tts_voice: document.getElementById('cfgVoice').value,
     device_interaction_enabled: document.getElementById('cfgDeviceInteraction').checked,
     device_interaction_chance: parseFloat(document.getElementById('cfgDeviceChance').value),
+    story_ai_provider: document.getElementById('cfgAiProvider').value,
+    story_ai_model: document.getElementById('cfgAiModel').value,
     updated_at: new Date().toISOString()
   };
 
@@ -117,6 +162,7 @@ async function saveConfig() {
 
   config = { ...config, ...updates };
   showToast('Config saved', 'success');
+  updateStoryArcHighlight(updates.current_chapter);
   await loadStats();
 }
 
@@ -152,6 +198,39 @@ async function loadStats() {
     .eq('status', 'delivered');
 
   document.getElementById('statTotalWhispers').textContent = totalCount ?? 0;
+
+  // Total cost
+  const { data: costData } = await supabase
+    .from('spirit_whisper_log')
+    .select('total_cost_usd, tts_cost_usd, ai_gen_cost_usd')
+    .eq('status', 'delivered');
+
+  if (costData) {
+    const totalCost = costData.reduce((sum, r) => sum + parseFloat(r.total_cost_usd || 0), 0);
+    const ttsCost = costData.reduce((sum, r) => sum + parseFloat(r.tts_cost_usd || 0), 0);
+    const aiGenCost = costData.reduce((sum, r) => sum + parseFloat(r.ai_gen_cost_usd || 0), 0);
+
+    document.getElementById('statTotalCost').textContent = '$' + totalCost.toFixed(2);
+
+    // Cost breakdown section
+    const costTtsEl = document.getElementById('costTts');
+    const costAiEl = document.getElementById('costAiGen');
+    const costTotalEl = document.getElementById('costTotal');
+    if (costTtsEl) costTtsEl.textContent = '$' + ttsCost.toFixed(4);
+    if (costAiEl) costAiEl.textContent = '$' + aiGenCost.toFixed(4);
+    if (costTotalEl) costTotalEl.textContent = '$' + totalCost.toFixed(4);
+
+    // Estimate
+    const avgCost = totalCost / Math.max(costData.length, 1);
+    const estEl = document.getElementById('costEstimate');
+    if (estEl) {
+      const whisperCount = costData.length;
+      const avgStr = avgCost > 0 ? '$' + avgCost.toFixed(4) : '$0.00';
+      estEl.textContent = whisperCount > 0
+        ? `Average cost per whisper: ${avgStr} | At 6 whispers/day: ~$${(avgCost * 6).toFixed(2)}/day, ~$${(avgCost * 6 * 30).toFixed(2)}/month`
+        : 'No delivered whispers yet. Estimated ~$0.005/whisper (TTS) + ~$0.003/whisper (Claude Opus 4.6) = ~$0.008/whisper, ~$0.05/day at 6/day, ~$1.44/month';
+    }
+  }
 }
 
 async function loadWhisperPool(chapter) {
@@ -223,12 +302,17 @@ async function loadDeliveryLog() {
       ? `<span style="font-size:0.7rem; color:var(--accent); margin-left:0.5rem;">${log.device_interaction}</span>`
       : '';
 
+    const costInfo = parseFloat(log.total_cost_usd || 0) > 0
+      ? `<span class="log-cost" title="TTS: $${parseFloat(log.tts_cost_usd||0).toFixed(4)} | AI: $${parseFloat(log.ai_gen_cost_usd||0).toFixed(4)}">$${parseFloat(log.total_cost_usd).toFixed(4)}</span>`
+      : '';
+
     return `
       <div class="log-entry">
         <span class="log-time">${timeStr}</span>
         <span class="log-zone">${log.target_zone}</span>
         <span class="log-text">"${escapeHtml(log.rendered_text)}"</span>
         <span class="log-status ${statusClass}">${log.status}</span>
+        ${costInfo}
         ${deviceInfo}
       </div>
     `;
