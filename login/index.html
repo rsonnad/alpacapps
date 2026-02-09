@@ -60,8 +60,9 @@
       text-align: center;
     }
 
-    .logo {
-      font-size: 3rem;
+    .login-card__logo {
+      height: 64px;
+      width: auto;
       margin-bottom: 0.5rem;
     }
 
@@ -74,6 +75,15 @@
     .subtitle {
       color: var(--text-muted);
       margin-bottom: 1.5rem;
+    }
+
+    .login-card__version {
+      display: block;
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      cursor: pointer;
     }
 
     /* Auth tabs */
@@ -309,10 +319,9 @@
 <body>
   <div class="login-container">
     <div class="login-card">
-      <div class="logo">&#129433;</div>
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="login-card__logo">
       <h1>AlpacAPPs</h1>
-      <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer">v260209.73 6:26a</span>
-      <p class="subtitle">Welcome to AlpacAPPs</p>
+      <p class="subtitle">We put the AI in Alpaca</p>
 
       <!-- Sign In / Sign Up forms -->
       <div id="loginContent">
@@ -408,6 +417,7 @@
       </div>
 
       <a href="/spaces/" class="back-link">&larr; Back to Spaces</a>
+      <span title="Site version" class="login-card__version">v260209.74 6:49a</span>
     </div>
   </div>
 

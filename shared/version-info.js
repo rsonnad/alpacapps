@@ -15,6 +15,7 @@ function findVersionSpan() {
   const candidates = [
     ...document.querySelectorAll('.aap-header__version'),
     ...document.querySelectorAll('.site-nav__version'),
+    ...document.querySelectorAll('.login-card__version'),
     ...document.querySelectorAll('.header-left span'),
   ];
   for (const el of candidates) {
