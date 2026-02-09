@@ -307,19 +307,20 @@ async function sendTestWhisper() {
 // Local audio preview via tts_preview action
 // ============================================
 
-/** Resolve template variables with placeholder values for preview */
+/** Resolve template variables with real-ish values for preview */
 function resolveForPreview(template) {
   const alpacas = ['Harley', 'Lol', 'Cacao'];
-  const spaces = ['Garage Mahal', 'Sparadise', 'Skyloft', 'Magic Bus', 'Swim Spa', 'Sauna', 'Skyloft Balcony'];
-  const names = ['friend'];
+  const spaces = ['Garage Mahal', 'Sparadise', 'Skyloft', 'Magic Bus', 'Swim Spa', 'Sauna', 'Skyloft Balcony', 'Cedar Chamber'];
+  const residents = ['Jon', 'Kymberly', 'Aseem', 'Safiyya', 'Ai', 'John', 'Rachel'];
+  const vehicles = ['Casper', 'Delphi', 'Cygnus', 'Sloop', 'Brisa Branca'];
   const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
   return template
-    .replaceAll('{resident_name}', rand(names))
+    .replaceAll('{resident_name}', rand(residents))
     .replaceAll('{resident_count}', '7')
-    .replaceAll('{vehicle_name}', 'Casper')
-    .replaceAll('{battery_level}', '82')
-    .replaceAll('{temperature}', '72')
+    .replaceAll('{vehicle_name}', rand(vehicles))
+    .replaceAll('{battery_level}', String(50 + Math.floor(Math.random() * 45)))
+    .replaceAll('{temperature}', String(68 + Math.floor(Math.random() * 8)))
     .replaceAll('{zone_name}', 'Living Sound')
     .replaceAll('{alpaca_name}', rand(alpacas))
     .replaceAll('{dog_name}', 'Teacups')
@@ -335,7 +336,8 @@ function getTimeGreeting() {
 }
 
 async function previewWhisper(template, voiceOverride, triggerBtn) {
-  const text = resolveForPreview(template);
+  const resolved = resolveForPreview(template);
+  const text = addWhisperTone(resolved);
   const voice = voiceOverride || config?.tts_voice || 'Sulafat';
 
   if (triggerBtn) {
@@ -381,12 +383,19 @@ async function previewWhisper(template, voiceOverride, triggerBtn) {
   }
 }
 
+/** Wrap text with whisper tone delivery cue for Gemini TTS */
+function addWhisperTone(text) {
+  // Gemini TTS responds to SSML-like cues and textual delivery hints
+  return `(speaking in a soft, gentle whisper, slowly and mysteriously) ${text}`;
+}
+
 async function previewTestWhisper() {
-  const text = document.getElementById('testText').value.trim();
-  if (!text) {
+  const rawText = document.getElementById('testText').value.trim();
+  if (!rawText) {
     showToast('Enter whisper text', 'warning');
     return;
   }
+  const text = addWhisperTone(rawText);
   const voice = document.getElementById('cfgVoice').value;
   const btn = document.getElementById('testPreviewBtn');
   btn.disabled = true;

@@ -2,8 +2,14 @@
  * Error Report Edge Function
  *
  * Receives client-side error reports and:
- * 1. Stores them in the database for analysis
- * 2. Sends a daily digest email when triggered
+ * 1. Stores them in the error_logs database for analysis
+ * 2. Auto-creates bug_reports for actionable errors (with risk evaluation)
+ * 3. Sends a daily digest email when triggered
+ *
+ * Risk levels:
+ *   low    → Bug Scout auto-fixes (status='pending')
+ *   medium → Bug Scout auto-fixes (status='pending') — but may touch more code
+ *   high   → Requires admin approval (status='needs_approval')
  *
  * Deploy with: supabase functions deploy error-report
  */
@@ -20,6 +26,54 @@ const corsHeaders = {
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'alpacaautomatic@gmail.com';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const FROM_EMAIL = 'Alpaca Automaton Errors <auto@alpacaplayhouse.com>';
+
+// =============================================
+// RISK EVALUATION CONFIG
+// =============================================
+
+// Errors that should NOT auto-create bug reports (noise, expected, transient)
+const IGNORED_ERROR_CODES = [
+  'ABORTED',           // User cancelled
+  'TUS_UNAVAILABLE',   // Expected fallback
+  'NETWORK_ERROR',     // Transient connectivity
+  'TIMEOUT',           // Transient timeout
+  'AUTH_SESSION_MISSING', // User not logged in (expected on public pages)
+];
+
+// Error categories that are never actionable as bugs
+const IGNORED_CATEGORIES = [
+  'info',  // Info-level logs are not bugs
+];
+
+// Pages/paths involving sensitive systems — high risk
+const HIGH_RISK_PATHS = [
+  '/spaces/admin/settings',   // System settings
+  '/spaces/admin/users',      // User management
+  '/spaces/admin/accounting', // Financial data
+  '/associates/',             // Associate payments/hours
+];
+
+// Edge function / API error patterns — high risk (server-side issue)
+const HIGH_RISK_CODES = [
+  'EDGE_FUNCTION_ERROR',    // Server-side edge function failure
+  'PAYMENT_ERROR',          // Payment processing failure
+  'AUTH_ERROR',             // Authentication system failure
+  'SIGNWELL_ERROR',         // E-signature failure
+  'PAYOUT_ERROR',           // PayPal payout failure
+];
+
+// Codes that indicate UI/display bugs — low risk, safe to auto-fix
+const LOW_RISK_CODES = [
+  'UNCAUGHT_ERROR',         // JS runtime error in UI
+  'UNHANDLED_REJECTION',    // Promise rejection in UI
+  'RENDER_ERROR',           // UI rendering failure
+  'LOAD_ERROR',             // Resource load failure
+  'DOM_ERROR',              // DOM manipulation error
+];
+
+// =============================================
+// INTERFACES
+// =============================================
 
 interface ErrorEntry {
   id: string;
@@ -49,9 +103,107 @@ interface ErrorReport {
   };
 }
 
-interface DigestRequest {
-  action: 'send_digest';
+// =============================================
+// RISK EVALUATION
+// =============================================
+
+interface RiskAssessment {
+  level: 'low' | 'medium' | 'high';
+  reasons: string[];
 }
+
+function evaluateRisk(error: ErrorEntry): RiskAssessment {
+  const reasons: string[] = [];
+  let level: 'low' | 'medium' | 'high' = 'low';
+
+  const pageUrl = error.environment?.url || '';
+  const pagePath = new URL(pageUrl, 'https://alpacaplayhouse.com').pathname;
+
+  // Check high-risk paths
+  if (HIGH_RISK_PATHS.some(p => pagePath.startsWith(p))) {
+    level = 'high';
+    reasons.push(`Sensitive page: ${pagePath}`);
+  }
+
+  // Check high-risk error codes
+  if (HIGH_RISK_CODES.includes(error.code)) {
+    level = 'high';
+    reasons.push(`High-risk error code: ${error.code}`);
+  }
+
+  // Critical severity bumps to at least medium
+  if (error.severity === 'critical' && level === 'low') {
+    level = 'medium';
+    reasons.push('Critical severity');
+  }
+
+  // Edge function errors (detected by message pattern) are high risk
+  if (error.message?.includes('edge function') || error.message?.includes('Edge Function')) {
+    level = 'high';
+    reasons.push('Edge function failure — may need server-side fix');
+  }
+
+  // Supabase/database errors are high risk
+  if (error.message?.includes('supabase') || error.code?.includes('DB_') || error.code?.includes('SUPABASE_')) {
+    level = 'high';
+    reasons.push('Database/Supabase error — may need schema or RLS fix');
+  }
+
+  // Low-risk codes stay low (unless overridden above)
+  if (LOW_RISK_CODES.includes(error.code) && level === 'low') {
+    reasons.push(`UI error code: ${error.code} — safe for auto-fix`);
+  }
+
+  // If no specific reasons were found, default reasoning
+  if (reasons.length === 0) {
+    reasons.push('Standard client-side error');
+  }
+
+  return { level, reasons };
+}
+
+function shouldCreateBugReport(error: ErrorEntry): boolean {
+  // Only create bugs for error and critical severity
+  if (error.severity === 'info' || error.severity === 'warning') {
+    return false;
+  }
+
+  // Skip ignored error codes
+  if (IGNORED_ERROR_CODES.includes(error.code)) {
+    return false;
+  }
+
+  // Skip ignored categories
+  if (IGNORED_CATEGORIES.includes(error.category)) {
+    return false;
+  }
+
+  // Must have a page URL so Bug Scout knows where to look
+  if (!error.environment?.url) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Generate a dedup signature for an error.
+ * Same category + code + page path = same bug.
+ */
+function getErrorSignature(error: ErrorEntry): string {
+  const pageUrl = error.environment?.url || '';
+  let pagePath = '';
+  try {
+    pagePath = new URL(pageUrl, 'https://alpacaplayhouse.com').pathname;
+  } catch {
+    pagePath = pageUrl;
+  }
+  return `${error.category}:${error.code}:${pagePath}`;
+}
+
+// =============================================
+// HANDLERS
+// =============================================
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -125,10 +277,121 @@ async function handleErrorReport(report: ErrorReport) {
     console.log(`Stored ${errors.length} errors in database`);
   }
 
+  // =============================================
+  // AUTO-CREATE BUG REPORTS
+  // =============================================
+
+  let bugsCreated = 0;
+  let bugsUpdated = 0;
+
+  // Deduplicate errors in this batch by signature
+  const uniqueErrors = new Map<string, ErrorEntry>();
+  for (const error of errors) {
+    if (shouldCreateBugReport(error)) {
+      const sig = getErrorSignature(error);
+      // Keep the first occurrence per signature in this batch
+      if (!uniqueErrors.has(sig)) {
+        uniqueErrors.set(sig, error);
+      }
+    }
+  }
+
+  for (const [signature, error] of uniqueErrors) {
+    try {
+      // Check if a bug report already exists for this error signature
+      const { data: existingBug } = await supabase
+        .from('bug_reports')
+        .select('id, status, error_count')
+        .eq('source_error_signature', signature)
+        .eq('source', 'auto_error')
+        .in('status', ['pending', 'processing', 'needs_approval'])
+        .single();
+
+      if (existingBug) {
+        // Increment error count on existing unfixed bug (shows it's recurring)
+        await supabase
+          .from('bug_reports')
+          .update({ error_count: (existingBug.error_count || 1) + 1 })
+          .eq('id', existingBug.id);
+        bugsUpdated++;
+        console.log(`Updated existing bug ${existingBug.id} for signature ${signature} (count: ${(existingBug.error_count || 1) + 1})`);
+        continue;
+      }
+
+      // Also skip if this error was already fixed recently (within 24h)
+      // This prevents re-filing a bug that was just fixed
+      const { data: recentlyFixed } = await supabase
+        .from('bug_reports')
+        .select('id')
+        .eq('source_error_signature', signature)
+        .eq('source', 'auto_error')
+        .eq('status', 'fixed')
+        .gte('processed_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1);
+
+      if (recentlyFixed && recentlyFixed.length > 0) {
+        console.log(`Skipping bug creation for ${signature} — recently fixed`);
+        continue;
+      }
+
+      // Evaluate risk
+      const risk = evaluateRisk(error);
+      const isHighRisk = risk.level === 'high';
+
+      // Build bug report description
+      const pageUrl = error.environment?.url || 'Unknown page';
+      const description = [
+        `**Auto-detected error** (${error.severity})`,
+        '',
+        `**Error:** ${error.code} — ${error.message}`,
+        '',
+        `**Page:** ${pageUrl}`,
+        error.stack ? `\n**Stack:**\n\`\`\`\n${error.stack}\n\`\`\`` : '',
+        error.details ? `\n**Details:** ${JSON.stringify(error.details).substring(0, 500)}` : '',
+        '',
+        `**Risk:** ${risk.level} — ${risk.reasons.join('; ')}`,
+      ].filter(Boolean).join('\n');
+
+      // Create the bug report
+      const bugStatus = isHighRisk ? 'needs_approval' : 'pending';
+      const { error: bugError } = await supabase
+        .from('bug_reports')
+        .insert({
+          reporter_name: 'Alpaca Error Monitor',
+          reporter_email: 'auto@alpacaplayhouse.com',
+          description,
+          page_url: pageUrl,
+          error_message: `${error.code}: ${error.message}`.substring(0, 500),
+          status: bugStatus,
+          source: 'auto_error',
+          source_error_signature: signature,
+          error_count: 1,
+          risk_level: risk.level,
+          auto_fix_approved: isHighRisk ? null : true,
+          user_agent: error.environment?.userAgent,
+          browser_name: error.user?.browser || null,
+          viewport_size: error.environment?.viewportSize || null,
+        });
+
+      if (bugError) {
+        console.error(`Failed to create bug report for ${signature}:`, bugError);
+      } else {
+        bugsCreated++;
+        console.log(`Created ${bugStatus} bug report for ${signature} (risk: ${risk.level})`);
+      }
+    } catch (err) {
+      console.error(`Error processing bug report for ${signature}:`, err);
+    }
+  }
+
+  console.log(`Bug reports: ${bugsCreated} created, ${bugsUpdated} updated`);
+
   return new Response(
     JSON.stringify({
       success: true,
       stored: errors.length,
+      bugs_created: bugsCreated,
+      bugs_updated: bugsUpdated,
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
@@ -179,6 +442,13 @@ async function handleDigestRequest() {
     );
   }
 
+  // Also check for pending approval bugs
+  const { data: pendingApproval } = await supabase
+    .from('bug_reports')
+    .select('id, description, risk_level, error_count, page_url')
+    .eq('status', 'needs_approval')
+    .eq('source', 'auto_error');
+
   if (!errors || errors.length === 0) {
     console.log('No errors to report');
 
@@ -189,14 +459,19 @@ async function handleDigestRequest() {
       email_sent: false,
     });
 
-    return new Response(
-      JSON.stringify({ success: true, errorCount: 0, emailSent: false }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // But still send email if there are pending approvals
+    if (!pendingApproval || pendingApproval.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, errorCount: 0, emailSent: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
   }
 
+  const errorCount = errors?.length || 0;
+
   // Group errors by category and code
-  const grouped = errors.reduce((acc, e) => {
+  const grouped = (errors || []).reduce((acc, e) => {
     const key = `${e.category}:${e.code}`;
     if (!acc[key]) {
       acc[key] = { count: 0, message: e.message, severity: e.severity, examples: [] };
@@ -213,7 +488,7 @@ async function handleDigestRequest() {
   }, {} as Record<string, { count: number; message: string; severity: string; examples: any[] }>);
 
   // Count by severity
-  const severityCounts = errors.reduce((acc, e) => {
+  const severityCounts = (errors || []).reduce((acc, e) => {
     acc[e.severity] = (acc[e.severity] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -232,21 +507,37 @@ ${exampleList}`;
     })
     .join('\n\n');
 
+  // Build pending approval section
+  let approvalSection = '';
+  if (pendingApproval && pendingApproval.length > 0) {
+    const approvalList = pendingApproval.map(bug =>
+      `  - [${bug.risk_level?.toUpperCase()}] ${bug.page_url} (seen ${bug.error_count}x)\n    ${bug.description?.split('\n')[2] || 'No details'}`
+    ).join('\n');
+    approvalSection = `
+HIGH-RISK BUGS AWAITING APPROVAL (${pendingApproval.length}):
+----------------------------------------------
+${approvalList}
+
+To approve: Update bug_reports.status from 'needs_approval' to 'pending' in Supabase.
+To reject: Update bug_reports.status to 'skipped'.
+`;
+  }
+
   const emailBody = `
 GenAlpaca Daily Error Digest
 ============================
 Period: ${sinceDate.toLocaleString()} to ${now.toLocaleString()}
-Total Errors: ${errors.length}
+Total Errors: ${errorCount}
 
 Severity Breakdown:
 - Critical: ${severityCounts.critical || 0}
 - Error: ${severityCounts.error || 0}
 - Warning: ${severityCounts.warning || 0}
 - Info: ${severityCounts.info || 0}
-
+${approvalSection}
 Error Details:
 --------------
-${errorList}
+${errorList || '(no errors)'}
 
 ---
 View the error_logs table in Supabase for full details.
@@ -256,6 +547,10 @@ View the error_logs table in Supabase for full details.
 
   if (RESEND_API_KEY) {
     try {
+      const subject = pendingApproval && pendingApproval.length > 0
+        ? `[GenAlpaca] Error Digest: ${errorCount} error(s), ${pendingApproval.length} awaiting approval`
+        : `[GenAlpaca] Daily Error Digest: ${errorCount} error(s)`;
+
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -265,7 +560,7 @@ View the error_logs table in Supabase for full details.
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: ADMIN_EMAIL,
-          subject: `[GenAlpaca] Daily Error Digest: ${errors.length} error(s)`,
+          subject,
           text: emailBody,
         }),
       });
@@ -287,15 +582,16 @@ View the error_logs table in Supabase for full details.
   // Log that we sent (or attempted to send) digest
   await supabase.from('error_digest_log').insert({
     sent_at: now.toISOString(),
-    error_count: errors.length,
+    error_count: errorCount,
     email_sent: emailSent,
   });
 
   return new Response(
     JSON.stringify({
       success: true,
-      errorCount: errors.length,
+      errorCount,
       emailSent,
+      pendingApproval: pendingApproval?.length || 0,
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
