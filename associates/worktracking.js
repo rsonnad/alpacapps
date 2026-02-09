@@ -380,6 +380,7 @@ async function refreshHistory() {
     const statusFilter = document.getElementById('historyStatus').value;
 
     let dateFrom = null;
+    const today = new Date().toISOString().split('T')[0];
     if (periodDays !== 'all') {
       const d = new Date();
       d.setDate(d.getDate() - parseInt(periodDays));
@@ -389,8 +390,11 @@ async function refreshHistory() {
     const isPaid = statusFilter === 'paid' ? true : (statusFilter === 'unpaid' ? false : undefined);
     const days = await hoursService.getHistory(profile.id, { dateFrom, isPaid });
 
+    // Load schedule data for the same period to build weekly comparison
+    const scheduleRows = await hoursService.getSchedule(profile.id, dateFrom, today);
+
     const container = document.getElementById('historyList');
-    if (!days.length) {
+    if (!days.length && !scheduleRows.length) {
       container.innerHTML = `<div class="history-empty">
         <div class="he-icon">📋</div>
         <div class="he-text">No entries found</div>
@@ -411,6 +415,75 @@ async function refreshHistory() {
       <div><div class="hs-val">${HoursService.formatHoursDecimal(periodMins)}h</div><div class="hs-lbl">Total Hours</div></div>
       <div><div class="hs-val">${HoursService.formatCurrency(periodAmt)}</div><div class="hs-lbl">Total Earned</div></div>
     </div>`;
+
+    // Build schedule vs actuals weekly comparison
+    let scheduleComparisonHtml = '';
+    if (scheduleRows.length > 0) {
+      // Build actuals by date from the history days
+      const actualsByDate = {};
+      for (const day of days) {
+        actualsByDate[day.date] = day.totalMinutes;
+      }
+
+      // Group schedule rows + actuals into Sun-Sat weeks
+      const allDates = new Set([
+        ...scheduleRows.map(r => r.schedule_date),
+        ...days.map(d => d.date)
+      ]);
+      const weekMap = {};
+      for (const date of allDates) {
+        const sun = getWeekSunday(date);
+        if (!weekMap[sun]) weekMap[sun] = { sunday: sun, scheduledMins: 0, actualMins: 0, mods: 0 };
+      }
+      for (const row of scheduleRows) {
+        const sun = getWeekSunday(row.schedule_date);
+        if (!weekMap[sun]) weekMap[sun] = { sunday: sun, scheduledMins: 0, actualMins: 0, mods: 0 };
+        weekMap[sun].scheduledMins += row.scheduled_minutes;
+        weekMap[sun].mods += row.modification_count;
+      }
+      for (const day of days) {
+        const sun = getWeekSunday(day.date);
+        if (!weekMap[sun]) weekMap[sun] = { sunday: sun, scheduledMins: 0, actualMins: 0, mods: 0 };
+        weekMap[sun].actualMins += day.totalMinutes;
+      }
+
+      // Sort weeks most recent first, only show weeks that have schedule data
+      const weeks = Object.values(weekMap)
+        .filter(w => w.scheduledMins > 0)
+        .sort((a, b) => b.sunday.localeCompare(a.sunday));
+
+      if (weeks.length > 0) {
+        const weeksHtml = weeks.map(w => {
+          const sunDate = new Date(w.sunday + 'T12:00:00');
+          const satDate = new Date(sunDate);
+          satDate.setDate(sunDate.getDate() + 6);
+          const sunLabel = sunDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const satLabel = satDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          const schedH = HoursService.formatHoursDecimal(w.scheduledMins);
+          const actualH = HoursService.formatHoursDecimal(w.actualMins);
+          const deltaMins = w.actualMins - w.scheduledMins;
+          const deltaH = HoursService.formatHoursDecimal(Math.abs(deltaMins));
+          const deltaSign = deltaMins > 0 ? '+' : (deltaMins < 0 ? '-' : '');
+          const deltaClass = deltaMins > 0 ? 'positive' : (deltaMins < 0 ? 'negative' : 'zero');
+          const modsLabel = w.mods > 0 ? `<span class="hsb-mods">${w.mods} change${w.mods !== 1 ? 's' : ''}</span>` : '';
+
+          return `<div class="hsb-week">
+            <div class="hsb-week-label">${sunLabel} – ${satLabel}${modsLabel}<span class="hsb-dates">Sun – Sat</span></div>
+            <div class="hsb-week-stats">
+              <div class="hsb-stat sched"><span class="hsb-num">${schedH}h</span><span class="hsb-lbl">Sched</span></div>
+              <div class="hsb-stat actual"><span class="hsb-num">${actualH}h</span><span class="hsb-lbl">Actual</span></div>
+              <div class="hsb-stat delta"><span class="hsb-num ${deltaClass}">${deltaSign}${deltaH}h</span><span class="hsb-lbl">Delta</span></div>
+            </div>
+          </div>`;
+        }).join('');
+
+        scheduleComparisonHtml = `<div class="history-schedule-bar">
+          <h4>Schedule vs Actual</h4>
+          <div class="hsb-weeks">${weeksHtml}</div>
+        </div>`;
+      }
+    }
 
     const daysHtml = days.map(day => {
       const badgeClass = day.hasPaid && day.hasUnpaid ? 'mixed' : (day.hasPaid ? 'paid' : 'unpaid');
@@ -458,7 +531,7 @@ async function refreshHistory() {
       </div>`;
     }).join('');
 
-    container.innerHTML = summaryHtml + daysHtml;
+    container.innerHTML = summaryHtml + scheduleComparisonHtml + daysHtml;
   } catch (err) {
     console.error('Failed to load history:', err);
     showToast('Failed to load history', 'error');
@@ -756,6 +829,16 @@ async function loadSchedule() {
   }
 }
 
+/**
+ * Get the Sunday that starts the week containing a given date string (YYYY-MM-DD).
+ */
+function getWeekSunday(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const day = d.getDay(); // 0=Sun
+  d.setDate(d.getDate() - day);
+  return d.toISOString().split('T')[0];
+}
+
 function renderSchedule() {
   const dates = getScheduleDates();
   const today = new Date().toISOString().split('T')[0];
@@ -794,31 +877,77 @@ function renderSchedule() {
   }
   summaryEl.innerHTML = summaryHtml;
 
-  // Grid rows
-  const gridEl = document.getElementById('scheduleGrid');
-  gridEl.innerHTML = dates.map(date => {
+  // Group dates into Sun-Sat weeks
+  const weeks = [];
+  let currentWeek = null;
+  for (const date of dates) {
+    const weekSun = getWeekSunday(date);
+    if (!currentWeek || currentWeek.sunday !== weekSun) {
+      currentWeek = { sunday: weekSun, dates: [], scheduledMins: 0, actualMins: 0, mods: 0 };
+      weeks.push(currentWeek);
+    }
+    currentWeek.dates.push(date);
     const sched = schedMap[date];
-    const isToday = date === today;
-    const dayLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    const startVal = sched ? sched.start_time.slice(0, 5) : '';
-    const endVal = sched ? sched.end_time.slice(0, 5) : '';
-    const plannedMins = sched ? sched.scheduled_minutes : 0;
-    const actualMins = scheduleActuals[date] || 0;
-    const plannedLabel = plannedMins > 0 ? HoursService.formatDuration(plannedMins) : '';
-    const actualLabel = actualMins > 0 ? HoursService.formatDuration(actualMins) : (plannedMins > 0 ? '0m' : '');
-    const actualClass = plannedMins > 0
-      ? (actualMins >= plannedMins ? 'met' : (actualMins > 0 ? 'partial' : 'none'))
-      : 'none';
+    if (sched) {
+      currentWeek.scheduledMins += sched.scheduled_minutes;
+      currentWeek.mods += sched.modification_count;
+    }
+    currentWeek.actualMins += (scheduleActuals[date] || 0);
+  }
 
-    return `<div class="schedule-row">
-      <span class="sr-date${isToday ? ' today' : ''}">${dayLabel}</span>
-      <input type="time" data-date="${date}" data-field="start" value="${startVal}">
-      <span class="sr-arrow">&rarr;</span>
-      <input type="time" data-date="${date}" data-field="end" value="${endVal}">
-      <span class="sr-planned">${plannedLabel}</span>
-      <span class="sr-actual ${actualClass}">${actualLabel}</span>
+  // Grid rows grouped by week
+  const gridEl = document.getElementById('scheduleGrid');
+  let html = '';
+
+  for (const week of weeks) {
+    // Week header
+    const sunDate = new Date(week.sunday + 'T12:00:00');
+    const satDate = new Date(sunDate);
+    satDate.setDate(sunDate.getDate() + 6);
+    const sunLabel = sunDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const satLabel = satDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const modsLabel = week.mods > 0 ? `${week.mods} change${week.mods !== 1 ? 's' : ''}` : '';
+    html += `<div class="schedule-week-header">
+      <span>Week of ${sunLabel} – ${satLabel}</span>
+      <span>${modsLabel}</span>
     </div>`;
-  }).join('');
+
+    // Day rows for this week
+    for (const date of week.dates) {
+      const sched = schedMap[date];
+      const isToday = date === today;
+      const dayLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const startVal = sched ? sched.start_time.slice(0, 5) : '';
+      const endVal = sched ? sched.end_time.slice(0, 5) : '';
+      const plannedMins = sched ? sched.scheduled_minutes : 0;
+      const actualMins = scheduleActuals[date] || 0;
+      const plannedLabel = plannedMins > 0 ? HoursService.formatDuration(plannedMins) : '';
+      const actualLabel = actualMins > 0 ? HoursService.formatDuration(actualMins) : (plannedMins > 0 ? '0m' : '');
+      const actualClass = plannedMins > 0
+        ? (actualMins >= plannedMins ? 'met' : (actualMins > 0 ? 'partial' : 'none'))
+        : 'none';
+
+      html += `<div class="schedule-row">
+        <span class="sr-date${isToday ? ' today' : ''}">${dayLabel}</span>
+        <input type="time" data-date="${date}" data-field="start" value="${startVal}">
+        <span class="sr-arrow">&rarr;</span>
+        <input type="time" data-date="${date}" data-field="end" value="${endVal}">
+        <span class="sr-planned">${plannedLabel}</span>
+        <span class="sr-actual ${actualClass}">${actualLabel}</span>
+      </div>`;
+    }
+
+    // Week subtotal row
+    if (week.scheduledMins > 0 || week.actualMins > 0) {
+      html += `<div class="schedule-week-totals">
+        <span class="swt-label">Week total:</span>
+        <span class="swt-hours">${HoursService.formatDuration(week.scheduledMins)} planned</span>
+        <span class="swt-hours">${HoursService.formatDuration(week.actualMins)} worked</span>
+      </div>`;
+    }
+  }
+
+  gridEl.innerHTML = html;
 }
 
 async function saveSchedule() {

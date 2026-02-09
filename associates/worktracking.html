@@ -349,6 +349,46 @@
     .schedule-row .sr-actual.partial { color: #ca8a04; }
     .schedule-row .sr-actual.none { color: #94a3b8; }
 
+    .schedule-week-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.5rem 0 0.3rem; margin-top: 0.5rem;
+      border-top: 2px solid #e5e7eb; font-size: 0.7rem; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+    }
+    .schedule-week-header:first-child { margin-top: 0; border-top: none; }
+    .schedule-week-totals {
+      display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem;
+      padding: 0.4rem 0 0.2rem; font-size: 0.75rem; border-top: 1px dashed #e5e7eb;
+      margin-bottom: 0.25rem;
+    }
+    .schedule-week-totals .swt-label { color: #94a3b8; font-weight: 500; }
+    .schedule-week-totals .swt-hours { font-weight: 700; color: #334155; }
+    .schedule-week-totals .swt-mods { font-size: 0.65rem; color: #94a3b8; }
+
+    /* History schedule comparison */
+    .history-schedule-bar {
+      background: #f8fafc; border-radius: 10px; padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .history-schedule-bar h4 { margin: 0 0 0.5rem; font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; }
+    .hsb-weeks { display: flex; flex-direction: column; gap: 0.5rem; }
+    .hsb-week {
+      display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center;
+      padding: 0.5rem 0.65rem; background: #fff; border-radius: 8px; border: 1px solid #f0f0f0;
+    }
+    .hsb-week-label { font-size: 0.78rem; font-weight: 600; color: #334155; }
+    .hsb-week-label .hsb-dates { font-weight: 400; color: #94a3b8; font-size: 0.7rem; display: block; }
+    .hsb-week-stats { display: flex; gap: 0.75rem; align-items: center; text-align: right; font-size: 0.75rem; }
+    .hsb-stat { display: flex; flex-direction: column; align-items: flex-end; }
+    .hsb-stat .hsb-num { font-weight: 700; font-size: 0.8rem; }
+    .hsb-stat .hsb-lbl { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; }
+    .hsb-stat.sched .hsb-num { color: #6366f1; }
+    .hsb-stat.actual .hsb-num { color: #1e293b; }
+    .hsb-stat.delta .hsb-num.positive { color: #16a34a; }
+    .hsb-stat.delta .hsb-num.negative { color: #dc2626; }
+    .hsb-stat.delta .hsb-num.zero { color: #94a3b8; }
+    .hsb-mods { font-size: 0.6rem; color: #94a3b8; }
+
     .btn-save-schedule {
       background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.5rem;
       border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem;
@@ -390,7 +430,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.02 12:05a</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.03 12:22a</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
