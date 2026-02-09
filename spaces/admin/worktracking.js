@@ -70,7 +70,9 @@ function setDefaultDates() {
 // DATA LOADING
 // =============================================
 async function loadAll() {
-  await Promise.all([loadAssociates(), loadEntries(), loadWorkGroups()]);
+  // Load associates first — work groups need the associates array for member dropdowns
+  await loadAssociates();
+  await Promise.all([loadEntries(), loadWorkGroups()]);
 }
 
 async function loadAssociates() {
@@ -83,6 +85,7 @@ async function loadAssociates() {
   } catch (err) {
     console.error('Failed to load associates:', err);
     showToast('Failed to load associates', 'error');
+    document.getElementById('associateConfig').innerHTML = '<div class="empty-state">Failed to load associates.</div>';
   }
 }
 
@@ -115,6 +118,7 @@ async function loadEntries() {
   } catch (err) {
     console.error('Failed to load entries:', err);
     showToast('Failed to load entries', 'error');
+    document.getElementById('entriesBody').innerHTML = '<tr><td colspan="13" class="empty-state">Failed to load entries.</td></tr>';
   }
 }
 
