@@ -19,7 +19,21 @@ const TODO_CATEGORIES = [
       { id: 'meta-3', title: 'Create Facebook Page for ALPACA Playhouse', desc: 'Create a business Facebook page linked to the Meta Business account.' },
       { id: 'meta-4', title: 'Create Instagram Business account', desc: 'Link or create an Instagram business profile under the Meta Business account.' },
       { id: 'meta-5', title: 'Set up Meta Pixel (optional)', desc: 'Install Meta Pixel on alpacaplayhouse.com for visitor analytics and ad targeting.', badge: 'nice' },
-      { id: 'meta-6', title: 'Configure WhatsApp Business (optional)', desc: 'Add WhatsApp Business API for messaging if needed.', badge: 'nice' },
+    ]
+  },
+  {
+    id: 'whatsapp',
+    title: 'WhatsApp Business Messaging',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+    items: [
+      { id: 'wa-1', title: 'Complete Meta Business verification (prerequisite)', desc: 'WhatsApp Business API requires a verified Meta Business account. Complete the Meta Business items first.', badge: 'critical' },
+      { id: 'wa-2', title: 'Add WhatsApp to Meta Business Account', desc: 'In <a href="https://business.facebook.com/settings/whatsapp" target="_blank">Meta Business Settings</a> → WhatsApp Accounts → Add WhatsApp Account.' },
+      { id: 'wa-3', title: 'Register a phone number for WhatsApp', desc: 'Register a dedicated phone number (can use the Telnyx number +17377474737 or a new one). Number must be able to receive SMS/voice for verification.' },
+      { id: 'wa-4', title: 'Set up WhatsApp Cloud API', desc: 'Go to <a href="https://developers.facebook.com" target="_blank">developers.facebook.com</a> → create app → add WhatsApp product → get API token and Phone Number ID.' , badge: 'important' },
+      { id: 'wa-5', title: 'Create message templates', desc: 'WhatsApp requires pre-approved templates for business-initiated messages. Create templates for: payment reminders, booking confirmations, maintenance alerts.' , badge: 'important' },
+      { id: 'wa-6', title: 'Set up webhook for inbound messages', desc: 'Configure a Supabase edge function to receive incoming WhatsApp messages (similar to Telnyx SMS webhook).' },
+      { id: 'wa-7', title: 'Build WhatsApp service module', desc: 'Create <code>shared/whatsapp-service.js</code> mirroring the SMS service pattern for sending templated messages.' },
+      { id: 'wa-8', title: 'Test end-to-end messaging', desc: 'Send a test template message and verify inbound message receipt through the webhook.' },
     ]
   },
   {
