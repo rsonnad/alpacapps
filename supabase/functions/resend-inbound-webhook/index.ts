@@ -11,6 +11,7 @@ const RESEND_API_URL = "https://api.resend.com";
 const SPECIAL_PREFIXES: Record<string, string> = {
   "herd": "herd",
   "auto": "auto",
+  "payments": "payments",
 };
 
 /**
@@ -204,9 +205,594 @@ async function handleSpecialLogic(
 
   if (type === "auto") {
     await handleAutoReply(emailRecord, supabase, resendApiKey);
+  } else if (type === "payments") {
+    await handlePaymentEmail(emailRecord, supabase, resendApiKey);
   }
 
   // herd@ - not yet implemented
+}
+
+// =============================================
+// ZELLE PAYMENT AUTO-RECORDING
+// =============================================
+
+interface ZellePayment {
+  amount: number;
+  senderName: string;
+  confirmationNumber: string | null;
+  bank: string;
+}
+
+/**
+ * Normalize a name for consistent matching.
+ */
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim().replace(/\s+/g, " ").replace(/[^a-z0-9\s]/g, "");
+}
+
+/**
+ * Parse Zelle payment details from email body text.
+ */
+function parseZellePayment(bodyText: string): ZellePayment | null {
+  // Charles Schwab format:
+  // "deposited the $130.00 payment from MAYA WHITE (confirmation number 4864859525)"
+  const schwabPattern = /deposited the \$([\d,]+\.\d{2}) payment from (.+?) \(confirmation number (\d+)\)/i;
+  const schwabMatch = bodyText.match(schwabPattern);
+  if (schwabMatch) {
+    return {
+      amount: parseFloat(schwabMatch[1].replace(/,/g, "")),
+      senderName: schwabMatch[2].trim(),
+      confirmationNumber: schwabMatch[3],
+      bank: "schwab",
+    };
+  }
+
+  // Chase format: "sent you $X.XX" or "You received $X.XX from NAME"
+  const chasePattern = /(?:received|sent you) \$([\d,]+\.\d{2}).*?(?:from|by)\s+(.+?)(?:\s*\.|$)/im;
+  const chaseMatch = bodyText.match(chasePattern);
+  if (chaseMatch) {
+    return {
+      amount: parseFloat(chaseMatch[1].replace(/,/g, "")),
+      senderName: chaseMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "chase",
+    };
+  }
+
+  // Bank of America format: "A Zelle payment of $X.XX was received from NAME"
+  const boaPattern = /Zelle payment of \$([\d,]+\.\d{2}) was received from (.+?)(?:\s*\.|$)/im;
+  const boaMatch = bodyText.match(boaPattern);
+  if (boaMatch) {
+    return {
+      amount: parseFloat(boaMatch[1].replace(/,/g, "")),
+      senderName: boaMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "boa",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Try to match a Zelle sender name to a person in the people table.
+ */
+async function matchByName(
+  supabase: any,
+  senderName: string
+): Promise<{ person_id: string; name: string } | null> {
+  const normalized = normalizeName(senderName);
+
+  // 1. Check payment_sender_mappings cache
+  const { data: cached } = await supabase
+    .from("payment_sender_mappings")
+    .select("person_id")
+    .eq("sender_name_normalized", normalized)
+    .single();
+
+  if (cached) {
+    const { data: person } = await supabase
+      .from("people")
+      .select("id, first_name, last_name")
+      .eq("id", cached.person_id)
+      .single();
+    if (person) {
+      return { person_id: person.id, name: `${person.first_name} ${person.last_name}` };
+    }
+  }
+
+  // 2. Load all people for matching
+  const { data: people } = await supabase
+    .from("people")
+    .select("id, first_name, last_name");
+
+  if (!people) return null;
+
+  // 3. Exact full-name match (case-insensitive)
+  for (const person of people) {
+    const fullName = `${person.first_name} ${person.last_name}`;
+    if (normalizeName(fullName) === normalized) {
+      // Save mapping for future
+      await supabase.from("payment_sender_mappings").upsert(
+        {
+          sender_name: senderName,
+          sender_name_normalized: normalized,
+          person_id: person.id,
+          confidence_score: 1.0,
+          match_source: "zelle_email_exact",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "sender_name_normalized" }
+      );
+      return { person_id: person.id, name: fullName };
+    }
+  }
+
+  // 4. Fuzzy: check if first+last name parts both appear in sender name
+  const parts = normalized.split(/\s+/);
+  if (parts.length >= 2) {
+    for (const person of people) {
+      const pFirst = (person.first_name || "").toLowerCase().trim();
+      const pLast = (person.last_name || "").toLowerCase().trim();
+      if (pFirst && pLast && parts.includes(pFirst) && parts.includes(pLast)) {
+        await supabase.from("payment_sender_mappings").upsert(
+          {
+            sender_name: senderName,
+            sender_name_normalized: normalized,
+            person_id: person.id,
+            confidence_score: 0.8,
+            match_source: "zelle_email_fuzzy",
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "sender_name_normalized" }
+        );
+        return { person_id: person.id, name: `${person.first_name} ${person.last_name}` };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find an active rental application with unpaid deposits for a person.
+ */
+async function findDepositApplication(supabase: any, personId: string): Promise<any | null> {
+  const { data } = await supabase
+    .from("rental_applications")
+    .select("*, person:person_id(id, first_name, last_name, email)")
+    .eq("person_id", personId)
+    .in("deposit_status", ["pending", "requested", "partial"])
+    .neq("is_archived", true)
+    .neq("is_test", true)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  return data && data.length > 0 ? data[0] : null;
+}
+
+/**
+ * Auto-record a deposit payment on a rental application.
+ * Splits across move-in and security deposits, flags overpayment.
+ */
+async function autoRecordDeposit(
+  supabase: any,
+  application: any,
+  parsed: ZellePayment,
+  resendApiKey: string
+): Promise<void> {
+  const now = new Date().toISOString();
+  const today = now.split("T")[0];
+  let remaining = parsed.amount;
+  const personName = `${application.person.first_name} ${application.person.last_name}`;
+
+  // Deduplicate: check if this confirmation number was already recorded
+  if (parsed.confirmationNumber) {
+    const { data: existing } = await supabase
+      .from("rental_payments")
+      .select("id")
+      .eq("transaction_id", parsed.confirmationNumber)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      console.log(`Duplicate payment detected (conf#${parsed.confirmationNumber}), skipping`);
+      await sendPaymentNotification(resendApiKey, "duplicate", {
+        parsed,
+        personName,
+        applicationId: application.id,
+      });
+      return;
+    }
+  }
+
+  // Record move-in deposit first
+  const moveInUnpaid = !application.move_in_deposit_paid && (application.move_in_deposit_amount || 0) > 0;
+  if (moveInUnpaid && remaining > 0) {
+    const moveInAmt = application.move_in_deposit_amount;
+    const applyAmt = Math.min(remaining, moveInAmt);
+
+    const { data: rpData } = await supabase
+      .from("rental_payments")
+      .insert({
+        rental_application_id: application.id,
+        payment_type: "move_in_deposit",
+        amount_due: moveInAmt,
+        amount_paid: applyAmt,
+        paid_date: today,
+        payment_method: "zelle",
+        transaction_id: parsed.confirmationNumber,
+      })
+      .select()
+      .single();
+
+    await supabase
+      .from("rental_applications")
+      .update({
+        move_in_deposit_paid: true,
+        move_in_deposit_paid_at: now,
+        move_in_deposit_method: "zelle",
+        updated_at: now,
+      })
+      .eq("id", application.id);
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "move_in_deposit",
+      amount: applyAmt,
+      payment_method: "zelle",
+      transaction_date: today,
+      person_id: application.person_id,
+      person_name: personName,
+      rental_application_id: application.id,
+      rental_payment_id: rpData?.id,
+      status: "completed",
+      description: `Move-in deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
+      recorded_by: "system:zelle-email",
+    });
+
+    remaining -= applyAmt;
+    console.log(`Recorded move-in deposit: $${applyAmt} for ${personName}`);
+  }
+
+  // Record security deposit
+  const securityUnpaid = !application.security_deposit_paid && (application.security_deposit_amount || 0) > 0;
+  if (securityUnpaid && remaining > 0) {
+    const secAmt = application.security_deposit_amount;
+    const applyAmt = Math.min(remaining, secAmt);
+
+    const { data: rpData } = await supabase
+      .from("rental_payments")
+      .insert({
+        rental_application_id: application.id,
+        payment_type: "security_deposit",
+        amount_due: secAmt,
+        amount_paid: applyAmt,
+        paid_date: today,
+        payment_method: "zelle",
+        transaction_id: parsed.confirmationNumber,
+      })
+      .select()
+      .single();
+
+    await supabase
+      .from("rental_applications")
+      .update({
+        security_deposit_paid: true,
+        security_deposit_paid_at: now,
+        security_deposit_method: "zelle",
+        updated_at: now,
+      })
+      .eq("id", application.id);
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "security_deposit",
+      amount: applyAmt,
+      payment_method: "zelle",
+      transaction_date: today,
+      person_id: application.person_id,
+      person_name: personName,
+      rental_application_id: application.id,
+      rental_payment_id: rpData?.id,
+      status: "completed",
+      description: `Security deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
+      recorded_by: "system:zelle-email",
+    });
+
+    remaining -= applyAmt;
+    console.log(`Recorded security deposit: $${applyAmt} for ${personName}`);
+  }
+
+  // Update overall deposit status
+  const { data: updatedApp } = await supabase
+    .from("rental_applications")
+    .select("move_in_deposit_paid, security_deposit_paid, security_deposit_amount")
+    .eq("id", application.id)
+    .single();
+
+  if (updatedApp) {
+    const allPaid =
+      updatedApp.move_in_deposit_paid &&
+      (updatedApp.security_deposit_paid || (updatedApp.security_deposit_amount || 0) === 0);
+    const anyPaid = updatedApp.move_in_deposit_paid || updatedApp.security_deposit_paid;
+
+    const newStatus = allPaid ? "received" : anyPaid ? "partial" : "requested";
+    await supabase
+      .from("rental_applications")
+      .update({ deposit_status: newStatus, updated_at: now })
+      .eq("id", application.id);
+  }
+
+  // Notify admin
+  const overpayment = remaining > 0 ? remaining : 0;
+  await sendPaymentNotification(resendApiKey, "auto_recorded", {
+    parsed,
+    personName,
+    applicationId: application.id,
+    overpayment,
+    moveInRecorded: moveInUnpaid,
+    securityRecorded: securityUnpaid,
+  });
+}
+
+/**
+ * Find applications where outstanding deposit amount matches the payment.
+ */
+async function matchByAmount(supabase: any, amount: number): Promise<any[]> {
+  const { data: apps } = await supabase
+    .from("rental_applications")
+    .select("*, person:person_id(id, first_name, last_name, email)")
+    .in("deposit_status", ["pending", "requested", "partial"])
+    .neq("is_archived", true)
+    .neq("is_test", true);
+
+  const matches: any[] = [];
+  for (const app of apps || []) {
+    const moveInDue = !app.move_in_deposit_paid ? (app.move_in_deposit_amount || 0) : 0;
+    const securityDue = !app.security_deposit_paid ? (app.security_deposit_amount || 0) : 0;
+    const totalDue = moveInDue + securityDue;
+
+    if (
+      (totalDue > 0 && Math.abs(amount - totalDue) < 0.01) ||
+      (moveInDue > 0 && Math.abs(amount - moveInDue) < 0.01) ||
+      (securityDue > 0 && Math.abs(amount - securityDue) < 0.01)
+    ) {
+      matches.push(app);
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Create a confirmation request for Tier 2 (amount match, name mismatch).
+ */
+async function createConfirmationRequest(
+  supabase: any,
+  resendApiKey: string,
+  parsed: ZellePayment,
+  application: any,
+  inboundEmailId: string
+): Promise<void> {
+  const { data: conf } = await supabase
+    .from("deposit_payment_confirmations")
+    .insert({
+      sender_name: parsed.senderName,
+      amount: parsed.amount,
+      confirmation_number: parsed.confirmationNumber,
+      payment_method: "zelle",
+      rental_application_id: application.id,
+      person_id: application.person_id,
+      inbound_email_id: inboundEmailId,
+    })
+    .select()
+    .single();
+
+  if (!conf) {
+    console.error("Failed to create confirmation record");
+    return;
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const confirmUrl = `${supabaseUrl}/functions/v1/confirm-deposit-payment?token=${conf.token}`;
+  const personName = `${application.person.first_name} ${application.person.last_name}`;
+
+  await sendPaymentNotification(resendApiKey, "confirm_request", {
+    parsed,
+    personName,
+    applicationId: application.id,
+    confirmUrl,
+  });
+}
+
+/**
+ * Send payment notification emails to admin.
+ */
+async function sendPaymentNotification(
+  resendApiKey: string,
+  type: string,
+  details: any
+): Promise<void> {
+  const adminEmail = "team@alpacaplayhouse.com";
+  const { parsed, personName, applicationId } = details;
+  const adminUrl = `https://alpacaplayhouse.com/spaces/admin/rentals.html#applicant=${applicationId}`;
+
+  let subject = "";
+  let html = "";
+
+  if (type === "auto_recorded") {
+    const overpayStr = details.overpayment > 0
+      ? `<p style="color:#e74c3c;font-weight:bold;">&#x26A0; Overpayment: $${details.overpayment.toFixed(2)} exceeds deposits owed. May need manual handling.</p>`
+      : "";
+    subject = `Zelle Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#2d7d46;">&#x2705; Payment Auto-Recorded</h2>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Zelle (${parsed.bank})</td></tr>
+        </table>
+        ${details.moveInRecorded ? "<p>&#x2705; Move-in deposit marked as paid</p>" : ""}
+        ${details.securityRecorded ? "<p>&#x2705; Security deposit marked as paid</p>" : ""}
+        ${overpayStr}
+        <p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#2d7d46;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>
+      </div>
+    `;
+  } else if (type === "confirm_request") {
+    subject = `Confirm Zelle Payment: $${parsed.amount.toFixed(2)} from ${parsed.senderName} → ${personName}?`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#e67e22;">&#x1F4B0; Payment Needs Confirmation</h2>
+        <p>A Zelle payment was received but the sender name didn't match anyone exactly. However, the <strong>amount matches</strong> an outstanding deposit.</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Zelle Sender</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Suggested Match</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+        </table>
+        <p style="margin-top:20px;">
+          <a href="${details.confirmUrl}" style="display:inline-block;padding:12px 30px;background:#2d7d46;color:white;text-decoration:none;border-radius:4px;font-size:16px;font-weight:bold;">Confirm Payment</a>
+        </p>
+        <p style="color:#999;font-size:0.85rem;">This link expires in 7 days. If this is not the right match, you can ignore this email and record it manually in the <a href="${adminUrl}">admin panel</a>.</p>
+      </div>
+    `;
+  } else if (type === "no_match") {
+    subject = `Unmatched Zelle Payment: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#e74c3c;">&#x2753; Unmatched Payment</h2>
+        <p>A Zelle payment was received but could not be matched to any tenant or outstanding deposit.</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Zelle Sender</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+        </table>
+        <p>Please record this payment manually in the admin panel.</p>
+        ${details.pendingApps ? `<p><strong>Current applications with pending deposits:</strong></p><ul>${details.pendingApps}</ul>` : ""}
+      </div>
+    `;
+  } else if (type === "duplicate") {
+    subject = `Duplicate Zelle Payment Detected: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#e67e22;">&#x26A0; Duplicate Payment</h2>
+        <p>A Zelle payment notification was received but confirmation #${parsed.confirmationNumber} was already recorded. No action taken.</p>
+        <p><a href="${adminUrl}">View Application</a></p>
+      </div>
+    `;
+  } else if (type === "unparseable") {
+    subject = "Unrecognized Payment Email";
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#999;">&#x2709; Unrecognized Payment Email</h2>
+        <p>An email was sent to payments@ but could not be parsed as a Zelle payment. It has been forwarded for manual review.</p>
+      </div>
+    `;
+  }
+
+  if (!subject) return;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        to: [adminEmail],
+        subject,
+        html,
+      }),
+    });
+    console.log(`Payment notification sent: ${type}`);
+  } catch (err) {
+    console.error("Failed to send payment notification:", err);
+  }
+}
+
+/**
+ * Main handler for payments@ emails.
+ */
+async function handlePaymentEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const bodyText = emailRecord.body_text || "";
+
+  // 1. Parse the Zelle payment
+  const parsed = parseZellePayment(bodyText);
+  if (!parsed) {
+    console.log("Could not parse Zelle payment from email, notifying admin");
+    await sendPaymentNotification(resendApiKey, "unparseable", {
+      parsed: { amount: 0, senderName: "Unknown", confirmationNumber: null },
+      personName: "",
+      applicationId: "",
+    });
+    return;
+  }
+
+  console.log(`Parsed Zelle payment: $${parsed.amount} from ${parsed.senderName}, conf#${parsed.confirmationNumber}`);
+
+  // 2. Tier 1: Name match
+  const nameMatch = await matchByName(supabase, parsed.senderName);
+
+  if (nameMatch) {
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      console.log(`Tier 1 match: ${parsed.senderName} → ${nameMatch.name}, app=${application.id}`);
+      await autoRecordDeposit(supabase, application, parsed, resendApiKey);
+      return;
+    }
+    console.log(`Name matched ${nameMatch.name} but no pending deposit application found`);
+  }
+
+  // 3. Tier 2: Amount match
+  const amountMatches = await matchByAmount(supabase, parsed.amount);
+
+  if (amountMatches.length === 1) {
+    console.log(`Tier 2 match: amount $${parsed.amount} matches ${amountMatches[0].person.first_name} ${amountMatches[0].person.last_name}`);
+    await createConfirmationRequest(supabase, resendApiKey, parsed, amountMatches[0], emailRecord.id);
+    return;
+  }
+
+  if (amountMatches.length > 1) {
+    console.log(`Tier 2: multiple amount matches (${amountMatches.length}), falling through to Tier 3`);
+  }
+
+  // 4. Tier 3: No match — notify admin
+  console.log("Tier 3: no match found, notifying admin");
+
+  // Build list of pending applications for reference
+  const { data: pendingApps } = await supabase
+    .from("rental_applications")
+    .select("id, person:person_id(first_name, last_name), move_in_deposit_amount, security_deposit_amount, deposit_status")
+    .in("deposit_status", ["pending", "requested", "partial"])
+    .neq("is_archived", true)
+    .neq("is_test", true);
+
+  let pendingAppsHtml = "";
+  if (pendingApps && pendingApps.length > 0) {
+    pendingAppsHtml = pendingApps
+      .map((a: any) => {
+        const name = `${a.person.first_name} ${a.person.last_name}`;
+        const total = (a.move_in_deposit_amount || 0) + (a.security_deposit_amount || 0);
+        return `<li>${name} — $${total.toFixed(2)} (${a.deposit_status})</li>`;
+      })
+      .join("");
+  }
+
+  await sendPaymentNotification(resendApiKey, "no_match", {
+    parsed,
+    personName: "",
+    applicationId: "",
+    pendingApps: pendingAppsHtml,
+  });
 }
 
 /**
