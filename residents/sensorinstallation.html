@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <title>UP-SENSE Sensor Setup — Alpaca Playhouse</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="aap-header aap-header--transparent aap-header--light" id="aap-header">
+    <div class="aap-header__inner">
+      <a href="/" class="aap-header__logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
+        <span title="Site version" class="aap-header__version">v260208.81 8:21p</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
+    <div class="aap-hero__content">
+      <h1 class="aap-hero__title">UP-SENSE Sensor Setup</h1>
+      <p class="aap-hero__subtitle">UniFi Protect All-In-One Smart Sensor installation guide</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <div class="aap-content">
+    <!-- Table of Contents -->
+    <nav class="aap-toc" style="background: #f8f7f4; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+      <p style="margin: 0 0 0.75rem 0; font-weight: 600;">On This Page</p>
+      <ul style="margin: 0; padding-left: 1.25rem; columns: 2; column-gap: 2rem;">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#whats-in-box">What's in the Box</a></li>
+        <li><a href="#adoption">Adopt to Protect</a></li>
+        <li><a href="#placement">Placement & Mounting</a></li>
+        <li><a href="#register-db">Register in Database</a></li>
+        <li><a href="#verify">Verify It's Working</a></li>
+        <li><a href="#sensor-data">Sensor Data Reference</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </nav>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>1. Overview</h2>
+      <p>The <strong>Ubiquiti UniFi Protect All-In-One Smart Sensor (UP-SENSE)</strong> is a battery-powered multi-sensor that reports through the UniFi Protect controller on our UDM Pro. Once adopted, sensor data automatically appears on the <a href="/residents/cameras.html">Cameras page</a> alongside live camera feeds.</p>
+
+      <div style="background: #e8f4e8; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+        <strong>What it detects:</strong>
+        <ul style="margin: 0.5rem 0 0 0;">
+          <li><strong>Motion</strong> &mdash; PIR motion detection</li>
+          <li><strong>Door/Window</strong> &mdash; magnetic contact sensor (open/closed)</li>
+          <li><strong>Temperature</strong> &mdash; ambient temperature</li>
+          <li><strong>Humidity</strong> &mdash; relative humidity</li>
+          <li><strong>Ambient Light</strong> &mdash; light level in lux</li>
+          <li><strong>Alarm Sound</strong> &mdash; detects smoke/CO alarm sound patterns</li>
+        </ul>
+      </div>
+
+      <p><strong>Price:</strong> $59 at B&H Photo or the <a href="https://store.ui.com/us/en/products/up-sense" target="_blank" rel="noopener">Ubiquiti Store</a>.<br>
+      <strong>Power:</strong> CR123A battery (included), lasts ~1-2 years.<br>
+      <strong>Connection:</strong> Bluetooth to UniFi Protect via the UDM Pro or a UniFi camera acting as a bridge.</p>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- What's in the Box -->
+    <section id="whats-in-box">
+      <h2>2. What's in the Box</h2>
+      <ul>
+        <li>UP-SENSE sensor unit</li>
+        <li>CR123A battery (pre-installed)</li>
+        <li>Magnetic mount base (adhesive)</li>
+        <li>Door/window magnet piece (adhesive)</li>
+        <li>Quick start guide</li>
+      </ul>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Adoption -->
+    <section id="adoption">
+      <h2>3. Adopt to UniFi Protect</h2>
+
+      <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+        <strong>Prerequisites:</strong>
+        <ul style="margin: 0.5rem 0 0 0;">
+          <li>UDM Pro running UniFi OS 3.x+ with Protect 2.x+</li>
+          <li>At least one UniFi camera within Bluetooth range to act as a bridge (our G5 PTZ cameras work)</li>
+          <li>UniFi Protect mobile app (iOS/Android) or web UI access</li>
+        </ul>
+      </div>
+
+      <h3>Steps</h3>
+      <ol>
+        <li><strong>Pull the battery tab</strong> on the sensor to power it on. The LED will blink blue.</li>
+        <li>Open the <strong>UniFi Protect app</strong> (or go to <code>https://192.168.1.1</code> &rarr; Protect).</li>
+        <li>The sensor should appear as a <strong>new device to adopt</strong> in the Protect dashboard. If it doesn't, go to <strong>Settings &rarr; Devices &rarr; Adopt</strong>.</li>
+        <li>Click <strong>Adopt</strong>. The sensor will connect via Bluetooth through the nearest UniFi camera.</li>
+        <li><strong>Name the sensor</strong> (e.g., "Front Door", "Kitchen", "Garage Mahal") and assign it to a location.</li>
+        <li>Wait for the LED to turn <strong>solid blue</strong> &mdash; this means it's adopted and connected.</li>
+      </ol>
+
+      <div style="background: #e8f4e8; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+        <strong>Tip:</strong> The sensor communicates via Bluetooth Low Energy (BLE) through nearby UniFi cameras. Make sure there's a camera within ~30 feet for reliable connectivity. Our three G5 PTZ cameras cover most of the property.
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Placement -->
+    <section id="placement">
+      <h2>4. Placement & Mounting</h2>
+
+      <h3>For Door/Window Monitoring</h3>
+      <ol>
+        <li>Peel the adhesive backing on the <strong>sensor mount base</strong> and stick it to the door/window frame.</li>
+        <li>Peel the adhesive on the <strong>magnet piece</strong> and stick it to the door/window itself, aligned with the sensor.</li>
+        <li>The sensor and magnet should be <strong>within 15mm</strong> of each other when the door is closed.</li>
+        <li>Open and close the door to verify the Protect app shows open/closed status changing.</li>
+      </ol>
+
+      <h3>For Room Monitoring (Motion, Temp, Humidity)</h3>
+      <ol>
+        <li>Mount the sensor on a wall or shelf at <strong>chest height</strong> (~4-5 feet) for best motion detection.</li>
+        <li>Avoid placing directly above heat sources, in direct sunlight, or near HVAC vents (skews temperature readings).</li>
+        <li>The PIR motion sensor has a ~120&deg; field of view.</li>
+      </ol>
+
+      <div style="background: #fff3cd; padding: 1rem; border-radius: 6px;">
+        <strong>Important:</strong> The sensor uses adhesive mounting. Clean the surface with rubbing alcohol before mounting for best adhesion. If you need to reposition, use a thin tool to gently pry the base off.
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Register in Database -->
+    <section id="register-db">
+      <h2>5. Register in Database</h2>
+      <p>After the sensor is adopted in Protect, you need to register it in the AlpacAPPs database so it appears on the Cameras page.</p>
+
+      <h3>Step 1: Get the Sensor's Protect ID</h3>
+      <p>Visit this URL to see all sensors reported by the Protect controller:</p>
+      <pre style="background: #f8f7f4; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem;"><code>https://cam.alpacaplayhouse.com/sensors</code></pre>
+      <p>Copy the <code>id</code> value from the response. It will be a hex string like <code>6a1b2c3d00abcd03e4012345</code>.</p>
+
+      <h3>Step 2: Insert a Row</h3>
+      <p>Run this SQL (replace the values):</p>
+      <pre style="background: #f8f7f4; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem;"><code>INSERT INTO protect_sensors (
+  protect_sensor_id,
+  name,
+  location,
+  mount_type,
+  display_order
+) VALUES (
+  '&lt;id-from-api&gt;',      -- Protect sensor ID from Step 1
+  'Front Door',           -- Display name
+  'Main Entrance',        -- Location description
+  'door',                 -- 'door', 'window', 'wall', or 'ceiling'
+  1                       -- Sort order (lower = first)
+);</code></pre>
+
+      <div style="background: #e8f4e8; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+        <strong>mount_type values:</strong>
+        <ul style="margin: 0.5rem 0 0 0;">
+          <li><code>door</code> &mdash; shows door Open/Closed status badge</li>
+          <li><code>window</code> &mdash; shows window Open/Closed status badge</li>
+          <li><code>wall</code> or <code>ceiling</code> &mdash; hides the door/window badge (room sensor only)</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Verify -->
+    <section id="verify">
+      <h2>6. Verify It's Working</h2>
+      <ol>
+        <li>Open the <a href="/residents/cameras.html">Cameras page</a>.</li>
+        <li>Scroll below the camera feeds &mdash; you should see an <strong>"Environment Sensors"</strong> section.</li>
+        <li>The sensor card should show:
+          <ul>
+            <li>Green dot (connected) or red dot (offline)</li>
+            <li>Battery percentage</li>
+            <li>Temperature in &deg;F</li>
+            <li>Humidity %</li>
+            <li>Light level in lux</li>
+            <li>Door/window status (if mounted on a door/window)</li>
+            <li>Motion status (Clear / Motion)</li>
+          </ul>
+        </li>
+        <li>Test: wave your hand in front of the sensor &mdash; the <strong>Motion</strong> badge should change to "Motion" (refreshes every 30 seconds).</li>
+        <li>If using door mount: open and close the door &mdash; the badge should toggle between "Open" and "Closed".</li>
+      </ol>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Sensor Data Reference -->
+    <section id="sensor-data">
+      <h2>7. Sensor Data Reference</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+        <thead>
+          <tr style="background: #f8f7f4; text-align: left;">
+            <th style="padding: 0.75rem; border-bottom: 2px solid #ddd;">Data</th>
+            <th style="padding: 0.75rem; border-bottom: 2px solid #ddd;">API Field</th>
+            <th style="padding: 0.75rem; border-bottom: 2px solid #ddd;">Unit</th>
+            <th style="padding: 0.75rem; border-bottom: 2px solid #ddd;">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Temperature</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>stats.temperature.value</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">&deg;C (displayed as &deg;F)</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Auto-converted to Fahrenheit in UI</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Humidity</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>stats.humidity.value</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">%</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Relative humidity</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Light</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>stats.light.value</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">lux</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Ambient light level</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Motion</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>isMotionDetected</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">boolean</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">PIR, ~120&deg; FOV</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Door/Window</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>isOpened</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">boolean</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Magnetic contact sensor</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Alarm</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>alarmTriggeredAt</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">timestamp</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Smoke/CO alarm sound detection</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">Battery</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;"><code>batteryStatus.percentage</code></td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">%</td>
+            <td style="padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee;">CR123A, ~1-2 year life</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Architecture</h3>
+      <pre style="background: #f8f7f4; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem;"><code>Browser (cameras.js)
+  &darr; HTTPS (every 30s)
+cam.alpacaplayhouse.com (Caddy on DO droplet)
+  &darr; HTTP
+ptz-proxy.js (port 8901, GET /sensors)
+  &darr; HTTPS (Tailscale subnet route)
+UDM Pro (192.168.1.1) &rarr; Protect API /proxy/protect/api/bootstrap
+  &darr; Bluetooth
+UP-SENSE sensor</code></pre>
+    </section>
+
+    <hr style="margin: 2rem 0;">
+
+    <!-- Troubleshooting -->
+    <section id="troubleshooting">
+      <h2>8. Troubleshooting</h2>
+
+      <h3>Sensor Not Appearing in Protect</h3>
+      <ul>
+        <li>Make sure the battery tab has been pulled and the LED blinks blue.</li>
+        <li>Move the sensor closer to a UniFi camera (Bluetooth bridge range is ~30 feet).</li>
+        <li>Restart the Protect controller: <strong>Settings &rarr; System &rarr; Restart</strong>.</li>
+        <li>Check that UniFi Protect firmware is up to date.</li>
+      </ul>
+
+      <h3>Sensor Shows "Offline" on Cameras Page</h3>
+      <ul>
+        <li>Check battery level in UniFi Protect &mdash; replace the CR123A battery if low.</li>
+        <li>Verify the sensor is still in Bluetooth range of a camera.</li>
+        <li>Confirm the <code>protect_sensor_id</code> in the database matches the <code>id</code> from <code>/sensors</code>.</li>
+      </ul>
+
+      <h3>Sensor Section Not Visible</h3>
+      <ul>
+        <li>The section is hidden when no active sensors exist in the <code>protect_sensors</code> table.</li>
+        <li>Check: <code>SELECT * FROM protect_sensors WHERE is_active = true;</code></li>
+        <li>Verify the proxy is working: <code>curl https://cam.alpacaplayhouse.com/sensors</code></li>
+      </ul>
+
+      <h3>Temperature Reads Inaccurately</h3>
+      <ul>
+        <li>Avoid mounting near heat sources, direct sunlight, or HVAC vents.</li>
+        <li>Allow 15-30 minutes after mounting for readings to stabilize.</li>
+        <li>The sensor reports in Celsius; the UI converts to Fahrenheit.</li>
+      </ul>
+
+      <h3>API / Proxy Issues</h3>
+      <ul>
+        <li><strong>ptz-proxy not responding:</strong> SSH to droplet, run <code>systemctl status ptz-proxy</code></li>
+        <li><strong>Bootstrap cache stale:</strong> Cache refreshes every 10 seconds automatically</li>
+        <li><strong>Caddy not routing:</strong> Check <code>/etc/caddy/Caddyfile</code> has <code>/sensors</code> and <code>/sensor/*</code> handles</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="aap-footer">
+    <div class="aap-footer__content">
+      <div class="aap-footer__logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse" class="aap-footer__icon">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse" class="aap-footer__wordmark">
+      </div>
+      <p class="aap-footer__copyright">
+        &copy; 2025 Austin Alpaca Playhouse. All rights reserved.<br>
+        160 Still Forest Drive, Cedar Creek, TX 78612
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="../shared/version-info.js"></script>
+  <script>
+    // Header scroll behavior
+    const header = document.getElementById('aap-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.remove('aap-header--transparent');
+        header.classList.add('aap-header--solid');
+        header.classList.remove('aap-header--light');
+        header.classList.add('aap-header--dark');
+      } else {
+        header.classList.add('aap-header--transparent');
+        header.classList.remove('aap-header--solid');
+        header.classList.add('aap-header--light');
+        header.classList.remove('aap-header--dark');
+      }
+    });
+  </script>
+</body>
+</html>
