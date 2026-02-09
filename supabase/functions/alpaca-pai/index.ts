@@ -15,6 +15,8 @@ interface UserScope {
   userLevel: number;
   displayName: string;
   appUserId: string;
+  callerPhone?: string | null;
+  callerEmail?: string | null;
   assignedSpaceIds: string[];
   allAccessibleSpaceIds: string[];
   goveeGroups: Array<{
@@ -627,6 +629,25 @@ const TOOL_DECLARATIONS = [
       required: [],
     },
   },
+  {
+    name: "send_link",
+    description:
+      "Send a URL or link to the caller via SMS text message. Use this in voice mode when you need to share a URL — never read URLs aloud. Instead, say 'I'll text you the link' and use this tool.",
+    parameters: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "The URL to send",
+        },
+        message: {
+          type: "string",
+          description: "A short message to include with the link (e.g., 'Here's the camera feed link you asked for')",
+        },
+      },
+      required: ["url", "message"],
+    },
+  },
 ];
 
 // =============================================
@@ -1122,6 +1143,53 @@ async function executeToolCall(
         }).join("\n");
       }
 
+      case "send_link": {
+        // Send a URL via SMS to the caller's phone
+        if (!scope.callerPhone) {
+          return "Cannot send link: caller phone number not available. This tool is for voice calls only.";
+        }
+
+        // Load Telnyx config
+        const supabaseAdmin2 = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const { data: telnyxConfig } = await supabaseAdmin2
+          .from("telnyx_config")
+          .select("phone_number")
+          .eq("id", 1)
+          .single();
+
+        if (!telnyxConfig?.phone_number) {
+          return "SMS system not configured. Cannot send link.";
+        }
+
+        const smsBody = `${args.message}\n\n${args.url}\n\n— PAI (Alpaca Playhouse)`;
+
+        // Call send-sms edge function
+        const smsResp = await fetch(
+          `${supabaseUrl}/functions/v1/send-sms`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+            },
+            body: JSON.stringify({
+              to: scope.callerPhone,
+              body: smsBody,
+              sms_type: "pai_link",
+            }),
+          }
+        );
+
+        if (!smsResp.ok) {
+          const errBody = await smsResp.text();
+          console.error("send_link SMS error:", errBody);
+          return `Failed to send SMS: ${smsResp.status}`;
+        }
+
+        return `OK: Link sent via text message to ${scope.callerPhone}`;
+      }
+
       case "build_feature": {
         // Permission check: staff+ only
         if (scope.userLevel < 2) {
@@ -1294,12 +1362,14 @@ async function buildVoiceUserScope(
   callerName: string | null;
   callerGreeting: string | null;
   callerType: string | null;
+  callerEmail: string | null;
+  callerPhoneFormatted: string | null;
 }> {
-  if (!callerPhone) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+  if (!callerPhone) return { scope: null, callerName: null, callerGreeting: null, callerType: null, callerEmail: null, callerPhoneFormatted: null };
 
   const digits = callerPhone.replace(/\D/g, "");
   const last10 = digits.slice(-10);
-  if (last10.length < 10) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+  if (last10.length < 10) return { scope: null, callerName: null, callerGreeting: null, callerType: null, callerEmail: null, callerPhoneFormatted: null };
 
   const { data: people } = await supabase
     .from("people")
@@ -1318,11 +1388,14 @@ async function buildVoiceUserScope(
     }
   }
 
-  if (!person) return { scope: null, callerName: null, callerGreeting: null, callerType: null };
+  if (!person) return { scope: null, callerName: null, callerGreeting: null, callerType: null, callerEmail: null, callerPhoneFormatted: null };
 
   const callerName = `${person.first_name || ""} ${person.last_name || ""}`.trim();
   const callerGreeting = person.voice_greeting || null;
   const callerType = person.type || null;
+  const callerEmail = person.email || null;
+  // Format phone as +1XXXXXXXXXX for SMS
+  const callerPhoneFormatted = callerPhone ? `+1${last10}` : null;
 
   const effectiveRole = PEOPLE_TYPE_TO_ROLE[callerType || ""] || "associate";
   const userLevel = ROLE_LEVEL[effectiveRole] || 0;
@@ -1335,7 +1408,12 @@ async function buildVoiceUserScope(
   };
 
   const scope = await buildUserScope(supabase, fakeAppUser, userLevel);
-  return { scope, callerName, callerGreeting, callerType };
+  // Attach caller contact info for voice tools (send_link)
+  if (scope) {
+    scope.callerPhone = callerPhoneFormatted;
+    scope.callerEmail = callerEmail;
+  }
+  return { scope, callerName, callerGreeting, callerType, callerEmail, callerPhoneFormatted };
 }
 
 // =============================================
@@ -1353,14 +1431,25 @@ function vapiToolWrapper(decl: any): any {
   };
 }
 
+function findTool(name: string): any {
+  return TOOL_DECLARATIONS.find((t) => t.name === name);
+}
+
 function buildVapiToolsList(scope: UserScope): any[] {
   const tools: any[] = [];
-  if (scope.goveeGroups.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[0])); // control_lights
-  if (scope.userLevel >= 1) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[1])); // control_sonos
-  if (scope.nestDevices.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[2])); // control_thermostat
-  if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(TOOL_DECLARATIONS[3])); // control_vehicle
-  tools.push(vapiToolWrapper(TOOL_DECLARATIONS[4])); // get_device_status
-  tools.push(vapiToolWrapper(TOOL_DECLARATIONS[5])); // search_spaces
+  if (scope.goveeGroups.length) tools.push(vapiToolWrapper(findTool("control_lights")));
+  if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("control_sonos")));
+  if (scope.nestDevices.length) tools.push(vapiToolWrapper(findTool("control_thermostat")));
+  if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(findTool("control_vehicle")));
+  tools.push(vapiToolWrapper(findTool("get_device_status")));
+  tools.push(vapiToolWrapper(findTool("search_spaces")));
+  // Voice callers can have links texted to them
+  if (scope.callerPhone) tools.push(vapiToolWrapper(findTool("send_link")));
+  // Staff+ can build features via voice too
+  if (scope.userLevel >= 2) {
+    tools.push(vapiToolWrapper(findTool("build_feature")));
+    tools.push(vapiToolWrapper(findTool("check_feature_status")));
+  }
   return tools;
 }
 
@@ -1441,6 +1530,9 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   } else {
     systemPrompt += `\n\nThis is an unknown caller. Focus on property questions. Use search_spaces to look up availability when asked. If they're interested in renting, collect their name and contact info.`;
   }
+
+  // Voice-specific URL handling
+  systemPrompt += `\n\nIMPORTANT VOICE RULE: NEVER read URLs, links, or web addresses aloud — they are impossible to remember by ear. Instead, say something like "I'll text you the link" and use the send_link tool to SMS the URL to the caller's phone. This applies to all URLs: page links, camera feeds, feature status URLs, property pages, etc.`;
 
   if (config.test_mode) {
     systemPrompt += "\n\n[TEST MODE: This is a test call. Mention that this is a test if asked.]";
@@ -1556,7 +1648,7 @@ async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-  // Re-identify caller and rebuild scope (stateless)
+  // Re-identify caller and rebuild scope (stateless, includes callerPhone/callerEmail)
   const { scope } = await buildVoiceUserScope(supabase, callerPhone);
 
   if (!scope) {
