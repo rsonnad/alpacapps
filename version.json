@@ -1,9 +1,10 @@
 {
-  "version": "v260209.16 1:08a",
-  "commit": "7e5a912a",
-  "full_commit": "7e5a912abfb051428909bd05c7b1ca6be4d74b80",
-  "timestamp": "2026-02-09T01:08:37-06:00",
+  "version": "v260209.18 1:10a",
+  "commit": "993fc8c2",
+  "full_commit": "993fc8c2602da206bbb0050cee0108c9843e8eb4",
+  "timestamp": "2026-02-09T01:10:16-06:00",
   "included":   origin/bugfix/20260209-78b7c6fe-1d23-455c-bdd8-c92afcef68da
+  origin/bugfix/20260209-b1bbccb9-7579-4e82-9d7a-9bb85d2dfbd0
   origin/bugfix/20260209-d8bcafd5-f92f-417a-b8e9-c3ada1e8e8aa
   origin/claude/add-vehicle-owner-details-9ycwy,
   "pending":   origin/feature/20260209-4692a387
