@@ -17,6 +17,7 @@ let activeEntry = null;
 let timerInterval = null;
 let selectedPhotoType = 'before';
 let currentLocation = null;
+let spacesMap = {};
 
 // =============================================
 // INITIALIZATION
@@ -122,17 +123,23 @@ async function loadSpaces() {
   try {
     const { data, error } = await supabase
       .from('spaces')
-      .select('id, name, parent_area')
+      .select('id, name, parent:parent_id(name)')
       .eq('is_archived', false)
       .order('name');
 
     if (error) throw error;
 
+    // Build a lookup map for space names (used by history/today rendering)
+    spacesMap = {};
+    for (const s of (data || [])) {
+      spacesMap[s.id] = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
+    }
+
     const sel = document.getElementById('spaceSelector');
-    sel.innerHTML = '<option value="">Select area...</option>';
+    sel.innerHTML = '<option value="">Select space...</option>';
     sel.innerHTML += '<option value="other">Other</option>';
     for (const s of (data || [])) {
-      const label = s.parent_area ? `${s.name} (${s.parent_area})` : s.name;
+      const label = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
       sel.innerHTML += `<option value="${s.id}">${escapeHtml(label)}</option>`;
     }
 
@@ -298,8 +305,9 @@ async function refreshToday() {
       const dur = e.duration_minutes ? HoursService.formatDuration(e.duration_minutes) : '...';
       const desc = e.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">${escapeHtml(e.description)}</div>` : '';
       const manual = e.is_manual ? '<span class="manual-badge" style="margin-left:0.3rem;">Manual</span>' : '';
+      const spaceLabel = e.space_id && spacesMap[e.space_id] ? `<span class="space-tag">${escapeHtml(spacesMap[e.space_id])}</span>` : '';
       return `<div class="entry-row">
-        <div><span class="entry-times">${ci} — ${co}</span>${manual}${desc}</div>
+        <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${desc}</div>
         <span class="entry-duration">${dur}</span>
       </div>`;
     }).join('');
@@ -413,6 +421,7 @@ async function refreshHistory() {
         const desc = e.description ? `<div class="ed-desc" title="${escapeHtml(e.description)}">${escapeHtml(e.description)}</div>` : '';
         const paidClass = e.is_paid ? 'paid' : 'unpaid';
         const manualHtml = e.is_manual ? `<span class="manual-badge" title="${escapeHtml(e.manual_reason || 'Manual entry')}">Manual</span>` : '';
+        const spaceHtml = e.space_id && spacesMap[e.space_id] ? `<div class="ed-desc">${escapeHtml(spacesMap[e.space_id])}</div>` : '';
 
         return `<div class="history-entry">
           <div class="entry-time-block">
@@ -423,6 +432,7 @@ async function refreshHistory() {
           <div class="entry-detail">
             <div class="ed-duration">${dur}${manualHtml}</div>
             ${desc}
+            ${spaceHtml}
           </div>
           ${earned ? `<div class="entry-earned">${earned}</div>` : ''}
           <div class="entry-paid-dot ${paidClass}" title="${e.is_paid ? 'Paid' : 'Unpaid'}"></div>
