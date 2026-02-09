@@ -245,6 +245,18 @@
       text-transform: uppercase; letter-spacing: 0.03em; margin-left: 0.35rem; cursor: default;
     }
 
+    /* Space selector */
+    .space-selector {
+      display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;
+    }
+    .space-selector label { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; white-space: nowrap; }
+    .space-selector select {
+      flex: 1; padding: 0.4rem 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;
+      font-size: 0.85rem; background: #fff; max-width: 100%;
+    }
+    .space-tag { font-size: 0.6rem; font-weight: 600; color: #6366f1; background: #eef2ff; padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.3rem; }
+
     /* Loading states */
     .loading-overlay { display: flex; position: fixed; inset: 0; background: #fff; z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
     .loading-overlay.hidden { display: none; }
@@ -302,7 +314,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.75 7:10p</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260208.76 7:25p</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
@@ -324,6 +336,17 @@
             <button class="btn-skip" id="btnClockoutSkip">Skip</button>
             <button class="btn-submit" id="btnClockoutSubmit">Clock Out</button>
           </div>
+        </div>
+
+        <div class="space-selector">
+          <label>Workplace</label>
+          <span style="font-size:0.85rem;font-weight:600;color:#1e293b;">Alpaca Playhouse</span>
+        </div>
+        <div class="space-selector">
+          <label>Area</label>
+          <select id="spaceSelector">
+            <option value="">Select area...</option>
+          </select>
         </div>
 
         <button class="manual-entry-link" id="btnManualEntry">+ Add manual entry</button>

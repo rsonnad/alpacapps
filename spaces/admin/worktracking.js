@@ -76,9 +76,28 @@ async function loadAssociates() {
     renderAssociateFilter();
     renderAssociateConfig();
     renderEntryAssociateSelect();
+    await loadEligibleUsers();
   } catch (err) {
     console.error('Failed to load associates:', err);
     showToast('Failed to load associates', 'error');
+  }
+}
+
+async function loadEligibleUsers() {
+  try {
+    const eligible = await hoursService.getEligibleUsers();
+    const sel = document.getElementById('addAssocUser');
+    sel.innerHTML = '<option value="">Select a user...</option>';
+    for (const u of eligible) {
+      const name = u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+      const signedUp = u.auth_user_id ? '' : ' (invited, not signed up)';
+      const role = u.role ? ` [${u.role}]` : '';
+      sel.innerHTML += `<option value="${u.id}">${escapeHtml(name)}${role}${signedUp}</option>`;
+    }
+    // Hide the add button if no one left to add
+    document.getElementById('btnShowAddAssoc').style.display = eligible.length ? '' : 'none';
+  } catch (err) {
+    console.error('Failed to load eligible users:', err);
   }
 }
 
@@ -152,7 +171,7 @@ function renderSummary() {
 function renderEntries() {
   const tbody = document.getElementById('entriesBody');
   if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="12" class="empty-state">No time entries found for this period.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="empty-state">No time entries found for this period.</td></tr>';
     return;
   }
 
@@ -168,13 +187,15 @@ function renderEntries() {
     const amount = HoursService.formatCurrency((mins / 60) * parseFloat(e.hourly_rate));
     const status = e.clock_out === null ? '' : (e.is_paid ? '<span class="badge paid">Paid</span>' : '<span class="badge unpaid">Unpaid</span>');
     const desc = e.description ? escapeHtml(e.description.substring(0, 60)) : '<span style="color:var(--text-muted)">—</span>';
+    const spaceName = e.space?.name || '<span style="color:var(--text-muted)">—</span>';
+    const manualTag = e.is_manual ? ' <span style="font-size:0.6rem;background:#eef2ff;color:#6366f1;padding:0.1rem 0.3rem;border-radius:3px;font-weight:700;">M</span>' : '';
     const loc = formatLocLink(e);
     const checked = selectedIds.has(e.id) ? 'checked' : '';
     const canCheck = e.clock_out && !e.is_paid;
 
     return `<tr>
       <td class="cb">${canCheck ? `<input type="checkbox" class="entry-cb" data-id="${e.id}" ${checked}>` : ''}</td>
-      <td>${escapeHtml(name)}</td>
+      <td>${escapeHtml(name)}${manualTag}</td>
       <td>${HoursService.formatDate(date)}</td>
       <td>${clockIn}</td>
       <td>${clockOut}</td>
@@ -183,6 +204,7 @@ function renderEntries() {
       <td><strong>${amount}</strong></td>
       <td>${status}</td>
       <td title="${escapeHtml(e.description || '')}">${desc}</td>
+      <td>${spaceName}</td>
       <td>${loc}</td>
       <td><button class="btn-small" data-edit="${e.id}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Edit</button></td>
     </tr>`;
@@ -192,22 +214,31 @@ function renderEntries() {
 function renderAssociateConfig() {
   const container = document.getElementById('associateConfig');
   if (!associates.length) {
-    container.innerHTML = '<div class="empty-state">No associates found. Invite users with the "associate" role from the Users tab.</div>';
+    container.innerHTML = '<div class="empty-state">No associates set up yet. Click "+ Add Associate" above to add users for time tracking.</div>';
     return;
   }
 
   container.innerHTML = associates.map(a => {
     const name = getAssocName(a);
+    const role = a.app_user?.role || 'unknown';
     const method = a.payment_method ? (PAYMENT_METHOD_LABELS[a.payment_method] || a.payment_method) : 'Not set';
     const handle = a.payment_handle || '';
+    const rate = parseFloat(a.hourly_rate) || 0;
+
     return `<div class="assoc-card" data-profile-id="${a.id}">
-      <h4>${escapeHtml(name)}</h4>
+      <h4>
+        ${escapeHtml(name)}
+        <span class="role-tag ${role}">${role}</span>
+      </h4>
       <p class="detail">${escapeHtml(a.app_user?.email || '')}</p>
       <p class="detail">Payment: ${escapeHtml(method)}${handle ? ' — ' + escapeHtml(handle) : ''}</p>
-      <p class="detail">Status: ${a.is_active ? 'Active' : 'Inactive'}</p>
+      <div class="rate-highlight">
+        <span class="rate-value">$${rate.toFixed(2)}</span>
+        <span class="rate-unit">/ hour</span>
+      </div>
       <div class="rate-row">
-        <label style="font-size:0.75rem;font-weight:600;white-space:nowrap;">$/hr:</label>
-        <input type="number" step="0.50" min="0" value="${a.hourly_rate}" class="rate-input" data-id="${a.id}">
+        <label style="font-size:0.75rem;font-weight:600;white-space:nowrap;">Set rate:</label>
+        <input type="number" step="0.50" min="0" value="${rate}" class="rate-input" data-id="${a.id}">
         <button class="save-btn" data-save-rate="${a.id}">Save</button>
       </div>
     </div>`;
@@ -273,6 +304,31 @@ function setupEventListeners() {
   document.getElementById('btnAddEntry').addEventListener('click', openAddEntry);
   document.getElementById('entryCancel').addEventListener('click', () => document.getElementById('addEntryModal').classList.remove('open'));
   document.getElementById('entryConfirm').addEventListener('click', confirmSaveEntry);
+
+  // Add Associate
+  document.getElementById('btnShowAddAssoc').addEventListener('click', () => {
+    const form = document.getElementById('addAssocForm');
+    form.style.display = form.style.display === 'none' ? '' : 'none';
+  });
+  document.getElementById('btnDoAddAssoc').addEventListener('click', async () => {
+    const userId = document.getElementById('addAssocUser').value;
+    const rate = parseFloat(document.getElementById('addAssocRate').value) || 0;
+    if (!userId) { showToast('Please select a user', 'warning'); return; }
+    const btn = document.getElementById('btnDoAddAssoc');
+    btn.disabled = true;
+    try {
+      await hoursService.createProfile(userId, { hourlyRate: rate });
+      showToast('Associate added!', 'success');
+      document.getElementById('addAssocForm').style.display = 'none';
+      document.getElementById('addAssocRate').value = '0';
+      await loadAssociates();
+      await loadEntries(); // refresh entries table too
+    } catch (err) {
+      showToast('Failed to add associate: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // Save rate buttons (delegated)
   document.getElementById('associateConfig').addEventListener('click', async (e) => {

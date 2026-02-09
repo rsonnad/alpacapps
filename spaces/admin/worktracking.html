@@ -43,13 +43,35 @@
     .photo-count { color: var(--accent); cursor: pointer; font-weight: 600; }
 
     .associate-config { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-    .assoc-card { background: var(--bg-card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; }
-    .assoc-card h4 { margin: 0 0 0.5rem; }
-    .assoc-card .detail { font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0; }
+    .assoc-card { background: var(--bg-card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; position: relative; }
+    .assoc-card h4 { margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .assoc-card .role-tag { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 0.1rem 0.4rem; border-radius: 4px; }
+    .assoc-card .role-tag.admin { background: #fce7f3; color: #9d174d; }
+    .assoc-card .role-tag.staff { background: #dbeafe; color: #1e40af; }
+    .assoc-card .role-tag.resident { background: #d1fae5; color: #065f46; }
+    .assoc-card .role-tag.associate { background: #fef3c7; color: #92400e; }
+    .assoc-card .role-tag.public { background: #f3f4f6; color: #6b7280; }
+    .assoc-card .signup-tag { font-size: 0.6rem; color: #94a3b8; font-style: italic; }
+    .assoc-card .detail { font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0; }
+    .assoc-card .rate-highlight { display: flex; align-items: baseline; gap: 0.35rem; margin: 0.6rem 0 0.4rem; }
+    .assoc-card .rate-highlight .rate-value { font-size: 1.5rem; font-weight: 800; color: #0f766e; }
+    .assoc-card .rate-highlight .rate-unit { font-size: 0.8rem; color: #64748b; font-weight: 500; }
     .assoc-card input, .assoc-card select { padding: 0.35rem 0.5rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; width: 100%; box-sizing: border-box; }
     .assoc-card .rate-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
     .assoc-card .rate-row input { width: 100px; }
     .assoc-card .save-btn { background: var(--accent); color: #fff; border: none; padding: 0.35rem 0.75rem; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; }
+    .assoc-card .inactive-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.6); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+    .assoc-card .inactive-label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+
+    .btn-add-assoc { background: #6366f1; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .add-assoc-form { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: var(--radius); border: 1px solid #e5e7eb; }
+    .add-assoc-form .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
+    .add-assoc-form .form-group label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .add-assoc-form select, .add-assoc-form input { padding: 0.4rem 0.5rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; }
+    .add-assoc-form .form-group select { min-width: 200px; }
+    .add-assoc-form .form-group input { width: 90px; }
+    .add-assoc-form .btn-do-add { background: #6366f1; color: #fff; border: none; padding: 0.4rem 0.85rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .add-assoc-form .btn-do-add:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Modal */
     .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
@@ -104,7 +126,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.75 7:10p</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260208.76 7:25p</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/admin/" class="btn-small">Dashboard</a>
@@ -184,6 +206,7 @@
                   <th>Amount</th>
                   <th>Status</th>
                   <th>Description</th>
+                  <th>Area</th>
                   <th>Loc</th>
                   <th></th>
                 </tr>
@@ -200,8 +223,20 @@
       <div class="section">
         <div class="section-header">
           <h2>Associate Settings</h2>
+          <button class="btn-add-assoc" id="btnShowAddAssoc">+ Add Associate</button>
         </div>
         <div class="section-body">
+          <div id="addAssocForm" class="add-assoc-form" style="display:none;">
+            <div class="form-group">
+              <label>User</label>
+              <select id="addAssocUser"><option value="">Select a user...</option></select>
+            </div>
+            <div class="form-group">
+              <label>$/hr</label>
+              <input type="number" id="addAssocRate" step="0.50" min="0" value="0" placeholder="0.00">
+            </div>
+            <button class="btn-do-add" id="btnDoAddAssoc">Add</button>
+          </div>
           <div class="associate-config" id="associateConfig">
             <div class="empty-state">Loading...</div>
           </div>

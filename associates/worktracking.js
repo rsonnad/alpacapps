@@ -77,6 +77,7 @@ async function initApp() {
 
   setupEventListeners();
   requestLocation();
+  await loadSpaces();
   await refreshAll();
 }
 
@@ -110,6 +111,49 @@ function getLocation() {
       { enableHighAccuracy: true, timeout: 5000 }
     );
   });
+}
+
+// =============================================
+// SPACE SELECTOR (sticky)
+// =============================================
+const SPACE_KEY = 'worktracking-selected-space';
+
+async function loadSpaces() {
+  try {
+    const { data, error } = await supabase
+      .from('spaces')
+      .select('id, name, parent_area')
+      .eq('is_archived', false)
+      .order('name');
+
+    if (error) throw error;
+
+    const sel = document.getElementById('spaceSelector');
+    sel.innerHTML = '<option value="">Select area...</option>';
+    sel.innerHTML += '<option value="other">Other</option>';
+    for (const s of (data || [])) {
+      const label = s.parent_area ? `${s.name} (${s.parent_area})` : s.name;
+      sel.innerHTML += `<option value="${s.id}">${escapeHtml(label)}</option>`;
+    }
+
+    // Restore sticky selection
+    const saved = localStorage.getItem(SPACE_KEY);
+    if (saved && sel.querySelector(`option[value="${saved}"]`)) {
+      sel.value = saved;
+    }
+
+    // Persist on change
+    sel.addEventListener('change', () => {
+      localStorage.setItem(SPACE_KEY, sel.value);
+    });
+  } catch (err) {
+    console.error('Failed to load spaces:', err);
+  }
+}
+
+function getSelectedSpaceId() {
+  const val = document.getElementById('spaceSelector').value;
+  return val && val !== 'other' ? val : null;
 }
 
 // =============================================
@@ -156,7 +200,7 @@ async function handleClockIn() {
   btn.disabled = true;
   try {
     const loc = await getLocation();
-    activeEntry = await hoursService.clockIn(profile.id, loc || {});
+    activeEntry = await hoursService.clockIn(profile.id, { ...(loc || {}), spaceId: getSelectedSpaceId() });
     showToast('Clocked in!', 'success');
     updateClockUI();
     await refreshToday();
@@ -591,7 +635,8 @@ async function handleManualSubmit() {
       clockOut: coDateTime,
       description: description || null,
       manualReason,
-      hourlyRate: profile.hourly_rate
+      hourlyRate: profile.hourly_rate,
+      spaceId: getSelectedSpaceId()
     });
     showToast('Manual entry added!', 'success');
     closeManualModal();

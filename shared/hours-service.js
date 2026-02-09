@@ -110,11 +110,53 @@ class HoursService {
   async getAllAssociates() {
     const { data, error } = await supabase
       .from('associate_profiles')
-      .select('*, app_user:app_user_id(id, email, display_name, first_name, last_name, person_id)')
+      .select('*, app_user:app_user_id(id, email, display_name, first_name, last_name, person_id, role)')
       .order('created_at', { ascending: true });
 
     if (error) throw error;
     return data || [];
+  }
+
+  /**
+   * Get all app_users who do NOT yet have an associate_profiles row.
+   * Returns users eligible to be added as associates.
+   */
+  async getEligibleUsers() {
+    // Get all app_users
+    const { data: allUsers, error: usersErr } = await supabase
+      .from('app_users')
+      .select('id, email, display_name, first_name, last_name, role, auth_user_id')
+      .order('display_name');
+
+    if (usersErr) throw usersErr;
+
+    // Get existing associate app_user_ids
+    const { data: existing, error: existErr } = await supabase
+      .from('associate_profiles')
+      .select('app_user_id');
+
+    if (existErr) throw existErr;
+
+    const existingSet = new Set((existing || []).map(e => e.app_user_id));
+
+    // Filter out users who already have a profile, and the bot user
+    return (allUsers || []).filter(u =>
+      !existingSet.has(u.id) && u.email !== 'bot@alpacaplayhouse.com'
+    );
+  }
+
+  /**
+   * Create an associate profile for a given app_user (admin action)
+   */
+  async createProfile(appUserId, { hourlyRate = 0 } = {}) {
+    const { data, error } = await supabase
+      .from('associate_profiles')
+      .insert({ app_user_id: appUserId, hourly_rate: hourlyRate })
+      .select('*, app_user:app_user_id(id, email, display_name, first_name, last_name, person_id, role)')
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   // ---- Time Entry Management ----
@@ -122,7 +164,7 @@ class HoursService {
   /**
    * Clock in — create a new time entry
    */
-  async clockIn(associateId, { lat, lng } = {}) {
+  async clockIn(associateId, { lat, lng, spaceId } = {}) {
     // Get current rate from profile
     const { data: profile, error: profileErr } = await supabase
       .from('associate_profiles')
@@ -137,7 +179,8 @@ class HoursService {
       clock_in: new Date().toISOString(),
       hourly_rate: profile.hourly_rate,
       clock_in_lat: lat || null,
-      clock_in_lng: lng || null
+      clock_in_lng: lng || null,
+      space_id: spaceId || null
     };
 
     const { data, error } = await supabase
@@ -191,23 +234,36 @@ class HoursService {
 
   /**
    * Create a manual time entry (not from live clock in/out)
+   * Used by both associate page (with manualReason) and admin page (without)
    */
-  async createManualEntry(associateId, { clockIn, clockOut, description, manualReason, hourlyRate }) {
+  async createManualEntry(associateId, { clockIn, clockOut, description, manualReason, hourlyRate, spaceId } = {}) {
     const ciDate = new Date(clockIn);
-    const coDate = new Date(clockOut);
-    const durationMs = coDate - ciDate;
-    if (durationMs <= 0) throw new Error('Clock out must be after clock in');
-    const durationMinutes = Math.round(durationMs / 60000);
+    const coDate = clockOut ? new Date(clockOut) : null;
+    const durationMinutes = coDate ? Math.round((coDate - ciDate) / 60000) : null;
+
+    if (coDate && coDate <= ciDate) throw new Error('Clock out must be after clock in');
+
+    // Use provided rate or fetch from profile
+    let rate = hourlyRate;
+    if (rate === undefined || rate === null) {
+      const { data: profile } = await supabase
+        .from('associate_profiles')
+        .select('hourly_rate')
+        .eq('id', associateId)
+        .single();
+      rate = profile?.hourly_rate || 0;
+    }
 
     const entry = {
       associate_id: associateId,
       clock_in: ciDate.toISOString(),
-      clock_out: coDate.toISOString(),
+      clock_out: coDate ? coDate.toISOString() : null,
       duration_minutes: durationMinutes,
-      hourly_rate: hourlyRate,
+      hourly_rate: rate,
       description: description || null,
       is_manual: true,
-      manual_reason: manualReason || null
+      manual_reason: manualReason || null,
+      space_id: spaceId || null
     };
 
     const { data, error } = await supabase
@@ -262,7 +318,7 @@ class HoursService {
   async getAllEntries({ dateFrom, dateTo, associateId, isPaid } = {}) {
     let query = supabase
       .from('time_entries')
-      .select('*, associate:associate_id(id, app_user_id, hourly_rate, payment_method, payment_handle, app_user:app_user_id(id, email, display_name, first_name, last_name))')
+      .select('*, associate:associate_id(id, app_user_id, hourly_rate, payment_method, payment_handle, app_user:app_user_id(id, email, display_name, first_name, last_name)), space:space_id(id, name)')
       .order('clock_in', { ascending: false });
 
     if (dateFrom) query = query.gte('clock_in', `${dateFrom}T00:00:00`);
@@ -306,42 +362,6 @@ class HoursService {
       .from('time_entries')
       .update(allowed)
       .eq('id', entryId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Create a manual time entry (admin)
-   */
-  async createManualEntry(associateId, { clockIn, clockOut, description, hourlyRate }) {
-    const ci = new Date(clockIn);
-    const co = clockOut ? new Date(clockOut) : null;
-    const durationMinutes = co ? Math.round((co - ci) / 60000) : null;
-
-    // Use provided rate or fetch from profile
-    let rate = hourlyRate;
-    if (rate === undefined || rate === null) {
-      const { data: profile } = await supabase
-        .from('associate_profiles')
-        .select('hourly_rate')
-        .eq('id', associateId)
-        .single();
-      rate = profile.hourly_rate;
-    }
-
-    const { data, error } = await supabase
-      .from('time_entries')
-      .insert({
-        associate_id: associateId,
-        clock_in: ci.toISOString(),
-        clock_out: co ? co.toISOString() : null,
-        duration_minutes: durationMinutes,
-        hourly_rate: rate,
-        description: description || null
-      })
       .select()
       .single();
 
