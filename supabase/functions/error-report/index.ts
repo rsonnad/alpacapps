@@ -358,7 +358,7 @@ async function handleErrorReport(report: ErrorReport) {
         .from('bug_reports')
         .insert({
           reporter_name: 'Alpaca Error Monitor',
-          reporter_email: 'auto@alpacaplayhouse.com',
+          reporter_email: 'alpacaautomatic@gmail.com',
           description,
           page_url: pageUrl,
           error_message: `${error.code}: ${error.message}`.substring(0, 500),
