@@ -25,7 +25,8 @@ interface SonosRequest {
     | "treble"
     | "loudness"
     | "balance"
-    | "announce";
+    | "announce"
+    | "tts_preview";
   room?: string;
   value?: number | string;
   name?: string;
@@ -375,6 +376,78 @@ serve(async (req) => {
           return jsonResponse({ status: "success", zones: succeeded, failed });
         }
         break;
+      }
+
+      case "tts_preview": {
+        // Generate TTS audio and return the URL — no Sonos playback
+        if (!body.text) return jsonResponse({ error: "Missing text" }, 400);
+
+        const previewGeminiKey = Deno.env.get("GEMINI_API_KEY");
+        if (!previewGeminiKey) {
+          return jsonResponse({ error: "Gemini API key not configured" }, 500);
+        }
+
+        const previewVoice = body.voice || "Sulafat";
+
+        console.log(`TTS Preview: generating for "${body.text}" with voice ${previewVoice}`);
+        const previewTtsResp = await fetch(`${GEMINI_TTS_URL}?key=${previewGeminiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: body.text }] }],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: previewVoice },
+                },
+              },
+            },
+          }),
+        });
+
+        if (!previewTtsResp.ok) {
+          const errBody = await previewTtsResp.text();
+          return jsonResponse({ error: `TTS failed: ${previewTtsResp.status}`, detail: errBody.substring(0, 500) }, 500);
+        }
+
+        const previewResult = await previewTtsResp.json();
+        const previewAudioData = previewResult.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!previewAudioData) {
+          return jsonResponse({ error: "TTS returned no audio data" }, 500);
+        }
+
+        // Convert PCM to WAV
+        const previewPcm = base64ToBytes(previewAudioData);
+        const previewWavHeader = buildWavHeader(previewPcm.length);
+        const previewWav = new Uint8Array(previewWavHeader.length + previewPcm.length);
+        previewWav.set(previewWavHeader, 0);
+        previewWav.set(previewPcm, previewWavHeader.length);
+
+        // Upload to storage
+        const previewFilename = `preview-${Date.now()}.wav`;
+        const previewPath = `${TTS_PREFIX}/${previewFilename}`;
+
+        const { error: previewUploadErr } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(previewPath, previewWav, {
+            contentType: "audio/wav",
+            upsert: true,
+          });
+
+        if (previewUploadErr) {
+          return jsonResponse({ error: `Upload failed: ${previewUploadErr.message}` }, 500);
+        }
+
+        const { data: previewUrlData } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(previewPath);
+
+        return jsonResponse({
+          status: "success",
+          audio_url: previewUrlData.publicUrl,
+          duration_secs: Math.ceil(previewPcm.length / (24000 * 2)),
+        });
       }
 
       default:

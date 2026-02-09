@@ -389,6 +389,45 @@
     .hsb-stat.delta .hsb-num.zero { color: #94a3b8; }
     .hsb-mods { font-size: 0.6rem; color: #94a3b8; }
 
+    /* Coworkers Tab */
+    .cw-empty { text-align: center; padding: 2rem 1rem; }
+    .cw-empty .cw-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .cw-empty .cw-text { color: var(--text-muted); font-size: 0.9rem; }
+    .cw-empty .cw-sub { color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem; }
+
+    .cw-group { margin-bottom: 1rem; }
+    .cw-group-name { font-size: 0.75rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+
+    .cw-card {
+      background: #fff; border-radius: 10px; padding: 0.75rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.5rem;
+    }
+    .cw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .cw-name { font-weight: 700; font-size: 0.9rem; color: #1e293b; }
+    .cw-name.is-you { color: #6366f1; }
+    .cw-week-stats { display: flex; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: #64748b; }
+    .cw-week-stats .cw-pct { font-weight: 700; }
+    .cw-week-stats .cw-pct.green { color: #16a34a; }
+    .cw-week-stats .cw-pct.yellow { color: #ca8a04; }
+    .cw-week-stats .cw-pct.red { color: #dc2626; }
+
+    .cw-days { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .cw-day {
+      display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+      min-width: 36px; padding: 0.25rem 0.2rem; border-radius: 6px;
+      font-size: 0.65rem; background: #f9fafb; border: 1px solid #f0f0f0;
+    }
+    .cw-day .cw-d-label { font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .cw-day .cw-d-hours { font-weight: 600; color: #334155; font-size: 0.7rem; }
+    .cw-day .cw-d-status { font-size: 0.7rem; }
+    .cw-day.met { background: #f0fdf4; border-color: #bbf7d0; }
+    .cw-day.partial { background: #fffbeb; border-color: #fde68a; }
+    .cw-day.missed { background: #fef2f2; border-color: #fecaca; }
+    .cw-day.none { background: #f9fafb; border-color: #f0f0f0; }
+    .cw-day.today { border-color: #6366f1; }
+
+    .cw-mods { font-size: 0.65rem; color: #94a3b8; margin-top: 0.35rem; }
+
     .btn-save-schedule {
       background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.5rem;
       border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem;
@@ -430,7 +469,7 @@
       <a href="https://alpacaplayhouse.com" class="logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs">
         <span style="font-weight:700;font-size:0.95rem;">Hours</span>
-        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.07 12:40a</span>
+        <span title="Site version" style="font-size:0.6rem;color:var(--text-muted);font-weight:400;cursor:help;">v260209.08 12:45a</span>
       </a>
       <div class="user-area">
         <span id="userName"></span>
@@ -482,6 +521,7 @@
       <div class="tabs">
         <button class="active" data-tab="today">Today</button>
         <button data-tab="history">History</button>
+        <button data-tab="coworkers">Coworkers</button>
         <button data-tab="payment">Payment</button>
       </div>
 
@@ -529,6 +569,11 @@
           </select>
         </div>
         <div id="historyList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading history...</p></div>
+      </div>
+
+      <!-- Coworkers Tab -->
+      <div class="tab-content" id="tabCoworkers">
+        <div id="coworkersList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading...</p></div>
       </div>
 
       <!-- Payment Tab -->

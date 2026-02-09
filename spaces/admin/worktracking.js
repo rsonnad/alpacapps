@@ -13,6 +13,7 @@ let associates = [];
 let entries = [];
 let selectedIds = new Set();
 let editingEntryId = null;
+let workGroups = [];
 let initialized = false;
 
 // =============================================
@@ -69,7 +70,7 @@ function setDefaultDates() {
 // DATA LOADING
 // =============================================
 async function loadAll() {
-  await Promise.all([loadAssociates(), loadEntries()]);
+  await Promise.all([loadAssociates(), loadEntries(), loadWorkGroups()]);
 }
 
 async function loadAssociates() {
@@ -396,6 +397,74 @@ function setupEventListeners() {
     }
   });
 
+  // Work Groups
+  document.getElementById('btnShowAddGroup').addEventListener('click', () => {
+    const form = document.getElementById('addGroupForm');
+    form.style.display = form.style.display === 'none' ? '' : 'none';
+  });
+
+  document.getElementById('btnDoAddGroup').addEventListener('click', async () => {
+    const name = document.getElementById('addGroupName').value.trim();
+    if (!name) { showToast('Please enter a group name', 'warning'); return; }
+    try {
+      await hoursService.createWorkGroup(name);
+      showToast('Work group created!', 'success');
+      document.getElementById('addGroupName').value = '';
+      document.getElementById('addGroupForm').style.display = 'none';
+      await loadWorkGroups();
+    } catch (err) {
+      showToast('Failed to create group: ' + err.message, 'error');
+    }
+  });
+
+  // Work group delegated events (add member, remove member, delete group)
+  document.getElementById('workGroupGrid').addEventListener('click', async (e) => {
+    // Add member
+    const addBtn = e.target.closest('[data-wg-add]');
+    if (addBtn) {
+      const groupId = addBtn.dataset.wgAdd;
+      const select = document.querySelector(`.wg-member-select[data-group="${groupId}"]`);
+      const assocId = select?.value;
+      if (!assocId) { showToast('Please select a member', 'warning'); return; }
+      try {
+        await hoursService.addGroupMember(groupId, assocId);
+        showToast('Member added!', 'success');
+        await loadWorkGroups();
+      } catch (err) {
+        showToast('Failed to add member: ' + err.message, 'error');
+      }
+      return;
+    }
+
+    // Remove member
+    const removeBtn = e.target.closest('[data-wg-remove]');
+    if (removeBtn) {
+      const groupId = removeBtn.dataset.wgRemove;
+      const assocId = removeBtn.dataset.assoc;
+      try {
+        await hoursService.removeGroupMember(groupId, assocId);
+        showToast('Member removed', 'success');
+        await loadWorkGroups();
+      } catch (err) {
+        showToast('Failed to remove member: ' + err.message, 'error');
+      }
+      return;
+    }
+
+    // Delete group
+    const deleteBtn = e.target.closest('[data-wg-delete]');
+    if (deleteBtn) {
+      if (!confirm('Delete this work group? Members will be removed.')) return;
+      try {
+        await hoursService.deleteWorkGroup(deleteBtn.dataset.wgDelete);
+        showToast('Work group deleted', 'success');
+        await loadWorkGroups();
+      } catch (err) {
+        showToast('Failed to delete group: ' + err.message, 'error');
+      }
+    }
+  });
+
   // Save rate buttons (delegated)
   document.getElementById('associateConfig').addEventListener('click', async (e) => {
     const saveBtn = e.target.closest('[data-save-rate]');
@@ -651,6 +720,59 @@ async function confirmSaveEntry() {
   } finally {
     btn.disabled = false;
   }
+}
+
+// =============================================
+// WORK GROUPS
+// =============================================
+async function loadWorkGroups() {
+  try {
+    workGroups = await hoursService.getWorkGroups();
+    renderWorkGroups();
+  } catch (err) {
+    console.error('Failed to load work groups:', err);
+  }
+}
+
+function renderWorkGroups() {
+  const container = document.getElementById('workGroupGrid');
+  if (!workGroups.length) {
+    container.innerHTML = '<div class="empty-state">No work groups yet. Create one to let associates see each other\'s schedules.</div>';
+    return;
+  }
+
+  container.innerHTML = workGroups.map(g => {
+    const members = g.members || [];
+    const memberChips = members.map(m => {
+      const name = getAssocName(m.associate || {});
+      return `<span class="wg-chip">
+        ${escapeHtml(name)}
+        <button class="wg-remove" data-wg-remove="${g.id}" data-assoc="${m.associate_id}" title="Remove">&times;</button>
+      </span>`;
+    }).join('');
+
+    // Build dropdown of associates not already in this group
+    const memberIds = new Set(members.map(m => m.associate_id));
+    const available = associates.filter(a => !memberIds.has(a.id));
+    const options = available.map(a => {
+      const name = getAssocName(a);
+      return `<option value="${a.id}">${escapeHtml(name)}</option>`;
+    }).join('');
+
+    return `<div class="wg-card" data-group-id="${g.id}">
+      <h4>${escapeHtml(g.name)}</h4>
+      ${g.description ? `<p class="wg-desc">${escapeHtml(g.description)}</p>` : ''}
+      <div class="wg-members">${memberChips || '<span style="color:var(--text-muted);font-size:0.8rem;">No members yet</span>'}</div>
+      ${available.length ? `<div class="wg-add-row">
+        <select class="wg-member-select" data-group="${g.id}">
+          <option value="">Add member...</option>
+          ${options}
+        </select>
+        <button class="wg-add-btn" data-wg-add="${g.id}">Add</button>
+      </div>` : ''}
+      <button class="wg-delete" data-wg-delete="${g.id}">Delete Group</button>
+    </div>`;
+  }).join('');
 }
 
 // =============================================

@@ -657,6 +657,7 @@ function setupEventListeners() {
       document.getElementById(tabId).classList.add('active');
       // Load tab data on switch
       if (btn.dataset.tab === 'history') refreshHistory();
+      else if (btn.dataset.tab === 'coworkers') refreshCoworkers();
       else if (btn.dataset.tab === 'payment') refreshPaymentTab();
     });
   });
@@ -998,6 +999,154 @@ async function saveSchedule() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Save Schedule';
+  }
+}
+
+// =============================================
+// COWORKERS TAB
+// =============================================
+async function refreshCoworkers() {
+  const container = document.getElementById('coworkersList');
+  try {
+    const groups = await hoursService.getMyGroups(profile.id);
+
+    if (!groups.length) {
+      container.innerHTML = `<div class="cw-empty">
+        <div class="cw-icon">👥</div>
+        <div class="cw-text">No work group</div>
+        <div class="cw-sub">Ask your admin to add you to a work group to see coworkers' schedules.</div>
+      </div>`;
+      return;
+    }
+
+    // Get current week Sun-Sat
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const dayOfWeek = today.getDay(); // 0=Sun
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - dayOfWeek);
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    const sunStr = sunday.toISOString().split('T')[0];
+    const satStr = saturday.toISOString().split('T')[0];
+
+    // Build week date array
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sunday);
+      d.setDate(sunday.getDate() + i);
+      weekDates.push(d.toISOString().split('T')[0]);
+    }
+    const dayAbbrevs = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    let html = '';
+
+    for (const group of groups) {
+      const members = group.members || [];
+      if (!members.length) continue;
+
+      const associateIds = members.map(m => m.associate_id);
+
+      // Fetch schedules and actuals for all members this week
+      const [schedules, actuals] = await Promise.all([
+        hoursService.getGroupSchedules(associateIds, sunStr, satStr),
+        hoursService.getGroupActuals(associateIds, sunStr, satStr)
+      ]);
+
+      // Index schedules by associate_id → date
+      const schedByAssoc = {};
+      for (const s of schedules) {
+        if (!schedByAssoc[s.associate_id]) schedByAssoc[s.associate_id] = {};
+        schedByAssoc[s.associate_id][s.schedule_date] = s;
+      }
+
+      // Index actuals by associate_id → date (sum minutes)
+      const actualsByAssoc = {};
+      for (const a of actuals) {
+        const date = a.clock_in.split('T')[0];
+        if (!actualsByAssoc[a.associate_id]) actualsByAssoc[a.associate_id] = {};
+        actualsByAssoc[a.associate_id][date] = (actualsByAssoc[a.associate_id][date] || 0) + parseFloat(a.duration_minutes);
+      }
+
+      html += `<div class="cw-group">`;
+      html += `<div class="cw-group-name">${escapeHtml(group.name)}</div>`;
+
+      for (const member of members) {
+        const assocId = member.associate_id;
+        const appUser = member.associate?.app_user;
+        const name = appUser?.display_name || appUser?.first_name || 'Unknown';
+        const isYou = assocId === profile.id;
+        const memberScheds = schedByAssoc[assocId] || {};
+        const memberActuals = actualsByAssoc[assocId] || {};
+
+        // Compute week totals
+        let weekSchedMins = 0, weekActualMins = 0, weekMods = 0;
+        for (const date of weekDates) {
+          const sched = memberScheds[date];
+          if (sched) { weekSchedMins += sched.scheduled_minutes; weekMods += sched.modification_count; }
+          weekActualMins += (memberActuals[date] || 0);
+        }
+
+        const pctRaw = weekSchedMins > 0 ? Math.round((weekActualMins / weekSchedMins) * 100) : 0;
+        const pctClass = weekSchedMins === 0 ? '' : (pctRaw >= 90 ? 'green' : (pctRaw >= 50 ? 'yellow' : 'red'));
+        const schedH = HoursService.formatHoursDecimal(weekSchedMins);
+        const actualH = HoursService.formatHoursDecimal(weekActualMins);
+
+        // Day cells
+        const daysHtml = weekDates.map((date, i) => {
+          const sched = memberScheds[date];
+          const actualMins = memberActuals[date] || 0;
+          const schedMins = sched ? sched.scheduled_minutes : 0;
+          const isToday = date === todayStr;
+
+          let statusIcon = '';
+          let dayClass = 'none';
+
+          if (schedMins > 0) {
+            if (actualMins >= schedMins) { dayClass = 'met'; statusIcon = '✓'; }
+            else if (actualMins > 0) { dayClass = 'partial'; statusIcon = '◐'; }
+            else {
+              // Only mark as missed if the date is in the past
+              if (date < todayStr) { dayClass = 'missed'; statusIcon = '✗'; }
+              else { dayClass = 'none'; statusIcon = '◌'; }
+            }
+          }
+
+          const hoursLabel = schedMins > 0 ? HoursService.formatDuration(schedMins) : '—';
+
+          return `<div class="cw-day ${dayClass}${isToday ? ' today' : ''}">
+            <span class="cw-d-label">${dayAbbrevs[i]}</span>
+            <span class="cw-d-hours">${hoursLabel}</span>
+            ${statusIcon ? `<span class="cw-d-status">${statusIcon}</span>` : ''}
+          </div>`;
+        }).join('');
+
+        const modsHtml = weekMods > 0 ? `<div class="cw-mods">${weekMods} schedule change${weekMods !== 1 ? 's' : ''} this week</div>` : '';
+
+        html += `<div class="cw-card">
+          <div class="cw-card-header">
+            <span class="cw-name${isYou ? ' is-you' : ''}">${escapeHtml(name)}${isYou ? ' (you)' : ''}</span>
+            <div class="cw-week-stats">
+              <span>${schedH}h sched</span>
+              <span>${actualH}h actual</span>
+              ${weekSchedMins > 0 ? `<span class="cw-pct ${pctClass}">${pctRaw}%</span>` : ''}
+            </div>
+          </div>
+          <div class="cw-days">${daysHtml}</div>
+          ${modsHtml}
+        </div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    container.innerHTML = html || `<div class="cw-empty">
+      <div class="cw-icon">👥</div>
+      <div class="cw-text">No coworkers in your group yet</div>
+    </div>`;
+  } catch (err) {
+    console.error('Failed to load coworkers:', err);
+    container.innerHTML = `<div class="cw-empty"><div class="cw-text">Failed to load coworkers</div></div>`;
   }
 }
 

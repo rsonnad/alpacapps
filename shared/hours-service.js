@@ -670,6 +670,155 @@ class HoursService {
     return { upserted: toUpsert.length, deleted: toDelete.length };
   }
 
+  // ---- Work Groups ----
+
+  /**
+   * Get all active work groups (admin view)
+   */
+  async getWorkGroups() {
+    const { data, error } = await supabase
+      .from('work_groups')
+      .select('*, members:work_group_members(id, associate_id, added_at, associate:associate_id(id, app_user_id, app_user:app_user_id(id, display_name, first_name, last_name, email)))')
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Create a work group (admin)
+   */
+  async createWorkGroup(name, description) {
+    const { data, error } = await supabase
+      .from('work_groups')
+      .insert({ name, description: description || null })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Update a work group (admin)
+   */
+  async updateWorkGroup(groupId, updates) {
+    const allowed = {};
+    if (updates.name !== undefined) allowed.name = updates.name;
+    if (updates.description !== undefined) allowed.description = updates.description;
+    if (updates.is_active !== undefined) allowed.is_active = updates.is_active;
+    allowed.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('work_groups')
+      .update(allowed)
+      .eq('id', groupId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Delete a work group (admin) — CASCADE deletes members
+   */
+  async deleteWorkGroup(groupId) {
+    const { error } = await supabase
+      .from('work_groups')
+      .delete()
+      .eq('id', groupId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Add an associate to a work group
+   */
+  async addGroupMember(groupId, associateId) {
+    const { data, error } = await supabase
+      .from('work_group_members')
+      .insert({ work_group_id: groupId, associate_id: associateId })
+      .select('id, associate_id, added_at, associate:associate_id(id, app_user_id, app_user:app_user_id(id, display_name, first_name, last_name, email))')
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Remove an associate from a work group
+   */
+  async removeGroupMember(groupId, associateId) {
+    const { error } = await supabase
+      .from('work_group_members')
+      .delete()
+      .eq('work_group_id', groupId)
+      .eq('associate_id', associateId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Get work groups the associate belongs to, with all member profiles
+   */
+  async getMyGroups(associateId) {
+    // Find which groups this associate is in
+    const { data: memberships, error: memErr } = await supabase
+      .from('work_group_members')
+      .select('work_group_id')
+      .eq('associate_id', associateId);
+
+    if (memErr) throw memErr;
+    if (!memberships || memberships.length === 0) return [];
+
+    const groupIds = memberships.map(m => m.work_group_id);
+
+    // Fetch those groups with all members
+    const { data, error } = await supabase
+      .from('work_groups')
+      .select('*, members:work_group_members(id, associate_id, added_at, associate:associate_id(id, app_user_id, app_user:app_user_id(id, display_name, first_name, last_name)))')
+      .in('id', groupIds)
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Get schedules for multiple associates within a date range
+   */
+  async getGroupSchedules(associateIds, dateFrom, dateTo) {
+    const { data, error } = await supabase
+      .from('associate_schedules')
+      .select('*')
+      .in('associate_id', associateIds)
+      .gte('schedule_date', dateFrom)
+      .lte('schedule_date', dateTo)
+      .order('schedule_date', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Get time entry actuals for multiple associates within a date range (completed only)
+   */
+  async getGroupActuals(associateIds, dateFrom, dateTo) {
+    const { data, error } = await supabase
+      .from('time_entries')
+      .select('associate_id, clock_in, duration_minutes')
+      .in('associate_id', associateIds)
+      .gte('clock_in', `${dateFrom}T00:00:00`)
+      .lte('clock_in', `${dateTo}T23:59:59`)
+      .not('duration_minutes', 'is', null);
+
+    if (error) throw error;
+    return data || [];
+  }
+
   // ---- Utility ----
 
   /**

@@ -94,6 +94,34 @@
 
     .section-actions { display: flex; gap: 0.5rem; align-items: center; }
 
+    /* Work Groups */
+    .wg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .wg-card { background: var(--bg-card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; }
+    .wg-card h4 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+    .wg-card .wg-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .wg-members { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; }
+    .wg-chip {
+      display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem;
+      background: #eef2ff; color: #4338ca; border-radius: 12px; font-size: 0.75rem; font-weight: 500;
+    }
+    .wg-chip .wg-remove {
+      cursor: pointer; font-size: 0.85rem; color: #6366f1; line-height: 1;
+      background: none; border: none; padding: 0; font-weight: 700;
+    }
+    .wg-chip .wg-remove:hover { color: #dc2626; }
+    .wg-add-row { display: flex; gap: 0.35rem; align-items: center; margin-top: 0.5rem; }
+    .wg-add-row select { flex: 1; padding: 0.3rem 0.4rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.8rem; }
+    .wg-add-row .wg-add-btn { background: #6366f1; color: #fff; border: none; padding: 0.3rem 0.6rem; border-radius: var(--radius); cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .wg-delete { background: none; border: 1px solid #fecaca; color: #dc2626; padding: 0.25rem 0.5rem; border-radius: var(--radius); cursor: pointer; font-size: 0.7rem; margin-top: 0.5rem; }
+    .wg-delete:hover { background: #fef2f2; }
+
+    .add-wg-form { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: var(--radius); border: 1px solid #e5e7eb; }
+    .add-wg-form .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
+    .add-wg-form .form-group label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .add-wg-form input { padding: 0.4rem 0.5rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; }
+    .add-wg-form .form-group input { min-width: 180px; }
+    .add-wg-form .btn-do-add { background: #6366f1; color: #fff; border: none; padding: 0.4rem 0.85rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+
     @media (max-width: 768px) {
       .summary-cards { grid-template-columns: repeat(2, 1fr); }
       .filters-bar { flex-direction: column; }
@@ -126,7 +154,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.07 12:40a</span>
+        <span title="Site version" style="font-size:0.65rem;color:var(--text-muted);font-weight:400;cursor:help;align-self:center;margin-left:-0.25rem">v260209.08 12:45a</span>
       </div>
       <div class="header-controls">
         <a href="/spaces/admin/" class="btn-small">Dashboard</a>
@@ -238,6 +266,26 @@
             <button class="btn-do-add" id="btnDoAddAssoc">Add</button>
           </div>
           <div class="associate-config" id="associateConfig">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Groups -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Work Groups</h2>
+          <button class="btn-add-assoc" id="btnShowAddGroup">+ Add Work Group</button>
+        </div>
+        <div class="section-body">
+          <div id="addGroupForm" class="add-wg-form" style="display:none;">
+            <div class="form-group">
+              <label>Group Name</label>
+              <input type="text" id="addGroupName" placeholder="e.g. Housekeeping Crew">
+            </div>
+            <button class="btn-do-add" id="btnDoAddGroup">Create</button>
+          </div>
+          <div class="wg-grid" id="workGroupGrid">
             <div class="empty-state">Loading...</div>
           </div>
         </div>

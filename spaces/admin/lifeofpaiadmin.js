@@ -8,6 +8,7 @@ import { supabase } from '../../shared/supabase.js';
 let config = null;
 let currentPoolChapter = 1;
 let isAdmin = false;
+let currentAudio = null;
 
 async function initPaiAdmin(authState) {
   const role = authState.appUser?.role;
@@ -27,7 +28,11 @@ async function initPaiAdmin(authState) {
   if (isAdmin) {
     document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
     document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
+    document.getElementById('testPreviewBtn').addEventListener('click', previewTestWhisper);
   }
+
+  // Player close button
+  document.getElementById('playerClose').addEventListener('click', closePlayer);
 
   // Pool chapter tabs
   document.getElementById('whisperPoolTabs').addEventListener('click', (e) => {
@@ -160,7 +165,7 @@ async function loadWhisperPool(chapter) {
   const countEl = document.getElementById('whisperPoolCount');
 
   if (error || !data) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center;">Failed to load</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center;">Failed to load</td></tr>';
     return;
   }
 
@@ -168,6 +173,7 @@ async function loadWhisperPool(chapter) {
 
   tbody.innerHTML = data.map(w => `
     <tr>
+      <td><button class="btn-play" data-template="${escapeAttr(w.text_template)}" data-voice="${escapeAttr(w.voice_override || '')}" title="Preview locally">▶</button></td>
       <td class="whisper-text">${escapeHtml(w.text_template)}</td>
       <td style="font-size:0.7rem; color:var(--text-muted);">${(w.requires_data || []).join(', ') || '-'}</td>
       <td style="font-size:0.75rem;">${w.voice_override || 'default'}</td>
@@ -175,6 +181,15 @@ async function loadWhisperPool(chapter) {
       <td>${w.is_active ? 'Yes' : 'No'}</td>
     </tr>
   `).join('');
+
+  // Bind play buttons
+  tbody.querySelectorAll('.btn-play').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const template = btn.dataset.template;
+      const voice = btn.dataset.voice;
+      previewWhisper(template, voice, btn);
+    });
+  });
 }
 
 async function loadDeliveryLog() {
@@ -288,10 +303,183 @@ async function sendTestWhisper() {
   }
 }
 
+// ============================================
+// Local audio preview via tts_preview action
+// ============================================
+
+/** Resolve template variables with placeholder values for preview */
+function resolveForPreview(template) {
+  const alpacas = ['Harley', 'Lol', 'Cacao'];
+  const spaces = ['Garage Mahal', 'Sparadise', 'Skyloft', 'Magic Bus', 'Swim Spa', 'Sauna', 'Skyloft Balcony'];
+  const names = ['friend'];
+  const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  return template
+    .replaceAll('{resident_name}', rand(names))
+    .replaceAll('{resident_count}', '7')
+    .replaceAll('{vehicle_name}', 'Casper')
+    .replaceAll('{battery_level}', '82')
+    .replaceAll('{temperature}', '72')
+    .replaceAll('{zone_name}', 'Living Sound')
+    .replaceAll('{alpaca_name}', rand(alpacas))
+    .replaceAll('{dog_name}', 'Teacups')
+    .replaceAll('{space_name}', rand(spaces))
+    .replaceAll('{time_greeting}', getTimeGreeting());
+}
+
+function getTimeGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+async function previewWhisper(template, voiceOverride, triggerBtn) {
+  const text = resolveForPreview(template);
+  const voice = voiceOverride || config?.tts_voice || 'Sulafat';
+
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = '⏳';
+  }
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      showToast('Not authenticated', 'error');
+      return;
+    }
+
+    const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/sonos-control`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': supabase.supabaseKey,
+      },
+      body: JSON.stringify({
+        action: 'tts_preview',
+        text,
+        voice,
+      })
+    });
+
+    const result = await resp.json();
+    if (!resp.ok) {
+      showToast(`Preview failed: ${result.error || 'Unknown error'}`, 'error');
+      return;
+    }
+
+    playLocalAudio(result.audio_url, text);
+  } catch (err) {
+    showToast(`Preview error: ${err.message}`, 'error');
+  } finally {
+    if (triggerBtn) {
+      triggerBtn.disabled = false;
+      triggerBtn.textContent = '▶';
+    }
+  }
+}
+
+async function previewTestWhisper() {
+  const text = document.getElementById('testText').value.trim();
+  if (!text) {
+    showToast('Enter whisper text', 'warning');
+    return;
+  }
+  const voice = document.getElementById('cfgVoice').value;
+  const btn = document.getElementById('testPreviewBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      showToast('Not authenticated', 'error');
+      return;
+    }
+
+    const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/sonos-control`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': supabase.supabaseKey,
+      },
+      body: JSON.stringify({
+        action: 'tts_preview',
+        text,
+        voice,
+      })
+    });
+
+    const result = await resp.json();
+    if (!resp.ok) {
+      showToast(`Preview failed: ${result.error || 'Unknown error'}`, 'error');
+      return;
+    }
+
+    playLocalAudio(result.audio_url, text);
+  } catch (err) {
+    showToast(`Preview error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔊 Preview Locally';
+  }
+}
+
+function playLocalAudio(url, text) {
+  const player = document.getElementById('localAudioPlayer');
+  const audio = document.getElementById('playerAudio');
+  const playerText = document.getElementById('playerText');
+
+  // Stop any current playback
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+  }
+
+  playerText.textContent = text.length > 60 ? text.substring(0, 57) + '...' : text;
+  audio.src = url;
+  audio.controls = true;
+  player.classList.add('visible');
+
+  audio.play().catch(err => {
+    console.warn('Autoplay blocked:', err);
+    showToast('Click play on the audio player', 'info');
+  });
+
+  currentAudio = audio;
+
+  audio.onended = () => {
+    setTimeout(() => {
+      player.classList.remove('visible');
+      currentAudio = null;
+    }, 3000);
+  };
+}
+
+function closePlayer() {
+  const player = document.getElementById('localAudioPlayer');
+  const audio = document.getElementById('playerAudio');
+  audio.pause();
+  audio.src = '';
+  player.classList.remove('visible');
+  currentAudio = null;
+}
+
+// ============================================
+// Helpers
+// ============================================
+
 function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+function escapeAttr(s) {
+  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // Initialize
