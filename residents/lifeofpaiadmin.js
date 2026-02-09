@@ -44,6 +44,15 @@ async function initPaiAdmin(authState) {
     document.getElementById('regenWhispersBtn').addEventListener('click', regenerateWhispers);
     document.getElementById('auditionSingleBtn').addEventListener('click', auditionSingleVoice);
     document.getElementById('auditionBatchBtn').addEventListener('click', auditionBatchVoices);
+    document.getElementById('auditionPreset').addEventListener('change', (e) => {
+      const sel = e.target;
+      if (!sel.value) return;
+      document.getElementById('auditionText').value = sel.value;
+      // Auto-switch chapter to match the preset's data-ch attribute
+      const opt = sel.selectedOptions[0];
+      const ch = opt?.dataset?.ch;
+      if (ch) document.getElementById('auditionChapter').value = ch;
+    });
   }
 
   // Player close button

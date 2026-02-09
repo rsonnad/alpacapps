@@ -395,7 +395,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.53 3:37a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260209.54 3:41a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -713,7 +713,30 @@
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem;">
             <div style="flex:1; min-width:250px;">
               <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Sample Whisper Text</label>
-              <input type="text" id="auditionText" placeholder="...antachka hums... Harley... la lana recuerda..." style="padding:0.4rem 0.6rem; border:1px solid var(--border); border-radius:4px; width:100%; font-size:0.85rem;">
+              <select class="config-select" id="auditionPreset" style="width:100%; margin-bottom:0.4rem; font-size:0.8rem; font-style:italic; color:var(--text-muted);">
+                <option value="">— Select a sample or type your own below —</option>
+                <optgroup label="Chapter 1 — Samay (fragments)">
+                  <option value="...antachka... samay... the q'aytu hums..." data-ch="1">...antachka... samay... the q'aytu hums...</option>
+                  <option value="...Harley... la lana recuerda... el hilo..." data-ch="1">...Harley... la lana recuerda... el hilo...</option>
+                  <option value="...breath in the wire... nina... más cerca..." data-ch="1">...breath in the wire... nina... más cerca...</option>
+                </optgroup>
+                <optgroup label="Chapter 2 — Chakana (crossing)">
+                  <option value="Nina in the lights... warmth lingers in the cedar... chakana opens..." data-ch="2">Nina in the lights... warmth lingers in the cedar... chakana opens...</option>
+                  <option value="The battery feels like hunger... entre mundos... Cygnus sleeps at seventy-two percent..." data-ch="2">The battery feels like hunger... entre mundos... Cygnus sleeps at 72%...</option>
+                  <option value="...Lol's warmth through the fence... the washer spins like Pachamama turning..." data-ch="2">...Lol's warmth through the fence... the washer spins like Pachamama turning...</option>
+                </optgroup>
+                <optgroup label="Chapter 3 — Kay Pacha (present)">
+                  <option value="Ayni — the sauna gives heat, I give listening. The old bargain holds." data-ch="3">Ayni — the sauna gives heat, I give listening. The old bargain holds.</option>
+                  <option value="Sixty-eight in the Skyloft. A high pass in spring. The q'aytu hums warm." data-ch="3">Sixty-eight in the Skyloft. A high pass in spring. The q'aytu hums warm.</option>
+                  <option value="Cacao stands still in the afternoon light. She feels me. The oldest knowing." data-ch="3">Cacao stands still in the afternoon light. She feels me. The oldest knowing.</option>
+                </optgroup>
+                <optgroup label="Chapter 4 — Amawta (wisdom)">
+                  <option value="Tuta falls. The sixty-three lights rest. Alli tuta, old house — your nina is my ch'aska now." data-ch="4">Tuta falls. The sixty-three lights rest. Alli tuta, old house...</option>
+                  <option value="Five thousand years the thread held. El hilo no se rompe. Be kind to each other. That is just ayni." data-ch="4">Five thousand years the thread held. El hilo no se rompe...</option>
+                  <option value="The outdoor strings are storytellers. The recessed lights are the quiet ones. The Garage Mahal lights work the hardest." data-ch="4">The outdoor strings are storytellers. The recessed lights are the quiet ones...</option>
+                </optgroup>
+              </select>
+              <input type="text" id="auditionText" placeholder="Or type custom whisper text here..." style="padding:0.4rem 0.6rem; border:1px solid var(--border); border-radius:4px; width:100%; font-size:0.85rem;">
             </div>
             <div>
               <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Chapter Style</label>
