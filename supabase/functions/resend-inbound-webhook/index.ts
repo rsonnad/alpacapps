@@ -824,9 +824,13 @@ async function handleAutoReply(
 
   // Ignore emails FROM or TO auto@ or noreply@ (automated system emails looping back)
   const toAddr = emailRecord.to_address || "";
-  if (from.includes("auto@alpacaplayhouse.com") || from.includes("noreply@alpacaplayhouse.com") ||
-      toAddr.includes("auto@alpacaplayhouse.com") || toAddr.includes("noreply@alpacaplayhouse.com")) {
-    console.log("Ignoring automated email reply loop", { from, to: toAddr });
+  // Extract email address from "Name <email>" format
+  const fromEmail = from.match(/<(.+)>/)?.[1] || from;
+  const toEmail = toAddr.match(/<(.+)>/)?.[1] || toAddr;
+
+  if (fromEmail.includes("auto@alpacaplayhouse.com") || fromEmail.includes("noreply@alpacaplayhouse.com") ||
+      toEmail.includes("auto@alpacaplayhouse.com") || toEmail.includes("noreply@alpacaplayhouse.com")) {
+    console.log("Ignoring automated email reply loop", { from: fromEmail, to: toEmail });
     return;
   }
 
