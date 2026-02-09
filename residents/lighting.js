@@ -754,7 +754,9 @@ function updateDeviceUI(deviceId) {
   }
 
   // Dim row if off
-  row.style.opacity = state.on === false ? '0.5' : '';
+  if (row && row.style) {
+    row.style.opacity = state.on === false ? '0.5' : '';
+  }
 }
 
 // =============================================
