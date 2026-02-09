@@ -1156,6 +1156,36 @@ serve(async (req) => {
     // Load forwarding rules from database
     const forwardingRules = await loadForwardingRules(supabase);
 
+    // ==============================================
+    // LOOP GUARD: Reject emails from our own domain to auto@
+    // This prevents feedback loops where Bug Scout notifications
+    // to auto@ get re-processed as new bug reports endlessly.
+    // ==============================================
+    const fromLower = from.toLowerCase();
+    const fromAddr = (fromLower.match(/<(.+)>/)?.[1] || fromLower).trim();
+    if (fromAddr.endsWith("@alpacaplayhouse.com")) {
+      const toAutoOrNoreply = toList.some(t => {
+        const p = extractPrefix(t);
+        return p === "auto" || p === "noreply";
+      });
+      if (toAutoOrNoreply) {
+        console.log(`LOOP GUARD: Blocking self-sent email from ${fromAddr} to ${toList.join(",")}, subject: ${subject}`);
+        await supabase.from("inbound_emails").insert({
+          resend_email_id: emailId,
+          from_address: from,
+          to_address: toList[0],
+          subject,
+          route_action: "blocked_loop",
+          special_logic_type: "loop_guard",
+          raw_payload: data,
+        });
+        return new Response(JSON.stringify({ ok: true, blocked: "loop_guard" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Process each recipient (there could be multiple to addresses)
     for (const toAddr of toList) {
       const prefix = extractPrefix(toAddr);
