@@ -311,11 +311,16 @@ async function sendTestWhisper() {
 function resolveForPreview(template) {
   const alpacas = ['Harley', 'Lol', 'Cacao'];
   const spaces = ['Garage Mahal', 'Sparadise', 'Skyloft', 'Magic Bus', 'Swim Spa', 'Sauna', 'Skyloft Balcony', 'Cedar Chamber'];
-  const residents = ['Jon', 'Kymberly', 'Aseem', 'Safiyya', 'Ai', 'John', 'Rachel'];
+  // All people at the Playhouse: residents + staff + admins + associates + past residents
+  const residents = [
+    'Jon', 'Kymberly', 'Aseem', 'Safiyya', 'Ai', 'John', 'Rachel',
+    'Haydn', 'Rahul', 'Sonia', 'Donald', 'Jackie',
+    'Ivan', 'Oscar', 'Emina', 'Maya', 'Phoebe', 'Kathy', 'Rob', 'Matthew'
+  ];
   const vehicles = ['Casper', 'Delphi', 'Cygnus', 'Sloop', 'Brisa Branca'];
   const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  const workers = ['Jackie', 'Justin', 'Donald', 'Rahul'];
+  const workers = ['Jackie', 'Donald', 'Rahul', 'Haydn', 'Sonia'];
   const workSpaces = ['Outhouse', 'Garage Mahal', 'Sparadise', 'Skyloft', 'Main House', 'Swim Spa'];
 
   return template
