@@ -1,9 +1,10 @@
 {
-  "version": "v260209.25 1:15a",
-  "commit": "55d16c6b",
-  "full_commit": "55d16c6bfd7b423d25aab71d3aa1a706f815f49c",
-  "timestamp": "2026-02-09T01:15:34-06:00",
-  "included":   origin/bugfix/20260209-78b7c6fe-1d23-455c-bdd8-c92afcef68da
+  "version": "v260209.26 1:16a",
+  "commit": "e84b16f6",
+  "full_commit": "e84b16f616780eed922e24873a3a1d874f81c8be",
+  "timestamp": "2026-02-09T01:16:55-06:00",
+  "included":   origin/bugfix/20260209-2fe7a9b8-3c9d-4691-8262-e386535da4c0
+  origin/bugfix/20260209-78b7c6fe-1d23-455c-bdd8-c92afcef68da
   origin/bugfix/20260209-8c588262-501c-4ddb-bae4-8157d96193bc
   origin/bugfix/20260209-afc95840-f0fb-4def-a371-034087f2e9f7
   origin/bugfix/20260209-b1bbccb9-7579-4e82-9d7a-9bb85d2dfbd0
