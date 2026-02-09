@@ -17,19 +17,19 @@
 .context-switcher {
   display: inline-flex;
   background: var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 3px;
   margin: 0.75rem 0 0.75rem 2rem;
 }
 
 .context-switcher-btn {
   padding: 0.3rem 0.85rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   letter-spacing: 0.02em;
 }
@@ -63,7 +63,7 @@
   font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.2s ease, border-color 0.2s ease;
   text-decoration: none;
 }
 
@@ -86,7 +86,8 @@
 
 .section {
   background: var(--bg-card);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   box-shadow: var(--shadow);
   margin-bottom: 1.5rem;
   overflow: hidden;
@@ -101,6 +102,7 @@
 }
 
 .section-header h2 {
+  font-family: var(--font-heading, inherit);
   font-size: 1.125rem;
   font-weight: 600;
 }
@@ -259,9 +261,10 @@
 .role-badge {
   font-size: 0.7rem;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .role-badge.admin {
@@ -290,16 +293,18 @@
   border: 1px solid var(--occupied);
   background: var(--bg-card);
   color: var(--occupied);
-  border-radius: var(--radius);
+  border-radius: 6px;
   font-family: inherit;
   font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .btn-danger:hover {
   background: var(--occupied);
   color: white;
+  transform: translateY(-1px);
 }
 
 /* Admin only notice */

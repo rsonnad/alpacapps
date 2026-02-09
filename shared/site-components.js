@@ -218,10 +218,63 @@ function renderHero(options = {}) {
 // =============================================
 
 /**
+ * Ensure Google Fonts are loaded
+ * Injects the <link> if not already present in <head>
+ */
+function loadGoogleFonts() {
+  const fontId = 'aap-google-fonts';
+  if (document.getElementById(fontId)) return;
+
+  // Preconnect for faster font loading
+  const preconnect1 = document.createElement('link');
+  preconnect1.rel = 'preconnect';
+  preconnect1.href = 'https://fonts.googleapis.com';
+  document.head.appendChild(preconnect1);
+
+  const preconnect2 = document.createElement('link');
+  preconnect2.rel = 'preconnect';
+  preconnect2.href = 'https://fonts.gstatic.com';
+  preconnect2.crossOrigin = 'anonymous';
+  document.head.appendChild(preconnect2);
+
+  // Load fonts stylesheet
+  const link = document.createElement('link');
+  link.id = fontId;
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap';
+  document.head.appendChild(link);
+}
+
+/**
+ * Initialize scroll reveal animations using IntersectionObserver
+ * Elements with class .aap-reveal will fade in when scrolled into view
+ */
+function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('aap-reveal--visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -40px 0px',
+  });
+
+  document.querySelectorAll('.aap-reveal').forEach(el => observer.observe(el));
+}
+
+/**
  * Initialize site components
  * Call this after the DOM is ready
  */
 function initSiteComponents() {
+  // Load Google Fonts dynamically
+  loadGoogleFonts();
+
   // Header scroll behavior
   const header = document.getElementById('aap-header');
   if (header && header.classList.contains('aap-header--transparent')) {
@@ -275,6 +328,20 @@ function initSiteComponents() {
       });
     });
   }
+
+  // Initialize scroll reveal animations
+  initScrollReveal();
+
+  // Enable smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 }
 
 // =============================================
@@ -291,6 +358,8 @@ export {
   renderFooter,
   renderHero,
   initSiteComponents,
+  loadGoogleFonts,
+  initScrollReveal,
 };
 
 // Also make available globally for non-module scripts
@@ -305,5 +374,7 @@ if (typeof window !== 'undefined') {
     renderFooter,
     renderHero,
     initSiteComponents,
+    loadGoogleFonts,
+    initScrollReveal,
   };
 }

@@ -5,23 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap">
   <title>Sign In - AlpacAPPs</title>
   <style>
     :root {
-      --bg: #faf9f7;
+      --bg: #faf8f5;
       --bg-card: #ffffff;
-      --text: #2d3142;
-      --text-muted: #7a7d8c;
-      --border: #e8e9ed;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --border: #e5e2dc;
       --accent: #3d8b7a;
       --accent-light: #e5f4f1;
       --success: #2d8659;
       --success-light: #e5f4ed;
       --error: #e07a5f;
       --error-light: #fdf0ec;
-      --radius: 8px;
-      --shadow: 0 1px 3px rgba(45,49,66,0.06), 0 1px 2px rgba(45,49,66,0.08);
-      --shadow-lg: 0 4px 12px rgba(45,49,66,0.08), 0 2px 4px rgba(45,49,66,0.06);
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
     }
 
     * {
@@ -31,10 +34,10 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.6;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -56,8 +59,9 @@
       background: var(--bg-card);
       border-radius: var(--radius);
       box-shadow: var(--shadow-lg);
-      padding: 2.5rem;
+      padding: 2.75rem 2.5rem;
       text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .logo {
@@ -69,9 +73,11 @@
     }
 
     h1 {
+      font-family: 'DM Serif Display', Georgia, serif;
       font-size: 1.75rem;
-      font-weight: 700;
+      font-weight: 400;
       margin-bottom: 0.25rem;
+      letter-spacing: -0.01em;
     }
 
     .subtitle {
@@ -98,7 +104,7 @@
       font-weight: 500;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: color 0.2s ease, border-color 0.2s ease;
     }
 
     .auth-tab:hover {
@@ -125,17 +131,20 @@
 
     .input-group input {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.8rem 1rem;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 8px;
       font-family: inherit;
       font-size: 1rem;
-      transition: border-color 0.15s ease;
+      background: var(--bg);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .input-group input:focus {
       outline: none;
       border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: var(--bg-card);
     }
 
     .btn-primary {
@@ -144,16 +153,19 @@
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: var(--radius);
+      border-radius: 8px;
       font-family: inherit;
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.01em;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .btn-primary:hover {
       background: #2f6d5f;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(61, 139, 122, 0.3);
     }
 
     .btn-primary:disabled {
@@ -201,18 +213,19 @@
       padding: 0.875rem 1.5rem;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 8px;
       font-family: inherit;
       font-size: 1rem;
       font-weight: 500;
       color: var(--text);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
 
     .btn-google:hover {
       border-color: var(--text-muted);
       box-shadow: var(--shadow);
+      transform: translateY(-1px);
     }
 
     .btn-google svg {
