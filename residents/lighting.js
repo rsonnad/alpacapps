@@ -1632,10 +1632,15 @@ function showDeviceColorPopover(triggerBtn) {
 
   // Adjust if overflows right edge
   requestAnimationFrame(() => {
-    if (!popover || !popover.isConnected) return;
-    const popRect = popover.getBoundingClientRect();
-    if (popRect.right > window.innerWidth - 8) {
-      popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
+    if (!popover || !popover.isConnected || !popover.style) return;
+    try {
+      const popRect = popover.getBoundingClientRect();
+      if (popRect.right > window.innerWidth - 8) {
+        popover.style.left = `${window.innerWidth - popRect.width - 8}px`;
+      }
+    } catch (err) {
+      // Popover was removed before RAF callback executed
+      console.debug('Popover positioning skipped - element removed');
     }
   });
 
