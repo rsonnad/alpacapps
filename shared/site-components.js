@@ -24,22 +24,24 @@ const IMAGES = {
   heroAlpacas: 'https://images.squarespace-cdn.com/content/v1/6213d804273001551ffe5b8c/4e23696e-623b-4621-8f3a-c223a521131b/P1020387.jpeg',
 };
 
-// Base path for links (for GitHub Pages deployment)
+// Base path for links (root on alpacaplayhouse.com)
 // Change this if deploying to a different subdirectory
-const BASE_PATH = '/alpacapps';
+const BASE_PATH = '';
 
-// Navigation links - unified across all pages (5 main sections)
+// Navigation links - unified across all pages
 // Logo clicks to Home, so Home is not in the nav
 const NAV_LINKS = [
   { text: 'Visiting', href: `${BASE_PATH}/visiting/` },
   { text: 'Rentals', href: `${BASE_PATH}/spaces/` },
   { text: 'Events', href: `${BASE_PATH}/events/` },
   { text: 'Community', href: `${BASE_PATH}/community/` },
+  { text: 'Photos', href: `${BASE_PATH}/photos/` },
   { text: 'Contact', href: `${BASE_PATH}/contact/` },
 ];
 
 // Mistiq link - only shown on Mistiq pages
 const MISTIQ_LINK = { text: 'Mistiq', href: `${BASE_PATH}/mistiq/` };
+const AUTH_LINK = { text: 'Sign In', href: `${BASE_PATH}/login/` };
 
 // =============================================
 // HEADER COMPONENT
@@ -52,17 +54,19 @@ const MISTIQ_LINK = { text: 'Mistiq', href: `${BASE_PATH}/mistiq/` };
  * @param {boolean} options.light - Use light (white) text/logo
  * @param {string} options.activePage - Current page identifier for nav highlighting
  * @param {boolean} options.showMistiq - Whether to show the Mistiq nav link (only true on Mistiq pages)
+ * @param {string} options.version - Version string for display in header
  */
 function renderHeader(options = {}) {
-  const { transparent = false, light = true, activePage = '', showMistiq = false } = options;
+  const { transparent = false, light = true, activePage = '', showMistiq = false, version = '' } = options;
 
   const headerClass = transparent ? 'aap-header--transparent' : 'aap-header--solid';
   const colorClass = light ? 'aap-header--light' : 'aap-header--dark';
 
   // Build navigation links - include Mistiq only if showMistiq is true
   const links = showMistiq ? [...NAV_LINKS, MISTIQ_LINK] : NAV_LINKS;
+  const linksWithAuth = [...links, AUTH_LINK];
 
-  const navItems = links.map(link => {
+  const navItems = linksWithAuth.map(link => {
     const isActive = link.href.includes(activePage) && activePage !== '';
     const activeClass = isActive ? 'aap-nav__link--active' : '';
     return `<li><a href="${link.href}" class="aap-nav__link ${activeClass}">${link.text}</a></li>`;
@@ -74,6 +78,7 @@ function renderHeader(options = {}) {
         <a href="${BASE_PATH}/" class="aap-header__logo">
           <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
           <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
+          ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
         </a>
 
         <nav class="aap-nav" id="aap-nav">
@@ -102,8 +107,9 @@ function renderHeader(options = {}) {
 function renderMobileNav(activePage = '', showMistiq = false) {
   // Build navigation links - include Mistiq only if showMistiq is true
   const links = showMistiq ? [...NAV_LINKS, MISTIQ_LINK] : NAV_LINKS;
+  const linksWithAuth = [...links, AUTH_LINK];
 
-  const navItems = links.map(link => {
+  const navItems = linksWithAuth.map(link => {
     const isActive = link.href.includes(activePage) && activePage !== '';
     const activeClass = isActive ? 'aap-mobile-nav__link--active' : '';
     return `

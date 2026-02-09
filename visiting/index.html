@@ -16,46 +16,8 @@
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body>
-  <!-- Header -->
-  <header class="aap-header aap-header--transparent aap-header--light" id="aap-header">
-    <div class="aap-header__inner">
-      <a href="/" class="aap-header__logo">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
-              <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
-        <span title="Site version" class="aap-header__version">v260209.63 5:32a</span>
-      </a>
-
-      <nav class="aap-nav" id="aap-nav">
-        <ul class="aap-nav__list">
-          <li><a href="/visiting/" class="aap-nav__link aap-nav__link--active">Visiting</a></li>
-          <li><a href="/spaces/" class="aap-nav__link">Rentals</a></li>
-          <li><a href="/events/" class="aap-nav__link">Events</a></li>
-          <li><a href="/community/" class="aap-nav__link">Community</a></li>
-          <li><a href="/photos/" class="aap-nav__link">Photos</a></li>
-          <li><a href="/contact/" class="aap-nav__link">Contact</a></li>
-        </ul>
-      </nav>
-
-      <button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">
-        <span class="aap-menu-toggle__bar"></span>
-        <span class="aap-menu-toggle__bar"></span>
-        <span class="aap-menu-toggle__bar"></span>
-      </button>
-    </div>
-  </header>
-
-  <!-- Mobile Navigation -->
-  <div class="aap-mobile-nav" id="aap-mobile-nav">
-    <button class="aap-mobile-nav__close" id="aap-mobile-nav-close" aria-label="Close menu">×</button>
-    <ul class="aap-mobile-nav__list">
-      <li class="aap-mobile-nav__item"><a href="/visiting/" class="aap-mobile-nav__link aap-mobile-nav__link--active">Visiting</a></li>
-      <li class="aap-mobile-nav__item"><a href="/spaces/" class="aap-mobile-nav__link">Rentals</a></li>
-      <li class="aap-mobile-nav__item"><a href="/events/" class="aap-mobile-nav__link">Events</a></li>
-      <li class="aap-mobile-nav__item"><a href="/community/" class="aap-mobile-nav__link">Community</a></li>
-      <li class="aap-mobile-nav__item"><a href="/photos/" class="aap-mobile-nav__link">Photos</a></li>
-      <li class="aap-mobile-nav__item"><a href="/contact/" class="aap-mobile-nav__link">Contact</a></li>
-    </ul>
-  </div>
+  <span data-site-version style="display:none;">v260209.62 5:31a</span>
+  <div id="siteHeader"></div>
 
   <!-- Hero Section -->
   <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
@@ -179,44 +141,10 @@
   </footer>
 
   <script type="module" src="../shared/version-info.js"></script>
-  <script>
-    // Header scroll behavior
-    const header = document.getElementById('aap-header');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        header.classList.remove('aap-header--transparent');
-        header.classList.add('aap-header--solid');
-        header.classList.remove('aap-header--light');
-        header.classList.add('aap-header--dark');
-      } else {
-        header.classList.add('aap-header--transparent');
-        header.classList.remove('aap-header--solid');
-        header.classList.add('aap-header--light');
-        header.classList.remove('aap-header--dark');
-      }
-    });
+  <script type="module">
+    import { initPublicPage } from '../shared/public-shell.js';
 
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('aap-menu-toggle');
-    const mobileNav = document.getElementById('aap-mobile-nav');
-    const mobileNavClose = document.getElementById('aap-mobile-nav-close');
-
-    menuToggle.addEventListener('click', () => {
-      mobileNav.classList.add('aap-mobile-nav--open');
-      document.body.style.overflow = 'hidden';
-    });
-
-    mobileNavClose.addEventListener('click', () => {
-      mobileNav.classList.remove('aap-mobile-nav--open');
-      document.body.style.overflow = '';
-    });
-
-    mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileNav.classList.remove('aap-mobile-nav--open');
-        document.body.style.overflow = '';
-      });
-    });
+    initPublicPage({ transparent: true, light: true, activePage: '/visiting/' });
   </script>
 </body>
 </html>
