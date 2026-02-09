@@ -315,6 +315,9 @@ function resolveForPreview(template) {
   const vehicles = ['Casper', 'Delphi', 'Cygnus', 'Sloop', 'Brisa Branca'];
   const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
+  const workers = ['Jackie', 'Justin', 'Donald', 'Rahul'];
+  const workSpaces = ['Outhouse', 'Garage Mahal', 'Sparadise', 'Skyloft', 'Main House', 'Swim Spa'];
+
   return template
     .replaceAll('{resident_name}', rand(residents))
     .replaceAll('{resident_count}', '7')
@@ -325,6 +328,8 @@ function resolveForPreview(template) {
     .replaceAll('{alpaca_name}', rand(alpacas))
     .replaceAll('{dog_name}', 'Teacups')
     .replaceAll('{space_name}', rand(spaces))
+    .replaceAll('{worker_name}', rand(workers))
+    .replaceAll('{work_space}', rand(workSpaces))
     .replaceAll('{time_greeting}', getTimeGreeting());
 }
 
