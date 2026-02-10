@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     section: 'staff',
     onReady: async (state) => {
       setupWebhookUrls();
-      await Promise.all([loadConfig(), loadAssistants(), loadCalls(), loadStats()]);
+      await Promise.all([loadConfig(), loadPaiConfig(), loadAssistants(), loadCalls(), loadStats()]);
       setupEventListeners();
     }
   });
@@ -362,10 +362,55 @@ async function viewCall(id) {
 }
 
 // =============================================
+// PAI CORE PROMPT CONFIG
+// =============================================
+
+async function loadPaiConfig() {
+  const { data, error } = await supabase
+    .from('pai_config')
+    .select('identity, property_info, amenities, chat_addendum')
+    .eq('id', 1)
+    .single();
+
+  if (error || !data) {
+    console.warn('No pai_config found, textareas will be empty');
+    return;
+  }
+
+  document.getElementById('paiIdentity').value = data.identity || '';
+  document.getElementById('paiPropertyInfo').value = data.property_info || '';
+  document.getElementById('paiAmenities').value = data.amenities || '';
+  document.getElementById('paiChatAddendum').value = data.chat_addendum || '';
+}
+
+async function savePaiConfig() {
+  const updates = {
+    identity: document.getElementById('paiIdentity').value.trim(),
+    property_info: document.getElementById('paiPropertyInfo').value.trim(),
+    amenities: document.getElementById('paiAmenities').value.trim(),
+    chat_addendum: document.getElementById('paiChatAddendum').value.trim(),
+  };
+
+  const { error } = await supabase
+    .from('pai_config')
+    .update(updates)
+    .eq('id', 1);
+
+  if (error) {
+    showToast(`Failed to save: ${error.message}`, 'error');
+  } else {
+    showToast('PAI core prompt saved', 'success');
+  }
+}
+
+// =============================================
 // EVENT LISTENERS
 // =============================================
 
 function setupEventListeners() {
+  // PAI Core Prompt
+  document.getElementById('savePaiConfigBtn')?.addEventListener('click', savePaiConfig);
+
   // Assistant CRUD
   document.getElementById('addAssistantBtn')?.addEventListener('click', () => openAssistantModal());
   document.getElementById('closeAssistantModal')?.addEventListener('click', closeAssistantModal);

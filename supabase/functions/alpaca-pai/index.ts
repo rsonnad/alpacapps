@@ -1583,17 +1583,22 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       .limit(1)
       .single();
     if (!fallback) return jsonResponse({ error: "No voice assistant configured" }, 503);
-    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces"))]);
+    const fallbackPaiConfig = await loadPaiConfig(supabase);
+    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces"))], fallbackPaiConfig);
   }
 
-  // Identify caller and build scope
-  const { scope, callerName, callerGreeting, callerType } = await buildVoiceUserScope(supabase, callerPhone);
+  // Identify caller, build scope, and load PAI config in parallel
+  const [callerResult, paiConfig] = await Promise.all([
+    buildVoiceUserScope(supabase, callerPhone),
+    loadPaiConfig(supabase),
+  ]);
+  const { scope, callerName, callerGreeting, callerType } = callerResult;
 
   // Build system prompt: shared base (identity, devices, property info)
   // + voice-specific addendum from DB
   let systemPrompt: string;
   if (scope && scope.userLevel >= 1) {
-    systemPrompt = buildSystemPrompt(scope);
+    systemPrompt = buildSystemPrompt(scope, paiConfig);
   } else {
     // Unknown/low-level caller: build a minimal scope for the shared prompt
     const minimalScope: UserScope = {
@@ -1608,7 +1613,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       teslaVehicles: [],
       cameras: [],
     };
-    systemPrompt = buildSystemPrompt(minimalScope);
+    systemPrompt = buildSystemPrompt(minimalScope, paiConfig);
   }
 
   // Append voice-specific instructions from DB
@@ -1677,7 +1682,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   });
 }
 
-function buildVapiResponse(assistant: any, callerName: string | null, callerGreeting: string | null, callerType: string | null, scope: UserScope | null, testMode: boolean, tools: any[]): Response {
+function buildVapiResponse(assistant: any, callerName: string | null, callerGreeting: string | null, callerType: string | null, scope: UserScope | null, testMode: boolean, tools: any[], paiConfig: PaiConfig): Response {
   let firstMessage = assistant.first_message;
   if (callerName && callerGreeting) {
     firstMessage = `Hey ${callerName.split(" ")[0]}! ${callerGreeting}`;
@@ -1698,7 +1703,7 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
     teslaVehicles: [],
     cameras: [],
   };
-  let systemPrompt = buildSystemPrompt(scope || minimalScope);
+  let systemPrompt = buildSystemPrompt(scope || minimalScope, paiConfig);
   if (assistant.system_prompt?.trim()) {
     systemPrompt += "\n\n" + assistant.system_prompt.trim();
   }
@@ -1831,8 +1836,11 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   console.log(`PAI chat from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
 
-  // 3. Build scope
-  const scope = await buildUserScope(supabase, appUser, userLevel);
+  // 3. Build scope and load PAI config in parallel
+  const [scope, paiConfig] = await Promise.all([
+    buildUserScope(supabase, appUser, userLevel),
+    loadPaiConfig(supabase),
+  ]);
 
   // 3b. Load Govee API key for direct Govee API calls
   let goveeApiKey = "";
@@ -1845,8 +1853,11 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
   }
 
-  // 4. Build system prompt (shared base — includes identity, devices, property info, amenities)
-  const systemPrompt = buildSystemPrompt(scope);
+  // 4. Build system prompt (shared base + optional chat addendum)
+  let systemPrompt = buildSystemPrompt(scope, paiConfig);
+  if (paiConfig.chat_addendum?.trim()) {
+    systemPrompt += "\n\n" + paiConfig.chat_addendum.trim();
+  }
 
   // 5. Build Gemini conversation
   const contents: any[] = [];
