@@ -536,11 +536,14 @@
   }
 }
 
-/* Demo mode: redacted text and banner (only when role is demo) */
+/* Demo mode: fake data shown in bold rainbow to signal it's not real */
 .demo-redacted {
   font-weight: 700;
-  font-family: ui-monospace, monospace;
-  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #e74c3c, #e67e22, #f1c40f, #2ecc71, #3498db, #9b59b6);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .demo-mode-banner {
