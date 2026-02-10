@@ -7,6 +7,7 @@ import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { leaseTemplateService } from '../../shared/lease-template-service.js';
 import { eventTemplateService } from '../../shared/event-template-service.js';
 import { worktradeTemplateService } from '../../shared/worktrade-template-service.js';
+import { emailTemplateService, renderTemplate } from '../../shared/email-template-service.js';
 import { formatDateAustin } from '../../shared/timezone.js';
 
 // =============================================
@@ -557,6 +558,8 @@ function setupEventListeners() {
     document.getElementById('leaseTemplateSection').style.display = type === 'lease' ? 'block' : 'none';
     document.getElementById('eventTemplateSection').style.display = type === 'event' ? 'block' : 'none';
     document.getElementById('worktradeTemplateSection').style.display = type === 'worktrade' ? 'block' : 'none';
+    document.getElementById('emailTemplateSection').style.display = type === 'email' ? 'block' : 'none';
+    if (type === 'email') loadEmailTemplates();
   });
 
   // Lease template buttons
@@ -571,4 +574,283 @@ function setupEventListeners() {
   // Work trade template buttons
   document.getElementById('loadDefaultWorktradeTemplateBtn')?.addEventListener('click', loadDefaultWorktradeTemplate);
   document.getElementById('saveWorktradeTemplateBtn')?.addEventListener('click', saveWorktradeTemplate);
+
+  // Email template buttons
+  document.getElementById('emailBackToListBtn')?.addEventListener('click', emailBackToList);
+  document.getElementById('emailPreviewBtn')?.addEventListener('click', emailPreviewTemplate);
+  document.getElementById('emailSaveBtn')?.addEventListener('click', emailSaveTemplate);
+  document.getElementById('emailPreviewCloseBtn')?.addEventListener('click', () => {
+    document.getElementById('emailPreviewModal').style.display = 'none';
+  });
+}
+
+// =============================================
+// EMAIL TEMPLATE FUNCTIONS
+// =============================================
+
+let emailTemplateList = [];
+let currentEmailTemplateKey = null;
+let emailCategoryFilterValue = null;
+
+const SENDER_LABELS = {
+  team: 'Team',
+  auto: 'Automaton',
+  noreply: 'No-Reply',
+  payments: 'Payments',
+};
+
+async function loadEmailTemplates() {
+  try {
+    emailTemplateList = await emailTemplateService.getAllTemplates(emailCategoryFilterValue);
+    renderEmailCategoryFilter();
+    renderEmailTemplateList();
+  } catch (e) {
+    console.error('Error loading email templates:', e);
+    showToast('Error loading email templates', 'error');
+  }
+}
+
+function renderEmailCategoryFilter() {
+  const container = document.getElementById('emailCategoryFilter');
+  if (!container) return;
+
+  const categories = emailTemplateService.getCategories();
+  const allActive = !emailCategoryFilterValue ? 'btn-primary' : '';
+
+  container.innerHTML = `
+    <button class="btn-small ${allActive}" data-cat="">All</button>
+    ${categories.map(c => {
+      const active = emailCategoryFilterValue === c.key ? 'btn-primary' : '';
+      return `<button class="btn-small ${active}" data-cat="${c.key}">${c.label}</button>`;
+    }).join('')}
+  `;
+
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      emailCategoryFilterValue = btn.dataset.cat || null;
+      loadEmailTemplates();
+    });
+  });
+}
+
+function renderEmailTemplateList() {
+  const tbody = document.getElementById('emailTemplateListBody');
+  if (!tbody) return;
+
+  if (emailTemplateList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates found</td></tr>';
+    return;
+  }
+
+  const categories = emailTemplateService.getCategories();
+  const catMap = Object.fromEntries(categories.map(c => [c.key, c]));
+
+  tbody.innerHTML = emailTemplateList.map(t => {
+    const cat = catMap[t.category] || { label: t.category, color: '#666' };
+    const sender = SENDER_LABELS[t.sender_type] || t.sender_type;
+    const keyLabel = t.template_key.replace(/_/g, ' ');
+    return `
+      <tr>
+        <td>
+          <strong style="text-transform:capitalize;">${keyLabel}</strong>
+          ${t.description ? `<br><span class="text-muted" style="font-size:0.85em;">${t.description}</span>` : ''}
+        </td>
+        <td><span class="status-badge" style="background:${cat.color};color:#fff;font-size:0.75em;">${cat.label}</span></td>
+        <td style="font-size:0.85em;">${sender}</td>
+        <td>v${t.version}</td>
+        <td>
+          <button class="btn-small" data-action="edit-email-template" data-key="${t.template_key}">Edit</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('[data-action="edit-email-template"]').forEach(btn => {
+    btn.addEventListener('click', () => editEmailTemplate(btn.dataset.key));
+  });
+}
+
+async function editEmailTemplate(templateKey) {
+  try {
+    const template = await emailTemplateService.getActiveTemplate(templateKey);
+    if (!template) {
+      showToast('Template not found', 'error');
+      return;
+    }
+
+    currentEmailTemplateKey = templateKey;
+
+    // Populate editor
+    const keyLabel = templateKey.replace(/_/g, ' ');
+    document.getElementById('emailEditorTitle').textContent = `Edit: ${keyLabel}`;
+    document.getElementById('emailDescription').value = template.description || '';
+    document.getElementById('emailSubject').value = template.subject_template || '';
+    document.getElementById('emailHtmlBody').value = template.html_template || '';
+    document.getElementById('emailTextBody').value = template.text_template || '';
+
+    // Populate placeholder reference
+    const placeholderList = document.getElementById('emailPlaceholderList');
+    const placeholders = template.placeholders || [];
+    if (placeholders.length > 0) {
+      placeholderList.innerHTML = placeholders.map(p => `
+        <div class="placeholder-item">
+          <code>{{${p.key}}}</code>
+          <span class="placeholder-desc">${p.description || ''}${p.required ? '' : ' <em>(optional)</em>'}</span>
+        </div>
+      `).join('');
+    } else {
+      placeholderList.innerHTML = '<p class="text-muted">No placeholders defined</p>';
+    }
+
+    // Load version history
+    await loadEmailVersionHistory(templateKey);
+
+    // Show editor, hide list
+    document.getElementById('emailListView').style.display = 'none';
+    document.getElementById('emailEditorView').style.display = 'block';
+    document.getElementById('emailTemplateValidation').style.display = 'none';
+  } catch (e) {
+    console.error('Error loading email template:', e);
+    showToast('Error loading template', 'error');
+  }
+}
+
+async function loadEmailVersionHistory(templateKey) {
+  try {
+    const versions = await emailTemplateService.getTemplateVersions(templateKey);
+    const tbody = document.getElementById('emailVersionHistoryBody');
+    if (!tbody) return;
+
+    if (versions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No versions yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = versions.map(v => `
+      <tr>
+        <td>v${v.version}</td>
+        <td>${formatDateAustin(v.updated_at || v.created_at, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</td>
+        <td>${v.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
+        <td>
+          <button class="btn-small" data-action="load-email-version" data-id="${v.id}">Load</button>
+          ${!v.is_active ? `<button class="btn-small" data-action="set-active-email-version" data-id="${v.id}" data-key="${v.template_key}">Set Active</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-action="load-email-version"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const { data } = await supabase.from('email_templates').select('*').eq('id', btn.dataset.id).single();
+        if (data) {
+          document.getElementById('emailSubject').value = data.subject_template || '';
+          document.getElementById('emailHtmlBody').value = data.html_template || '';
+          document.getElementById('emailTextBody').value = data.text_template || '';
+          document.getElementById('emailDescription').value = data.description || '';
+          showToast('Version loaded', 'success');
+        }
+      });
+    });
+
+    tbody.querySelectorAll('[data-action="set-active-email-version"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await emailTemplateService.setActiveVersion(btn.dataset.id, btn.dataset.key);
+          await loadEmailVersionHistory(btn.dataset.key);
+          showToast('Version set as active', 'success');
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Error loading email version history:', e);
+  }
+}
+
+function emailBackToList() {
+  currentEmailTemplateKey = null;
+  document.getElementById('emailEditorView').style.display = 'none';
+  document.getElementById('emailListView').style.display = 'block';
+  loadEmailTemplates();
+}
+
+async function emailSaveTemplate() {
+  if (!currentEmailTemplateKey) return;
+
+  const subject = document.getElementById('emailSubject').value.trim();
+  const html = document.getElementById('emailHtmlBody').value;
+  const text = document.getElementById('emailTextBody').value;
+  const description = document.getElementById('emailDescription').value.trim();
+
+  if (!subject) {
+    showToast('Subject line cannot be empty', 'warning');
+    return;
+  }
+  if (!html.trim()) {
+    showToast('HTML body cannot be empty', 'warning');
+    return;
+  }
+
+  // Get current template for category/sender/placeholders
+  const current = await emailTemplateService.getActiveTemplate(currentEmailTemplateKey);
+  if (!current) {
+    showToast('Could not find current template', 'error');
+    return;
+  }
+
+  // Validate
+  const allContent = subject + ' ' + html + ' ' + text;
+  const validation = emailTemplateService.validateTemplate(allContent, current.placeholders);
+  const validationDiv = document.getElementById('emailTemplateValidation');
+
+  if (validation.warnings.length > 0) {
+    validationDiv.innerHTML = `
+      <div class="validation-warning">
+        <strong>Warnings:</strong>
+        <ul>${validation.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+  } else {
+    validationDiv.style.display = 'none';
+  }
+
+  try {
+    await emailTemplateService.saveTemplate(currentEmailTemplateKey, {
+      category: current.category,
+      description: description || current.description,
+      sender_type: current.sender_type,
+      subject_template: subject,
+      html_template: html,
+      text_template: text,
+      placeholders: current.placeholders,
+    }, true);
+
+    await loadEmailVersionHistory(currentEmailTemplateKey);
+    showToast('Email template saved!', 'success');
+  } catch (e) {
+    showToast('Error saving: ' + e.message, 'error');
+  }
+}
+
+function emailPreviewTemplate() {
+  const subject = document.getElementById('emailSubject').value;
+  const html = document.getElementById('emailHtmlBody').value;
+
+  // Get current template for sample data
+  const current = emailTemplateList.find(t => t.template_key === currentEmailTemplateKey);
+  const placeholders = current?.placeholders || [];
+  const sampleData = {};
+  for (const p of placeholders) {
+    sampleData[p.key] = p.sample_value || `[${p.key}]`;
+  }
+
+  const renderedSubject = renderTemplate(subject, sampleData);
+  const renderedHtml = renderTemplate(html, sampleData);
+
+  document.getElementById('emailPreviewSubject').textContent = renderedSubject;
+  const iframe = document.getElementById('emailPreviewFrame');
+  iframe.srcdoc = renderedHtml;
+
+  document.getElementById('emailPreviewModal').style.display = 'flex';
 }

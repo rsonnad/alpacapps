@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { renderTemplate, SENDER_MAP } from "../_shared/template-engine.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
+
+// In-memory template cache (survives within a single edge function instance)
+const templateCache = new Map<string, { template: any; fetchedAt: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Email template types
 type EmailType =
@@ -1224,6 +1229,64 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Try to load a template from the DB (with cache), fall back to hardcoded.
+ * Returns { subject, html, text, sender_type } with placeholders already rendered.
+ */
+async function getRenderedTemplate(
+  type: EmailType,
+  data: Record<string, any>
+): Promise<{ subject: string; html: string; text: string; senderType: string }> {
+  // 1. Try DB template (cached)
+  const cached = templateCache.get(type);
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+    const t = cached.template;
+    return {
+      subject: renderTemplate(t.subject_template, data),
+      html: renderTemplate(t.html_template, data),
+      text: renderTemplate(t.text_template, data),
+      senderType: t.sender_type || "team",
+    };
+  }
+
+  // 2. Fetch from DB
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: dbTemplate, error } = await supabase
+      .from("email_templates")
+      .select("subject_template, html_template, text_template, sender_type")
+      .eq("template_key", type)
+      .eq("is_active", true)
+      .order("version", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (dbTemplate && !error) {
+      templateCache.set(type, { template: dbTemplate, fetchedAt: Date.now() });
+      return {
+        subject: renderTemplate(dbTemplate.subject_template, data),
+        html: renderTemplate(dbTemplate.html_template, data),
+        text: renderTemplate(dbTemplate.text_template, data),
+        senderType: dbTemplate.sender_type || "team",
+      };
+    }
+  } catch (e) {
+    console.error(`DB template fetch failed for ${type}, using hardcoded fallback:`, e);
+  }
+
+  // 3. Fall back to hardcoded template (evaluated with JS template literals)
+  const fallback = getTemplate(type, data);
+  return {
+    subject: fallback.subject,
+    html: fallback.html,
+    text: fallback.text,
+    senderType: "team", // fallback doesn't know sender_type, will be overridden below
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -1236,28 +1299,8 @@ serve(async (req) => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    // Sender addresses by category:
-    // auto@ = automated system emails (bug reports, errors, identity verification)
-    // team@ = human-facing team emails (rental, events, payments, invitations)
-    const AUTO_FROM = "Alpaca Automaton <auto@alpacaplayhouse.com>";
-    const TEAM_FROM = "Alpaca Team <team@alpacaplayhouse.com>";
-    const AUTO_REPLY_TO = "auto@alpacaplayhouse.com";
-    const TEAM_REPLY_TO = "team@alpacaplayhouse.com";
-
     const body: EmailRequest = await req.json();
     const { type, to, data, subject: customSubject, from, reply_to } = body;
-
-    // Map email types to their sender category
-    const AUTO_TYPES: EmailType[] = [
-      "bug_report_received", "bug_report_fixed", "bug_report_failed", "bug_report_verified",
-      "dl_upload_link", "dl_verified", "dl_mismatch",
-      "faq_unanswered",
-      "feature_review",
-    ];
-
-    const isAutoType = AUTO_TYPES.includes(type);
-    const DEFAULT_FROM = isAutoType ? AUTO_FROM : TEAM_FROM;
-    const DEFAULT_REPLY_TO = isAutoType ? AUTO_REPLY_TO : TEAM_REPLY_TO;
 
     if (!type || !to || !data) {
       return new Response(
@@ -1266,8 +1309,11 @@ serve(async (req) => {
       );
     }
 
-    // Get template
-    const template = getTemplate(type, data);
+    // Get rendered template (DB first, then hardcoded fallback)
+    const rendered = await getRenderedTemplate(type, data);
+
+    // Determine sender from DB template's sender_type, with fallback
+    const sender = SENDER_MAP[rendered.senderType] || SENDER_MAP.team;
 
     // Send email via Resend
     const response = await fetch(RESEND_API_URL, {
@@ -1277,12 +1323,12 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: from || DEFAULT_FROM,
+        from: from || sender.from,
         to: Array.isArray(to) ? to : [to],
-        reply_to: reply_to || DEFAULT_REPLY_TO,
-        subject: customSubject || template.subject,
-        html: template.html,
-        text: template.text,
+        reply_to: reply_to || sender.reply_to,
+        subject: customSubject || rendered.subject,
+        html: rendered.html,
+        text: rendered.text,
       }),
     });
 
