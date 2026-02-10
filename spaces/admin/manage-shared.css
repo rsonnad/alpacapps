@@ -98,13 +98,27 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .section-header h2 {
   font-family: var(--font-heading, inherit);
   font-size: 1.125rem;
   font-weight: 600;
+}
+
+#spacesCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted, #f3f4f6);
+  border-radius: 999px;
 }
 
 .filter-checkboxes {

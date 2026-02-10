@@ -432,9 +432,23 @@ function handleSort(column) {
   renderSpacesView();
 }
 
+function getSpaceCategoryLabel() {
+  const d = document.getElementById('showDwellings')?.checked ?? true;
+  const e = document.getElementById('showEventSpaces')?.checked ?? true;
+  const o = document.getElementById('showOther')?.checked ?? true;
+  if (d && !e && !o) return 'Dwellings';
+  if (!d && e && !o) return 'Event Spaces';
+  if (!d && !e && o) return 'Other Spaces';
+  if (d && e && !o) return 'Dwellings & Events';
+  if (d && !e && o) return 'Dwellings & Other';
+  if (!d && e && o) return 'Events & Other';
+  return 'All Spaces';
+}
+
 function renderSpacesView() {
   const filtered = getFilteredSpaces();
-  document.getElementById('spacesCount').textContent = `${filtered.length} spaces`;
+  document.getElementById('spacesHeading').textContent = getSpaceCategoryLabel();
+  document.getElementById('spacesCount').textContent = filtered.length;
   renderCards(filtered);
   renderTable(filtered);
 }
