@@ -863,7 +863,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.57 6:20a</span>
+<span data-site-version style="display:none;">v260210.58 6:23a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1088,6 +1088,15 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
         </span>
         <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
       </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="homeserver" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Home Server</span>
+          <span class="calc-svc__desc">Local Mac for smart home, cameras, media</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
+      </label>
     </div>
 
     <h3>How much will you build?</h3>
@@ -1102,7 +1111,7 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       <label class="calc-tier" data-tier="complicated">
         <input type="radio" name="tier" value="complicated" onchange="recalcCost()">
         <span class="calc-tier__label">Complicated</span>
-        <span class="calc-tier__desc">Full CRUD, user roles, notifications, payments. Max ($100) for the first month of building, then Pro ($20/mo).</span>
+        <span class="calc-tier__desc">User accounts, dashboards, notifications, payments. Max ($100) for the first month of building, then Pro ($20/mo).</span>
       </label>
       <label class="calc-tier" data-tier="hyper">
         <input type="radio" name="tier" value="hyper" onchange="recalcCost()">
@@ -1870,11 +1879,12 @@ function recalcCost() {
     'telnyx':      { basic: 0, complicated: 60, hyper: 180 },
     'square':      { basic: 0, complicated: 0, hyper: 0 },
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
-    'gemini':      { basic: 0, complicated: 0, hyper: 0 },
+    'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'discord':     { basic: 0, complicated: 48, hyper: 48 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
-    'android':     { basic: 25, complicated: 25, hyper: 25 }
+    'android':     { basic: 25, complicated: 25, hyper: 25 },
+    'homeserver':  { basic: 150, complicated: 150, hyper: 150 }
   };
 
   var svcLabels = {
@@ -1890,16 +1900,19 @@ function recalcCost() {
     'discord':     'Discord Bot + server',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
-    'android':     'Android App (Google Play)'
+    'android':     'Android App (Google Play)',
+    'homeserver':  'Home Server (used Mac)'
   };
 
   var svcNotes = {
     'claude':   { complicated: 'Max $100 first month, then Pro $20/mo \u00d7 11', hyper: 'Max $100/mo or Max+ $200/mo year-round' },
     'supabase': { hyper: 'May need Pro ($25/mo) for storage/bandwidth' },
+    'gemini':   { complicated: '~$10/mo for AI chat, matching, image gen', hyper: '~$50/mo for heavy AI usage' },
     'telnyx':   { complicated: '~$5/mo: phone number + ~1,000 SMS', hyper: '~$15/mo: higher volume SMS' },
     'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
-    'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' }
+    'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
+    'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' }
   };
 
   // Gather selected services. Core always included.
