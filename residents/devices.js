@@ -37,7 +37,11 @@ function renderDeviceCards(state) {
   const grid = document.getElementById('devicesGrid');
   if (!grid) return;
 
-  const allowed = DEVICE_CATEGORIES.filter(cat => state.hasPermission?.(cat.permission));
+  const role = state.appUser?.role;
+  const hasAllDeviceAccess = ['admin', 'staff', 'oracle'].includes(role);
+  const allowed = DEVICE_CATEGORIES.filter(cat =>
+    hasAllDeviceAccess || state.hasPermission?.(cat.permission)
+  );
   if (allowed.length === 0) {
     grid.innerHTML = '<p class="text-muted" style="padding:1rem;">No device categories available for your account.</p>';
     return;
