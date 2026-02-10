@@ -2,6 +2,7 @@
 import { supabase, SUPABASE_URL } from '../shared/supabase.js';
 import { formatDateAustin, getAustinToday, parseAustinDate, isTodayOrAfterAustin } from '../shared/timezone.js';
 import { initPublicHeaderAuth } from '../shared/site-components.js';
+import { initAuth, requireAuth } from '../shared/auth.js';
 
 // App state
 let spaces = [];
@@ -51,6 +52,11 @@ const spaceDetailModal = document.getElementById('spaceDetailModal');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+  // Require login — redirect to /login/ if not authenticated
+  await initAuth();
+  if (!requireAuth('/login/')) return;
+  document.body.classList.add('authed');
+
   // Public header: show profile when signed in, Sign In link when not
   initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
 

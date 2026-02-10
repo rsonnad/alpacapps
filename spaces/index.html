@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>Available Rental and Event Spaces — Austin Alpaca Playhouse</title>
   <link rel="stylesheet" href="styles.css?v=5">
+  <style>/* Hide page content until auth completes to prevent flash */
+  header, .filters, main { display: none !important; }
+  body.authed header, body.authed .filters { display: flex !important; }
+  body.authed main { display: block !important; }</style>
 </head>
 <body>
   <!-- Site-wide Navigation -->
@@ -16,7 +20,7 @@
     <a href="/" class="site-nav__logo">
       <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span title="Site version" class="site-nav__version">v260210.12 5:32p</span>
+      <span title="Site version" class="site-nav__version">v260210.14 5:47p</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
