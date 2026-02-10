@@ -1013,7 +1013,7 @@ async function showPermissionsModal(userId) {
 
   let html = '';
   for (const section of PERM_SUPER_SECTIONS) {
-    html += `<div class="perm-group-header" style="background:#f5f5f5;color:#888;border-top:2px solid #ddd;font-size:0.65rem;padding:0.3rem 0.75rem;margin-top:0;">${section.label}</div>`;
+    html += `<div class="perm-super-section">${section.label}</div>`;
     for (const gid of section.groupIds) {
       const group = PERM_GROUPS.find(g => g.id === gid);
       if (!group) continue;
