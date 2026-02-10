@@ -834,7 +834,7 @@ function renderUsers() {
                 <span class="${isDemoUser() ? 'demo-redacted' : ''}">${displayName}</span>
                 ${isCurrentUser ? '<span class="you-tag">You</span>' : ''}
               </td>
-              <td>${u.email}</td>
+              <td>${u.email}${u.contact_email && u.contact_email !== u.email ? `<br><span style="font-size:0.75rem;color:var(--text-muted)">contact: ${u.contact_email}</span>` : ''}</td>
               <td>
                 <select
                   class="role-select"

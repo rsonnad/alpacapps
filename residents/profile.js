@@ -37,7 +37,7 @@ async function loadProfile() {
   const [profileRes, ownedRes, driverRes] = await Promise.all([
     supabase
       .from('app_users')
-      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, dietary_preferences, allergies, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
+      .select('id, display_name, first_name, last_name, email, contact_email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, dietary_preferences, allergies, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
       .eq('id', currentUser.id)
       .single(),
     supabase
@@ -135,6 +135,8 @@ function renderProfile() {
   document.getElementById('fieldFirstName').value = d.first_name || '';
   document.getElementById('fieldLastName').value = d.last_name || '';
   document.getElementById('fieldDisplayName').value = d.display_name || '';
+  document.getElementById('fieldContactEmail').value = d.contact_email || '';
+  document.getElementById('fieldContactEmail').placeholder = d.email || '';
   document.getElementById('fieldGender').value = d.gender || '';
   document.getElementById('fieldBio').value = d.bio || '';
   document.getElementById('fieldNationality').value = d.nationality || '';
@@ -350,10 +352,13 @@ async function saveProfile() {
     const firstName = document.getElementById('fieldFirstName').value.trim() || null;
     const lastName = document.getElementById('fieldLastName').value.trim() || null;
 
+    const contactEmail = document.getElementById('fieldContactEmail').value.trim() || null;
+
     const updates = {
       first_name: firstName,
       last_name: lastName,
       display_name: document.getElementById('fieldDisplayName').value.trim() || null,
+      contact_email: contactEmail,
       gender: document.getElementById('fieldGender').value || null,
       bio: document.getElementById('fieldBio').value.trim() || null,
       nationality: document.getElementById('fieldNationality').value.trim() || null,
@@ -378,6 +383,14 @@ async function saveProfile() {
 
     // Update local state
     Object.assign(profileData, updates);
+
+    // Sync contact email to linked person record
+    if (profileData.person_id && contactEmail) {
+      await supabase
+        .from('people')
+        .update({ email: contactEmail })
+        .eq('id', profileData.person_id);
+    }
 
     // Update header name
     const headerName = getDisplayName(profileData);
@@ -621,6 +634,7 @@ function getFormSnapshot() {
     first_name: document.getElementById('fieldFirstName').value.trim(),
     last_name: document.getElementById('fieldLastName').value.trim(),
     display_name: document.getElementById('fieldDisplayName').value.trim(),
+    contact_email: document.getElementById('fieldContactEmail').value.trim(),
     gender: document.getElementById('fieldGender').value,
     bio: document.getElementById('fieldBio').value.trim(),
     nationality: document.getElementById('fieldNationality').value.trim(),
@@ -695,7 +709,7 @@ function bindEvents() {
   document.getElementById('fieldLocationBase').addEventListener('input', updateLocationFlag);
 
   // Dirty tracking on all form fields
-  const textFields = ['fieldFirstName', 'fieldLastName', 'fieldDisplayName', 'fieldBio', 'fieldNationality',
+  const textFields = ['fieldFirstName', 'fieldLastName', 'fieldDisplayName', 'fieldContactEmail', 'fieldBio', 'fieldNationality',
     'fieldLocationBase', 'fieldPhone', 'fieldPhone2', 'fieldWhatsApp', 'fieldInstagram'];
   textFields.forEach(id => {
     document.getElementById(id).addEventListener('input', updateSaveButton);

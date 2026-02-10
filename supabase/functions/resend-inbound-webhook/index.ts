@@ -230,6 +230,7 @@ interface PaiClassificationResult {
   type: PaiEmailClassification;
   confidence: number;
   summary: string;
+  is_personal: boolean;
 }
 
 /**
@@ -244,7 +245,7 @@ async function classifyPaiEmail(
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
   if (!geminiApiKey) {
     console.warn("GEMINI_API_KEY not set, defaulting to 'other'");
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "No Gemini key" };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "No Gemini key", is_personal: false };
   }
 
   const prompt = `You are an email classifier for PAI (Property AI Assistant) at Alpaca Playhouse, a residential property.
@@ -256,11 +257,13 @@ Classify this email into ONE of these categories:
 - "command" — A real person requesting a smart home action (lights, music, thermostat, locks, etc.)
 - "other" — Legitimate but unrelated email that doesn't fit the above categories.
 
+Also determine if this is a PERSONAL question (about the sender's own situation — their lease, their access code, their payment, their room, their account) vs a GENERAL property question (about amenities, policies, rules, features, cooking, parking, pets, etc. that would be useful in an FAQ).
+
 Email subject: ${subject}
 Email body (first 1000 chars): ${bodyText.substring(0, 1000)}
 Has attachments: ${hasAttachments}
 
-Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
+Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary", "is_personal": true|false}`;
 
   try {
     const res = await fetch(
@@ -277,7 +280,7 @@ Respond with ONLY a JSON object: {"type": "spam|question|document|command|other"
 
     if (!res.ok) {
       console.error(`Gemini classification failed: ${res.status}`);
-      return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Gemini API error" };
+      return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Gemini API error", is_personal: false };
     }
 
     const result = await res.json();
@@ -297,13 +300,14 @@ Respond with ONLY a JSON object: {"type": "spam|question|document|command|other"
         type: ["question", "document", "command", "spam", "other"].includes(parsed.type) ? parsed.type : "other",
         confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
         summary: parsed.summary || "",
+        is_personal: parsed.is_personal === true,
       };
     }
 
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Could not parse" };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Could not parse", is_personal: false };
   } catch (err) {
     console.error("Gemini classification error:", err.message);
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message, is_personal: false };
   }
 }
 
