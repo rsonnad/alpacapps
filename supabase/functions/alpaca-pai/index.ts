@@ -414,6 +414,12 @@ SPACES:
 - Use the search_spaces tool to answer questions about availability, pricing, amenities, or room details — do NOT guess.
 - Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
 
+  // Document library
+  parts.push(`\nDOCUMENT LIBRARY:
+The property has a library of instruction manuals and guides for equipment on-site.
+Use the lookup_document tool when someone asks about programming, operating, maintaining, or troubleshooting property equipment (locks, swim spa, appliances, etc.).
+Do NOT guess at instructions — always look them up.`);
+
   // Feature building (staff+ only)
   if (scope.userLevel >= 2) {
     parts.push(`\nFEATURE BUILDING (staff+ only):
@@ -719,6 +725,21 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["url", "message"],
+    },
+  },
+  {
+    name: "lookup_document",
+    description:
+      "Look up an instruction manual or document from the property's document library. Use this when someone asks about how to program, operate, maintain, or troubleshoot equipment, appliances, locks, or other property items. Returns the document content if available as text, or a link to the PDF.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query describing what the user needs help with (e.g., 'door lock programming', 'swim spa maintenance', 'how to change lock code')",
+        },
+      },
+      required: ["query"],
     },
   },
 ];
@@ -1287,6 +1308,50 @@ async function executeToolCall(
         return `OK: Link sent via text message to ${scope.callerPhone}`;
       }
 
+      case "lookup_document": {
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const searchQuery = (args.query || "").toLowerCase();
+
+        // Search document_index by keywords and title/description
+        const { data: docs } = await supabaseAdmin
+          .from("document_index")
+          .select("slug, title, description, keywords, storage_bucket, storage_path, content_text")
+          .eq("is_active", true);
+
+        if (!docs?.length) return "No documents found in the library.";
+
+        // Score each document by keyword match
+        const scored = docs.map((doc: any) => {
+          let score = 0;
+          const queryWords = searchQuery.split(/\s+/);
+          for (const word of queryWords) {
+            if (doc.title.toLowerCase().includes(word)) score += 3;
+            if (doc.description.toLowerCase().includes(word)) score += 2;
+            if ((doc.keywords || []).some((k: string) => k.toLowerCase().includes(word))) score += 2;
+          }
+          return { ...doc, score };
+        });
+
+        const matches = scored.filter((d: any) => d.score > 0).sort((a: any, b: any) => b.score - a.score);
+
+        if (!matches.length) {
+          // No keyword match — list what's available
+          const available = docs.map((d: any) => `- ${d.title}: ${d.description}`).join("\n");
+          return `No matching documents found for "${args.query}". Available documents:\n${available}`;
+        }
+
+        const best = matches[0];
+        const pdfUrl = `${supabaseUrl}/storage/v1/object/public/${best.storage_bucket}/${best.storage_path}`;
+
+        if (best.content_text) {
+          // Return full text content for short documents
+          return `Document: ${best.title}\nPDF: ${pdfUrl}\n\n${best.content_text}`;
+        } else {
+          // No extracted text — return description and PDF link
+          return `Document: ${best.title}\n${best.description}\n\nFull PDF available at: ${pdfUrl}\n\nThis is a large document (the full text isn't stored). You can share the PDF link with the user, or describe what the document covers based on the description above.`;
+        }
+      }
+
       case "build_feature": {
         // Permission check: staff+ only
         if (scope.userLevel < 2) {
@@ -1541,6 +1606,7 @@ function buildVapiToolsList(scope: UserScope): any[] {
   if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(findTool("control_vehicle")));
   tools.push(vapiToolWrapper(findTool("get_device_status")));
   tools.push(vapiToolWrapper(findTool("search_spaces")));
+  tools.push(vapiToolWrapper(findTool("lookup_document")));
   // Voice callers can have links texted to them
   if (scope.callerPhone) tools.push(vapiToolWrapper(findTool("send_link")));
   // Staff+ can build features via voice too
@@ -1584,7 +1650,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       .single();
     if (!fallback) return jsonResponse({ error: "No voice assistant configured" }, 503);
     const fallbackPaiConfig = await loadPaiConfig(supabase);
-    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces"))], fallbackPaiConfig);
+    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces")), vapiToolWrapper(findTool("lookup_document"))], fallbackPaiConfig);
   }
 
   // Identify caller, build scope, and load PAI config in parallel
@@ -1642,7 +1708,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   }
 
   // Build tools based on caller's scope
-  const vapiTools = scope ? buildVapiToolsList(scope) : [vapiToolWrapper(findTool("search_spaces"))];
+  const vapiTools = scope ? buildVapiToolsList(scope) : [vapiToolWrapper(findTool("search_spaces")), vapiToolWrapper(findTool("lookup_document"))];
 
   // Personalize greeting
   let firstMessage = assistant.first_message;
