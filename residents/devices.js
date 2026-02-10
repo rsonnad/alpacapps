@@ -115,14 +115,16 @@ async function fetchSonos() {
         const state = group.coordinatorState || {};
         const track = state.currentTrack || {};
         const playback = state.playbackState || 'STOPPED';
+        const isActive = playback === 'PLAYING' || playback === 'PAUSED_PLAYBACK';
         for (const member of group.members || []) {
           zones.push({
             room_name: member.roomName,
-            playbackState: member.isCoordinator ? playback : playback,
+            playbackState: playback,
             volume: member.volume,
             mute: member.mute,
-            trackTitle: track.title || '',
-            trackArtist: track.artist || '',
+            // Only show track info when the group is actually playing or paused
+            trackTitle: isActive ? (track.title || '') : '',
+            trackArtist: isActive ? (track.artist || '') : '',
             isCoordinator: member.isCoordinator,
             coordinatorName: group.coordinatorName,
           });
