@@ -250,7 +250,7 @@
           <div class="settings-card-header">
             <div>
               <h3>Shared Prompt Sections</h3>
-              <p>These sections are shared by both PAI chat and PAI voice. Edits apply to both channels immediately.</p>
+              <p>These sections are shared across all PAI channels (chat, voice, email). Edits apply immediately.</p>
             </div>
             <button class="btn-small btn-primary" id="savePaiConfigBtn">Save All</button>
           </div>
@@ -270,11 +270,18 @@
               <textarea id="paiAmenities" rows="6" placeholder="AMENITIES & SMART HOME:..."></textarea>
               <p class="form-hint">Property amenities and smart home features PAI can reference.</p>
             </div>
-            <div class="form-group">
-              <label for="paiChatAddendum">Chat-Only Addendum</label>
+            <h4 style="margin: 1.5rem 0 0.75rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Channel-Specific Addendums</h4>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="paiChatAddendum">Chat Widget Addendum</label>
               <textarea id="paiChatAddendum" rows="3" placeholder="Optional: extra instructions for chat only..."></textarea>
-              <p class="form-hint">Appended only when PAI responds via the chat widget (not voice). Leave empty if not needed.</p>
+              <p class="form-hint">Appended only when PAI responds via the chat widget. Leave empty if not needed.</p>
             </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="paiEmailAddendum">Email Addendum</label>
+              <textarea id="paiEmailAddendum" rows="3" placeholder="Optional: extra instructions for email replies..."></textarea>
+              <p class="form-hint">Appended when PAI replies to emails at pai@alpacaplayhouse.com. Use for email-specific tone or formatting guidance.</p>
+            </div>
+            <p class="form-hint" style="margin-top: 0.5rem; font-style: italic;">Voice-specific instructions are set per assistant in the Voice Assistants section below.</p>
           </div>
         </div>
       </div>

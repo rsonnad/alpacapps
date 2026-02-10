@@ -368,7 +368,7 @@ async function viewCall(id) {
 async function loadPaiConfig() {
   const { data, error } = await supabase
     .from('pai_config')
-    .select('identity, property_info, amenities, chat_addendum')
+    .select('identity, property_info, amenities, chat_addendum, email_addendum')
     .eq('id', 1)
     .single();
 
@@ -381,6 +381,7 @@ async function loadPaiConfig() {
   document.getElementById('paiPropertyInfo').value = data.property_info || '';
   document.getElementById('paiAmenities').value = data.amenities || '';
   document.getElementById('paiChatAddendum').value = data.chat_addendum || '';
+  document.getElementById('paiEmailAddendum').value = data.email_addendum || '';
 }
 
 async function savePaiConfig() {
@@ -389,6 +390,7 @@ async function savePaiConfig() {
     property_info: document.getElementById('paiPropertyInfo').value.trim(),
     amenities: document.getElementById('paiAmenities').value.trim(),
     chat_addendum: document.getElementById('paiChatAddendum').value.trim(),
+    email_addendum: document.getElementById('paiEmailAddendum').value.trim(),
   };
 
   const { error } = await supabase

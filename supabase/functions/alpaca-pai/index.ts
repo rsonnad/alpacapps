@@ -272,6 +272,7 @@ interface PaiConfig {
   property_info: string;
   amenities: string;
   chat_addendum: string;
+  email_addendum: string;
 }
 
 const DEFAULT_PAI_CONFIG: PaiConfig = {
@@ -300,13 +301,14 @@ You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean
 - The Best Little Outhouse in Texas — Japanese toilets, amazing tile work, shower and changing room
 - Multiple indoor and outdoor living spaces`,
   chat_addendum: "",
+  email_addendum: "",
 };
 
 async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
   try {
     const { data } = await supabase
       .from("pai_config")
-      .select("identity, property_info, amenities, chat_addendum")
+      .select("identity, property_info, amenities, chat_addendum, email_addendum")
       .eq("id", 1)
       .single();
     if (data) {
@@ -315,6 +317,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
         property_info: data.property_info || DEFAULT_PAI_CONFIG.property_info,
         amenities: data.amenities || DEFAULT_PAI_CONFIG.amenities,
         chat_addendum: data.chat_addendum || "",
+        email_addendum: data.email_addendum || "",
       };
     }
   } catch (e) {
@@ -1897,11 +1900,13 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   // 2. Parse request
   const { message, conversationHistory = [] }: PaiRequest = body;
+  const context = body.context || {};
+  const isEmailChannel = context.source === "email";
   if (!message?.trim()) {
     return jsonResponse({ error: "Message is required" }, 400);
   }
 
-  console.log(`PAI chat from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
+  console.log(`PAI ${isEmailChannel ? "email" : "chat"} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
 
   // 3. Build scope and load PAI config in parallel
   const [scope, paiConfig] = await Promise.all([
@@ -1920,9 +1925,11 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || "";
   }
 
-  // 4. Build system prompt (shared base + optional chat addendum)
+  // 4. Build system prompt (shared base + channel-specific addendum)
   let systemPrompt = buildSystemPrompt(scope, paiConfig);
-  if (paiConfig.chat_addendum?.trim()) {
+  if (isEmailChannel && paiConfig.email_addendum?.trim()) {
+    systemPrompt += "\n\n" + paiConfig.email_addendum.trim();
+  } else if (!isEmailChannel && paiConfig.chat_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.chat_addendum.trim();
   }
 
