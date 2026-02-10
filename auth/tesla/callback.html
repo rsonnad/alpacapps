@@ -49,7 +49,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY1ODgxNjUsImV4cCI6MjA0MjE2NDE2NX0.vGSLw5PtxKcdRGPQHxNfoHqVvmzWQWFiCZsHaRuIvNw';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 
     const card = document.getElementById('card');
     const params = new URLSearchParams(window.location.search);
@@ -92,7 +92,10 @@
 
       try {
         // Get a fresh Supabase session from localStorage (survives redirects on same domain)
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Must use same storageKey as shared/supabase.js so we find the existing session
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { storageKey: 'genalpaca-auth', autoRefreshToken: true, persistSession: true }
+        });
         const { data: { session }, error: sessErr } = await sb.auth.getSession();
         if (sessErr || !session?.access_token) {
           throw new Error('Your session has expired. Please log in again from the Cars page and retry.');
