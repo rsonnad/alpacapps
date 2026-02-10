@@ -120,7 +120,7 @@ async function loadEntries() {
   } catch (err) {
     console.error('Failed to load entries:', err);
     showToast('Failed to load entries', 'error');
-    document.getElementById('entriesBody').innerHTML = '<tr><td colspan="13" class="empty-state">Failed to load entries.</td></tr>';
+    document.getElementById('entriesBody').innerHTML = '<tr><td colspan="8" class="empty-state">Failed to load entries.</td></tr>';
   }
 }
 
@@ -180,7 +180,7 @@ function renderSummary() {
 function renderEntries() {
   const tbody = document.getElementById('entriesBody');
   if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="13" class="empty-state">No time entries found for this period.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No time entries found for this period.</td></tr>';
     return;
   }
 
@@ -195,15 +195,22 @@ function renderEntries() {
     const rate = formatCurrencyDisplay(e.hourly_rate);
     const amount = formatCurrencyDisplay((mins / 60) * parseFloat(e.hourly_rate));
     const status = e.clock_out === null ? '' : (e.is_paid ? '<span class="badge paid">Paid</span>' : '<span class="badge unpaid">Unpaid</span>');
-    const desc = e.description ? escapeHtml(e.description.substring(0, 60)) : '<span style="color:var(--text-muted)">—</span>';
-    const spaceName = e.space?.name || '<span style="color:var(--text-muted)">—</span>';
+    const desc = e.description ? escapeHtml(e.description) : '<span style="color:var(--text-muted)">—</span>';
+    const spaceName = e.space?.name || '';
     const manualTag = e.is_manual ? ' <span style="font-size:0.6rem;background:#eef2ff;color:#6366f1;padding:0.1rem 0.3rem;border-radius:3px;font-weight:700;">M</span>' : '';
     const loc = formatLocLink(e);
     const checked = selectedIds.has(e.id) ? 'checked' : '';
     const canCheck = !isDemoUser() && e.clock_out && !e.is_paid;
 
-    return `<tr>
-      <td class="cb">${canCheck ? `<input type="checkbox" class="entry-cb" data-id="${e.id}" ${checked}>` : ''}</td>
+    // Build second row meta items
+    const metaParts = [];
+    if (status) metaParts.push(status);
+    if (spaceName) metaParts.push(`<span style="color:#6b7280;">Space:</span> ${escapeHtml(spaceName)}`);
+    if (e.latitude || e.clock_in_lat || e.clock_out_lat) metaParts.push(loc);
+    metaParts.push(`<button class="btn-small" data-edit="${e.id}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Edit</button>`);
+
+    return `<tr class="entry-row1">
+      <td class="cb" rowspan="2">${canCheck ? `<input type="checkbox" class="entry-cb" data-id="${e.id}" ${checked}>` : ''}</td>
       <td class="${isDemoUser() ? 'demo-redacted' : ''}">${escapeHtml(name)}${manualTag}</td>
       <td>${HoursService.formatDate(date)}</td>
       <td>${clockIn}</td>
@@ -211,11 +218,9 @@ function renderEntries() {
       <td>${hours}</td>
       <td class="${isDemoUser() ? 'demo-redacted' : ''}">${rate}</td>
       <td class="${isDemoUser() ? 'demo-redacted' : ''}"><strong>${amount}</strong></td>
-      <td>${status}</td>
-      <td title="${escapeHtml(e.description || '')}">${desc}</td>
-      <td>${spaceName}</td>
-      <td>${loc}</td>
-      <td><button class="btn-small" data-edit="${e.id}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Edit</button></td>
+    </tr>
+    <tr class="entry-row2">
+      <td colspan="7"><div class="entry-meta">${metaParts.join('<span style="color:#d1d5db;">|</span>')} <span class="entry-desc">${desc}</span></div></td>
     </tr>`;
   }).join('');
 }
