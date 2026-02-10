@@ -11,6 +11,20 @@
   gap: 0;
   border-bottom: 2px solid var(--border);
   margin-bottom: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* When inside manage-container, let container handle alignment */
+.manage-container .manage-tabs {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Context switcher (Resident / Staff toggle) */
@@ -373,6 +387,8 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .context-switcher {

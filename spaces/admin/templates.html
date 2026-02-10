@@ -42,7 +42,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.71 7:26a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.72 7:30a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -69,6 +69,7 @@
               <option value="lease">Lease Agreement</option>
               <option value="event">Event Agreement</option>
               <option value="worktrade">Work Trade Agreement</option>
+              <option value="email">Email Notifications</option>
             </select>
           </div>
         </div>
@@ -290,6 +291,118 @@
                 <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Template Section -->
+      <div id="emailTemplateSection" style="display: none;">
+        <!-- List View -->
+        <div id="emailListView">
+          <div class="section">
+            <div class="section-header">
+              <h2>Email Notification Templates</h2>
+            </div>
+            <div class="section-body">
+              <p class="text-muted" style="margin-bottom: 1rem;">
+                Edit the content of any email notification. Changes take effect immediately for all future emails.
+              </p>
+              <div id="emailCategoryFilter" class="email-category-filter" style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.4rem;"></div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Template</th>
+                    <th>Category</th>
+                    <th>Sender</th>
+                    <th>Version</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="emailTemplateListBody">
+                  <tr><td colspan="5" class="text-muted">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor View -->
+        <div id="emailEditorView" style="display:none;">
+          <div class="section">
+            <div class="section-header">
+              <h2 id="emailEditorTitle">Edit Template</h2>
+              <div class="header-actions">
+                <button type="button" id="emailBackToListBtn" class="btn-small">Back to List</button>
+                <button type="button" id="emailPreviewBtn" class="btn-small">Preview</button>
+                <button type="button" id="emailSaveBtn" class="btn-small btn-primary">Save Template</button>
+              </div>
+            </div>
+            <div class="section-body">
+              <div class="form-group" style="margin-bottom:1rem;">
+                <label for="emailDescription">Description</label>
+                <input type="text" id="emailDescription" placeholder="Short description of this email">
+              </div>
+
+              <div class="form-group" style="margin-bottom:1rem;">
+                <label for="emailSubject">Subject Line</label>
+                <input type="text" id="emailSubject" placeholder="Email subject with {{placeholders}}" style="font-family:monospace;">
+              </div>
+
+              <div class="template-editor-container">
+                <div class="template-editor">
+                  <label for="emailHtmlBody">HTML Body</label>
+                  <textarea id="emailHtmlBody" class="template-textarea" rows="18" placeholder="HTML email body with {{placeholders}}" style="font-family:monospace;font-size:0.85rem;"></textarea>
+
+                  <label for="emailTextBody" style="margin-top:1rem;">Plain Text Body</label>
+                  <textarea id="emailTextBody" class="template-textarea" rows="10" placeholder="Plain text version with {{placeholders}}" style="font-family:monospace;font-size:0.85rem;"></textarea>
+                </div>
+
+                <div class="placeholder-reference">
+                  <h4>Available Placeholders</h4>
+                  <div id="emailPlaceholderList" class="placeholder-list"></div>
+                </div>
+              </div>
+
+              <div id="emailTemplateValidation" class="template-validation" style="display:none;margin-top:1rem;"></div>
+            </div>
+          </div>
+
+          <!-- Version History -->
+          <div class="section">
+            <div class="section-header">
+              <h2>Version History</h2>
+            </div>
+            <div class="section-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Version</th>
+                    <th>Updated</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="emailVersionHistoryBody">
+                  <tr><td colspan="4" class="text-muted">No versions yet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Modal -->
+        <div id="emailPreviewModal" class="modal-overlay" style="display:none;">
+          <div class="modal" style="max-width:700px;max-height:90vh;overflow:auto;">
+            <div class="modal-header">
+              <h3>Email Preview</h3>
+              <button type="button" class="modal-close" id="emailPreviewCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p style="margin-bottom:0.5rem;"><strong>Subject:</strong> <span id="emailPreviewSubject"></span></p>
+              <div style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-top:0.5rem;">
+                <iframe id="emailPreviewFrame" style="width:100%;height:500px;border:none;"></iframe>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -109,7 +109,7 @@ function renderContextSwitcher() {
 
   const tabs = [
     { id: 'resident', label: 'Resident', href: '/residents/' },
-    { id: 'associate', label: 'Associate', href: '/associates/' },
+    { id: 'associate', label: 'Associate', href: '/associates/worktracking.html' },
     { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
     { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
   ];

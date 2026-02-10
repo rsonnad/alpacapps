@@ -442,7 +442,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.71 7:26a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.72 7:30a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -587,20 +587,34 @@
   </div>
 
   <style>
-    .perm-section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); background: var(--bg); padding: 0.35rem 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    /* Permissions modal - grouped sections */
+    .perm-group { margin-bottom: 0; }
+    .perm-group-header {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.4rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .perm-group-header .pg-icon { font-size: 0.85rem; opacity: 0.7; }
+    .perm-group-header .pg-count { font-size: 0.6rem; font-weight: 400; opacity: 0.5; margin-left: auto; }
+
     .perm-table { width: 100%; border-collapse: collapse; }
-    .perm-table td { padding: 0.3rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.8rem; vertical-align: middle; }
+    .perm-table td { padding: 0.25rem 0.75rem; font-size: 0.8rem; vertical-align: middle; border-bottom: 1px solid rgba(0,0,0,0.04); }
     .perm-table tr:last-child td { border-bottom: none; }
-    .perm-table tr:hover td { background: var(--bg); }
-    .perm-table .pt-check { width: 28px; text-align: center; padding-right: 0; }
+    .perm-table tr:hover td { filter: brightness(0.97); }
+    .perm-table .pt-check { width: 26px; text-align: center; padding-right: 0; }
     .perm-table .pt-name { width: 30%; font-weight: 500; white-space: nowrap; }
-    .perm-table .pt-desc { color: var(--text-muted); }
-    .perm-table .pt-roles { width: 22%; text-align: right; white-space: nowrap; }
+    .perm-table .pt-desc { color: rgba(0,0,0,0.45); font-size: 0.75rem; }
+    .perm-table .pt-roles { width: 20%; text-align: right; white-space: nowrap; }
+    .perm-table .pt-indent td.pt-name { padding-left: 1.5rem; font-weight: 400; font-size: 0.75rem; color: var(--text-muted); }
     .perm-table input[type="checkbox"] { margin: 0; cursor: pointer; accent-color: var(--text-muted); }
     .perm-table tr.perm-granted input[type="checkbox"] { accent-color: #22c55e; }
     .perm-table tr.perm-revoked input[type="checkbox"] { accent-color: #ef4444; }
     .perm-table tr.perm-revoked .pt-name { text-decoration: line-through; color: #ef4444; }
-    .perm-role-chip { display: inline-block; font-size: 0.6rem; font-weight: 600; padding: 0.1rem 0.3rem; border-radius: 3px; margin-left: 2px; background: #e5e7eb; color: #6b7280; text-transform: uppercase; }
+    .perm-role-chip {
+      display: inline-block; font-size: 0.55rem; font-weight: 600;
+      padding: 0.05rem 0.25rem; border-radius: 3px; margin-left: 1px;
+      text-transform: uppercase; opacity: 0.6;
+    }
     @media (max-width: 600px) {
       .perm-table .pt-desc { display: none; }
       .perm-table .pt-roles { display: none; }
