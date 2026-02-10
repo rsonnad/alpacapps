@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No longer a hot mess. - Rahul Sonnad</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <style>
+    .email-page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: var(--aap-space-md) var(--aap-space-sm) var(--aap-space-2xl);
+    }
+
+    .email-subject {
+      font-family: var(--aap-font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--aap-text);
+      margin-bottom: 0.25rem;
+    }
+
+    .email-meta-count {
+      color: var(--aap-text-muted);
+      font-size: 0.85rem;
+      margin-bottom: var(--aap-space-lg);
+    }
+
+    .email-thread {
+      display: flex;
+      flex-direction: column;
+      gap: var(--aap-space-lg);
+    }
+
+    .email-message {
+      border: 1px solid var(--aap-border);
+      border-radius: var(--aap-radius-lg);
+      overflow: hidden;
+      background: var(--aap-bg);
+      box-shadow: var(--aap-shadow);
+    }
+
+    .email-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: var(--aap-space-sm) var(--aap-space-md);
+      border-bottom: 1px solid var(--aap-border);
+      background: var(--aap-bg-muted);
+      gap: var(--aap-space-sm);
+    }
+
+    .email-sender-info {
+      min-width: 0;
+    }
+
+    .email-sender-name {
+      font-weight: 600;
+      color: var(--aap-text);
+      font-size: 0.95rem;
+    }
+
+    .email-sender-addr {
+      color: var(--aap-text-muted);
+      font-size: 0.8rem;
+    }
+
+    .email-to {
+      color: var(--aap-text-muted);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .email-date {
+      color: var(--aap-text-muted);
+      font-size: 0.8rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .email-body {
+      padding: var(--aap-space-md);
+      line-height: 1.7;
+      color: var(--aap-text);
+      font-size: 0.95rem;
+    }
+
+    .email-body p {
+      margin: 0 0 1em;
+    }
+
+    .email-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .email-body .quote {
+      font-style: italic;
+      color: var(--aap-text-muted);
+    }
+
+    .email-body .signoff {
+      margin-top: 1.5em;
+    }
+
+    .email-body a {
+      color: var(--aap-accent);
+      text-decoration: none;
+    }
+
+    .email-body a:hover {
+      text-decoration: underline;
+    }
+
+    .email-image {
+      width: 100%;
+      padding: 0 var(--aap-space-md) var(--aap-space-md);
+    }
+
+    .email-image img {
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--aap-radius);
+      display: block;
+      cursor: pointer;
+      transition: opacity var(--aap-transition);
+    }
+
+    .email-image img:hover {
+      opacity: 0.9;
+    }
+
+    .email-image figcaption {
+      font-size: 0.8rem;
+      color: var(--aap-text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .email-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--aap-space-sm);
+      color: var(--aap-text-muted);
+      font-size: 0.8rem;
+    }
+
+    .email-divider::before,
+    .email-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--aap-border);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--aap-text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      margin-bottom: var(--aap-space-md);
+    }
+
+    .back-link:hover {
+      color: var(--aap-accent);
+    }
+
+    /* Lightbox */
+    .img-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--aap-overlay);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: var(--aap-space-md);
+    }
+
+    .img-lightbox.active {
+      display: flex;
+    }
+
+    .img-lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: var(--aap-radius-lg);
+      box-shadow: var(--aap-shadow-lg);
+    }
+
+    @media (max-width: 480px) {
+      .email-subject {
+        font-size: 1.35rem;
+      }
+
+      .email-header {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .email-date {
+        font-size: 0.75rem;
+      }
+
+      .email-body {
+        padding: var(--aap-space-sm);
+        font-size: 0.9rem;
+      }
+
+      .email-image {
+        padding: 0 var(--aap-space-sm) var(--aap-space-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+  <span data-site-version style="display:none;">v260210.10 2:41a</span>
+  <div id="siteHeader"></div>
+
+  <main class="email-page">
+
+    <a href="/rahulio" class="back-link">&larr; Back to Rahul's page</a>
+
+    <h1 class="email-subject">No longer a hot mess.</h1>
+    <div class="email-meta-count">2 messages &middot; February 10, 2026</div>
+
+    <div class="email-thread">
+
+      <!-- Message 1: Luelle's original email -->
+      <article class="email-message">
+        <div class="email-header">
+          <div class="email-sender-info">
+            <div class="email-sender-name">Luelle Llorens</div>
+            <div class="email-to">To: crazyveddie@gmail.com</div>
+          </div>
+          <div class="email-date">Tue, Feb 10 at 7:01 AM</div>
+        </div>
+        <div class="email-body">
+          <p>Hey there,</p>
+          <p>You helped me out once when my car ran out of gas on the West side of LA.</p>
+          <p>It was highly embarrassing, and you were very kind and supportive.</p>
+          <p>You gave me a mixed CD of Eddie Vedder songs.</p>
+          <p>I've moved across the country and have been carrying that thing around with me for years. Saying I'd write you one day and thank you for your kindness. And finally let you know that I got my shit together.</p>
+          <p>Well.</p>
+          <p>Today's that day.</p>
+          <p>I want to say that I really appreciated you calling me out saying <span class="quote">"You're a hot mess..."</span></p>
+          <p>Pretty sure my account was overdrawn too. And you got to witness my credit card being declined.</p>
+          <p>It was refreshing to have someone call me out on the bullshit. Lol</p>
+          <p>It's been years since this happened.</p>
+          <p>Not sure if you even recall the day or moment.</p>
+          <p>But I haven't forgotten the feeling of that encounter.</p>
+          <p><span class="quote">"Here's a CD for when you're down..."</span></p>
+          <p>It was weird, but loving all at once.<br>And from a complete stranger.</p>
+          <p>Very refreshing.</p>
+          <p>Since that day close to Marina Del Rey, I have moved to Florida and I'm in my 3rd year of teaching English to Middle schoolers.</p>
+          <p>I freaking love it.</p>
+          <p>And tomorrow I might just pop your CD in my car and listen to it once more while smiling knowing, everything's gonna be all right.</p>
+          <p>Thanks again. Keep being you.</p>
+        </div>
+        <figure class="email-image">
+          <img src="images/eddie-vedder-cd.jpeg" alt="The Eddie Vedder mix CD" onclick="openLightbox(this)">
+          <figcaption>The Eddie Vedder mix CD &mdash; "Hand Picked Select Blend"</figcaption>
+        </figure>
+        <div class="email-body">
+          <p class="signoff">Sincerely,<br>Luelle Llorens</p>
+        </div>
+      </article>
+
+      <div class="email-divider">reply</div>
+
+      <!-- Message 2: Rahul's reply -->
+      <article class="email-message">
+        <div class="email-header">
+          <div class="email-sender-info">
+            <div class="email-sender-name">Rahul Sonnad</div>
+            <div class="email-to">To: Luelle Llorens</div>
+          </div>
+          <div class="email-date">Tue, Feb 10 at 11:36 AM</div>
+        </div>
+        <div class="email-body">
+          <p>Hey Luelle, wow, thanks for this note. It's such an amazing conveyance.</p>
+          <p>I do remember that, but not the credit card part...</p>
+          <p>I can't even believe this gmail forwarding still works.</p>
+          <p>I'm in India at a fort, and I was 2 minutes ago playing the song "Society" on my ukulele.</p>
+          <p>You've given me increased conviction that there is some mystery behind it all.</p>
+          <p>If you are ever in Austin, let me know.</p>
+          <p class="signoff">- Rahul</p>
+        </div>
+        <figure class="email-image">
+          <img src="images/rahul-ukulele-india.png" alt="Rahul with ukulele at a fort in India" onclick="openLightbox(this)">
+          <figcaption>Playing ukulele at a fort in India, moments before receiving the email</figcaption>
+        </figure>
+      </article>
+
+    </div>
+  </main>
+
+  <div id="siteFooter"></div>
+
+  <!-- Lightbox -->
+  <div class="img-lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <script>
+    function openLightbox(el) {
+      const lb = document.getElementById('lightbox');
+      document.getElementById('lightboxImg').src = el.src;
+      document.getElementById('lightboxImg').alt = el.alt;
+      lb.classList.add('active');
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+  <script type="module" src="/shared/site-components.js"></script>
+</body>
+</html>
