@@ -96,8 +96,15 @@
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: { storageKey: 'genalpaca-auth', autoRefreshToken: true, persistSession: true }
         });
-        const { data: { session }, error: sessErr } = await sb.auth.getSession();
-        if (sessErr || !session?.access_token) {
+
+        // Force a token refresh — the access token may have expired during the Tesla OAuth redirect
+        const { data: { session: refreshedSession }, error: refreshErr } = await sb.auth.refreshSession();
+        // Fall back to cached session if refresh fails (token might still be valid)
+        const { data: { session: cachedSession }, error: sessErr } = refreshErr
+          ? await sb.auth.getSession()
+          : { data: { session: refreshedSession }, error: null };
+        const session = refreshedSession || cachedSession;
+        if (!session?.access_token) {
           throw new Error('Your session has expired. Please log in again from the Cars page and retry.');
         }
 
