@@ -1,0 +1,38 @@
+# Bump version on every push to main.
+# Runs only when the push is NOT our own bump commit ([skip ci]), so we avoid a loop.
+# Version is incremented in DB and all HTML + version.json are updated, then committed and pushed.
+
+name: Bump version on push to main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  bump:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Bump version (DB + HTML + version.json)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: ./scripts/bump-version.sh --model ci
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet && echo "No version changes (unexpected)" && exit 1 || true
+          git commit -m "chore: bump version [skip ci]"
+          git push origin main

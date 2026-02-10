@@ -3,6 +3,10 @@
 #
 # Usage: ./scripts/bump-version.sh [--model MODEL_CODE]
 #
+# On main, version is normally bumped by the GitHub Action on push (see
+# .github/workflows/bump-version-on-push.yml). Run this script locally only to
+# test or to regenerate version.json; don't commit a local bump when pushing to main.
+#
 # Options:
 #   --model MODEL_CODE   AI model that created this version (e.g., o4.6, g2.5, s4.0)
 #                        If not provided, infers from branch name pattern or defaults to "unknown"
@@ -50,7 +54,8 @@ else
   exit 1
 fi
 
-DB_URL="postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+# DB URL: use SUPABASE_DB_URL in CI (e.g. GitHub Actions secret); default for local
+DB_URL="${SUPABASE_DB_URL:-postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres}"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Local machine name for version metadata (prefer env var)

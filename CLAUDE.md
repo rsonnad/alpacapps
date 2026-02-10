@@ -135,6 +135,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `nest-control/` - Proxies requests to Google SDM API with OAuth token management (resident+ auth)
 - `nest-token-refresh/` - Standalone Nest OAuth token refresher (cron)
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
+- `create-tesla-account/` - Creates tesla_accounts row with server-held Fleet API credentials (resident+ auth); use default JWT
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
 - `verify-identity/` - Driver's license photo → Claude Vision API → auto-verify applicants/associates
 - `paypal-payout/` - Sends PayPal payouts to associates
@@ -523,58 +524,29 @@ const messages = await smsService.getConversation(personId);
 
 This site deploys directly to GitHub Pages from the `main` branch. There is no build step, PR process, or branch protection - just push to main and it's live.
 
-### REQUIRED: Bump Version Before Every Push
+### Version: Bumped automatically on push to main
 
-**You MUST run `./scripts/bump-version.sh` before committing and pushing.** This is not optional.
+**Version is incremented only when something is pushed to `main`.** A GitHub Action runs on every push to main (except its own bump commit), updates the version in the `site_config` DB table, rewrites the version string in all HTML files and `version.json`, then commits and pushes with `[skip ci]`. So the version always goes up on main and there is no conflict between Cursor, Claude Code Desktop, or other clients.
 
-**Model + machine self-reporting (required):**
-- Model: set `AAP_MODEL_CODE` (or pass `--model` to the wrapper)
-- Machine: set `AAP_MACHINE_NAME` or add a `.machine-name` file (gitignored)
+**One-time setup:** In the repo's GitHub Settings → Secrets and variables → Actions, add a secret:
+- **`SUPABASE_DB_URL`** — full Postgres connection string (e.g. `postgres://postgres.PROJECT_REF:PASSWORD@aws-1-us-east-2.pooler.supabase.com:5432/postgres`). The bump script uses this in CI; locally it uses the default in the script.
 
-If you don't know your exact model, use a best-effort label like `gpt-5.2-codex` or `cur`.
-
-The model + machine are stored in `version.json` and shown in the hover tooltip and click modal.
-
-#### Quick model helper (recommended)
-
-To switch models quickly in your shell, use:
+**Deploy workflow:** Commit your changes, then push to main. No need to run `bump-version.sh` locally.
 
 ```bash
-source ./scripts/modl.sh g   # gpt-5.3-codex
-source ./scripts/modl.sh o   # opus-4.6
-source ./scripts/modl.sh c   # composer-1.5
+# Deploy to main (version is bumped by the action after your push):
+git add -A
+git commit -m "Your message"
+./scripts/push-main.sh                     # pull --rebase, then push
+
+# Or manually:
+git pull --rebase origin main
+git push origin main
 ```
 
-Optional: add an alias to your `~/.zshrc`:
+**Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the bump script pattern-matches and updates. If you add a new HTML page, include a version string in that format so the action can update it.
 
-```bash
-alias modl='source /path/to/alpacapps/scripts/modl.sh'
-```
-
-The script:
-1. Atomically increments the version in the `site_config` DB table (format: `vYYMMDD.NN H:MMa/p`)
-2. Uses `sed` to find/replace the version string in **all HTML files**
-3. Generates `version.json` with model tracking (per-version and per-branch)
-4. Prints the new version to stdout
-
-**Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the script pattern-matches and updates. If you add a new HTML page, you MUST include a version string in the same format so the bump script catches it.
-
-```bash
-# Full deploy workflow (recommended):
-export AAP_MODEL_CODE="gpt-5.2-codex"
-export AAP_MACHINE_NAME="rahulio-macair"
-./scripts/push-main.sh                     # bumps version, commits, pushes
-
-# Manual deploy workflow:
-./scripts/bump-version.sh                  # MUST run first — bumps version in DB + all HTML files
-git add <files>                            # Stage your changes AND the bumped HTML files
-git commit -m "Description"
-git push
-# Changes are live in 1-2 minutes
-# Hard refresh browser (Cmd+Shift+R) to see changes
-```
-
-> **If the script can't run** (no DB access, no psql), tell the user and do NOT push without bumping. The version stamp is how users verify they're seeing the latest deploy.
+**Local bump (optional):** To test the bump script or regenerate `version.json` locally (e.g. for version hover), run `./scripts/bump-version.sh --model <code>`. Do not commit that bump when pushing to main—the action will bump once per push.
 
 ### REQUIRED: Display Version in Chat
 
@@ -589,13 +561,13 @@ This ensures the user always knows which version they're looking at and which AI
 After every `git push`, you MUST include a status message so the user knows what was pushed and whether it's live. The format depends on which branch was pushed.
 
 **If pushed to `main` (live deploy):**
-> **Deployed to main** — version `vYYMMDD.NN H:MMa/p` `[model]`
+> **Deployed to main** — the GitHub Action will bump the version and push; check the site or the latest Actions run for the new version.
 > Test it here: https://alpacaplayhouse.com/residents/laundry.html
 
 **If pushed to a feature/claude branch (NOT yet live):**
 > **Pushed to branch `claude/branch-name`** (not yet deployed) `[model]`
 > Changed files: `residents/residents.css`, `residents/laundry.html`
-> To deploy: merge to main, run `./scripts/bump-version.sh --model MODEL`, push main
+> To deploy: merge to main, push main (version will be bumped by GitHub Actions)
 
 Common page URLs for testing links (use only on main deploys):
 - Resident pages: `https://alpacaplayhouse.com/residents/{page}.html` (cameras, climate, lighting, sonos, laundry, cars)
