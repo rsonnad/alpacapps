@@ -173,6 +173,7 @@
       .voice-call-detail-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="../../styles/site.css">
 </head>
 <body>
   <!-- Toast Container -->
@@ -199,18 +200,9 @@
 
   <!-- Main app content -->
   <div id="appContent" class="hidden">
-    <header>
-      <div class="header-left">
-        <a href="https://alpacaplayhouse.com" class="header-logo">
-          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
-          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
-        </a>
-        <span id="roleBadge" class="role-badge">Admin</span>
-      </div>
-      <div class="header-controls">
-        <span id="userInfo" class="user-info"></span>
-      </div>
-    </header>
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260210.68 4:35p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>

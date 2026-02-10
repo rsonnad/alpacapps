@@ -229,6 +229,12 @@ ul, ol {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
+/* Role badge inside site nav header */
+.aap-header__inner > .role-badge {
+  align-self: center;
+  flex-shrink: 0;
+}
+
 /* Hide wordmark on mobile to prevent overlap with hamburger */
 @media (max-width: 767px) {
   .aap-header__wordmark {

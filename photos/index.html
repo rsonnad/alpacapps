@@ -24,7 +24,7 @@
       <a href="/" class="aap-header__logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
               <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
-        <span title="Site version" class="aap-header__version">v260210.66 4:31p</span>
+        <span title="Site version" class="aap-header__version">v260210.68 4:35p</span>
       </a>
 
       <nav class="aap-nav" id="aap-nav">
@@ -60,7 +60,7 @@
   </div>
 
   <!-- Hero Section -->
-  <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
+  <section class="aap-hero aap-hero--short photos-hero" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
     <div class="aap-hero__content">
       <h1 class="aap-hero__title">Photos & Media</h1>
       <p class="aap-hero__subtitle">Explore the Alpaca Playhouse through photos and videos</p>
@@ -455,6 +455,16 @@
   </footer>
 
   <style>
+    /* Darker hero overlay for readability on bright alpaca image */
+    .photos-hero::before {
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.35) 50%,
+        rgba(0, 0, 0, 0.55) 100%
+      ) !important;
+    }
+
     /* Highlights Gallery Banner */
     .highlights-gallery {
       background: #1a1a1a;

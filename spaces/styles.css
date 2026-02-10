@@ -310,7 +310,12 @@ body {
   }
 }
 
-/* Header */
+/* Offset for fixed site nav */
+#appContent {
+  padding-top: var(--aap-header-height, 72px);
+}
+
+/* Header (legacy — kept for pages not yet migrated to site nav) */
 header {
   display: flex;
   justify-content: space-between;

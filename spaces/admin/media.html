@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=5">
   <link rel="stylesheet" href="manage-shared.css?v=5">
   <link rel="stylesheet" href="media.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
 </head>
 <body>
   <!-- Toast Container -->
@@ -36,19 +37,9 @@
 
   <!-- Main app content -->
   <div id="appContent" class="hidden">
-    <header>
-      <div class="header-left">
-        <a href="https://alpacaplayhouse.com" class="header-logo">
-          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
-          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
-        </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.66 4:31p</span>
-        <span id="roleBadge" class="role-badge">Admin</span>
-      </div>
-      <div class="header-controls">
-        <span id="userInfo" class="user-info"></span>
-      </div>
-    </header>
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260210.68 4:35p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
