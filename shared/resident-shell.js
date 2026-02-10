@@ -123,7 +123,27 @@ function renderUserInfo(el, appUser, profileHref) {
     ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
     : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
 
-  el.innerHTML = `<a href="${profileHref}" class="user-profile-link">${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span></a>`;
+  el.innerHTML = `
+    <button class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+      ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
+    </button>
+    <div class="user-menu-dropdown hidden">
+      <a href="${profileHref}" class="user-menu-item">Profile</a>
+      <button class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
+    </div>`;
+
+  const trigger = el.querySelector('.user-menu-trigger');
+  const dropdown = el.querySelector('.user-menu-dropdown');
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !dropdown.classList.contains('hidden');
+    dropdown.classList.toggle('hidden', open);
+    trigger.setAttribute('aria-expanded', !open);
+  });
+  document.addEventListener('click', () => {
+    dropdown.classList.add('hidden');
+    trigger.setAttribute('aria-expanded', 'false');
+  });
 }
 
 function getInitials(name) {
