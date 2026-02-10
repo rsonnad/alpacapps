@@ -883,13 +883,69 @@ function renderUsers() {
 // PERMISSIONS MODAL
 // =============================================
 
-const CATEGORY_LABELS = {
-  resident: 'Resident Features',
-  staff: 'Staff Features',
-  admin: 'Admin Features',
-  associate: 'Associate Features',
-  admin_resident: 'Admin Settings on Resident Pages',
-};
+// ---- Permission groups: functional grouping with colors ----
+// Each group maps DB permission keys → a visual section with icon, label, and background tint.
+// "admin_key" is the matching admin_resident permission to indent under this group.
+const PERM_GROUPS = [
+  // -- Resident smart-home tabs --
+  { id: 'cameras',  icon: '📹', label: 'Cameras',  bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
+    keys: ['view_cameras', 'use_camera_ptz', 'use_camera_talkback'], adminKey: null },
+  { id: 'lighting', icon: '💡', label: 'Lighting', bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
+    keys: ['view_lighting', 'control_lighting'], adminKey: 'admin_lighting_settings' },
+  { id: 'climate',  icon: '🌡️', label: 'Climate',  bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
+    keys: ['view_climate', 'control_climate'], adminKey: 'admin_climate_settings' },
+  { id: 'music',    icon: '🎵', label: 'Music',    bg: '#f3effc', headerBg: '#e2dafc', headerColor: '#5b3fa0',
+    keys: ['view_music', 'control_music'], adminKey: 'admin_music_settings' },
+  { id: 'laundry',  icon: '🧺', label: 'Laundry',  bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
+    keys: ['view_laundry'], adminKey: 'admin_laundry_settings' },
+  { id: 'cars',     icon: '🚗', label: 'Vehicles', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
+    keys: ['view_cars', 'control_cars'], adminKey: 'admin_cars_settings' },
+  { id: 'pai',      icon: '🦙', label: 'PAI',      bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
+    keys: ['use_pai'], adminKey: 'admin_pai_settings' },
+  { id: 'profile',  icon: '👤', label: 'Profile',  bg: '#f5f5f5', headerBg: '#e8e8e8', headerColor: '#555',
+    keys: ['view_profile', 'edit_profile'], adminKey: null },
+  // -- Staff admin tabs --
+  { id: 'spaces',   icon: '🏠', label: 'Spaces',   bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
+    keys: ['view_spaces', 'manage_spaces'], adminKey: null },
+  { id: 'rentals',  icon: '📋', label: 'Rentals',  bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
+    keys: ['view_rentals', 'manage_rentals'], adminKey: null },
+  { id: 'events',   icon: '🎉', label: 'Events',   bg: '#f3effc', headerBg: '#e2dafc', headerColor: '#5b3fa0',
+    keys: ['view_events', 'manage_events'], adminKey: null },
+  { id: 'media',    icon: '🖼️', label: 'Media',    bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
+    keys: ['view_media', 'manage_media'], adminKey: null },
+  { id: 'sms',      icon: '💬', label: 'SMS',      bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
+    keys: ['view_sms', 'send_sms'], adminKey: null },
+  { id: 'hours',    icon: '⏱️', label: 'Hours',    bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
+    keys: ['view_hours', 'manage_hours'], adminKey: null },
+  { id: 'faq',      icon: '❓', label: 'FAQ / AI', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
+    keys: ['view_faq', 'manage_faq'], adminKey: null },
+  { id: 'voice',    icon: '📞', label: 'Voice',    bg: '#f5f5f5', headerBg: '#e8e8e8', headerColor: '#555',
+    keys: ['view_voice', 'manage_voice'], adminKey: null },
+  { id: 'todo',     icon: '✅', label: 'Todo',     bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
+    keys: ['view_todo', 'manage_todo'], adminKey: null },
+  // -- Admin-only --
+  { id: 'users',    icon: '👥', label: 'Users & Permissions', bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_users', 'manage_users', 'manage_permissions'], adminKey: null },
+  { id: 'passwords',icon: '🔑', label: 'Passwords', bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_passwords', 'manage_passwords'], adminKey: null },
+  { id: 'settings', icon: '⚙️', label: 'Settings', bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_settings', 'manage_settings'], adminKey: null },
+  { id: 'templates',icon: '📄', label: 'Templates',bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_templates', 'manage_templates'], adminKey: null },
+  { id: 'accounting',icon:'💰', label: 'Accounting',bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_accounting', 'manage_accounting'], adminKey: null },
+  // -- Associate --
+  { id: 'associate', icon: '🔧', label: 'Associate Work', bg: '#fce7f3', headerBg: '#f9d0e7', headerColor: '#9d174d',
+    keys: ['clock_in_out', 'upload_work_photos', 'view_own_hours', 'manage_payment_prefs'], adminKey: null },
+];
+
+// Super-sections that group the above
+const PERM_SUPER_SECTIONS = [
+  { label: 'Resident', groupIds: ['cameras','lighting','climate','music','laundry','cars','pai','profile'] },
+  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo'] },
+  { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting'] },
+  { label: 'Associate',groupIds: ['associate'] },
+];
 
 // Track current modal state
 let permModalUserId = null;
@@ -910,19 +966,19 @@ async function showPermissionsModal(userId) {
   badge.textContent = user.role;
   badge.className = 'role-badge ' + user.role;
 
-  // Fetch all permissions, role defaults, user overrides, and all role mappings in parallel
+  // Fetch all permissions, role defaults, user overrides, and all role mappings
   const fetches = [
     supabase.from('permissions').select('*').order('category').order('sort_order'),
     supabase.from('role_permissions').select('permission_key').eq('role', user.role),
     supabase.from('user_permissions').select('permission_key, granted').eq('app_user_id', userId),
   ];
-  // Cache all role mappings (only fetch once per page load)
   if (!allRoleMappings) {
     fetches.push(supabase.from('role_permissions').select('permission_key, role'));
   }
 
   const results = await Promise.all(fetches);
   const allPerms = results[0].data || [];
+  const permsMap = Object.fromEntries(allPerms.map(p => [p.key, p]));
   permModalRoleDefaults = new Set((results[1].data || []).map(r => r.permission_key));
   permModalOverrides = new Map((results[2].data || []).map(o => [o.permission_key, o.granted]));
 
@@ -934,37 +990,53 @@ async function showPermissionsModal(userId) {
     }
   }
 
-  // Group by category
-  const categories = {};
-  for (const perm of allPerms) {
-    if (!categories[perm.category]) categories[perm.category] = [];
-    categories[perm.category].push(perm);
+  const roleOrder = ['associate', 'resident', 'staff', 'admin', 'oracle'];
+  const roleAbbrev = { associate: 'asc', resident: 'res', staff: 'stf', admin: 'adm', oracle: 'orc' };
+
+  function renderRow(perm, indent) {
+    const isRoleDefault = permModalRoleDefaults.has(perm.key);
+    const override = permModalOverrides.get(perm.key);
+    const isEffective = override !== undefined ? override : isRoleDefault;
+    const stateClass = override === true ? 'perm-granted' :
+                       override === false ? 'perm-revoked' : '';
+    const roles = (allRoleMappings[perm.key] || []).sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b));
+    const rolesHtml = roles.map(r =>
+      `<span class="perm-role-chip" style="background:${r === 'admin' || r === 'oracle' ? '#fef3c7' : r === 'staff' ? '#e0e7ff' : r === 'resident' ? '#d1fae5' : r === 'associate' ? '#fce7f3' : '#e5e7eb'};color:${r === 'admin' || r === 'oracle' ? '#92400e' : r === 'staff' ? '#3730a3' : r === 'resident' ? '#065f46' : r === 'associate' ? '#9d174d' : '#6b7280'}">${roleAbbrev[r] || r}</span>`
+    ).join('');
+    return `<tr class="${stateClass} ${indent ? 'pt-indent' : ''}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
+      <td class="pt-check"><input type="checkbox" ${isEffective ? 'checked' : ''} onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})"></td>
+      <td class="pt-name">${indent ? '↳ ' : ''}${perm.label}</td>
+      <td class="pt-desc">${perm.description || ''}</td>
+      <td class="pt-roles">${rolesHtml}</td>
+    </tr>`;
   }
 
-  const roleOrder = ['associate', 'resident', 'staff', 'admin', 'oracle'];
-  const roleAbbrev = { associate: 'assoc', resident: 'res', staff: 'staff', admin: 'admin', oracle: 'oracle' };
-
   let html = '';
-  for (const [cat, perms] of Object.entries(categories)) {
-    html += `<div class="perm-section-label">${CATEGORY_LABELS[cat] || cat}</div>`;
-    html += '<table class="perm-table">';
-    for (const perm of perms) {
-      const isRoleDefault = permModalRoleDefaults.has(perm.key);
-      const override = permModalOverrides.get(perm.key);
-      const isEffective = override !== undefined ? override : isRoleDefault;
-      const stateClass = override === true ? 'perm-granted' :
-                         override === false ? 'perm-revoked' : '';
-      const roles = (allRoleMappings[perm.key] || []).sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b));
-      const rolesHtml = roles.map(r => `<span class="perm-role-chip">${roleAbbrev[r] || r}</span>`).join('');
+  for (const section of PERM_SUPER_SECTIONS) {
+    html += `<div class="perm-group-header" style="background:#f5f5f5;color:#888;border-top:2px solid #ddd;font-size:0.65rem;padding:0.3rem 0.75rem;margin-top:0;">${section.label}</div>`;
+    for (const gid of section.groupIds) {
+      const group = PERM_GROUPS.find(g => g.id === gid);
+      if (!group) continue;
+      // Collect permissions for this group
+      const groupPerms = group.keys.map(k => permsMap[k]).filter(Boolean);
+      const adminPerm = group.adminKey ? permsMap[group.adminKey] : null;
+      if (groupPerms.length === 0 && !adminPerm) continue;
+      const totalCount = groupPerms.length + (adminPerm ? 1 : 0);
 
-      html += `<tr class="${stateClass}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
-        <td class="pt-check"><input type="checkbox" ${isEffective ? 'checked' : ''} onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})"></td>
-        <td class="pt-name">${perm.label}</td>
-        <td class="pt-desc">${perm.description || ''}</td>
-        <td class="pt-roles">${rolesHtml}</td>
-      </tr>`;
+      html += `<div class="perm-group">`;
+      html += `<div class="perm-group-header" style="background:${group.headerBg};color:${group.headerColor};">
+        <span class="pg-icon">${group.icon}</span> ${group.label}
+        <span class="pg-count">${totalCount}</span>
+      </div>`;
+      html += `<table class="perm-table" style="background:${group.bg};">`;
+      for (const perm of groupPerms) {
+        html += renderRow(perm, false);
+      }
+      if (adminPerm) {
+        html += renderRow(adminPerm, true);
+      }
+      html += '</table></div>';
     }
-    html += '</table>';
   }
 
   document.getElementById('permissionCategories').innerHTML = html;
@@ -974,19 +1046,20 @@ async function showPermissionsModal(userId) {
 function togglePermOverride(checkbox, key, isRoleDefault) {
   const isChecked = checkbox.checked;
   const row = checkbox.closest('tr');
+  const indentClass = row.classList.contains('pt-indent') ? ' pt-indent' : '';
 
   if (isRoleDefault && isChecked) {
     permModalOverrides.delete(key);
-    row.className = '';
+    row.className = indentClass.trim();
   } else if (isRoleDefault && !isChecked) {
     permModalOverrides.set(key, false);
-    row.className = 'perm-revoked';
+    row.className = ('perm-revoked' + indentClass).trim();
   } else if (!isRoleDefault && isChecked) {
     permModalOverrides.set(key, true);
-    row.className = 'perm-granted';
+    row.className = ('perm-granted' + indentClass).trim();
   } else if (!isRoleDefault && !isChecked) {
     permModalOverrides.delete(key);
-    row.className = '';
+    row.className = indentClass.trim();
   }
 }
 
