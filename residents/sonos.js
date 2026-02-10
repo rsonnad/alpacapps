@@ -7,6 +7,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { hasPermission } from '../shared/auth.js';
 
 // =============================================
 // CONFIGURATION
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'resident',
     onReady: async (state) => {
       userRole = state.appUser?.role;
-      if (['staff', 'admin'].includes(userRole)) {
+      if (hasPermission('admin_music_settings')) {
         document.body.classList.add('is-staff');
       }
       loadBalanceState();
@@ -225,7 +226,7 @@ function formatDuration(seconds) {
 }
 
 function isStaffPlus() {
-  return ['staff', 'admin'].includes(userRole);
+  return hasPermission('admin_music_settings');
 }
 
 function isPlaylistStarred(name) {

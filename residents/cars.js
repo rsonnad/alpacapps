@@ -5,6 +5,7 @@
 
 import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { hasPermission } from '../shared/auth.js';
 
 // =============================================
 // CONFIGURATION
@@ -141,8 +142,8 @@ function isChargingAtHome(car) {
 }
 
 function filterVehiclesForUser(allVehicles) {
-  // Admins see everything
-  if (['admin', 'oracle'].includes(currentUserRole)) return allVehicles;
+  // Users with admin_cars_settings or control_cars see everything
+  if (hasPermission('admin_cars_settings') || hasPermission('control_cars')) return allVehicles;
 
   return allVehicles.filter(car => {
     // User owns this vehicle
@@ -176,7 +177,7 @@ async function loadAccounts() {
     .order('id', { ascending: true });
 
   // Non-admins only see their own accounts
-  if (!['admin', 'oracle'].includes(currentUserRole)) {
+  if (!hasPermission('admin_cars_settings')) {
     query = query.eq('app_user_id', currentUserId);
   }
 

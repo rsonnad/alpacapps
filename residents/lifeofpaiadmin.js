@@ -4,6 +4,7 @@
 
 import { initAdminPage, showToast } from '../shared/admin-shell.js';
 import { supabase } from '../shared/supabase.js';
+import { hasPermission } from '../shared/auth.js';
 
 let config = null;
 let currentPoolChapter = 1;
@@ -19,7 +20,7 @@ const previewData = {
 
 async function initPaiAdmin(authState) {
   const role = authState.appUser?.role;
-  isAdmin = ['admin', 'oracle'].includes(role);
+  isAdmin = hasPermission('admin_pai_settings');
 
   // Hide admin-only sections for non-admins
   if (!isAdmin) {

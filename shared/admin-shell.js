@@ -3,30 +3,38 @@
  * Provides: auth flow, tab navigation, toast notifications, lightbox
  */
 
-import { initAuth, getAuthState, signOut, onAuthStateChange } from './auth.js';
+import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
 
 // =============================================
 // TAB DEFINITIONS
 // =============================================
-const STAFF_TABS = [
-  { id: 'spaces', label: 'Spaces', href: 'spaces.html' },
-  { id: 'rentals', label: 'Rentals', href: 'rentals.html' },
-  { id: 'events', label: 'Events', href: 'events.html' },
-  { id: 'media', label: 'Media', href: 'media.html' },
-  { id: 'sms', label: 'SMS', href: 'sms-messages.html' },
-  { id: 'hours', label: 'Hours', href: 'worktracking.html' },
-  { id: 'faq', label: 'FAQ/AI', href: 'faq.html' },
-  { id: 'voice', label: 'Voice', href: 'voice.html' },
-  { id: 'todo', label: 'Todo', href: 'todo.html' },
+// Permission keys for staff/admin section detection
+const STAFF_PERMISSION_KEYS = [
+  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
+  'view_hours', 'view_faq', 'view_voice', 'view_todo',
+];
+const ADMIN_PERMISSION_KEYS = [
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
 ];
 
-const ADMIN_TABS = [
-  { id: 'users', label: 'Users', href: 'users.html' },
-  { id: 'passwords', label: 'Passwords', href: 'passwords.html' },
-  { id: 'settings', label: 'Settings', href: 'settings.html' },
-  { id: 'templates', label: 'Templates', href: 'templates.html' },
-  { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
+const ALL_ADMIN_TABS = [
+  // Staff section
+  { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'staff' },
+  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff' },
+  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
+  { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
+  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
+  { id: 'hours', label: 'Hours', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
+  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
+  { id: 'voice', label: 'Voice', href: 'voice.html', permission: 'view_voice', section: 'staff' },
+  { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'staff' },
+  // Admin section
+  { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
+  { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
+  { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
+  { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin' },
+  { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
 ];
 
 // =============================================
@@ -65,19 +73,25 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-export function renderTabNav(activeTab, userRole, section = 'staff') {
+export function renderTabNav(activeTab, authState, section = 'staff') {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
-  // Show context switcher for staff+ users (HTML is in page, hidden by default)
+  // Show context switcher for users with any staff/admin permissions
   const switcher = document.getElementById('contextSwitcher');
   if (switcher) {
-    if (['staff', 'admin'].includes(userRole)) {
+    const hasStaffPerms = authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
+    const hasAdminPerms = authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+    if (hasStaffPerms || hasAdminPerms) {
       switcher.classList.remove('hidden');
     }
   }
 
-  const tabs = section === 'admin' ? ADMIN_TABS : STAFF_TABS;
+  // Filter tabs by section AND permission
+  const tabs = ALL_ADMIN_TABS
+    .filter(tab => tab.section === section)
+    .filter(tab => authState.hasPermission?.(tab.permission));
+
   tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
@@ -141,12 +155,14 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   const switcher = document.getElementById('contextSwitcher');
   if (!switcher) return;
 
-  if (!['staff', 'admin', 'oracle'].includes(userRole)) {
+  // Show context switcher if user has any staff or admin permissions
+  const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
+  const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
+  if (!hasStaffPerms && !hasAdminPerms) {
     switcher.classList.add('hidden');
     return;
   }
 
-  const isAdmin = ['admin', 'oracle'].includes(userRole);
   const tabs = [
     { id: 'resident', label: 'Resident', href: '/residents/' },
     { id: 'associate', label: 'Associate', href: '/associates/' },
@@ -154,9 +170,9 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
     { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
   ];
 
-  const safeSection = isAdmin && activeSection === 'admin' ? 'admin' : 'staff';
+  const safeSection = hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff';
   switcher.innerHTML = tabs.map(tab => {
-    if (tab.id === 'admin' && !isAdmin) {
+    if (tab.id === 'admin' && !hasAdminPerms) {
       return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
     }
     const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
@@ -177,7 +193,7 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initAdminPage({ activeTab, requiredRole = 'staff', section = 'staff', onReady }) {
+export async function initAdminPage({ activeTab, requiredRole = 'staff', requiredPermission, section = 'staff', onReady }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -198,15 +214,21 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', section
       });
     }
 
-    // Check if user meets the required role
-    // Role hierarchy: admin > staff > resident = associate
+    // Check if user meets the required permission or role
     const userRole = state.appUser?.role;
-    const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
-    const userLevel = ROLE_LEVEL[userRole] || 0;
-    const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
-    const meetsRoleRequirement = userLevel >= requiredLevel;
+    let meetsRequirement;
+    if (requiredPermission) {
+      // Permission-based access (preferred)
+      meetsRequirement = state.hasPermission?.(requiredPermission);
+    } else {
+      // Legacy role-based access (backward compat)
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
+      const userLevel = ROLE_LEVEL[userRole] || 0;
+      const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+      meetsRequirement = userLevel >= requiredLevel;
+    }
 
-    if (state.appUser && meetsRoleRequirement) {
+    if (state.appUser && meetsRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
       renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
@@ -228,8 +250,8 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', section
       const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
 
       renderContextSwitcher(state.appUser?.role, resolvedSection);
-      // Render tab navigation
-      renderTabNav(activeTab, state.appUser?.role, resolvedSection);
+      // Render tab navigation (pass full auth state for permission checks)
+      renderTabNav(activeTab, state, resolvedSection);
 
       // Sign out handlers (only bind once)
       if (!pageContentShown) {

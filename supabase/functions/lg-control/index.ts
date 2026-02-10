@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 interface LgControlRequest {
   action: "getStatus" | "control" | "watch" | "unwatch" | "registerPushToken";
@@ -47,21 +48,9 @@ serve(async (req) => {
       return jsonResponse({ error: "Invalid token" }, 401);
     }
 
-    // 2. Check user role (resident+)
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("id, role")
-      .eq("auth_user_id", user.id)
-      .single();
-
-    const ROLE_LEVEL: Record<string, number> = {
-      admin: 3,
-      staff: 2,
-      resident: 1,
-      associate: 1,
-    };
-    const userLevel = ROLE_LEVEL[appUser?.role] || 0;
-    if (userLevel < 1) {
+    // 2. Check granular permission: view_laundry
+    const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "view_laundry");
+    if (!hasPermission) {
       return jsonResponse({ error: "Insufficient permissions" }, 403);
     }
 

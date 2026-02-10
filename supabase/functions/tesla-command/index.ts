@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 const TESLA_TOKEN_URL =
   "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token";
@@ -57,7 +58,6 @@ serve(async (req) => {
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
 
-    let userLevel = 3; // default to admin for internal calls
     let appUser: any = null;
     if (!isInternalCall) {
       const {
@@ -68,25 +68,12 @@ serve(async (req) => {
         return jsonResponse({ error: "Invalid token" }, 401);
       }
 
-      // 2. Check user role (resident+)
-      const { data: appUserData } = await supabase
-        .from("app_users")
-        .select("id, role")
-        .eq("auth_user_id", user.id)
-        .single();
-      appUser = appUserData;
-
-      const ROLE_LEVEL: Record<string, number> = {
-        admin: 3,
-        oracle: 3,
-        staff: 2,
-        resident: 1,
-        associate: 1,
-      };
-      userLevel = ROLE_LEVEL[appUser?.role] || 0;
-    }
-    if (userLevel < 1) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+      // 2. Check granular permission: control_cars
+      const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
+      appUser = result.appUser;
+      if (!result.hasPermission) {
+        return jsonResponse({ error: "Insufficient permissions" }, 403);
+      }
     }
 
     // 3. Parse request

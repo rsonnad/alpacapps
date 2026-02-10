@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 const SDM_BASE_URL = "https://smartdevicemanagement.googleapis.com/v1";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -65,7 +66,6 @@ serve(async (req) => {
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
 
-    let userLevel = 3; // default to admin for internal calls
     if (!isInternalCall) {
       const {
         data: { user },
@@ -75,23 +75,11 @@ serve(async (req) => {
         return jsonResponse({ error: "Invalid token" }, 401);
       }
 
-      // Check user role
-      const { data: appUser } = await supabase
-        .from("app_users")
-        .select("role")
-        .eq("auth_user_id", user.id)
-        .single();
-
-      const ROLE_LEVEL: Record<string, number> = {
-        admin: 3,
-        staff: 2,
-        resident: 1,
-        associate: 1,
-      };
-      userLevel = ROLE_LEVEL[appUser?.role] || 0;
-    }
-    if (userLevel < 1) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+      // Check granular permission: control_climate
+      const { hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_climate");
+      if (!hasPermission) {
+        return jsonResponse({ error: "Insufficient permissions" }, 403);
+      }
     }
 
     // Read nest_config

@@ -3,7 +3,7 @@
  * Single-page app orchestrator for the Alpaca Playhouse mobile app.
  */
 
-import { initAuth, getAuthState, signOut, signInWithPassword, signInWithGoogle, onAuthStateChange } from '../../shared/auth.js';
+import { initAuth, getAuthState, signOut, signInWithPassword, signInWithGoogle, onAuthStateChange, hasPermission } from '../../shared/auth.js';
 import { userHasTeslaAccount } from '../../shared/services/cars-data.js';
 
 // =============================================
@@ -25,11 +25,17 @@ async function initApp() {
 
   function handleAuth(state) {
     authState = state;
+    // Use permissions for access check — any user with at least one resident permission is authorized
+    const hasAnyResidentPerm = state.hasAnyPermission?.(
+      'view_cameras', 'view_lighting', 'view_climate', 'view_music', 'view_laundry', 'view_cars'
+    );
+    // Fallback to role level for backward compat during permission loading
     const userRole = state.appUser?.role;
-    const ROLE_LEVEL = { admin: 3, staff: 2, resident: 1, associate: 1 };
+    const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
     const userLevel = ROLE_LEVEL[userRole] || 0;
+    const isAuthorized = hasAnyResidentPerm || userLevel >= 1;
 
-    if (state.appUser && userLevel >= 1) {
+    if (state.appUser && isAuthorized) {
       // Authorized resident+
       appUser = state.appUser;
       document.getElementById('loadingOverlay').classList.add('hidden');
@@ -128,12 +134,18 @@ function setupLogin() {
 // CARS TAB VISIBILITY
 // =============================================
 async function checkCarsVisibility(authState) {
-  const role = authState.appUser?.role;
   const carsBtn = document.getElementById('carsTabBtn');
   if (!carsBtn) return;
 
-  // Staff/admin always see cars tab
-  if (['staff', 'admin', 'oracle'].includes(role)) {
+  // No view_cars permission at all — hide
+  if (!authState.hasPermission?.('view_cars')) {
+    carsBtn.classList.add('hidden');
+    if (currentTab === 'cars') switchTab('cameras');
+    return;
+  }
+
+  // Users with admin_cars_settings or control_cars always see cars tab
+  if (authState.hasPermission?.('admin_cars_settings') || authState.hasPermission?.('control_cars')) {
     carsBtn.classList.remove('hidden');
     return;
   }
@@ -144,7 +156,6 @@ async function checkCarsVisibility(authState) {
     carsBtn.classList.remove('hidden');
   } else {
     carsBtn.classList.add('hidden');
-    // If currently on cars tab, switch away
     if (currentTab === 'cars') switchTab('cameras');
   }
 }

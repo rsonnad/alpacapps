@@ -5,6 +5,7 @@
 
 import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { hasPermission } from '../shared/auth.js';
 
 // =============================================
 // CONFIGURATION
@@ -403,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentAppUserId = appUser?.id;
 
       // Show admin settings
-      if (['admin', 'oracle'].includes(role)) {
+      if (hasPermission('admin_laundry_settings')) {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         await renderAdminSettings();
       }

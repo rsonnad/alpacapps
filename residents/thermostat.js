@@ -5,6 +5,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { hasPermission } from '../shared/auth.js';
 
 // =============================================
 // CONFIGURATION
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Check for OAuth callback code in URL params
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      if (code && ['admin', 'oracle'].includes(currentUserRole)) {
+      if (code && hasPermission('admin_climate_settings')) {
         await handleOAuthCallback(code);
         window.history.replaceState({}, '', window.location.pathname);
       }
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (thermoActions.length) setTimeout(() => refreshAllStates(), 1500);
       });
 
-      if (['admin', 'oracle'].includes(currentUserRole)) {
+      if (hasPermission('admin_climate_settings')) {
         await loadNestSettings();
       }
     },

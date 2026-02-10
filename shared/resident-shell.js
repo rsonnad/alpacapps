@@ -5,7 +5,7 @@
  */
 
 import { supabase } from './supabase.js';
-import { initAuth, getAuthState, signOut, onAuthStateChange } from './auth.js';
+import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
 import { initPaiWidget } from './pai-widget.js';
 import { setupVersionInfo } from './version-info.js';
@@ -13,16 +13,25 @@ import { setupVersionInfo } from './version-info.js';
 // =============================================
 // TAB DEFINITIONS
 // =============================================
+// Permission keys for staff/admin section detection (context switcher)
+const STAFF_PERMISSION_KEYS = [
+  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
+  'view_hours', 'view_faq', 'view_voice', 'view_todo',
+];
+const ADMIN_PERMISSION_KEYS = [
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
+];
+
 const RESIDENT_TABS = [
-  { id: 'homeauto', label: 'Lighting', href: 'lighting.html' },
-  { id: 'music', label: 'Music', href: 'sonos.html' },
-  { id: 'cameras', label: 'Cameras', href: 'cameras.html' },
-  { id: 'climate', label: 'Climate', href: 'climate.html' },
-  { id: 'laundry', label: 'Laundry', href: 'laundry.html' },
-  { id: 'cars', label: 'Cars', href: 'cars.html' },
-  { id: 'profile', label: 'Profile', href: 'profile.html' },
-  { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html' },
-  { id: 'pai', label: 'Life of PAI', href: 'lifeofpai.html' },
+  { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
+  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
+  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
+  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
+  { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry' },
+  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
+  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html', permission: 'view_cameras' },
+  { id: 'pai', label: 'Life of PAI', href: 'lifeofpai.html', permission: 'use_pai' },
 ];
 
 // =============================================
@@ -61,19 +70,24 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-function renderResidentTabNav(activeTab, userRole) {
+function renderResidentTabNav(activeTab, authState) {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
-  // Show context switcher for staff+ users (HTML is in page, hidden by default)
+  // Show context switcher for users with any staff/admin permissions
   const switcher = document.getElementById('contextSwitcher');
   if (switcher) {
-    if (['staff', 'admin'].includes(userRole)) {
+    const hasStaffPerms = authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
+    const hasAdminPerms = authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+    if (hasStaffPerms || hasAdminPerms) {
       switcher.classList.remove('hidden');
     }
   }
 
-  tabsContainer.innerHTML = RESIDENT_TABS.map(tab => {
+  // Filter tabs by permission
+  const tabs = RESIDENT_TABS.filter(tab => authState.hasPermission?.(tab.permission));
+
+  tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
@@ -82,16 +96,17 @@ function renderResidentTabNav(activeTab, userRole) {
 // =============================================
 // CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
 // =============================================
-function renderContextSwitcher(userRole) {
+function renderContextSwitcher() {
   const switcher = document.getElementById('contextSwitcher');
   if (!switcher) return;
 
-  if (!['staff', 'admin', 'oracle'].includes(userRole)) {
+  const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
+  const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
+  if (!hasStaffPerms && !hasAdminPerms) {
     switcher.classList.add('hidden');
     return;
   }
 
-  const isAdmin = ['admin', 'oracle'].includes(userRole);
   const tabs = [
     { id: 'resident', label: 'Resident', href: '/residents/' },
     { id: 'associate', label: 'Associate', href: '/associates/' },
@@ -100,7 +115,7 @@ function renderContextSwitcher(userRole) {
   ];
 
   switcher.innerHTML = tabs.map(tab => {
-    if (tab.id === 'admin' && !isAdmin) {
+    if (tab.id === 'admin' && !hasAdminPerms) {
       return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
     }
     const isActive = tab.id === 'resident';
@@ -171,7 +186,7 @@ function escapeHtml(s) {
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initResidentPage({ activeTab, requiredRole = 'resident', onReady }) {
+export async function initResidentPage({ activeTab, requiredRole = 'resident', requiredPermission, onReady }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -192,15 +207,19 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
       });
     }
 
-    // Check if user meets the required role
-    // Role hierarchy: admin > staff > resident = associate
+    // Check if user meets the required permission or role
     const userRole = state.appUser?.role;
-    const ROLE_LEVEL = { admin: 3, staff: 2, resident: 1, associate: 1 };
-    const userLevel = ROLE_LEVEL[userRole] || 0;
-    const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
-    const meetsRoleRequirement = userLevel >= requiredLevel;
+    let meetsRequirement;
+    if (requiredPermission) {
+      meetsRequirement = state.hasPermission?.(requiredPermission);
+    } else {
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
+      const userLevel = ROLE_LEVEL[userRole] || 0;
+      const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+      meetsRequirement = userLevel >= requiredLevel;
+    }
 
-    if (state.appUser && meetsRoleRequirement) {
+    if (state.appUser && meetsRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
       renderUserInfo(document.getElementById('userInfo'), state.appUser, 'profile.html');
@@ -218,9 +237,9 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', o
         document.body.classList.remove('is-admin');
       }
 
-      renderContextSwitcher(state.appUser?.role);
-      // Render tab navigation
-      renderResidentTabNav(activeTab, state.appUser?.role);
+      renderContextSwitcher();
+      // Render tab navigation (pass full auth state for permission checks)
+      renderResidentTabNav(activeTab, state);
 
       // Sign out handlers + PAI widget + version info (only bind once)
       if (!pageContentShown) {

@@ -194,6 +194,7 @@ export async function initAuth() {
             currentUser = null;
             currentAppUser = null;
             currentRole = 'public';
+            currentPermissions = new Set();
             notifyListeners();
           }
           doResolve(null, 'public', 'supabase:no-session');
@@ -203,6 +204,7 @@ export async function initAuth() {
         currentUser = null;
         currentAppUser = null;
         currentRole = 'public';
+        currentPermissions = new Set();
         clearCachedAuthState();
         notifyListeners();
         doResolve(null, 'public', 'supabase:signed-out');
@@ -575,7 +577,29 @@ export function getAuthState() {
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
     isCurrentResident: currentAppUser?.is_current_resident === true,
+    // Granular permissions
+    permissions: currentPermissions,
+    hasPermission: (key) => currentPermissions.has(key),
+    hasAnyPermission: (...keys) => keys.some(k => currentPermissions.has(k)),
   };
+}
+
+/**
+ * Check if the current user has a specific permission
+ * @param {string} permKey - Permission key to check
+ * @returns {boolean}
+ */
+export function hasPermission(permKey) {
+  return currentPermissions.has(permKey);
+}
+
+/**
+ * Check if the current user has any of the specified permissions
+ * @param {...string} permKeys - Permission keys to check
+ * @returns {boolean}
+ */
+export function hasAnyPermission(...permKeys) {
+  return permKeys.some(k => currentPermissions.has(k));
 }
 
 /**

@@ -3,6 +3,7 @@ import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { emailService } from '../../shared/email-service.js';
 import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
+import { hasPermission } from '../../shared/auth.js';
 
 // Timeout configuration
 const DB_TIMEOUT_MS = 10000; // 10 seconds for database operations
@@ -861,6 +862,10 @@ function renderUsers() {
               </td>
               <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
               <td>
+                ${hasPermission('manage_permissions') && !isCurrentUser
+                  ? `<button class="btn-secondary btn-small" onclick="showPermissionsModal('${u.id}')" style="margin-right:0.25rem;">Permissions</button>`
+                  : ''
+                }
                 ${isCurrentUser
                   ? '-'
                   : `<button class="btn-danger" onclick="removeUser('${u.id}')">Remove</button>`
@@ -872,6 +877,171 @@ function renderUsers() {
       </tbody>
     </table>
   `;
+}
+
+// =============================================
+// PERMISSIONS MODAL
+// =============================================
+
+const CATEGORY_LABELS = {
+  resident: 'Resident Features',
+  staff: 'Staff Features',
+  admin: 'Admin Features',
+  associate: 'Associate Features',
+  admin_resident: 'Admin Settings on Resident Pages',
+};
+
+// Track current modal state
+let permModalUserId = null;
+let permModalUserRole = null;
+let permModalRoleDefaults = new Set();
+let permModalOverrides = new Map(); // key → boolean (granted)
+
+async function showPermissionsModal(userId) {
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+
+  permModalUserId = userId;
+  permModalUserRole = user.role;
+
+  document.getElementById('permUserName').textContent = user.display_name || user.email;
+  const badge = document.getElementById('permUserRoleBadge');
+  badge.textContent = user.role;
+  badge.className = 'role-badge ' + user.role;
+
+  // Fetch all permissions, role defaults, and user overrides in parallel
+  const [allPermsResult, roleDefaultsResult, userOverridesResult] = await Promise.all([
+    supabase.from('permissions').select('*').order('category').order('sort_order'),
+    supabase.from('role_permissions').select('permission_key').eq('role', user.role),
+    supabase.from('user_permissions').select('permission_key, granted').eq('app_user_id', userId),
+  ]);
+
+  const allPerms = allPermsResult.data || [];
+  permModalRoleDefaults = new Set((roleDefaultsResult.data || []).map(r => r.permission_key));
+  permModalOverrides = new Map((userOverridesResult.data || []).map(o => [o.permission_key, o.granted]));
+
+  // Group by category
+  const categories = {};
+  for (const perm of allPerms) {
+    if (!categories[perm.category]) categories[perm.category] = [];
+    categories[perm.category].push(perm);
+  }
+
+  let html = '';
+  for (const [cat, perms] of Object.entries(categories)) {
+    html += `<div class="perm-category"><h4>${CATEGORY_LABELS[cat] || cat}</h4><div class="perm-grid">`;
+    for (const perm of perms) {
+      const isRoleDefault = permModalRoleDefaults.has(perm.key);
+      const override = permModalOverrides.get(perm.key);
+      const isEffective = override !== undefined ? override : isRoleDefault;
+      const stateClass = override === true ? 'perm-granted' :
+                         override === false ? 'perm-revoked' :
+                         'perm-default';
+      const overrideBadge = override === true ? '<span class="perm-override-badge">Added</span>' :
+                            override === false ? '<span class="perm-override-badge">Revoked</span>' : '';
+
+      html += `
+        <label class="perm-item ${stateClass}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
+          <input type="checkbox" ${isEffective ? 'checked' : ''}
+                 onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})">
+          <span class="perm-label">${perm.label}</span>
+          ${overrideBadge}
+        </label>`;
+    }
+    html += '</div></div>';
+  }
+
+  document.getElementById('permissionCategories').innerHTML = html;
+  document.getElementById('permissionsModal').classList.remove('hidden');
+}
+
+function togglePermOverride(checkbox, key, isRoleDefault) {
+  const isChecked = checkbox.checked;
+  const label = checkbox.closest('.perm-item');
+
+  if (isRoleDefault && isChecked) {
+    // Matches role default — remove override
+    permModalOverrides.delete(key);
+    label.className = 'perm-item perm-default';
+  } else if (isRoleDefault && !isChecked) {
+    // Revoking a role default
+    permModalOverrides.set(key, false);
+    label.className = 'perm-item perm-revoked';
+  } else if (!isRoleDefault && isChecked) {
+    // Granting beyond role defaults
+    permModalOverrides.set(key, true);
+    label.className = 'perm-item perm-granted';
+  } else if (!isRoleDefault && !isChecked) {
+    // Matches role default (not in defaults, not checked) — remove override
+    permModalOverrides.delete(key);
+    label.className = 'perm-item perm-default';
+  }
+
+  // Update override badge
+  const existingBadge = label.querySelector('.perm-override-badge');
+  if (existingBadge) existingBadge.remove();
+
+  const override = permModalOverrides.get(key);
+  if (override === true) {
+    label.insertAdjacentHTML('beforeend', '<span class="perm-override-badge">Added</span>');
+  } else if (override === false) {
+    label.insertAdjacentHTML('beforeend', '<span class="perm-override-badge">Revoked</span>');
+  }
+}
+
+function closePermissionsModal() {
+  document.getElementById('permissionsModal').classList.add('hidden');
+  permModalUserId = null;
+}
+
+async function resetPermissions() {
+  if (!permModalUserId) return;
+  try {
+    const { error } = await supabase
+      .from('user_permissions')
+      .delete()
+      .eq('app_user_id', permModalUserId);
+    if (error) throw error;
+    showToast('Permissions reset to role defaults', 'success');
+    // Reopen modal to refresh
+    await showPermissionsModal(permModalUserId);
+  } catch (e) {
+    showToast('Failed to reset: ' + e.message, 'error');
+  }
+}
+
+async function savePermissions() {
+  if (!permModalUserId) return;
+  try {
+    // Delete all existing overrides for this user
+    const { error: delError } = await supabase
+      .from('user_permissions')
+      .delete()
+      .eq('app_user_id', permModalUserId);
+    if (delError) throw delError;
+
+    // Insert new overrides
+    if (permModalOverrides.size > 0) {
+      const rows = [];
+      for (const [key, granted] of permModalOverrides) {
+        rows.push({
+          app_user_id: permModalUserId,
+          permission_key: key,
+          granted,
+          granted_by: authState.appUser?.id,
+        });
+      }
+      const { error: insertError } = await supabase
+        .from('user_permissions')
+        .insert(rows);
+      if (insertError) throw insertError;
+    }
+
+    showToast('Permissions saved', 'success');
+    closePermissionsModal();
+  } catch (e) {
+    showToast('Failed to save: ' + e.message, 'error');
+  }
 }
 
 // Make functions globally accessible
@@ -889,3 +1059,8 @@ window.showLinkPersonModal = showLinkPersonModal;
 window.closeLinkPersonModal = closeLinkPersonModal;
 window.confirmLinkPerson = confirmLinkPerson;
 window.unlinkPerson = unlinkPerson;
+window.showPermissionsModal = showPermissionsModal;
+window.closePermissionsModal = closePermissionsModal;
+window.togglePermOverride = togglePermOverride;
+window.resetPermissions = resetPermissions;
+window.savePermissions = savePermissions;

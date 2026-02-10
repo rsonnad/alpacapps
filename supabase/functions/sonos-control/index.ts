@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 interface SonosRequest {
   action:
@@ -129,17 +130,9 @@ serve(async (req) => {
         return jsonResponse({ error: "Invalid token" }, 401);
       }
 
-      // Verify user has resident+ role
-      const { data: appUser } = await supabase
-        .from("app_users")
-        .select("role")
-        .eq("auth_user_id", user.id)
-        .single();
-
-      if (
-        !appUser ||
-        !["resident", "associate", "staff", "admin", "oracle"].includes(appUser.role)
-      ) {
+      // Check granular permission: control_music
+      const { hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_music");
+      if (!hasPermission) {
         return jsonResponse({ error: "Insufficient permissions" }, 403);
       }
     }

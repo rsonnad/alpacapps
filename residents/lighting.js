@@ -6,6 +6,7 @@
 
 import { supabase, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { hasPermission } from '../shared/auth.js';
 
 // =============================================
 // CONFIGURATION
@@ -87,7 +88,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'resident',
     onReady: async () => {
       await loadGroupsFromDB();
-      await loadGoveeSettings();
+      if (hasPermission('admin_lighting_settings')) {
+        await loadGoveeSettings();
+      }
       renderLightingAreas();
       setupEventListeners();
       await refreshAllStates();

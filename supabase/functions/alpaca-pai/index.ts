@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 // =============================================
 // Types
@@ -1887,16 +1888,12 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     return jsonResponse({ error: "Invalid token" }, 401);
   }
 
-  const { data: appUser } = await supabase
-    .from("app_users")
-    .select("id, role, email, display_name, person_id")
-    .eq("auth_user_id", user.id)
-    .single();
-
-  const userLevel = ROLE_LEVEL[appUser?.role] || 0;
-  if (userLevel < 1) {
+  // Check granular permission: use_pai
+  const { appUser, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, user.id, "use_pai");
+  if (!hasPaiPerm) {
     return jsonResponse({ error: "Insufficient permissions" }, 403);
   }
+  const userLevel = ROLE_LEVEL[appUser?.role] || 0;
 
   // 2. Parse request
   const { message, conversationHistory = [] }: PaiRequest = body;
