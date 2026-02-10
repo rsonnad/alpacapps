@@ -863,7 +863,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.43 5:49a</span>
+<span data-site-version style="display:none;">v260210.44 5:52a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1071,13 +1071,22 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
         <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
       </label>
       <label class="calc-svc">
-        <input type="checkbox" data-svc="mobile" onchange="recalcCost()">
+        <input type="checkbox" data-svc="iphone" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
-          <span class="calc-svc__name">Mobile App</span>
-          <span class="calc-svc__desc">iOS &amp; Android via Capacitor</span>
+          <span class="calc-svc__name">iPhone App</span>
+          <span class="calc-svc__desc">iOS via Capacitor + App Store</span>
         </span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr + $25</span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="android" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Android App</span>
+          <span class="calc-svc__desc">Android via Capacitor + Play Store</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
       </label>
     </div>
 
@@ -1085,19 +1094,19 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">This mainly affects your Claude Code plan and usage-based services.</p>
 
     <div class="calc-tiers">
-      <label class="calc-tier calc-tier--active" data-tier="light">
-        <input type="radio" name="tier" value="light" checked onchange="recalcCost()">
-        <span class="calc-tier__label">Light</span>
+      <label class="calc-tier calc-tier--active" data-tier="basic">
+        <input type="radio" name="tier" value="basic" checked onchange="recalcCost()">
+        <span class="calc-tier__label">Basic</span>
         <span class="calc-tier__desc">Landing page, basic CRM, a few forms. A weekend project.</span>
       </label>
-      <label class="calc-tier" data-tier="moderate">
-        <input type="radio" name="tier" value="moderate" onchange="recalcCost()">
-        <span class="calc-tier__label">Moderate</span>
+      <label class="calc-tier" data-tier="complicated">
+        <input type="radio" name="tier" value="complicated" onchange="recalcCost()">
+        <span class="calc-tier__label">Complicated</span>
         <span class="calc-tier__desc">Full CRUD, user roles, email/SMS notifications, payments. A few weeks of building.</span>
       </label>
-      <label class="calc-tier" data-tier="intensive">
-        <input type="radio" name="tier" value="intensive" onchange="recalcCost()">
-        <span class="calc-tier__label">Intensive</span>
+      <label class="calc-tier" data-tier="hyper">
+        <input type="radio" name="tier" value="hyper" onchange="recalcCost()">
+        <span class="calc-tier__label">Hyperintensive</span>
         <span class="calc-tier__desc">Complex workflows, integrations, AI features, mobile app, ongoing development.</span>
       </label>
     </div>
@@ -1851,24 +1860,21 @@ function recalcCost() {
     el.classList.toggle('calc-tier--active', el.dataset.tier === tier);
   });
 
-  // Claude Code annual cost by tier
-  var claudeCosts = { light: 0, moderate: 1200, intensive: 2400 };
-  var claudeLabels = { light: 'Free tier', moderate: 'Pro ($20/mo) + Max during build sprints', intensive: 'Max ($100/mo) or Max+ ($200/mo)' };
-
   // Per-service annual costs by tier
   var svcCosts = {
-    'github':      { light: 0, moderate: 0, intensive: 0 },
-    'supabase':    { light: 0, moderate: 0, intensive: 300 },  // might hit Pro at $25/mo
-    'claude':      { light: 0, moderate: 1200, intensive: 2400 },
-    'google-auth': { light: 0, moderate: 0, intensive: 0 },
-    'resend':      { light: 0, moderate: 0, intensive: 0 },
-    'telnyx':      { light: 0, moderate: 60, intensive: 180 },   // ~$5-15/mo
-    'square':      { light: 0, moderate: 0, intensive: 0 },       // % based, not flat
-    'signwell':    { light: 0, moderate: 0, intensive: 0 },
-    'gemini':      { light: 0, moderate: 0, intensive: 0 },
-    'discord':     { light: 0, moderate: 48, intensive: 48 },     // $4/mo droplet
-    'domain':      { light: 10, moderate: 10, intensive: 10 },
-    'mobile':      { light: 124, moderate: 124, intensive: 124 }  // $99/yr Apple + $25 one-time amortized
+    'github':      { basic: 0, complicated: 0, hyper: 0 },
+    'supabase':    { basic: 0, complicated: 0, hyper: 300 },
+    'claude':      { basic: 0, complicated: 1200, hyper: 2400 },
+    'google-auth': { basic: 0, complicated: 0, hyper: 0 },
+    'resend':      { basic: 0, complicated: 0, hyper: 0 },
+    'telnyx':      { basic: 0, complicated: 60, hyper: 180 },
+    'square':      { basic: 0, complicated: 0, hyper: 0 },
+    'signwell':    { basic: 0, complicated: 0, hyper: 0 },
+    'gemini':      { basic: 0, complicated: 0, hyper: 0 },
+    'discord':     { basic: 0, complicated: 48, hyper: 48 },
+    'domain':      { basic: 10, complicated: 10, hyper: 10 },
+    'iphone':      { basic: 99, complicated: 99, hyper: 99 },
+    'android':     { basic: 25, complicated: 25, hyper: 25 }
   };
 
   var svcLabels = {
@@ -1883,14 +1889,16 @@ function recalcCost() {
     'gemini':      'Google Gemini (AI)',
     'discord':     'Discord Bot + server',
     'domain':      'Custom domain',
-    'mobile':      'Mobile app (App Store fees)'
+    'iphone':      'iPhone App (Apple Developer)',
+    'android':     'Android App (Google Play)'
   };
 
   var svcNotes = {
-    'supabase': { intensive: 'May need Pro ($25/mo) for storage/bandwidth' },
-    'telnyx':   { moderate: '~$5/mo: phone number + ~1,000 SMS', intensive: '~$15/mo: higher volume SMS' },
-    'square':   { moderate: '2.9% + 30\u00a2 per transaction (no flat fee)', intensive: '2.9% + 30\u00a2 per transaction (no flat fee)' },
-    'mobile':   { light: 'Apple $99/yr + Google $25 one-time', moderate: 'Apple $99/yr + Google $25 one-time', intensive: 'Apple $99/yr + Google $25 one-time' }
+    'supabase': { hyper: 'May need Pro ($25/mo) for storage/bandwidth' },
+    'telnyx':   { complicated: '~$5/mo: phone number + ~1,000 SMS', hyper: '~$15/mo: higher volume SMS' },
+    'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
+    'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
+    'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' }
   };
 
   // Gather selected services. Core always included.
@@ -1924,8 +1932,8 @@ function recalcCost() {
   // Note
   var notes = lines.filter(function(l) { return l.note; }).map(function(l) { return l.label + ': ' + l.note; });
   var noteEl = document.getElementById('calc-note');
-  if (tier === 'light' && total === 0) {
-    noteEl.textContent = 'The light tier runs entirely on free tiers. Claude Code\'s free plan works for small projects.';
+  if (tier === 'basic' && total === 0) {
+    noteEl.textContent = 'The basic tier runs entirely on free tiers. Claude Code\'s free plan works for small projects.';
   } else if (notes.length > 0) {
     noteEl.innerHTML = notes.join('<br>');
   } else {
