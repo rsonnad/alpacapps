@@ -1,5 +1,5 @@
 /**
- * Demo mode redaction: only applies when current user has role 'demo'.
+ * Demo mode redaction: only applies when current user has role 'demon'.
  * Does not change behavior for any other role.
  */
 
@@ -18,11 +18,11 @@ const FAKE = {
 };
 
 /**
- * @returns {boolean} True only if current user role is 'demo'. Other roles unchanged.
+ * @returns {boolean} True only if current user role is 'demon'. Other roles unchanged.
  */
 export function isDemoUser() {
   const state = getAuthState();
-  return state?.appUser?.role === 'demo';
+  return state?.appUser?.role === 'demon';
 }
 
 /**

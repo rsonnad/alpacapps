@@ -219,12 +219,12 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     let meetsRequirement;
     if (requiredPermission) {
       meetsRequirement = state.hasPermission?.(requiredPermission);
-    } else if (userRole === 'demo') {
+    } else if (userRole === 'demon') {
       const tabDef = ALL_ADMIN_TABS.find(t => t.id === activeTab);
       const tabPermission = tabDef?.permission;
       meetsRequirement = !!(tabPermission && state.hasPermission?.(tabPermission));
     } else {
-      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
@@ -247,14 +247,14 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       } else {
         document.body.classList.remove('is-admin');
       }
-      if (state.appUser.role === 'demo') {
+      if (state.appUser.role === 'demon') {
         document.body.classList.add('is-demo-mode');
       } else {
         document.body.classList.remove('is-demo-mode');
       }
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
-      const isDemo = state.appUser.role === 'demo';
+      const isDemo = state.appUser.role === 'demon';
       const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
 
       renderContextSwitcher(state.appUser?.role, resolvedSection);

@@ -57,10 +57,10 @@ Example:
 
 ## 3. Invitation flow
 
-- **Invite role:** Add `demo` to the invite dropdown in **Users** admin (`spaces/admin/users.html` + `users.js`).
-- **DB:** Allow `demo` in `app_users.role` and `user_invitations.role` (migration to extend role check).
-- **Email:** Reuse existing staff-invitation flow; add `demo` to role label/description so the email says they’re invited as a “Demo” (or “Demon”) user and will see the product with demo data where sensitive.
-- **Sign-up:** Same as today: invitee signs in with the invited email → `handleAuthChange` in `auth.js` finds pending invitation and creates `app_users` with `role: 'demo'`.
+- **Invite role:** Add `demon` to the invite dropdown in **Users** admin (`spaces/admin/users.html` + `users.js`).
+- **DB:** Allow `demon` in `app_users.role` and `user_invitations.role` (migration to extend role check).
+- **Email:** Reuse existing staff-invitation flow; add `demon` to role label/description so the email says they’re invited as a “Demo” (or “Demon”) user and will see the product with demo data where sensitive.
+- **Sign-up:** Same as today: invitee signs in with the invited email → `handleAuthChange` in `auth.js` finds pending invitation and creates `app_users` with `role: 'demon'`.
 
 ---
 
@@ -68,8 +68,8 @@ Example:
 
 ### 4.1 Auth & role
 
-- [x] **Migration:** Extend `app_users.role` and `user_invitations.role` checks to include `'demo'` (and `'oracle'`/`'public'` if not already).
-- [x] **auth.js:** Include `'demo'` in cached role list and in any role-based redirects so demo users get the same shell as residents + staff (resident shell + context switcher to admin).
+- [x] **Migration:** Extend `app_users.role` and `user_invitations.role` checks to include `'demon'` (and `'oracle'`/`'public'` if not already).
+- [x] **auth.js:** Include `'demon'` in cached role list and in any role-based redirects so demo users get the same shell as residents + staff (resident shell + context switcher to admin).
 - [x] **Permissions:** Define `role_permissions` for `demo`: grant **view-only** permissions for all admin tabs (view_spaces, view_rentals, view_events, view_media, view_sms, view_hours, view_faq, view_voice, view_todo, view_users, view_settings, view_templates, view_accounting, etc.) and resident tabs; **no** edit permissions (no edit_spaces, edit_rentals, etc.).
 - [ ] **RLS / Edge functions:** Where today you check `role IN ('admin','staff')` for write access, keep writes for admin/staff only; demo never gets write. For read, allow demo where staff can read, but optionally have edge functions return redacted payloads for demo (or rely on client-side redaction only – see below).
 
