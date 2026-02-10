@@ -23,6 +23,7 @@ const STAFF_TABS = [
 
 const ADMIN_TABS = [
   { id: 'users', label: 'Users', href: 'users.html' },
+  { id: 'passwords', label: 'Passwords', href: 'passwords.html' },
   { id: 'settings', label: 'Settings', href: 'settings.html' },
   { id: 'templates', label: 'Templates', href: 'templates.html' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html' },
