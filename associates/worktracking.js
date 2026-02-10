@@ -38,7 +38,7 @@ initAssociatePage({
 async function initApp() {
   // Get or create associate profile
   try {
-    profile = await hoursService.getOrCreateProfile(authState.appUser.id);
+    profile = await hoursService.getOrCreateProfile(authState.appUser.id, authState.appUser.role);
   } catch (err) {
     console.error('Failed to get profile:', err);
     showToast('Failed to load your profile', 'error');
@@ -537,7 +537,7 @@ async function refreshHistory() {
 async function refreshPaymentTab() {
   try {
     // Refresh profile to get latest rate
-    profile = await hoursService.getOrCreateProfile(authState.appUser.id);
+    profile = await hoursService.getOrCreateProfile(authState.appUser.id, authState.appUser.role);
 
     document.getElementById('payRate').textContent = `${HoursService.formatCurrency(profile.hourly_rate)}/hr`;
     document.getElementById('payMethod').value = profile.payment_method || '';

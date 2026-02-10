@@ -31,7 +31,7 @@ class HoursService {
   /**
    * Get or create an associate profile for a given app_user
    */
-  async getOrCreateProfile(appUserId) {
+  async getOrCreateProfile(appUserId, userRole) {
     // Try to fetch existing
     const { data: existing, error: fetchErr } = await supabase
       .from('associate_profiles')
@@ -41,6 +41,9 @@ class HoursService {
 
     if (fetchErr) throw fetchErr;
     if (existing) return existing;
+
+    // Only auto-create for actual associates
+    if (userRole !== 'associate') return null;
 
     // Create new profile
     const { data: created, error: createErr } = await supabase
