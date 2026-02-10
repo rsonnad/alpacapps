@@ -46,6 +46,7 @@
     <p>Connecting your Tesla account...</p>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY1ODgxNjUsImV4cCI6MjA0MjE2NDE2NX0.vGSLw5PtxKcdRGPQHxNfoHqVvmzWQWFiCZsHaRuIvNw';
@@ -56,11 +57,10 @@
     const error = params.get('error');
     const stateParam = params.get('state') || '';
 
-    // State format: "accountId:supabaseToken" or "profile:accountId:supabaseToken"
+    // State format: "accountId" or "profile:accountId"
     const stateParts = stateParam.split(':');
     const isProfileFlow = stateParts[0] === 'profile';
     const accountId = isProfileFlow ? stateParts[1] : stateParts[0];
-    const supabaseToken = (isProfileFlow ? stateParts.slice(2) : stateParts.slice(1)).join(':');
 
     async function exchangeCode() {
       if (error) {
@@ -81,9 +81,9 @@
         return;
       }
 
-      if (!accountId || !supabaseToken) {
+      if (!accountId) {
         card.innerHTML = `
-          <h2 class="error">Missing Session Data</h2>
+          <h2 class="error">Missing Account ID</h2>
           <p>Could not identify which account to connect. Please try again from the Cars page.</p>
           <p><a href="/residents/cars.html">Back to Cars</a></p>
         `;
@@ -91,14 +91,19 @@
       }
 
       try {
-        // Call edge function directly with fetch — supabase.functions.invoke
-        // doesn't reliably forward custom auth headers on standalone pages
+        // Get a fresh Supabase session from localStorage (survives redirects on same domain)
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data: { session }, error: sessErr } = await sb.auth.getSession();
+        if (sessErr || !session?.access_token) {
+          throw new Error('Your session has expired. Please log in again from the Cars page and retry.');
+        }
+
         const fnUrl = SUPABASE_URL + '/functions/v1/tesla-command';
         const fnRes = await fetch(fnUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + supabaseToken,
+            'Authorization': 'Bearer ' + session.access_token,
             'apikey': SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({
@@ -112,7 +117,6 @@
         const fnError = fnRes.ok ? null : { message: data?.error || `HTTP ${fnRes.status}` };
 
         if (fnError) {
-          // Try to extract detailed error from the response body
           const detail = data?.error || fnError.message || 'Function call failed';
           throw new Error(detail);
         }

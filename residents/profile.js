@@ -1140,15 +1140,8 @@ async function startTeslaOAuth() {
 
     if (error) throw error;
 
-    // Get current Supabase session token
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      showToast('Not logged in. Please sign in first.', 'error');
-      return;
-    }
-
-    // Build Tesla OAuth URL with profile: prefix in state
-    const state = `profile:${account.id}:${session.access_token}`;
+    // Build Tesla OAuth URL — callback page gets a fresh session from localStorage
+    const state = `profile:${account.id}`;
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',

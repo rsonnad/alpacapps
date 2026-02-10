@@ -755,15 +755,8 @@ window._disconnectTesla = async function(accountId) {
 
 // Connect Tesla account via OAuth flow
 window._connectTesla = async function(accountId) {
-  // Get current Supabase session token to pass through OAuth state
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    showToast('Not logged in. Please sign in first.', 'error');
-    return;
-  }
-
-  // Build Tesla OAuth URL with account_id and token in state
-  const state = `${accountId}:${session.access_token}`;
+  // Build Tesla OAuth URL — callback page gets a fresh session from localStorage
+  const state = `${accountId}`;
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',
