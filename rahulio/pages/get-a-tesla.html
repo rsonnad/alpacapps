@@ -1505,10 +1505,90 @@
   </ul>
 </div>
 
-<!-- Top 5 Recommendations -->
+<!-- Top 2 Recommendations -->
 <div class="top-picks" id="topPicks">
-  <h3>&#127942; Our Top 5 Picks</h3>
+  <h3>&#127942; Our Top 2 Picks</h3>
+  <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">We excluded Performance trim &mdash; the extra power is a safety liability for a young driver, and Long Range has the same safety hardware with better range.</p>
   <div class="pick-cards" id="pickCards"></div>
+</div>
+
+<!-- FSD: Subscribe vs Buy Analysis -->
+<div class="case-section" style="margin:1.5rem 0;">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--purple-soft);color:var(--purple);">&#128200;</div>
+    <div class="section-toggle-text">
+      <h3>FSD Analysis: Subscribe ($99/mo) vs. Buy ($8,000)</h3>
+      <p>Net present value comparison over 7 years at a 9% discount rate</p>
+      <div class="section-summary">
+        <span class="summary-chip purple">NPV subscribe: $6,091</span>
+        <span class="summary-chip green">NPV buy: $8,000</span>
+        <span class="summary-chip accent">But resale changes everything</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="content-block">
+      <h4>&#128178; Raw NPV: Subscription wins on paper</h4>
+      <p>At a <strong>9% annual discount rate</strong> (0.75%/month), the present value of 84 monthly payments of $99 is:</p>
+      <div class="stat-callout">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Subscribe ($99/mo &times; 84 months)</div>
+            <div class="big-num" style="color:var(--purple);">$6,091</div>
+            <div class="context">NPV of subscription &mdash; <strong>$1,909 less</strong> than buying outright</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Buy outright (one-time)</div>
+            <div class="big-num" style="color:var(--text);">$8,000</div>
+            <div class="context">Paid today &mdash; full cost felt immediately</div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:0.75rem;"><strong>Formula:</strong> PV = $99 &times; [(1 &minus; (1.0075)<sup>&minus;84</sup>) / 0.0075] = $99 &times; 61.53 = <strong>$6,091</strong></p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128176; But resale value flips the math</h4>
+      <p>When you <em>buy</em> FSD, it transfers to the next owner. That means the $8,000 isn't gone &mdash; it's embedded in the car's resale price. With unsupervised FSD likely by 2026&ndash;2027, a car with FSD already purchased will command a significant premium.</p>
+    </div>
+
+    <table class="savings-table">
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Total Cost (NPV)</th>
+          <th>Resale FSD Value</th>
+          <th>Net Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Subscribe $99/mo for 7 years</strong></td>
+          <td>$6,091</td>
+          <td class="cost-val">$0 (doesn't transfer)</td>
+          <td><strong>$6,091</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Buy FSD at $8,000</strong></td>
+          <td>$8,000</td>
+          <td class="savings-val">+$5,000&ndash;$8,000</td>
+          <td class="savings-val"><strong>$0&ndash;$3,000</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Buy FSD included in purchase price</strong></td>
+          <td>$0 (already in car price)</td>
+          <td class="savings-val">+$5,000&ndash;$8,000</td>
+          <td class="savings-val"><strong>&minus;$5,000 to &minus;$8,000</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="bottom-line-box" style="background:linear-gradient(135deg, var(--purple-soft), var(--surface));border-color:var(--purple-border);">
+      <div class="headline" style="color:var(--purple);">Verdict: Buy &gt; Subscribe &mdash; and FSD-included is the best of all</div>
+      <div class="detail">If she keeps the car 5&ndash;7 years and sells it, <strong>buying FSD outright is essentially free</strong> because it increases resale value by roughly what you paid. Subscribing costs $6K+ that you never get back. And if FSD is already included in the purchase price (like Pick #2 below), it's pure upside &mdash; you paid nothing extra and get $5&ndash;8K more at resale.</div>
+    </div>
+  </div>
 </div>
 
 <!-- EV Durability Note -->
@@ -1745,88 +1825,46 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
   render();
 });
 
-// ── Top 5 Picks ──
+// ── Top 2 Picks ──
+// Performance trim excluded — the extra power is a safety liability for a young driver.
+// Long Range has identical safety hardware with better range.
 function renderTopPicks() {
   const picks = [];
 
-  // Pick 1: Best overall value — highest adjusted savings among confirmed HW4
-  const hw4Vehicles = VEHICLES.filter(v => v.hwConf === 'confirmed');
-  const bestValue = [...hw4Vehicles].sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
-  if (bestValue) picks.push({
-    v: bestValue,
-    tag: 'Best Overall Value',
+  // Pick 1: Cheapest HW4-confirmed Long Range — best entry point
+  const hw4LR = VEHICLES.filter(v => v.hwConf === 'confirmed' && v.trim !== 'Performance');
+  const cheapest = [...hw4LR].sort((a, b) => a.price - b.price)[0];
+  if (cheapest) picks.push({
+    v: cheapest,
+    tag: 'Cheapest HW4 + Long Range',
     tagColor: 'var(--green)',
     tagBg: 'var(--green-soft)',
-    why: `${Math.round(getDealScore(bestValue).savingsPct)}% below new MSRP with confirmed HW4. ${fmtMi(bestValue.mileage)} is nothing for an EV &mdash; decades of life ahead.`,
+    why: `The most affordable confirmed HW4 Long Range near Chicago. ${fmt$(49990 - cheapest.price)} less than buying new. ${cheapest.mileage ? fmtMi(cheapest.mileage) + ' is nothing for an EV — decades of life left.' : ''}`,
     rank: 'gold'
   });
 
-  // Pick 2: Lowest price HW4 confirmed
-  const cheapestHW4 = [...hw4Vehicles].sort((a, b) => a.price - b.price)[0];
-  if (cheapestHW4 && cheapestHW4 !== bestValue) picks.push({
-    v: cheapestHW4,
-    tag: 'Lowest Price + HW4',
-    tagColor: 'var(--accent)',
-    tagBg: 'var(--accent-soft)',
-    why: `The most affordable confirmed HW4 in the search area. At ${fmt$(cheapestHW4.price)}, it's ${fmt$(49990 - cheapestHW4.price)} less than a new LR.`,
-    rank: 'silver'
-  });
-
-  // Pick 3: Lowest mileage (nearly new)
-  const lowestMiles = [...hw4Vehicles].filter(v => v.mileage && v.mileage > 0).sort((a, b) => a.mileage - b.mileage)[0];
-  if (lowestMiles && !picks.find(p => p.v === lowestMiles)) picks.push({
-    v: lowestMiles,
-    tag: 'Practically New',
-    tagColor: 'var(--purple)',
-    tagBg: 'var(--purple-soft)',
-    why: `Only ${fmtMi(lowestMiles.mileage)} &mdash; like buying a new car at a ${fmt$(49990 - lowestMiles.price)} discount. Full factory warranty likely still active.`,
-    rank: 'bronze'
-  });
-
-  // Pick 4: Best Performance model deal
-  const bestPerf = [...VEHICLES].filter(v => v.trim === 'Performance' && (v.hwConf === 'confirmed' || v.hw === 'HW4'))
-    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
-  if (bestPerf && !picks.find(p => p.v === bestPerf)) picks.push({
-    v: bestPerf,
-    tag: 'Best Performance Deal',
-    tagColor: 'var(--orange)',
-    tagBg: 'var(--orange-soft)',
-    why: `Performance trim (3.5s 0&ndash;60, track mode) at ${fmt$(57990 - bestPerf.price)} off new MSRP. Same safety hardware as LR with more power.`,
-    rank: 'blue'
-  });
-
-  // Pick 5: FSD included if available, else newest model year
-  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included');
-  if (fsdPick && !picks.find(p => p.v === fsdPick)) {
+  // Pick 2: FSD Included — the $8,000 package is already paid for + transfers at resale
+  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included' && v.trim !== 'Performance');
+  if (fsdPick) {
+    const deal = getDealScore(fsdPick);
     picks.push({
       v: fsdPick,
-      tag: 'FSD Included',
+      tag: 'FSD Included — Best Long-Term Value',
       tagColor: 'var(--purple)',
       tagBg: 'var(--purple-soft)',
-      why: `Comes with $8,000 Full Self-Driving package already purchased. Combined savings of ${fmt$(getDealScore(fsdPick).savings)} vs buying new + FSD separately.`,
-      rank: 'blue'
-    });
-  } else {
-    const newest = [...hw4Vehicles].filter(v => !picks.find(p => p.v === v))
-      .sort((a, b) => b.year - a.year || a.mileage - b.mileage)[0];
-    if (newest) picks.push({
-      v: newest,
-      tag: 'Newest Model Year',
-      tagColor: 'var(--teal)',
-      tagBg: 'var(--teal-soft)',
-      why: `${newest.year} with latest features and longest remaining warranty. Still saves ${fmt$(getDealScore(newest).savings)} vs buying identical car new.`,
-      rank: 'blue'
+      why: `Comes with $8,000 FSD already purchased — it transfers when she sells, adding $5–8K to resale value. Combined savings of ${fmt$(deal.savings)} vs buying new + FSD separately. Subscription would cost $6,091 (NPV) over 7 years and adds $0 at resale.`,
+      rank: 'silver'
     });
   }
 
   const pickContainer = document.getElementById('pickCards');
-  pickContainer.innerHTML = picks.slice(0, 5).map((p, i) => {
+  pickContainer.innerHTML = picks.map((p, i) => {
     const deal = getDealScore(p.v);
     return `
       <div class="pick-card">
         <div class="pick-rank ${p.rank}">${i + 1}</div>
         <div class="pick-info">
-          <h4>${p.v.year} Model Y ${p.v.trim}</h4>
+          <h4>${p.v.year} Model Y ${p.v.trim}${p.v.fsd === 'FSD Included' ? ' + FSD' : ''}</h4>
           <div class="pick-why">${p.why}</div>
           <span class="pick-tag" style="background:${p.tagBg};color:${p.tagColor};border:1px solid ${p.tagColor}33;">${p.tag}</span>
         </div>
