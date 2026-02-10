@@ -97,7 +97,8 @@ async function loadEligibleUsers() {
     const sel = document.getElementById('addAssocUser');
     sel.innerHTML = '<option value="">Select a user...</option>';
     for (const u of eligible) {
-      const name = u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+      const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+      const name = fullName || u.display_name || u.email;
       const signedUp = u.auth_user_id ? '' : ' (invited, not signed up)';
       const role = u.role ? ` [${u.role}]` : '';
       sel.innerHTML += `<option value="${u.id}">${escapeHtml(name)}${role}${signedUp}</option>`;
@@ -797,7 +798,8 @@ function renderWorkGroups() {
 // =============================================
 function getAssocName(assocOrProfile) {
   const u = assocOrProfile.app_user || assocOrProfile;
-  const raw = u?.display_name || `${u?.first_name || ''} ${u?.last_name || ''}`.trim() || u?.email || '?';
+  const fullName = `${u?.first_name || ''} ${u?.last_name || ''}`.trim();
+  const raw = fullName || u?.display_name || u?.email || '?';
   return isDemoUser() ? redactString(raw, 'name') : raw;
 }
 

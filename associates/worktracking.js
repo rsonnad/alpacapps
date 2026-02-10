@@ -1049,7 +1049,8 @@ async function refreshCoworkers() {
       for (const member of members) {
         const assocId = member.associate_id;
         const appUser = member.associate?.app_user;
-        const name = appUser?.display_name || appUser?.first_name || 'Unknown';
+        const fullName = `${appUser?.first_name || ''} ${appUser?.last_name || ''}`.trim();
+        const name = fullName || appUser?.display_name || 'Unknown';
         const isYou = assocId === profile.id;
         const memberScheds = schedByAssoc[assocId] || {};
         const memberActuals = actualsByAssoc[assocId] || {};
