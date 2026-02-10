@@ -20,7 +20,7 @@ let revealedPasswords = new Set();
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
-  { id: 'access', label: 'Access' },
+  { id: 'house', label: 'House' },
   { id: 'platform', label: 'Platform' },
   { id: 'social', label: 'Social' },
   { id: 'service', label: 'Service' },
@@ -137,6 +137,10 @@ function renderGrid() {
     const isRevealed = revealedPasswords.has(e.id);
     const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
     const spaceName = e.space ? e.space.name : null;
+    const metaParts = [];
+    if (spaceName) metaParts.push(`<span class="meta-space"><span class="space-name">${escapeHtml(spaceName)}</span></span>`);
+    if (e.url) metaParts.push(`<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
+    if (e.notes) metaParts.push(`<span class="meta-notes">${escapeHtml(e.notes)}</span>`);
 
     return `
       <div class="vault-card" data-id="${e.id}">
@@ -147,22 +151,22 @@ function renderGrid() {
             <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
           </div>
         </div>
-        ${e.username ? `
-        <div class="vault-field">
-          <span class="vault-field-label">user</span>
-          <span class="vault-field-value">${escapeHtml(e.username)}</span>
-          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="username" title="Copy username">${COPY_SVG}</button>
-        </div>` : ''}
-        ${e.password ? `
-        <div class="vault-field">
-          <span class="vault-field-label">pass</span>
-          <span class="vault-field-value ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${isRevealed ? escapeHtml(e.password) : MASK}</span>
-          <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}">${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
-          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password">${COPY_SVG}</button>
-        </div>` : ''}
-        ${spaceName ? `<div class="vault-card-space">Space: <span class="space-name">${escapeHtml(spaceName)}</span></div>` : ''}
-        ${e.url ? `<div class="vault-card-url"><a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a></div>` : ''}
-        ${e.notes ? `<div class="vault-card-notes">${escapeHtml(e.notes)}</div>` : ''}
+        <div class="vault-fields">
+          ${e.username ? `
+          <div class="vault-field">
+            <span class="vault-field-label">user</span>
+            <span class="vault-field-value">${escapeHtml(e.username)}</span>
+            <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="username" title="Copy">${COPY_SVG}</button>
+          </div>` : ''}
+          ${e.password ? `
+          <div class="vault-field">
+            <span class="vault-field-label">pass</span>
+            <span class="vault-field-value ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${isRevealed ? escapeHtml(e.password) : MASK}</span>
+            <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}">${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
+            <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy">${COPY_SVG}</button>
+          </div>` : ''}
+        </div>
+        ${metaParts.length ? `<div class="vault-card-meta">${metaParts.join(' ')}</div>` : ''}
       </div>`;
   }).join('');
 }
@@ -300,6 +304,10 @@ async function copyToClipboard(text) {
 function setupEventListeners() {
   document.getElementById('vaultSearch').addEventListener('input', (e) => {
     searchQuery = e.target.value;
+    if (searchQuery) {
+      activeCategory = 'all';
+      renderFilters();
+    }
     renderGrid();
   });
 
