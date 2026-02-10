@@ -171,7 +171,7 @@ function renderGrid() {
           ${subtitleParts.length ? `<span class="vault-card-subtitle">${subtitleParts.join(' &middot; ')}</span>` : ''}
         </div>
         <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
-        <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${e.password ? (isRevealed ? escapeHtml(e.password) + (e.category === 'house' ? ' <span style="color:#16a34a;font-family:system-ui">✓</span>' : '') : MASK) : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">—</span>'}</span>
+        <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${e.password ? (isRevealed ? escapeHtml(e.password) + (e.category === 'house' ? (/fuego|spartan/i.test(e.service) ? ' <span style="color:#9a3412;font-weight:600;font-family:system-ui">#</span>' : ' <span style="color:#16a34a;font-family:system-ui">✓</span>') : '') : MASK) : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">—</span>'}</span>
         <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
         <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
         <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy full details">${SHARE_SVG}</button>
