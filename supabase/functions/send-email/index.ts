@@ -433,9 +433,8 @@ Alpaca Playhouse`
           ${data.late_fee ? `<p><strong>Late Fee:</strong> $${data.late_fee}</p><p><strong>Total Due:</strong> $${data.total_due}</p>` : ''}
           <p>Please submit payment as soon as possible to avoid any additional fees or action.</p>
           <p><strong>Payment Methods:</strong></p>
-          <ul>
-            <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: alpacaplayhouse@gmail.com</li>
+          <ul style="list-style:none;padding-left:0;">
+            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
           </ul>
           <p>If you're experiencing difficulties, please reach out to discuss options.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
@@ -450,8 +449,7 @@ ${data.late_fee ? `\nLate Fee: $${data.late_fee}\nTotal Due: $${data.total_due}`
 Please submit payment as soon as possible to avoid any additional fees or action.
 
 Payment Methods:
-- Venmo: @AlpacaPlayhouse
-- Zelle: alpacaplayhouse@gmail.com
+${data._payment_methods_text || '- Contact us for payment options'}
 
 If you're experiencing difficulties, please reach out to discuss options.
 

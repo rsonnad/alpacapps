@@ -33,6 +33,8 @@ export const EMAIL_TYPES = {
   DL_UPLOAD_LINK: 'dl_upload_link',
   DL_VERIFIED: 'dl_verified',
   DL_MISMATCH: 'dl_mismatch',
+  // Payment statement
+  PAYMENT_STATEMENT: 'payment_statement',
 };
 
 /**
@@ -269,6 +271,22 @@ export const emailService = {
       amount,
       period,
     });
+  },
+
+  /**
+   * Send payment statement with full ledger summary
+   * @param {string} email - Recipient email
+   * @param {object} data - Statement data
+   * @param {string} data.first_name - Tenant first name
+   * @param {string} data.space_name - Space name
+   * @param {Array} data.line_items - [{date, description, amount, status}]
+   * @param {number} data.balance_due - Outstanding balance
+   * @param {string} data.overdue_since - Date balance became overdue
+   * @param {number} data.upcoming_amount - Next payment amount
+   * @param {string} data.upcoming_date - Next payment due date
+   */
+  async sendPaymentStatement(email, data) {
+    return sendEmail(EMAIL_TYPES.PAYMENT_STATEMENT, email, data);
   },
 
   // ===== INVITATIONS =====
