@@ -44,6 +44,14 @@ function esc(str) {
   return d.innerHTML;
 }
 
+/** Human-readable labels for model codes (tooltip/modal) */
+const MODEL_DISPLAY_NAMES = {
+  'modl a': 'Cursor Auto',
+};
+function modelDisplayName(code) {
+  return (code && MODEL_DISPLAY_NAMES[code]) || code || '';
+}
+
 /** Extract short ID from bugfix branch name like "bugfix/20260209-79aa46b3-..." → "79aa46b3" */
 function branchId(name) {
   const m = name.match(/bugfix\/\d{8}-([a-f0-9]{8})/);
@@ -179,7 +187,8 @@ function showVersionModal(info) {
     function modelBadge(branch) {
       const m = models[branch];
       if (!m) return '';
-      return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;background:#fef3e2;color:#d4883a;margin-left:6px;vertical-align:middle;">${esc(m)}</span>`;
+      const label = modelDisplayName(m) || m;
+      return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;background:#fef3e2;color:#d4883a;margin-left:6px;vertical-align:middle;">${esc(label)}</span>`;
     }
 
     // Build bug fixes section — match included bugfix branches to descriptions
@@ -255,11 +264,11 @@ function showVersionModal(info) {
       }).join('');
     }
 
-    // Build model summary line
-    const uniqueModels = [...new Set(Object.values(models))].filter(Boolean);
+    // Build model summary line (use display names when available)
+    const uniqueModels = [...new Set(Object.values(models).map(m => modelDisplayName(m) || m))].filter(Boolean);
     const modelSummaryLine = info.model
-      ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span>`
-      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.join(', ')}</span>` : '');
+      ? `<span style="color:#d4883a;font-weight:600;">${esc(modelDisplayName(info.model) || info.model)}</span>`
+      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.map(m => esc(m)).join(', ')}</span>` : '');
 
     overlay.innerHTML = `
       <div id="vi-modal">
@@ -328,18 +337,7 @@ export function setupVersionInfo() {
   const currentSize = parseFloat(computed.fontSize);
   if (currentSize < 10) span.style.fontSize = '0.55rem';
 
-  // Fetch version info and append dynamic model badge
-  fetchVersionInfo().then(info => {
-    if (!span.querySelector('.vi-model-badge')) {
-      const badge = document.createElement('span');
-      badge.className = 'vi-model-badge';
-      const modelCode = (info && info.model) ? info.model : '';
-      badge.textContent = modelCode ? ` ${modelCode}` : '';
-      badge.style.cssText = 'color:#d4883a;font-weight:600;';
-      span.appendChild(badge);
-    }
-  });
-
+  // Visible string is version only (no model/user); model and branches shown in hover/modal
   injectStyles();
 
   // Hover tooltip — bigger, shows model and branch info
@@ -353,30 +351,24 @@ export function setupVersionInfo() {
     if (!info) {
       tooltip.innerHTML = '<div class="vi-tooltip-version">Build info unavailable</div>';
     } else {
-      const bugCount = (info.included || []).filter(b => b.includes('bugfix/')).length;
-      const changeCount = (info.changes || []).length;
-      const pendCount = (info.pending || []).length;
-      const modelLabel = info.model ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span> · ` : '';
+      const included = info.included || [];
+      const mainAndBranches = included.map(b => b === 'main' ? 'main' : shortBranch(b));
+      const branchesLine = mainAndBranches.length > 0
+        ? mainAndBranches.join(' · ')
+        : 'main';
 
-      // Build model summary from models map
-      const models = info.models || {};
-      const uniqueModels = [...new Set(Object.values(models))].filter(Boolean);
-      const modelSummary = uniqueModels.length > 0
-        ? `<div style="margin-top:4px;font-size:0.75rem;color:#9ca3af;">Models: ${uniqueModels.map(m => `<span style="color:#d4883a">${esc(m)}</span>`).join(', ')}</div>`
-        : '';
+      const modelLabel = modelDisplayName(info.model);
+      const modelPart = modelLabel ? `Model: <span style="color:#d4883a;">${esc(modelLabel)}</span>` : '';
+      const machinePart = (info.machine || '').trim() ? `Machine: ${esc(info.machine)}` : '';
+      const metaLine = [modelPart, machinePart].filter(Boolean).join(' · ');
 
       tooltip.innerHTML = `
         <div class="vi-tooltip-version">${esc(info.version)}</div>
-        <div class="vi-tooltip-stats">
-          ${modelLabel}<span>${bugCount}</span> bug fix${bugCount !== 1 ? 'es' : ''}
-          · <span>${changeCount}</span> change${changeCount !== 1 ? 's' : ''}
-          ${pendCount > 0 ? `· <span style="color:#fbbf24">${pendCount}</span> pending` : ''}
-          · ${esc(info.commit || '?')}
+        <div class="vi-tooltip-stats" style="margin-top:6px;">
+          <strong>Main &amp; included branches:</strong><br>
+          <span style="word-break:break-word;">${esc(branchesLine)}</span>
         </div>
-        <div class="vi-tooltip-stats" style="margin-top:4px;">
-          ${modelSummaryLine ? `Model: ${modelSummaryLine}` : 'Model: unknown'}${machine ? ` · Machine: ${esc(machine)}` : ''}
-        </div>
-        ${modelSummary}
+        ${metaLine ? `<div class="vi-tooltip-stats" style="margin-top:4px;font-size:0.8rem;color:#9ca3af;">${metaLine}</div>` : ''}
       `;
     }
     const rect = span.getBoundingClientRect();

@@ -26,6 +26,7 @@ Model code format is a short `x0.0` identifier:
 - `s4.0` = Claude Sonnet 4
 - `g2.5` = Gemini 2.5
 - `g4o` = GPT-4o
+- `modl a` = Cursor Auto
 - `cur` = Cursor (unknown model)
 
 Never omit `--model`. If unsure of your exact model, use the closest identifier.
