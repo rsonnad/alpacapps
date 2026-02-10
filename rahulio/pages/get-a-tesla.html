@@ -746,23 +746,102 @@
     }
     .footer a { color: var(--accent); }
 
+    /* ── Summary graphic strip on section toggles ── */
+    .section-summary {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .summary-chip .chip-num {
+      font-weight: 800;
+    }
+    .summary-chip.red { background: var(--red-soft); color: var(--red); border-color: var(--red-border); }
+    .summary-chip.green { background: var(--green-soft); color: var(--green); border-color: var(--green-border); }
+    .summary-chip.purple { background: var(--purple-soft); color: var(--purple); border-color: var(--purple-border); }
+    .summary-chip.teal { background: var(--teal-soft); color: var(--teal); border-color: rgba(13,148,136,0.22); }
+    .summary-chip.accent { background: var(--accent-soft); color: var(--accent); border-color: rgba(124,92,191,0.22); }
+
     @media (max-width: 700px) {
-      .hero { padding: 3rem 1.25rem 2.5rem; }
-      .hero h1 { font-size: 1.9rem; }
-      .hero-stats { gap: 1.25rem; }
+      .hero { padding: 2rem 1rem 2rem; }
+      .hero h1 { font-size: 1.6rem; }
+      .hero .subtitle { font-size: 0.9rem; margin-bottom: 1.5rem; }
+      .hero-stats { gap: 0.75rem 1.5rem; }
+      .hero-stat .num { font-size: 1.5rem; }
+      .hero-stat .label { font-size: 0.68rem; }
+      .hero img { width: 160px !important; height: 160px !important; }
+      .container { padding: 0 1rem; }
+      .case-section { margin: 1.25rem 0; }
+      .section-toggle { padding: 1rem; gap: 0.75rem; }
+      .section-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+      .section-toggle-text h3 { font-size: 0.9rem; }
+      .section-toggle-text p { font-size: 0.75rem; }
+      .section-body { padding: 1rem; }
+      .content-block h4 { font-size: 0.88rem; }
+      .content-block p { font-size: 0.85rem; }
+      .stat-callout { padding: 0.9rem 1rem; }
+      .stat-callout .big-num { font-size: 1.6rem; }
+      .stat-callout .context { font-size: 0.78rem; }
       .compare-grid { grid-template-columns: 1fr; }
-      .card { grid-template-columns: 1fr; }
+      .compare-card .card-value { font-size: 1.15rem; }
+      .compare-card .card-detail { font-size: 0.72rem; }
+      .risk-bar-label { font-size: 0.75rem; flex-direction: column; align-items: flex-start; gap: 0.1rem; }
+      .risk-bar-label .rank { font-size: 0.7rem; }
+      .timeline-item { gap: 0.75rem; }
+      .timeline-item .desc { font-size: 0.8rem; }
+      .savings-table { font-size: 0.72rem; }
+      .savings-table th, .savings-table td { padding: 0.4rem 0.35rem; }
+      .savings-table .total-row td { font-size: 0.82rem; }
+      .bottom-line-box { padding: 1rem; }
+      .bottom-line-box .headline { font-size: 0.9rem; }
+      .bottom-line-box .detail { font-size: 0.8rem; }
+      .card { grid-template-columns: 1fr; padding: 1rem; }
       .card-right {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         min-width: 0;
       }
+      .card-year { font-size: 1.05rem; }
+      .card-trim { font-size: 0.88rem; }
+      .card-price { font-size: 1.2rem; }
+      .card-link { padding: 0.4rem 0.9rem; font-size: 0.78rem; }
+      .ref-pricing { padding: 1rem; }
       .ref-grid { grid-template-columns: 1fr 1fr; }
-      .savings-table { font-size: 0.78rem; }
-      .savings-table th, .savings-table td { padding: 0.5rem; }
-      .pick-card { grid-template-columns: auto 1fr; gap: 0.75rem; }
-      .pick-price-col { grid-column: 1 / -1; text-align: left; display: flex; align-items: center; gap: 1rem; min-width: 0; }
+      .ref-card { padding: 0.7rem 0.85rem; }
+      .ref-card .msrp { font-size: 1rem; }
+      .hw4-box { padding: 1rem; }
+      .hw4-box ul { font-size: 0.8rem; }
+      .listings-header h2 { font-size: 1.3rem; }
+      .filters { gap: 0.3rem; }
+      .filter-btn { padding: 0.35rem 0.7rem; font-size: 0.72rem; }
+      .pick-card { grid-template-columns: auto 1fr; gap: 0.6rem; padding: 0.85rem; }
+      .pick-rank { width: 30px; height: 30px; font-size: 0.82rem; }
+      .pick-info h4 { font-size: 0.85rem; }
+      .pick-info .pick-why { font-size: 0.75rem; }
+      .pick-price-col { grid-column: 1 / -1; text-align: left; display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+      .pick-price-col .price { font-size: 1rem; }
+      .ev-durability-box { padding: 0.85rem 1rem; font-size: 0.8rem; }
+      .ev-durability-box h4 { font-size: 0.82rem; }
+      .top-picks h3 { font-size: 1rem; }
+      .section-divider { margin: 2rem 0; }
+      .disclaimer { padding: 1rem; font-size: 0.72rem; }
+      /* Safety feature grid: single column on mobile */
+      .safety-features-grid { grid-template-columns: 1fr !important; }
+      .summary-chip { font-size: 0.65rem; padding: 0.15rem 0.4rem; }
     }
   </style>
 </head>
@@ -809,6 +888,11 @@
     <div class="section-toggle-text">
       <h3>The Risk: Driving Is the #1 Danger for Young Women</h3>
       <p>Why the car she drives is the single most impactful safety decision you can make</p>
+      <div class="section-summary">
+        <span class="summary-chip red">112K crashes/yr</span>
+        <span class="summary-chip red">#1 killer ages 20-29</span>
+        <span class="summary-chip red">307/day in Chicago</span>
+      </div>
     </div>
     <span class="section-chevron">&#9660;</span>
   </button>
@@ -873,15 +957,20 @@
 <!--  SECTION 2: WHY TESLA                          -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="case-section">
-  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
     <div class="section-icon" style="background:var(--green-soft);color:var(--green);">&#128737;&#65039;</div>
     <div class="section-toggle-text">
       <h3>Why Tesla: The Safest Car Ever Tested</h3>
       <p>5-star NHTSA, lowest rollover risk of any SUV, and AI that watches the road when she can't</p>
+      <div class="section-summary">
+        <span class="summary-chip green">5&#9733; NHTSA</span>
+        <span class="summary-chip green">9x safer</span>
+        <span class="summary-chip green">6.3% injury risk</span>
+      </div>
     </div>
     <span class="section-chevron">&#9660;</span>
   </button>
-  <div class="section-body">
+  <div class="section-body open">
 
     <div class="content-block">
       <h4>&#11088; Perfect crash test scores</h4>
@@ -906,7 +995,7 @@
       <p>Every Tesla comes standard with a suite of active safety features &mdash; no extra cost, no packages to add. These work <em>every time she drives</em>, 24/7, whether she's using Autopilot or not:</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin:0.75rem 0;">
+    <div class="safety-features-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin:0.75rem 0;">
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
         <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Automatic Emergency Braking</div>
         <div style="font-size:0.78rem;color:var(--text-dim);">Detects cars, pedestrians, and cyclists &mdash; brakes automatically at 7&ndash;90 mph</div>
@@ -971,15 +1060,20 @@
 <!--  SECTION 3: THE TRAJECTORY                     -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="case-section">
-  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
     <div class="section-icon" style="background:var(--purple-soft);color:var(--purple);">&#128640;</div>
     <div class="section-toggle-text">
       <h3>The Trajectory: It Gets Safer Every Year</h3>
       <p>FSD roadmap to unsupervised autonomy, and why buying now locks in the future</p>
+      <div class="section-summary">
+        <span class="summary-chip purple">Unsupervised 2026</span>
+        <span class="summary-chip accent">HW4 required</span>
+        <span class="summary-chip purple">Robotaxi 2027+</span>
+      </div>
     </div>
     <span class="section-chevron">&#9660;</span>
   </button>
-  <div class="section-body">
+  <div class="section-body open">
 
     <div class="content-block">
       <h4>&#128197; Tesla's self-driving roadmap (2025&ndash;2028)</h4>
@@ -1031,15 +1125,20 @@
 <!--  SECTION 4: THE MATH                           -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="case-section">
-  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
     <div class="section-icon" style="background:var(--teal-soft);color:var(--teal);">&#128176;</div>
     <div class="section-toggle-text">
       <h3>The Math: Tesla vs. Honda CR-V (5-Year Total Cost)</h3>
       <p>Including residual value: the Tesla is actually $5,900 cheaper over 5 years than keeping the CR-V</p>
+      <div class="section-summary">
+        <span class="summary-chip green">$5,900 cheaper</span>
+        <span class="summary-chip teal">CR-V &#8594; $17.5K</span>
+        <span class="summary-chip green">Tesla resale $25K+</span>
+      </div>
     </div>
     <span class="section-chevron">&#9660;</span>
   </button>
-  <div class="section-body">
+  <div class="section-body open">
 
     <div class="content-block">
       <h4>&#128178; Step 1: Sell the 2020 Honda CR-V</h4>
