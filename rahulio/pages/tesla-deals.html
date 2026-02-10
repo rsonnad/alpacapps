@@ -750,6 +750,8 @@
       .ref-grid { grid-template-columns: 1fr 1fr; }
       .savings-table { font-size: 0.78rem; }
       .savings-table th, .savings-table td { padding: 0.5rem; }
+      .pick-card { grid-template-columns: auto 1fr; gap: 0.75rem; }
+      .pick-price-col { grid-column: 1 / -1; text-align: left; display: flex; align-items: center; gap: 1rem; min-width: 0; }
     }
   </style>
 </head>
@@ -1240,7 +1242,7 @@
 <div class="cards" id="cardContainer"></div>
 
 <div class="disclaimer">
-  <strong>Disclaimer:</strong> Prices and availability change frequently. FSD status is detected from listing features and may not be 100% accurate &mdash; always confirm with the dealer. HW4 determination for 2023 models is based on VIN sequence analysis and is approximate. "Savings vs New" compares to the equivalent new 2025 MSRP with a $0.12/mi mileage depreciation adjustment. This page is for informational purposes and does not constitute financial or purchasing advice. Statistical data sourced from CDC, NHTSA, Tesla Vehicle Safety Reports, City of Chicago data portal, Edmunds, KBB, and InsideEVs.
+  <strong>Disclaimer:</strong> Prices and availability change frequently. FSD status is detected from listing features and may not be 100% accurate &mdash; always confirm with the dealer. HW4 determination for 2023 models is based on VIN sequence analysis and is approximate. "Savings vs New" compares to the equivalent new 2025 MSRP with a $0.04/mi EV-adjusted mileage depreciation (vs $0.12/mi for gas cars, reflecting 300K+ mile EV lifespan). This page is for informational purposes and does not constitute financial or purchasing advice. Statistical data sourced from CDC, NHTSA, Tesla Vehicle Safety Reports, City of Chicago data portal, Edmunds, KBB, and InsideEVs.
 </div>
 
 <div class="footer">
@@ -1440,6 +1442,102 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
   currentSort = e.target.value;
   render();
 });
+
+// ── Top 5 Picks ──
+function renderTopPicks() {
+  const picks = [];
+
+  // Pick 1: Best overall value — highest adjusted savings among confirmed HW4
+  const hw4Vehicles = VEHICLES.filter(v => v.hwConf === 'confirmed');
+  const bestValue = [...hw4Vehicles].sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
+  if (bestValue) picks.push({
+    v: bestValue,
+    tag: 'Best Overall Value',
+    tagColor: 'var(--green)',
+    tagBg: 'var(--green-soft)',
+    why: `${Math.round(getDealScore(bestValue).savingsPct)}% below new MSRP with confirmed HW4. ${fmtMi(bestValue.mileage)} is nothing for an EV &mdash; decades of life ahead.`,
+    rank: 'gold'
+  });
+
+  // Pick 2: Lowest price HW4 confirmed
+  const cheapestHW4 = [...hw4Vehicles].sort((a, b) => a.price - b.price)[0];
+  if (cheapestHW4 && cheapestHW4 !== bestValue) picks.push({
+    v: cheapestHW4,
+    tag: 'Lowest Price + HW4',
+    tagColor: 'var(--accent)',
+    tagBg: 'var(--accent-soft)',
+    why: `The most affordable confirmed HW4 in the search area. At ${fmt$(cheapestHW4.price)}, it's ${fmt$(49990 - cheapestHW4.price)} less than a new LR.`,
+    rank: 'silver'
+  });
+
+  // Pick 3: Lowest mileage (nearly new)
+  const lowestMiles = [...hw4Vehicles].filter(v => v.mileage && v.mileage > 0).sort((a, b) => a.mileage - b.mileage)[0];
+  if (lowestMiles && !picks.find(p => p.v === lowestMiles)) picks.push({
+    v: lowestMiles,
+    tag: 'Practically New',
+    tagColor: 'var(--purple)',
+    tagBg: 'var(--purple-soft)',
+    why: `Only ${fmtMi(lowestMiles.mileage)} &mdash; like buying a new car at a ${fmt$(49990 - lowestMiles.price)} discount. Full factory warranty likely still active.`,
+    rank: 'bronze'
+  });
+
+  // Pick 4: Best Performance model deal
+  const bestPerf = [...VEHICLES].filter(v => v.trim === 'Performance' && (v.hwConf === 'confirmed' || v.hw === 'HW4'))
+    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
+  if (bestPerf && !picks.find(p => p.v === bestPerf)) picks.push({
+    v: bestPerf,
+    tag: 'Best Performance Deal',
+    tagColor: 'var(--orange)',
+    tagBg: 'var(--orange-soft)',
+    why: `Performance trim (3.5s 0&ndash;60, track mode) at ${fmt$(57990 - bestPerf.price)} off new MSRP. Same safety hardware as LR with more power.`,
+    rank: 'blue'
+  });
+
+  // Pick 5: FSD included if available, else newest model year
+  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included');
+  if (fsdPick && !picks.find(p => p.v === fsdPick)) {
+    picks.push({
+      v: fsdPick,
+      tag: 'FSD Included',
+      tagColor: 'var(--purple)',
+      tagBg: 'var(--purple-soft)',
+      why: `Comes with $8,000 Full Self-Driving package already purchased. Combined savings of ${fmt$(getDealScore(fsdPick).savings)} vs buying new + FSD separately.`,
+      rank: 'blue'
+    });
+  } else {
+    const newest = [...hw4Vehicles].filter(v => !picks.find(p => p.v === v))
+      .sort((a, b) => b.year - a.year || a.mileage - b.mileage)[0];
+    if (newest) picks.push({
+      v: newest,
+      tag: 'Newest Model Year',
+      tagColor: 'var(--teal)',
+      tagBg: 'var(--teal-soft)',
+      why: `${newest.year} with latest features and longest remaining warranty. Still saves ${fmt$(getDealScore(newest).savings)} vs buying identical car new.`,
+      rank: 'blue'
+    });
+  }
+
+  const pickContainer = document.getElementById('pickCards');
+  pickContainer.innerHTML = picks.slice(0, 5).map((p, i) => {
+    const deal = getDealScore(p.v);
+    return `
+      <div class="pick-card">
+        <div class="pick-rank ${p.rank}">${i + 1}</div>
+        <div class="pick-info">
+          <h4>${p.v.year} Model Y ${p.v.trim}</h4>
+          <div class="pick-why">${p.why}</div>
+          <span class="pick-tag" style="background:${p.tagBg};color:${p.tagColor};border:1px solid ${p.tagColor}33;">${p.tag}</span>
+        </div>
+        <div class="pick-price-col">
+          <div class="price">${fmt$(p.v.price)}</div>
+          <div class="savings">${fmt$(deal.savings)} off new</div>
+          <a href="${p.v.link}" target="_blank" rel="noopener">View &rarr;</a>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+renderTopPicks();
 
 // Initial render
 render();
