@@ -215,7 +215,7 @@ function renderQuestionLog() {
   const container = document.getElementById('questionLogSection');
   if (!container) return; // Not on page yet
 
-  const autoEntries = faqEntries.filter(e => e.source === 'auto');
+  const autoEntries = faqEntries.filter(e => e.source === 'auto' || e.source === 'pai_email');
   const countBadge = document.getElementById('questionLogCount');
   if (countBadge) countBadge.textContent = autoEntries.length;
 
@@ -226,11 +226,16 @@ function renderQuestionLog() {
 
   container.innerHTML = `
     <div class="faq-list">
-      ${autoEntries.map(entry => `
+      ${autoEntries.map(entry => {
+        const sourceBadge = entry.source === 'pai_email'
+          ? '<span class="confidence-badge" style="background: #3d8b7a; color: #fff;">Email</span>'
+          : '<span class="confidence-badge" style="background: #555; color: #fff;">Web</span>';
+        return `
         <div class="faq-card">
           <div class="faq-card__header">
             <div class="faq-card__question">${escapeHtml(entry.question)}</div>
             <div class="faq-card__actions">
+              ${sourceBadge}
               <span class="confidence-badge confidence-badge--${(entry.confidence || 'LOW').toLowerCase()}">${entry.confidence || '?'}</span>
               <button class="btn-secondary btn-small" onclick="editAutoEntry('${entry.id}')">Edit</button>
               <button class="btn-danger btn-small" onclick="deleteFaq('${entry.id}')">×</button>
@@ -239,9 +244,10 @@ function renderQuestionLog() {
           ${entry.ai_answer ? `<div class="faq-card__answer" style="color: #555; font-style: italic;">${escapeHtml(entry.ai_answer)}</div>` : ''}
           <div class="faq-card__meta">
             <span>${formatDate(entry.created_at)}</span>
+            ${entry.user_email ? `<span style="color: #888;">from ${escapeHtml(entry.user_email)}</span>` : ''}
           </div>
         </div>
-      `).join('')}
+      `}).join('')}
     </div>
   `;
 }

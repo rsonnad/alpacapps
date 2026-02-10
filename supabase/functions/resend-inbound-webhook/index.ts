@@ -576,6 +576,7 @@ async function handlePaiEmail(
         email_from: senderEmail,
         classification: classification.type,
         confidence: classification.confidence,
+        is_personal: classification.is_personal,
       },
     });
   }
@@ -686,7 +687,12 @@ async function handlePaiEmail(
     (classification.type === "other" && looksLikeQuestion(subject, bodyText || bodyHtml))
   ) {
     // === QUESTION or COMMAND (or other that looks like a question): Forward to PAI, send reply ===
-    const message = bodyText || bodyHtml || subject;
+    // Always include subject + body so PAI sees the full context (questions are often in the subject)
+    const strippedBody = (bodyHtml || "").replace(/<[^>]*>/g, "").trim();
+    const bodyContent = bodyText?.trim() || strippedBody || "";
+    const message = bodyContent
+      ? `Subject: ${subject}\n${bodyContent}`
+      : subject;
 
     try {
       // Call the alpaca-pai edge function directly
@@ -714,6 +720,44 @@ async function handlePaiEmail(
 
       if (!replyText) {
         replyText = `Thank you for your email. I've received your ${classification.type === "command" ? "request" : "question"} and I'll have someone from the team follow up with you.\n\nFor faster responses, you can chat with me directly at https://alpacaplayhouse.com/residents/ (requires resident login).`;
+      }
+
+      // Store the Q&A in api_usage_log for full audit trail
+      try {
+        await supabase.from("api_usage_log").insert({
+          vendor: "supabase",
+          category: "pai_email_reply_attempt",
+          estimated_cost_usd: 0,
+          metadata: {
+            to: senderEmail,
+            inbound_email_id: emailRecord.id,
+            pai_ok: paiRes.ok,
+            pai_status: paiRes.status,
+            status: paiRes.status,
+            success: paiRes.ok,
+            question: message.substring(0, 500),
+            reply_preview: replyText.substring(0, 500),
+            is_personal: classification.is_personal,
+          },
+        });
+      } catch (_) { /* non-critical */ }
+
+      // Log to faq_entries for general (non-personal) questions
+      if (classification.type === "question" && !classification.is_personal && replyText) {
+        try {
+          await supabase.from("faq_entries").insert({
+            question: subject || message.substring(0, 500),
+            ai_answer: replyText,
+            confidence: "HIGH",
+            source: "pai_email",
+            is_published: false,
+            user_email: senderEmail,
+            user_name: senderName,
+          });
+          console.log("PAI email Q&A logged to faq_entries");
+        } catch (faqErr) {
+          console.warn("Failed to log PAI email to faq_entries:", faqErr.message);
+        }
       }
 
       await sendPaiReply(supabase, senderEmail, replyText, subject, bodyText || bodyHtml || "");
