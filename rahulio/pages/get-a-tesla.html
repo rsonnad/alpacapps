@@ -1505,10 +1505,10 @@
   </ul>
 </div>
 
-<!-- Top 2 Recommendations -->
+<!-- Top 5 Recommendations -->
 <div class="top-picks" id="topPicks">
-  <h3>&#127942; Our Top 2 Picks</h3>
-  <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">We excluded Performance trim &mdash; the extra power is a safety liability for a young driver, and Long Range has the same safety hardware with better range.</p>
+  <h3>&#127942; Our Top 5 Picks</h3>
+  <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">Long Range only &mdash; Performance trim excluded because the extra power is a safety liability for a young driver. LR has the same safety hardware with better range.</p>
   <div class="pick-cards" id="pickCards"></div>
 </div>
 
@@ -1825,40 +1825,86 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
   render();
 });
 
-// ── Top 2 Picks ──
-// Performance trim excluded — the extra power is a safety liability for a young driver.
-// Long Range has identical safety hardware with better range.
+// ── Top 5 Picks ──
+// Long Range only — Performance excluded (safety liability for young driver).
+// Ranked by value: price + HW4 status + deal score. All compared against LR MSRP $49,990.
 function renderTopPicks() {
   const picks = [];
 
-  // Pick 1: Cheapest HW4-confirmed Long Range — best entry point
-  const hw4LR = VEHICLES.filter(v => v.hwConf === 'confirmed' && v.trim !== 'Performance');
-  const cheapest = [...hw4LR].sort((a, b) => a.price - b.price)[0];
-  if (cheapest) picks.push({
-    v: cheapest,
-    tag: 'Cheapest HW4 + Long Range',
+  // Only Long Range models with HW4 (confirmed or likely)
+  const lrHW4 = VEHICLES.filter(v =>
+    v.trim === 'Long Range' && (v.hwConf === 'confirmed' || v.hw === 'HW4')
+  );
+
+  // Pick 1: User's specific pick — 2023 LR, $26,995, 84,892 mi, HW4 likely
+  const userPick = VEHICLES.find(v => v.vin === '7SAYGDEE3PF755314');
+  if (userPick) picks.push({
+    v: userPick,
+    tag: 'Best Value — Cheapest HW4 Long Range',
     tagColor: 'var(--green)',
     tagBg: 'var(--green-soft)',
-    why: `The most affordable confirmed HW4 Long Range near Chicago. ${fmt$(49990 - cheapest.price)} less than buying new. ${cheapest.mileage ? fmtMi(cheapest.mileage) + ' is nothing for an EV — decades of life left.' : ''}`,
+    why: `The absolute cheapest Long Range with HW4 near Chicago — ${fmt$(49990 - userPick.price)} under new MSRP. ${fmtMi(userPick.mileage)} is early youth for an EV (300K+ mile lifespan). HW4 likely based on late-2023 VIN sequence.`,
     rank: 'gold'
   });
 
-  // Pick 2: FSD Included — the $8,000 package is already paid for + transfers at resale
-  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included' && v.trim !== 'Performance');
-  if (fsdPick) {
+  // Pick 2: Cheapest confirmed HW4 LR (2024+)
+  const confirmedLR = lrHW4.filter(v => v.hwConf === 'confirmed' && !picks.find(p => p.v === v));
+  const cheapestConfirmed = [...confirmedLR].sort((a, b) => a.price - b.price)[0];
+  if (cheapestConfirmed) picks.push({
+    v: cheapestConfirmed,
+    tag: 'Cheapest Confirmed HW4',
+    tagColor: 'var(--teal)',
+    tagBg: 'var(--teal-soft)',
+    why: `Guaranteed HW4 (2024 model year = no guessing). ${fmt$(49990 - cheapestConfirmed.price)} less than new. ${cheapestConfirmed.mileage ? fmtMi(cheapestConfirmed.mileage) + ' — barely broken in for an EV.' : ''}`,
+    rank: 'silver'
+  });
+
+  // Pick 3: Best deal score among remaining LR HW4 (highest adjusted savings)
+  const remaining = [...lrHW4].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
+  if (remaining[0]) {
+    const deal = getDealScore(remaining[0]);
+    picks.push({
+      v: remaining[0],
+      tag: 'Best Adjusted Value',
+      tagColor: 'var(--green)',
+      tagBg: 'var(--green-soft)',
+      why: `Highest deal score after mileage adjustment — ${fmt$(deal.adjustedSavings)} in net savings vs new. Sweet spot of low price and reasonable mileage.`,
+      rank: 'bronze'
+    });
+  }
+
+  // Pick 4: FSD Included — transfers at resale, NPV advantage
+  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included' && v.trim === 'Long Range');
+  if (fsdPick && !picks.find(p => p.v === fsdPick)) {
     const deal = getDealScore(fsdPick);
     picks.push({
       v: fsdPick,
       tag: 'FSD Included — Best Long-Term Value',
       tagColor: 'var(--purple)',
       tagBg: 'var(--purple-soft)',
-      why: `Comes with $8,000 FSD already purchased — it transfers when she sells, adding $5–8K to resale value. Combined savings of ${fmt$(deal.savings)} vs buying new + FSD separately. Subscription would cost $6,091 (NPV) over 7 years and adds $0 at resale.`,
-      rank: 'silver'
+      why: `$8,000 FSD already paid — transfers at resale, adding $5–8K to future value. Total savings of ${fmt$(deal.savings)} vs new + FSD. Subscribing costs $6,091 NPV and adds $0 at resale.`,
+      rank: 'blue'
+    });
+  }
+
+  // Pick 5: Next best value from remaining
+  const remaining2 = [...lrHW4].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
+  if (remaining2[0]) {
+    const deal = getDealScore(remaining2[0]);
+    picks.push({
+      v: remaining2[0],
+      tag: 'Strong Value Pick',
+      tagColor: 'var(--accent)',
+      tagBg: 'var(--accent-soft)',
+      why: `${fmt$(deal.adjustedSavings)} net savings after mileage adjustment. ${remaining2[0].hwConf === 'confirmed' ? 'Confirmed' : 'Likely'} HW4 with ${remaining2[0].mileage ? fmtMi(remaining2[0].mileage) : 'low miles'}.`,
+      rank: 'blue'
     });
   }
 
   const pickContainer = document.getElementById('pickCards');
-  pickContainer.innerHTML = picks.map((p, i) => {
+  pickContainer.innerHTML = picks.slice(0, 5).map((p, i) => {
     const deal = getDealScore(p.v);
     return `
       <div class="pick-card">
