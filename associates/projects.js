@@ -13,9 +13,8 @@ let myTasksActive = false;
 // ---- Init ----
 initAssociatePage({
   activeTab: 'projects',
-  onReady: async (appUser) => {
-    currentUser = appUser;
-    document.getElementById('mainContent').style.display = '';
+  onReady: async (state) => {
+    currentUser = state.appUser;
     await loadAssignees();
     await loadTasks();
     bindEvents();

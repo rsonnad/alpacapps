@@ -118,49 +118,84 @@
 
     .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
   </style>
+  <script type="module" src="../shared/version-info.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/site.css">
 </head>
 <body>
-  <!-- Shell injects nav here -->
-  <div id="appNav"></div>
-  <div id="toastContainer"></div>
+  <div id="toastContainer" class="toast-container"></div>
 
-  <div class="app-container" id="mainContent" style="display:none">
-    <!-- Stats -->
-    <div class="stats-bar" id="statsBar">
-      <div class="stat-chip open"><span class="num" id="statOpen">0</span> Open</div>
-      <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
-      <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
-    </div>
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
 
-    <!-- Filters -->
-    <div class="filter-bar">
-      <button class="btn-my-tasks" id="btnMyTasks">My Tasks</button>
-      <select id="filterAssignee">
-        <option value="">All People</option>
-      </select>
-      <select id="filterStatus">
-        <option value="">Open + In Progress</option>
-        <option value="open">Open</option>
-        <option value="in_progress">In Progress</option>
-        <option value="done">Done</option>
-        <option value="all">All</option>
-      </select>
-      <select id="filterPriority">
-        <option value="">All Priorities</option>
-        <option value="1">P1 - Urgent</option>
-        <option value="2">P2 - High</option>
-        <option value="3">P3 - Medium</option>
-        <option value="4">P4 - Low</option>
-      </select>
-    </div>
-
-    <!-- Task list -->
-    <div id="taskList">
-      <div class="loading">Loading tasks...</div>
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access associate features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
     </div>
   </div>
 
-  <span title="Site version" style="display:none">v260210.79 4:54p</span>
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260210.82 4:57p</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Associate</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <div class="app-container">
+      <!-- Stats -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-chip open"><span class="num" id="statOpen">0</span> Open</div>
+        <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
+        <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="btn-my-tasks" id="btnMyTasks">My Tasks</button>
+        <select id="filterAssignee">
+          <option value="">All People</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">Open + In Progress</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+          <option value="all">All</option>
+        </select>
+        <select id="filterPriority">
+          <option value="">All Priorities</option>
+          <option value="1">P1 - Urgent</option>
+          <option value="2">P2 - High</option>
+          <option value="3">P3 - Medium</option>
+          <option value="4">P4 - Low</option>
+        </select>
+      </div>
+
+      <!-- Task list -->
+      <div id="taskList">
+        <div class="loading">Loading tasks...</div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="projects.js"></script>
 </body>
 </html>

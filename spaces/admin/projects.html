@@ -146,78 +146,110 @@
       .task-table th.hide-mobile, .task-table td.hide-mobile { display: none; }
     }
   </style>
+  <link rel="stylesheet" href="../../styles/site.css">
 </head>
 <body>
-  <div id="appNav"></div>
-  <div id="toastContainer"></div>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
 
-  <div class="manage-page projects-page" id="mainContent" style="display:none">
-    <div class="manage-header">
-      <h1>Projects</h1>
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260210.82 4:57p</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
     </div>
 
-    <!-- Summary -->
-    <div class="summary-cards" id="summaryCards">
-      <div class="summary-card"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
-      <div class="summary-card open"><div class="num" id="statOpen">0</div><div class="label">Open</div></div>
-      <div class="summary-card in-progress"><div class="num" id="statInProgress">0</div><div class="label">In Progress</div></div>
-      <div class="summary-card done"><div class="num" id="statDone">0</div><div class="label">Done</div></div>
-    </div>
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
 
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="Search tasks...">
-      <select id="filterAssignee"><option value="">All People</option></select>
-      <select id="filterStatus">
-        <option value="">Open + In Progress</option>
-        <option value="open">Open</option>
-        <option value="in_progress">In Progress</option>
-        <option value="done">Done</option>
-        <option value="all">All</option>
-      </select>
-      <select id="filterPriority">
-        <option value="">All Priorities</option>
-        <option value="1">P1</option>
-        <option value="2">P2</option>
-        <option value="3">P3</option>
-        <option value="4">P4</option>
-      </select>
-      <button class="btn-add" id="btnAddTask">+ Add Task</button>
-    </div>
+    <!-- Main Content -->
+    <main class="manage-content projects-page">
+      <!-- Summary -->
+      <div class="summary-cards" id="summaryCards">
+        <div class="summary-card"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
+        <div class="summary-card open"><div class="num" id="statOpen">0</div><div class="label">Open</div></div>
+        <div class="summary-card in-progress"><div class="num" id="statInProgress">0</div><div class="label">In Progress</div></div>
+        <div class="summary-card done"><div class="num" id="statDone">0</div><div class="label">Done</div></div>
+      </div>
 
-    <!-- Bulk actions -->
-    <div class="bulk-bar" id="bulkBar">
-      <span id="bulkCount">0</span> selected
-      <select id="bulkAssignee"><option value="">Reassign to...</option></select>
-      <button id="btnBulkReassign">Reassign</button>
-      <select id="bulkStatus">
-        <option value="">Change status...</option>
-        <option value="open">Open</option>
-        <option value="in_progress">In Progress</option>
-        <option value="done">Done</option>
-      </select>
-      <button id="btnBulkStatus">Apply</button>
-    </div>
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Search tasks...">
+        <select id="filterAssignee"><option value="">All People</option></select>
+        <select id="filterStatus">
+          <option value="">Open + In Progress</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+          <option value="all">All</option>
+        </select>
+        <select id="filterPriority">
+          <option value="">All Priorities</option>
+          <option value="1">P1</option>
+          <option value="2">P2</option>
+          <option value="3">P3</option>
+          <option value="4">P4</option>
+        </select>
+        <button class="btn-add" id="btnAddTask">+ Add Task</button>
+      </div>
 
-    <!-- Table -->
-    <div style="overflow-x:auto">
-      <table class="task-table">
-        <thead>
-          <tr>
-            <th style="width:30px"><input type="checkbox" id="selectAll"></th>
-            <th style="width:40px">P</th>
-            <th>Task</th>
-            <th>Assignee</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th class="hide-mobile" style="width:80px">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="taskTableBody">
-          <tr><td colspan="7" class="empty-state">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Bulk actions -->
+      <div class="bulk-bar" id="bulkBar">
+        <span id="bulkCount">0</span> selected
+        <select id="bulkAssignee"><option value="">Reassign to...</option></select>
+        <button id="btnBulkReassign">Reassign</button>
+        <select id="bulkStatus">
+          <option value="">Change status...</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <button id="btnBulkStatus">Apply</button>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto">
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th style="width:30px"><input type="checkbox" id="selectAll"></th>
+              <th style="width:40px">P</th>
+              <th>Task</th>
+              <th>Assignee</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th class="hide-mobile" style="width:80px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
   </div>
 
   <!-- Add/Edit Modal -->
@@ -268,7 +300,7 @@
     </div>
   </div>
 
-  <span title="Site version" style="display:none">v260210.79 4:54p</span>
+  <script type="module" src="../../shared/version-info.js"></script>
   <script type="module" src="projects.js"></script>
 </body>
 </html>

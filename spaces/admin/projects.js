@@ -19,7 +19,6 @@ initAdminPage({
   onReady: async () => {
     if (initialized) return;
     initialized = true;
-    document.getElementById('mainContent').style.display = '';
     await Promise.all([loadSpaces(), loadAssignees()]);
     bindEvents();
     await loadTasks();
