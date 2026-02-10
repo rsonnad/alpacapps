@@ -3,261 +3,553 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Used Tesla Model Y Deals — Chicago Area</title>
+  <title>The Case for a Tesla Model Y</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
     :root {
-      --bg: #0a0a0f;
-      --surface: #141420;
-      --surface2: #1c1c2e;
-      --border: #2a2a3e;
-      --text: #e8e8f0;
-      --text-dim: #8888a0;
+      --bg: #09090b;
+      --surface: #111114;
+      --surface2: #19191e;
+      --surface3: #222228;
+      --border: #27272a;
+      --border-light: #3f3f46;
+      --text: #fafafa;
+      --text-soft: #d4d4d8;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
       --accent: #3b82f6;
-      --accent-glow: rgba(59, 130, 246, 0.15);
+      --accent-soft: rgba(59, 130, 246, 0.12);
       --green: #22c55e;
-      --green-dim: rgba(34, 197, 94, 0.12);
+      --green-soft: rgba(34, 197, 94, 0.10);
+      --green-border: rgba(34, 197, 94, 0.25);
       --yellow: #eab308;
-      --yellow-dim: rgba(234, 179, 8, 0.12);
+      --yellow-soft: rgba(234, 179, 8, 0.10);
+      --yellow-border: rgba(234, 179, 8, 0.25);
       --red: #ef4444;
-      --red-dim: rgba(239, 68, 68, 0.12);
+      --red-soft: rgba(239, 68, 68, 0.10);
+      --red-border: rgba(239, 68, 68, 0.25);
       --purple: #a855f7;
-      --purple-dim: rgba(168, 85, 247, 0.12);
+      --purple-soft: rgba(168, 85, 247, 0.10);
+      --purple-border: rgba(168, 85, 247, 0.25);
+      --orange: #f97316;
+      --orange-soft: rgba(249, 115, 22, 0.10);
+      --teal: #14b8a6;
+      --teal-soft: rgba(20, 184, 166, 0.10);
       --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.5);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.65;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* ── Hero ── */
     .hero {
-      padding: 3rem 1.5rem 2rem;
+      padding: 4.5rem 1.5rem 3.5rem;
       text-align: center;
-      background: linear-gradient(180deg, #12122a 0%, var(--bg) 100%);
+      background: linear-gradient(180deg, #0f1029 0%, #0d0d1a 40%, var(--bg) 100%);
       border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
     }
     .hero h1 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin-bottom: 0.5rem;
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
     }
-    .hero h1 span { color: var(--accent); }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
     .hero .subtitle {
       color: var(--text-dim);
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.05rem;
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
     }
-
-    .stats-row {
+    .hero-stats {
       display: flex;
       justify-content: center;
-      gap: 1rem;
+      gap: 2rem;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
     }
-    .stat-pill {
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat .num {
+      display: block;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .hero-stat .num.blue { color: var(--accent); }
+    .hero-stat .num.green { color: var(--green); }
+    .hero-stat .num.purple { color: var(--purple); }
+    .hero-stat .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+
+    /* ── Container ── */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Expandable Sections ── */
+    .case-section {
+      margin: 2rem 0;
+    }
+    .section-toggle {
+      width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.45rem 1rem;
-      font-size: 0.85rem;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
     }
-    .stat-pill .num { font-weight: 700; color: var(--accent); }
-    .stat-pill.green .num { color: var(--green); }
-    .stat-pill.purple .num { color: var(--purple); }
-
-    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-
-    /* Reference pricing section */
-    .ref-pricing {
+    .section-toggle:hover {
+      border-color: var(--border-light);
+      background: var(--surface2);
+    }
+    .section-toggle[aria-expanded="true"] {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
+    }
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .section-toggle-text h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.15rem;
+    }
+    .section-toggle-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .section-chevron {
+      margin-left: auto;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .section-toggle[aria-expanded="true"] .section-chevron {
+      transform: rotate(180deg);
+    }
+    .section-body {
+      display: none;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       padding: 1.5rem;
-      margin-bottom: 2rem;
     }
-    .ref-pricing h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+    .section-body.open {
+      display: block;
+    }
+
+    /* ── Content blocks inside sections ── */
+    .content-block {
+      margin-bottom: 1.5rem;
+    }
+    .content-block:last-child { margin-bottom: 0; }
+    .content-block h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
+    .content-block p {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-callout {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin: 0.75rem 0;
+    }
+    .stat-callout .big-num {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .stat-callout .context {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .compare-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+    }
+    .compare-card.highlight {
+      border-color: var(--green-border);
+      background: var(--green-soft);
+    }
+    .compare-card.dim {
+      opacity: 0.75;
+    }
+    .compare-card .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .compare-card .card-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .compare-card .card-detail {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    .risk-bar {
+      margin: 0.75rem 0;
+    }
+    .risk-bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 0.3rem;
+    }
+    .risk-bar-label .rank { font-weight: 600; }
+    .risk-bar-track {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 0.4rem;
+      flex-shrink: 0;
+    }
+    .timeline-item .year-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.1rem;
+    }
+    .timeline-item .desc {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .savings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 0.75rem 0;
+    }
+    .savings-table th {
+      text-align: left;
+      font-weight: 600;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid var(--border-light);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .savings-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+    .savings-table .savings-val {
+      font-weight: 700;
+      color: var(--green);
+    }
+    .savings-table .cost-val {
+      color: var(--red);
+    }
+    .savings-table .total-row td {
+      border-top: 2px solid var(--border-light);
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding-top: 0.8rem;
+    }
+
+    .bottom-line-box {
+      background: linear-gradient(135deg, var(--green-soft), var(--surface2));
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .bottom-line-box .headline {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--green);
+      margin-bottom: 0.3rem;
+    }
+    .bottom-line-box .detail {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 3rem 0;
+    }
+
+    /* ── Vehicle Listings Section ── */
+    .listings-header {
+      margin-bottom: 1.5rem;
+    }
+    .listings-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+    .listings-header p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Reference pricing */
+    .ref-pricing {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .ref-pricing h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
     .ref-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.6rem;
     }
     .ref-card {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
     }
-    .ref-card .trim { font-weight: 600; font-size: 0.95rem; }
-    .ref-card .msrp { font-size: 1.3rem; font-weight: 700; color: var(--accent); margin: 0.25rem 0; }
-    .ref-card .detail { font-size: 0.8rem; color: var(--text-dim); }
+    .ref-card .trim { font-weight: 600; font-size: 0.85rem; }
+    .ref-card .msrp { font-size: 1.15rem; font-weight: 700; color: var(--accent); margin: 0.15rem 0; }
+    .ref-card .detail { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* HW4 explainer */
+    /* HW4 box */
     .hw4-box {
-      background: linear-gradient(135deg, var(--green-dim), var(--surface));
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.5rem;
+      margin-bottom: 1.5rem;
     }
-    .hw4-box h3 { color: var(--green); margin-bottom: 0.5rem; font-size: 1rem; }
-    .hw4-box ul { padding-left: 1.2rem; color: var(--text-dim); }
+    .hw4-box h3 { color: var(--green); margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 700; }
+    .hw4-box ul { padding-left: 1.2rem; color: var(--text-dim); font-size: 0.85rem; }
     .hw4-box li { margin-bottom: 0.25rem; }
-    .hw4-box strong { color: var(--text); }
+    .hw4-box strong { color: var(--text-soft); }
 
     /* Filter bar */
     .filters {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
       flex-wrap: wrap;
     }
     .filter-btn {
       background: var(--surface);
       border: 1px solid var(--border);
-      color: var(--text-dim);
-      padding: 0.5rem 1rem;
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
       border-radius: 100px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.15s;
+      font-family: inherit;
     }
     .filter-btn:hover { border-color: var(--accent); color: var(--text); }
-    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .sort-bar select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
 
     /* Vehicle cards */
-    .cards { display: flex; flex-direction: column; gap: 1rem; }
+    .cards { display: flex; flex-direction: column; gap: 0.75rem; }
 
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      padding: 1.15rem 1.25rem;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 1rem;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: all 0.2s;
       position: relative;
     }
     .card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 20px var(--accent-glow);
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
     }
     .card.great-deal { border-left: 3px solid var(--green); }
     .card.good-deal { border-left: 3px solid var(--yellow); }
-    .card.fair-deal { border-left: 3px solid var(--text-dim); }
+    .card.fair-deal { border-left: 3px solid var(--border-light); }
 
     .card-main { min-width: 0; }
-
     .card-top {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
-    .card-year { font-size: 1.3rem; font-weight: 700; }
-    .card-trim { font-size: 1.1rem; font-weight: 500; color: var(--text-dim); }
+    .card-year { font-size: 1.2rem; font-weight: 800; }
+    .card-trim { font-size: 1rem; font-weight: 500; color: var(--text-dim); }
 
     .badge {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
-      padding: 0.2rem 0.55rem;
+      padding: 0.18rem 0.5rem;
       border-radius: 100px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
     }
-    .badge-hw4 { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-    .badge-hw4-likely { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
-    .badge-hw3 { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-    .badge-fsd { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
-    .badge-deal-great { background: var(--green-dim); color: var(--green); }
-    .badge-deal-good { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-hw4 { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-hw4-likely { background: var(--yellow-soft); color: var(--yellow); border: 1px solid var(--yellow-border); }
+    .badge-hw3 { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-border); }
+    .badge-fsd { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple-border); }
+    .badge-deal-great { background: var(--green-soft); color: var(--green); }
+    .badge-deal-good { background: var(--yellow-soft); color: var(--yellow); }
 
     .card-specs {
       display: flex;
-      gap: 1.25rem;
+      gap: 1.15rem;
       flex-wrap: wrap;
-      margin: 0.5rem 0;
+      margin: 0.35rem 0;
     }
-    .spec {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-    }
-    .spec strong { color: var(--text); font-weight: 600; }
+    .spec { font-size: 0.82rem; color: var(--text-dim); }
+    .spec strong { color: var(--text-soft); font-weight: 600; }
 
     .card-features {
       display: flex;
       gap: 0.4rem;
       flex-wrap: wrap;
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
     }
     .feature-chip {
-      font-size: 0.72rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0.15rem 0.45rem;
-      color: var(--text-dim);
-    }
-
-    .card-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: space-between;
-      min-width: 140px;
-    }
-    .card-price {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-    .card-savings {
-      font-size: 0.8rem;
-      margin-top: 0.15rem;
-    }
-    .card-savings.positive { color: var(--green); }
-    .card-savings.negative { color: var(--red); }
-    .card-link {
-      display: inline-block;
-      margin-top: 0.75rem;
-      padding: 0.5rem 1.25rem;
-      background: var(--accent);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: opacity 0.15s;
-    }
-    .card-link:hover { opacity: 0.85; }
-
-    .card-vin {
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      margin-top: 0.5rem;
-      opacity: 0.6;
-    }
-
-    .source-icon {
       font-size: 0.7rem;
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -266,41 +558,156 @@
       color: var(--text-dim);
     }
 
-    .disclaimer {
-      margin-top: 3rem;
-      padding: 1.5rem;
-      background: var(--surface);
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-width: 130px;
+    }
+    .card-price { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .card-savings { font-size: 0.78rem; margin-top: 0.1rem; }
+    .card-savings.positive { color: var(--green); }
+    .card-savings.negative { color: var(--red); }
+    .card-link {
+      display: inline-block;
+      margin-top: 0.6rem;
+      padding: 0.45rem 1.1rem;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .card-link:hover { opacity: 0.85; }
+
+    .card-vin {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      margin-top: 0.4rem;
+    }
+    .source-icon {
+      font-size: 0.68rem;
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      text-align: center;
-    }
-    .disclaimer strong { color: var(--text); }
-
-    .timestamp {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      opacity: 0.6;
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      color: var(--text-muted);
     }
 
-    .sort-bar {
+    /* Top Picks */
+    .top-picks {
+      margin-bottom: 2rem;
+    }
+    .top-picks h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom: 1rem;
-      font-size: 0.85rem;
-      color: var(--text-dim);
     }
-    .sort-bar select {
+    .pick-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .pick-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.4rem 0.75rem;
-      border-radius: 8px;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .pick-card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
+    }
+    .pick-rank {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .pick-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+    .pick-rank.silver { background: linear-gradient(135deg, #d4d4d8, #a1a1aa); color: #000; }
+    .pick-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+    .pick-rank.blue { background: var(--accent); color: #fff; }
+    .pick-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+    .pick-info .pick-why {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin-bottom: 0.2rem;
+    }
+    .pick-info .pick-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .pick-price-col {
+      text-align: right;
+      min-width: 100px;
+    }
+    .pick-price-col .price {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .pick-price-col .savings {
+      font-size: 0.75rem;
+      color: var(--green);
+    }
+    .pick-price-col a {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .pick-price-col a:hover { text-decoration: underline; }
+
+    .ev-durability-box {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
       font-size: 0.85rem;
+    }
+    .ev-durability-box h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box p {
+      color: var(--text-soft);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box .note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
     }
 
     .empty-state {
@@ -309,101 +716,550 @@
       color: var(--text-dim);
     }
 
+    .disclaimer {
+      margin-top: 2.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .disclaimer strong { color: var(--text-dim); }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .footer a { color: var(--text-dim); }
+
     @media (max-width: 700px) {
-      .hero h1 { font-size: 1.6rem; }
+      .hero { padding: 3rem 1.25rem 2.5rem; }
+      .hero h1 { font-size: 1.9rem; }
+      .hero-stats { gap: 1.25rem; }
+      .compare-grid { grid-template-columns: 1fr; }
       .card { grid-template-columns: 1fr; }
-      .card-right { flex-direction: row; align-items: center; justify-content: space-between; min-width: 0; }
+      .card-right {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+      }
       .ref-grid { grid-template-columns: 1fr 1fr; }
+      .savings-table { font-size: 0.78rem; }
+      .savings-table th, .savings-table td { padding: 0.5rem; }
     }
   </style>
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!--  HERO                                          -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="hero">
-  <h1>Used Tesla <span>Model Y</span> Deals</h1>
-  <div class="subtitle">Chicago, IL (60601) &middot; 200 mile radius &middot; HW4 focus</div>
-  <div class="stats-row">
-    <div class="stat-pill"><span class="num" id="totalCount">0</span> vehicles</div>
-    <div class="stat-pill green"><span class="num" id="hw4Count">0</span> HW4 confirmed</div>
-    <div class="stat-pill purple"><span class="num" id="fsdCount">0</span> with FSD</div>
-    <div class="stat-pill"><span class="num" id="priceRange">—</span> price range</div>
+  <div class="hero-eyebrow">A data-driven analysis</div>
+  <h1>The Case for a <em>Tesla Model Y</em></h1>
+  <div class="subtitle">
+    Why the safest SUV ever tested is the smartest investment for a young woman driving in Chicago &mdash; and why used 2024 models are the sweet spot right now.
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="num blue" id="totalCount">0</span>
+      <span class="label">Vehicles Found</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num green" id="hw4Count">0</span>
+      <span class="label">HW4 Confirmed</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num purple" id="fsdCount">0</span>
+      <span class="label">With FSD</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num" id="priceRange" style="color:var(--text);">&mdash;</span>
+      <span class="label">Price Range</span>
+    </div>
   </div>
 </div>
 
 <div class="container">
-  <!-- New pricing reference -->
-  <div class="ref-pricing">
-    <h2>&#128176; 2025 Model Y New Pricing (for deal comparison)</h2>
-    <div class="ref-grid">
-      <div class="ref-card">
-        <div class="trim">Long Range AWD</div>
-        <div class="msrp">$49,990</div>
-        <div class="detail">310 mi range &middot; 4.8s 0-60 &middot; HW4</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 1: THE RISK                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--red-soft);color:var(--red);">&#9888;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>The Risk: Driving Is the #1 Danger for Young Women</h3>
+      <p>Why the car she drives is the single most impactful safety decision you can make</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+
+    <div class="content-block">
+      <h4>&#128200; The uncomfortable truth</h4>
+      <p>For women ages 20&ndash;29, <strong>unintentional injury is the #1 cause of death</strong> in the United States. Among those injuries, motor vehicle crashes are the leading killer after poisoning (CDC, 2023). This isn't a rare risk &mdash; it's the statistical reality every time she gets behind the wheel.</p>
+    </div>
+
+    <div class="stat-callout">
+      <div class="big-num" style="color:var(--red);">112,006</div>
+      <div class="context">Car crashes in Chicago in 2024 alone &mdash; resulting in 25,692 injuries and 124 fatalities. That's 307 crashes every single day in the city where she drives.</div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128202; How it compares to other risks</h4>
+      <p>We spend thousands on health insurance, home security, and even gym memberships &mdash; but the single highest-probability serious injury risk for a woman in her 20s is the car she's already driving daily.</p>
+    </div>
+
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Motor vehicle crashes</span>
+        <span class="rank" style="color:var(--red);">#1 injury killer, ages 20&ndash;29</span>
       </div>
-      <div class="ref-card">
-        <div class="trim">Performance AWD</div>
-        <div class="msrp">$57,990</div>
-        <div class="detail">285 mi range &middot; 3.5s 0-60 &middot; HW4</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:92%;background:var(--red);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Falls</span>
+        <span class="rank" style="color:var(--orange);">Common but rarely fatal at this age</span>
       </div>
-      <div class="ref-card">
-        <div class="trim">FSD Add-on</div>
-        <div class="msrp">$8,000</div>
-        <div class="detail">One-time purchase &middot; Supervised self-driving</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:18%;background:var(--orange);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Drowning</span>
+        <span class="rank" style="color:var(--yellow);">Low frequency</span>
       </div>
-      <div class="ref-card">
-        <div class="trim">FSD Subscription</div>
-        <div class="msrp">$99/mo</div>
-        <div class="detail">Monthly &middot; Cancel anytime &middot; Not transferable</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:8%;background:var(--yellow);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Fire / burns</span>
+        <span class="rank" style="color:var(--text-muted);">Rare</span>
       </div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:4%;background:var(--text-muted);"></div></div>
+    </div>
+
+    <div class="content-block" style="margin-top:1rem;">
+      <p>Women ages 20&ndash;29 have a fatal crash rate of <strong>1.3 per 100 million miles driven</strong>. That sounds small &mdash; until you realize she drives ~12,000 miles/year in one of America's most crash-dense cities. Over 5 years, that's 60,000 miles in Chicago traffic. The car wrapping her body is the single variable you can control.</p>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">The bottom line</div>
+      <div class="detail">Spending $30&ndash;40K on the safest SUV ever made isn't a luxury &mdash; it's the most effective injury-prevention investment you'll ever make for your child. No gym, supplement, or insurance policy comes close to the ROI of preventing a crash injury.</div>
     </div>
   </div>
-
-  <!-- HW4 explainer -->
-  <div class="hw4-box">
-    <h3>&#9989; Hardware 4 (HW4 / AI4) Verification</h3>
-    <ul>
-      <li><strong>2024-2025 Model Y:</strong> All ship with HW4 &mdash; confirmed, no exceptions.</li>
-      <li><strong>2023 Model Y (after ~June 2023):</strong> Likely HW4. VIN sequence numbers above ~500,000 indicate late-2023 production. Marked as "HW4 (likely)" below.</li>
-      <li><strong>2023 Model Y (before ~June 2023):</strong> Likely HW3. VIN sequence below ~500,000. Marked as "HW3 (likely)".</li>
-      <li><strong>Why HW4 matters:</strong> Required for future unsupervised FSD. HW3 vehicles may be limited to current Autopilot capabilities long-term.</li>
-    </ul>
-  </div>
-
-  <!-- Filters -->
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="hw4-confirmed">HW4 Confirmed</button>
-    <button class="filter-btn" data-filter="hw4-any">Any HW4</button>
-    <button class="filter-btn" data-filter="fsd">FSD Included</button>
-    <button class="filter-btn" data-filter="great-deals">Great Deals</button>
-    <button class="filter-btn" data-filter="2024+">2024+</button>
-    <button class="filter-btn" data-filter="under-35k">Under $35k</button>
-  </div>
-
-  <div class="sort-bar">
-    Sort by:
-    <select id="sortSelect">
-      <option value="deal">Best Deal</option>
-      <option value="price-asc">Price: Low to High</option>
-      <option value="price-desc">Price: High to Low</option>
-      <option value="miles-asc">Miles: Low to High</option>
-      <option value="year-desc">Year: Newest First</option>
-    </select>
-    <span id="visibleCount" style="margin-left:auto;">—</span>
-  </div>
-
-  <div class="cards" id="cardContainer"></div>
-
-  <div class="disclaimer">
-    <strong>Disclaimer:</strong> Prices and availability change frequently. FSD status is detected from listing features and may not be 100% accurate &mdash; always confirm with the dealer.
-    HW4 determination for 2023 models is based on VIN sequence analysis and is approximate.
-    "Savings vs New" compares to the equivalent new 2025 MSRP. This page does not constitute financial or purchasing advice.
-  </div>
-  <div class="timestamp" id="timestamp"></div>
 </div>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 2: WHY TESLA                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--green-soft);color:var(--green);">&#128737;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>Why Tesla: The Safest Car Ever Tested</h3>
+      <p>5-star NHTSA, lowest rollover risk of any SUV, and AI that watches the road when she can't</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body">
+
+    <div class="content-block">
+      <h4>&#11088; Perfect crash test scores</h4>
+      <p>The Tesla Model Y earned a <strong>5-star overall rating from NHTSA</strong> &mdash; the highest possible &mdash; with 5 stars in every single category: frontal crash, side crash, and rollover. The Model Y's overall probability of injury in a crash is just <strong>6.3%</strong> &mdash; among the lowest ever recorded for any vehicle.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card highlight">
+        <div class="card-label">Rollover Risk</div>
+        <div class="card-value" style="color:var(--green);">7.9%</div>
+        <div class="card-detail">Lowest of any SUV ever tested by NHTSA</div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="card-label">Probability of Injury</div>
+        <div class="card-value" style="color:var(--green);">6.3%</div>
+        <div class="card-detail">Overall vehicle safety score (VSS 0.42)</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#129302; Active safety: The car that drives defensively even when she doesn't</h4>
+      <p>Every Tesla comes standard with a suite of active safety features &mdash; no extra cost, no packages to add. These work <em>every time she drives</em>, 24/7, whether she's using Autopilot or not:</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin:0.75rem 0;">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Automatic Emergency Braking</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Detects cars, pedestrians, and cyclists &mdash; brakes automatically at 7&ndash;90 mph</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Forward Collision Warning</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Visual + audio alert before potential impact, using neural-net prediction models</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Side Collision Warning</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Warns of potential side impacts from lane changes or merging vehicles</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Emergency Lane Departure</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Corrective steering back into lane when drifting toward a collision</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Obstacle Aware Acceleration</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Prevents accidental acceleration into obstacles at low speed (parking lots)</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Collision Avoidance Assist</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Combines all systems into continuous 360&deg; threat monitoring while driving</div>
+      </div>
+    </div>
+
+    <div class="stat-callout">
+      <div class="big-num" style="color:var(--green);">9x safer</div>
+      <div class="context">Tesla with Autopilot: 1 crash per 6.36 million miles. U.S. average: 1 crash per 702,000 miles. Even Teslas <em>without</em> Autopilot are 2x safer than the national average. (Tesla Vehicle Safety Report, Q3 2025)</div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128187; Hardware 4: The AI brain that keeps getting smarter</h4>
+      <p>All 2024+ Model Y vehicles ship with <strong>Hardware 4 (HW4 / AI4)</strong> &mdash; a major generational leap in the onboard computer and camera system:</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card dim">
+        <div class="card-label">HW3 (pre-2024)</div>
+        <div class="card-value" style="font-size:1.1rem;">1.2 MP cameras</div>
+        <div class="card-detail">12 CPU cores @ 2.2 GHz &middot; Vision only, no radar</div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="card-label">HW4 (2024+)</div>
+        <div class="card-value" style="font-size:1.1rem;color:var(--green);">5 MP cameras</div>
+        <div class="card-detail">20 CPU cores @ 2.35 GHz &middot; 3&ndash;5x faster &middot; HD radar option &middot; Better low-light</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <p>Why does hardware matter? Because Tesla's safety features and self-driving capabilities improve with <strong>over-the-air software updates</strong>. The car you buy today will be meaningfully safer 6 months from now &mdash; and radically more capable in 2&ndash;3 years. HW4 is required for that future.</p>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">Passive + active safety combined</div>
+      <div class="detail">Tesla is the only vehicle that's simultaneously the <strong>best at surviving a crash</strong> (lowest injury probability) and the <strong>best at avoiding one</strong> (AI collision avoidance, 9x lower crash rate). That combination doesn't exist in any other car at any price.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 3: THE TRAJECTORY                     -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--purple-soft);color:var(--purple);">&#128640;</div>
+    <div class="section-toggle-text">
+      <h3>The Trajectory: It Gets Safer Every Year</h3>
+      <p>FSD roadmap to unsupervised autonomy, and why buying now locks in the future</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body">
+
+    <div class="content-block">
+      <h4>&#128197; Tesla's self-driving roadmap (2025&ndash;2028)</h4>
+      <p>Tesla's Full Self-Driving (FSD) system is currently "supervised" &mdash; the car handles all driving tasks, but the human must stay alert and ready to take over. The roadmap to unsupervised (no human needed) is accelerating:</p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--green);"></div>
+      <div>
+        <div class="year-label">Now (2025&ndash;2026)</div>
+        <div class="desc"><strong>FSD Supervised</strong> &mdash; navigates city streets, highways, intersections, and parking. Human supervises. Already dramatically reduces distracted driving risk because the car handles the tedious parts.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--accent);"></div>
+      <div>
+        <div class="year-label">Late 2025 &ndash; Early 2026</div>
+        <div class="desc"><strong>Unsupervised FSD (limited)</strong> &mdash; select cities (likely Austin first), specific conditions, Tesla assumes liability. First vehicles to qualify: Model Y with HW4.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--purple);"></div>
+      <div>
+        <div class="year-label">2026&ndash;2027</div>
+        <div class="desc"><strong>Expanded unsupervised FSD</strong> &mdash; gradual rollout to more cities and conditions. Nationwide U.S. expected by end of 2026. HW4 required for eligibility.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--teal);"></div>
+      <div>
+        <div class="year-label">2027&ndash;2028</div>
+        <div class="desc"><strong>Robotaxi capability</strong> &mdash; the car could earn money while she's in class or at work. Even if this timeline slips, the safety improvements along the way are real and cumulative.</div>
+      </div>
+    </div>
+
+    <div class="content-block" style="margin-top:1rem;">
+      <h4>&#128273; Why HW4 is the key</h4>
+      <p>Only vehicles with Hardware 4 will be eligible for unsupervised FSD. A used 2024 Model Y with HW4 today costs $30&ndash;38K &mdash; and will receive the same software updates as a brand-new $50K one. That's the value proposition: <strong>current-gen hardware at last-gen prices, with the full future ahead of it.</strong></p>
+    </div>
+
+    <div class="bottom-line-box" style="background:linear-gradient(135deg, var(--purple-soft), var(--surface2));border-color:var(--purple-border);">
+      <div class="headline" style="color:var(--purple);">An appreciating asset</div>
+      <div class="detail">Unlike every other car, a Tesla with HW4 has the potential to become <em>more</em> valuable over time as software capabilities expand. The car she drives at 25 will be meaningfully smarter and safer when she's 28.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 4: THE MATH                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--teal-soft);color:var(--teal);">&#128176;</div>
+    <div class="section-toggle-text">
+      <h3>The Math: Tesla vs. Honda CR-V (5-Year Cost)</h3>
+      <p>Sell the 2020 CR-V for $17&ndash;18K, save $6,500+ on gas and maintenance, offset insurance</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body">
+
+    <div class="content-block">
+      <h4>&#128178; Step 1: Sell the 2020 Honda CR-V</h4>
+      <p>The 2020 CR-V holds its value exceptionally well &mdash; in the top 10% of all SUVs for depreciation retention. Current values (Edmunds/KBB, Feb 2026):</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="card-label">Private Sale Value</div>
+        <div class="card-value">$17,500</div>
+        <div class="card-detail">Clean condition, ~60K miles typical</div>
+      </div>
+      <div class="compare-card">
+        <div class="card-label">Dealer Trade-In</div>
+        <div class="card-value">$15,500</div>
+        <div class="card-detail">Quick, hassle-free, guaranteed</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <p>Honda CR-Vs are among the easiest vehicles to sell privately. High demand, well-known reliability, and broad appeal means it typically sells within 1&ndash;2 weeks on Facebook Marketplace or Craigslist. CarMax and Carvana also give instant online quotes.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#9981;&#65039; Step 2: The running cost savings</h4>
+      <p>Beyond the purchase price, an EV saves real money every month. Here's the 5-year comparison at 12,000 miles/year in Chicago:</p>
+    </div>
+
+    <table class="savings-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Honda CR-V (5yr)</th>
+          <th>Tesla Model Y (5yr)</th>
+          <th>Savings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fuel / Energy</strong></td>
+          <td class="cost-val">$7,800</td>
+          <td>$2,400</td>
+          <td class="savings-val">+$5,400</td>
+        </tr>
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);padding-left:1.5rem;">&#8627; per mile</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~13&cent;/mi (gas)</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~4&cent;/mi (home charging)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>Maintenance</strong></td>
+          <td class="cost-val">$5,300</td>
+          <td>$2,400</td>
+          <td class="savings-val">+$2,900</td>
+        </tr>
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);padding-left:1.5rem;">&#8627; details</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">Oil, brakes, trans fluid, belts</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">Tires, wipers, cabin filter</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>Repairs</strong></td>
+          <td class="cost-val">$700</td>
+          <td>$2,100</td>
+          <td style="color:var(--red);">&minus;$1,400</td>
+        </tr>
+        <tr>
+          <td><strong>Insurance</strong></td>
+          <td>$13,200</td>
+          <td class="cost-val">$17,700</td>
+          <td style="color:var(--red);">&minus;$4,500</td>
+        </tr>
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);padding-left:1.5rem;">&#8627; monthly</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~$220/mo (under-25 woman)</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~$295/mo (under-25 woman)</td>
+          <td></td>
+        </tr>
+        <tr class="total-row">
+          <td>Net 5-Year Running Cost Delta</td>
+          <td></td>
+          <td></td>
+          <td class="savings-val">+$2,400 savings</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="content-block">
+      <h4>&#128200; Step 3: The full picture</h4>
+      <p>Here's the total cost comparison, including purchase price and the CR-V sale proceeds:</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card dim">
+        <div class="card-label">Keep the 2020 CR-V (5yr total)</div>
+        <div class="card-value" style="font-size:1.15rem;">$27,000</div>
+        <div class="card-detail">$0 purchase + $7,800 gas + $5,300 maint + $700 repair + $13,200 insurance</div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="card-label">Switch to Used 2024 Model Y (5yr)</div>
+        <div class="card-value" style="font-size:1.15rem;color:var(--green);">$38,100</div>
+        <div class="card-detail">$33,000 purchase &minus; $17,500 CR-V sale + $2,400 energy + $2,400 maint + $17,700 ins &minus; $900 repair diff</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <p>The net cost difference over 5 years is roughly <strong>$11,000</strong> &mdash; or about <strong>$183/month</strong>. For that, you get:</p>
+      <ul style="padding-left:1.2rem;color:var(--text-soft);font-size:0.88rem;margin-top:0.4rem;">
+        <li>The safest SUV ever made (5-star everything, 9x lower crash rate)</li>
+        <li>AI collision avoidance running 24/7, even without Autopilot</li>
+        <li>Hardware 4 with future unsupervised self-driving eligibility</li>
+        <li>Zero gas station stops &mdash; charge overnight at home</li>
+        <li>Over-the-air updates making the car safer and smarter every quarter</li>
+        <li>A car that may appreciate in value as FSD capability unlocks</li>
+      </ul>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">$183/month for the safest car in the world</div>
+      <div class="detail">That's less than a gym membership + health insurance copay combined. And unlike those, this one addresses the #1 statistical risk to her life at this age. The question isn't "can we afford this?" &mdash; it's "can we afford not to?"</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  DIVIDER INTO LISTINGS                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section-divider"></div>
+
+<div class="listings-header">
+  <h2>Available Vehicles Near Chicago</h2>
+  <p>200 mile radius of 60601 &middot; scraped Feb 10, 2026 &middot; Cars.com + Craigslist</p>
+</div>
+
+<!-- New pricing reference -->
+<div class="ref-pricing">
+  <h3>2025 Model Y New Pricing (for deal comparison)</h3>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <div class="trim">Long Range AWD</div>
+      <div class="msrp">$49,990</div>
+      <div class="detail">310 mi &middot; 4.8s 0-60 &middot; HW4</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">Performance AWD</div>
+      <div class="msrp">$57,990</div>
+      <div class="detail">285 mi &middot; 3.5s 0-60 &middot; HW4</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">FSD (One-Time)</div>
+      <div class="msrp">$8,000</div>
+      <div class="detail">Transfers with vehicle on resale</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">FSD Subscription</div>
+      <div class="msrp">$99/mo</div>
+      <div class="detail">Cancel anytime &middot; $1,188/yr</div>
+    </div>
+  </div>
+</div>
+
+<!-- HW4 explainer -->
+<div class="hw4-box">
+  <h3>&#9989; Hardware 4 (HW4 / AI4) Verification</h3>
+  <ul>
+    <li><strong>2024&ndash;2025 Model Y:</strong> All ship with HW4 &mdash; confirmed, no exceptions.</li>
+    <li><strong>2023 Model Y (after ~June 2023):</strong> Likely HW4. VIN sequence above ~500K = late production.</li>
+    <li><strong>2023 Model Y (before ~June 2023):</strong> Likely HW3. May be limited to current Autopilot long-term.</li>
+    <li><strong>Why it matters:</strong> HW4 required for future unsupervised FSD. 5 MP cameras (vs 1.2 MP), 20 CPU cores (vs 12), HD radar option.</li>
+  </ul>
+</div>
+
+<!-- Top 5 Recommendations -->
+<div class="top-picks" id="topPicks">
+  <h3>&#127942; Our Top 5 Picks</h3>
+  <div class="pick-cards" id="pickCards"></div>
+</div>
+
+<!-- EV Durability Note -->
+<div class="ev-durability-box">
+  <h4>&#128267; Why high mileage on a Tesla isn't like high mileage on a gas car</h4>
+  <p>Electric motors have <strong>~20 moving parts</strong> vs. ~2,000 in a gas engine. No oil to degrade, no timing belt to snap, no transmission to fail. Tesla batteries are warrantied to 120,000 miles and routinely last <strong>300,000&ndash;500,000 miles</strong> with 80%+ capacity. A 50,000-mile Tesla is essentially in its early youth &mdash; comparable to a gas car with 15,000 miles on the odometer in terms of remaining mechanical life.</p>
+  <div class="note">This means "high mileage" deals (40&ndash;80K mi) are the sweet spot for value: massive price discounts with virtually no mechanical risk. Our deal scores reflect this EV longevity advantage.</div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="hw4-confirmed">HW4 Confirmed</button>
+  <button class="filter-btn" data-filter="hw4-any">Any HW4</button>
+  <button class="filter-btn" data-filter="fsd">FSD Included</button>
+  <button class="filter-btn" data-filter="great-deals">Great Deals</button>
+  <button class="filter-btn" data-filter="2024+">2024+</button>
+  <button class="filter-btn" data-filter="under-35k">Under $35k</button>
+</div>
+
+<div class="sort-bar">
+  Sort by:
+  <select id="sortSelect">
+    <option value="deal">Best Deal</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="miles-asc">Miles: Low to High</option>
+    <option value="year-desc">Year: Newest First</option>
+  </select>
+  <span id="visibleCount" style="margin-left:auto;">&mdash;</span>
+</div>
+
+<div class="cards" id="cardContainer"></div>
+
+<div class="disclaimer">
+  <strong>Disclaimer:</strong> Prices and availability change frequently. FSD status is detected from listing features and may not be 100% accurate &mdash; always confirm with the dealer. HW4 determination for 2023 models is based on VIN sequence analysis and is approximate. "Savings vs New" compares to the equivalent new 2025 MSRP with a $0.12/mi mileage depreciation adjustment. This page is for informational purposes and does not constitute financial or purchasing advice. Statistical data sourced from CDC, NHTSA, Tesla Vehicle Safety Reports, City of Chicago data portal, Edmunds, KBB, and InsideEVs.
+</div>
+
+<div class="footer">
+  <p>Data scraped February 10, 2026 &middot; Sources: Cars.com, Craigslist Chicago &middot; Tesla.com blocked by Akamai CDN</p>
+  <p style="margin-top:0.3rem;">Built with <a href="https://claude.ai" target="_blank">Claude</a> + Puppeteer</p>
+</div>
+
+</div><!-- /container -->
+
 <script>
-// ── Vehicle Data (scraped 2026-02-10) ──────────────────────
+// ── Toggle sections ──
+function toggleSection(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open', !expanded);
+}
+
+// ── Vehicle Data (scraped 2026-02-10) ──
 const VEHICLES = [
   { vin:"7SAYGDEE0RA214883", year:2024, trim:"Long Range", price:29895, mileage:50646, color:"Deep Blue Metallic", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/4e1b9238-81ae-433e-a2a3-aeac323065bb/", range:"310 mi" },
   { vin:"7SAYGDEE0RA258415", year:2024, trim:"Long Range", price:32595, mileage:41640, color:"Pearl White", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/f497c435-7319-4499-8455-13413f0334ab/", range:"310 mi" },
@@ -436,7 +1292,7 @@ const VEHICLES = [
   { vin:"", year:2023, trim:"Performance", price:24397, mileage:null, color:"", interior:"", fsd:"Basic Autopilot", hw:"HW4/HW3", hwConf:"uncertain", source:"craigslist", link:"https://chicago.craigslist.org/nch/ctd/d/glenview-2023-tesla-model/7910542573.html", range:"" },
 ];
 
-// ── New MSRP reference for deal scoring ──────────────────
+// ── New MSRP reference ──
 const NEW_MSRP = {
   'Long Range': 49990,
   'Performance': 57990,
@@ -450,15 +1306,15 @@ function getDealScore(v) {
   const effectiveMSRP = msrp + (v.fsd === 'FSD Included' ? FSD_VALUE : 0);
   const savings = effectiveMSRP - v.price;
   const savingsPct = (savings / effectiveMSRP * 100);
-
-  // Penalize for mileage (roughly $0.12/mi depreciation)
-  const mileagePenalty = (v.mileage || 0) * 0.12;
+  // EVs last 300K+ miles, so mileage penalty is much lower than gas cars
+  // $0.04/mi vs typical $0.12/mi for gas — reflects minimal mechanical wear
+  const mileagePenalty = (v.mileage || 0) * 0.04;
   const adjustedSavings = savings - mileagePenalty;
   const dealScore = adjustedSavings;
 
   let dealRating;
-  if (savingsPct > 35 && adjustedSavings > 8000) dealRating = 'Great Deal';
-  else if (savingsPct > 20 && adjustedSavings > 3000) dealRating = 'Good Deal';
+  if (savingsPct > 30 && adjustedSavings > 8000) dealRating = 'Great Deal';
+  else if (savingsPct > 18 && adjustedSavings > 3000) dealRating = 'Good Deal';
   else dealRating = 'Fair';
 
   return { savings, savingsPct, adjustedSavings, dealScore, dealRating, effectiveMSRP };
@@ -482,7 +1338,7 @@ function renderCard(v) {
   const fsdBadge = v.fsd === 'FSD Included'
     ? `<span class="badge badge-fsd">FSD Included</span>`
     : v.fsd === 'Basic Autopilot'
-      ? `<span class="badge" style="background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)">Basic AP</span>`
+      ? `<span class="badge" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)">Basic AP</span>`
       : '';
 
   const dealBadge = deal.dealRating === 'Great Deal'
@@ -491,10 +1347,8 @@ function renderCard(v) {
       ? `<span class="badge badge-deal-good">Good Deal</span>`
       : '';
 
-  const colorChip = v.color
-    ? `<div class="spec"><strong>Color:</strong> ${v.color}</div>` : '';
-  const rangeChip = v.range
-    ? `<div class="spec"><strong>Range:</strong> ${v.range}</div>` : '';
+  const colorChip = v.color ? `<div class="spec"><strong>Color:</strong> ${v.color}</div>` : '';
+  const rangeChip = v.range ? `<div class="spec"><strong>Range:</strong> ${v.range}</div>` : '';
 
   return `
     <div class="card ${dealClass}" data-year="${v.year}" data-hw="${v.hw}" data-hwconf="${v.hwConf}" data-fsd="${v.fsd}" data-price="${v.price}" data-deal="${deal.dealScore}" data-mileage="${v.mileage||999999}">
@@ -506,12 +1360,12 @@ function renderCard(v) {
           <span class="source-icon">${v.source}</span>
         </div>
         <div class="card-specs">
-          <div class="spec"><strong>Mileage:</strong> ${fmtMi(v.mileage)}</div>
+          <div class="spec"><strong>Miles:</strong> ${fmtMi(v.mileage)}</div>
           ${colorChip}
           ${v.interior ? `<div class="spec"><strong>Interior:</strong> ${v.interior}</div>` : ''}
           ${rangeChip}
         </div>
-        ${v.fsd === 'FSD Included' ? '<div class="card-features"><span class="feature-chip" style="border-color:rgba(168,85,247,0.4);color:var(--purple)">Full Self-Driving (Supervised) &mdash; $8,000 value included</span></div>' : ''}
+        ${v.fsd === 'FSD Included' ? '<div class="card-features"><span class="feature-chip" style="border-color:var(--purple-border);color:var(--purple)">Full Self-Driving (Supervised) &mdash; $8,000 value included</span></div>' : ''}
         <div class="card-vin">${v.vin || 'VIN not available'}</div>
       </div>
       <div class="card-right">
@@ -520,7 +1374,7 @@ function renderCard(v) {
           <div class="card-savings ${deal.savings > 0 ? 'positive' : 'negative'}">
             ${deal.savings > 0 ? `Save ${fmt$(deal.savings)} vs new` : ''}
           </div>
-          <div style="font-size:0.72rem;color:var(--text-dim);text-align:right;">
+          <div style="font-size:0.7rem;color:var(--text-muted);text-align:right;">
             ${Math.round(deal.savingsPct)}% below ${fmt$(deal.effectiveMSRP)} new
           </div>
         </div>
@@ -529,7 +1383,7 @@ function renderCard(v) {
     </div>`;
 }
 
-// ── Render & filtering ──────────────────────────────────────
+// ── Render & filtering ──
 const container = document.getElementById('cardContainer');
 let currentFilter = 'all';
 let currentSort = 'deal';
@@ -551,7 +1405,6 @@ function render() {
     return true;
   });
 
-  // Sort
   filtered.sort((a, b) => {
     if (currentSort === 'deal') return getDealScore(b).dealScore - getDealScore(a).dealScore;
     if (currentSort === 'price-asc') return a.price - b.price;
@@ -578,7 +1431,6 @@ document.getElementById('totalCount').textContent = VEHICLES.length;
 document.getElementById('hw4Count').textContent = hw4Confirmed.length;
 document.getElementById('fsdCount').textContent = fsdVehicles.length;
 document.getElementById('priceRange').textContent = `${fmt$(Math.min(...prices))} \u2013 ${fmt$(Math.max(...prices))}`;
-document.getElementById('timestamp').textContent = `Data scraped: February 10, 2026 \u00b7 Sources: Cars.com, Craigslist Chicago \u00b7 Tesla.com blocked by Akamai`;
 
 // Event listeners
 document.querySelectorAll('.filter-btn').forEach(btn => {

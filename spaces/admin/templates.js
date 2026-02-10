@@ -19,6 +19,9 @@ let authState = null;
 let activeSection = null; // 'lease' | 'event' | 'worktrade' | email template_key
 let emailTemplateList = [];
 let currentEmailTemplateKey = null;
+let emailHtmlSource = ''; // source-of-truth for the current email HTML
+let emailHtmlPreviousSource = ''; // for undo after AI edit
+let emailEditorMode = 'visual'; // 'visual' | 'source'
 
 const SENDER_LABELS = {
   team: 'Team',
@@ -403,6 +406,19 @@ function setupEventListeners() {
   document.getElementById('emailSaveBtn')?.addEventListener('click', emailSaveTemplate);
   document.getElementById('emailPreviewCloseBtn')?.addEventListener('click', () => {
     document.getElementById('emailPreviewModal').style.display = 'none';
+  });
+
+  // Email editor mode toggle
+  document.querySelectorAll('.email-editor-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleEmailEditorMode(btn.dataset.mode));
+  });
+
+  // AI edit
+  document.getElementById('aiEditApply')?.addEventListener('click', aiEditTemplate);
+  document.getElementById('aiEditUndo')?.addEventListener('click', aiUndoEdit);
+  // Enter key on prompt
+  document.getElementById('aiEditPrompt')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') aiEditTemplate();
   });
 
   // Search
@@ -838,8 +854,21 @@ async function editEmailTemplate(templateKey) {
     document.getElementById('emailEditorTitle').textContent = `Edit: ${keyLabel}`;
     document.getElementById('emailDescription').value = template.description || '';
     document.getElementById('emailSubject').value = template.subject_template || '';
-    document.getElementById('emailHtmlBody').value = template.html_template || '';
-    document.getElementById('emailTextBody').value = template.text_template || '';
+
+    // Store HTML source-of-truth
+    emailHtmlSource = template.html_template || '';
+    emailHtmlPreviousSource = '';
+
+    // Reset to visual mode
+    toggleEmailEditorMode('visual');
+
+    // Render visual preview
+    renderEmailVisual();
+
+    // Hide undo button
+    document.getElementById('aiEditUndo').style.display = 'none';
+    document.getElementById('aiEditStatus').textContent = '';
+    document.getElementById('aiEditPrompt').value = '';
 
     // Populate placeholder reference
     const placeholderList = document.getElementById('emailPlaceholderList');
@@ -866,6 +895,151 @@ async function editEmailTemplate(templateKey) {
     showToast('Error loading template', 'error');
   }
 }
+
+// ---- Visual / Source mode toggle ----
+
+function toggleEmailEditorMode(mode) {
+  emailEditorMode = mode;
+
+  // Update toggle buttons
+  document.querySelectorAll('.email-editor-mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  const visualContainer = document.getElementById('emailVisualContainer');
+  const sourceContainer = document.getElementById('emailSourceContainer');
+
+  if (mode === 'visual') {
+    // If switching from source, read textarea back into state
+    const sourceEditor = document.getElementById('emailSourceEditor');
+    if (sourceContainer.style.display !== 'none' && sourceEditor) {
+      emailHtmlSource = sourceEditor.value;
+    }
+    visualContainer.style.display = 'block';
+    sourceContainer.style.display = 'none';
+    renderEmailVisual();
+  } else {
+    // Populate source textarea
+    document.getElementById('emailSourceEditor').value = emailHtmlSource;
+    visualContainer.style.display = 'none';
+    sourceContainer.style.display = 'block';
+  }
+}
+
+function getEmailSampleData() {
+  const current = emailTemplateList.find(t => t.template_key === currentEmailTemplateKey);
+  const placeholders = current?.placeholders || [];
+  const sampleData = {};
+  for (const p of placeholders) {
+    sampleData[p.key] = p.sample_value || `[${p.key}]`;
+  }
+  return sampleData;
+}
+
+function renderEmailVisual() {
+  const iframe = document.getElementById('emailVisualPreview');
+  if (!iframe) return;
+
+  const sampleData = getEmailSampleData();
+  const rendered = renderTemplate(emailHtmlSource, sampleData);
+  iframe.srcdoc = rendered;
+}
+
+// Sync source before save (in case user is in source mode)
+function syncHtmlFromEditor() {
+  if (emailEditorMode === 'source') {
+    emailHtmlSource = document.getElementById('emailSourceEditor').value;
+  }
+}
+
+// ---- AI Edit ----
+
+async function aiEditTemplate() {
+  const promptEl = document.getElementById('aiEditPrompt');
+  const statusEl = document.getElementById('aiEditStatus');
+  const prompt = promptEl.value.trim();
+
+  if (!prompt) {
+    showToast('Enter an edit instruction', 'warning');
+    return;
+  }
+
+  syncHtmlFromEditor();
+
+  if (!emailHtmlSource.trim()) {
+    showToast('No HTML to edit', 'warning');
+    return;
+  }
+
+  // Show loading
+  statusEl.innerHTML = '<span class="ai-edit-loading">Applying AI edit...</span>';
+  document.getElementById('aiEditApply').disabled = true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const resp = await fetch(
+      `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/edit-email-template`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ html: emailHtmlSource, prompt }),
+      }
+    );
+
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(result.error || `API error: ${resp.status}`);
+    }
+
+    if (!result.html) {
+      throw new Error('Empty response from AI');
+    }
+
+    // Save previous for undo
+    emailHtmlPreviousSource = emailHtmlSource;
+    emailHtmlSource = result.html;
+
+    // Update visual or source view
+    if (emailEditorMode === 'visual') {
+      renderEmailVisual();
+    } else {
+      document.getElementById('emailSourceEditor').value = emailHtmlSource;
+    }
+
+    promptEl.value = '';
+    statusEl.innerHTML = '<span style="color:var(--success);">Edit applied.</span>';
+    document.getElementById('aiEditUndo').style.display = '';
+
+  } catch (e) {
+    console.error('AI edit error:', e);
+    statusEl.innerHTML = `<span style="color:var(--occupied);">Error: ${e.message}</span>`;
+  } finally {
+    document.getElementById('aiEditApply').disabled = false;
+  }
+}
+
+function aiUndoEdit() {
+  if (!emailHtmlPreviousSource) return;
+
+  emailHtmlSource = emailHtmlPreviousSource;
+  emailHtmlPreviousSource = '';
+
+  if (emailEditorMode === 'visual') {
+    renderEmailVisual();
+  } else {
+    document.getElementById('emailSourceEditor').value = emailHtmlSource;
+  }
+
+  document.getElementById('aiEditUndo').style.display = 'none';
+  document.getElementById('aiEditStatus').innerHTML = '<span style="color:var(--text-muted);">AI edit undone.</span>';
+  showToast('AI edit undone', 'info');
+}
+
+// ---- Version History ----
 
 async function loadEmailVersionHistory(templateKey) {
   try {
@@ -895,9 +1069,13 @@ async function loadEmailVersionHistory(templateKey) {
         const { data } = await supabase.from('email_templates').select('*').eq('id', btn.dataset.id).single();
         if (data) {
           document.getElementById('emailSubject').value = data.subject_template || '';
-          document.getElementById('emailHtmlBody').value = data.html_template || '';
-          document.getElementById('emailTextBody').value = data.text_template || '';
           document.getElementById('emailDescription').value = data.description || '';
+          emailHtmlSource = data.html_template || '';
+          if (emailEditorMode === 'visual') {
+            renderEmailVisual();
+          } else {
+            document.getElementById('emailSourceEditor').value = emailHtmlSource;
+          }
           showToast('Version loaded', 'success');
         }
       });
@@ -919,12 +1097,15 @@ async function loadEmailVersionHistory(templateKey) {
   }
 }
 
+// ---- Save ----
+
 async function emailSaveTemplate() {
   if (!currentEmailTemplateKey) return;
 
+  syncHtmlFromEditor();
+
   const subject = document.getElementById('emailSubject').value.trim();
-  const html = document.getElementById('emailHtmlBody').value;
-  const text = document.getElementById('emailTextBody').value;
+  const html = emailHtmlSource;
   const description = document.getElementById('emailDescription').value.trim();
 
   if (!subject) {
@@ -944,7 +1125,7 @@ async function emailSaveTemplate() {
   }
 
   // Validate
-  const allContent = subject + ' ' + html + ' ' + text;
+  const allContent = subject + ' ' + html;
   const validation = emailTemplateService.validateTemplate(allContent, current.placeholders);
   const validationDiv = document.getElementById('emailTemplateValidation');
 
@@ -967,7 +1148,7 @@ async function emailSaveTemplate() {
       sender_type: current.sender_type,
       subject_template: subject,
       html_template: html,
-      text_template: text,
+      text_template: '', // plain text no longer used
       placeholders: current.placeholders,
     }, true);
 
@@ -978,20 +1159,16 @@ async function emailSaveTemplate() {
   }
 }
 
-function emailPreviewTemplate() {
-  const subject = document.getElementById('emailSubject').value;
-  const html = document.getElementById('emailHtmlBody').value;
+// ---- Preview modal ----
 
-  // Get current template for sample data
-  const current = emailTemplateList.find(t => t.template_key === currentEmailTemplateKey);
-  const placeholders = current?.placeholders || [];
-  const sampleData = {};
-  for (const p of placeholders) {
-    sampleData[p.key] = p.sample_value || `[${p.key}]`;
-  }
+function emailPreviewTemplate() {
+  syncHtmlFromEditor();
+
+  const subject = document.getElementById('emailSubject').value;
+  const sampleData = getEmailSampleData();
 
   const renderedSubject = renderTemplate(subject, sampleData);
-  const renderedHtml = renderTemplate(html, sampleData);
+  const renderedHtml = renderTemplate(emailHtmlSource, sampleData);
 
   document.getElementById('emailPreviewSubject').textContent = renderedSubject;
   const iframe = document.getElementById('emailPreviewFrame');

@@ -43,7 +43,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.93 11:53a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.94 12:04p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -364,11 +364,35 @@
 
                 <div class="template-editor-container">
                   <div class="template-editor">
-                    <label for="emailHtmlBody">HTML Body</label>
-                    <textarea id="emailHtmlBody" class="template-textarea" rows="18" placeholder="HTML email body with {{placeholders}}" style="font-family:monospace;font-size:0.85rem;"></textarea>
+                    <!-- Mode Toggle -->
+                    <div class="email-editor-mode-toggle">
+                      <button class="email-editor-mode-btn active" data-mode="visual">Visual</button>
+                      <button class="email-editor-mode-btn" data-mode="source">Source</button>
+                    </div>
 
-                    <label for="emailTextBody" style="margin-top:1rem;">Plain Text Body</label>
-                    <textarea id="emailTextBody" class="template-textarea" rows="10" placeholder="Plain text version with {{placeholders}}" style="font-family:monospace;font-size:0.85rem;"></textarea>
+                    <!-- Visual Preview -->
+                    <div id="emailVisualContainer">
+                      <iframe id="emailVisualPreview" class="email-visual-preview" sandbox="allow-same-origin"></iframe>
+                    </div>
+
+                    <!-- Source Editor (hidden by default) -->
+                    <div id="emailSourceContainer" style="display:none;">
+                      <textarea id="emailSourceEditor" class="template-textarea" rows="22" placeholder="HTML email source..." style="font-family:monospace;font-size:0.85rem;"></textarea>
+                    </div>
+
+                    <!-- AI Edit Prompt -->
+                    <div class="ai-edit-area">
+                      <label class="ai-edit-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22"/><path d="M8 6a4 4 0 0 1 8 0"/><path d="M17 12H7"/></svg>
+                        AI Edit
+                      </label>
+                      <div class="ai-edit-input-row">
+                        <input type="text" id="aiEditPrompt" placeholder="Describe changes... e.g. 'Make the button green and larger'">
+                        <button type="button" id="aiEditApply" class="btn-small btn-primary">Apply</button>
+                      </div>
+                      <div id="aiEditStatus"></div>
+                      <button type="button" id="aiEditUndo" class="btn-small" style="display:none;margin-top:0.5rem;">Undo AI Edit</button>
+                    </div>
                   </div>
 
                   <div class="placeholder-reference">
