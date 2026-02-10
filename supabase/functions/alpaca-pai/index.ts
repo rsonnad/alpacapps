@@ -289,6 +289,7 @@ interface PaiConfig {
   amenities: string;
   chat_addendum: string;
   email_addendum: string;
+  house_rules: string;
 }
 
 const DEFAULT_PAI_CONFIG: PaiConfig = {
@@ -318,15 +319,33 @@ You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean
 - Multiple indoor and outdoor living spaces`,
   chat_addendum: "",
   email_addendum: "",
+  house_rules: "",
 };
 
 async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
   try {
-    const { data } = await supabase
-      .from("pai_config")
-      .select("identity, property_info, amenities, chat_addendum, email_addendum")
-      .eq("id", 1)
-      .single();
+    // Load PAI config and FAQ context entries in parallel
+    const [configResult, faqResult] = await Promise.all([
+      supabase
+        .from("pai_config")
+        .select("identity, property_info, amenities, chat_addendum, email_addendum")
+        .eq("id", 1)
+        .single(),
+      supabase
+        .from("faq_context_entries")
+        .select("title, content")
+        .eq("is_active", true)
+        .order("display_order"),
+    ]);
+
+    const data = configResult.data;
+    const faqEntries = faqResult.data || [];
+
+    // Build house rules from FAQ context entries
+    const houseRules = faqEntries.length
+      ? faqEntries.map((e: any) => `${e.title}: ${e.content}`).join("\n")
+      : "";
+
     if (data) {
       return {
         identity: data.identity || DEFAULT_PAI_CONFIG.identity,
@@ -334,6 +353,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
         amenities: data.amenities || DEFAULT_PAI_CONFIG.amenities,
         chat_addendum: data.chat_addendum || "",
         email_addendum: data.email_addendum || "",
+        house_rules: houseRules,
       };
     }
   } catch (e) {
@@ -419,6 +439,12 @@ Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get
     }
     parts.push(`View live feeds at: https://alpacaplayhouse.com/residents/cameras.html
 When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.`);
+  }
+
+  // House rules & policies (from faq_context_entries)
+  if (paiConfig.house_rules) {
+    parts.push(`\nHOUSE RULES & POLICIES (IMPORTANT — enforce these strictly, do not contradict them):
+${paiConfig.house_rules}`);
   }
 
   // General info (from DB-editable pai_config)
