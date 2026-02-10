@@ -52,7 +52,9 @@ type EmailType =
   | "feature_review"
   // PAI email
   | "pai_email_reply"
-  | "pai_document_received";
+  | "pai_document_received"
+  // Payment statement
+  | "payment_statement";
 
 interface EmailRequest {
   type: EmailType;

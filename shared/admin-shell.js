@@ -232,6 +232,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
 
     if (state.appUser && meetsRequirement) {
       document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('unauthorizedOverlay')?.classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
       renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
 
