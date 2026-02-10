@@ -889,7 +889,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.73 7:31a</span>
+<span data-site-version style="display:none;">v260210.74 7:34a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -986,10 +986,10 @@
   <!-- Architecture + Cost Calculator -->
   <div class="section" id="architecture">
     <h2>Architecture &amp; Cost Calculator</h2>
-    <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Storage + Auth)
-                                             &nearr;
-Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
-    <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, file storage, authentication, and serverless functions. GitHub Pages serves static files for free.</p>
+    <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Auth + Edge Functions)
+                                             &nearr;          &darr;
+Optional: Discord Bot (DigitalOcean) &mdash;&rsaquo;    Cloudflare R2 (media storage, optional)</div>
+    <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, authentication, and serverless functions. For file storage, you can use Supabase Storage (1 GB free) or Cloudflare R2 (10 GB free, zero egress fees). GitHub Pages serves static files for free.</p>
 
     <h3>Select what you need</h3>
     <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Core services are pre-selected. Toggle optional ones on or off.</p>
@@ -1075,6 +1075,15 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
         <span class="calc-svc__info">
           <span class="calc-svc__name">Google Gemini</span>
           <span class="calc-svc__desc">AI-powered features</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="cloudflare-r2" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Cloudflare R2</span>
+          <span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1907,6 +1916,7 @@ function recalcCost() {
     'square':      { basic: 0, complicated: 0, hyper: 0 },
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
+    'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
     'discord':     { basic: 0, complicated: 48, hyper: 48 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
@@ -1924,6 +1934,7 @@ function recalcCost() {
     'square':      'Square (payments)',
     'signwell':    'SignWell (e-sign)',
     'gemini':      'Google Gemini (AI)',
+    'cloudflare-r2': 'Cloudflare R2 (storage)',
     'discord':     'Discord Bot + server',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
@@ -1935,6 +1946,7 @@ function recalcCost() {
     'claude':   { complicated: 'Max $100 first month, then Pro $20/mo \u00d7 11', hyper: 'Max $100/mo or Max+ $200/mo year-round' },
     'supabase': { hyper: 'May need Pro ($25/mo) for storage/bandwidth' },
     'gemini':   { complicated: '~$10/mo for AI chat, matching, image gen', hyper: '~$50/mo for heavy AI usage' },
+    'cloudflare-r2': { basic: '10 GB free, zero egress fees, 10M reads/mo', complicated: '10 GB free, zero egress fees, 10M reads/mo', hyper: '10 GB free; $0.015/GB-mo beyond that, zero egress' },
     'telnyx':   { complicated: '~$5/mo: phone number + ~1,000 SMS', hyper: '~$15/mo: higher volume SMS' },
     'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
@@ -1985,8 +1997,8 @@ function recalcCost() {
   var scopes = {
     basic: [
       'Unlimited pages on GitHub Pages (soft cap: 1 GB repo, 100 GB bandwidth/mo)',
-      '500 MB database storage on Supabase free tier',
-      '1 GB file storage (photos, documents)',
+      '500 MB database on Supabase free tier',
+      '1 GB file storage on Supabase (or 10 GB with Cloudflare R2, zero egress)',
       '50,000 monthly active users (Supabase Auth)',
       '500,000 edge function calls/month',
       '3,000 emails/month (Resend free tier)',
@@ -1998,12 +2010,13 @@ function recalcCost() {
       '~250 SMS/month on Telnyx ($1/mo number + $0.004/SMS)',
       'Unlimited payment transactions (Square charges % per txn only)',
       'Gemini AI: ~3,000 API calls/month at $10/mo',
-      'Claude Code: Max plan ($100) for the first month of heavy building, then Pro ($20/mo) for maintenance and tweaks',
-      'Still on Supabase free tier (500 MB DB, 1 GB storage)',
-      'Outgrow this tier if you exceed 500 MB of data or 1 GB of files'
+      'Claude Code: Max ($100) for the first month of heavy building, then Pro ($20/mo) for maintenance',
+      'Still on Supabase free tier (500 MB DB) \u2014 add R2 for 10 GB media storage at no extra cost',
+      'Outgrow this tier if you exceed 500 MB of database data'
     ],
     hyper: [
-      'Supabase Pro ($25/mo): 8 GB DB, 100 GB storage, unlimited API requests',
+      'Supabase Pro ($25/mo): 8 GB DB, 100 GB file storage, unlimited API requests',
+      'Cloudflare R2 for heavy media: $0.015/GB-mo beyond 10 GB free, zero egress fees',
       'Gemini AI: ~15,000+ API calls/month at $50/mo',
       'Claude Code: Max ($100/mo) or Max+ ($200/mo) for ongoing heavy development',
       'Higher SMS volume: ~3,000/month on Telnyx',
