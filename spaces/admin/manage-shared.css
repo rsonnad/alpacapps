@@ -315,6 +315,11 @@
   color: #9d174d;
 }
 
+.role-badge.demon {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 /* Button danger */
 .btn-danger {
   padding: 0.375rem 0.75rem;

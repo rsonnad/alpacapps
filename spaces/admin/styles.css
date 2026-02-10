@@ -99,6 +99,11 @@
   color: #9d174d;
 }
 
+.role-badge.demon {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 .user-info {
   position: relative;
   font-size: 0.875rem;
