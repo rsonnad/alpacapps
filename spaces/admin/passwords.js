@@ -110,8 +110,8 @@ function renderGrid() {
 
   grid.innerHTML = entries.map(e => {
     const isRevealed = revealedPasswords.has(e.id);
-    const maskedPw = e.password ? '\u2022'.repeat(Math.min(e.password.length, 12)) : '';
-    const displayPw = isRevealed ? escapeHtml(e.password) : maskedPw;
+    // Fixed-length mask so password length is not leaked
+    const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
 
     return `
       <div class="vault-card" data-id="${e.id}">
@@ -123,14 +123,14 @@ function renderGrid() {
         <div class="vault-field">
           <span class="vault-field-label">user</span>
           <span class="vault-field-value">${escapeHtml(e.username)}</span>
-          <button class="vault-btn-icon" data-action="copy" data-value="${escapeAttr(e.username)}" title="Copy username">${COPY_SVG}</button>
+          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="username" title="Copy username">${COPY_SVG}</button>
         </div>` : ''}
         ${e.password ? `
         <div class="vault-field">
           <span class="vault-field-label">pass</span>
-          <span class="vault-field-value ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${displayPw}</span>
+          <span class="vault-field-value ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${isRevealed ? escapeHtml(e.password) : MASK}</span>
           <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}">${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
-          <button class="vault-btn-icon" data-action="copy" data-value="${escapeAttr(e.password)}" title="Copy password">${COPY_SVG}</button>
+          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password">${COPY_SVG}</button>
         </div>` : ''}
         ${e.url ? `<div class="vault-card-url"><a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a></div>` : ''}
         ${e.notes ? `<div class="vault-card-notes">${escapeHtml(e.notes)}</div>` : ''}
@@ -286,8 +286,13 @@ function setupEventListeners() {
     if (!btn) return;
 
     const action = btn.dataset.action;
-    if (action === 'copy') {
-      copyToClipboard(btn.dataset.value);
+    if (action === 'copy-field') {
+      // Look up value from JS state, never from DOM
+      const entry = allEntries.find(en => en.id === btn.dataset.id);
+      if (entry) {
+        const val = btn.dataset.field === 'password' ? entry.password : entry.username;
+        if (val) copyToClipboard(val);
+      }
     } else if (action === 'toggle-pw') {
       const id = btn.dataset.id;
       if (revealedPasswords.has(id)) {
