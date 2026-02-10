@@ -1,6 +1,7 @@
 // Consumer view - Public spaces listing
 import { supabase, SUPABASE_URL } from '../shared/supabase.js';
 import { formatDateAustin, getAustinToday, parseAustinDate, isTodayOrAfterAustin } from '../shared/timezone.js';
+import { initPublicHeaderAuth } from '../shared/site-components.js';
 
 // App state
 let spaces = [];
@@ -50,6 +51,9 @@ const spaceDetailModal = document.getElementById('spaceDetailModal');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+  // Public header: show profile when signed in, Sign In link when not
+  initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
+
   // Check for URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const directSpaceId = urlParams.get('id');

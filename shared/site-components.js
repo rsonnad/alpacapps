@@ -5,6 +5,8 @@
  * These components generate the header, navigation, and footer.
  */
 
+import { initAuth, getAuthState, signOut } from './auth.js';
+
 // =============================================
 // CONFIGURATION
 // =============================================
@@ -345,6 +347,89 @@ function initSiteComponents() {
 }
 
 // =============================================
+// PUBLIC HEADER AUTH (Sign In vs profile when signed in)
+// =============================================
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return (name[0] || '?').toUpperCase();
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/**
+ * Render user menu HTML (avatar + name + dropdown) for public header.
+ * Caller must attach to DOM and bind dropdown/sign-out in initPublicHeaderAuth.
+ */
+function renderUserMenuHTML(appUser, profileHref) {
+  const name = appUser.display_name || appUser.email;
+  const initials = getInitials(name);
+  const avatarUrl = appUser.avatar_url;
+  const avatarHtml = avatarUrl
+    ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
+    : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
+  return `
+    <button class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+      ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
+    </button>
+    <div class="user-menu-dropdown hidden">
+      <a href="${profileHref}" class="user-menu-item">Profile</a>
+      <button class="user-menu-item user-menu-signout" id="publicHeaderSignOutBtn">Sign Out</button>
+    </div>`;
+}
+
+/**
+ * Initialize public header auth: show profile when signed in, Sign In link when not.
+ * @param {Object} options
+ * @param {string} options.authContainerId - ID of element to fill with user menu when signed in
+ * @param {string} options.signInLinkId - ID of Sign In link to hide when signed in
+ * @param {string} [options.profileHref='/residents/profile.html'] - Profile link for dropdown
+ */
+export async function initPublicHeaderAuth({ authContainerId, signInLinkId, profileHref = '/residents/profile.html' }) {
+  const authEl = document.getElementById(authContainerId);
+  const signInEl = document.getElementById(signInLinkId);
+  if (!authEl) return;
+
+  await initAuth();
+  const state = getAuthState();
+
+  if (state.appUser) {
+    authEl.innerHTML = renderUserMenuHTML(state.appUser, profileHref);
+    authEl.classList.add('user-info');
+    if (signInEl) signInEl.classList.add('hidden');
+
+    const trigger = authEl.querySelector('.user-menu-trigger');
+    const dropdown = authEl.querySelector('.user-menu-dropdown');
+    if (trigger && dropdown) {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = !dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden', open);
+        trigger.setAttribute('aria-expanded', !open);
+      });
+      document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    }
+    authEl.querySelector('#publicHeaderSignOutBtn')?.addEventListener('click', async () => {
+      await signOut();
+      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+    });
+  } else {
+    authEl.innerHTML = '';
+    authEl.classList.remove('user-info');
+    if (signInEl) signInEl.classList.remove('hidden');
+  }
+}
+
+// =============================================
 // EXPORTS
 // =============================================
 
@@ -376,5 +461,6 @@ if (typeof window !== 'undefined') {
     initSiteComponents,
     loadGoogleFonts,
     initScrollReveal,
+    initPublicHeaderAuth,
   };
 }

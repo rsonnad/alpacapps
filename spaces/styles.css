@@ -360,6 +360,87 @@ h1 {
   gap: 1rem;
 }
 
+/* Public header user menu (when signed in) */
+.header-controls .user-info {
+  position: relative;
+  font-size: 0.875rem;
+}
+.header-controls .user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.header-controls .user-menu-trigger:hover {
+  background: var(--bg);
+}
+.header-controls .user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.header-controls .user-avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  user-select: none;
+}
+.header-controls .user-profile-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.header-controls .user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 100;
+  padding: 0.25rem 0;
+}
+.header-controls .user-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.875rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.header-controls .user-menu-item:hover {
+  background: var(--bg);
+}
+.header-controls .user-menu-signout {
+  color: var(--occupied, #c0392b);
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+  padding-top: 0.625rem;
+}
+
 .view-toggle {
   display: flex;
   background: var(--bg);
