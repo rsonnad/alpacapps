@@ -1,5 +1,5 @@
 /**
- * Accounting Page - Transaction ledger, reconciliation, refunds
+ * Accounting Page - Transaction ledger and refunds
  */
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { supabase } from '../../shared/supabase.js';
@@ -134,7 +134,6 @@ function getFilters() {
   const direction = document.getElementById('filterDirection').value;
   const category = document.getElementById('filterCategory').value;
   const method = document.getElementById('filterMethod').value;
-  const reconciled = document.getElementById('filterReconciled').value;
   const search = document.getElementById('filterSearch').value.trim();
 
   if (dateFrom) filters.dateFrom = dateFrom;
@@ -142,7 +141,6 @@ function getFilters() {
   if (direction) filters.direction = direction;
   if (category) filters.category = category;
   if (method) filters.paymentMethod = method;
-  if (reconciled !== '') filters.isReconciled = reconciled === 'true';
   if (search) filters.search = search;
 
   const showTest = document.getElementById('filterShowTest')?.checked;
@@ -379,7 +377,6 @@ function renderTransactions() {
           <th style="text-align: right; width:90px">Amount</th>
           <th class="col-method" style="width:70px">Method</th>
           <th class="col-status" style="width:90px">Status</th>
-          <th class="col-reconciled" style="text-align: center; width:35px">QB</th>
           <th style="width:90px">Actions</th>
         </tr>
       </thead>
@@ -391,11 +388,6 @@ function renderTransactions() {
 
   container.innerHTML = html;
 
-  // Attach reconcile checkbox handlers
-  container.querySelectorAll('.reconciled-check').forEach(cb => {
-    cb.addEventListener('change', (e) => handleReconcileToggle(e.target.dataset.id, e.target.checked));
-  });
-
   // Attach action button handlers
   container.querySelectorAll('.tx-action-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -403,7 +395,6 @@ function renderTransactions() {
       const id = e.target.dataset.id;
       if (action === 'refund') openRefundModal(id);
       else if (action === 'void') handleVoid(id);
-      else if (action === 'reconcile') openReconcileModal(id);
     });
   });
 }
@@ -431,13 +422,9 @@ function renderTransactionRow(tx) {
       <td style="text-align: right;" class="${amountClass}">${prefix}${formatCurrency(tx.amount)}</td>
       <td class="col-method"><span class="method-badge">${PAYMENT_METHOD_LABELS[tx.payment_method] || tx.payment_method || '—'}</span></td>
       <td class="col-status"><span class="tx-status-badge ${tx.status}">${tx.status}</span></td>
-      <td class="col-reconciled" style="text-align: center;">
-        <input type="checkbox" class="reconciled-check" data-id="${tx.id}" ${tx.is_reconciled ? 'checked' : ''} title="${tx.qb_reference ? 'QB: ' + tx.qb_reference : 'Not reconciled'}">
-      </td>
       <td>
         <div class="tx-actions">
           ${canRefund ? `<button class="tx-action-btn refund" data-action="refund" data-id="${tx.id}">Refund</button>` : ''}
-          ${!tx.is_reconciled && tx.status === 'completed' ? `<button class="tx-action-btn" data-action="reconcile" data-id="${tx.id}">QB</button>` : ''}
           ${tx.status !== 'voided' ? `<button class="tx-action-btn" data-action="void" data-id="${tx.id}">Void</button>` : ''}
         </div>
       </td>
@@ -462,7 +449,6 @@ function setupEventListeners() {
   document.getElementById('filterDirection').addEventListener('change', loadData);
   document.getElementById('filterCategory').addEventListener('change', loadData);
   document.getElementById('filterMethod').addEventListener('change', loadData);
-  document.getElementById('filterReconciled').addEventListener('change', loadData);
   document.getElementById('filterShowTest').addEventListener('change', loadData);
 
   let searchTimeout;
@@ -497,11 +483,6 @@ function setupEventListeners() {
   document.getElementById('closeRefundModal').addEventListener('click', closeRefundModal);
   document.getElementById('cancelRefundBtn').addEventListener('click', closeRefundModal);
   document.getElementById('processRefundBtn').addEventListener('click', handleProcessRefund);
-
-  // Reconcile Modal
-  document.getElementById('closeReconcileModal').addEventListener('click', closeReconcileModal);
-  document.getElementById('cancelReconcileBtn').addEventListener('click', closeReconcileModal);
-  document.getElementById('confirmReconcileBtn').addEventListener('click', handleConfirmReconcile);
 
   // Compute Cost Modal
   document.getElementById('addComputeCostBtn').addEventListener('click', openComputeCostModal);
@@ -636,52 +617,6 @@ async function saveTransaction() {
   } catch (err) {
     console.error('Failed to save transaction:', err);
     showToast('Failed to save transaction', 'error');
-  }
-}
-
-// =============================================
-// RECONCILIATION
-// =============================================
-async function handleReconcileToggle(id, checked) {
-  try {
-    if (checked) {
-      await accountingService.reconcileTransaction(id, null, null);
-      showToast('Marked as reconciled', 'success');
-    } else {
-      await accountingService.unreconcile(id);
-      showToast('Removed reconciliation', 'info');
-    }
-  } catch (err) {
-    console.error('Reconciliation failed:', err);
-    showToast('Reconciliation failed', 'error');
-    await loadData();
-  }
-}
-
-function openReconcileModal(id) {
-  document.getElementById('reconcileLedgerId').value = id;
-  document.getElementById('reconcileQbRef').value = '';
-  document.getElementById('reconcileNotes').value = '';
-  document.getElementById('reconcileModal').classList.remove('hidden');
-}
-
-function closeReconcileModal() {
-  document.getElementById('reconcileModal').classList.add('hidden');
-}
-
-async function handleConfirmReconcile() {
-  const id = document.getElementById('reconcileLedgerId').value;
-  const qbRef = document.getElementById('reconcileQbRef').value;
-  const notes = document.getElementById('reconcileNotes').value;
-
-  try {
-    await accountingService.reconcileTransaction(id, qbRef, notes);
-    showToast('Transaction reconciled', 'success');
-    closeReconcileModal();
-    await loadData();
-  } catch (err) {
-    console.error('Reconciliation failed:', err);
-    showToast('Reconciliation failed', 'error');
   }
 }
 

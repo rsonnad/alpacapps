@@ -863,7 +863,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.45 5:53a</span>
+<span data-site-version style="display:none;">v260210.48 5:57a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1097,17 +1097,17 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       <label class="calc-tier calc-tier--active" data-tier="basic">
         <input type="radio" name="tier" value="basic" checked onchange="recalcCost()">
         <span class="calc-tier__label">Basic</span>
-        <span class="calc-tier__desc">Landing page, basic CRM, a few forms. A weekend project.</span>
+        <span class="calc-tier__desc">Landing page, basic CRM, a few forms. Free tier of Claude Code is enough.</span>
       </label>
       <label class="calc-tier" data-tier="complicated">
         <input type="radio" name="tier" value="complicated" onchange="recalcCost()">
         <span class="calc-tier__label">Complicated</span>
-        <span class="calc-tier__desc">Full CRUD, user roles, email/SMS notifications, payments. A few weeks of building.</span>
+        <span class="calc-tier__desc">Full CRUD, user roles, notifications, payments. Max ($100) for the first month of building, then Pro ($20/mo).</span>
       </label>
       <label class="calc-tier" data-tier="hyper">
         <input type="radio" name="tier" value="hyper" onchange="recalcCost()">
         <span class="calc-tier__label">Hyperintensive</span>
-        <span class="calc-tier__desc">Complex workflows, integrations, AI features, mobile app, ongoing development.</span>
+        <span class="calc-tier__desc">Complex workflows, AI features, mobile app, ongoing heavy development. Max ($100/mo) or Max+ ($200/mo) year-round.</span>
       </label>
     </div>
 
@@ -1864,7 +1864,7 @@ function recalcCost() {
   var svcCosts = {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
-    'claude':      { basic: 0, complicated: 1200, hyper: 2400 },
+    'claude':      { basic: 0, complicated: 320, hyper: 2400 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
     'telnyx':      { basic: 0, complicated: 60, hyper: 180 },
