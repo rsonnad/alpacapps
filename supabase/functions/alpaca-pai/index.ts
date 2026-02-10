@@ -2143,7 +2143,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       const result = await executeToolCall(
         fc,
         scope,
-        userToken,
+        token,
         supabaseUrl,
         goveeApiKey
       );

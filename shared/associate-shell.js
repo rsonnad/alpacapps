@@ -8,6 +8,7 @@ import { supabase } from './supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
 import { setupVersionInfo } from './version-info.js';
+import { renderHeader, initSiteComponents } from './site-components.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -158,6 +159,31 @@ function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+// =============================================
+// SITE NAV INJECTION
+// =============================================
+let siteNavInitialized = false;
+
+function injectSiteNav() {
+  if (siteNavInitialized) return;
+  const target = document.getElementById('siteHeader');
+  if (!target) return;
+
+  const versionEl = document.querySelector('[data-site-version]');
+  const version = versionEl?.textContent?.trim() || '';
+
+  target.innerHTML = renderHeader({
+    transparent: false,
+    light: false,
+    version,
+    showRoleBadge: true,
+  });
+
+  initSiteComponents();
+  setupVersionInfo();
+  siteNavInitialized = true;
 }
 
 // =============================================

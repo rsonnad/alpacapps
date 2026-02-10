@@ -132,7 +132,7 @@ async function fetchVehicles() {
   try {
     const { data, error } = await supabase
       .from('vehicles')
-      .select('name, make, model, year, color, vehicle_state, last_state, last_synced_at, is_active')
+      .select('name, vehicle_make, vehicle_model, year, color, vehicle_state, last_state, last_synced_at, is_active')
       .eq('is_active', true)
       .order('display_order');
     if (error) { console.warn('Vehicles fetch error:', error); return []; }
@@ -221,11 +221,10 @@ function renderVehicleRows(vehicles) {
     const battery = s.battery_level != null ? `${s.battery_level}%` : '—';
     const status = v.vehicle_state || '—';
     const locked = s.locked != null ? (s.locked ? '🔒' : '🔓') : '—';
-    const charging = s.charging_state || '—';
     return `
       <tr>
         <td class="dt-name">${esc(v.name)}</td>
-        <td class="dt-secondary">${esc(v.make)} ${esc(v.model)} ${v.year || ''}</td>
+        <td class="dt-secondary">${esc(v.vehicle_make)} ${esc(v.vehicle_model)} ${v.year || ''}</td>
         <td class="dt-num">${battery}</td>
         <td>${esc(status)}</td>
         <td>${locked}</td>

@@ -274,6 +274,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
         const role = state.appUser.role || 'resident';
         roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
         roleBadge.className = 'role-badge ' + role;
+        roleBadge.style.display = '';
       }
       if (['admin', 'oracle'].includes(state.appUser.role)) {
         document.body.classList.add('is-admin');
