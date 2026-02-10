@@ -5,6 +5,13 @@ This file provides context for Claude (AI assistant) when working on this codeba
 > **See `CLAUDE.local.md` for credentials, connection strings, and environment-specific configuration.**
 > That file is gitignored and contains operator directives, database access details, API keys, and deployment-specific settings.
 
+## Excluded: `/mistiq/`
+
+The `/mistiq/` directory is a **separate, unrelated project** (Mistiq Staffing). It shares this repo for hosting convenience only. Do NOT:
+- Include Mistiq in shared components, skills, or reusable templates
+- Apply AlpacApps style/font changes to Mistiq (it has its own brand)
+- Reference Mistiq when packaging or sharing this codebase with others
+
 ## Project Overview
 
 GenAlpaca is a property management system for GenAlpaca Residency. It manages rental spaces, tenants, bookings, payments, and photos.
