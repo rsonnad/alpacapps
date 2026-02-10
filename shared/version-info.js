@@ -168,6 +168,7 @@ function showVersionModal(info) {
   } else {
     const bugfixes = info.bugfixes || {};
     const features = info.features || {};
+    const branchMeta = info.branch_meta || {};
     const changes = info.changes || [];
     const included = info.included || [];
     const pending = info.pending || [];
@@ -190,11 +191,13 @@ function showVersionModal(info) {
         const desc = bugInfo ? bugInfo.desc : shortBranch(b);
         const page = bugInfo && bugInfo.page ? bugInfo.page : '';
         const pageName = page ? page.replace(/.*\//, '').replace('.html', '') : '';
+        const meta = branchMeta[b];
+        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
         return `<div class="vi-item">
           <div class="vi-item-icon vi-icon-bug">&#10003;</div>
           <div class="vi-item-text">
             <div class="vi-item-desc">${esc(desc)}${modelBadge(b)}</div>
-            <div class="vi-item-meta">${bid || shortBranch(b)}${pageName ? ' · ' + esc(pageName) : ''}</div>
+            <div class="vi-item-meta">${bid || shortBranch(b)}${pageName ? ' · ' + esc(pageName) : ''}${timeLabel}</div>
           </div>
         </div>`;
       }).join('');
@@ -222,11 +225,13 @@ function showVersionModal(info) {
       pendingHtml = pending.map(b => {
         const featDesc = features[b] || '';
         const bid = branchId(b);
+        const meta = branchMeta[b];
+        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
         return `<div class="vi-item">
           <div class="vi-item-icon vi-icon-pending">&#9675;</div>
           <div class="vi-item-text">
             <div class="vi-item-desc">${featDesc ? esc(featDesc) : esc(shortBranch(b))}${modelBadge(b)}</div>
-            <div class="vi-item-meta">${esc(shortBranch(b))}</div>
+            <div class="vi-item-meta">${esc(shortBranch(b))}${timeLabel}</div>
           </div>
         </div>`;
       }).join('');
@@ -236,12 +241,17 @@ function showVersionModal(info) {
     const otherBranches = included.filter(b => !b.includes('bugfix/') && !b.includes('main'));
     let otherHtml = '';
     if (otherBranches.length > 0) {
-      otherHtml = otherBranches.map(b => `<div class="vi-item">
-        <div class="vi-item-icon vi-icon-feat">&#10003;</div>
-        <div class="vi-item-text">
-          <div class="vi-item-desc">${esc(shortBranch(b))}${modelBadge(b)}</div>
-        </div>
-      </div>`).join('');
+      otherHtml = otherBranches.map(b => {
+        const meta = branchMeta[b];
+        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
+        return `<div class="vi-item">
+          <div class="vi-item-icon vi-icon-feat">&#10003;</div>
+          <div class="vi-item-text">
+            <div class="vi-item-desc">${esc(shortBranch(b))}${modelBadge(b)}</div>
+            <div class="vi-item-meta">${esc(shortBranch(b))}${timeLabel}</div>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     // Build model summary line

@@ -224,7 +224,7 @@ if [ -n "$ALL_BRANCHES" ]; then
       gpt/*)       BRANCH_MODEL="gpt" ;;
       cursor/*)    BRANCH_MODEL="cursor" ;;
       bugfix/*)    BRANCH_MODEL="claude" ;;  # bugfix branches are typically Claude Code
-      redesign/*)  BRANCH_MODEL="" ;;  # could be any model
+      redesign/*)  BRANCH_MODEL="" ;;
       ui/*)        BRANCH_MODEL="" ;;
     esac
     # Try to read Model-Code trailer from the branch's latest commit
@@ -245,6 +245,27 @@ fi
 # Escape MODEL_CODE for JSON
 SAFE_MODEL_CODE=$(echo "$MODEL_CODE" | sed 's/"/\\"/g')
 
+# 7b. Gather branch metadata (commit hash + commit time) for hover details
+BRANCH_META_JSON="{}"
+BRANCH_LIST=$(echo "$INCLUDED_JSON" "$PENDING_JSON" \
+  | tr -d '[]"' | tr ',' '\n' | sed '/^$/d' | sort -u)
+if [ -n "$BRANCH_LIST" ]; then
+  BRANCH_ENTRIES=""
+  while read -r branch; do
+    [ -z "$branch" ] && continue
+    INFO=$(git log "origin/$branch" -1 --format="%H|%h|%cI" 2>/dev/null || true)
+    if [ -n "$INFO" ]; then
+      FULL_COMMIT="${INFO%%|*}"
+      REST="${INFO#*|}"
+      SHORT_COMMIT="${REST%%|*}"
+      COMMIT_TIME="${REST#*|}"
+      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
+      [ -n "$BRANCH_ENTRIES" ] && BRANCH_ENTRIES="$BRANCH_ENTRIES,"
+      BRANCH_ENTRIES="$BRANCH_ENTRIES\"$SAFE_BRANCH\":{\"full_commit\":\"$FULL_COMMIT\",\"short_commit\":\"$SHORT_COMMIT\",\"commit_time\":\"$COMMIT_TIME\"}"
+    fi
+  done <<< "$BRANCH_LIST"
+  [ -n "$BRANCH_ENTRIES" ] && BRANCH_META_JSON="{$BRANCH_ENTRIES}"
+fi
 cat > "$PROJECT_ROOT/version.json" << ENDJSON
 {
   "version": "$NEW_DISPLAY_VERSION",
@@ -257,7 +278,8 @@ cat > "$PROJECT_ROOT/version.json" << ENDJSON
   "changes": $CHANGES_JSON,
   "bugfixes": $BUGFIXES_JSON,
   "features": $FEATURES_JSON,
-  "models": $MODELS_JSON
+  "models": $MODELS_JSON,
+  "branch_meta": $BRANCH_META_JSON
 }
 ENDJSON
 
