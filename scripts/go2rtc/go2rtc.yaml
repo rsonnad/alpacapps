@@ -32,3 +32,13 @@ streams:
     - rtspx://192.168.1.1:7441/N8fKGdVD017n9urn
   side-yard-low:
     - rtspx://192.168.1.1:7441/eLkr5lNQISofL8Go
+
+  # Wansview cameras (plain RTSP, not TLS)
+  wansview-1-high:
+    - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch0
+  wansview-1-low:
+    - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch1
+  wansview-4-high:
+    - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch0
+  wansview-4-low:
+    - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch1

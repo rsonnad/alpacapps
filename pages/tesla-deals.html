@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Used Tesla Model Y Deals — Chicago Area</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #141420;
+      --surface2: #1c1c2e;
+      --border: #2a2a3e;
+      --text: #e8e8f0;
+      --text-dim: #8888a0;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.12);
+      --yellow: #eab308;
+      --yellow-dim: rgba(234, 179, 8, 0.12);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.12);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.12);
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .hero {
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+      background: linear-gradient(180deg, #12122a 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero .subtitle {
+      color: var(--text-dim);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.45rem 1rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .stat-pill .num { font-weight: 700; color: var(--accent); }
+    .stat-pill.green .num { color: var(--green); }
+    .stat-pill.purple .num { color: var(--purple); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+    /* Reference pricing section */
+    .ref-pricing {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .ref-pricing h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .ref-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .ref-card .trim { font-weight: 600; font-size: 0.95rem; }
+    .ref-card .msrp { font-size: 1.3rem; font-weight: 700; color: var(--accent); margin: 0.25rem 0; }
+    .ref-card .detail { font-size: 0.8rem; color: var(--text-dim); }
+
+    /* HW4 explainer */
+    .hw4-box {
+      background: linear-gradient(135deg, var(--green-dim), var(--surface));
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .hw4-box h3 { color: var(--green); margin-bottom: 0.5rem; font-size: 1rem; }
+    .hw4-box ul { padding-left: 1.2rem; color: var(--text-dim); }
+    .hw4-box li { margin-bottom: 0.25rem; }
+    .hw4-box strong { color: var(--text); }
+
+    /* Filter bar */
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Vehicle cards */
+    .cards { display: flex; flex-direction: column; gap: 1rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .card.great-deal { border-left: 3px solid var(--green); }
+    .card.good-deal { border-left: 3px solid var(--yellow); }
+    .card.fair-deal { border-left: 3px solid var(--text-dim); }
+
+    .card-main { min-width: 0; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .card-year { font-size: 1.3rem; font-weight: 700; }
+    .card-trim { font-size: 1.1rem; font-weight: 500; color: var(--text-dim); }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .badge-hw4 { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-hw4-likely { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+    .badge-hw3 { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-fsd { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+    .badge-deal-great { background: var(--green-dim); color: var(--green); }
+    .badge-deal-good { background: var(--yellow-dim); color: var(--yellow); }
+
+    .card-specs {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      margin: 0.5rem 0;
+    }
+    .spec {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .spec strong { color: var(--text); font-weight: 600; }
+
+    .card-features {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .feature-chip {
+      font-size: 0.72rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      color: var(--text-dim);
+    }
+
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-width: 140px;
+    }
+    .card-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .card-savings {
+      font-size: 0.8rem;
+      margin-top: 0.15rem;
+    }
+    .card-savings.positive { color: var(--green); }
+    .card-savings.negative { color: var(--red); }
+    .card-link {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.5rem 1.25rem;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .card-link:hover { opacity: 0.85; }
+
+    .card-vin {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      margin-top: 0.5rem;
+      opacity: 0.6;
+    }
+
+    .source-icon {
+      font-size: 0.7rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.12rem 0.4rem;
+      color: var(--text-dim);
+    }
+
+    .disclaimer {
+      margin-top: 3rem;
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+    .disclaimer strong { color: var(--text); }
+
+    .timestamp {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .sort-bar select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 700px) {
+      .hero h1 { font-size: 1.6rem; }
+      .card { grid-template-columns: 1fr; }
+      .card-right { flex-direction: row; align-items: center; justify-content: space-between; min-width: 0; }
+      .ref-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Used Tesla <span>Model Y</span> Deals</h1>
+  <div class="subtitle">Chicago, IL (60601) &middot; 200 mile radius &middot; HW4 focus</div>
+  <div class="stats-row">
+    <div class="stat-pill"><span class="num" id="totalCount">0</span> vehicles</div>
+    <div class="stat-pill green"><span class="num" id="hw4Count">0</span> HW4 confirmed</div>
+    <div class="stat-pill purple"><span class="num" id="fsdCount">0</span> with FSD</div>
+    <div class="stat-pill"><span class="num" id="priceRange">—</span> price range</div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- New pricing reference -->
+  <div class="ref-pricing">
+    <h2>&#128176; 2025 Model Y New Pricing (for deal comparison)</h2>
+    <div class="ref-grid">
+      <div class="ref-card">
+        <div class="trim">Long Range AWD</div>
+        <div class="msrp">$49,990</div>
+        <div class="detail">310 mi range &middot; 4.8s 0-60 &middot; HW4</div>
+      </div>
+      <div class="ref-card">
+        <div class="trim">Performance AWD</div>
+        <div class="msrp">$57,990</div>
+        <div class="detail">285 mi range &middot; 3.5s 0-60 &middot; HW4</div>
+      </div>
+      <div class="ref-card">
+        <div class="trim">FSD Add-on</div>
+        <div class="msrp">$8,000</div>
+        <div class="detail">One-time purchase &middot; Supervised self-driving</div>
+      </div>
+      <div class="ref-card">
+        <div class="trim">FSD Subscription</div>
+        <div class="msrp">$99/mo</div>
+        <div class="detail">Monthly &middot; Cancel anytime &middot; Not transferable</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HW4 explainer -->
+  <div class="hw4-box">
+    <h3>&#9989; Hardware 4 (HW4 / AI4) Verification</h3>
+    <ul>
+      <li><strong>2024-2025 Model Y:</strong> All ship with HW4 &mdash; confirmed, no exceptions.</li>
+      <li><strong>2023 Model Y (after ~June 2023):</strong> Likely HW4. VIN sequence numbers above ~500,000 indicate late-2023 production. Marked as "HW4 (likely)" below.</li>
+      <li><strong>2023 Model Y (before ~June 2023):</strong> Likely HW3. VIN sequence below ~500,000. Marked as "HW3 (likely)".</li>
+      <li><strong>Why HW4 matters:</strong> Required for future unsupervised FSD. HW3 vehicles may be limited to current Autopilot capabilities long-term.</li>
+    </ul>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="hw4-confirmed">HW4 Confirmed</button>
+    <button class="filter-btn" data-filter="hw4-any">Any HW4</button>
+    <button class="filter-btn" data-filter="fsd">FSD Included</button>
+    <button class="filter-btn" data-filter="great-deals">Great Deals</button>
+    <button class="filter-btn" data-filter="2024+">2024+</button>
+    <button class="filter-btn" data-filter="under-35k">Under $35k</button>
+  </div>
+
+  <div class="sort-bar">
+    Sort by:
+    <select id="sortSelect">
+      <option value="deal">Best Deal</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+      <option value="miles-asc">Miles: Low to High</option>
+      <option value="year-desc">Year: Newest First</option>
+    </select>
+    <span id="visibleCount" style="margin-left:auto;">—</span>
+  </div>
+
+  <div class="cards" id="cardContainer"></div>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> Prices and availability change frequently. FSD status is detected from listing features and may not be 100% accurate &mdash; always confirm with the dealer.
+    HW4 determination for 2023 models is based on VIN sequence analysis and is approximate.
+    "Savings vs New" compares to the equivalent new 2025 MSRP. This page does not constitute financial or purchasing advice.
+  </div>
+  <div class="timestamp" id="timestamp"></div>
+</div>
+
+<script>
+// ── Vehicle Data (scraped 2026-02-10) ──────────────────────
+const VEHICLES = [
+  { vin:"7SAYGDEE0RA214883", year:2024, trim:"Long Range", price:29895, mileage:50646, color:"Deep Blue Metallic", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/4e1b9238-81ae-433e-a2a3-aeac323065bb/", range:"310 mi" },
+  { vin:"7SAYGDEE0RA258415", year:2024, trim:"Long Range", price:32595, mileage:41640, color:"Pearl White", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/f497c435-7319-4499-8455-13413f0334ab/", range:"310 mi" },
+  { vin:"7SAYGDEE5RA285478", year:2024, trim:"Long Range", price:35495, mileage:17112, color:"Pearl White", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/cc2b78b0-8133-4f31-9458-a4093de41956/", range:"310 mi" },
+  { vin:"7SAYGAEE3RF182299", year:2024, trim:"Long Range", price:36000, mileage:11050, color:"Gray", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/ec00dbc1-38a3-49ce-a577-80c9ff48f2e8/", range:"310 mi" },
+  { vin:"7SAYGAEE8RF015548", year:2024, trim:"Long Range", price:36888, mileage:29784, color:"Solid Black", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/d5586c44-4fa5-4593-b6f3-9eef3bbc6bd4/", range:"310 mi" },
+  { vin:"7SAYGDEE6RA288504", year:2024, trim:"Long Range", price:36900, mileage:13252, color:"Ultra Red", interior:"White/Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/96f4e2d8-c3da-4a44-bbf7-32984608a77c/", range:"310 mi" },
+  { vin:"7SAYGDEE2RA274633", year:2024, trim:"Long Range", price:36958, mileage:14007, color:"Stealth Gray", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/1b2943e2-cb88-46ce-820c-ef584ec05378/", range:"310 mi" },
+  { vin:"7SAYGDEE1RF201580", year:2024, trim:"Long Range", price:37500, mileage:6491, color:"Pearl White", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/370ad1f1-937f-4e0d-a46d-dd9be59c8714/", range:"310 mi" },
+  { vin:"7SAYGDEF5RA301395", year:2024, trim:"Performance", price:37877, mileage:19892, color:"Blue", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/3f63a2d5-8f55-4691-b462-77f14670318a/", range:"285 mi" },
+  { vin:"7SAYGDEF2RA274723", year:2024, trim:"Performance", price:39998, mileage:14701, color:"Black", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/e2591282-6685-4604-b379-a3276e77ff33/", range:"285 mi" },
+  { vin:"7SAYGDEE7RA282498", year:2024, trim:"Long Range", price:41888, mileage:3018, color:"Ultra Red", interior:"Black/White", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/6a6bbd1d-7534-4baa-b96c-b28d5720b8ad/", range:"310 mi" },
+  { vin:"7SAYGAEE9SF258680", year:2025, trim:"Long Range", price:36799, mileage:22643, color:"Solid Black", interior:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/e0530ed5-1173-46e8-bb36-99565a926945/", range:"311 mi" },
+  { vin:"7SAYGAEE2SF256480", year:2025, trim:"Long Range", price:39998, mileage:16998, color:"Black", interior:"Black", fsd:"FSD Included", hw:"HW4", hwConf:"confirmed", source:"cars.com", link:"https://www.cars.com/vehicledetail/512f40cf-43d0-4fdc-92d9-c1e70305c55b/", range:"311 mi" },
+  { vin:"7SAYGDEF7PF647738", year:2023, trim:"Performance", price:26495, mileage:77228, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/536267b3-cf0f-49a7-a2e7-218df60a8c53/", range:"" },
+  { vin:"7SAYGDEE3PF755314", year:2023, trim:"Long Range", price:26995, mileage:84892, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/b83708e4-ae90-45ce-8356-dbea7495753c/", range:"" },
+  { vin:"7SAYGDEF7PF660523", year:2023, trim:"Performance", price:27995, mileage:89696, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/e25be3c5-3c47-4cff-b80d-b187fa836d85/", range:"" },
+  { vin:"7SAYGDEF0PF696120", year:2023, trim:"Performance", price:28988, mileage:60383, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/083c73d6-f81b-43c9-9b11-dfa03a9ed694/", range:"" },
+  { vin:"7SAYGDEE9PF606261", year:2023, trim:"Long Range", price:29995, mileage:39009, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/584d1fcf-3e5e-42c5-a5c8-54039054dbea/", range:"" },
+  { vin:"7SAYGDEE7PA060041", year:2023, trim:"Long Range", price:29998, mileage:49996, color:"", interior:"", fsd:"Unknown", hw:"HW3", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/7dbb8936-ba3d-4b36-af50-4b31a1be96b2/", range:"" },
+  { vin:"7SAYGDEE3PA210016", year:2023, trim:"Long Range", price:30789, mileage:35115, color:"", interior:"", fsd:"Unknown", hw:"HW3", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/9ee1bc2c-fb55-4b94-b7cc-a7887525ecf3/", range:"" },
+  { vin:"7SAYGDEE1PF853564", year:2023, trim:"Long Range", price:31995, mileage:27051, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/00aa2cd5-6fb2-4535-abd5-4406152dce21/", range:"" },
+  { vin:"7SAYGDEE5PA038507", year:2023, trim:"Long Range", price:32302, mileage:23072, color:"", interior:"", fsd:"Unknown", hw:"HW3", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/43383974-e595-4e13-832d-a699873d6aca/", range:"" },
+  { vin:"7SAYGDEE5PF662052", year:2023, trim:"Long Range", price:32500, mileage:18144, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/1d261848-a944-4c9e-b51e-d25999456794/", range:"" },
+  { vin:"7SAYGDEE7PF805860", year:2023, trim:"Long Range", price:32500, mileage:31545, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/6bd3f8ae-8c08-4bdd-b5e6-13126fcef97f/", range:"" },
+  { vin:"7SAYGDEF4PF665470", year:2023, trim:"Performance", price:33998, mileage:32508, color:"", interior:"", fsd:"Unknown", hw:"HW4", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/f6169f28-78bb-4b7a-8749-51b657044310/", range:"" },
+  { vin:"7SAYGDEE4PA181500", year:2023, trim:"Long Range", price:34998, mileage:25215, color:"", interior:"", fsd:"Unknown", hw:"HW3", hwConf:"likely", source:"cars.com", link:"https://www.cars.com/vehicledetail/6f2c8f5e-e98b-4479-9c3b-00e9869467c4/", range:"" },
+  { vin:"", year:2023, trim:"Unknown", price:34800, mileage:18000, color:"", interior:"", fsd:"Unknown", hw:"HW4/HW3", hwConf:"uncertain", source:"craigslist", link:"https://chicago.craigslist.org/wcl/cto/d/elmhurst-tesla-model-2023-run-only-18k/7912517209.html", range:"" },
+  { vin:"7SAYGDEE7PF706911", year:2023, trim:"Long Range", price:30800, mileage:null, color:"", interior:"", fsd:"Basic Autopilot", hw:"HW4", hwConf:"likely", source:"craigslist", link:"https://chicago.craigslist.org/chc/cto/d/chicago-2023-tesla-model-with-extreme/7912467120.html", range:"" },
+  { vin:"", year:2023, trim:"Performance", price:24397, mileage:null, color:"", interior:"", fsd:"Basic Autopilot", hw:"HW4/HW3", hwConf:"uncertain", source:"craigslist", link:"https://chicago.craigslist.org/nch/ctd/d/glenview-2023-tesla-model/7910542573.html", range:"" },
+];
+
+// ── New MSRP reference for deal scoring ──────────────────
+const NEW_MSRP = {
+  'Long Range': 49990,
+  'Performance': 57990,
+  'Standard Range': 44990,
+  'Unknown': 49990,
+};
+const FSD_VALUE = 8000;
+
+function getDealScore(v) {
+  const msrp = NEW_MSRP[v.trim] || 49990;
+  const effectiveMSRP = msrp + (v.fsd === 'FSD Included' ? FSD_VALUE : 0);
+  const savings = effectiveMSRP - v.price;
+  const savingsPct = (savings / effectiveMSRP * 100);
+
+  // Penalize for mileage (roughly $0.12/mi depreciation)
+  const mileagePenalty = (v.mileage || 0) * 0.12;
+  const adjustedSavings = savings - mileagePenalty;
+  const dealScore = adjustedSavings;
+
+  let dealRating;
+  if (savingsPct > 35 && adjustedSavings > 8000) dealRating = 'Great Deal';
+  else if (savingsPct > 20 && adjustedSavings > 3000) dealRating = 'Good Deal';
+  else dealRating = 'Fair';
+
+  return { savings, savingsPct, adjustedSavings, dealScore, dealRating, effectiveMSRP };
+}
+
+function fmt$(n) { return '$' + n.toLocaleString(); }
+function fmtMi(n) { return n ? n.toLocaleString() + ' mi' : 'N/A'; }
+
+function renderCard(v) {
+  const deal = getDealScore(v);
+  const dealClass = deal.dealRating === 'Great Deal' ? 'great-deal' : deal.dealRating === 'Good Deal' ? 'good-deal' : 'fair-deal';
+
+  const hwBadge = v.hwConf === 'confirmed'
+    ? `<span class="badge badge-hw4">HW4 &#10003;</span>`
+    : v.hw === 'HW4'
+      ? `<span class="badge badge-hw4-likely">HW4 likely</span>`
+      : v.hw === 'HW3'
+        ? `<span class="badge badge-hw3">HW3 likely</span>`
+        : `<span class="badge badge-hw4-likely">HW4/HW3 ?</span>`;
+
+  const fsdBadge = v.fsd === 'FSD Included'
+    ? `<span class="badge badge-fsd">FSD Included</span>`
+    : v.fsd === 'Basic Autopilot'
+      ? `<span class="badge" style="background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)">Basic AP</span>`
+      : '';
+
+  const dealBadge = deal.dealRating === 'Great Deal'
+    ? `<span class="badge badge-deal-great">&#9733; Great Deal</span>`
+    : deal.dealRating === 'Good Deal'
+      ? `<span class="badge badge-deal-good">Good Deal</span>`
+      : '';
+
+  const colorChip = v.color
+    ? `<div class="spec"><strong>Color:</strong> ${v.color}</div>` : '';
+  const rangeChip = v.range
+    ? `<div class="spec"><strong>Range:</strong> ${v.range}</div>` : '';
+
+  return `
+    <div class="card ${dealClass}" data-year="${v.year}" data-hw="${v.hw}" data-hwconf="${v.hwConf}" data-fsd="${v.fsd}" data-price="${v.price}" data-deal="${deal.dealScore}" data-mileage="${v.mileage||999999}">
+      <div class="card-main">
+        <div class="card-top">
+          <span class="card-year">${v.year}</span>
+          <span class="card-trim">Model Y ${v.trim}</span>
+          ${hwBadge}${fsdBadge}${dealBadge}
+          <span class="source-icon">${v.source}</span>
+        </div>
+        <div class="card-specs">
+          <div class="spec"><strong>Mileage:</strong> ${fmtMi(v.mileage)}</div>
+          ${colorChip}
+          ${v.interior ? `<div class="spec"><strong>Interior:</strong> ${v.interior}</div>` : ''}
+          ${rangeChip}
+        </div>
+        ${v.fsd === 'FSD Included' ? '<div class="card-features"><span class="feature-chip" style="border-color:rgba(168,85,247,0.4);color:var(--purple)">Full Self-Driving (Supervised) &mdash; $8,000 value included</span></div>' : ''}
+        <div class="card-vin">${v.vin || 'VIN not available'}</div>
+      </div>
+      <div class="card-right">
+        <div>
+          <div class="card-price">${fmt$(v.price)}</div>
+          <div class="card-savings ${deal.savings > 0 ? 'positive' : 'negative'}">
+            ${deal.savings > 0 ? `Save ${fmt$(deal.savings)} vs new` : ''}
+          </div>
+          <div style="font-size:0.72rem;color:var(--text-dim);text-align:right;">
+            ${Math.round(deal.savingsPct)}% below ${fmt$(deal.effectiveMSRP)} new
+          </div>
+        </div>
+        <a class="card-link" href="${v.link}" target="_blank" rel="noopener">View Listing &rarr;</a>
+      </div>
+    </div>`;
+}
+
+// ── Render & filtering ──────────────────────────────────────
+const container = document.getElementById('cardContainer');
+let currentFilter = 'all';
+let currentSort = 'deal';
+
+function applyFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  render();
+}
+
+function render() {
+  let filtered = VEHICLES.filter(v => {
+    if (currentFilter === 'hw4-confirmed') return v.hwConf === 'confirmed';
+    if (currentFilter === 'hw4-any') return v.hw === 'HW4';
+    if (currentFilter === 'fsd') return v.fsd === 'FSD Included';
+    if (currentFilter === 'great-deals') return getDealScore(v).dealRating === 'Great Deal';
+    if (currentFilter === '2024+') return v.year >= 2024;
+    if (currentFilter === 'under-35k') return v.price < 35000;
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    if (currentSort === 'deal') return getDealScore(b).dealScore - getDealScore(a).dealScore;
+    if (currentSort === 'price-asc') return a.price - b.price;
+    if (currentSort === 'price-desc') return b.price - a.price;
+    if (currentSort === 'miles-asc') return (a.mileage||999999) - (b.mileage||999999);
+    if (currentSort === 'year-desc') return b.year - a.year || a.price - b.price;
+    return 0;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">No vehicles match this filter.</div>';
+  } else {
+    container.innerHTML = filtered.map(renderCard).join('');
+  }
+
+  document.getElementById('visibleCount').textContent = `${filtered.length} of ${VEHICLES.length} shown`;
+}
+
+// Stats
+const hw4Confirmed = VEHICLES.filter(v => v.hwConf === 'confirmed');
+const fsdVehicles = VEHICLES.filter(v => v.fsd === 'FSD Included');
+const prices = VEHICLES.map(v => v.price);
+document.getElementById('totalCount').textContent = VEHICLES.length;
+document.getElementById('hw4Count').textContent = hw4Confirmed.length;
+document.getElementById('fsdCount').textContent = fsdVehicles.length;
+document.getElementById('priceRange').textContent = `${fmt$(Math.min(...prices))} \u2013 ${fmt$(Math.max(...prices))}`;
+document.getElementById('timestamp').textContent = `Data scraped: February 10, 2026 \u00b7 Sources: Cars.com, Craigslist Chicago \u00b7 Tesla.com blocked by Akamai`;
+
+// Event listeners
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+});
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+  currentSort = e.target.value;
+  render();
+});
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>
