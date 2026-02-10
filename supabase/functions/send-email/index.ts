@@ -1413,6 +1413,23 @@ serve(async (req) => {
 
     console.log("Email sent successfully:", { type, to, id: result.id });
 
+    // Log to api_usage_log (fire-and-forget, don't block response)
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const sb = createClient(supabaseUrl, supabaseKey);
+      const recipientCount = Array.isArray(to) ? to.length : 1;
+      sb.from("api_usage_log").insert({
+        vendor: "resend",
+        category: `email_${type}`,
+        endpoint: "POST /emails",
+        units: recipientCount,
+        unit_type: "emails",
+        estimated_cost_usd: recipientCount * 0.00028,
+        metadata: { resend_id: result.id, email_type: type, recipient_count: recipientCount },
+      }).then(() => {});
+    } catch (_) { /* non-critical */ }
+
     return new Response(
       JSON.stringify({ success: true, id: result.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

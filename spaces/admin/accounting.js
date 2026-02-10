@@ -18,6 +18,7 @@ let people = [];
 let currentFilters = {};
 let occupancyData = null; // { occupancyPct, occupiedUnits, availableUnits, totalUnits, revenuePct, currentRevenue, maxPotential, revenueGap }
 let computeCosts = [];
+let apiUsageData = null;
 let initialized = false;
 
 // Check if running in embed mode (inside iframe on manage.html)
@@ -48,7 +49,7 @@ initAdminPage({
     await loadPeople();
     setDefaultDateRange();
     setupEventListeners();
-    await Promise.all([loadData(), loadOccupancy(), loadComputeCosts()]);
+    await Promise.all([loadData(), loadOccupancy(), loadComputeCosts(), loadApiUsage()]);
   }
 });
 
@@ -483,6 +484,9 @@ function setupEventListeners() {
   document.getElementById('closeRefundModal').addEventListener('click', closeRefundModal);
   document.getElementById('cancelRefundBtn').addEventListener('click', closeRefundModal);
   document.getElementById('processRefundBtn').addEventListener('click', handleProcessRefund);
+
+  // API Usage month selector
+  populateMonthSelector();
 
   // Compute Cost Modal
   document.getElementById('addComputeCostBtn').addEventListener('click', openComputeCostModal);
@@ -924,6 +928,345 @@ function renderUnitBreakdown(spaces) {
   }).join('');
 
   container.innerHTML = rows || '<div class="empty-state">No dwelling spaces found</div>';
+}
+
+// =============================================
+// API USAGE
+// =============================================
+
+// Vendor config: limits, pricing, display
+const API_VENDORS = {
+  resend: {
+    label: 'Resend',
+    color: '#000',
+    metrics: [
+      { key: 'outbound', label: 'Outbound Emails', dailyLimit: 100, limitNote: '100/day free tier' },
+      { key: 'inbound', label: 'Inbound Emails' },
+    ],
+    costPer: 0.00028,
+    costUnit: 'email',
+  },
+  telnyx: {
+    label: 'Telnyx',
+    color: '#00c08b',
+    metrics: [
+      { key: 'outbound', label: 'Outbound SMS', costPer: 0.004 },
+      { key: 'inbound', label: 'Inbound SMS', costPer: 0.001 },
+    ],
+    costUnit: 'segment',
+  },
+  signwell: {
+    label: 'SignWell',
+    color: '#6366f1',
+    metrics: [
+      { key: 'documents', label: 'Documents', monthlyLimit: 25, limitNote: '25/month free' },
+    ],
+    costPer: 0,
+    costUnit: 'doc',
+  },
+  gemini: {
+    label: 'Gemini',
+    color: '#4285f4',
+    metrics: [
+      { key: 'image_gen', label: 'Image Gen' },
+      { key: 'pai_chat', label: 'PAI Chat' },
+      { key: 'other', label: 'Other' },
+    ],
+    costUnit: 'request',
+  },
+  vapi: {
+    label: 'Vapi',
+    color: '#5b21b6',
+    metrics: [
+      { key: 'calls', label: 'Voice Calls' },
+      { key: 'minutes', label: 'Minutes', isFloat: true },
+    ],
+    costUnit: 'call',
+  },
+  anthropic: {
+    label: 'Anthropic',
+    color: '#d97706',
+    metrics: [
+      { key: 'requests', label: 'API Calls' },
+    ],
+    costUnit: 'request',
+  },
+};
+
+function getMonthOptions() {
+  const now = new Date();
+  const options = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    options.push({ val, label, isCurrent: i === 0 });
+  }
+  return options;
+}
+
+function populateMonthSelector() {
+  const select = document.getElementById('apiUsageMonthSelect');
+  const options = getMonthOptions();
+  select.innerHTML = options.map(o =>
+    `<option value="${o.val}"${o.isCurrent ? ' selected' : ''}>${o.label}</option>`
+  ).join('');
+  select.addEventListener('change', loadApiUsage);
+}
+
+async function loadApiUsage() {
+  const container = document.getElementById('apiUsageContainer');
+  const totalEl = document.getElementById('apiUsageTotalCost');
+
+  // Get selected month
+  const select = document.getElementById('apiUsageMonthSelect');
+  if (!select.options.length) populateMonthSelector();
+  const selectedMonth = select.value;
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const monthStart = `${selectedMonth}-01T00:00:00`;
+  const nextMonth = new Date(year, month, 1);
+  const monthEnd = nextMonth.toISOString();
+
+  try {
+    // Fetch all data sources in parallel
+    const [
+      apiLogResult,
+      smsResult,
+      inboundEmailResult,
+      imageGenResult,
+      voiceCallResult,
+    ] = await Promise.all([
+      // api_usage_log (new table — may have data going forward)
+      supabase.from('api_usage_log')
+        .select('vendor, category, units, unit_type, estimated_cost_usd, created_at')
+        .gte('created_at', monthStart)
+        .lt('created_at', monthEnd),
+      // SMS messages (existing data)
+      supabase.from('sms_messages')
+        .select('direction, created_at')
+        .gte('created_at', monthStart)
+        .lt('created_at', monthEnd),
+      // Inbound emails (existing data)
+      supabase.from('inbound_emails')
+        .select('route_action, created_at')
+        .gte('created_at', monthStart)
+        .lt('created_at', monthEnd),
+      // Image gen jobs (existing data)
+      supabase.from('image_gen_jobs')
+        .select('status, estimated_cost_usd, created_at')
+        .eq('status', 'completed')
+        .gte('created_at', monthStart)
+        .lt('created_at', monthEnd),
+      // Voice calls (existing data)
+      supabase.from('voice_calls')
+        .select('duration_seconds, cost_usd, created_at')
+        .gte('created_at', monthStart)
+        .lt('created_at', monthEnd),
+    ]);
+
+    const apiLog = apiLogResult.data || [];
+    const smsMessages = smsResult.data || [];
+    const inboundEmails = inboundEmailResult.data || [];
+    const imageGenJobs = imageGenResult.data || [];
+    const voiceCalls = voiceCallResult.data || [];
+
+    // Count outbound emails from api_usage_log (new logging)
+    const emailsFromLog = apiLog.filter(r => r.vendor === 'resend');
+    const emailOutboundCount = emailsFromLog.reduce((s, r) => s + (parseFloat(r.units) || 0), 0);
+
+    // Count outbound emails for today (for daily limit)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const emailsTodayFromLog = emailsFromLog.filter(r => new Date(r.created_at) >= todayStart);
+    const emailTodayCount = emailsTodayFromLog.reduce((s, r) => s + (parseFloat(r.units) || 0), 0);
+
+    // SMS from existing sms_messages table
+    const smsOutbound = smsMessages.filter(m => m.direction === 'outbound').length;
+    const smsInbound = smsMessages.filter(m => m.direction === 'inbound').length;
+
+    // Also check api_usage_log for SMS (future data)
+    const smsFromLog = apiLog.filter(r => r.vendor === 'telnyx');
+    // Use whichever is higher (avoid double-counting)
+    const smsOutboundFinal = Math.max(smsOutbound, smsFromLog.filter(r => r.category?.includes('outbound') || !r.category?.includes('inbound')).length);
+    const smsInboundFinal = Math.max(smsInbound, smsFromLog.filter(r => r.category?.includes('inbound')).length);
+
+    // Inbound emails count
+    const inboundEmailCount = inboundEmails.length;
+
+    // Image gen from image_gen_jobs
+    const imageGenCount = imageGenJobs.length;
+    const imageGenCost = imageGenJobs.reduce((s, j) => s + (parseFloat(j.estimated_cost_usd) || 0), 0);
+
+    // Gemini from api_usage_log (PAI chat, payment matching, etc.)
+    const geminiFromLog = apiLog.filter(r => r.vendor === 'gemini');
+    const geminiPaiCount = geminiFromLog.filter(r => r.category?.includes('pai')).length;
+    const geminiOtherCount = geminiFromLog.filter(r => !r.category?.includes('pai') && !r.category?.includes('image')).length;
+    const geminiCost = geminiFromLog.reduce((s, r) => s + (parseFloat(r.estimated_cost_usd) || 0), 0);
+
+    // Voice calls
+    const voiceCallCount = voiceCalls.length;
+    const voiceMinutes = voiceCalls.reduce((s, c) => s + ((c.duration_seconds || 0) / 60), 0);
+    const voiceCost = voiceCalls.reduce((s, c) => s + (parseFloat(c.cost_usd) || 0), 0);
+
+    // Anthropic from api_usage_log
+    const anthropicFromLog = apiLog.filter(r => r.vendor === 'anthropic');
+    const anthropicCount = anthropicFromLog.length;
+    const anthropicCost = anthropicFromLog.reduce((s, r) => s + (parseFloat(r.estimated_cost_usd) || 0), 0);
+
+    // SignWell — count from api_usage_log
+    const signwellFromLog = apiLog.filter(r => r.vendor === 'signwell');
+    const signwellCount = signwellFromLog.reduce((s, r) => s + (parseFloat(r.units) || 1), 0);
+
+    // Build vendor data
+    const vendorData = [
+      {
+        id: 'resend',
+        label: 'Resend',
+        color: '#000',
+        totalCost: emailOutboundCount * 0.00028,
+        rows: [
+          { label: 'Outbound Emails', count: emailOutboundCount, dailyLimit: 100, dailyCount: emailTodayCount, limitNote: '100/day free tier' },
+          { label: 'Inbound Emails', count: inboundEmailCount },
+        ],
+      },
+      {
+        id: 'telnyx',
+        label: 'Telnyx',
+        color: '#00c08b',
+        totalCost: (smsOutboundFinal * 0.004) + (smsInboundFinal * 0.001),
+        rows: [
+          { label: 'Outbound SMS', count: smsOutboundFinal, costEach: '$0.004' },
+          { label: 'Inbound SMS', count: smsInboundFinal, costEach: '$0.001' },
+        ],
+      },
+      {
+        id: 'signwell',
+        label: 'SignWell',
+        color: '#6366f1',
+        totalCost: 0,
+        rows: [
+          { label: 'Documents', count: signwellCount, monthlyLimit: 25, limitNote: '25/month free' },
+        ],
+      },
+      {
+        id: 'gemini',
+        label: 'Gemini',
+        color: '#4285f4',
+        totalCost: imageGenCost + geminiCost,
+        rows: [
+          { label: 'Image Gen', count: imageGenCount },
+          { label: 'PAI Chat', count: geminiPaiCount },
+          ...(geminiOtherCount > 0 ? [{ label: 'Other', count: geminiOtherCount }] : []),
+        ],
+      },
+      {
+        id: 'vapi',
+        label: 'Vapi',
+        color: '#5b21b6',
+        totalCost: voiceCost,
+        rows: [
+          { label: 'Calls', count: voiceCallCount },
+          { label: 'Minutes', count: voiceMinutes, isFloat: true },
+        ],
+      },
+      {
+        id: 'anthropic',
+        label: 'Anthropic',
+        color: '#d97706',
+        totalCost: anthropicCost,
+        rows: [
+          { label: 'API Calls', count: anthropicCount },
+        ],
+      },
+    ];
+
+    // Filter out vendors with zero activity (but keep limit-sensitive ones always)
+    const alwaysShow = ['resend', 'telnyx', 'signwell'];
+    const filtered = vendorData.filter(v =>
+      alwaysShow.includes(v.id) ||
+      v.rows.some(r => r.count > 0) ||
+      v.totalCost > 0
+    );
+
+    const grandTotal = filtered.reduce((s, v) => s + v.totalCost, 0);
+    totalEl.textContent = '$' + grandTotal.toFixed(2);
+
+    apiUsageData = filtered;
+    renderApiUsage(filtered);
+  } catch (err) {
+    console.error('Failed to load API usage:', err);
+    container.innerHTML = '<div class="empty-state">Failed to load API usage data.</div>';
+  }
+}
+
+function renderApiUsage(vendors) {
+  const container = document.getElementById('apiUsageContainer');
+
+  if (!vendors || vendors.length === 0) {
+    container.innerHTML = '<div class="empty-state">No API usage data yet.</div>';
+    return;
+  }
+
+  const cards = vendors.map(v => {
+    const costDisplay = v.totalCost > 0 ? '$' + v.totalCost.toFixed(4) : 'Free';
+    const costClass = v.totalCost > 0 ? '' : ' api-usage-card-cost-free';
+
+    const rows = v.rows.map(r => {
+      const countDisplay = r.isFloat ? r.count.toFixed(1) : Math.round(r.count);
+
+      // Build bar if there's a limit
+      let barHtml = '';
+      if (r.dailyLimit) {
+        const pct = Math.min(100, (r.dailyCount / r.dailyLimit) * 100);
+        const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'safe';
+        barHtml = `
+          <div class="api-usage-bar">
+            <div class="api-usage-bar-fill ${barClass}" style="width: ${pct}%"></div>
+          </div>
+          <div class="api-usage-row-top">
+            <span class="api-usage-row-label">Today: ${Math.round(r.dailyCount)} / ${r.dailyLimit}</span>
+            <span class="api-usage-row-value" style="font-size: 0.65rem; color: var(--text-muted);">${r.limitNote || ''}</span>
+          </div>
+        `;
+      } else if (r.monthlyLimit) {
+        const pct = Math.min(100, (r.count / r.monthlyLimit) * 100);
+        const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'safe';
+        barHtml = `
+          <div class="api-usage-bar">
+            <div class="api-usage-bar-fill ${barClass}" style="width: ${pct}%"></div>
+          </div>
+          <div class="api-usage-row-top">
+            <span class="api-usage-row-label">${Math.round(r.count)} / ${r.monthlyLimit} used</span>
+            <span class="api-usage-row-value" style="font-size: 0.65rem; color: var(--text-muted);">${r.limitNote || ''}</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="api-usage-row">
+          <div class="api-usage-row-top">
+            <span class="api-usage-row-label">${escapeHtml(r.label)}</span>
+            <span class="api-usage-row-value">${countDisplay}${r.costEach ? ` × ${r.costEach}` : ''}</span>
+          </div>
+          ${barHtml}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="api-usage-card">
+        <div class="api-usage-card-header">
+          <span class="api-usage-card-vendor" style="color: ${v.color};">${escapeHtml(v.label)}</span>
+          <span class="api-usage-card-cost${costClass}">${costDisplay}</span>
+        </div>
+        <div class="api-usage-card-rows">
+          ${rows}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `<div class="api-usage-grid">${cards}</div>`;
 }
 
 // =============================================

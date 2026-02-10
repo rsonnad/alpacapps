@@ -220,6 +220,17 @@ serve(async (req) => {
 
     console.log("SMS sent successfully:", { type, to, id: messageId });
 
+    // Log to api_usage_log (fire-and-forget)
+    supabase.from("api_usage_log").insert({
+      vendor: "telnyx",
+      category: `sms_${type}`,
+      endpoint: "POST /messages",
+      units: 1,
+      unit_type: "sms_segments",
+      estimated_cost_usd: 0.004,
+      metadata: { telnyx_id: messageId, sms_type: type, to },
+    }).then(() => {});
+
     return new Response(
       JSON.stringify({ success: true, id: messageId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
