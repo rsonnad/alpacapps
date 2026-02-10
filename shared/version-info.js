@@ -298,6 +298,18 @@ export function setupVersionInfo() {
   span.style.textDecoration = 'underline dotted';
   span.style.textUnderlineOffset = '2px';
 
+  // Bump version font size slightly and append model badge
+  const computed = getComputedStyle(span);
+  const currentSize = parseFloat(computed.fontSize);
+  if (currentSize < 10) span.style.fontSize = '0.55rem';
+  if (!span.querySelector('.vi-model-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'vi-model-badge';
+    badge.textContent = ' o4.6';
+    badge.style.cssText = 'color:#d4883a;font-weight:600;';
+    span.appendChild(badge);
+  }
+
   injectStyles();
 
   // Hover tooltip — bigger and more informative
