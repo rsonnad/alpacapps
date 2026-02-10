@@ -518,6 +518,22 @@ If you don't know your exact model, use a best-effort label like `gpt-5.2-codex`
 
 The model + machine are stored in `version.json` and shown in the hover tooltip and click modal.
 
+#### Quick model helper (recommended)
+
+To switch models quickly in your shell, use:
+
+```bash
+source ./scripts/modl.sh g   # gpt-5.3-codex
+source ./scripts/modl.sh o   # opus-4.6
+source ./scripts/modl.sh c   # composer-1.5
+```
+
+Optional: add an alias to your `~/.zshrc`:
+
+```bash
+alias modl='source /path/to/alpacapps/scripts/modl.sh'
+```
+
 The script:
 1. Atomically increments the version in the `site_config` DB table (format: `vYYMMDD.NN H:MMa/p`)
 2. Uses `sed` to find/replace the version string in **all HTML files**
