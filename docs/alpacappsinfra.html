@@ -889,7 +889,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.79 8:14a</span>
+<span data-site-version style="display:none;">v260210.80 8:16a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1619,9 +1619,43 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 10. Discord -->
+  <!-- 10. Cloudflare R2 -->
+  <div class="section" id="cloudflare-r2-setup">
+    <h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">10. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2>
+    <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Sign up at <a href="https://dash.cloudflare.com/sign-up" target="_blank">dash.cloudflare.com/sign-up</a> (free, no credit card)</li>
+      <li>Go to <strong>R2 Object Storage</strong> in the left sidebar &rarr; <strong>Create bucket</strong></li>
+      <li>Name your bucket (e.g., your project name), choose a region, click <strong>Create bucket</strong></li>
+      <li>In bucket <strong>Settings</strong>, enable <strong>Public Development URL</strong> (allows public read access via a <code>pub-*.r2.dev</code> URL)</li>
+      <li>Go to <strong>R2 Object Storage</strong> &rarr; <strong>Manage R2 API Tokens</strong> &rarr; <strong>Create API token</strong></li>
+      <li>Give it <strong>Object Read &amp; Write</strong> permission, apply to your bucket, create the token</li>
+      <li>Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> (shown only once!)</li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### Cloudflare R2
+- Account ID: `your-cloudflare-account-id` (from the R2 dashboard URL or Overview page)
+- Bucket name: `your-bucket-name`
+- Public URL: `https://pub-xxxx.r2.dev` (from bucket Settings &rarr; Public Development URL)
+- Access Key ID: `your-access-key`
+- Secret Access Key: `your-secret-key`</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Store my R2 credentials as Supabase secrets and create the R2 upload helper and config table."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will:
+        <code>supabase secrets set R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=... R2_BUCKET_NAME=... R2_PUBLIC_URL=...</code>,
+        create <code>r2_config</code> table, create <code>supabase/functions/_shared/r2-upload.ts</code> (S3-compatible upload with AWS Sig V4)</span>
+    </div>
+  </div>
+
+  <!-- 11. Discord -->
   <div class="section" id="discord">
-    <h2><img src="https://cdn.simpleicons.org/discord" alt="Discord" class="service-icon">10. Discord Bot (Optional)</h2>
+    <h2><img src="https://cdn.simpleicons.org/discord" alt="Discord" class="service-icon">11. Discord Bot (Optional)</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1633,9 +1667,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ol>
   </div>
 
-  <!-- 11. Custom Domain -->
+  <!-- 12. Custom Domain -->
   <div class="section" id="domain">
-    <h2>11. Custom Domain (Optional)</h2>
+    <h2>12. Custom Domain (Optional)</h2>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.

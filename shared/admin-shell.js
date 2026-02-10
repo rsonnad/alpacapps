@@ -164,8 +164,8 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   }
 
   const tabs = [
-    { id: 'resident', label: 'Resident', href: '/residents/' },
-    { id: 'associate', label: 'Associate', href: '/associates/worktracking.html' },
+    { id: 'resident', label: 'Residents', href: '/residents/' },
+    { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
     { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
     { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
   ];
