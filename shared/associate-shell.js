@@ -224,9 +224,24 @@ export async function initAssociatePage({ activeTab, onReady }) {
     const meetsRequirement = allowedRoles.includes(userRole);
 
     if (state.appUser && meetsRequirement) {
+      injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-      renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
+
+      // Render user info into site nav auth container (replaces Sign In link)
+      const siteAuthEl = document.getElementById('aapHeaderAuth');
+      const legacyUserInfo = document.getElementById('userInfo');
+      if (siteAuthEl) {
+        renderUserInfo(siteAuthEl, state.appUser, '/residents/profile.html');
+        siteAuthEl.classList.add('user-info');
+        const signInLink = document.getElementById('aapSignInLink');
+        if (signInLink) signInLink.style.display = 'none';
+        const mobileSignInLink = document.getElementById('aapMobileSignInLink');
+        if (mobileSignInLink) mobileSignInLink.closest('li')?.remove();
+        if (legacyUserInfo) legacyUserInfo.style.display = 'none';
+      } else if (legacyUserInfo) {
+        renderUserInfo(legacyUserInfo, state.appUser, '/residents/profile.html');
+      }
 
       // Update role badge
       const roleBadge = document.getElementById('roleBadge');
@@ -234,6 +249,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
         const role = state.appUser.role || 'associate';
         roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
         roleBadge.className = 'role-badge ' + role;
+        roleBadge.style.display = '';
       }
 
       renderContextSwitcher();

@@ -2795,7 +2795,7 @@ async function loadAirbnbRentals() {
               start: parseAustinDate(a.start_date),
               end: parseAustinDate(a.end_date),
               type: a.airbnb_uid ? 'airbnb' : 'tenant',
-              name: displayName
+              name: isDemoUser() ? redactString(displayName, 'name') : displayName
             };
           }),
           ...blockedRanges.map(r => ({
