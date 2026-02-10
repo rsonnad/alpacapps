@@ -57,7 +57,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.19 3:55a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.20 4:04a</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -102,21 +102,14 @@
           <h2>Personal URL</h2>
         </div>
         <div class="section-body" style="padding: 1rem 1.5rem;">
-          <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-            <code id="personalUrl" style="font-size:0.9rem;background:var(--bg);padding:0.4rem 0.75rem;border-radius:4px;border:1px solid var(--border);color:var(--text)">alpacaplayhouse.com/...</code>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <span style="color:var(--text-muted);font-size:0.9rem;white-space:nowrap">alpacaplayhouse.com/</span>
+            <input type="text" id="slugInput" maxlength="30" style="width:150px;padding:0.35rem 0.5rem;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;font-family:monospace" placeholder="your-slug">
+            <button class="btn-small btn-primary" id="saveSlugBtn" disabled>Change</button>
             <button class="btn-small" id="copyUrlBtn" title="Copy to clipboard">Copy</button>
             <a id="openUrlBtn" class="btn-small" target="_blank" title="Open in new tab">Open</a>
           </div>
-          <div id="slugEditContainer" style="margin-top:0.75rem;display:none">
-            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-              <span style="color:var(--text-muted);font-size:0.85rem">alpacaplayhouse.com/</span>
-              <input type="text" id="slugInput" maxlength="30" style="width:150px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:4px;font-size:0.9rem" placeholder="your-slug">
-              <button class="btn-small btn-primary" id="saveSlugBtn">Save</button>
-              <button class="btn-small" id="cancelSlugBtn">Cancel</button>
-            </div>
-            <p id="slugError" style="color:var(--occupied,#e74c3c);font-size:0.8rem;margin-top:0.25rem;display:none"></p>
-          </div>
-          <button class="btn-small" id="editSlugBtn" style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted)">Change URL</button>
+          <p id="slugError" style="color:var(--occupied,#e74c3c);font-size:0.8rem;margin-top:0.25rem;display:none"></p>
         </div>
       </section>
 

@@ -626,18 +626,14 @@ function bindEvents() {
       showToast('URL copied!', 'success');
     }
   });
-  document.getElementById('editSlugBtn')?.addEventListener('click', () => {
-    document.getElementById('slugEditContainer').style.display = '';
-    document.getElementById('editSlugBtn').style.display = 'none';
-    document.getElementById('slugInput').value = profileData.slug || '';
-    document.getElementById('slugError').style.display = 'none';
-    document.getElementById('slugInput').focus();
+  document.getElementById('slugInput')?.addEventListener('input', () => {
+    const input = document.getElementById('slugInput');
+    const saveBtn = document.getElementById('saveSlugBtn');
+    const errorEl = document.getElementById('slugError');
+    errorEl.style.display = 'none';
+    saveBtn.disabled = input.value.trim().toLowerCase() === (input.dataset.original || '');
   });
   document.getElementById('saveSlugBtn')?.addEventListener('click', saveSlug);
-  document.getElementById('cancelSlugBtn')?.addEventListener('click', () => {
-    document.getElementById('slugEditContainer').style.display = 'none';
-    document.getElementById('editSlugBtn').style.display = '';
-  });
 
   // Add link
   document.getElementById('addLinkBtn').addEventListener('click', () => {
@@ -1274,20 +1270,20 @@ function renderPersonalUrl() {
   const section = document.getElementById('personalUrlSection');
   if (!section) return;
 
-  const slug = profileData.slug;
-  const urlEl = document.getElementById('personalUrl');
+  const slug = profileData.slug || '';
+  const slugInput = document.getElementById('slugInput');
   const openBtn = document.getElementById('openUrlBtn');
-  const copyBtn = document.getElementById('copyUrlBtn');
+  const saveBtn = document.getElementById('saveSlugBtn');
+
+  slugInput.value = slug;
+  slugInput.dataset.original = slug;
+  saveBtn.disabled = true;
 
   if (slug) {
-    urlEl.textContent = `alpacaplayhouse.com/${slug}`;
     openBtn.href = `/${slug}`;
     openBtn.style.display = '';
-    copyBtn.style.display = '';
   } else {
-    urlEl.textContent = 'Not set yet';
     openBtn.style.display = 'none';
-    copyBtn.style.display = '';
   }
 }
 
@@ -1343,8 +1339,6 @@ async function saveSlug() {
 
     profileData.slug = slug;
     renderPersonalUrl();
-    document.getElementById('slugEditContainer').style.display = 'none';
-    document.getElementById('editSlugBtn').style.display = '';
     showToast('Personal URL updated!', 'success');
   } catch (err) {
     showToast('Failed to update URL: ' + err.message, 'error');
