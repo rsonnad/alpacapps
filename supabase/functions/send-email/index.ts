@@ -49,7 +49,10 @@ type EmailType =
   | "dl_verified"
   | "dl_mismatch"
   // Feature builder
-  | "feature_review";
+  | "feature_review"
+  // PAI email
+  | "pai_email_reply"
+  | "pai_document_received";
 
 interface EmailRequest {
   type: EmailType;
@@ -1218,6 +1221,72 @@ ${data.is_expired ? 'Note: ID appears to be expired' : ''}
 
 Review in Admin: ${data.admin_url}`
       };
+
+    // ===== PAI EMAIL =====
+    case "pai_email_reply":
+      return {
+        subject: `Re: ${data.original_subject || 'Your message to PAI'}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #1a1a2e; padding: 20px; border-radius: 12px 12px 0 0;">
+              <h2 style="color: #e0d68a; margin: 0;">PAI</h2>
+              <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Property AI Assistant</p>
+            </div>
+            <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
+              <div style="white-space: pre-wrap; line-height: 1.6;">${data.reply_body || ''}</div>
+              ${data.original_body ? `
+              <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
+              <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Your original message:</p>
+              <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${data.original_body}</div>
+              ` : ''}
+            </div>
+            <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
+              This is an automated reply from PAI at Alpaca Playhouse. Reply to this email to continue the conversation.
+            </p>
+          </div>
+        `,
+        text: `PAI - Property AI Assistant
+
+${data.reply_body || ''}
+
+${data.original_body ? `---\nYour original message:\n${data.original_body}` : ''}
+
+This is an automated reply from PAI at Alpaca Playhouse.`
+      };
+
+    case "pai_document_received": {
+      const fileList = (data.files || []).map((f: any) => `• ${f.name} (${f.type}, ${f.size})`).join('\n');
+      const fileListHtml = (data.files || []).map((f: any) => `<li><strong>${f.name}</strong> (${f.type}, ${f.size})</li>`).join('');
+      return {
+        subject: `PAI Document Upload: ${data.file_count || 1} file(s) from ${data.sender_name || data.sender_email}`,
+        html: `
+          <h2 style="color: #3d8b7a;">Document Received via PAI Email</h2>
+          <p><strong>${data.sender_name || 'Unknown'}</strong> (${data.sender_email}) sent ${data.file_count || 1} document(s) to <code>pai@alpacaplayhouse.com</code>.</p>
+
+          <div style="background: #f0faf7; padding: 15px; border-radius: 8px; border-left: 4px solid #3d8b7a; margin: 15px 0;">
+            <strong>Subject:</strong> ${data.original_subject || '(none)'}<br>
+            ${data.message_body ? `<strong>Message:</strong> ${data.message_body.substring(0, 500)}` : ''}
+          </div>
+
+          <h3>Uploaded Files</h3>
+          <ul>${fileListHtml}</ul>
+
+          <p>Files have been uploaded to R2 and added to the <strong>document index</strong> as <strong>inactive</strong> (pending admin review).</p>
+          <p><a href="${data.admin_url || 'https://alpacaplayhouse.com/spaces/admin/manage.html'}" style="background: #3d8b7a; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Review in Admin</a></p>
+        `,
+        text: `PAI Document Upload
+
+${data.sender_name || 'Unknown'} (${data.sender_email}) sent ${data.file_count || 1} document(s) to pai@alpacaplayhouse.com.
+
+Subject: ${data.original_subject || '(none)'}
+${data.message_body ? `Message: ${data.message_body.substring(0, 500)}` : ''}
+
+Files:
+${fileList}
+
+Files have been uploaded to R2 and added to the document index as inactive (pending admin review).`
+      };
+    }
 
     default:
       throw new Error(`Unknown email type: ${type}`);

@@ -27,6 +27,7 @@ Pick the capabilities you need. The core platform is always included — everyth
 | **Payment Processing** | Accept credit cards online, invoicing, receipts, refunds | Square | 2.9% + 30¢ |
 | **E-Signatures** | Generate contracts from templates, send for digital signature | SignWell | Free (3–25 docs/mo) |
 | **AI-Powered Features** | Fuzzy matching, smart categorization, natural language search | Google Gemini | Free |
+| **Object Storage** | Document/media hosting (10 GB free, zero egress fees) | Cloudflare R2 | Free |
 
 ---
 
@@ -41,10 +42,11 @@ Pick the capabilities you need. The core platform is always included — everyth
 7. [Square (Payments)](#7-square-payments)
 8. [SignWell (E-Signatures)](#8-signwell-e-signatures)
 9. [Google Gemini (AI Matching — Optional)](#9-google-gemini-ai-matching--optional)
-10. [Discord Bot — Optional](#10-discord-bot--optional)
-11. [Custom Domain — Optional](#11-custom-domain--optional)
-12. [CLAUDE.md Template](#12-claudemd-template)
-13. [Day-One Checklist](#13-day-one-checklist)
+10. [Cloudflare R2 (Object Storage — Optional)](#10-cloudflare-r2-object-storage--optional)
+11. [Discord Bot — Optional](#11-discord-bot--optional)
+12. [Custom Domain — Optional](#12-custom-domain--optional)
+13. [CLAUDE.md Template](#13-claudemd-template)
+14. [Day-One Checklist](#14-day-one-checklist)
 
 ---
 
@@ -69,6 +71,7 @@ Optional: Discord Bot (DigitalOcean) ───────┘
 | Square | Payment processing | Free until you process payments (2.9% + 30¢ per transaction) |
 | SignWell | E-signatures | 3 free documents/month (25/month with card on file) |
 | Google Gemini | AI-powered matching | Free tier available |
+| Cloudflare R2 | Object storage (documents, media) | 10 GB storage, zero egress |
 
 ---
 
@@ -456,7 +459,39 @@ Claude will run: `supabase secrets set GEMINI_API_KEY=your_key_here`
 
 ---
 
-## 10. Discord Bot — Optional
+## 10. Cloudflare R2 (Object Storage — Optional)
+
+S3-compatible object storage with 10 GB free and zero egress fees. Use this for documents, manuals, PDFs, and media that don't need Supabase Storage's RLS.
+
+### You do (in your browser):
+
+1. Sign up at [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) (free, no credit card)
+2. Go to **R2 Object Storage** → **Create bucket** → name it, choose a region
+3. In bucket **Settings**, enable **Public Development URL**
+4. Go to **R2 Object Storage** → **Manage R2 API Tokens** → **Create API token**
+5. Give it **Object Read & Write** permission, apply to your bucket
+6. Copy the **Access Key ID** and **Secret Access Key**
+
+### Give Claude these credentials:
+
+```
+### Cloudflare R2
+- Account ID: `your-cloudflare-account-id`
+- Bucket name: `your-bucket-name`
+- Public URL: `https://pub-xxxx.r2.dev`
+- Access Key ID: `your-access-key`
+- Secret Access Key: `your-secret-key`
+```
+
+### Then tell Claude:
+
+> "Store my R2 credentials as Supabase secrets and create the R2 upload helper and config table."
+
+Claude will set secrets, create `r2_config` and `document_index` tables, and create `supabase/functions/_shared/r2-upload.ts` with S3-compatible uploads using AWS Signature V4.
+
+---
+
+## 11. Discord Bot — Optional
 
 If you want a Discord bot that queries your database:
 
@@ -471,7 +506,7 @@ If you want a Discord bot that queries your database:
 
 ---
 
-## 11. Custom Domain — Optional
+## 12. Custom Domain — Optional
 
 ### You do (in your browser):
 
@@ -490,7 +525,7 @@ If you want a Discord bot that queries your database:
 
 ---
 
-## 12. CLAUDE.md Template
+## 13. CLAUDE.md Template
 
 If you used the `/setup-alpacapps-infra` skill, Claude built your `CLAUDE.md` automatically during setup. No manual steps needed.
 
@@ -505,7 +540,7 @@ The template includes sections for:
 
 ---
 
-## 13. Day-One Checklist
+## 14. Day-One Checklist
 
 ### You do (in your browser)
 
@@ -570,6 +605,7 @@ Claude will handle everything from there — creating tables, writing edge funct
 | Square | 2.9% + 30¢ per transaction | No monthly fee |
 | SignWell | $0 | 3–25 docs/month free |
 | Google Gemini | $0 | Free tier available |
+| Cloudflare R2 | $0 | 10 GB free, zero egress, $0.015/GB-mo beyond |
 | Custom domain | ~$10/year | Optional |
 | **Claude Code** | $0–$200 | Free tier available. Pro $20, Max $100, Max+ $200 for intensive development |
 

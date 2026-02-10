@@ -1,6 +1,6 @@
 ---
 name: setup-alpacapps-infra
-description: Interactive infrastructure setup wizard. Walks through setting up the full stack (Supabase, Telnyx, Square, SignWell, Resend, DigitalOcean) step by step. Use when starting a new project or adding services to an existing one.
+description: Interactive infrastructure setup wizard. Walks through setting up the full stack (Supabase, Telnyx, Square, SignWell, Resend, Cloudflare R2, DigitalOcean) step by step. Use when starting a new project or adding services to an existing one.
 ---
 
 # Infrastructure Setup Wizard
@@ -41,6 +41,7 @@ Ask two things in a single message:
 - Payment processing (Square) — 2.9% + 30¢ per transaction
 - E-signatures (SignWell) — Free, 3–25 docs/month
 - AI-powered features (Google Gemini) — Free
+- Object storage / file hosting (Cloudflare R2) — Free, 10 GB
 - DigitalOcean Droplet (server for bots, workers, automation) — ~$12/mo
 
 Remember their choices and skip everything they don't need.
@@ -227,7 +228,33 @@ Ask:
 **Then you:**
 1. `supabase secrets set GEMINI_API_KEY={key}`
 
-### Step 10: DigitalOcean Droplet — if selected
+### Step 10: Cloudflare R2 (Object Storage) — if selected
+
+Ask in a single message:
+
+> Sign up at https://dash.cloudflare.com/sign-up (free, no credit card needed), then:
+> 1. Go to **R2 Object Storage** in the left sidebar → **Create bucket**
+> 2. Name your bucket (e.g., your project name), choose a region, click **Create bucket**
+> 3. In bucket **Settings**, enable **Public Development URL** (gives you a `pub-*.r2.dev` URL for public access)
+> 4. Go to **R2 Object Storage** → **Manage R2 API Tokens** → **Create API token**
+> 5. Give it **Object Read & Write** permission, apply to your bucket, create the token
+> 6. Copy the **Access Key ID** and **Secret Access Key** (shown only once!)
+>
+> Paste me these values: **Account ID** (from the URL or R2 Overview), **bucket name**, **public dev URL**, **Access Key ID**, **Secret Access Key**
+
+**Then you:**
+1. Set Supabase secrets: `supabase secrets set R2_ACCOUNT_ID={id} R2_ACCESS_KEY_ID={key} R2_SECRET_ACCESS_KEY={secret} R2_BUCKET_NAME={bucket} R2_PUBLIC_URL={url}`
+2. Create `r2_config` table (single row: account_id, bucket_name, public_url, is_active)
+3. Create `document_index` table (title, description, keywords, source_url, file_type, storage_backend, is_active)
+4. Create `supabase/functions/_shared/r2-upload.ts` with S3-compatible upload using AWS Signature V4:
+   - `uploadToR2(key, body, contentType)` → returns public URL
+   - `deleteFromR2(key)` → deletes object
+   - `getR2PublicUrl(key)` → constructs public URL
+5. Insert R2 config row with account_id, bucket_name, public_url
+6. Append R2 details to CLAUDE.md (bucket, public URL, helper path, tables)
+7. Append R2 credentials to CLAUDE.local.md (account ID, keys, bucket, dashboard URL)
+
+### Step 11: DigitalOcean Droplet — if selected
 
 Ask in a single message:
 
@@ -256,7 +283,7 @@ Ask in a single message:
    - Repo paths with git `core.sharedRepository=group` note
    - Troubleshooting: ownership fix command for `.git/objects`
 
-### Step 11: Claude Code Permissions
+### Step 12: Claude Code Permissions
 
 After all services are configured, set up Claude Code tool permissions so the user doesn't get prompted for routine actions.
 
@@ -292,7 +319,7 @@ Options:
 - "All Bash commands" → add `"Bash(*)"` (this supersedes "Git commands" — if both selected, only add `"Bash(*)"`)
 - `"Edit"`, `"Write"`, `"Read"` → always added (defaults, not optional)
 
-### Step 12: Final Summary
+### Step 13: Final Summary
 
 1. Verify GitHub Pages is live (curl the URL)
 2. Verify Supabase connection (run a test query)

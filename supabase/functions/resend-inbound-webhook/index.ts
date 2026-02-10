@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { uploadToR2 } from "../_shared/r2-upload.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -12,6 +13,7 @@ const SPECIAL_PREFIXES: Record<string, string> = {
   "herd": "herd",
   "auto": "auto",
   "payments": "payments",
+  "pai": "pai",
 };
 
 /**
@@ -207,9 +209,446 @@ async function handleSpecialLogic(
     await handleAutoReply(emailRecord, supabase, resendApiKey);
   } else if (type === "payments") {
     await handlePaymentEmail(emailRecord, supabase, resendApiKey);
+  } else if (type === "pai") {
+    await handlePaiEmail(emailRecord, supabase, resendApiKey);
   }
 
   // herd@ - not yet implemented
+}
+
+// =============================================
+// PAI EMAIL HANDLER
+// =============================================
+
+type PaiEmailClassification = "question" | "document" | "command" | "other";
+
+interface PaiClassificationResult {
+  type: PaiEmailClassification;
+  confidence: number;
+  summary: string;
+}
+
+/**
+ * Classify an inbound email using Gemini.
+ * Returns the email type (question, document, command, other) with confidence.
+ */
+async function classifyPaiEmail(
+  subject: string,
+  bodyText: string,
+  hasAttachments: boolean
+): Promise<PaiClassificationResult> {
+  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!geminiApiKey) {
+    console.warn("GEMINI_API_KEY not set, defaulting to 'other'");
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "No Gemini key" };
+  }
+
+  const prompt = `You are an email classifier for PAI (Property AI Assistant) at Alpaca Playhouse, a residential property.
+
+Classify this email into ONE of these categories:
+- "question" — Asking about the property, amenities, policies, move-in, availability, etc.
+- "document" — Sending a document (manual, guide, receipt, etc.) for storage/reference. Has attachments or mentions sending a file.
+- "command" — Requesting a smart home action (lights, music, thermostat, locks, etc.)
+- "other" — Spam, marketing, unrelated, or can't be classified.
+
+Email subject: ${subject}
+Email body (first 1000 chars): ${bodyText.substring(0, 1000)}
+Has attachments: ${hasAttachments}
+
+Respond with ONLY a JSON object: {"type": "question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      console.error(`Gemini classification failed: ${res.status}`);
+      return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Gemini API error" };
+    }
+
+    const result = await res.json();
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Log usage for cost tracking
+    const usage = result.usageMetadata;
+    if (usage) {
+      console.log(`Gemini classification tokens: in=${usage.promptTokenCount}, out=${usage.candidatesTokenCount}`);
+    }
+
+    // Parse JSON from response (may be wrapped in ```json ... ```)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        type: ["question", "document", "command", "other"].includes(parsed.type) ? parsed.type : "other",
+        confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
+        summary: parsed.summary || "",
+      };
+    }
+
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Could not parse" };
+  } catch (err) {
+    console.error("Gemini classification error:", err.message);
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message };
+  }
+}
+
+/**
+ * Call the send-email edge function to send a PAI reply.
+ */
+async function sendPaiReply(
+  supabase: any,
+  to: string,
+  replyBody: string,
+  originalSubject: string,
+  originalBody: string
+): Promise<void> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({
+      type: "pai_email_reply",
+      to,
+      data: {
+        reply_body: replyBody,
+        original_subject: originalSubject,
+        original_body: originalBody.substring(0, 500),
+      },
+      sender_type: "pai",
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error(`Failed to send PAI reply: ${res.status} ${errText}`);
+  } else {
+    console.log(`PAI reply sent to ${to}`);
+  }
+}
+
+/**
+ * Send admin notification about uploaded documents.
+ */
+async function sendPaiDocumentNotification(
+  supabase: any,
+  senderName: string,
+  senderEmail: string,
+  originalSubject: string,
+  messageBody: string,
+  files: Array<{ name: string; type: string; size: string }>
+): Promise<void> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+
+  // Get admin emails
+  const { data: admins } = await supabase
+    .from("app_users")
+    .select("email")
+    .eq("role", "admin");
+
+  const adminEmails = admins?.map((a: any) => a.email) || ["alpacaplayhouse@gmail.com"];
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({
+      type: "pai_document_received",
+      to: adminEmails,
+      data: {
+        sender_name: senderName,
+        sender_email: senderEmail,
+        original_subject: originalSubject,
+        message_body: messageBody,
+        files,
+        file_count: files.length,
+        admin_url: "https://alpacaplayhouse.com/spaces/admin/manage.html",
+      },
+      sender_type: "auto",
+    }),
+  });
+
+  if (!res.ok) {
+    console.error(`Failed to send document notification: ${res.status}`);
+  }
+}
+
+/**
+ * Download attachment from Resend and return as Uint8Array.
+ */
+async function downloadResendAttachment(
+  resendApiKey: string,
+  emailId: string,
+  attachmentIndex: number
+): Promise<{ data: Uint8Array; filename: string; contentType: string } | null> {
+  try {
+    // Fetch the full email to get attachment download URLs
+    const res = await fetch(`${RESEND_API_URL}/emails/receiving/${emailId}`, {
+      headers: { Authorization: `Bearer ${resendApiKey}` },
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to fetch email for attachments: ${res.status}`);
+      return null;
+    }
+
+    const emailData = await res.json();
+    const attachments = emailData.attachments || [];
+    if (attachmentIndex >= attachments.length) {
+      console.error(`Attachment index ${attachmentIndex} out of range (${attachments.length} attachments)`);
+      return null;
+    }
+
+    const att = attachments[attachmentIndex];
+    const filename = att.filename || `attachment-${attachmentIndex}`;
+    const contentType = att.content_type || "application/octet-stream";
+
+    // Attachment content is base64-encoded in the Resend response
+    if (att.content) {
+      const data = base64Decode(att.content);
+      return { data: new Uint8Array(data), filename, contentType };
+    }
+
+    console.error(`No content found for attachment ${attachmentIndex}`);
+    return null;
+  } catch (err) {
+    console.error(`Error downloading attachment: ${err.message}`);
+    return null;
+  }
+}
+
+/**
+ * Format file size in human-readable form.
+ */
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Handle inbound email to pai@alpacaplayhouse.com.
+ *
+ * 1. Classify via Gemini (question/document/command/other)
+ * 2. Questions & commands → forward to PAI chat, send reply email
+ * 3. Documents → download attachments, upload to R2, index, notify admin
+ */
+async function handlePaiEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+  const emailId = emailRecord.resend_email_id || "";
+  const rawPayload = emailRecord.raw_payload || {};
+  const attachmentsMetadata = emailRecord.attachments || rawPayload.attachments || [];
+
+  // Extract sender info
+  const senderName = (from.match(/^([^<]+)/)?.[1] || "").trim() || from.split("@")[0];
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+
+  const hasAttachments = attachmentsMetadata.length > 0;
+
+  console.log(`PAI email from ${senderEmail}: subject="${subject}", attachments=${attachmentsMetadata.length}`);
+
+  // Classify the email
+  const classification = await classifyPaiEmail(subject, bodyText || bodyHtml, hasAttachments);
+  console.log(`PAI classification: type=${classification.type}, confidence=${classification.confidence}, summary="${classification.summary}"`);
+
+  // Log usage for cost tracking
+  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+  if (geminiApiKey) {
+    await supabase.from("api_usage_log").insert({
+      vendor: "gemini",
+      category: "pai_email_classification",
+      endpoint: "generateContent",
+      estimated_cost_usd: 0.0001, // ~100 input tokens + ~50 output tokens on flash
+      metadata: {
+        model: "gemini-2.0-flash",
+        email_from: senderEmail,
+        classification: classification.type,
+        confidence: classification.confidence,
+      },
+    });
+  }
+
+  // Handle based on classification
+  if (classification.type === "document" && hasAttachments) {
+    // === DOCUMENT: Download, upload to R2, index, notify admin ===
+    const uploadedFiles: Array<{ name: string; type: string; size: string }> = [];
+
+    for (let i = 0; i < attachmentsMetadata.length; i++) {
+      const att = attachmentsMetadata[i];
+      const filename = att.filename || att.name || `attachment-${i}`;
+      const contentType = att.content_type || att.type || "application/octet-stream";
+
+      // Skip non-document types (e.g., inline images, signatures)
+      if (contentType.startsWith("image/") && !filename.match(/\.(pdf|doc|docx|xls|xlsx|csv|txt)$/i)) {
+        console.log(`Skipping inline image: ${filename}`);
+        continue;
+      }
+
+      try {
+        // Download from Resend
+        const downloaded = await downloadResendAttachment(resendApiKey, emailId, i);
+        if (!downloaded) continue;
+
+        // Generate R2 key
+        const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_").toLowerCase();
+        const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const r2Key = `documents/email-uploads/${datePrefix}/${sanitizedFilename}`;
+
+        // Upload to R2
+        const publicUrl = await uploadToR2(r2Key, downloaded.data, downloaded.contentType);
+        console.log(`Uploaded to R2: ${r2Key} → ${publicUrl}`);
+
+        // Create document_index entry (inactive pending admin review)
+        const fileExt = filename.split(".").pop()?.toLowerCase() || "";
+        await supabase.from("document_index").insert({
+          title: filename,
+          description: `Uploaded via email by ${senderName} (${senderEmail}). Subject: ${subject}`,
+          keywords: [fileExt, "email-upload", senderName.toLowerCase()],
+          source_url: publicUrl,
+          file_type: fileExt,
+          file_size_bytes: downloaded.data.length,
+          storage_backend: "r2",
+          is_active: false, // Pending admin review
+        });
+
+        uploadedFiles.push({
+          name: filename,
+          type: contentType,
+          size: formatFileSize(downloaded.data.length),
+        });
+
+        // Log R2 upload cost
+        await supabase.from("api_usage_log").insert({
+          vendor: "cloudflare_r2",
+          category: "r2_document_upload",
+          endpoint: "PutObject",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0, // Free tier
+          metadata: { key: r2Key, size_bytes: downloaded.data.length, source: "pai_email" },
+        });
+      } catch (err) {
+        console.error(`Error processing attachment ${filename}:`, err.message);
+      }
+    }
+
+    if (uploadedFiles.length > 0) {
+      // Notify admin
+      await sendPaiDocumentNotification(
+        supabase,
+        senderName,
+        senderEmail,
+        subject,
+        (bodyText || bodyHtml || "").substring(0, 500),
+        uploadedFiles
+      );
+
+      // Auto-reply to sender
+      const fileNames = uploadedFiles.map(f => f.name).join(", ");
+      await sendPaiReply(
+        supabase,
+        senderEmail,
+        `Thank you for sending ${uploadedFiles.length === 1 ? "the document" : `${uploadedFiles.length} documents`} (${fileNames}). I've received ${uploadedFiles.length === 1 ? "it" : "them"} and ${uploadedFiles.length === 1 ? "it's" : "they're"} now pending admin review before being added to my knowledge base.\n\nYou'll be able to ask me about ${uploadedFiles.length === 1 ? "this document" : "these documents"} once ${uploadedFiles.length === 1 ? "it's" : "they're"} approved.`,
+        subject,
+        bodyText || bodyHtml || ""
+      );
+    }
+  } else if (classification.type === "question" || classification.type === "command") {
+    // === QUESTION or COMMAND: Forward to PAI, send reply ===
+    const message = bodyText || bodyHtml || subject;
+
+    try {
+      // Call the alpaca-pai edge function directly
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+      const paiRes = await fetch(`${supabaseUrl}/functions/v1/alpaca-pai`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          message: `[Email from ${senderName}] ${message.substring(0, 2000)}`,
+          context: { source: "email", sender: senderEmail, subject },
+        }),
+      });
+
+      let replyText = "";
+
+      if (paiRes.ok) {
+        const paiData = await paiRes.json();
+        replyText = paiData.reply || paiData.response || paiData.text || "";
+      }
+
+      if (!replyText) {
+        replyText = `Thank you for your email. I've received your ${classification.type === "command" ? "request" : "question"} and I'll have someone from the team follow up with you.\n\nFor faster responses, you can chat with me directly at https://alpacaplayhouse.com/residents/ (requires resident login).`;
+      }
+
+      await sendPaiReply(supabase, senderEmail, replyText, subject, bodyText || bodyHtml || "");
+    } catch (err) {
+      console.error(`PAI response error: ${err.message}`);
+      // Send generic reply on error
+      await sendPaiReply(
+        supabase,
+        senderEmail,
+        "Thank you for your email. I've received your message and the team will review it shortly.\n\nFor immediate assistance, you can call us or chat with me at https://alpacaplayhouse.com/residents/.",
+        subject,
+        bodyText || bodyHtml || ""
+      );
+    }
+  } else {
+    // === OTHER: Forward to admin ===
+    console.log(`PAI email classified as 'other', forwarding to admin`);
+    // Just forward — the normal forwarding logic handles this since we don't set forwardTargets for special logic
+    // But since special logic handlers don't forward by default, let's manually forward
+    const adminEmail = "alpacaplayhouse@gmail.com";
+    const forwardRes = await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `PAI Forward <notifications@alpacaplayhouse.com>`,
+        to: [adminEmail],
+        reply_to: senderEmail,
+        subject: `[PAI Forward] ${subject}`,
+        html: bodyHtml || `<pre>${bodyText}</pre>`,
+        text: bodyText || "(HTML-only email)",
+      }),
+    });
+
+    if (!forwardRes.ok) {
+      console.error(`PAI forward failed: ${forwardRes.status}`);
+    } else {
+      console.log(`PAI email forwarded to admin (classified as 'other')`);
+    }
+  }
 }
 
 // =============================================
@@ -1166,7 +1605,7 @@ serve(async (req) => {
     if (fromAddr.endsWith("@alpacaplayhouse.com")) {
       const toAutoOrNoreply = toList.some(t => {
         const p = extractPrefix(t);
-        return p === "auto" || p === "noreply";
+        return p === "auto" || p === "noreply" || p === "pai";
       });
       if (toAutoOrNoreply) {
         console.log(`LOOP GUARD: Blocking self-sent email from ${fromAddr} to ${toList.join(",")}, subject: ${subject}`);

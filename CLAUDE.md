@@ -127,7 +127,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
-- `send-email/` - Outbound email via Resend API (43+ templates)
+- `send-email/` - Outbound email via Resend API (45+ templates)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards, auto-records Zelle payments
 - `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
 - `alpaca-pai/` - PAI chat + voice assistant: Gemini-powered natural language smart home control + property Q&A + Vapi voice calling (resident+ auth)
@@ -687,6 +687,8 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `square_payment_processing` | Square payment transactions |
 | `paypal_associate_payout` | PayPal associate payouts |
 | `airbnb_ical_sync` | Airbnb calendar sync |
+| `r2_document_upload` | Document upload to Cloudflare R2 |
+| `pai_email_classification` | PAI email classification via Gemini |
 
 **When adding a new feature that uses an API, add a new category to this list.** Categories should be specific enough to answer "how much does X feature cost us per month?"
 
@@ -796,6 +798,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 | `team@` | Forward | `alpacaplayhouse@gmail.com` |
 | `herd@` | Special logic | (stub — future AI processing) |
 | `auto@` | Special logic | Bug report replies → new bug report; others → admin |
+| `pai@` | Special logic | Gemini classifies → questions/commands get PAI reply; documents uploaded to R2; other forwarded to admin |
 | Everything else | Forward | `alpacaplayhouse@gmail.com` |
 
 ### Telnyx (SMS)
@@ -1173,6 +1176,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - Supabase secrets: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL
    - Migrated 2 PDFs from Supabase Storage `instructions-and-manuals` bucket to R2
    - 10 GB free, zero egress fees, $0.015/GB-mo beyond free tier
+38. **PAI Email Inbox** - `pai@alpacaplayhouse.com` processes inbound emails
+   - Added `pai` to SPECIAL_PREFIXES and loop guard in `resend-inbound-webhook`
+   - Gemini classifies emails: question, document, command, or other
+   - Questions/commands: forwarded to `alpaca-pai` edge function, PAI reply sent via email
+   - Documents: attachments downloaded from Resend, uploaded to R2 (`documents/email-uploads/`), indexed in `document_index` (inactive pending admin review), admin notified
+   - Other: forwarded to admin
+   - New templates: `pai_email_reply`, `pai_document_received` in send-email
+   - New sender: `pai` in SENDER_MAP (`PAI <pai@alpacaplayhouse.com>`)
+   - Loop guard prevents feedback loops (self-sent emails to pai@)
 
 ## Testing Changes
 

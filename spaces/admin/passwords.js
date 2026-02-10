@@ -141,19 +141,8 @@ function renderGrid() {
     <div class="vault-col-header">
       <span class="vault-col-label">Name</span>
       <span class="vault-col-label">Type</span>
-      <span class="vault-col-label">PWD</span>
-      <span class="vault-col-label col-center" title="Reveal password">
-        ${EYE_SVG.replace('width="14"', '').replace('height="14"', '')}
-      </span>
-      <span class="vault-col-label col-center" title="Copy password">
-        ${COPY_SVG.replace('width="14"', '').replace('height="14"', '')}
-      </span>
-      <span class="vault-col-label col-center" title="Share full details">
-        ${SHARE_SVG.replace('width="14"', '').replace('height="14"', '')}
-      </span>
-      <span class="vault-col-label col-center" title="Edit">
-        ${EDIT_SVG.replace('width="14"', '').replace('height="14"', '')}
-      </span>
+      <span class="vault-col-label">Password</span>
+      <span class="vault-col-label col-actions">Actions</span>
     </div>`;
 
   const rows = entries.map(e => {
@@ -164,6 +153,12 @@ function renderGrid() {
     if (e.url) subtitleParts.push(`<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
     if (e.notes) subtitleParts.push(`<span style="font-style:italic">${escapeHtml(e.notes)}</span>`);
 
+    const pwDisplay = e.password
+      ? (isRevealed
+        ? escapeHtml(e.password) + (isRoomDoor(e) ? (/fuego|spartan/i.test(e.service) ? ' <span style="color:#9a3412;font-weight:600;font-family:system-ui">#</span>' : ' <span style="color:#16a34a;font-family:system-ui">\u2713</span>') : '')
+        : MASK)
+      : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">\u2014</span>';
+
     return `
       <div class="vault-card" data-id="${e.id}">
         <div class="vault-card-name">
@@ -171,11 +166,13 @@ function renderGrid() {
           ${subtitleParts.length ? `<span class="vault-card-subtitle">${subtitleParts.join(' &middot; ')}</span>` : ''}
         </div>
         <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
-        <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${e.password ? (isRevealed ? escapeHtml(e.password) + (isRoomDoor(e) ? (/fuego|spartan/i.test(e.service) ? ' <span style="color:#9a3412;font-weight:600;font-family:system-ui">#</span>' : ' <span style="color:#16a34a;font-family:system-ui">✓</span>') : '') : MASK) : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">—</span>'}</span>
-        <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
-        <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
-        <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy full details">${SHARE_SVG}</button>
-        <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
+        <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${pwDisplay}</span>
+        <div class="vault-actions">
+          <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
+          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
+          <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy all details">${SHARE_SVG}</button>
+          <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
+        </div>
       </div>`;
   }).join('');
 

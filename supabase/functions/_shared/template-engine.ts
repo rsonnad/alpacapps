@@ -65,4 +65,8 @@ export const SENDER_MAP: Record<
     from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
     reply_to: "team@alpacaplayhouse.com",
   },
+  pai: {
+    from: "PAI <pai@alpacaplayhouse.com>",
+    reply_to: "pai@alpacaplayhouse.com",
+  },
 };
