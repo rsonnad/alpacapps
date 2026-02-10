@@ -1,0 +1,42 @@
+---
+description: Version string and AI model tracking rules for all agents
+alwaysApply: true
+---
+
+# Version & Model Tracking
+
+## Always Display Version
+
+In every response where you make code changes, deploy, or push, display the current version:
+
+> `vYYMMDD.NN H:MMa/p [model]`
+
+Read from `version.json` (field: `version` + `model`) or from `bump-version.sh` output.
+
+## Model Self-Reporting
+
+When running `bump-version.sh`, you MUST pass `--model` with your model code:
+
+```bash
+./scripts/bump-version.sh --model o4.6
+```
+
+Model code format is a short `x0.0` identifier:
+- `o4.6` = Claude Opus 4.6
+- `s4.0` = Claude Sonnet 4
+- `g2.5` = Gemini 2.5
+- `g4o` = GPT-4o
+- `cur` = Cursor (unknown model)
+
+Never omit `--model`. If unsure of your exact model, use the closest identifier.
+
+## Deploy Workflow
+
+```bash
+./scripts/bump-version.sh --model MODEL   # Bump version with model tag
+git add -A
+git commit -m "Description"
+git push
+```
+
+Post-push, always report: **Deployed to main** -- version `vYYMMDD.NN H:MMa/p` `[model]`

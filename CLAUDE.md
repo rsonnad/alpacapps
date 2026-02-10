@@ -508,19 +508,30 @@ This site deploys directly to GitHub Pages from the `main` branch. There is no b
 
 ### REQUIRED: Bump Version Before Every Push
 
-**You MUST run `./scripts/bump-version.sh` before committing and pushing.** This is not optional.
+**You MUST run `./scripts/bump-version.sh --model MODEL_CODE` before committing and pushing.** This is not optional.
+
+**Model self-reporting:** You MUST pass your model code via the `--model` flag. Use a short identifier in `x0.0` format:
+- Claude Opus 4.6 → `o4.6`
+- Claude Sonnet 4 → `s4.0`
+- Gemini 2.5 → `g2.5`
+- GPT-4o → `g4o`
+- Cursor (unknown model) → `cur`
+- If you don't know your exact model, use the closest short identifier you can. **Never omit the --model flag.**
+
+The model code is stored in `version.json` and displayed next to the version string on every page (in orange). The hover tooltip and click modal show which AI model created each branch.
 
 The script:
 1. Atomically increments the version in the `site_config` DB table (format: `vYYMMDD.NN H:MMa/p`)
 2. Uses `sed` to find/replace the version string in **all HTML files**
-3. Prints the new version to stdout
+3. Generates `version.json` with model tracking (per-version and per-branch)
+4. Prints the new version to stdout
 
 **Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the script pattern-matches and updates. If you add a new HTML page, you MUST include a version string in the same format so the bump script catches it.
 
 ```bash
 # Full deploy workflow:
-./scripts/bump-version.sh        # MUST run first — bumps version in DB + all HTML files
-git add <files>                   # Stage your changes AND the bumped HTML files
+./scripts/bump-version.sh --model o4.6   # MUST run first — bumps version in DB + all HTML files
+git add <files>                           # Stage your changes AND the bumped HTML files
 git commit -m "Description"
 git push
 # Changes are live in 1-2 minutes
@@ -529,18 +540,26 @@ git push
 
 > **If the script can't run** (no DB access, no psql), tell the user and do NOT push without bumping. The version stamp is how users verify they're seeing the latest deploy.
 
+### REQUIRED: Display Version in Chat
+
+**You MUST display the current public version string in every response where you make code changes or deploy.** Read the version from `version.json` or from the output of `bump-version.sh`. Format:
+
+> `vYYMMDD.NN H:MMa/p [model]`
+
+This ensures the user always knows which version they're looking at and which AI model produced it.
+
 ### REQUIRED: Post-Push Status Message
 
 After every `git push`, you MUST include a status message so the user knows what was pushed and whether it's live. The format depends on which branch was pushed.
 
 **If pushed to `main` (live deploy):**
-> **Deployed to main** — version `vYYMMDD.NN H:MMa/p`
+> **Deployed to main** — version `vYYMMDD.NN H:MMa/p` `[model]`
 > Test it here: https://alpacaplayhouse.com/residents/laundry.html
 
 **If pushed to a feature/claude branch (NOT yet live):**
-> **Pushed to branch `claude/branch-name`** (not yet deployed)
+> **Pushed to branch `claude/branch-name`** (not yet deployed) `[model]`
 > Changed files: `residents/residents.css`, `residents/laundry.html`
-> To deploy: merge to main, run `./scripts/bump-version.sh`, push main
+> To deploy: merge to main, run `./scripts/bump-version.sh --model MODEL`, push main
 
 Common page URLs for testing links (use only on main deploys):
 - Resident pages: `https://alpacaplayhouse.com/residents/{page}.html` (cameras, climate, lighting, sonos, laundry, cars)

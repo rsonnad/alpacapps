@@ -1,7 +1,11 @@
 #!/bin/bash
 # bump-version.sh — Atomically increment version number in DB, update all HTML files.
 #
-# Usage: ./scripts/bump-version.sh
+# Usage: ./scripts/bump-version.sh [--model MODEL_CODE]
+#
+# Options:
+#   --model MODEL_CODE   AI model that created this version (e.g., o4.6, g2.5, s4.0)
+#                        If not provided, infers from branch name pattern or defaults to "unknown"
 #
 # Version format: vYYMMDD.NN H:MMa/p
 #   YYMMDD = date in Austin, TX timezone (America/Chicago)
@@ -11,13 +15,30 @@
 # Flow:
 #   1. Atomically increment version in DB using UPDATE ... RETURNING (no race conditions)
 #   2. Find-and-replace the old version string in all HTML files
-#   3. Print the new version to stdout
+#   3. Generate version.json with model tracking info
+#   4. Print the new version to stdout
 #
 # The SQL does the increment in a single atomic statement:
 #   - If same day: bump sequence number
 #   - If new day: reset to .01
 
 set -euo pipefail
+
+# Parse arguments
+MODEL_CODE=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --model)
+      MODEL_CODE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      echo "Usage: ./scripts/bump-version.sh [--model MODEL_CODE]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 # Auto-detect psql path (macOS Homebrew vs Linux)
 if [ -x "/opt/homebrew/opt/libpq/bin/psql" ]; then
@@ -31,6 +52,18 @@ fi
 
 DB_URL="postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Infer model from branch name if not explicitly provided
+if [ -z "$MODEL_CODE" ]; then
+  CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+  case "$CURRENT_BRANCH" in
+    claude/*)  MODEL_CODE="claude" ;;
+    gemini/*)  MODEL_CODE="gemini" ;;
+    gpt/*)     MODEL_CODE="gpt" ;;
+    cursor/*)  MODEL_CODE="cursor" ;;
+    *)         MODEL_CODE="" ;;  # Will show as empty if truly unknown
+  esac
+fi
 
 # Compute today's date and timestamp in Austin timezone
 TODAY=$(TZ="America/Chicago" date +"%y%m%d")
@@ -174,9 +207,48 @@ if [ "$PENDING_JSON" != "[]" ]; then
   [ -n "$FEAT_ENTRIES" ] && FEATURES_JSON="{$FEAT_ENTRIES}"
 fi
 
+# 7. Build per-branch model map — infer AI model from branch naming convention
+#    Branch patterns: claude/* → claude, gemini/* → gemini, gpt/* → gpt, cursor/* → cursor
+#    Also reads from commit trailers if present (Model-Code: xxx)
+MODELS_JSON="{}"
+ALL_BRANCHES=$(echo "$INCLUDED_JSON" "$PENDING_JSON" | tr -d '[]' | tr ',' '\n' | tr -d '"' | sort -u)
+if [ -n "$ALL_BRANCHES" ]; then
+  MODEL_ENTRIES=""
+  for branch in $ALL_BRANCHES; do
+    [ -z "$branch" ] && continue
+    BRANCH_MODEL=""
+    # Infer from branch name prefix
+    case "$branch" in
+      claude/*)    BRANCH_MODEL="claude" ;;
+      gemini/*)    BRANCH_MODEL="gemini" ;;
+      gpt/*)       BRANCH_MODEL="gpt" ;;
+      cursor/*)    BRANCH_MODEL="cursor" ;;
+      bugfix/*)    BRANCH_MODEL="claude" ;;  # bugfix branches are typically Claude Code
+      redesign/*)  BRANCH_MODEL="" ;;  # could be any model
+      ui/*)        BRANCH_MODEL="" ;;
+    esac
+    # Try to read Model-Code trailer from the branch's latest commit
+    if [ -z "$BRANCH_MODEL" ]; then
+      TRAILER=$(git log "origin/$branch" -1 --format='%(trailers:key=Model-Code,valueonly)' 2>/dev/null || true)
+      [ -n "$TRAILER" ] && BRANCH_MODEL=$(echo "$TRAILER" | tr -d '[:space:]')
+    fi
+    if [ -n "$BRANCH_MODEL" ]; then
+      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
+      SAFE_MODEL=$(echo "$BRANCH_MODEL" | sed 's/"/\\"/g')
+      [ -n "$MODEL_ENTRIES" ] && MODEL_ENTRIES="$MODEL_ENTRIES,"
+      MODEL_ENTRIES="$MODEL_ENTRIES\"$SAFE_BRANCH\":\"$SAFE_MODEL\""
+    fi
+  done
+  [ -n "$MODEL_ENTRIES" ] && MODELS_JSON="{$MODEL_ENTRIES}"
+fi
+
+# Escape MODEL_CODE for JSON
+SAFE_MODEL_CODE=$(echo "$MODEL_CODE" | sed 's/"/\\"/g')
+
 cat > "$PROJECT_ROOT/version.json" << ENDJSON
 {
   "version": "$NEW_DISPLAY_VERSION",
+  "model": "$SAFE_MODEL_CODE",
   "commit": "$COMMIT_HASH",
   "full_commit": "$FULL_HASH",
   "timestamp": "$ISO_TIMESTAMP",
@@ -184,9 +256,14 @@ cat > "$PROJECT_ROOT/version.json" << ENDJSON
   "pending": $PENDING_JSON,
   "changes": $CHANGES_JSON,
   "bugfixes": $BUGFIXES_JSON,
-  "features": $FEATURES_JSON
+  "features": $FEATURES_JSON,
+  "models": $MODELS_JSON
 }
 ENDJSON
 
-# 7. Output new version
-echo "$NEW_DISPLAY_VERSION"
+# 8. Output new version (with model if available)
+if [ -n "$MODEL_CODE" ]; then
+  echo "$NEW_DISPLAY_VERSION  [$MODEL_CODE]"
+else
+  echo "$NEW_DISPLAY_VERSION"
+fi

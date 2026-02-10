@@ -171,6 +171,14 @@ function showVersionModal(info) {
     const changes = info.changes || [];
     const included = info.included || [];
     const pending = info.pending || [];
+    const models = info.models || {};
+
+    /** Render a small colored model badge for a branch */
+    function modelBadge(branch) {
+      const m = models[branch];
+      if (!m) return '';
+      return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;background:#fef3e2;color:#d4883a;margin-left:6px;vertical-align:middle;">${esc(m)}</span>`;
+    }
 
     // Build bug fixes section — match included bugfix branches to descriptions
     const bugfixBranches = included.filter(b => b.includes('bugfix/'));
@@ -185,7 +193,7 @@ function showVersionModal(info) {
         return `<div class="vi-item">
           <div class="vi-item-icon vi-icon-bug">&#10003;</div>
           <div class="vi-item-text">
-            <div class="vi-item-desc">${esc(desc)}</div>
+            <div class="vi-item-desc">${esc(desc)}${modelBadge(b)}</div>
             <div class="vi-item-meta">${bid || shortBranch(b)}${pageName ? ' · ' + esc(pageName) : ''}</div>
           </div>
         </div>`;
@@ -217,7 +225,7 @@ function showVersionModal(info) {
         return `<div class="vi-item">
           <div class="vi-item-icon vi-icon-pending">&#9675;</div>
           <div class="vi-item-text">
-            <div class="vi-item-desc">${featDesc ? esc(featDesc) : esc(shortBranch(b))}</div>
+            <div class="vi-item-desc">${featDesc ? esc(featDesc) : esc(shortBranch(b))}${modelBadge(b)}</div>
             <div class="vi-item-meta">${esc(shortBranch(b))}</div>
           </div>
         </div>`;
@@ -231,17 +239,23 @@ function showVersionModal(info) {
       otherHtml = otherBranches.map(b => `<div class="vi-item">
         <div class="vi-item-icon vi-icon-feat">&#10003;</div>
         <div class="vi-item-text">
-          <div class="vi-item-desc">${esc(shortBranch(b))}</div>
+          <div class="vi-item-desc">${esc(shortBranch(b))}${modelBadge(b)}</div>
         </div>
       </div>`).join('');
     }
+
+    // Build model summary line
+    const uniqueModels = [...new Set(Object.values(models))].filter(Boolean);
+    const modelSummaryLine = info.model
+      ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span> · `
+      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.join(', ')}</span> · ` : '');
 
     overlay.innerHTML = `
       <div id="vi-modal">
         <div class="vi-header">
           <div>
-            <h2>${esc(info.version)}</h2>
-            <div class="vi-version-sub">${esc(info.commit || '?')} · ${fmtTime(info.timestamp)}</div>
+            <h2>${esc(info.version)}${info.model ? ` <span style="color:#d4883a;font-size:0.85em;font-weight:400;">${esc(info.model)}</span>` : ''}</h2>
+            <div class="vi-version-sub">${modelSummaryLine}${esc(info.commit || '?')} · ${fmtTime(info.timestamp)}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>
         </div>
@@ -298,21 +312,26 @@ export function setupVersionInfo() {
   span.style.textDecoration = 'underline dotted';
   span.style.textUnderlineOffset = '2px';
 
-  // Bump version font size slightly and append model badge
+  // Bump version font size slightly
   const computed = getComputedStyle(span);
   const currentSize = parseFloat(computed.fontSize);
   if (currentSize < 10) span.style.fontSize = '0.55rem';
-  if (!span.querySelector('.vi-model-badge')) {
-    const badge = document.createElement('span');
-    badge.className = 'vi-model-badge';
-    badge.textContent = ' o4.6';
-    badge.style.cssText = 'color:#d4883a;font-weight:600;';
-    span.appendChild(badge);
-  }
+
+  // Fetch version info and append dynamic model badge
+  fetchVersionInfo().then(info => {
+    if (!span.querySelector('.vi-model-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'vi-model-badge';
+      const modelCode = (info && info.model) ? info.model : '';
+      badge.textContent = modelCode ? ` ${modelCode}` : '';
+      badge.style.cssText = 'color:#d4883a;font-weight:600;';
+      span.appendChild(badge);
+    }
+  });
 
   injectStyles();
 
-  // Hover tooltip — bigger and more informative
+  // Hover tooltip — bigger, shows model and branch info
   const tooltip = document.createElement('div');
   tooltip.className = 'vi-tooltip';
   tooltip.innerHTML = '<div class="vi-tooltip-version">Loading...</div>';
@@ -326,14 +345,24 @@ export function setupVersionInfo() {
       const bugCount = (info.included || []).filter(b => b.includes('bugfix/')).length;
       const changeCount = (info.changes || []).length;
       const pendCount = (info.pending || []).length;
+      const modelLabel = info.model ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span> · ` : '';
+
+      // Build model summary from models map
+      const models = info.models || {};
+      const uniqueModels = [...new Set(Object.values(models))].filter(Boolean);
+      const modelSummary = uniqueModels.length > 0
+        ? `<div style="margin-top:4px;font-size:0.75rem;color:#9ca3af;">Models: ${uniqueModels.map(m => `<span style="color:#d4883a">${esc(m)}</span>`).join(', ')}</div>`
+        : '';
+
       tooltip.innerHTML = `
         <div class="vi-tooltip-version">${esc(info.version)}</div>
         <div class="vi-tooltip-stats">
-          <span>${bugCount}</span> bug fix${bugCount !== 1 ? 'es' : ''}
+          ${modelLabel}<span>${bugCount}</span> bug fix${bugCount !== 1 ? 'es' : ''}
           · <span>${changeCount}</span> change${changeCount !== 1 ? 's' : ''}
           ${pendCount > 0 ? `· <span style="color:#fbbf24">${pendCount}</span> pending` : ''}
           · ${esc(info.commit || '?')}
         </div>
+        ${modelSummary}
       `;
     }
     const rect = span.getBoundingClientRect();
