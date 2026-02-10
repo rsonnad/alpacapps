@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No longer a hot mess.</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1a1a2e;
+      --ink-soft: #4a4a5a;
+      --ink-faint: #8a8a9a;
+      --cream: #faf8f5;
+      --warm: #f0ebe4;
+      --gold: #c8956c;
+      --gold-light: #e8c9a8;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      background: linear-gradient(160deg, #1a1a2e 0%, #2d1f3d 40%, #3a2040 70%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 5rem 1.5rem 4rem;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 20% 30%, rgba(200,149,108,0.18) 0%, transparent 55%),
+                  radial-gradient(ellipse at 80% 70%, rgba(180,100,140,0.12) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 100%, rgba(200,149,108,0.08) 0%, transparent 40%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      max-width: 380px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Back link ── */
+    .back-bar {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 2;
+    }
+
+    .back-bar a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .back-bar a:hover { color: var(--gold-light); }
+
+    /* ── Thread ── */
+    .thread {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 5rem;
+    }
+
+    /* ── Message card ── */
+    .msg {
+      margin-bottom: 3rem;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.75rem;
+      box-shadow: 0 1px 3px rgba(26,26,46,0.04), 0 4px 16px rgba(26,26,46,0.03);
+      border: 1px solid rgba(200,149,108,0.1);
+    }
+
+    .msg.luelle {
+      border-top: 3px solid var(--gold-light);
+    }
+
+    .msg.rahul {
+      border-top: 3px solid #b8c4d8;
+      background: linear-gradient(180deg, #fdfcfa 0%, #fff 100%);
+    }
+
+    .msg-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--warm);
+    }
+
+    .msg-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .msg-avatar.reply {
+      background: var(--ink);
+    }
+
+    .msg-who {
+      flex: 1;
+      margin-left: 0.75rem;
+    }
+
+    .msg-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .msg-to {
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+    }
+
+    .msg-date {
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+      white-space: nowrap;
+    }
+
+    /* ── Body text ── */
+    .msg-body {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--ink-soft);
+    }
+
+    .msg-body p {
+      margin-bottom: 0.9em;
+    }
+
+    .msg-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .msg-body .signoff {
+      margin-top: 2em;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* ── Pull quote ── */
+    .pull-quote {
+      position: relative;
+      margin: 2rem -0.5rem;
+      padding: 1.75rem 2rem;
+      background: linear-gradient(135deg, #f5ede4 0%, #f0e8de 100%);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .pull-quote p {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.3rem;
+      line-height: 1.5;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .pull-quote .attr {
+      display: block;
+      font-family: var(--sans);
+      font-style: normal;
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+      margin-top: 0.75rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Emphasis paragraphs ── */
+    .well { color: var(--ink); font-weight: 500; }
+    .today {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    /* ── Image ── */
+    .msg-img {
+      margin: 2rem -0.5rem 1rem;
+    }
+
+    .msg-img img {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 10px;
+      display: block;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .msg-img img:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .msg-img figcaption {
+      font-size: 0.78rem;
+      color: var(--ink-faint);
+      margin-top: 0.75rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ── Reply divider ── */
+    .reply-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0 3rem;
+      color: var(--ink-faint);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .reply-divider::before,
+    .reply-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+    }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(26,26,46,0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 1.5rem;
+      animation: lbIn 0.25s ease;
+    }
+
+    .lightbox.active { display: flex; }
+
+    @keyframes lbIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .lightbox img {
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* ── Footer context ── */
+    .page-footer {
+      text-align: center;
+      padding: 2rem 1.5rem 3rem;
+      border-top: 1px solid var(--warm);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .page-footer p {
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      line-height: 1.7;
+    }
+
+    .page-footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .page-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 520px) {
+      .hero { padding: 4rem 1.25rem 3rem; }
+      .hero h1 { font-size: 2.2rem; }
+      .thread { padding: 2rem 1rem 4rem; }
+      .pull-quote { padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
+      .pull-quote p { font-size: 1.15rem; }
+      .msg-body { font-size: 1rem; }
+      .msg-head { flex-wrap: wrap; gap: 0.5rem; }
+      .msg-date { width: 100%; text-align: right; }
+    }
+  </style>
+</head>
+<body>
+  <span data-site-version style="display:none;">v260210.12 3:14a</span>
+
+  <!-- Hero -->
+  <header class="hero">
+    <nav class="back-bar">
+      <a href="/rahulio">&larr; Rahul's page</a>
+    </nav>
+    <div class="hero-content">
+      <div class="hero-eyebrow">An email from a stranger &middot; February 10, 2015</div>
+      <h1>&ldquo;No longer a hot mess.&rdquo;</h1>
+      <p class="hero-subtitle">Years earlier, a woman ran out of gas on the west side of LA. A stranger helped and handed her an Eddie Vedder mix CD. This is the email she sent years later.</p>
+    </div>
+  </header>
+
+  <!-- Thread -->
+  <div class="thread">
+
+    <!-- Message 1: Luelle -->
+    <article class="msg luelle">
+      <div class="msg-head">
+        <div class="msg-avatar">L</div>
+        <div class="msg-who">
+          <div class="msg-name">Luelle Llorens</div>
+          <div class="msg-to">to crazyveddie@gmail.com</div>
+        </div>
+        <div class="msg-date">Feb 10, 2015 &middot; 7:01 AM</div>
+      </div>
+
+      <div class="msg-body">
+        <p>Hey there,</p>
+        <p>You helped me out once when my car ran out of gas on the West side of LA.</p>
+        <p>It was highly embarrassing, and you were very kind and supportive.</p>
+        <p>You gave me a mixed CD of Eddie Vedder songs.</p>
+        <p>I've moved across the country and have been carrying that thing around with me for years. Saying I'd write you one day and thank you for your kindness. And finally let you know that I got my shit together.</p>
+        <p class="well">Well.</p>
+        <p class="today">Today's that day.</p>
+      </div>
+
+      <div class="pull-quote">
+        <p>&ldquo;You're a hot mess&hellip;&rdquo;</p>
+        <span class="attr">&mdash; What you said to me that day</span>
+      </div>
+
+      <div class="msg-body">
+        <p>I want to say that I really appreciated you calling me out.</p>
+        <p>Pretty sure my account was overdrawn too. And you got to witness my credit card being declined.</p>
+        <p>It was refreshing to have someone call me out on the bullshit. Lol</p>
+        <p>It's been years since this happened.</p>
+        <p>Not sure if you even recall the day or moment.</p>
+        <p>But I haven't forgotten the feeling of that encounter.</p>
+      </div>
+
+      <div class="pull-quote">
+        <p>&ldquo;Here's a CD for when you're down&hellip;&rdquo;</p>
+      </div>
+
+      <div class="msg-body">
+        <p>It was weird, but loving all at once.<br>And from a complete stranger.</p>
+        <p>Very refreshing.</p>
+        <p>Since that day close to Marina Del Rey, I have moved to Florida and I'm in my 3rd year of teaching English to Middle schoolers.</p>
+        <p>I freaking love it.</p>
+        <p>And tomorrow I might just pop your CD in my car and listen to it once more while smiling knowing, everything's gonna be all right.</p>
+        <p>Thanks again. Keep being you.</p>
+      </div>
+
+      <figure class="msg-img">
+        <img src="images/eddie-vedder-cd.jpeg" alt="The Eddie Vedder mix CD — Hand Picked Select Blend" onclick="openLightbox(this)">
+        <figcaption>The mix CD &mdash; "Eddie Vedder &middot; Hand Picked Select Blend"</figcaption>
+      </figure>
+
+      <div class="msg-body">
+        <p class="signoff">Sincerely,<br>Luelle Llorens</p>
+      </div>
+    </article>
+
+    <div class="reply-divider">reply &middot; 4 hours later</div>
+
+    <!-- Message 2: Rahul -->
+    <article class="msg rahul">
+      <div class="msg-head">
+        <div class="msg-avatar reply">R</div>
+        <div class="msg-who">
+          <div class="msg-name">Rahul Sonnad</div>
+          <div class="msg-to">to Luelle Llorens</div>
+        </div>
+        <div class="msg-date">Feb 10, 2015 &middot; 11:36 AM</div>
+      </div>
+
+      <div class="msg-body">
+        <p>Hey Luelle, wow, thanks for this note. It's such an amazing conveyance.</p>
+        <p>I do remember that, but not the credit card part...</p>
+        <p>I can't even believe this gmail forwarding still works.</p>
+        <p>I'm in India at a fort, and I was 2 minutes ago playing the song "Society" on my ukulele.</p>
+        <p>You've given me increased conviction that there is some mystery behind it all.</p>
+        <p>If you are ever in Austin, let me know.</p>
+        <p class="signoff">&mdash; Rahul</p>
+      </div>
+
+      <figure class="msg-img">
+        <img src="images/rahul-ukulele-india.png" alt="Rahul with ukulele at a fort in India" onclick="openLightbox(this)">
+        <figcaption>At a fort in India, moments before the email arrived</figcaption>
+      </figure>
+    </article>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <p>Saved from Gmail. Published by <a href="/rahulio">Rahul Sonnad</a>.</p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <script>
+    function openLightbox(el) {
+      document.getElementById('lightboxImg').src = el.src;
+      document.getElementById('lightboxImg').alt = el.alt;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+</body>
+</html>
