@@ -424,7 +424,7 @@ function showInvitationModal(email, role) {
   const roleDescriptions = {
     admin: 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)',
     staff: 'staff access (view all spaces and occupant details)',
-    demon: 'demon access (explore the product; names and amounts are sample data only)',
+    demon: 'demon access (conduct self-demo of AlpacApps, see redacted fake names and amounts for privacy)',
     resident: 'resident access (cameras, lighting, and house info)',
     associate: 'associate access (cameras, lighting, and house info)',
     public: 'public access (view available spaces)',
