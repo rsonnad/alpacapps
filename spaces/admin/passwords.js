@@ -32,6 +32,7 @@ const COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const EYE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 const EDIT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+const SHARE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
 
 // =============================================
 // INITIALIZATION
@@ -133,42 +134,51 @@ function renderGrid() {
     return;
   }
 
-  grid.innerHTML = entries.map(e => {
+  const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+
+  const headerRow = `
+    <div class="vault-col-header">
+      <span class="vault-col-label">Name</span>
+      <span class="vault-col-label">Type</span>
+      <span class="vault-col-label">PWD</span>
+      <span class="vault-col-label col-center" title="Reveal password">
+        ${EYE_SVG.replace('width="14"', '').replace('height="14"', '')}
+      </span>
+      <span class="vault-col-label col-center" title="Copy password">
+        ${COPY_SVG.replace('width="14"', '').replace('height="14"', '')}
+      </span>
+      <span class="vault-col-label col-center" title="Share full details">
+        ${SHARE_SVG.replace('width="14"', '').replace('height="14"', '')}
+      </span>
+      <span class="vault-col-label col-center" title="Edit">
+        ${EDIT_SVG.replace('width="14"', '').replace('height="14"', '')}
+      </span>
+    </div>`;
+
+  const rows = entries.map(e => {
     const isRevealed = revealedPasswords.has(e.id);
-    const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-    const spaceName = e.space ? e.space.name : null;
-    const metaParts = [];
-    if (spaceName) metaParts.push(`<span class="meta-space"><span class="space-name">${escapeHtml(spaceName)}</span></span>`);
-    if (e.url) metaParts.push(`<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
-    if (e.notes) metaParts.push(`<span class="meta-notes">${escapeHtml(e.notes)}</span>`);
+    const subtitleParts = [];
+    if (e.username) subtitleParts.push(escapeHtml(e.username));
+    if (e.space && e.space.name) subtitleParts.push(escapeHtml(e.space.name));
+    if (e.url) subtitleParts.push(`<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
+    if (e.notes) subtitleParts.push(`<span style="font-style:italic">${escapeHtml(e.notes)}</span>`);
 
     return `
       <div class="vault-card" data-id="${e.id}">
-        <div class="vault-card-header">
+        <div class="vault-card-name">
           <span class="vault-card-service">${escapeHtml(e.service)}</span>
-          <div class="vault-card-actions">
-            <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
-            <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
-          </div>
+          ${subtitleParts.length ? `<span class="vault-card-subtitle">${subtitleParts.join(' &middot; ')}</span>` : ''}
         </div>
-        <div class="vault-fields">
-          ${e.username ? `
-          <div class="vault-field">
-            <span class="vault-field-label">user</span>
-            <span class="vault-field-value">${escapeHtml(e.username)}</span>
-            <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="username" title="Copy">${COPY_SVG}</button>
-          </div>` : ''}
-          ${e.password ? `
-          <div class="vault-field">
-            <span class="vault-field-label">pass</span>
-            <span class="vault-field-value ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${isRevealed ? escapeHtml(e.password) : MASK}</span>
-            <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}">${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
-            <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy">${COPY_SVG}</button>
-          </div>` : ''}
-        </div>
-        ${metaParts.length ? `<div class="vault-card-meta">${metaParts.join(' ')}</div>` : ''}
+        <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
+        <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${e.password ? (isRevealed ? escapeHtml(e.password) : MASK) : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">—</span>'}</span>
+        <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
+        <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
+        <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy full details">${SHARE_SVG}</button>
+        <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
       </div>`;
   }).join('');
+
+  grid.innerHTML = headerRow + rows;
 }
 
 // =============================================
@@ -331,6 +341,13 @@ function setupEventListeners() {
         const val = btn.dataset.field === 'password' ? entry.password : entry.username;
         if (val) copyToClipboard(val);
       }
+    } else if (action === 'share') {
+      const entry = allEntries.find(en => en.id === btn.dataset.id);
+      if (entry) {
+        const text = buildShareText(entry);
+        copyToClipboard(text);
+        showToast('Full details copied', 'success', 2000);
+      }
     } else if (action === 'toggle-pw') {
       const id = btn.dataset.id;
       if (revealedPasswords.has(id)) {
@@ -371,6 +388,16 @@ function escapeHtml(str) {
 function escapeAttr(str) {
   if (!str) return '';
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildShareText(entry) {
+  const lines = [entry.service];
+  if (entry.space && entry.space.name) lines.push(`Location: ${entry.space.name}`);
+  if (entry.username) lines.push(`User: ${entry.username}`);
+  if (entry.password) lines.push(`Password: ${entry.password}`);
+  if (entry.url) lines.push(`URL: ${entry.url}`);
+  if (entry.notes) lines.push(`Notes: ${entry.notes}`);
+  return lines.join('\n');
 }
 
 function prettifyUrl(url) {
