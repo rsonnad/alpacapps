@@ -481,16 +481,24 @@ Alpaca Playhouse`
 
     case "payment_statement": {
       // line_items: [{ date, description, amount, status }]
-      // balance_due, upcoming_amount, upcoming_date, space_name
+      // balance_due, upcoming_amount, upcoming_date, space_name, pay_now_url
       const items = data.line_items || [];
+
       const rowsHtml = items.map((item: any) => {
-        const statusColor = item.status === 'Paid' ? '#2e7d32' : item.status === 'Overdue' ? '#c62828' : '#e65100';
-        const statusBadge = `<span style="background:${statusColor};color:white;padding:2px 8px;border-radius:10px;font-size:0.85em;">${item.status}</span>`;
-        return `<tr>
-              <td style="padding:10px 8px;border-bottom:1px solid #eee;">${item.date}</td>
-              <td style="padding:10px 8px;border-bottom:1px solid #eee;">${item.description}</td>
-              <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:right;">$${Number(item.amount).toFixed(2)}</td>
-              <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;">${statusBadge}</td>
+        const isPaid = item.status === 'Paid';
+        const isOverdue = item.status === 'Overdue';
+        const isDue = !isPaid && !isOverdue;
+        const statusBg = isPaid ? '#e8f5e9' : isOverdue ? '#ffebee' : '#fff3e0';
+        const statusColor = isPaid ? '#2e7d32' : isOverdue ? '#c62828' : '#e65100';
+        const rowBg = isOverdue ? 'background:#fff8f8;' : '';
+        const amtColor = isOverdue ? 'color:#c62828;font-weight:600;' : isDue ? 'color:#888;' : 'color:#333;';
+        const txtColor = isDue ? 'color:#888;' : 'color:#333;';
+        const bold = isOverdue ? 'font-weight:600;' : '';
+        return `<tr style="${rowBg}">
+              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;${txtColor}${bold}">${item.date}</td>
+              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;${txtColor}${bold}">${item.description}</td>
+              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:right;${amtColor}">$${Number(item.amount).toFixed(2)}</td>
+              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">${item.status}</span></td>
             </tr>`;
       }).join("\n");
 
@@ -498,51 +506,116 @@ Alpaca Playhouse`
         `  ${item.date}  |  ${item.description}  |  $${Number(item.amount).toFixed(2)}  |  ${item.status}`
       ).join("\n");
 
-      const balanceSection = data.balance_due && Number(data.balance_due) > 0
-        ? `<div style="background:#fff3e0;border-left:4px solid #e65100;padding:16px;margin:20px 0;border-radius:4px;">
-              <strong style="font-size:1.1em;color:#e65100;">Outstanding Balance: $${Number(data.balance_due).toFixed(2)}</strong>
-              ${data.overdue_since ? `<br><span style="color:#c62828;">Overdue since ${data.overdue_since}</span>` : ''}
+      const hasDue = data.balance_due && Number(data.balance_due) > 0;
+
+      const balanceSection = hasDue
+        ? `<div style="background:linear-gradient(135deg,#fff3e0 0%,#ffe0b2 100%);border-left:4px solid #e65100;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <div style="font-size:13px;color:#e65100;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Outstanding Balance</div>
+              <div style="font-size:28px;font-weight:700;color:#bf360c;">$${Number(data.balance_due).toFixed(2)}</div>
+              ${data.overdue_since ? `<div style="font-size:13px;color:#e65100;margin-top:4px;">Overdue since ${data.overdue_since}</div>` : ''}
             </div>`
-        : `<div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:16px;margin:20px 0;border-radius:4px;">
-              <strong style="color:#2e7d32;">All caught up! No outstanding balance.</strong>
+        : `<div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <strong style="color:#2e7d32;font-size:16px;">&#10003; All caught up! No outstanding balance.</strong>
             </div>`;
 
       const upcomingSection = data.upcoming_amount
-        ? `<p style="color:#555;">⏳ <strong>Next payment:</strong> $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}</p>`
+        ? `<div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:16px 20px;margin:0 0 24px;border-radius:0 8px 8px 0;">
+              <span style="font-size:13px;color:#7b1fa2;">&#9203; <strong>Next payment:</strong> $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}</span>
+            </div>`
         : '';
+
+      // CTA button — links to Stripe checkout if URL provided, otherwise generic
+      const ctaSection = hasDue && data.pay_now_url
+        ? `<div style="text-align:center;margin:32px 0;">
+              <a href="${data.pay_now_url}" style="display:inline-block;background:linear-gradient(135deg,#e65100 0%,#bf360c 100%);color:white;padding:16px 48px;text-decoration:none;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">Pay $${Number(data.balance_due).toFixed(2)} Now</a>
+              <p style="margin:8px 0 0;font-size:12px;color:#999;">Secure payment via Stripe &bull; Cards, Apple Pay, Google Pay, or Bank Transfer</p>
+            </div>`
+        : hasDue
+        ? `<div style="text-align:center;margin:32px 0;">
+              <p style="font-size:16px;font-weight:600;color:#e65100;">Please send $${Number(data.balance_due).toFixed(2)} using one of the methods below</p>
+            </div>`
+        : '';
+
+      // Payment methods with branded badges
+      const methodBadges: Record<string, { bg: string; label: string }> = {
+        venmo: { bg: '#3d95ce', label: 'Venmo' },
+        zelle: { bg: '#6c1cd3', label: 'Zelle' },
+        paypal: { bg: '#003087', label: 'PayPal' },
+        bank_ach: { bg: '#333333', label: 'Bank' },
+        square: { bg: '#1a1a1a', label: 'Square' },
+        stripe: { bg: '#635bff', label: 'Stripe' },
+        cash: { bg: '#2e7d32', label: 'Cash' },
+        check: { bg: '#555', label: 'Check' },
+        other: { bg: '#888', label: 'Other' },
+      };
+
+      // Build branded payment methods HTML from data injected by getPaymentMethodsForEmail
+      // We also build our own branded version using _payment_methods_raw if available
+      let paymentMethodsHtml = '';
+      if (data._payment_methods_raw && Array.isArray(data._payment_methods_raw)) {
+        paymentMethodsHtml = data._payment_methods_raw.map((m: any) => {
+          const badge = methodBadges[m.method_type] || methodBadges.other;
+          const id = m.account_identifier ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>` : '';
+          const instr = m.instructions ? `<span style="color:#888;font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
+          return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+                <span style="display:inline-block;background:${badge.bg};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">${badge.label}</span>
+                ${id}${instr}
+              </td></tr>`;
+        }).join("\n");
+      }
+
+      const paymentMethodsSection = paymentMethodsHtml
+        ? `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
+              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">${data.pay_now_url ? 'Other Payment Methods:' : 'Payment Methods:'}</p>
+              <table style="width:100%;border-collapse:collapse;font-size:14px;">${paymentMethodsHtml}</table>
+            </div>`
+        : `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
+              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">${data.pay_now_url ? 'Other Payment Methods:' : 'Payment Methods:'}</p>
+              <ul style="list-style:none;padding-left:0;">
+                ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
+              </ul>
+            </div>`;
 
       return {
         subject: `Payment Statement - ${data.space_name || 'Alpaca Playhouse'}`,
         html: `
-          <h2 style="color:#333;">Payment Statement</h2>
-          <p>Hi ${data.first_name},</p>
-          <p>Here's your payment summary for <strong>${data.space_name || 'Alpaca Playhouse'}</strong>.</p>
+          <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:32px;text-align:center;">
+              <h1 style="color:white;margin:0;font-size:24px;letter-spacing:0.5px;">Alpaca Playhouse</h1>
+              <p style="color:rgba(255,255,255,0.7);margin:8px 0 0;font-size:14px;">Payment Statement</p>
+            </div>
+            <div style="padding:32px;">
+              <p style="color:#333;font-size:16px;">Hi ${data.first_name},</p>
+              <p style="color:#555;font-size:15px;">Here's your payment summary for <strong>${data.space_name || 'Alpaca Playhouse'}</strong>.</p>
 
-          <table style="border-collapse:collapse;width:100%;max-width:600px;margin:20px 0;">
-            <thead>
-              <tr style="background:#f5f5f5;">
-                <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #ddd;">Date</th>
-                <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #ddd;">Description</th>
-                <th style="padding:10px 8px;text-align:right;border-bottom:2px solid #ddd;">Amount</th>
-                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #ddd;">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-            ${rowsHtml}
-            </tbody>
-          </table>
+              <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
+                <thead>
+                  <tr>
+                    <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</th>
+                    <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Description</th>
+                    <th style="padding:12px 8px;text-align:right;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Amount</th>
+                    <th style="padding:12px 8px;text-align:center;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                ${rowsHtml}
+                </tbody>
+              </table>
 
-          ${balanceSection}
-          ${upcomingSection}
+              ${balanceSection}
+              ${upcomingSection}
+              ${ctaSection}
+              ${paymentMethodsSection}
 
-          <p style="margin-top:24px;"><strong>Payment Methods:</strong></p>
-          <ul style="list-style:none;padding-left:0;">
-            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-          </ul>
-          <p style="font-size:0.9em;color:#888;">Please include your name and "rent" in the payment memo.</p>
-
-          <p>If you have any questions about your statement, just reply to this email.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
+              <p style="font-size:13px;color:#999;margin-top:16px;">Please include your name and &quot;rent&quot; in the payment memo so we can match your payment.</p>
+              <p style="color:#555;font-size:15px;">If you have any questions about your statement, just reply to this email.</p>
+              <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+            </div>
+            <div style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0;">
+              <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
+              <p style="margin:4px 0 0;color:#bbb;font-size:11px;">GenAlpaca Residency</p>
+            </div>
+          </div>
         `,
         text: `Payment Statement
 
@@ -552,9 +625,9 @@ Here's your payment summary for ${data.space_name || 'Alpaca Playhouse'}.
 
 ${rowsText}
 
-${data.balance_due && Number(data.balance_due) > 0 ? `Outstanding Balance: $${Number(data.balance_due).toFixed(2)}${data.overdue_since ? ` (overdue since ${data.overdue_since})` : ''}` : 'All caught up! No outstanding balance.'}
+${hasDue ? `Outstanding Balance: $${Number(data.balance_due).toFixed(2)}${data.overdue_since ? ` (overdue since ${data.overdue_since})` : ''}` : 'All caught up! No outstanding balance.'}
 ${data.upcoming_amount ? `Next payment: $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}` : ''}
-
+${data.pay_now_url ? `\nPay now: ${data.pay_now_url}\n` : ''}
 Payment Methods:
 ${data._payment_methods_text || '- Contact us for payment options'}
 
