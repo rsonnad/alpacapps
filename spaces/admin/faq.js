@@ -1,6 +1,7 @@
 // FAQ Management Page
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { getAuthState } from '../../shared/auth.js';
 import { askQuestion } from '../../shared/chat-widget.js';
 
 // State

@@ -23,6 +23,7 @@ const ADMIN_PERMISSION_KEYS = [
 ];
 
 const RESIDENT_TABS = [
+  { id: 'devices', label: 'Devices', href: 'devices.html', permission: 'view_lighting' },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
