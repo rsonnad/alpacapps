@@ -847,11 +847,37 @@
     .calc-result__breakdown .brk-value { text-align: right; font-weight: 600; }
     .calc-result__breakdown .brk-value.brk-free { color: var(--success); }
     .calc-result__note {
-      padding: 0.75rem 1.5rem 1rem;
+      padding: 0.75rem 1.5rem 0.5rem;
       font-size: 0.8rem;
       color: var(--text-muted);
       line-height: 1.5;
     }
+    .calc-result__scope {
+      padding: 0.75rem 1.5rem 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .calc-result__scope strong {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .calc-result__scope ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+    .calc-result__scope li {
+      margin-bottom: 0.2rem;
+      break-inside: avoid;
+    }
+    @media (max-width: 640px) { .calc-result__scope ul { columns: 1; } }
 
     @media print {
       body { background: white; }
@@ -863,7 +889,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.60 6:48a</span>
+<span data-site-version style="display:none;">v260210.61 6:50a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1128,6 +1154,7 @@ Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
       </div>
       <div class="calc-result__breakdown" id="calc-breakdown"></div>
       <div class="calc-result__note" id="calc-note"></div>
+      <div class="calc-result__scope" id="calc-scope"></div>
     </div>
   </div>
 
@@ -1953,6 +1980,47 @@ function recalcCost() {
   } else {
     noteEl.textContent = 'All selected services stay within free tiers at this complexity level.';
   }
+
+  // Scope / "What this looks like"
+  var scopes = {
+    basic: [
+      '5\u201310 pages (landing, about, contact, etc.)',
+      '1\u20132 database tables',
+      'A contact form or simple booking form',
+      'Basic admin dashboard to view submissions',
+      '~100 photos or files in storage',
+      'A weekend to a week of Claude Code work',
+      'Public-facing info site with a backend',
+      'No user accounts needed'
+    ],
+    complicated: [
+      '15\u201330 pages across public + admin views',
+      '10\u201320 database tables with relationships',
+      'User accounts with roles (admin, staff, customer)',
+      'Email + SMS notifications to customers',
+      'Payment collection via credit card',
+      'Document generation and e-signatures',
+      '1,000\u20135,000 photos/files in storage',
+      'A few weeks of Claude Code building, then maintenance'
+    ],
+    hyper: [
+      '50+ pages across multiple portals',
+      '30+ database tables with complex relationships',
+      'AI-powered chat, voice assistant, image generation',
+      'Smart home/IoT control (lights, climate, cameras)',
+      'Mobile app on iPhone and/or Android',
+      '20,000+ photos/files, video streaming',
+      'Background workers polling external APIs',
+      'Ongoing weekly development and new features'
+    ]
+  };
+
+  var scopeEl = document.getElementById('calc-scope');
+  var scopeItems = scopes[tier] || [];
+  var scopeHtml = '<strong>What this looks like at this level</strong><ul>';
+  scopeItems.forEach(function(item) { scopeHtml += '<li>' + item + '</li>'; });
+  scopeHtml += '</ul>';
+  scopeEl.innerHTML = scopeHtml;
 }
 
 // Run on page load
