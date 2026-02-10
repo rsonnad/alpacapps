@@ -2,6 +2,7 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { getAuthState, hasPermission } from '../../shared/auth.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 import { askQuestion } from '../../shared/chat-widget.js';
 
 // State
@@ -193,8 +194,8 @@ function renderImpersonateDropdown() {
   dropdown.innerHTML = impersonateFiltered.map((u, i) => `
     <div class="impersonation-dropdown-item ${i === impersonateIndex ? 'active' : ''}" data-index="${i}">
       <span>
-        <span class="imp-name">${escapeHtml(u.display_name || u.email)}</span>
-        <span class="imp-email">${u.display_name ? escapeHtml(u.email) : ''}</span>
+        <span class="imp-name">${isDemoUser() ? `<span class="demo-redacted">${redactString(u.display_name || u.email, 'name')}</span>` : escapeHtml(u.display_name || u.email)}</span>
+        <span class="imp-email">${u.display_name ? (isDemoUser() ? `<span class="demo-redacted">${redactString(u.email, 'email')}</span>` : escapeHtml(u.email)) : ''}</span>
       </span>
       <span class="imp-role">${u.role}</span>
     </div>
@@ -222,7 +223,7 @@ function selectImpersonateUser(user) {
   dropdown.classList.add('hidden');
   clearBtn.classList.remove('hidden');
   chip.classList.remove('hidden');
-  chipName.textContent = user.display_name || user.email;
+  chipName.textContent = isDemoUser() ? redactString(user.display_name || user.email, 'name') : (user.display_name || user.email);
   chipRole.textContent = user.role;
   modeLabel.textContent = `Testing as ${user.role}`;
   impersonateFiltered = [];

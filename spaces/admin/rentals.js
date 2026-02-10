@@ -161,7 +161,8 @@ function populateRentalDropdowns() {
         const pName = isDemoUser()
           ? redactString(`${p.first_name || ''} ${p.last_name || ''}`, 'name')
           : `${p.first_name || ''} ${p.last_name || ''}`;
-        return `<option value="${p.id}">${pName} (${p.email || 'no email'})</option>`;
+        const pEmail = isDemoUser() ? redactString(p.email || 'no email', 'email') : (p.email || 'no email');
+        return `<option value="${p.id}">${pName} (${pEmail})</option>`;
       }).join('');
   }
 
@@ -523,7 +524,7 @@ function renderAssignmentsTable() {
         <td>
           <div class="tenant-cell">
             <strong class="${demoClass}">${tenantName}</strong>
-            ${person.email ? `<div class="tenant-email">${person.email}</div>` : ''}
+            ${person.email ? `<div class="tenant-email${isDemoUser() ? ' demo-redacted' : ''}">${isDemoUser() ? redactString(person.email, 'email') : person.email}</div>` : ''}
           </div>
         </td>
         <td>${spaceNames}</td>
@@ -571,7 +572,9 @@ async function openAssignmentDetail(assignmentId) {
   // Tenant info (read-only)
   document.getElementById('assignmentTenantName').textContent = assignTenantName;
   document.getElementById('assignmentTenantName').classList.toggle('demo-redacted', isDemoUser());
-  document.getElementById('assignmentTenantEmail').textContent = person.email || '-';
+  const tenantEmail = isDemoUser() ? redactString(person.email || '-', 'email') : (person.email || '-');
+  document.getElementById('assignmentTenantEmail').textContent = tenantEmail;
+  document.getElementById('assignmentTenantEmail').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('assignmentTenantPhone').textContent = person.phone || '-';
 
   // Populate space dropdown
@@ -841,7 +844,7 @@ function renderCalendar() {
 
       const tooltipData = JSON.stringify({
         tenant: tenantName,
-        email: person.email || '-',
+        email: isDemoUser() ? redactString(person.email || '-', 'email') : (person.email || '-'),
         phone: person.phone || '-',
         start: formatDateAustin(startDate, { month: 'short', day: 'numeric', year: 'numeric' }),
         end: endDate ? formatDateAustin(endDate, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Ongoing',
@@ -984,7 +987,9 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   if (testBadge) testBadge.style.display = app.is_test ? 'inline-block' : 'none';
 
   // Header meta
-  document.getElementById('detailEmail').textContent = person.email || '-';
+  const detailEmail = isDemoUser() ? redactString(person.email || '-', 'email') : (person.email || '-');
+  document.getElementById('detailEmail').textContent = detailEmail;
+  document.getElementById('detailEmail').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('detailPhone').textContent = person.phone || '-';
   document.getElementById('detailSubmittedAt').textContent =
     'Submitted: ' + rentalService.formatDate(app.submitted_at || app.created_at);
@@ -1002,7 +1007,9 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   // Contact Info
   document.getElementById('detailApplicantName').textContent = fullName;
   document.getElementById('detailApplicantName').classList.toggle('demo-redacted', isDemoUser());
-  document.getElementById('detailApplicantEmail').textContent = person.email || '-';
+  const applicantEmail = isDemoUser() ? redactString(person.email || '-', 'email') : (person.email || '-');
+  document.getElementById('detailApplicantEmail').textContent = applicantEmail;
+  document.getElementById('detailApplicantEmail').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('detailApplicantPhone').textContent = person.phone || '-';
   document.getElementById('detailApplicantDOB').textContent =
     person.date_of_birth || '-';

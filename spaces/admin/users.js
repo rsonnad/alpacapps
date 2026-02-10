@@ -744,7 +744,7 @@ function renderInvitations() {
           const emailStatus = getEmailStatus(inv);
           return `
             <tr class="${isExpired ? 'expired-row' : ''}">
-              <td>${inv.email}</td>
+              <td>${isDemoUser() ? `<span class="demo-redacted">${redactString(inv.email, 'email')}</span>` : inv.email}</td>
               <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
               <td>
                 <span class="email-status ${emailStatus.class}">${emailStatus.text}</span>
@@ -834,7 +834,7 @@ function renderUsers() {
                 <span class="${isDemoUser() ? 'demo-redacted' : ''}">${displayName}</span>
                 ${isCurrentUser ? '<span class="you-tag">You</span>' : ''}
               </td>
-              <td>${u.email}${u.contact_email && u.contact_email !== u.email ? `<br><span style="font-size:0.75rem;color:var(--text-muted)">contact: ${u.contact_email}</span>` : ''}</td>
+              <td>${isDemoUser() ? `<span class="demo-redacted">${redactString(u.email, 'email')}</span>` : u.email}${u.contact_email && u.contact_email !== u.email ? `<br><span style="font-size:0.75rem;color:var(--text-muted)">contact: ${isDemoUser() ? `<span class="demo-redacted">${redactString(u.contact_email, 'email')}</span>` : u.contact_email}</span>` : ''}</td>
               <td>
                 <select
                   class="role-select"

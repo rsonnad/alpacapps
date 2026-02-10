@@ -243,7 +243,7 @@ function renderAssociateConfig() {
         ${escapeHtml(name)}
         <span class="role-tag ${role}">${role}</span>
       </h4>
-      <p class="detail">${escapeHtml(a.app_user?.email || '')}</p>
+      <p class="detail${isDemoUser() ? ' demo-redacted' : ''}">${isDemoUser() ? redactString(a.app_user?.email || '', 'email') : escapeHtml(a.app_user?.email || '')}</p>
       <p class="detail">Payment: ${escapeHtml(method)}${handle ? ' — ' + escapeHtml(handle) : ''}</p>
       <div class="detail" style="margin-top:0.25rem;">ID: ${idBadge} ${idActions}</div>
       <div class="rate-highlight ${isDemoUser() ? 'demo-redacted' : ''}">

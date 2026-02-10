@@ -913,8 +913,8 @@ function showSpaceDetail(spaceId) {
     occupantHtml = `
       <div class="detail-section">
         <h3>Current Occupant</h3>
-        <p><strong>${occupant.first_name} ${occupant.last_name || ''}</strong> (${occupant.type})</p>
-        ${occupant.email ? `<p>Email: ${occupant.email}</p>` : ''}
+        <p><strong class="${isDemoUser() ? 'demo-redacted' : ''}">${isDemoUser() ? redactString(`${occupant.first_name} ${occupant.last_name || ''}`, 'name') : `${occupant.first_name} ${occupant.last_name || ''}`}</strong> (${occupant.type})</p>
+        ${occupant.email ? `<p class="${isDemoUser() ? 'demo-redacted' : ''}">Email: ${isDemoUser() ? redactString(occupant.email, 'email') : occupant.email}</p>` : ''}
         ${occupant.phone ? `<p>Phone: ${occupant.phone}</p>` : ''}
         <p>Rate: $${a.rate_amount}/${a.rate_term}</p>
         <p>Start: ${a.start_date ? formatDateAustin(a.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</p>

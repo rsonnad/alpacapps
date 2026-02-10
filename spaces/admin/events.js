@@ -433,7 +433,9 @@ window.openEventDetail = async function(requestId) {
   const clientEl = document.getElementById('eventInfoClient');
   clientEl.textContent = detailClientName;
   clientEl.classList.toggle('demo-redacted', demo);
-  document.getElementById('eventInfoEmail').textContent = person?.email || '-';
+  const eventEmail = demo ? redactString(person?.email || '-', 'email') : (person?.email || '-');
+  document.getElementById('eventInfoEmail').textContent = eventEmail;
+  document.getElementById('eventInfoEmail').classList.toggle('demo-redacted', demo);
   document.getElementById('eventInfoPhone').textContent = person?.phone || '-';
   document.getElementById('eventInfoOrg').textContent = req.organization_name || '-';
   document.getElementById('eventInfoDate').textContent = req.event_date
