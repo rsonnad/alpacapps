@@ -404,10 +404,14 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
   await initAuth();
   const state = getAuthState();
 
+  // Also find mobile nav Sign In link
+  const mobileSignInEl = document.getElementById('aapMobileSignInLink');
+
   if (state.appUser) {
     authEl.innerHTML = renderUserMenuHTML(state.appUser, profileHref);
     authEl.classList.add('user-info');
-    if (signInEl) signInEl.classList.add('hidden');
+    if (signInEl) signInEl.style.display = 'none';
+    if (mobileSignInEl) mobileSignInEl.closest('li')?.remove();
 
     const trigger = authEl.querySelector('.user-menu-trigger');
     const dropdown = authEl.querySelector('.user-menu-dropdown');
@@ -430,7 +434,7 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
   } else {
     authEl.innerHTML = '';
     authEl.classList.remove('user-info');
-    if (signInEl) signInEl.classList.remove('hidden');
+    if (signInEl) signInEl.style.display = '';
   }
 }
 

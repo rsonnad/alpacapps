@@ -323,9 +323,121 @@ ul, ol {
   color: var(--aap-text);
 }
 
+/* Header auth container (user menu when signed in) */
+.aap-header-auth {
+  display: none;
+}
+
+.aap-header-auth.user-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.aap-header-auth .user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: var(--aap-font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--aap-radius);
+  cursor: pointer;
+  transition: background var(--aap-transition);
+}
+
+.aap-header--light .aap-header-auth .user-menu-trigger {
+  color: var(--aap-text-light);
+}
+
+.aap-header--dark .aap-header-auth .user-menu-trigger {
+  color: var(--aap-text);
+}
+
+.aap-header-auth .user-menu-trigger:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.aap-header-auth .user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.aap-header-auth .user-avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--aap-accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.aap-header-auth .user-profile-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.aap-header-auth .user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 150px;
+  background: var(--aap-bg);
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  padding: 0.25rem 0;
+}
+
+.aap-header-auth .user-menu-dropdown.hidden {
+  display: none;
+}
+
+.aap-header-auth .user-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.875rem;
+  background: none;
+  border: none;
+  font-family: var(--aap-font-body);
+  font-size: 0.85rem;
+  color: var(--aap-text);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.aap-header-auth .user-menu-item:hover {
+  background: var(--aap-bg-muted);
+}
+
+.aap-header-auth .user-menu-signout {
+  color: #c0392b;
+  border-top: 1px solid var(--aap-border);
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
 /* Desktop navigation */
 @media (min-width: 768px) {
   .aap-nav {
+    display: flex;
+  }
+
+  .aap-header-auth {
     display: flex;
   }
 

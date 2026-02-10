@@ -1,7 +1,7 @@
 /**
- * Public Shell - injects shared header + mobile nav
+ * Public Shell - injects shared header + mobile nav + auth state
  */
-import { renderHeader, initSiteComponents } from './site-components.js';
+import { renderHeader, initSiteComponents, initPublicHeaderAuth } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
 
 export function initPublicPage(options = {}) {
@@ -22,6 +22,12 @@ export function initPublicPage(options = {}) {
 
   initSiteComponents();
   setupVersionInfo();
+
+  // Show logged-in user state (avatar + name) when authenticated
+  initPublicHeaderAuth({
+    authContainerId: 'aapHeaderAuth',
+    signInLinkId: 'aapSignInLink',
+  });
 }
 
 if (typeof window !== 'undefined') {
