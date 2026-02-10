@@ -135,8 +135,11 @@ function renderProfile() {
   document.getElementById('fieldFirstName').value = d.first_name || '';
   document.getElementById('fieldLastName').value = d.last_name || '';
   document.getElementById('fieldDisplayName').value = d.display_name || '';
+  const hasSeparateContact = !!d.contact_email;
+  document.getElementById('contactEmailSameAsLogin').checked = !hasSeparateContact;
   document.getElementById('fieldContactEmail').value = d.contact_email || '';
   document.getElementById('fieldContactEmail').placeholder = d.email || '';
+  document.getElementById('fieldContactEmail').style.display = hasSeparateContact ? '' : 'none';
   document.getElementById('fieldGender').value = d.gender || '';
   document.getElementById('fieldBio').value = d.bio || '';
   document.getElementById('fieldNationality').value = d.nationality || '';
@@ -352,7 +355,8 @@ async function saveProfile() {
     const firstName = document.getElementById('fieldFirstName').value.trim() || null;
     const lastName = document.getElementById('fieldLastName').value.trim() || null;
 
-    const contactEmail = document.getElementById('fieldContactEmail').value.trim() || null;
+    const sameAsLogin = document.getElementById('contactEmailSameAsLogin').checked;
+    const contactEmail = sameAsLogin ? null : (document.getElementById('fieldContactEmail').value.trim() || null);
 
     const updates = {
       first_name: firstName,
@@ -634,6 +638,7 @@ function getFormSnapshot() {
     first_name: document.getElementById('fieldFirstName').value.trim(),
     last_name: document.getElementById('fieldLastName').value.trim(),
     display_name: document.getElementById('fieldDisplayName').value.trim(),
+    contact_email_same: document.getElementById('contactEmailSameAsLogin').checked,
     contact_email: document.getElementById('fieldContactEmail').value.trim(),
     gender: document.getElementById('fieldGender').value,
     bio: document.getElementById('fieldBio').value.trim(),
@@ -692,6 +697,14 @@ function bindEvents() {
     saveBtn.disabled = input.value.trim().toLowerCase() === (input.dataset.original || '');
   });
   document.getElementById('saveSlugBtn')?.addEventListener('click', saveSlug);
+
+  // Contact email checkbox toggle
+  document.getElementById('contactEmailSameAsLogin').addEventListener('change', (e) => {
+    const emailInput = document.getElementById('fieldContactEmail');
+    emailInput.style.display = e.target.checked ? 'none' : '';
+    if (!e.target.checked) emailInput.focus();
+    updateSaveButton();
+  });
 
   // Add link
   document.getElementById('addLinkBtn').addEventListener('click', () => {

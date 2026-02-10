@@ -399,9 +399,8 @@ Alpaca Playhouse`
           <p>Hi ${data.first_name},</p>
           <p>This is a friendly reminder that your rent payment of <strong>$${data.amount}</strong> is due on <strong>${data.due_date}</strong>.</p>
           <p><strong>Payment Methods:</strong></p>
-          <ul>
-            <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: alpacaplayhouse@gmail.com</li>
+          <ul style="list-style:none;padding-left:0;">
+            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
           </ul>
           <p>Please include your name and "${data.period || 'rent'}" in the payment memo.</p>
           <p>Thank you!</p>
@@ -414,8 +413,7 @@ Hi ${data.first_name},
 This is a friendly reminder that your rent payment of $${data.amount} is due on ${data.due_date}.
 
 Payment Methods:
-- Venmo: @AlpacaPlayhouse
-- Zelle: alpacaplayhouse@gmail.com
+${data._payment_methods_text || '- Contact us for payment options'}
 
 Please include your name and "${data.period || 'rent'}" in the payment memo.
 
@@ -482,6 +480,94 @@ Thank you for your prompt payment!
 Best regards,
 Alpaca Playhouse`
       };
+
+    case "payment_statement": {
+      // line_items: [{ date, description, amount, status }]
+      // balance_due, upcoming_amount, upcoming_date, space_name
+      const items = data.line_items || [];
+      const rowsHtml = items.map((item: any) => {
+        const statusColor = item.status === 'Paid' ? '#2e7d32' : item.status === 'Overdue' ? '#c62828' : '#e65100';
+        const statusBadge = `<span style="background:${statusColor};color:white;padding:2px 8px;border-radius:10px;font-size:0.85em;">${item.status}</span>`;
+        return `<tr>
+              <td style="padding:10px 8px;border-bottom:1px solid #eee;">${item.date}</td>
+              <td style="padding:10px 8px;border-bottom:1px solid #eee;">${item.description}</td>
+              <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:right;">$${Number(item.amount).toFixed(2)}</td>
+              <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;">${statusBadge}</td>
+            </tr>`;
+      }).join("\n");
+
+      const rowsText = items.map((item: any) =>
+        `  ${item.date}  |  ${item.description}  |  $${Number(item.amount).toFixed(2)}  |  ${item.status}`
+      ).join("\n");
+
+      const balanceSection = data.balance_due && Number(data.balance_due) > 0
+        ? `<div style="background:#fff3e0;border-left:4px solid #e65100;padding:16px;margin:20px 0;border-radius:4px;">
+              <strong style="font-size:1.1em;color:#e65100;">Outstanding Balance: $${Number(data.balance_due).toFixed(2)}</strong>
+              ${data.overdue_since ? `<br><span style="color:#c62828;">Overdue since ${data.overdue_since}</span>` : ''}
+            </div>`
+        : `<div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:16px;margin:20px 0;border-radius:4px;">
+              <strong style="color:#2e7d32;">All caught up! No outstanding balance.</strong>
+            </div>`;
+
+      const upcomingSection = data.upcoming_amount
+        ? `<p style="color:#555;">⏳ <strong>Next payment:</strong> $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}</p>`
+        : '';
+
+      return {
+        subject: `Payment Statement - ${data.space_name || 'Alpaca Playhouse'}`,
+        html: `
+          <h2 style="color:#333;">Payment Statement</h2>
+          <p>Hi ${data.first_name},</p>
+          <p>Here's your payment summary for <strong>${data.space_name || 'Alpaca Playhouse'}</strong>.</p>
+
+          <table style="border-collapse:collapse;width:100%;max-width:600px;margin:20px 0;">
+            <thead>
+              <tr style="background:#f5f5f5;">
+                <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #ddd;">Date</th>
+                <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #ddd;">Description</th>
+                <th style="padding:10px 8px;text-align:right;border-bottom:2px solid #ddd;">Amount</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #ddd;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${rowsHtml}
+            </tbody>
+          </table>
+
+          ${balanceSection}
+          ${upcomingSection}
+
+          <p style="margin-top:24px;"><strong>Payment Methods:</strong></p>
+          <ul style="list-style:none;padding-left:0;">
+            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
+          </ul>
+          <p style="font-size:0.9em;color:#888;">Please include your name and "rent" in the payment memo.</p>
+
+          <p>If you have any questions about your statement, just reply to this email.</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+        `,
+        text: `Payment Statement
+
+Hi ${data.first_name},
+
+Here's your payment summary for ${data.space_name || 'Alpaca Playhouse'}.
+
+${rowsText}
+
+${data.balance_due && Number(data.balance_due) > 0 ? `Outstanding Balance: $${Number(data.balance_due).toFixed(2)}${data.overdue_since ? ` (overdue since ${data.overdue_since})` : ''}` : 'All caught up! No outstanding balance.'}
+${data.upcoming_amount ? `Next payment: $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}` : ''}
+
+Payment Methods:
+${data._payment_methods_text || '- Contact us for payment options'}
+
+Please include your name and "rent" in the payment memo.
+
+If you have any questions about your statement, just reply to this email.
+
+Best regards,
+Alpaca Playhouse`
+      };
+    }
 
     // ===== INVITATIONS =====
     case "event_invitation":
@@ -1366,6 +1452,14 @@ async function getRenderedTemplate(
   type: EmailType,
   data: Record<string, any>
 ): Promise<{ subject: string; html: string; text: string; senderType: string }> {
+  // Enrich payment-related templates with dynamic payment methods from DB
+  const paymentTypes: EmailType[] = ["payment_reminder", "payment_overdue", "payment_statement"];
+  if (paymentTypes.includes(type)) {
+    const pm = await getPaymentMethodsForEmail();
+    data._payment_methods_html = pm.html;
+    data._payment_methods_text = pm.text;
+  }
+
   // 1. Try DB template (cached)
   const cached = templateCache.get(type);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
