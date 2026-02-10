@@ -407,7 +407,7 @@ function renderQuestionLog() {
               <button class="btn-danger btn-small" onclick="deleteFaq('${entry.id}')">×</button>
             </div>
           </div>
-          ${entry.ai_answer ? `<div class="faq-card__answer" style="color: #555; font-style: italic;">${escapeHtml(entry.ai_answer)}</div>` : ''}
+          ${(entry.answer || entry.ai_answer) ? `<div class="faq-card__answer" style="color: #555; font-style: italic;">${escapeHtml(entry.answer || entry.ai_answer)}</div>` : ''}
           <div class="faq-card__meta">
             <span>${formatDate(entry.created_at)}</span>
             ${entry.user_email ? `<span style="color: #888;">from ${escapeHtml(entry.user_email)}</span>` : ''}
