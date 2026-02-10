@@ -737,6 +737,122 @@
       color: var(--text);
     }
 
+    /* ---- Cost Calculator ---- */
+    .calc-services {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    @media (max-width: 640px) { .calc-services { grid-template-columns: 1fr; } }
+
+    .calc-svc {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .calc-svc:hover { border-color: var(--accent); }
+    .calc-svc input { display: none; }
+    .calc-svc__check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      color: transparent;
+      transition: all 0.15s;
+    }
+    .calc-svc input:checked ~ .calc-svc__check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .calc-svc--locked { opacity: 0.85; cursor: default; }
+    .calc-svc--locked:hover { border-color: var(--border); }
+    .calc-svc--core input:checked ~ .calc-svc__check {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    .calc-svc__info { display: flex; flex-direction: column; min-width: 0; }
+    .calc-svc__name { font-weight: 600; font-size: 0.88rem; }
+    .calc-svc__desc { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .calc-tiers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    @media (max-width: 640px) { .calc-tiers { grid-template-columns: 1fr; } }
+
+    .calc-tier {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: center;
+    }
+    .calc-tier:hover { border-color: var(--accent); }
+    .calc-tier input { display: none; }
+    .calc-tier--active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .calc-tier__label {
+      display: block;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
+    .calc-tier__desc {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .calc-result {
+      margin-top: 1.5rem;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .calc-result__header {
+      background: var(--text);
+      color: #fff;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .calc-result__title { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: rgba(255,255,255,0.7); }
+    .calc-result__total { font-size: 2rem; font-weight: 300; color: var(--accent); }
+    .calc-result__breakdown {
+      padding: 1rem 1.5rem 0.5rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.15rem 1rem;
+      font-size: 0.85rem;
+    }
+    .calc-result__breakdown .brk-label { color: var(--text-muted); }
+    .calc-result__breakdown .brk-value { text-align: right; font-weight: 600; }
+    .calc-result__breakdown .brk-value.brk-free { color: var(--success); }
+    .calc-result__note {
+      padding: 0.75rem 1.5rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     @media print {
       body { background: white; }
       .aap-header, .aap-mobile-nav { display: none; }
@@ -747,7 +863,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.35 5:30a</span>
+<span data-site-version style="display:none;">v260210.36 5:34a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -823,7 +939,7 @@
   <nav class="toc">
     <h2>Easy Setup Instructions</h2>
     <div class="toc-grid">
-      <a href="#architecture"><span class="num" style="background:var(--bg-warm);color:var(--text-muted);">&mdash;</span> Architecture Overview</a>
+      <a href="#architecture"><span class="num" style="background:var(--bg-warm);color:var(--text-muted);">&mdash;</span> Architecture &amp; Cost Calculator</a>
       <a href="#github"><span class="num">1</span> GitHub + Starter Template</a>
       <a href="#claude-code"><span class="num">2</span> Install Claude Code</a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
@@ -841,60 +957,159 @@
     </div>
   </nav>
 
-  <!-- Architecture (unnumbered) -->
+  <!-- Architecture + Cost Calculator -->
   <div class="section" id="architecture">
-    <h2>Architecture Overview</h2>
+    <h2>Architecture &amp; Cost Calculator</h2>
     <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Storage + Auth)
                                              &nearr;
 Optional: Discord Bot (DigitalOcean) &mdash;&mdash;&mdash;&rsaquo;</div>
     <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, file storage, authentication, and serverless functions. GitHub Pages serves static files for free.</p>
-    <table>
-      <thead><tr><th>Service</th><th>Purpose</th><th>Free Tier</th></tr></thead>
-      <tbody>
-        <tr><td>GitHub Pages</td><td>Static site hosting</td><td><span class="cost-badge cost-free">Free</span> Unlimited</td></tr>
-        <tr><td>Supabase</td><td>Database, storage, auth, edge functions</td><td><span class="cost-badge cost-free">Free</span> 500 MB DB, 1 GB storage</td></tr>
-        <tr><td>Resend</td><td>Transactional email</td><td><span class="cost-badge cost-free">Free</span> 3,000 emails/month</td></tr>
-        <tr><td>Telnyx</td><td>SMS notifications</td><td><span class="cost-badge cost-payg">Pay-as-you-go</span> ~$0.004/SMS</td></tr>
-        <tr><td>Square</td><td>Payment processing</td><td><span class="cost-badge cost-payg">Pay-as-you-go</span> 2.9% + 30&cent;/txn</td></tr>
-        <tr><td>SignWell</td><td>E-signatures</td><td><span class="cost-badge cost-free">Free</span> 3&ndash;25 docs/month</td></tr>
-        <tr><td>Google Gemini</td><td>AI-powered matching</td><td><span class="cost-badge cost-free">Free</span> Free tier</td></tr>
-      </tbody>
-    </table>
-  </div>
 
-  <!-- Cost Summary -->
-  <div class="section">
-    <h2>Cost Summary</h2>
+    <h3>Select what you need</h3>
+    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Core services are pre-selected. Toggle optional ones on or off.</p>
 
-    <h3>Infrastructure</h3>
-    <table>
-      <thead><tr><th>Service</th><th>Monthly Cost</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>GitHub Pages</td><td><span class="cost-badge cost-free">$0</span></td><td>Unlimited for public repos</td></tr>
-        <tr><td>Supabase</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 MB DB, 1 GB storage</td></tr>
-        <tr><td>Resend</td><td><span class="cost-badge cost-free">$0</span></td><td>3,000 emails/month free</td></tr>
-        <tr><td>Telnyx</td><td><span class="cost-badge cost-payg">~$1</span></td><td>Phone number + $0.004/SMS</td></tr>
-        <tr><td>Square</td><td><span class="cost-badge cost-payg">2.9% + 30&cent;</span></td><td>Per transaction, no monthly fee</td></tr>
-        <tr><td>SignWell</td><td><span class="cost-badge cost-free">$0</span></td><td>3&ndash;25 docs/month free</td></tr>
-        <tr><td>Google Gemini</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier available</td></tr>
-        <tr><td>Custom domain</td><td><span class="cost-badge cost-payg">~$1</span></td><td>~$10/year, optional</td></tr>
-        <tr><td><strong>Claude Code</strong></td><td><span class="cost-badge cost-payg">$0&ndash;$200</span></td><td>Free tier available. Pro $20, Max $100, Max+ $200 for intensive development</td></tr>
-      </tbody>
-    </table>
+    <div class="calc-services" id="calc-services">
+      <!-- Core (locked) -->
+      <label class="calc-svc calc-svc--core calc-svc--locked">
+        <input type="checkbox" checked disabled data-svc="github">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">GitHub Pages</span>
+          <span class="calc-svc__desc">Static site hosting</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc calc-svc--core calc-svc--locked">
+        <input type="checkbox" checked disabled data-svc="supabase">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Supabase</span>
+          <span class="calc-svc__desc">Database, storage, auth, edge functions</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc calc-svc--core calc-svc--locked">
+        <input type="checkbox" checked disabled data-svc="claude">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Claude Code</span>
+          <span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
+      </label>
+      <!-- Optional -->
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="google-auth" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Google Sign-In</span>
+          <span class="calc-svc__desc">OAuth user login</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="resend" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Resend</span>
+          <span class="calc-svc__desc">Transactional email (3,000/mo free)</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Telnyx</span>
+          <span class="calc-svc__desc">SMS notifications</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="square" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Square</span>
+          <span class="calc-svc__desc">Payment processing</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">SignWell</span>
+          <span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Google Gemini</span>
+          <span class="calc-svc__desc">AI-powered features</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="discord" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Discord Bot</span>
+          <span class="calc-svc__desc">Chat bot on a $4/mo droplet</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">~$4/mo</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="domain" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Custom Domain</span>
+          <span class="calc-svc__desc">Your own branded URL</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="mobile" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Mobile App</span>
+          <span class="calc-svc__desc">iOS &amp; Android via Capacitor</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr + $25</span>
+      </label>
+    </div>
 
-    <h3>Mobile App</h3>
-    <table>
-      <thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>Capacitor (development)</td><td><span class="cost-badge cost-free">$0</span></td><td>Open source, free to develop</td></tr>
-        <tr><td>Apple App Store</td><td><span class="cost-badge cost-payg">$99/year</span></td><td>Apple Developer Program membership</td></tr>
-        <tr><td>Google Play Store</td><td><span class="cost-badge cost-payg">$25 one-time</span></td><td>Google Play Console registration</td></tr>
-        <tr><td>Capgo OTA Updates</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 devices, 4 GB bandwidth</td></tr>
-      </tbody>
-    </table>
+    <h3>How much will you build?</h3>
+    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">This mainly affects your Claude Code plan and usage-based services.</p>
 
-    <div class="callout success">
-      <strong>$0/month for the infrastructure.</strong> While Claude Code is free to start, any meaningful features will require at least the $20/month plan. The $100/month plan will support all your work for the first few months, after which you may be able to downgrade. SMS and payments are pay-as-you-go with no minimums. Mobile app distribution adds $99/year (Apple) + $25 one-time (Google).
+    <div class="calc-tiers">
+      <label class="calc-tier calc-tier--active" data-tier="light">
+        <input type="radio" name="tier" value="light" checked onchange="recalcCost()">
+        <span class="calc-tier__label">Light</span>
+        <span class="calc-tier__desc">Landing page, basic CRM, a few forms. A weekend project.</span>
+      </label>
+      <label class="calc-tier" data-tier="moderate">
+        <input type="radio" name="tier" value="moderate" onchange="recalcCost()">
+        <span class="calc-tier__label">Moderate</span>
+        <span class="calc-tier__desc">Full CRUD, user roles, email/SMS notifications, payments. A few weeks of building.</span>
+      </label>
+      <label class="calc-tier" data-tier="intensive">
+        <input type="radio" name="tier" value="intensive" onchange="recalcCost()">
+        <span class="calc-tier__label">Intensive</span>
+        <span class="calc-tier__desc">Complex workflows, integrations, AI features, mobile app, ongoing development.</span>
+      </label>
+    </div>
+
+    <!-- Cost result -->
+    <div class="calc-result" id="calc-result">
+      <div class="calc-result__header">
+        <span class="calc-result__title">Estimated annual cost</span>
+        <span class="calc-result__total" id="calc-total">$0</span>
+      </div>
+      <div class="calc-result__breakdown" id="calc-breakdown"></div>
+      <div class="calc-result__note" id="calc-note"></div>
     </div>
   </div>
 
@@ -1626,6 +1841,101 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
 
 
 </div>
+
+<script>
+// ---- Cost Calculator ----
+function recalcCost() {
+  var tier = document.querySelector('input[name="tier"]:checked').value;
+  // Update tier visual state
+  document.querySelectorAll('.calc-tier').forEach(function(el) {
+    el.classList.toggle('calc-tier--active', el.dataset.tier === tier);
+  });
+
+  // Claude Code annual cost by tier
+  var claudeCosts = { light: 0, moderate: 1200, intensive: 2400 };
+  var claudeLabels = { light: 'Free tier', moderate: 'Pro ($20/mo) + Max during build sprints', intensive: 'Max ($100/mo) or Max+ ($200/mo)' };
+
+  // Per-service annual costs by tier
+  var svcCosts = {
+    'github':      { light: 0, moderate: 0, intensive: 0 },
+    'supabase':    { light: 0, moderate: 0, intensive: 300 },  // might hit Pro at $25/mo
+    'claude':      { light: 0, moderate: 1200, intensive: 2400 },
+    'google-auth': { light: 0, moderate: 0, intensive: 0 },
+    'resend':      { light: 0, moderate: 0, intensive: 0 },
+    'telnyx':      { light: 0, moderate: 60, intensive: 180 },   // ~$5-15/mo
+    'square':      { light: 0, moderate: 0, intensive: 0 },       // % based, not flat
+    'signwell':    { light: 0, moderate: 0, intensive: 0 },
+    'gemini':      { light: 0, moderate: 0, intensive: 0 },
+    'discord':     { light: 0, moderate: 48, intensive: 48 },     // $4/mo droplet
+    'domain':      { light: 10, moderate: 10, intensive: 10 },
+    'mobile':      { light: 124, moderate: 124, intensive: 124 }  // $99/yr Apple + $25 one-time amortized
+  };
+
+  var svcLabels = {
+    'github':      'GitHub Pages',
+    'supabase':    'Supabase',
+    'claude':      'Claude Code',
+    'google-auth': 'Google Sign-In',
+    'resend':      'Resend (email)',
+    'telnyx':      'Telnyx (SMS)',
+    'square':      'Square (payments)',
+    'signwell':    'SignWell (e-sign)',
+    'gemini':      'Google Gemini (AI)',
+    'discord':     'Discord Bot + server',
+    'domain':      'Custom domain',
+    'mobile':      'Mobile app (App Store fees)'
+  };
+
+  var svcNotes = {
+    'supabase': { intensive: 'May need Pro ($25/mo) for storage/bandwidth' },
+    'telnyx':   { moderate: '~$5/mo: phone number + ~1,000 SMS', intensive: '~$15/mo: higher volume SMS' },
+    'square':   { moderate: '2.9% + 30\u00a2 per transaction (no flat fee)', intensive: '2.9% + 30\u00a2 per transaction (no flat fee)' },
+    'mobile':   { light: 'Apple $99/yr + Google $25 one-time', moderate: 'Apple $99/yr + Google $25 one-time', intensive: 'Apple $99/yr + Google $25 one-time' }
+  };
+
+  // Gather selected services. Core always included.
+  var selected = ['github', 'supabase', 'claude'];
+  document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
+    if (cb.checked) selected.push(cb.dataset.svc);
+  });
+
+  // Calculate
+  var total = 0;
+  var lines = [];
+  selected.forEach(function(key) {
+    var cost = (svcCosts[key] || {})[tier] || 0;
+    total += cost;
+    var note = (svcNotes[key] || {})[tier] || '';
+    lines.push({ label: svcLabels[key] || key, cost: cost, note: note });
+  });
+
+  // Render
+  document.getElementById('calc-total').textContent = total === 0 ? '$0' : '$' + total.toLocaleString() + '/yr';
+
+  var brkHtml = '';
+  lines.forEach(function(l) {
+    var valClass = l.cost === 0 ? 'brk-value brk-free' : 'brk-value';
+    var valText = l.cost === 0 ? 'Free' : '$' + l.cost.toLocaleString() + '/yr';
+    brkHtml += '<span class="brk-label">' + l.label + '</span>';
+    brkHtml += '<span class="' + valClass + '">' + valText + '</span>';
+  });
+  document.getElementById('calc-breakdown').innerHTML = brkHtml;
+
+  // Note
+  var notes = lines.filter(function(l) { return l.note; }).map(function(l) { return l.label + ': ' + l.note; });
+  var noteEl = document.getElementById('calc-note');
+  if (tier === 'light' && total === 0) {
+    noteEl.textContent = 'The light tier runs entirely on free tiers. Claude Code\'s free plan works for small projects.';
+  } else if (notes.length > 0) {
+    noteEl.innerHTML = notes.join('<br>');
+  } else {
+    noteEl.textContent = 'All selected services stay within free tiers at this complexity level.';
+  }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', function() { recalcCost(); });
+</script>
 
 <script>
 // Copy prompt text from "Then tell Claude" callouts

@@ -239,6 +239,46 @@
         </div>
       </div>
 
+      <!-- ===== PAI CORE PROMPT ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h2>PAI Core Prompt</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Shared Prompt Sections</h3>
+              <p>These sections are shared by both PAI chat and PAI voice. Edits apply to both channels immediately.</p>
+            </div>
+            <button class="btn-small btn-primary" id="savePaiConfigBtn">Save All</button>
+          </div>
+          <div class="settings-card-body">
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="paiIdentity">Identity &amp; Personality</label>
+              <textarea id="paiIdentity" rows="6" placeholder="You are PAI..."></textarea>
+              <p class="form-hint">Who PAI is, its personality, and speaking style. Shared across chat and voice.</p>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="paiPropertyInfo">Property Info</label>
+              <textarea id="paiPropertyInfo" rows="6" placeholder="PROPERTY INFO:..."></textarea>
+              <p class="form-hint">Address, contact info, WiFi, portal URL, and other property details.</p>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="paiAmenities">Amenities &amp; Smart Home</label>
+              <textarea id="paiAmenities" rows="6" placeholder="AMENITIES & SMART HOME:..."></textarea>
+              <p class="form-hint">Property amenities and smart home features PAI can reference.</p>
+            </div>
+            <div class="form-group">
+              <label for="paiChatAddendum">Chat-Only Addendum</label>
+              <textarea id="paiChatAddendum" rows="3" placeholder="Optional: extra instructions for chat only..."></textarea>
+              <p class="form-hint">Appended only when PAI responds via the chat widget (not voice). Leave empty if not needed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== ASSISTANTS GROUP ===== -->
       <div class="settings-group">
         <div class="settings-group-header">
@@ -388,9 +428,9 @@
           </div>
 
           <div class="form-group">
-            <label for="assistantPrompt">System Prompt</label>
-            <textarea id="assistantPrompt" rows="10" placeholder="You are a friendly AI assistant for GenAlpaca Residency..." required></textarea>
-            <p class="form-hint">Instructions for the AI. Describe its personality, what it knows, and how it should handle different questions.</p>
+            <label for="assistantPrompt">Voice-Specific Instructions</label>
+            <textarea id="assistantPrompt" rows="6" placeholder="Keep responses concise for phone conversation. Use natural number phrasing..." required></textarea>
+            <p class="form-hint">Addendum appended to the shared PAI core prompt for voice calls only. Use this for voice-specific behavior (e.g., brevity, phone etiquette). The core identity, property info, and device lists are shared with PAI chat.</p>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
