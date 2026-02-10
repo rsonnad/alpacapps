@@ -1148,10 +1148,10 @@ Discovered via `tinytuya` (installed on Alpaca Mac) and UDM Pro client list. All
 | UniFi G5 PTZ | Alpacamera | 192.168.1.173 | f4:e2:c6:7a:7f:fe | UVC G5 PTZ (fw 5.1.240, recording) |
 | UniFi G5 PTZ | Front Of House | 192.168.1.182 | 1c:6a:1b:87:8f:55 | UVC G5 PTZ (fw 5.1.240, recording) |
 | UniFi G5 PTZ | Side Yard | 192.168.1.110 | f4:e2:c6:79:a0:a2 | UVC G5 PTZ (fw 5.1.240, recording) |
-| Trolink Camera 1 | WVCABN73I8YL861I | 192.168.1.18 | 30:4a:26:15:bc:69 | WiFi camera |
-| Trolink Camera 2 | WVCABN8ZLH8LFC3B | 192.168.1.21 | 30:4a:26:15:bc:70 | WiFi camera |
-| Trolink Camera 3 | WVCABNUQUXILGOBE | 192.168.1.26 | 30:4a:26:18:c2:8d | WiFi camera |
-| Trolink Camera 4 | WVCB34M3DFFQBTTU | 192.168.1.132 | 68:b9:d3:03:86:0e | WiFi camera |
+| Wansview 1 | WVCABN73I8YL861I | 192.168.1.18 | 30:4a:26:15:bc:69 | Wansview WiFi cam (RTSP verified, offline from LAN) |
+| Wansview 2 | WVCABN8ZLH8LFC3B | 192.168.1.21 | 30:4a:26:15:bc:70 | Wansview WiFi cam (auth OK, no video — offline?) |
+| Wansview 3 | WVCABNUQUXILGOBE | 192.168.1.26 | 30:4a:26:18:c2:8d | Wansview WiFi cam (auth OK, no video — offline?) |
+| Wansview 4 | WVCB34M3DFFQBTTU | 192.168.1.132 | 68:b9:d3:03:86:0e | Wansview WiFi cam (**streaming via go2rtc**) |
 
 **Entertainment & Media:**
 
@@ -1241,7 +1241,54 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 - [x] ~~**Deploy camera streaming**~~ — Deployed 2026-02-07. go2rtc v1.9.14 on Alpaca Mac with 9 streams. Caddy reverse proxy on DO droplet at `cam.alpacaplayhouse.com`. HLS.js frontend at `residents/cameras.html`.
 - [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.102.122.65`. Key expiry disabled.
 - [x] ~~**MediaMTX → go2rtc migration**~~ — MediaMTX crashed on UniFi Protect's malformed SPS NAL units. Switched to go2rtc which handles them perfectly. MediaMTX binary kept at `~/mediamtx/mediamtx.v1.16.0.bak` but service is unloaded.
-- [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located? Can they stream RTSP?
+- [x] ~~**Identify Trolink cameras**~~ — These are Wansview/Trolink cameras (Trolink is Wansview's OEM). RTSP on port 554, ONVIF on port 8899, HTTP on port 80 (Boa web server, hi3510 chipset). Each camera has unique RTSP credentials set via Wansview app (Settings > Local Application > Local Account). Wansview 4 (.132) is streaming via go2rtc. Wansview 1 (.18) verified working via ffprobe but unreachable from Alpaca Mac. Wansview 2 (.21) and 3 (.26) accept auth but send no video data (likely physically offline).
+- [ ] **Get physical locations of Wansview cameras** — Currently named "Wansview 1" through "Wansview 4" as placeholders
+- [ ] **Troubleshoot Wansview 1 (.18)** — RTSP confirmed working via DO droplet but go2rtc on Alpaca Mac gets "host is down". May be a WiFi/ARP issue on the local network.
+- [ ] **Troubleshoot Wansview 2 (.21) and 3 (.26)** — RTSP auth succeeds with all credentials but cameras send no video. Likely powered off or disconnected.
+
+### Wansview Camera Integration
+
+**Brand:** Wansview (Trolink OEM). Cloud account: `alpacaplayhouse@gmail.com`
+**Chipset:** hi3510 (Boa/0.94.13 web server, AJSS/1.0.4 RTSP server)
+**Protocols:** RTSP (port 554), ONVIF (port 8899), HTTP (port 80)
+**RTSP paths:** `/live/ch0` (1920x1080 high), `/live/ch1` (768x432 low)
+**Codec:** H.264 High, 15fps, AAC-LC 8kHz mono audio
+
+**Credentials** (each camera has unique RTSP credentials, set in Wansview app > Settings > Local Application > Local Account):
+
+| Camera | IP | Hostname | RTSP User | RTSP Password | Status |
+|--------|-----|----------|-----------|---------------|--------|
+| Wansview 1 | 192.168.1.18 | WVCABN73I8YL861I | `eVm1DUbw` | `Q9wjylqPseNj0eo5` | go2rtc can't reach (host down from LAN) |
+| Wansview 2 | 192.168.1.21 | WVCABN8ZLH8LFC3B | — | — | Auth passes, no video (offline?) |
+| Wansview 3 | 192.168.1.26 | WVCABNUQUXILGOBE | — | — | Auth passes, no video (offline?) |
+| Wansview 4 | 192.168.1.132 | WVCB34M3DFFQBTTU | `P8oqrztI` | `UhJTMvMjQx8WAxG1` | ✅ **Streaming via go2rtc** |
+
+**Unmatched credentials** (from Wansview app, not yet mapped to a specific camera):
+- `5EZbH9Uf` / `96bcJZg26H6gQj2b`
+- `lHSsv3X9` / `scbevBv1uBW4n9P7`
+- `v0H7TTAR` / `8kRmuNVjy9osqAYS`
+
+**go2rtc streams** (in `scripts/go2rtc/go2rtc.yaml`, deployed to `~/go2rtc/go2rtc.yaml` on Alpaca Mac):
+```yaml
+wansview-1-high:
+  - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch0
+wansview-1-low:
+  - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch1
+wansview-4-high:
+  - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch0
+wansview-4-low:
+  - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch1
+```
+
+**DB entries** (`camera_streams` table):
+- `wansview-1-high` / `wansview-1-low` → "Wansview 1" (high 1920x1080, low 768x432)
+- `wansview-4-high` / `wansview-4-low` → "Wansview 4" (high 1920x1080, low 768x432)
+
+**Key differences from UniFi cameras:**
+- Plain `rtsp://` not `rtspx://` (no TLS)
+- Only 2 quality levels (high/low) vs UniFi's 3 (high/med/low)
+- No PTZ, no snapshots, no IR/LED settings via Protect API
+- Credentials in RTSP URL (UniFi uses token-based paths)
 
 ### TODO: Lighting Catalog
 
@@ -1258,5 +1305,4 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 - [ ] **Enable Govee LAN Control** — Per-device in Govee Home app: Settings → LAN Control → ON (optional, Cloud API works fine)
 - [ ] **Identify 3 Tuya devices** — Check Tuya/Smart Life app for .69, .208, .254
 - [ ] **Identify 4 unknown Amazon devices** — .91, .209, .228, .232 (plugs? Fire sticks?)
-- [ ] **Identify Trolink cameras** — Where are WVCABN* cameras physically located?
 - [ ] **Identify Matter devices** — The 10 Alexa-fabric Matter devices are likely Govee bulbs re-exposed via Alexa's Matter bridge
