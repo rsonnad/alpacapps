@@ -89,40 +89,46 @@ function injectStyles() {
       background: #fff; border-radius: 14px; padding: 0;
       max-width: 520px; width: 94%; max-height: 85vh; overflow-y: auto;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     }
     #vi-modal * { box-sizing: border-box; }
     .vi-header {
       padding: 1.25rem 1.5rem 1rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #e5e7eb;
       display: flex; justify-content: space-between; align-items: flex-start;
+      font-family: inherit;
     }
-    .vi-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: #111; }
+    .vi-header h2 {
+      margin: 0; font-size: 1.5rem; font-weight: 700; color: #111;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
     .vi-header .vi-version-sub {
-      font-size: 0.85rem; color: #666; font-family: monospace; margin-top: 2px;
+      font-size: 0.85rem; color: #666; font-family: ui-monospace, 'SF Mono', Monaco, monospace; margin-top: 2px;
     }
     .vi-close {
       background: none; border: none; font-size: 1.8rem; cursor: pointer;
       color: #999; line-height: 1; padding: 0 0 0 8px; transition: color 0.15s;
     }
     .vi-close:hover { color: #333; }
-    .vi-body { padding: 1rem 1.5rem 1.5rem; }
+    .vi-body { padding: 1rem 1.5rem 1.5rem; font-family: inherit; }
     .vi-section { margin-bottom: 1.25rem; }
     .vi-section:last-child { margin-bottom: 0; }
     .vi-section-title {
       font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex;
       align-items: center; gap: 6px;
+      font-family: inherit;
     }
     .vi-section-title .vi-count {
-      background: #eee; border-radius: 10px; padding: 1px 7px;
+      background: #e5e7eb; border-radius: 10px; padding: 1px 7px;
       font-size: 0.7rem; font-weight: 600;
     }
     .vi-item {
-      padding: 6px 0; border-bottom: 1px solid #f5f5f5;
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 0.9rem; line-height: 1.4;
+      padding: 0.5rem 0.75rem; display: flex; align-items: flex-start; gap: 8px;
+      font-size: 0.9rem; line-height: 1.4; font-family: inherit;
+      background: #fff; border-bottom: 1px solid #f3f4f6;
     }
+    .vi-item:nth-child(even) { background: #f9fafb; }
     .vi-item:last-child { border-bottom: none; }
     .vi-item-icon {
       flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
@@ -136,10 +142,10 @@ function injectStyles() {
     .vi-item-text { flex: 1; min-width: 0; }
     .vi-item-desc { color: #333; word-break: break-word; }
     .vi-item-meta {
-      font-size: 0.75rem; color: #999; font-family: monospace;
+      font-size: 0.75rem; color: #6b7280; font-family: ui-monospace, 'SF Mono', Monaco, monospace;
       margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .vi-empty { font-size: 0.85rem; color: #999; font-style: italic; padding: 4px 0; }
+    .vi-empty { font-size: 0.85rem; color: #9ca3af; font-style: italic; padding: 0.5rem 0.75rem; font-family: inherit; }
     .vi-tooltip {
       position: fixed; background: #1a1a2e; color: #f0f0f0;
       padding: 10px 16px; border-radius: 10px; font-size: 0.95rem;
@@ -351,25 +357,15 @@ export function setupVersionInfo() {
     if (!info) {
       tooltip.innerHTML = '<div class="vi-tooltip-version">Build info unavailable</div>';
     } else {
-      const included = info.included || [];
-      const mainAndBranches = included.map(b => b === 'main' ? 'main' : shortBranch(b));
-      const branchesLine = mainAndBranches.length > 0
-        ? mainAndBranches.join(' · ')
-        : 'main';
-
       const modelLabel = modelDisplayName(info.model);
-      const modelPart = modelLabel ? `Model: <span style="color:#d4883a;">${esc(modelLabel)}</span>` : '';
-      const machinePart = (info.machine || '').trim() ? `Machine: ${esc(info.machine)}` : '';
-      const metaLine = [modelPart, machinePart].filter(Boolean).join(' · ');
-
-      tooltip.innerHTML = `
-        <div class="vi-tooltip-version">${esc(info.version)}</div>
-        <div class="vi-tooltip-stats" style="margin-top:6px;">
-          <strong>Main &amp; included branches:</strong><br>
-          <span style="word-break:break-word;">${esc(branchesLine)}</span>
-        </div>
-        ${metaLine ? `<div class="vi-tooltip-stats" style="margin-top:4px;font-size:0.8rem;color:#9ca3af;">${metaLine}</div>` : ''}
-      `;
+      const machine = (info.machine || '').trim();
+      const lines = [
+        `<div class="vi-tooltip-version">${esc(info.version)}</div>`,
+        modelLabel ? `<div class="vi-tooltip-stats">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span></div>` : '',
+        machine ? `<div class="vi-tooltip-stats">Machine: ${esc(machine)}</div>` : '',
+        '<div class="vi-tooltip-stats" style="margin-top:6px;font-size:0.8rem;color:#9ca3af;">Click for full build details</div>',
+      ].filter(Boolean);
+      tooltip.innerHTML = lines.join('');
     }
     const rect = span.getBoundingClientRect();
     tooltip.style.left = Math.min(rect.left, window.innerWidth - 370) + 'px';

@@ -30,6 +30,11 @@
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'DM Serif Display', Georgia, serif;
+  /* Safe area for notched phones (iOS/Android) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -274,7 +279,10 @@ body {
 
 @media (max-width: 600px) {
   .site-nav {
-    padding: 0.75rem 1rem;
+    padding-top: max(0.75rem, var(--safe-top));
+    padding-right: max(1rem, var(--safe-right));
+    padding-bottom: 0.75rem;
+    padding-left: max(1rem, var(--safe-left));
   }
 
   .site-nav__logo span {
@@ -287,6 +295,18 @@ body {
 
   .site-nav__wordmark {
     display: none;
+  }
+}
+
+/* Mobile nav overlay: safe area for close button and content */
+@media (max-width: 900px) {
+  .site-nav-mobile {
+    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
+  }
+
+  .site-nav-mobile__close {
+    top: max(1rem, var(--safe-top));
+    right: max(1rem, var(--safe-right));
   }
 }
 
@@ -982,7 +1002,18 @@ tr:last-child td {
   max-width: 480px;
   max-height: 90vh;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 16px 48px rgba(42, 31, 35, 0.15), 0 4px 12px rgba(42, 31, 35, 0.08);
+}
+
+@media (max-width: 768px) {
+  .modal {
+    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
+  }
+
+  .modal-content {
+    max-height: min(85vh, calc(100vh - var(--safe-top) - var(--safe-bottom) - 2rem));
+  }
 }
 
 .modal-content.modal-large {
@@ -1506,6 +1537,8 @@ tr:last-child td {
 
   .filters {
     flex-direction: column;
+    padding-left: max(1rem, var(--safe-left));
+    padding-right: max(1rem, var(--safe-right));
   }
 
   .filter-group {
@@ -1517,8 +1550,15 @@ tr:last-child td {
     width: 100%;
   }
 
+  header {
+    padding-top: max(0.75rem, var(--safe-top));
+    padding-right: max(1rem, var(--safe-right));
+    padding-bottom: 0.75rem;
+    padding-left: max(1rem, var(--safe-left));
+  }
+
   main {
-    padding: 1rem;
+    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
   }
 
   .card-grid {

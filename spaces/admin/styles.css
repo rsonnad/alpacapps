@@ -1662,12 +1662,12 @@ body.is-admin .admin-only {
   color: var(--accent);
 }
 
-/* Mobile toast positioning */
+/* Mobile toast positioning (safe area for notched phones) */
 @media (max-width: 768px) {
   .toast-container {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    left: max(1rem, env(safe-area-inset-left, 0px));
   }
 
   .toast {
