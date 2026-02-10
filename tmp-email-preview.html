@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Payment Statement Preview</title></head>
+<body style="background:#f4f4f4;padding:40px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:32px;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:24px;letter-spacing:0.5px;">🦙 Alpaca Playhouse</h1>
+    <p style="color:rgba(255,255,255,0.7);margin:8px 0 0;font-size:14px;">Payment Statement</p>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:32px;">
+    <p style="color:#333;font-size:16px;">Hi Aseem,</p>
+    <p style="color:#555;font-size:15px;">Here's your payment summary for <strong>Master Pasture Suite</strong>.</p>
+
+    <!-- Ledger Table -->
+    <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
+      <thead>
+        <tr>
+          <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</th>
+          <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Description</th>
+          <th style="padding:12px 8px;text-align:right;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Amount</th>
+          <th style="padding:12px 8px;text-align:center;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;">Jan 13</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;">Security Deposit</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;text-align:right;">$350.00</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">Paid</span></td>
+        </tr>
+        <tr>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;">Jan 13</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;">January Rent (Jan 14–31, prorated)</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;text-align:right;">$655.00</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">Paid</span></td>
+        </tr>
+        <tr style="background:#fff8f8;">
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;">Feb 2</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;">Weekly Rent (1st Monday)</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#c62828;text-align:right;font-weight:600;">$299.00</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">Overdue</span></td>
+        </tr>
+        <tr>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;">Feb 16</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;">Weekly Rent (3rd Monday)</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;text-align:right;">$299.00</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">Due Feb 16</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Balance Alert -->
+    <div style="background:linear-gradient(135deg,#fff3e0 0%,#ffe0b2 100%);border-left:4px solid #e65100;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+      <div style="font-size:13px;color:#e65100;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Outstanding Balance</div>
+      <div style="font-size:28px;font-weight:700;color:#bf360c;">$299.00</div>
+      <div style="font-size:13px;color:#e65100;margin-top:4px;">Overdue since February 2, 2026</div>
+    </div>
+
+    <!-- Upcoming -->
+    <div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:16px 20px;margin:0 0 24px;border-radius:0 8px 8px 0;">
+      <span style="font-size:13px;color:#7b1fa2;">⏳ <strong>Next payment:</strong> $299.00 due February 16, 2026</span>
+    </div>
+
+    <!-- CTA Button -->
+    <div style="text-align:center;margin:32px 0;">
+      <a href="https://square.link/u/EXAMPLE" style="display:inline-block;background:linear-gradient(135deg,#e65100 0%,#bf360c 100%);color:white;padding:16px 48px;text-decoration:none;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">Pay $299.00 Now</a>
+    </div>
+
+    <!-- Payment Methods -->
+    <div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
+      <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">Other Payment Methods:</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;">
+            <span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span>
+            <strong style="margin-left:8px;">@rahuliox</strong>
+            <span style="color:#888;font-size:12px;margin-left:4px;">(last 4: 7096)</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;">
+            <span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span>
+            <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;">
+            <span style="display:inline-block;background:#003087;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">PayPal</span>
+            <strong style="margin-left:8px;">rahulioson@gmail.com</strong>
+            <span style="color:#888;font-size:12px;margin-left:4px;">(Friends & Family)</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;">
+            <span style="display:inline-block;background:#333;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Bank</span>
+            <span style="margin-left:8px;color:#666;">Contact us for ACH/wire details</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="font-size:13px;color:#999;margin-top:16px;">Please include your name and "rent" in the payment memo so we can match your payment automatically.</p>
+    <p style="color:#555;font-size:15px;">If you have any questions about your statement, just reply to this email.</p>
+    <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0;">
+    <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
+    <p style="margin:4px 0 0;color:#bbb;font-size:11px;">GenAlpaca Residency • Alpaca Playhouse</p>
+  </div>
+
+</div>
+</body>
+</html>
