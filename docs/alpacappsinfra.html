@@ -746,7 +746,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260209.77 7:56a</span>
+<span data-site-version style="display:none;">v260209.79 10:23p</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1585,20 +1585,13 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
       <li><strong>Inline login</strong> &mdash; Capacitor WebView can't handle multi-page redirects, so the mobile app uses an inline login form instead of a separate login page</li>
     </ul>
 
-    <h3>App Store Costs</h3>
-    <table>
-      <thead><tr><th>Platform</th><th>Cost</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>Apple App Store</td><td>$99/year</td><td>Apple Developer Program membership</td></tr>
-        <tr><td>Google Play Store</td><td>$25 one-time</td><td>Google Play Console registration</td></tr>
-        <tr><td>Capgo OTA</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 devices, 4 GB bandwidth</td></tr>
-      </tbody>
-    </table>
   </div>
 
   <!-- Cost Summary -->
   <div class="section">
     <h2>Cost Summary</h2>
+
+    <h3>Infrastructure</h3>
     <table>
       <thead><tr><th>Service</th><th>Monthly Cost</th><th>Notes</th></tr></thead>
       <tbody>
@@ -1610,12 +1603,23 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
         <tr><td>SignWell</td><td><span class="cost-badge cost-free">$0</span></td><td>3&ndash;25 docs/month free</td></tr>
         <tr><td>Google Gemini</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier available</td></tr>
         <tr><td>Custom domain</td><td><span class="cost-badge cost-payg">~$1</span></td><td>~$10/year, optional</td></tr>
-        <tr><td>Mobile App (Capacitor)</td><td><span class="cost-badge cost-free">$0</span></td><td>Free to develop. App Store: $99/yr (Apple) + $25 one-time (Google)</td></tr>
         <tr><td><strong>Claude Code</strong></td><td><span class="cost-badge cost-payg">$0&ndash;$200</span></td><td>Free tier available. Pro $20, Max $100, Max+ $200 for intensive development</td></tr>
       </tbody>
     </table>
+
+    <h3>Mobile App</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Capacitor (development)</td><td><span class="cost-badge cost-free">$0</span></td><td>Open source, free to develop</td></tr>
+        <tr><td>Apple App Store</td><td><span class="cost-badge cost-payg">$99/year</span></td><td>Apple Developer Program membership</td></tr>
+        <tr><td>Google Play Store</td><td><span class="cost-badge cost-payg">$25 one-time</span></td><td>Google Play Console registration</td></tr>
+        <tr><td>Capgo OTA Updates</td><td><span class="cost-badge cost-free">$0</span></td><td>Free tier: 500 devices, 4 GB bandwidth</td></tr>
+      </tbody>
+    </table>
+
     <div class="callout success">
-      <strong>$0/month for the infrastructure.</strong> Claude Code is free to start, or $20/month (Pro) for more usage. For intensive development, the $100 or $200 plans are available. SMS and payments are pay-as-you-go with no minimums.
+      <strong>$0/month for the infrastructure.</strong> Claude Code is free to start, or $20/month (Pro) for more usage. For intensive development, the $100 or $200 plans are available. SMS and payments are pay-as-you-go with no minimums. Mobile app distribution adds $99/year (Apple) + $25 one-time (Google).
     </div>
   </div>
 
