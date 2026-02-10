@@ -5189,21 +5189,24 @@ span.sonos-library-item__star.starred {
 
 .device-section__label {
   flex-shrink: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .device-section__count {
+  margin-left: auto;
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
   background: var(--bg, #f5f5f5);
   padding: 0.15rem 0.5rem;
   border-radius: 10px;
+  white-space: nowrap;
 }
 
 .device-section__link {
-  margin-left: auto;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--accent, #d4883a);
   text-decoration: none;
   white-space: nowrap;
@@ -5308,7 +5311,7 @@ span.sonos-library-item__star.starred {
   }
 
   .device-section__link {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
   }
 
   .device-table {

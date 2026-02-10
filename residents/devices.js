@@ -327,15 +327,21 @@ async function renderInventory() {
   if (!container) return;
   container.innerHTML = '<p class="text-muted" style="padding:1rem">Loading devices...</p>';
 
-  // Fetch all device data in parallel
-  const [cameras, lighting, sonos, climate, vehicles, laundry] = await Promise.all([
-    fetchCameras(),
-    fetchLighting(),
-    fetchSonos(),
-    fetchClimate(),
-    fetchVehicles(),
-    fetchLaundry(),
-  ]);
+  let cameras, lighting, sonos, climate, vehicles, laundry;
+  try {
+    [cameras, lighting, sonos, climate, vehicles, laundry] = await Promise.all([
+      fetchCameras(),
+      fetchLighting(),
+      fetchSonos(),
+      fetchClimate(),
+      fetchVehicles(),
+      fetchLaundry(),
+    ]);
+  } catch (e) {
+    console.error('Device inventory fetch error:', e);
+    container.innerHTML = '<p class="text-muted" style="padding:1rem">Error loading devices. Check console.</p>';
+    return;
+  }
 
   const totalDevices = cameras.length
     + lighting.reduce((s, g) => s + g.deviceCount, 0)
