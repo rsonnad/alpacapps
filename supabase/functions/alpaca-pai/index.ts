@@ -9,6 +9,7 @@ import { getAppUserWithPermission } from "../_shared/permissions.ts";
 interface PaiRequest {
   message: string;
   conversationHistory?: Array<{ role: "user" | "model"; text: string }>;
+  impersonate_user_id?: string;
 }
 
 interface UserScope {
@@ -44,6 +45,7 @@ interface UserScope {
     name: string;
     location: string;
   }>;
+  spaceAccessCodes: Record<string, string>;
 }
 
 // =============================================
@@ -139,7 +141,7 @@ async function buildUserScope(
       : Promise.resolve({ data: null }),
     supabase
       .from("spaces")
-      .select("id, parent_id, can_be_dwelling")
+      .select("id, name, parent_id, can_be_dwelling, access_code")
       .eq("is_archived", false),
   ]);
 
@@ -229,6 +231,18 @@ async function buildUserScope(
     return true;
   });
 
+  // Build access code map for spaces the user can access
+  const spaceAccessCodes: Record<string, string> = {};
+  for (const s of allSpaces) {
+    if (!s.access_code) continue;
+    if (userLevel >= 2) {
+      // Staff+ see all codes
+      spaceAccessCodes[s.name] = s.access_code;
+    } else if (allAccessibleSpaceIds.includes(s.id)) {
+      spaceAccessCodes[s.name] = s.access_code;
+    }
+  }
+
   return {
     role: appUser.role,
     userLevel,
@@ -261,6 +275,7 @@ async function buildUserScope(
       name: c.camera_name,
       location: c.location,
     })),
+    spaceAccessCodes,
   };
 }
 
@@ -418,6 +433,16 @@ SPACES:
 - Each space has structured amenities (e.g. hi-fi sound, A/C, jacuzzi tub, fireplace, smart lighting, balcony)
 - Use the search_spaces tool to answer questions about availability, pricing, amenities, or room details — do NOT guess.
 - Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
+
+  // Access codes
+  const codeEntries = Object.entries(scope.spaceAccessCodes);
+  if (codeEntries.length) {
+    parts.push(`\nACCESS CODES FOR YOUR SPACES:`);
+    for (const [spaceName, code] of codeEntries) {
+      parts.push(`- ${spaceName}: ${code}`);
+    }
+    parts.push(`Only share these codes with the person asking. These are private to their assigned spaces.`);
+  }
 
   // Document library
   parts.push(`\nDOCUMENT LIBRARY:
@@ -1935,6 +1960,30 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     }
     appUser = au;
     userLevel = ROLE_LEVEL[appUser?.role] ?? 0;
+  }
+
+  // Impersonation: admin with impersonate_user permission can test as another user
+  const impersonateUserId = body.impersonate_user_id;
+  if (impersonateUserId) {
+    const callerLevel = ROLE_LEVEL[appUser?.role] ?? 0;
+    if (callerLevel < 3) {
+      return jsonResponse({ error: "Only admins can impersonate users" }, 403);
+    }
+    const { hasPermission: canImpersonate } = await getAppUserWithPermission(supabase, (await supabase.auth.getUser(token)).data?.user?.id, "impersonate_user");
+    if (!canImpersonate) {
+      return jsonResponse({ error: "Missing impersonate_user permission" }, 403);
+    }
+    const { data: targetUser } = await supabase
+      .from("app_users")
+      .select("id, role, display_name, email, person_id")
+      .eq("id", impersonateUserId)
+      .single();
+    if (!targetUser) {
+      return jsonResponse({ error: "Target user not found" }, 404);
+    }
+    console.log(`PAI impersonation: ${appUser.display_name} (${appUser.role}) → ${targetUser.display_name} (${targetUser.role})`);
+    appUser = targetUser;
+    userLevel = ROLE_LEVEL[targetUser.role] ?? 0;
   }
 
   console.log(`PAI ${isEmailChannel ? "email" : "chat"} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);

@@ -1,7 +1,7 @@
 // FAQ Management Page
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { getAuthState } from '../../shared/auth.js';
+import { getAuthState, hasPermission } from '../../shared/auth.js';
 import { askQuestion } from '../../shared/chat-widget.js';
 
 // State
@@ -11,6 +11,12 @@ let contextMeta = null;
 let contextEntries = [];
 let voiceAssistant = null;
 let voiceCallStats = null;
+
+// Impersonation state
+let appUsersList = [];
+let impersonateTarget = null; // { id, display_name, email, role }
+let impersonateFiltered = [];
+let impersonateIndex = -1;
 
 // Check if running in embed mode (inside iframe)
 const isEmbed = new URLSearchParams(window.location.search).has('embed');
@@ -49,14 +55,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadData() {
-  await Promise.all([
+  const loads = [
     loadFaqEntries(),
     loadContextLinks(),
     loadContextMeta(),
     loadContextEntries(),
     loadVoiceAssistant()
-  ]);
+  ];
+  if (hasPermission('impersonate_user')) {
+    loads.push(loadAppUsers());
+  }
+  await Promise.all(loads);
   renderAll();
+  setupImpersonation();
 }
 
 async function loadFaqEntries() {
@@ -112,6 +123,148 @@ async function loadContextEntries() {
   contextEntries = data || [];
 }
 
+async function loadAppUsers() {
+  const { data, error } = await supabase
+    .from('app_users')
+    .select('id, email, display_name, role')
+    .order('display_name');
+  if (error) {
+    console.error('Error loading app users:', error);
+    return;
+  }
+  appUsersList = data || [];
+}
+
+function setupImpersonation() {
+  if (!hasPermission('impersonate_user') || !appUsersList.length) return;
+
+  const row = document.getElementById('impersonationRow');
+  if (!row) return;
+  row.classList.remove('hidden');
+
+  const input = document.getElementById('impersonateInput');
+  const dropdown = document.getElementById('impersonateDropdown');
+  const clearBtn = document.getElementById('impersonateClearBtn');
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    impersonateIndex = -1;
+    if (q.length < 1) { dropdown.classList.add('hidden'); return; }
+    impersonateFiltered = appUsersList.filter(u => {
+      const full = `${u.display_name || ''} ${u.email || ''}`.toLowerCase();
+      return full.includes(q);
+    }).slice(0, 8);
+    if (!impersonateFiltered.length) { dropdown.classList.add('hidden'); return; }
+    renderImpersonateDropdown();
+    dropdown.classList.remove('hidden');
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (dropdown.classList.contains('hidden')) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      impersonateIndex = Math.min(impersonateIndex + 1, impersonateFiltered.length - 1);
+      renderImpersonateDropdown();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      impersonateIndex = Math.max(impersonateIndex - 1, -1);
+      renderImpersonateDropdown();
+    } else if (e.key === 'Enter' && impersonateIndex >= 0) {
+      e.preventDefault();
+      selectImpersonateUser(impersonateFiltered[impersonateIndex]);
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.impersonation-input-wrap')) dropdown.classList.add('hidden');
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim().length >= 1 && impersonateFiltered.length) dropdown.classList.remove('hidden');
+  });
+
+  clearBtn.addEventListener('click', clearImpersonation);
+}
+
+function renderImpersonateDropdown() {
+  const dropdown = document.getElementById('impersonateDropdown');
+  dropdown.innerHTML = impersonateFiltered.map((u, i) => `
+    <div class="impersonation-dropdown-item ${i === impersonateIndex ? 'active' : ''}" data-index="${i}">
+      <span>
+        <span class="imp-name">${escapeHtml(u.display_name || u.email)}</span>
+        <span class="imp-email">${u.display_name ? escapeHtml(u.email) : ''}</span>
+      </span>
+      <span class="imp-role">${u.role}</span>
+    </div>
+  `).join('');
+  dropdown.querySelectorAll('.impersonation-dropdown-item').forEach(item => {
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      selectImpersonateUser(impersonateFiltered[parseInt(item.dataset.index)]);
+    });
+  });
+}
+
+function selectImpersonateUser(user) {
+  impersonateTarget = user;
+  const input = document.getElementById('impersonateInput');
+  const dropdown = document.getElementById('impersonateDropdown');
+  const clearBtn = document.getElementById('impersonateClearBtn');
+  const chip = document.getElementById('impersonateChip');
+  const chipName = document.getElementById('impersonateChipName');
+  const chipRole = document.getElementById('impersonateChipRole');
+  const modeLabel = document.getElementById('testModeLabel');
+
+  input.value = '';
+  input.placeholder = user.display_name || user.email;
+  dropdown.classList.add('hidden');
+  clearBtn.classList.remove('hidden');
+  chip.classList.remove('hidden');
+  chipName.textContent = user.display_name || user.email;
+  chipRole.textContent = user.role;
+  modeLabel.textContent = `Testing as ${user.role}`;
+  impersonateFiltered = [];
+  impersonateIndex = -1;
+}
+
+function clearImpersonation() {
+  impersonateTarget = null;
+  const input = document.getElementById('impersonateInput');
+  const clearBtn = document.getElementById('impersonateClearBtn');
+  const chip = document.getElementById('impersonateChip');
+  const modeLabel = document.getElementById('testModeLabel');
+
+  input.value = '';
+  input.placeholder = 'Anonymous (contact page)';
+  clearBtn.classList.add('hidden');
+  chip.classList.add('hidden');
+  modeLabel.textContent = 'Same as contact page';
+}
+
+async function askViaPai(question, impersonateUserId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Not authenticated');
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/alpaca-pai`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      message: question,
+      impersonate_user_id: impersonateUserId,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'PAI request failed');
+  return { answer: data.reply || data.answer || data.text || JSON.stringify(data), confident: true };
+}
+
 function setupEventListeners() {
   document.getElementById('recompileBtn').addEventListener('click', recompileContext);
   document.getElementById('addFaqBtn').addEventListener('click', () => openFaqModal());
@@ -152,26 +305,38 @@ async function handleTestQuestion() {
   confidenceMeta.classList.remove('visible');
 
   try {
-    const result = await askQuestion(question);
+    let result;
+    if (impersonateTarget) {
+      // Route through PAI with impersonation
+      result = await askViaPai(question, impersonateTarget.id);
+    } else {
+      // Anonymous: use public ask-question endpoint
+      result = await askQuestion(question);
+    }
 
     answerText.textContent = result.answer;
     answerContainer.classList.add('visible');
 
     // Show confidence indicator
     confidenceMeta.classList.add('visible');
-    if (result.confident) {
+    if (impersonateTarget) {
+      // PAI doesn't have confidence scoring — show the impersonated user context
+      confidenceLabel.innerHTML = `<span class="confidence-badge confidence-badge--high">PAI</span> <span style="font-size:0.75rem;color:var(--text-muted)">as ${escapeHtml(impersonateTarget.display_name || impersonateTarget.email)} (${impersonateTarget.role})</span>`;
+    } else if (result.confident) {
       confidenceLabel.innerHTML = '<span class="confidence-badge confidence-badge--high">HIGH CONFIDENCE</span>';
     } else {
       confidenceLabel.innerHTML = '<span class="confidence-badge confidence-badge--low">LOW CONFIDENCE</span>';
       lowConfidence.classList.add('visible');
     }
 
-    // Refresh question log since the edge function logs the question
-    await loadFaqEntries();
-    renderQuestionLog();
-    renderPendingQuestions();
-    const countBadge = document.getElementById('questionLogCount');
-    if (countBadge) countBadge.textContent = faqEntries.filter(e => e.source === 'auto').length;
+    // Refresh question log since the edge function logs the question (only for anonymous)
+    if (!impersonateTarget) {
+      await loadFaqEntries();
+      renderQuestionLog();
+      renderPendingQuestions();
+      const countBadge = document.getElementById('questionLogCount');
+      if (countBadge) countBadge.textContent = faqEntries.filter(e => e.source === 'auto').length;
+    }
   } catch (error) {
     answerText.textContent = 'Error: ' + (error.message || 'Failed to get a response. Check console for details.');
     answerContainer.classList.add('visible');

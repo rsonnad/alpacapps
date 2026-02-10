@@ -39,7 +39,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.49 3:40p</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.51 3:50p</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -61,10 +61,24 @@
       <div class="section test-ai-section">
         <div class="section-header">
           <h2>Test AI Assistant</h2>
-          <span class="test-ai-label">Same as contact page</span>
+          <span id="testModeLabel" class="test-ai-label">Same as contact page</span>
         </div>
         <div class="section-body">
           <p class="context-description">Ask a question to test the AI assistant exactly as visitors would experience it on the contact page.</p>
+
+          <!-- User Impersonation (admin only) -->
+          <div id="impersonationRow" class="impersonation-row hidden">
+            <label class="impersonation-label">Test as:</label>
+            <div class="impersonation-input-wrap">
+              <input type="text" id="impersonateInput" class="impersonation-input" placeholder="Anonymous (contact page)" autocomplete="off">
+              <div id="impersonateDropdown" class="impersonation-dropdown hidden"></div>
+            </div>
+            <button id="impersonateClearBtn" class="btn-small btn-secondary impersonation-clear hidden">Clear</button>
+          </div>
+          <div id="impersonateChip" class="impersonate-chip hidden">
+            <span id="impersonateChipName"></span>
+            <span id="impersonateChipRole" class="impersonate-chip-role"></span>
+          </div>
 
           <div class="test-question-wrapper">
             <input type="text" id="testQuestionInput" class="test-question-input" placeholder="What would you like to know?" autocomplete="off">
