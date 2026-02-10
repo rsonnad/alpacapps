@@ -15,7 +15,7 @@ import { setupVersionInfo } from './version-info.js';
 // Permission keys for staff/admin section detection (context switcher)
 const STAFF_PERMISSION_KEYS = [
   'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_hours', 'view_faq', 'view_voice', 'view_todo',
+  'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_projects',
 ];
 const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
@@ -23,6 +23,7 @@ const ADMIN_PERMISSION_KEYS = [
 
 const ASSOCIATE_TABS = [
   { id: 'hours', label: 'Work Planning', href: 'worktracking.html' },
+  { id: 'projects', label: 'Projects', href: 'projects.html' },
 ];
 
 // =============================================

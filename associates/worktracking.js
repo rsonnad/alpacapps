@@ -8,6 +8,7 @@ import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-s
 import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
 import { identityService } from '../shared/identity-service.js';
+import { projectService } from '../shared/project-service.js';
 
 // =============================================
 // STATE
@@ -131,6 +132,11 @@ function getSelectedSpaceId() {
   return val && val !== 'other' ? val : null;
 }
 
+function getSelectedTaskId() {
+  const sel = document.getElementById('taskSelector');
+  return sel ? (sel.value || null) : null;
+}
+
 // =============================================
 // CLOCK IN/OUT
 // =============================================
@@ -175,7 +181,7 @@ async function handleClockIn() {
   btn.disabled = true;
   try {
     const loc = await getLocation();
-    activeEntry = await hoursService.clockIn(profile.id, { ...(loc || {}), spaceId: getSelectedSpaceId() });
+    activeEntry = await hoursService.clockIn(profile.id, { ...(loc || {}), spaceId: getSelectedSpaceId(), taskId: getSelectedTaskId() });
     showToast('Clocked in!', 'success');
     updateClockUI();
     await refreshToday();
@@ -726,7 +732,8 @@ async function handleManualSubmit() {
       description: description || null,
       manualReason,
       hourlyRate: profile.hourly_rate,
-      spaceId: getSelectedSpaceId()
+      spaceId: getSelectedSpaceId(),
+      taskId: getSelectedTaskId()
     });
     showToast('Manual entry added!', 'success');
     closeManualModal();

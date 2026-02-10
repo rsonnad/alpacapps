@@ -1331,7 +1331,7 @@ Review in Admin: ${data.admin_url}`
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #1a1a2e; padding: 20px; border-radius: 12px 12px 0 0;">
               <h2 style="color: #e0d68a; margin: 0;">PAI</h2>
-              <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Property AI Assistant</p>
+              <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Prompt Alpaca Intelligence</p>
             </div>
             <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
               <div style="white-space: pre-wrap; line-height: 1.6;">${data.reply_body || ''}</div>
@@ -1346,7 +1346,7 @@ Review in Admin: ${data.admin_url}`
             </p>
           </div>
         `,
-        text: `PAI - Property AI Assistant
+        text: `PAI - Prompt Alpaca Intelligence
 
 ${data.reply_body || ''}
 

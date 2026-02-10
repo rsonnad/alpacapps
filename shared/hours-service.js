@@ -164,7 +164,7 @@ class HoursService {
   /**
    * Clock in — create a new time entry
    */
-  async clockIn(associateId, { lat, lng, spaceId } = {}) {
+  async clockIn(associateId, { lat, lng, spaceId, taskId } = {}) {
     // Get current rate from profile
     const { data: profile, error: profileErr } = await supabase
       .from('associate_profiles')
@@ -180,7 +180,8 @@ class HoursService {
       hourly_rate: profile.hourly_rate,
       clock_in_lat: lat || null,
       clock_in_lng: lng || null,
-      space_id: spaceId || null
+      space_id: spaceId || null,
+      task_id: taskId || null
     };
 
     const { data, error } = await supabase
@@ -236,7 +237,7 @@ class HoursService {
    * Create a manual time entry (not from live clock in/out)
    * Used by both associate page (with manualReason) and admin page (without)
    */
-  async createManualEntry(associateId, { clockIn, clockOut, description, manualReason, hourlyRate, spaceId } = {}) {
+  async createManualEntry(associateId, { clockIn, clockOut, description, manualReason, hourlyRate, spaceId, taskId } = {}) {
     const ciDate = new Date(clockIn);
     const coDate = clockOut ? new Date(clockOut) : null;
     const durationMinutes = coDate ? Math.round((coDate - ciDate) / 60000) : null;
@@ -263,7 +264,8 @@ class HoursService {
       description: description || null,
       is_manual: true,
       manual_reason: manualReason || null,
-      space_id: spaceId || null
+      space_id: spaceId || null,
+      task_id: taskId || null
     };
 
     const { data, error } = await supabase
@@ -318,7 +320,7 @@ class HoursService {
   async getAllEntries({ dateFrom, dateTo, associateId, isPaid } = {}) {
     let query = supabase
       .from('time_entries')
-      .select('*, associate:associate_id(id, app_user_id, hourly_rate, payment_method, payment_handle, app_user:app_user_id(id, email, display_name, first_name, last_name)), space:space_id(id, name)')
+      .select('*, associate:associate_id(id, app_user_id, hourly_rate, payment_method, payment_handle, app_user:app_user_id(id, email, display_name, first_name, last_name)), space:space_id(id, name), task:task_id(id, title)')
       .order('clock_in', { ascending: false });
 
     if (dateFrom) query = query.gte('clock_in', `${dateFrom}T00:00:00`);
