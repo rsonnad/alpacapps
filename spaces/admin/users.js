@@ -896,6 +896,7 @@ let permModalUserId = null;
 let permModalUserRole = null;
 let permModalRoleDefaults = new Set();
 let permModalOverrides = new Map(); // key → boolean (granted)
+let allRoleMappings = null; // permission_key → [roles], cached across modal opens
 
 async function showPermissionsModal(userId) {
   const user = users.find(u => u.id === userId);
@@ -909,16 +910,29 @@ async function showPermissionsModal(userId) {
   badge.textContent = user.role;
   badge.className = 'role-badge ' + user.role;
 
-  // Fetch all permissions, role defaults, and user overrides in parallel
-  const [allPermsResult, roleDefaultsResult, userOverridesResult] = await Promise.all([
+  // Fetch all permissions, role defaults, user overrides, and all role mappings in parallel
+  const fetches = [
     supabase.from('permissions').select('*').order('category').order('sort_order'),
     supabase.from('role_permissions').select('permission_key').eq('role', user.role),
     supabase.from('user_permissions').select('permission_key, granted').eq('app_user_id', userId),
-  ]);
+  ];
+  // Cache all role mappings (only fetch once per page load)
+  if (!allRoleMappings) {
+    fetches.push(supabase.from('role_permissions').select('permission_key, role'));
+  }
 
-  const allPerms = allPermsResult.data || [];
-  permModalRoleDefaults = new Set((roleDefaultsResult.data || []).map(r => r.permission_key));
-  permModalOverrides = new Map((userOverridesResult.data || []).map(o => [o.permission_key, o.granted]));
+  const results = await Promise.all(fetches);
+  const allPerms = results[0].data || [];
+  permModalRoleDefaults = new Set((results[1].data || []).map(r => r.permission_key));
+  permModalOverrides = new Map((results[2].data || []).map(o => [o.permission_key, o.granted]));
+
+  if (results[3]) {
+    allRoleMappings = {};
+    for (const row of (results[3].data || [])) {
+      if (!allRoleMappings[row.permission_key]) allRoleMappings[row.permission_key] = [];
+      allRoleMappings[row.permission_key].push(row.role);
+    }
+  }
 
   // Group by category
   const categories = {};
@@ -927,28 +941,30 @@ async function showPermissionsModal(userId) {
     categories[perm.category].push(perm);
   }
 
+  const roleOrder = ['associate', 'resident', 'staff', 'admin', 'oracle'];
+  const roleAbbrev = { associate: 'assoc', resident: 'res', staff: 'staff', admin: 'admin', oracle: 'oracle' };
+
   let html = '';
   for (const [cat, perms] of Object.entries(categories)) {
-    html += `<div class="perm-category"><h4>${CATEGORY_LABELS[cat] || cat}</h4><div class="perm-grid">`;
+    html += `<div class="perm-section-label">${CATEGORY_LABELS[cat] || cat}</div>`;
+    html += '<table class="perm-table">';
     for (const perm of perms) {
       const isRoleDefault = permModalRoleDefaults.has(perm.key);
       const override = permModalOverrides.get(perm.key);
       const isEffective = override !== undefined ? override : isRoleDefault;
       const stateClass = override === true ? 'perm-granted' :
-                         override === false ? 'perm-revoked' :
-                         'perm-default';
-      const overrideBadge = override === true ? '<span class="perm-override-badge">Added</span>' :
-                            override === false ? '<span class="perm-override-badge">Revoked</span>' : '';
+                         override === false ? 'perm-revoked' : '';
+      const roles = (allRoleMappings[perm.key] || []).sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b));
+      const rolesHtml = roles.map(r => `<span class="perm-role-chip">${roleAbbrev[r] || r}</span>`).join('');
 
-      html += `
-        <label class="perm-item ${stateClass}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
-          <input type="checkbox" ${isEffective ? 'checked' : ''}
-                 onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})">
-          <span class="perm-label">${perm.label}</span>
-          ${overrideBadge}
-        </label>`;
+      html += `<tr class="${stateClass}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
+        <td class="pt-check"><input type="checkbox" ${isEffective ? 'checked' : ''} onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})"></td>
+        <td class="pt-name">${perm.label}</td>
+        <td class="pt-desc">${perm.description || ''}</td>
+        <td class="pt-roles">${rolesHtml}</td>
+      </tr>`;
     }
-    html += '</div></div>';
+    html += '</table>';
   }
 
   document.getElementById('permissionCategories').innerHTML = html;
@@ -957,35 +973,20 @@ async function showPermissionsModal(userId) {
 
 function togglePermOverride(checkbox, key, isRoleDefault) {
   const isChecked = checkbox.checked;
-  const label = checkbox.closest('.perm-item');
+  const row = checkbox.closest('tr');
 
   if (isRoleDefault && isChecked) {
-    // Matches role default — remove override
     permModalOverrides.delete(key);
-    label.className = 'perm-item perm-default';
+    row.className = '';
   } else if (isRoleDefault && !isChecked) {
-    // Revoking a role default
     permModalOverrides.set(key, false);
-    label.className = 'perm-item perm-revoked';
+    row.className = 'perm-revoked';
   } else if (!isRoleDefault && isChecked) {
-    // Granting beyond role defaults
     permModalOverrides.set(key, true);
-    label.className = 'perm-item perm-granted';
+    row.className = 'perm-granted';
   } else if (!isRoleDefault && !isChecked) {
-    // Matches role default (not in defaults, not checked) — remove override
     permModalOverrides.delete(key);
-    label.className = 'perm-item perm-default';
-  }
-
-  // Update override badge
-  const existingBadge = label.querySelector('.perm-override-badge');
-  if (existingBadge) existingBadge.remove();
-
-  const override = permModalOverrides.get(key);
-  if (override === true) {
-    label.insertAdjacentHTML('beforeend', '<span class="perm-override-badge">Added</span>');
-  } else if (override === false) {
-    label.insertAdjacentHTML('beforeend', '<span class="perm-override-badge">Revoked</span>');
+    row.className = '';
   }
 }
 
