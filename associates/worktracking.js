@@ -3,7 +3,7 @@
  * Clock in/out, view history, upload work photos, manage payment preferences
  */
 import { supabase } from '../shared/supabase.js';
-import { initAuth, getAuthState, signOut, onAuthStateChange } from '../shared/auth.js';
+import { initAssociatePage, showToast as shellShowToast } from '../shared/associate-shell.js';
 import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-service.js';
 import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
@@ -26,49 +26,15 @@ let scheduleLoaded = false;
 // =============================================
 // INITIALIZATION
 // =============================================
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await initAuth();
-    authState = getAuthState();
-    if (!authState?.appUser) {
-      showAuthScreen();
-      return;
-    }
+initAssociatePage({
+  activeTab: 'hours',
+  onReady: async (state) => {
+    authState = state;
     await initApp();
-  } catch (err) {
-    console.error('Init failed:', err);
-    showAuthScreen();
   }
-
-  onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_OUT') {
-      showAuthScreen();
-    } else if (event === 'SIGNED_IN' && session) {
-      authState = getAuthState();
-      if (authState?.appUser) await initApp();
-    }
-  });
 });
 
-function showAuthScreen() {
-  window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
-}
-
 async function initApp() {
-  const role = authState.appUser?.role;
-  if (!['associate', 'staff', 'admin'].includes(role)) {
-    showAuthScreen();
-    showToast('Your account is not authorized for hours tracking', 'error');
-    return;
-  }
-
-  document.getElementById('authScreen').classList.add('hidden');
-  document.getElementById('loadingOverlay').classList.add('hidden');
-  document.getElementById('appContent').classList.remove('hidden');
-
-  document.getElementById('userName').textContent =
-    authState.appUser?.display_name || authState.appUser?.first_name || authState.email || '';
-
   // Get or create associate profile
   try {
     profile = await hoursService.getOrCreateProfile(authState.appUser.id);
@@ -626,12 +592,6 @@ async function savePaymentPref() {
 // EVENT LISTENERS
 // =============================================
 function setupEventListeners() {
-  // Sign out
-  document.getElementById('btnSignOut').addEventListener('click', async () => {
-    await signOut();
-    showAuthScreen();
-  });
-
   // Tab switching
   document.querySelectorAll('.tabs button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1136,17 +1096,10 @@ async function refreshCoworkers() {
 }
 
 // =============================================
-// TOAST
+// TOAST (delegates to associate-shell.js)
 // =============================================
 function showToast(message, type = 'info', duration = 4000) {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">&times;</button>`;
-  container.appendChild(toast);
-  if (duration > 0) {
-    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, duration);
-  }
+  shellShowToast(message, type, duration);
 }
 
 // =============================================
