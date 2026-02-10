@@ -6,6 +6,7 @@
 
 import { initResidentPage } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
+import { loadZones } from '../shared/services/sonos-data.js';
 
 const COLLAPSE_KEY = 'devices-collapsed';
 
@@ -104,14 +105,53 @@ async function fetchLighting() {
 }
 
 async function fetchSonos() {
+  // Try live Sonos API first for real-time playback info
+  try {
+    const zoneGroups = await loadZones();
+    if (zoneGroups.length > 0) {
+      // Flatten zone groups into individual zone rows
+      const zones = [];
+      for (const group of zoneGroups) {
+        const state = group.coordinatorState || {};
+        const track = state.currentTrack || {};
+        const playback = state.playbackState || 'STOPPED';
+        for (const member of group.members || []) {
+          zones.push({
+            room_name: member.roomName,
+            playbackState: member.isCoordinator ? playback : playback,
+            volume: member.volume,
+            mute: member.mute,
+            trackTitle: track.title || '',
+            trackArtist: track.artist || '',
+            isCoordinator: member.isCoordinator,
+            coordinatorName: group.coordinatorName,
+          });
+        }
+      }
+      return zones;
+    }
+  } catch (e) { console.warn('Sonos live fetch failed, falling back to DB:', e); }
+
+  // Fallback: load from DB (sonos_zones table)
   try {
     const { data, error } = await supabase
       .from('sonos_zones')
       .select('*')
       .eq('is_active', true)
       .order('display_order');
-    if (error) { console.warn('Sonos fetch error:', error); return []; }
-    return data || [];
+    if (error) { console.warn('Sonos DB fetch error:', error); return []; }
+    // Reshape DB rows to match live format
+    return (data || []).map(z => {
+      const st = z.last_state || {};
+      return {
+        room_name: z.room_name,
+        playbackState: st.playbackState || 'STOPPED',
+        volume: st.volume,
+        mute: st.mute,
+        trackTitle: st.trackTitle || '',
+        trackArtist: st.trackArtist || '',
+      };
+    });
   } catch (e) { console.warn('Sonos fetch failed:', e); return []; }
 }
 
@@ -178,16 +218,29 @@ function renderLightingRows(groups) {
 }
 
 function renderSonosRows(zones) {
-  if (!zones.length) return emptyRow(3, 'No zones synced yet');
-  return zones.map(z => {
-    const st = z.last_state || {};
-    const playback = st.playbackState || '—';
-    const vol = st.volume != null ? `${st.volume}%` : '—';
+  if (!zones.length) return emptyRow(4, 'No zones — Sonos API unavailable');
+  // Sort: playing first
+  const sorted = [...zones].sort((a, b) => {
+    const playing = x => x.playbackState === 'PLAYING' ? 0 : 1;
+    return playing(a) - playing(b);
+  });
+  return sorted.map(z => {
+    const isPlaying = z.playbackState === 'PLAYING';
+    const isPaused = z.playbackState === 'PAUSED_PLAYBACK';
+    const rowClass = isPlaying ? 'dt-row-playing' : (isPaused ? 'dt-row-paused' : 'dt-row-idle');
+    const vol = z.volume != null ? `${z.volume}%` : '—';
+    const stateLabel = isPlaying ? 'Playing' : isPaused ? 'Paused' : 'Idle';
+    let nowPlaying = '—';
+    if (z.trackTitle) {
+      nowPlaying = esc(z.trackTitle);
+      if (z.trackArtist) nowPlaying += ` <span class="dt-secondary">— ${esc(z.trackArtist)}</span>`;
+    }
     return `
-      <tr>
+      <tr class="${rowClass}">
         <td class="dt-name">${esc(z.room_name)}</td>
-        <td>${playback === 'PLAYING' ? statusDot(true) : statusDot(false)} ${esc(playback)}</td>
-        <td class="dt-num">${vol}</td>
+        <td>${stateLabel}</td>
+        <td>${nowPlaying}</td>
+        <td class="dt-num">${z.mute ? '🔇' : ''} ${vol}</td>
       </tr>
     `;
   }).join('');
@@ -366,8 +419,10 @@ async function renderInventory() {
 
   // Music (Sonos)
   const musicCat = CATEGORIES.find(c => c.id === 'music');
-  html += buildSection(musicCat, sonos.length,
-    th('Zone') + th('State') + th('Volume'),
+  const playingCount = sonos.filter(z => z.playbackState === 'PLAYING').length;
+  const sonosCount = playingCount > 0 ? `${sonos.length} zones · ${playingCount} playing` : `${sonos.length} zones`;
+  html += buildSection(musicCat, sonosCount,
+    th('Zone') + th('State') + th('Now Playing') + th('Volume'),
     renderSonosRows(sonos));
 
   // Climate

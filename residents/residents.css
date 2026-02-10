@@ -5304,6 +5304,27 @@ span.sonos-library-item__star.starred {
   vertical-align: middle;
 }
 
+/* Row state colors for Sonos / playback */
+.dt-row-playing {
+  background: #ecfdf5 !important;
+}
+
+.dt-row-playing td:first-child {
+  box-shadow: inset 3px 0 0 var(--available, #54a326);
+}
+
+.dt-row-paused {
+  background: #fff8ed !important;
+}
+
+.dt-row-paused td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent, #d4883a);
+}
+
+.dt-row-idle td {
+  color: var(--text-muted);
+}
+
 @media (max-width: 768px) {
   .device-section__header {
     padding: 0.6rem 0.75rem;
