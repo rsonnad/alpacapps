@@ -22,7 +22,7 @@ const ADMIN_PERMISSION_KEYS = [
 ];
 
 const ASSOCIATE_TABS = [
-  { id: 'hours', label: 'Hours', href: 'worktracking.html' },
+  { id: 'hours', label: 'Work Planning', href: 'worktracking.html' },
 ];
 
 // =============================================
