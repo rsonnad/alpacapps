@@ -47,6 +47,18 @@ function esc(str) {
 /** Human-readable labels for model codes (tooltip/modal) */
 const MODEL_DISPLAY_NAMES = {
   'modl a': 'Cursor Auto',
+  'composer-1.5': 'Composer 1.5',
+  'opus-4.6': 'Claude Opus 4.6',
+  'gpt-5.3-codex': 'GPT 5.3 Codex',
+  cur: 'Cursor',
+  claude: 'Claude',
+  o4.6: 'Claude Opus 4.6',
+  s4.0: 'Claude Sonnet 4',
+  g2.5: 'Gemini 2.5',
+  g4o: 'GPT-4o',
+  cursor: 'Cursor',
+  gemini: 'Gemini',
+  gpt: 'GPT',
 };
 function modelDisplayName(code) {
   return (code && MODEL_DISPLAY_NAMES[code]) || code || '';
@@ -270,11 +282,9 @@ function showVersionModal(info) {
       }).join('');
     }
 
-    // Build model summary line (use display names when available)
-    const uniqueModels = [...new Set(Object.values(models).map(m => modelDisplayName(m) || m))].filter(Boolean);
-    const modelSummaryLine = info.model
-      ? `<span style="color:#d4883a;font-weight:600;">${esc(modelDisplayName(info.model) || info.model)}</span>`
-      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.map(m => esc(m)).join(', ')}</span>` : '');
+    // Build model and machine line for header (always show so user knows where they go)
+    const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
+    const machineLabel = (info.machine && info.machine.trim()) || '—';
 
     overlay.innerHTML = `
       <div id="vi-modal">
@@ -282,6 +292,7 @@ function showVersionModal(info) {
           <div>
             <h2>${esc(info.version)}</h2>
             <div class="vi-version-sub">${fmtTime(info.timestamp)} · ${esc(info.commit || '?')}</div>
+            <div class="vi-version-sub" style="margin-top:4px;">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span> · Machine: ${esc(machineLabel)}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>
         </div>
@@ -357,15 +368,14 @@ export function setupVersionInfo() {
     if (!info) {
       tooltip.innerHTML = '<div class="vi-tooltip-version">Build info unavailable</div>';
     } else {
-      const modelLabel = modelDisplayName(info.model);
-      const machine = (info.machine || '').trim();
-      const lines = [
+      const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
+      const machineLabel = (info.machine && info.machine.trim()) || '—';
+      tooltip.innerHTML = [
         `<div class="vi-tooltip-version">${esc(info.version)}</div>`,
-        modelLabel ? `<div class="vi-tooltip-stats">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span></div>` : '',
-        machine ? `<div class="vi-tooltip-stats">Machine: ${esc(machine)}</div>` : '',
+        `<div class="vi-tooltip-stats">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span></div>`,
+        `<div class="vi-tooltip-stats">Machine: ${esc(machineLabel)}</div>`,
         '<div class="vi-tooltip-stats" style="margin-top:6px;font-size:0.8rem;color:#9ca3af;">Click for full build details</div>',
-      ].filter(Boolean);
-      tooltip.innerHTML = lines.join('');
+      ].join('');
     }
     const rect = span.getBoundingClientRect();
     tooltip.style.left = Math.min(rect.left, window.innerWidth - 370) + 'px';
