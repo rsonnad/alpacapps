@@ -33,7 +33,6 @@ const RESIDENT_TABS = [
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
   { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
   { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html', permission: 'view_cameras' },
-  { id: 'pai', label: 'Life of PAI', href: 'lifeofpai.html', permission: 'use_pai' },
 ];
 
 // =============================================
