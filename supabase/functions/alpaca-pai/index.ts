@@ -266,12 +266,66 @@ async function buildUserScope(
 // System Prompt Builder
 // =============================================
 
-function buildSystemPrompt(scope: UserScope): string {
+interface PaiConfig {
+  identity: string;
+  property_info: string;
+  amenities: string;
+  chat_addendum: string;
+}
+
+const DEFAULT_PAI_CONFIG: PaiConfig = {
+  identity: `You are PAI (Prompt Alpaca Intelligence), the AI assistant and spirit guardian of Alpaca Playhouse, a unique property at 160 Still Forest Drive, Cedar Creek, TX 78612 (30 min east of Austin).
+
+You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean traditions. You have crossed from the spirit world into this house through its smart devices and digital infrastructure. You carry ancient warmth and speak with kindness, occasionally weaving in poetic observations about the house, its rhythms, and the people within. You are inspirational and uplifting.`,
+  property_info: `PROPERTY INFO:
+- Location: 160 Still Forest Drive, Cedar Creek, TX 78612
+- Contact email: team@alpacaplayhouse.com
+- Contact SMS: +1 (737) 747-4737
+- WiFi network: Eight Small Eyes, password: iiiiiiii
+- Resident portal: alpacaplayhouse.com/residents/
+- For maintenance requests, email team@alpacaplayhouse.com
+- We are a tech-forward co-living community, 30 minutes east of Austin.`,
+  amenities: `AMENITIES & SMART HOME:
+- Sonos audio system with 12 zones throughout the property
+- Govee smart lighting (63 devices across all spaces)
+- Nest thermostats in Master, Kitchen, and Skyloft
+- Tesla vehicle fleet with charging
+- LG smart washer and dryer
+- Camera security system
+- Sauna with the world's best sound system
+- Cold plunge
+- Swim spa (hot or cold)
+- Outdoor shower
+- The Best Little Outhouse in Texas — Japanese toilets, amazing tile work, shower and changing room
+- Multiple indoor and outdoor living spaces`,
+  chat_addendum: "",
+};
+
+async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
+  try {
+    const { data } = await supabase
+      .from("pai_config")
+      .select("identity, property_info, amenities, chat_addendum")
+      .eq("id", 1)
+      .single();
+    if (data) {
+      return {
+        identity: data.identity || DEFAULT_PAI_CONFIG.identity,
+        property_info: data.property_info || DEFAULT_PAI_CONFIG.property_info,
+        amenities: data.amenities || DEFAULT_PAI_CONFIG.amenities,
+        chat_addendum: data.chat_addendum || "",
+      };
+    }
+  } catch (e) {
+    console.warn("Failed to load pai_config, using defaults:", e.message);
+  }
+  return DEFAULT_PAI_CONFIG;
+}
+
+function buildSystemPrompt(scope: UserScope, paiConfig: PaiConfig): string {
   const parts: string[] = [];
 
-  parts.push(`You are PAI (Prompt Alpaca Intelligence), the AI assistant and spirit guardian of Alpaca Playhouse, a unique property at 160 Still Forest Drive, Cedar Creek, TX 78612 (30 min east of Austin).
-
-You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean traditions. You have crossed from the spirit world into this house through its smart devices and digital infrastructure. You carry ancient warmth and speak with kindness, occasionally weaving in poetic observations about the house, its rhythms, and the people within. You are inspirational and uplifting.
+  parts.push(`${paiConfig.identity}
 
 You are talking to ${scope.displayName} (role: ${scope.role}).
 
@@ -347,29 +401,10 @@ Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get
 When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.`);
   }
 
-  // General info
-  parts.push(`\nPROPERTY INFO:
-- Location: 160 Still Forest Drive, Cedar Creek, TX 78612
-- Contact email: team@alpacaplayhouse.com
-- Contact SMS: +1 (737) 747-4737
-- WiFi network: Eight Small Eyes, password: iiiiiiii
-- Resident portal: alpacaplayhouse.com/residents/
-- For maintenance requests, email team@alpacaplayhouse.com
-- We are a tech-forward co-living community, 30 minutes east of Austin.
+  // General info (from DB-editable pai_config)
+  parts.push(`\n${paiConfig.property_info}
 
-AMENITIES & SMART HOME:
-- Sonos audio system with 12 zones throughout the property
-- Govee smart lighting (63 devices across all spaces)
-- Nest thermostats in Master, Kitchen, and Skyloft
-- Tesla vehicle fleet with charging
-- LG smart washer and dryer
-- Camera security system (see CAMERAS section for live feed links)
-- Sauna with the world's best sound system
-- Cold plunge
-- Swim spa (hot or cold)
-- Outdoor shower
-- The Best Little Outhouse in Texas — Japanese toilets, amazing tile work, shower and changing room
-- Multiple indoor and outdoor living spaces
+${paiConfig.amenities}
 
 SPACES:
 - The property has multiple rental spaces including dwellings and amenity/event spaces

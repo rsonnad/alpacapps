@@ -11,6 +11,8 @@ import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
 let authState = null;
 let allEntries = [];
+let allSpaces = [];
+let spacesMap = {};
 let activeCategory = 'all';
 let searchQuery = '';
 let editingEntryId = null;
@@ -42,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     section: 'admin',
     onReady: async (state) => {
       renderFilters();
-      await loadEntries();
+      await Promise.all([loadEntries(), loadSpaces()]);
       setupEventListeners();
     }
   });
@@ -56,7 +58,7 @@ async function loadEntries() {
   try {
     const { data, error } = await supabase
       .from('password_vault')
-      .select('*')
+      .select('*, space:space_id(id, name)')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
@@ -67,6 +69,29 @@ async function loadEntries() {
     console.error('Error loading vault:', err);
     showToast('Failed to load passwords', 'error');
   }
+}
+
+async function loadSpaces() {
+  try {
+    const { data, error } = await supabase
+      .from('spaces')
+      .select('id, name')
+      .eq('is_archived', false)
+      .order('name');
+    if (error) throw error;
+    allSpaces = data || [];
+    spacesMap = {};
+    for (const s of allSpaces) spacesMap[s.id] = s.name;
+    populateSpaceDropdown();
+  } catch (err) {
+    console.error('Error loading spaces:', err);
+  }
+}
+
+function populateSpaceDropdown() {
+  const sel = document.getElementById('entrySpace');
+  sel.innerHTML = '<option value="">None</option>' +
+    allSpaces.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
 }
 
 function getFilteredEntries() {
@@ -110,14 +135,17 @@ function renderGrid() {
 
   grid.innerHTML = entries.map(e => {
     const isRevealed = revealedPasswords.has(e.id);
-    // Fixed-length mask so password length is not leaked
     const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+    const spaceName = e.space ? e.space.name : null;
 
     return `
       <div class="vault-card" data-id="${e.id}">
         <div class="vault-card-header">
           <span class="vault-card-service">${escapeHtml(e.service)}</span>
-          <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
+          <div class="vault-card-actions">
+            <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
+            <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
+          </div>
         </div>
         ${e.username ? `
         <div class="vault-field">
@@ -132,11 +160,9 @@ function renderGrid() {
           <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}">${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
           <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password">${COPY_SVG}</button>
         </div>` : ''}
+        ${spaceName ? `<div class="vault-card-space">Space: <span class="space-name">${escapeHtml(spaceName)}</span></div>` : ''}
         ${e.url ? `<div class="vault-card-url"><a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a></div>` : ''}
         ${e.notes ? `<div class="vault-card-notes">${escapeHtml(e.notes)}</div>` : ''}
-        <div class="vault-card-actions">
-          <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
-        </div>
       </div>`;
   }).join('');
 }
@@ -162,6 +188,7 @@ function openModal(entryId = null) {
       document.getElementById('entryCategory').value = entry.category;
       document.getElementById('entryUsername').value = entry.username || '';
       document.getElementById('entryPassword').value = entry.password || '';
+      document.getElementById('entrySpace').value = entry.space_id || '';
       document.getElementById('entryUrl').value = entry.url || '';
       document.getElementById('entryNotes').value = entry.notes || '';
     }
@@ -171,6 +198,7 @@ function openModal(entryId = null) {
     form.reset();
     document.getElementById('entryId').value = '';
     document.getElementById('entryCategory').value = 'service';
+    document.getElementById('entrySpace').value = '';
   }
 
   modal.classList.remove('hidden');
@@ -188,11 +216,13 @@ async function saveEntry() {
     return;
   }
 
+  const spaceVal = document.getElementById('entrySpace').value;
   const data = {
     service,
     category: document.getElementById('entryCategory').value,
     username: document.getElementById('entryUsername').value.trim() || null,
     password: document.getElementById('entryPassword').value.trim() || null,
+    space_id: spaceVal || null,
     url: document.getElementById('entryUrl').value.trim() || null,
     notes: document.getElementById('entryNotes').value.trim() || null,
     updated_at: new Date().toISOString(),
