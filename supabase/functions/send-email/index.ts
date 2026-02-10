@@ -1316,6 +1316,49 @@ const corsHeaders = {
 };
 
 /**
+ * Fetch active payment methods from DB and format them for email templates.
+ */
+async function getPaymentMethodsForEmail(): Promise<{ html: string; text: string }> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+    const { data: methods } = await sb
+      .from("payment_methods")
+      .select("name, method_type, account_identifier, instructions")
+      .eq("is_active", true)
+      .order("display_order");
+
+    if (!methods || methods.length === 0) {
+      return {
+        html: `<li>Contact us for payment options</li>`,
+        text: `- Contact us for payment options`,
+      };
+    }
+
+    const htmlItems = methods.map((m: any) => {
+      const id = m.account_identifier ? `: <strong>${m.account_identifier}</strong>` : "";
+      const instr = m.instructions ? ` <span style="color:#666;font-size:0.9em;">(${m.instructions.split('\n')[0]})</span>` : "";
+      return `<li style="margin-bottom:6px;">${m.name}${id}${instr}</li>`;
+    }).join("\n            ");
+
+    const textItems = methods.map((m: any) => {
+      const id = m.account_identifier ? `: ${m.account_identifier}` : "";
+      const instr = m.instructions ? ` (${m.instructions.split('\n')[0]})` : "";
+      return `- ${m.name}${id}${instr}`;
+    }).join("\n");
+
+    return { html: htmlItems, text: textItems };
+  } catch (e) {
+    console.error("Failed to fetch payment methods:", e);
+    return {
+      html: `<li>Contact us for payment options</li>`,
+      text: `- Contact us for payment options`,
+    };
+  }
+}
+
+/**
  * Try to load a template from the DB (with cache), fall back to hardcoded.
  * Returns { subject, html, text, sender_type } with placeholders already rendered.
  */
