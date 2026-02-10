@@ -66,7 +66,7 @@
 
     /* ── Hero ── */
     .hero {
-      padding: 4.5rem 1.5rem 3.5rem;
+      padding: 4.5rem 1.5rem 3rem;
       text-align: center;
       background: linear-gradient(180deg, #f0e8f5 0%, #f6f0eb 40%, var(--bg) 100%);
       border-bottom: 1px solid var(--border);
@@ -113,26 +113,90 @@
       margin: 0 auto 2rem;
       line-height: 1.7;
     }
-    .hero-stats {
+
+    /* ── Thesis Summary Cards ── */
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 720px;
+      margin: 0 auto 1.75rem;
+      text-align: left;
+    }
+    .thesis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      position: relative;
+    }
+    .thesis-card.full-width {
+      grid-column: 1 / -1;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+      border-color: rgba(124,92,191,0.25);
+    }
+    .thesis-card .tc-icon {
+      font-size: 1.3rem;
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-headline {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .thesis-card .tc-detail {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .thesis-card .tc-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .thesis-card.full-width .tc-headline {
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+    .thesis-card.full-width .tc-detail {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Vehicle inventory strip ── */
+    .hero-inventory {
       display: flex;
       justify-content: center;
-      gap: 2rem;
+      gap: 1.5rem;
       flex-wrap: wrap;
+      padding-top: 0.5rem;
     }
-    .hero-stat {
+    .hero-inv-item {
       text-align: center;
     }
-    .hero-stat .num {
+    .hero-inv-item .inv-num {
       display: block;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.03em;
     }
-    .hero-stat .num.blue { color: var(--accent); }
-    .hero-stat .num.green { color: var(--green); }
-    .hero-stat .num.purple { color: var(--purple); }
-    .hero-stat .label {
-      font-size: 0.75rem;
+    .hero-inv-item .inv-num.blue { color: var(--accent); }
+    .hero-inv-item .inv-num.green { color: var(--green); }
+    .hero-inv-item .inv-num.purple { color: var(--purple); }
+    .hero-inv-item .inv-label {
+      font-size: 0.68rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -776,13 +840,18 @@
     .summary-chip.accent { background: var(--accent-soft); color: var(--accent); border-color: rgba(124,92,191,0.22); }
 
     @media (max-width: 700px) {
-      .hero { padding: 2rem 1rem 2rem; }
+      .hero { padding: 2rem 1rem 1.5rem; }
       .hero h1 { font-size: 1.6rem; }
-      .hero .subtitle { font-size: 0.9rem; margin-bottom: 1.5rem; }
-      .hero-stats { gap: 0.75rem 1.5rem; }
-      .hero-stat .num { font-size: 1.5rem; }
-      .hero-stat .label { font-size: 0.68rem; }
+      .hero .subtitle { font-size: 0.9rem; margin-bottom: 1.25rem; }
       .hero img { width: 160px !important; height: 160px !important; }
+      .thesis-grid { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+      .thesis-card { padding: 0.9rem 1rem; }
+      .thesis-card .tc-headline { font-size: 0.95rem; }
+      .thesis-card .tc-detail { font-size: 0.75rem; }
+      .thesis-card.full-width .tc-headline { font-size: 1.05rem; }
+      .hero-inventory { gap: 1rem; }
+      .hero-inv-item .inv-num { font-size: 1.25rem; }
+      .hero-inv-item .inv-label { font-size: 0.62rem; }
       .container { padding: 0 1rem; }
       .case-section { margin: 1.25rem 0; }
       .section-toggle { padding: 1rem; gap: 0.75rem; }
@@ -851,28 +920,73 @@
 <!--  HERO                                          -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="hero">
-  <img src="images/get-a-tesla-og.png" alt="Girl loving her Tesla Model Y" style="width:220px;height:220px;border-radius:50%;object-fit:cover;margin-bottom:1.25rem;border:4px solid var(--border);box-shadow:var(--shadow-lg);">
-  <div class="hero-eyebrow">A data-driven analysis</div>
+  <img src="images/get-a-tesla-og.png" alt="Peace of mind in a self-driving Tesla" style="width:220px;height:220px;border-radius:50%;object-fit:cover;margin-bottom:1.25rem;border:4px solid var(--border);box-shadow:var(--shadow-lg);">
+  <div class="hero-eyebrow">A data-driven case</div>
   <h1>Why You Should Get Annabelle a <em>Tesla</em></h1>
   <div class="subtitle">
-    Why the safest SUV ever tested is the smartest investment for a young woman driving in Chicago &mdash; and why used 2024 models are the sweet spot right now.
+    The safest SUV ever tested. The smartest financial move. And a car that gets better every year.
   </div>
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <span class="num blue" id="totalCount">0</span>
-      <span class="label">Vehicles Found</span>
+
+  <!-- ── Thesis summary: Safety → Economics → Core thesis ── -->
+  <div class="thesis-grid">
+    <div class="thesis-card" style="border-left:3px solid var(--red);">
+      <div class="tc-icon">&#9888;&#65039;</div>
+      <div class="tc-label">The danger</div>
+      <div class="tc-headline">Driving is the #1 killer of women ages 20&ndash;29</div>
+      <div class="tc-detail">112K crashes/yr in Chicago alone &mdash; 307 every day. The car she drives is the single highest-impact safety decision.</div>
     </div>
-    <div class="hero-stat">
-      <span class="num green" id="hw4Count">0</span>
-      <span class="label">HW4 Confirmed</span>
+    <div class="thesis-card" style="border-left:3px solid var(--green);">
+      <div class="tc-icon">&#128737;&#65039;</div>
+      <div class="tc-label">The solution</div>
+      <div class="tc-headline">Tesla Model Y: 5&#9733; NHTSA, 9x safer, 6.3% injury risk</div>
+      <div class="tc-detail">Lowest rollover risk of any SUV ever tested. AI brakes, steers, and watches the road 24/7 &mdash; standard, no extra cost.</div>
     </div>
-    <div class="hero-stat">
-      <span class="num purple" id="fsdCount">0</span>
-      <span class="label">With FSD</span>
+    <div class="thesis-card" style="border-left:3px solid var(--green);">
+      <div class="tc-icon">&#128176;</div>
+      <div class="tc-label">The bottom line</div>
+      <div class="tc-headline" style="color:var(--green);">Tesla is $5,900 cheaper over 5 years</div>
+      <div class="tc-detail">No gas, no oil changes, no transmission. When you include resale value, the Tesla <em>saves</em> money vs. keeping the CR-V.</div>
+      <div class="tc-chips">
+        <span class="summary-chip green">$0 gas</span>
+        <span class="summary-chip green">$0 oil changes</span>
+        <span class="summary-chip teal">CR-V resale: $6K</span>
+        <span class="summary-chip green">Tesla resale: $25K+</span>
+      </div>
     </div>
-    <div class="hero-stat">
-      <span class="num" id="priceRange" style="color:var(--text);">&mdash;</span>
-      <span class="label">Price Range</span>
+    <div class="thesis-card" style="border-left:3px solid var(--purple);">
+      <div class="tc-icon">&#128640;</div>
+      <div class="tc-label">The trajectory</div>
+      <div class="tc-headline" style="color:var(--purple);">Unsupervised self-driving by 2026</div>
+      <div class="tc-detail">HW4 Teslas will drive themselves &mdash; and could earn money as robotaxis by 2027. The car appreciates instead of depreciating.</div>
+      <div class="tc-chips">
+        <span class="summary-chip purple">FSD Unsupervised 2026</span>
+        <span class="summary-chip accent">HW4 required</span>
+      </div>
+    </div>
+    <div class="thesis-card full-width">
+      <div class="tc-headline">Sell depreciation. Buy appreciation.</div>
+      <div class="tc-detail">The Honda CR-V loses value every year. A Tesla with HW4 is one of the only cars in history that could become <em>more</em> valuable over time. Trade a depreciating asset for an appreciating one &mdash; and get the safest car on the road in the process.</div>
+    </div>
+  </div>
+
+  <!-- ── Vehicle inventory (secondary) ── -->
+  <div style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Available near Chicago</div>
+  <div class="hero-inventory">
+    <div class="hero-inv-item">
+      <span class="inv-num blue" id="totalCount">0</span>
+      <span class="inv-label">Vehicles</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num green" id="hw4Count">0</span>
+      <span class="inv-label">HW4</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num purple" id="fsdCount">0</span>
+      <span class="inv-label">With FSD</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num" id="priceRange" style="color:var(--text);">&mdash;</span>
+      <span class="inv-label">Price Range</span>
     </div>
   </div>
 </div>
