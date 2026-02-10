@@ -407,29 +407,55 @@ async function sendPaiReply(
   originalSubject: string,
   originalBody: string
 ): Promise<void> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  const resendApiKey = Deno.env.get("RESEND_API_KEY") || "";
 
   // Fetch a random PAI art image for the email footer
   const paiArtUrl = await getRandomPaiArtUrl(supabase);
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+  const subject = `Re: ${originalSubject || "Your message to PAI"}`;
+  const truncatedBody = originalBody.substring(0, 500);
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #1a1a2e; padding: 20px; border-radius: 12px 12px 0 0;">
+        <h2 style="color: #e0d68a; margin: 0;">PAI</h2>
+        <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Prompt Alpaca Intelligence</p>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none;">
+        <div style="white-space: pre-wrap; line-height: 1.6;">${replyBody || ""}</div>
+        ${truncatedBody ? `
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Your original message:</p>
+        <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${truncatedBody}</div>
+        ` : ""}
+      </div>
+      ${paiArtUrl ? `
+      <div style="border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden;">
+        <img src="${paiArtUrl}" alt="PAI - Prompt Alpaca Intelligence" style="width: 100%; height: auto; display: block;" />
+      </div>
+      ` : '<div style="border-radius: 0 0 12px 12px; height: 4px; background: #1a1a2e;"></div>'}
+      <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
+        This is an automated reply from PAI at Alpaca Playhouse. Reply to this email to continue the conversation.
+      </p>
+    </div>
+  `;
+
+  const text = `PAI - Prompt Alpaca Intelligence\n\n${replyBody || ""}\n\n${truncatedBody ? `---\nYour original message:\n${truncatedBody}` : ""}\n\nThis is an automated reply from PAI at Alpaca Playhouse.`;
+
+  // Send directly via Resend API (avoids nested edge function call)
+  const res = await fetch(RESEND_API_URL, {
     method: "POST",
     headers: {
+      Authorization: `Bearer ${resendApiKey}`,
       "Content-Type": "application/json",
-      Authorization: `Bearer ${serviceKey}`,
     },
     body: JSON.stringify({
-      type: "pai_email_reply",
-      to,
-      data: {
-        reply_body: replyBody,
-        original_subject: originalSubject,
-        original_body: originalBody.substring(0, 500),
-        pai_art_url: paiArtUrl,
-      },
       from: "PAI <pai@alpacaplayhouse.com>",
+      to: [to],
       reply_to: "pai@alpacaplayhouse.com",
+      subject,
+      html,
+      text,
     }),
   });
 
@@ -437,7 +463,21 @@ async function sendPaiReply(
     const errText = await res.text();
     console.error(`Failed to send PAI reply: ${res.status} ${errText}`);
   } else {
-    console.log(`PAI reply sent to ${to}`);
+    const result = await res.json();
+    console.log(`PAI reply sent to ${to}, resend_id=${result.id}`);
+
+    // Log to api_usage_log
+    try {
+      await supabase.from("api_usage_log").insert({
+        vendor: "resend",
+        category: "email_pai_email_reply",
+        endpoint: "POST /emails",
+        units: 1,
+        unit_type: "emails",
+        estimated_cost_usd: 0.00028,
+        metadata: { resend_id: result.id, to, inbound_subject: originalSubject },
+      });
+    } catch (_) { /* non-critical */ }
   }
 }
 
