@@ -1,10 +1,12 @@
 /**
  * Cameras Tab - Mobile HLS camera feeds
  * Shows camera cards with live video via HLS.js, quality switching.
- * Simplified mobile version — no PTZ controls, no lightbox (tap to fullscreen native).
+ * HLS.js is lazy-loaded when this tab is first opened to improve initial app load.
  */
 
 import { loadCameras, buildHlsUrl } from '../../../shared/services/camera-data.js';
+
+const HLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js';
 
 let cameras = [];
 let hlsInstances = {}; // { camIndex: Hls instance }
@@ -14,6 +16,25 @@ let retryTimers = {}; // { camIndex: timer }
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000;
 let retryCounts = {};
+
+/** Load HLS.js script once; resolves when window.Hls is available. */
+function loadHlsScript() {
+  if (typeof window.Hls !== 'undefined') return Promise.resolve();
+  const existing = document.querySelector(`script[src="${HLS_SCRIPT_URL}"]`);
+  if (existing) {
+    return new Promise((resolve) => {
+      if (window.Hls) return resolve();
+      existing.addEventListener('load', () => resolve(), { once: true });
+    });
+  }
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = HLS_SCRIPT_URL;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load HLS.js'));
+    document.head.appendChild(script);
+  });
+}
 
 // =============================================
 // TOAST
@@ -243,6 +264,7 @@ function setupVisibility() {
 // =============================================
 export async function init(user) {
   try {
+    await loadHlsScript();
     cameras = await loadCameras();
     render();
     setupVisibility();

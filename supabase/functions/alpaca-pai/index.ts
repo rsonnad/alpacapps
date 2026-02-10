@@ -125,37 +125,39 @@ async function buildUserScope(
   appUser: any,
   userLevel: number
 ): Promise<UserScope> {
-  // 1. Get assigned space IDs for residents (uses person_id FK on app_users)
-  let assignedSpaceIds: string[] = [];
-  if (userLevel < 2) {
-    const personId = appUser.person_id;
-    if (personId) {
-      const { data: assignments } = await supabase
-        .from("assignments")
-        .select("id, assignment_spaces(space_id)")
-        .eq("person_id", personId)
-        .in("status", ["active", "pending_contract", "contract_sent"]);
+  // 1. Fetch assignments (for residents) and spaces in parallel
+  const personId = appUser.person_id;
+  const [assignmentsResult, spacesResult] = await Promise.all([
+    userLevel < 2 && personId
+      ? supabase
+          .from("assignments")
+          .select("id, assignment_spaces(space_id)")
+          .eq("person_id", personId)
+          .in("status", ["active", "pending_contract", "contract_sent"])
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("spaces")
+      .select("id, parent_id, can_be_dwelling")
+      .eq("is_archived", false),
+  ]);
 
-      for (const a of assignments || []) {
-        for (const as of a.assignment_spaces || []) {
-          if (as.space_id) assignedSpaceIds.push(as.space_id);
-        }
+  let assignedSpaceIds: string[] = [];
+  const assignments = assignmentsResult?.data;
+  if (assignments) {
+    for (const a of assignments) {
+      for (const as of a.assignment_spaces || []) {
+        if (as.space_id) assignedSpaceIds.push(as.space_id);
       }
     }
   }
 
-  // 2. Expand to include ancestor/descendant spaces
-  let allAccessibleSpaceIds = [...assignedSpaceIds];
-  const { data: allSpaces } = await supabase
-    .from("spaces")
-    .select("id, parent_id, can_be_dwelling")
-    .eq("is_archived", false);
+  const allSpaces = spacesResult?.data || [];
 
-  if (userLevel < 2 && assignedSpaceIds.length && allSpaces) {
+  // 2. Expand to include ancestor spaces and build dwelling map
+  let allAccessibleSpaceIds = [...assignedSpaceIds];
+  if (userLevel < 2 && assignedSpaceIds.length && allSpaces.length) {
     const parentMap: Record<string, string | null> = {};
     for (const s of allSpaces) parentMap[s.id] = s.parent_id;
-
-    // Walk up parent chain
     for (const spaceId of assignedSpaceIds) {
       let current = parentMap[spaceId];
       while (current) {
@@ -166,58 +168,56 @@ async function buildUserScope(
     allAccessibleSpaceIds = [...new Set(allAccessibleSpaceIds)];
   }
 
-  // Build dwelling lookup for common area detection
   const dwellingMap: Record<string, boolean> = {};
-  for (const s of allSpaces || []) {
+  for (const s of allSpaces) {
     dwellingMap[s.id] = s.can_be_dwelling === true;
   }
 
-  // 3. Load Govee groups
-  const { data: goveeGroups } = await supabase
-    .from("govee_devices")
-    .select("device_id, name, area, space_id, sku")
-    .eq("is_group", true)
-    .eq("is_active", true)
-    .order("display_order");
+  // 3. Load Govee, Nest, vehicles, and camera_streams in parallel
+  const [goveeResult, nestResult, vehiclesResult, cameraResult] = await Promise.all([
+    supabase
+      .from("govee_devices")
+      .select("device_id, name, area, space_id, sku")
+      .eq("is_group", true)
+      .eq("is_active", true)
+      .order("display_order"),
+    supabase
+      .from("nest_devices")
+      .select("sdm_device_id, room_name, space_id, min_role, last_state")
+      .eq("is_active", true)
+      .eq("device_type", "thermostat"),
+    supabase
+      .from("vehicles")
+      .select("id, name, vehicle_make, vehicle_model, vehicle_state, last_state")
+      .eq("is_active", true),
+    supabase
+      .from("camera_streams")
+      .select("camera_name, location")
+      .eq("is_active", true)
+      .order("camera_name"),
+  ]);
 
-  const accessibleGovee = (goveeGroups || []).filter(
+  const goveeGroups = goveeResult?.data || [];
+  const nestDevices = nestResult?.data || [];
+  const teslaVehicles = vehiclesResult?.data || [];
+  const cameraStreams = cameraResult?.data || [];
+
+  const accessibleGovee = goveeGroups.filter(
     (g: any) => {
-      if (userLevel >= 2) return true; // staff+ sees all
-      if (!g.space_id) return true; // no space = common area
-      // Non-dwelling = common area, accessible by all residents
+      if (userLevel >= 2) return true;
+      if (!g.space_id) return true;
       if (!dwellingMap[g.space_id]) return true;
-      // Dwelling = private, only if assigned
       return allAccessibleSpaceIds.includes(g.space_id);
     }
   );
 
-  // 4. Load Nest thermostats
-  const { data: nestDevices } = await supabase
-    .from("nest_devices")
-    .select("sdm_device_id, room_name, space_id, min_role, last_state")
-    .eq("is_active", true)
-    .eq("device_type", "thermostat");
-
-  const accessibleNest = (nestDevices || []).filter((d: any) => {
+  const accessibleNest = nestDevices.filter((d: any) => {
     if (d.min_role && (ROLE_LEVEL[d.min_role] || 0) > userLevel) return false;
     if (userLevel >= 2) return true;
     if (!d.space_id) return true;
     if (!dwellingMap[d.space_id]) return true;
     return allAccessibleSpaceIds.includes(d.space_id);
   });
-
-  // 5. Vehicles (Tesla vehicles controllable by all residents)
-  const { data: teslaVehicles } = await supabase
-    .from("vehicles")
-    .select("id, name, vehicle_make, vehicle_model, vehicle_state, last_state")
-    .eq("is_active", true);
-
-  // 6. Cameras (distinct camera names + locations from camera_streams)
-  const { data: cameraStreams } = await supabase
-    .from("camera_streams")
-    .select("camera_name, location")
-    .eq("is_active", true)
-    .order("camera_name");
 
   // Deduplicate (multiple quality rows per camera)
   const seenCameras = new Set<string>();
@@ -1816,7 +1816,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   // 5. Build Gemini conversation
   const contents: any[] = [];
 
-  const recentHistory = conversationHistory.slice(-20);
+  const recentHistory = conversationHistory.slice(-12);
   for (const msg of recentHistory) {
     contents.push({
       role: msg.role === "user" ? "user" : "model",

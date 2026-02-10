@@ -7,12 +7,15 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
 const PAI_URL = `${SUPABASE_URL}/functions/v1/alpaca-pai`;
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 12;
 
 let conversationHistory = [];
 let isOpen = false;
 let isProcessing = false;
 let widgetInjected = false;
+/** Cached token and expiry (seconds) to avoid getSession on every message */
+let cachedToken = null;
+let cachedTokenExpiresAt = 0;
 
 // =============================================
 // Initialization
@@ -135,17 +138,19 @@ async function sendMessage() {
   const typingEl = showTypingIndicator();
 
   try {
-    // Get fresh auth token
-    let { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const expiresAt = session.expires_at;
-      const now = Math.floor(Date.now() / 1000);
-      if (!expiresAt || expiresAt - now < 60) {
+    // Use cached token if still valid (≥60s until expiry); otherwise get/refresh session
+    const now = Math.floor(Date.now() / 1000);
+    let token = cachedToken;
+    if (!token || !cachedTokenExpiresAt || cachedTokenExpiresAt - now < 60) {
+      let { data: { session } } = await supabase.auth.getSession();
+      if (session?.expires_at && session.expires_at - now < 60) {
         const { data } = await supabase.auth.refreshSession();
-        session = data.session;
+        session = data?.session;
       }
+      token = session?.access_token;
+      cachedToken = token || null;
+      cachedTokenExpiresAt = session?.expires_at || 0;
     }
-    const token = session?.access_token;
     if (!token) throw new Error('Not authenticated');
 
     const response = await fetch(PAI_URL, {
