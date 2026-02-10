@@ -8,7 +8,7 @@
 /* =============================================
    GOOGLE FONTS
    ============================================= */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 /* =============================================
    CSS CUSTOM PROPERTIES
@@ -30,8 +30,8 @@
   --aap-border: #e6e2d9;
   --aap-overlay: rgba(28, 22, 24, 0.6);
 
-  /* Typography - DM Serif Display for headings, DM Sans for body */
-  --aap-font-heading: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  /* Typography - DM Sans for all text */
+  --aap-font-heading: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --aap-font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Spacing - intentional 4px-based scale */
@@ -108,7 +108,7 @@ a:hover {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--aap-font-heading);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
   margin-bottom: var(--aap-space-sm);
@@ -370,7 +370,7 @@ ul, ol {
 .aap-mobile-nav__link {
   font-size: 1.5rem;
   font-family: var(--aap-font-heading);
-  font-weight: 400;
+  font-weight: 600;
   color: var(--aap-text-light);
   transition: color var(--aap-transition), opacity var(--aap-transition);
   opacity: 0.8;
@@ -460,7 +460,7 @@ ul, ol {
 .aap-hero__title {
   font-family: var(--aap-font-heading);
   font-size: 3rem;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.15;
   margin-bottom: var(--aap-space-md);
@@ -601,7 +601,7 @@ ul, ol {
 .aap-links-section__title {
   font-family: var(--aap-font-heading);
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 700;
   margin-bottom: var(--aap-space-md);
   padding-bottom: var(--aap-space-xs);
   border-bottom: 2px solid var(--aap-border);
