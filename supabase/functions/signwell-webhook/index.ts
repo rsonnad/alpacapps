@@ -469,6 +469,12 @@ async function sendRentalSignedEmail(
             <strong>Monthly Rent:</strong> $${monthlyRate || 'TBD'}/${rateTermDisplay}
           </div>
 
+          <div style="background: #f0f7ff; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #3d8b7a;">Set Up Your Resident Profile</h3>
+            <p>While you're here, take a minute to fill out your resident profile. This helps your housemates get to know you before you arrive!</p>
+            <p style="margin-bottom: 0;"><a href="https://alpacaplayhouse.com/residents/profile.html" style="display: inline-block; background: #3d8b7a; color: #fff; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">Complete Your Profile</a></p>
+          </div>
+
           <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
@@ -493,6 +499,11 @@ Important: Please include your name and "Reservation Deposit" in the payment mem
 
 Move-in Date: ${moveInDate}
 Monthly Rent: $${monthlyRate || 'TBD'}/${rateTermDisplay}
+
+SET UP YOUR RESIDENT PROFILE
+-----------------------------
+Take a minute to fill out your resident profile — it helps your housemates get to know you before you arrive!
+https://alpacaplayhouse.com/residents/profile.html
 
 Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.
 
