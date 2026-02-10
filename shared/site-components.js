@@ -71,7 +71,9 @@ function renderHeader(options = {}) {
   const navItems = linksWithAuth.map(link => {
     const isActive = link.href.includes(activePage) && activePage !== '';
     const activeClass = isActive ? 'aap-nav__link--active' : '';
-    return `<li><a href="${link.href}" class="aap-nav__link ${activeClass}">${link.text}</a></li>`;
+    // Add ID to Sign In link so initPublicHeaderAuth can find and hide it
+    const signInId = link.text === 'Sign In' ? ' id="aapSignInLink"' : '';
+    return `<li><a href="${link.href}" class="aap-nav__link ${activeClass}"${signInId}>${link.text}</a></li>`;
   }).join('');
 
   return `
@@ -88,6 +90,8 @@ function renderHeader(options = {}) {
             ${navItems}
           </ul>
         </nav>
+
+        <div id="aapHeaderAuth" class="aap-header-auth"></div>
 
         <button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">
           <span class="aap-menu-toggle__bar"></span>
@@ -114,9 +118,10 @@ function renderMobileNav(activePage = '', showMistiq = false) {
   const navItems = linksWithAuth.map(link => {
     const isActive = link.href.includes(activePage) && activePage !== '';
     const activeClass = isActive ? 'aap-mobile-nav__link--active' : '';
+    const signInId = link.text === 'Sign In' ? ' id="aapMobileSignInLink"' : '';
     return `
       <li class="aap-mobile-nav__item">
-        <a href="${link.href}" class="aap-mobile-nav__link ${activeClass}">${link.text}</a>
+        <a href="${link.href}" class="aap-mobile-nav__link ${activeClass}"${signInId}>${link.text}</a>
       </li>
     `;
   }).join('');
