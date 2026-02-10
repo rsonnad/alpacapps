@@ -1315,7 +1315,7 @@ async function executeToolCall(
         // Search document_index by keywords and title/description
         const { data: docs } = await supabaseAdmin
           .from("document_index")
-          .select("slug, title, description, keywords, storage_bucket, storage_path, content_text")
+          .select("slug, title, description, keywords, storage_bucket, storage_path, content_text, source_url")
           .eq("is_active", true);
 
         if (!docs?.length) return "No documents found in the library.";
@@ -1341,14 +1341,18 @@ async function executeToolCall(
         }
 
         const best = matches[0];
-        const pdfUrl = `${supabaseUrl}/storage/v1/object/public/${best.storage_bucket}/${best.storage_path}`;
+        // Prefer external source_url (Google Drive), fall back to Supabase Storage
+        const docUrl = best.source_url
+          || (best.storage_bucket && best.storage_path
+            ? `${supabaseUrl}/storage/v1/object/public/${best.storage_bucket}/${best.storage_path}`
+            : null);
 
         if (best.content_text) {
           // Return full text content for short documents
-          return `Document: ${best.title}\nPDF: ${pdfUrl}\n\n${best.content_text}`;
+          return `Document: ${best.title}${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${best.content_text}`;
         } else {
-          // No extracted text — return description and PDF link
-          return `Document: ${best.title}\n${best.description}\n\nFull PDF available at: ${pdfUrl}\n\nThis is a large document (the full text isn't stored). You can share the PDF link with the user, or describe what the document covers based on the description above.`;
+          // No extracted text — return description and link
+          return `Document: ${best.title}\n${best.description}${docUrl ? `\n\nFull document available at: ${docUrl}` : ""}\n\nThis is a large document (the full text isn't stored). You can share the link with the user, or describe what the document covers based on the description above.`;
         }
       }
 

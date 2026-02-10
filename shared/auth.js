@@ -59,6 +59,7 @@ async function withRetry(fn, maxRetries = 2, baseDelayMs = 1000) {
 let currentUser = null;
 let currentAppUser = null;
 let currentRole = 'public';
+let currentPermissions = new Set();
 let authStateListeners = [];
 let authHandlingInProgress = false; // Prevent concurrent auth handling
 let resolvedFromCache = false; // Track whether we initially resolved from cache
@@ -73,6 +74,7 @@ function cacheAuthState(user, appUser, role) {
       userId: user?.id,
       appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email, person_id: appUser.person_id, is_current_resident: appUser.is_current_resident } : null,
       role,
+      permissions: Array.from(currentPermissions),
       timestamp: Date.now(),
     };
     localStorage.setItem(CACHED_AUTH_KEY, JSON.stringify(cached));
@@ -145,6 +147,7 @@ export async function initAuth() {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
+      currentPermissions = new Set(cached.permissions || []);
       resolvedFromCache = true;
       // We still need the actual Supabase user object, so we don't set currentUser yet
       // but we resolve with a minimal user so the UI can proceed
@@ -228,6 +231,7 @@ async function handleAuthChange(session) {
     currentUser = null;
     currentAppUser = null;
     currentRole = 'public';
+    currentPermissions = new Set();
     clearCachedAuthState();
     notifyListeners();
     return;
@@ -279,6 +283,25 @@ async function handleAuthChange(session) {
     currentRole = appUser.role;
     currentUser.displayName = appUser.display_name || currentUser.user_metadata?.full_name || currentUser.email;
     authLog.info('User role resolved', { role: appUser.role, displayName: currentUser.displayName });
+
+    // Fetch effective permissions (role defaults ± user overrides)
+    try {
+      const { data: permData, error: permError } = await withTimeout(
+        supabase.rpc('get_effective_permissions', { p_app_user_id: appUser.id }),
+        AUTH_TIMEOUT_MS,
+        'Permission fetch timed out'
+      );
+      if (!permError && permData) {
+        currentPermissions = new Set(permData);
+        authLog.info('Permissions loaded', { count: currentPermissions.size });
+      } else {
+        authLog.warn('Failed to fetch permissions, using empty set', permError?.message);
+        currentPermissions = new Set();
+      }
+    } catch (permTimeoutError) {
+      authLog.warn('Permission fetch timed out, using empty set');
+      currentPermissions = new Set();
+    }
 
     // Cache the verified auth state for instant restore on next visit
     cacheAuthState(currentUser, appUser, appUser.role);
@@ -528,6 +551,7 @@ export async function signOut() {
   currentUser = null;
   currentAppUser = null;
   currentRole = 'public';
+  currentPermissions = new Set();
   authLog.info('signOut() completed');
   notifyListeners();
 }
