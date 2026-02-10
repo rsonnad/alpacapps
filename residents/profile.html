@@ -52,6 +52,13 @@
     .dietary-chip:hover span {
       border-color: #3d8b7a;
     }
+    .allergy-chip input:checked + span {
+      background: #c0392b;
+      border-color: #c0392b;
+    }
+    .allergy-chip:hover span {
+      border-color: #c0392b;
+    }
   </style>
   <script type="module" src="../shared/version-info.js"></script>
 </head>
@@ -85,7 +92,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.25 4:39a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.26 4:44a</span>
         <span id="roleBadge" class="role-badge">Staff</span>
       </div>
       <div class="header-controls">
@@ -212,42 +219,6 @@
             </div>
             <div class="profile-field">
               <div class="profile-field-label-row">
-                <label>Dietary Preferences</label>
-                <div class="profile-privacy-widget" id="privacy_dietary" data-value="all_guests"></div>
-              </div>
-              <div id="dietaryOptions" class="dietary-options">
-                <label class="dietary-chip"><input type="checkbox" value="vegetarian"><span>Vegetarian</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="vegan"><span>Vegan</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="pescatarian"><span>Pescatarian</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="flexitarian"><span>Flexitarian</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="vegan-before-noon"><span>Vegan Before Noon</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="gluten-free"><span>Gluten-Free</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="dairy-free"><span>Dairy-Free</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="nut-free"><span>Nut-Free</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="halal"><span>Halal</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="kosher"><span>Kosher</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="keto"><span>Keto</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="paleo"><span>Paleo</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="carnivore"><span>Carnivore</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="whole30"><span>Whole30</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="raw-food"><span>Raw Food</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="low-fodmap"><span>Low-FODMAP</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="16-8-if"><span>16:8 IF</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="omad"><span>OMAD</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="5-2-if"><span>5:2 IF</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="no-sugar"><span>No Sugar</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="low-carb"><span>Low-Carb</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="mediterranean"><span>Mediterranean</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="ayurvedic"><span>Ayurvedic</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="macrobiotic"><span>Macrobiotic</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="fruitarian"><span>Fruitarian</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="vegan-with-women"><span>Vegan with Women</span></label>
-                <label class="dietary-chip"><input type="checkbox" value="baking-soda-washed"><span>Baking Soda Washed</span></label>
-              </div>
-              <input type="text" id="fieldDietaryCustom" placeholder="Other dietary needs (e.g. low-sodium, no shellfish)" maxlength="200" style="margin-top:0.5rem">
-            </div>
-            <div class="profile-field">
-              <div class="profile-field-label-row">
                 <label for="fieldPhone">Phone</label>
                 <div class="profile-privacy-widget" id="privacy_phone" data-value="all_guests"></div>
               </div>
@@ -289,6 +260,72 @@
               </div>
               <div id="linksContainer"></div>
               <button class="btn-small" id="addLinkBtn" type="button">+ Add Link</button>
+            </div>
+
+            <div class="profile-field">
+              <div class="profile-field-label-row">
+                <label>Dietary Preferences</label>
+                <div class="profile-privacy-widget" id="privacy_dietary" data-value="all_guests"></div>
+              </div>
+              <div id="dietaryOptions" class="dietary-options">
+                <label class="dietary-chip"><input type="checkbox" value="vegetarian"><span>Vegetarian</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="vegan"><span>Vegan</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="pescatarian"><span>Pescatarian</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="flexitarian"><span>Flexitarian</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="vegan-before-noon"><span>Vegan Before Noon</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="gluten-free"><span>Gluten-Free</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="dairy-free"><span>Dairy-Free</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="nut-free"><span>Nut-Free</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="halal"><span>Halal</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="kosher"><span>Kosher</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="keto"><span>Keto</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="paleo"><span>Paleo</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="carnivore"><span>Carnivore</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="whole30"><span>Whole30</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="raw-food"><span>Raw Food</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="low-fodmap"><span>Low-FODMAP</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="16-8-if"><span>16:8 IF</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="omad"><span>OMAD</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="5-2-if"><span>5:2 IF</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="no-sugar"><span>No Sugar</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="low-carb"><span>Low-Carb</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="mediterranean"><span>Mediterranean</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="ayurvedic"><span>Ayurvedic</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="macrobiotic"><span>Macrobiotic</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="fruitarian"><span>Fruitarian</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="vegan-with-women"><span>Vegan with Women</span></label>
+                <label class="dietary-chip"><input type="checkbox" value="baking-soda-washed"><span>Baking Soda Washed</span></label>
+              </div>
+              <input type="text" id="fieldDietaryCustom" placeholder="Other dietary needs" maxlength="200" style="margin-top:0.5rem">
+            </div>
+            <div class="profile-field">
+              <div class="profile-field-label-row">
+                <label>Allergies</label>
+                <div class="profile-privacy-widget" id="privacy_allergies" data-value="all_guests"></div>
+              </div>
+              <div id="allergyOptions" class="dietary-options">
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="peanuts"><span>Peanuts</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="tree-nuts"><span>Tree Nuts</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="shellfish"><span>Shellfish</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="fish"><span>Fish</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="eggs"><span>Eggs</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="milk"><span>Milk</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="soy"><span>Soy</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="wheat"><span>Wheat</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="gluten"><span>Gluten</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="sesame"><span>Sesame</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="corn"><span>Corn</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="latex"><span>Latex</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="sulphites"><span>Sulphites</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="nightshades"><span>Nightshades</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="msg"><span>MSG</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="alcohol"><span>Alcohol</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="caffeine"><span>Caffeine</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="histamine"><span>Histamine</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="red-dye"><span>Red Dye</span></label>
+                <label class="dietary-chip allergy-chip"><input type="checkbox" value="penicillin"><span>Penicillin</span></label>
+              </div>
+              <input type="text" id="fieldAllergyCustom" placeholder="Other allergies (e.g. bee stings, mango skin)" maxlength="200" style="margin-top:0.5rem">
             </div>
 
             <div class="profile-actions">

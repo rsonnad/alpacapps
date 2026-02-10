@@ -37,7 +37,7 @@ async function loadProfile() {
   const [profileRes, ownedRes, driverRes] = await Promise.all([
     supabase
       .from('app_users')
-      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, dietary_preferences, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
+      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, dietary_preferences, allergies, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
       .eq('id', currentUser.id)
       .single(),
     supabase
@@ -152,6 +152,14 @@ function renderProfile() {
     cb.checked = selectedDiets.includes(cb.value);
   });
   document.getElementById('fieldDietaryCustom').value = dietary.custom || '';
+
+  // Allergies
+  const allergies = d.allergies || {};
+  const selectedAllergies = allergies.selected || [];
+  document.querySelectorAll('#allergyOptions input[type="checkbox"]').forEach(cb => {
+    cb.checked = selectedAllergies.includes(cb.value);
+  });
+  document.getElementById('fieldAllergyCustom').value = allergies.custom || '';
 
   // Bio counter
   updateBioCount();
@@ -356,6 +364,7 @@ async function saveProfile() {
       whatsapp: document.getElementById('fieldWhatsApp').value.trim() || null,
       instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, '') || null,
       dietary_preferences: collectDietaryPreferences(),
+      allergies: collectAllergies(),
       links: collectLinks(),
       privacy_settings: collectPrivacySettings(),
     };
@@ -593,6 +602,16 @@ function collectDietaryPreferences() {
   return { selected, custom: custom || null };
 }
 
+function collectAllergies() {
+  const selected = [];
+  document.querySelectorAll('#allergyOptions input[type="checkbox"]:checked').forEach(cb => {
+    selected.push(cb.value);
+  });
+  const custom = document.getElementById('fieldAllergyCustom').value.trim();
+  if (!selected.length && !custom) return null;
+  return { selected, custom: custom || null };
+}
+
 // =============================================
 // DIRTY TRACKING
 // =============================================
@@ -612,6 +631,7 @@ function getFormSnapshot() {
     whatsapp: document.getElementById('fieldWhatsApp').value.trim(),
     instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, ''),
     dietary: JSON.stringify(collectDietaryPreferences()),
+    allergies: JSON.stringify(collectAllergies()),
     links: collectLinks(),
     privacy: collectPrivacySettings(),
   });
@@ -684,6 +704,10 @@ function bindEvents() {
   document.getElementById('fieldGender').addEventListener('change', updateSaveButton);
   document.getElementById('fieldDietaryCustom').addEventListener('input', updateSaveButton);
   document.querySelectorAll('#dietaryOptions input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', updateSaveButton);
+  });
+  document.getElementById('fieldAllergyCustom').addEventListener('input', updateSaveButton);
+  document.querySelectorAll('#allergyOptions input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', updateSaveButton);
   });
 
@@ -1421,6 +1445,7 @@ const PRIVACY_FIELDS = [
   { key: 'location_base', label: 'Location Base' },
   { key: 'birthday', label: 'Birthday' },
   { key: 'dietary', label: 'Dietary Preferences' },
+  { key: 'allergies', label: 'Allergies' },
   { key: 'phone', label: 'Phone' },
   { key: 'phone2', label: 'Phone 2' },
   { key: 'whatsapp', label: 'WhatsApp' },
