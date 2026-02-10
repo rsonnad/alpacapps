@@ -173,6 +173,7 @@ function showVersionModal(info) {
     const included = info.included || [];
     const pending = info.pending || [];
     const models = info.models || {};
+    const machine = info.machine || '';
 
     /** Render a small colored model badge for a branch */
     function modelBadge(branch) {
@@ -257,15 +258,15 @@ function showVersionModal(info) {
     // Build model summary line
     const uniqueModels = [...new Set(Object.values(models))].filter(Boolean);
     const modelSummaryLine = info.model
-      ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span> · `
-      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.join(', ')}</span> · ` : '');
+      ? `<span style="color:#d4883a;font-weight:600;">${esc(info.model)}</span>`
+      : (uniqueModels.length > 0 ? `<span style="color:#d4883a;">${uniqueModels.join(', ')}</span>` : '');
 
     overlay.innerHTML = `
       <div id="vi-modal">
         <div class="vi-header">
           <div>
-            <h2>${esc(info.version)}${info.model ? ` <span style="color:#d4883a;font-size:0.85em;font-weight:400;">${esc(info.model)}</span>` : ''}</h2>
-            <div class="vi-version-sub">${modelSummaryLine}${esc(info.commit || '?')} · ${fmtTime(info.timestamp)}</div>
+            <h2>${esc(info.version)}</h2>
+            <div class="vi-version-sub">${fmtTime(info.timestamp)} · ${esc(info.commit || '?')}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>
         </div>
@@ -371,6 +372,9 @@ export function setupVersionInfo() {
           · <span>${changeCount}</span> change${changeCount !== 1 ? 's' : ''}
           ${pendCount > 0 ? `· <span style="color:#fbbf24">${pendCount}</span> pending` : ''}
           · ${esc(info.commit || '?')}
+        </div>
+        <div class="vi-tooltip-stats" style="margin-top:4px;">
+          ${modelSummaryLine ? `Model: ${modelSummaryLine}` : 'Model: unknown'}${machine ? ` · Machine: ${esc(machine)}` : ''}
         </div>
         ${modelSummary}
       `;

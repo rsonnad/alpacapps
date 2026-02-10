@@ -53,6 +53,13 @@ fi
 DB_URL="postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+# Local machine name for version metadata (prefer env var)
+MACHINE_NAME="${AAP_MACHINE_NAME:-}"
+if [ -z "$MACHINE_NAME" ] && [ -f "$PROJECT_ROOT/.machine-name" ]; then
+  MACHINE_NAME=$(cat "$PROJECT_ROOT/.machine-name" | tr -d '\r' | head -n 1)
+fi
+SAFE_MACHINE_NAME=$(echo "$MACHINE_NAME" | sed 's/"/\\"/g')
+
 # Infer model from branch name if not explicitly provided
 if [ -z "$MODEL_CODE" ]; then
   CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
@@ -270,6 +277,7 @@ cat > "$PROJECT_ROOT/version.json" << ENDJSON
 {
   "version": "$NEW_DISPLAY_VERSION",
   "model": "$SAFE_MODEL_CODE",
+  "machine": "$SAFE_MACHINE_NAME",
   "commit": "$COMMIT_HASH",
   "full_commit": "$FULL_HASH",
   "timestamp": "$ISO_TIMESTAMP",
