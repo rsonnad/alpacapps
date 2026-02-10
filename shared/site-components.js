@@ -57,10 +57,9 @@ const AUTH_LINK = { text: 'Sign In', href: `${BASE_PATH}/login/` };
  * @param {string} options.activePage - Current page identifier for nav highlighting
  * @param {boolean} options.showMistiq - Whether to show the Mistiq nav link (only true on Mistiq pages)
  * @param {string} options.version - Version string for display in header
- * @param {boolean} options.showRoleBadge - Whether to render a role badge placeholder (for signed-in pages)
  */
 function renderHeader(options = {}) {
-  const { transparent = false, light = true, activePage = '', showMistiq = false, version = '', showRoleBadge = false } = options;
+  const { transparent = false, light = true, activePage = '', showMistiq = false, version = '' } = options;
 
   const headerClass = transparent ? 'aap-header--transparent' : 'aap-header--solid';
   const colorClass = light ? 'aap-header--light' : 'aap-header--dark';
@@ -85,8 +84,6 @@ function renderHeader(options = {}) {
           <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
           ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
         </a>
-        ${showRoleBadge ? '<span id="roleBadge" class="role-badge" style="display:none"></span>' : ''}
-
         <nav class="aap-nav" id="aap-nav">
           <ul class="aap-nav__list">
             ${navItems}

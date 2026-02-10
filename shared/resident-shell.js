@@ -145,6 +145,7 @@ function renderUserInfo(el, appUser, profileHref) {
       ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
     </button>
     <div class="user-menu-dropdown hidden">
+      <div id="roleBadge" class="role-badge dropdown-role-badge" style="display:none"></div>
       <a href="${profileHref}" class="user-menu-item">Profile</a>
       <button type="button" class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
