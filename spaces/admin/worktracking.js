@@ -198,15 +198,20 @@ function renderEntries() {
     const desc = e.description ? escapeHtml(e.description) : '<span style="color:var(--text-muted)">—</span>';
     const spaceName = e.space?.name || '';
     const manualTag = e.is_manual ? ' <span style="font-size:0.6rem;background:#eef2ff;color:#6366f1;padding:0.1rem 0.3rem;border-radius:3px;font-weight:700;">M</span>' : '';
-    const loc = formatLocLink(e);
     const checked = selectedIds.has(e.id) ? 'checked' : '';
     const canCheck = !isDemoUser() && e.clock_out && !e.is_paid;
+    const gpsUrl = formatGpsUrl(e);
 
     // Build second row meta items
     const metaParts = [];
     if (status) metaParts.push(status);
-    if (spaceName) metaParts.push(`<span style="color:#6b7280;">Space:</span> ${escapeHtml(spaceName)}`);
-    if (e.latitude || e.clock_in_lat || e.clock_out_lat) metaParts.push(loc);
+    if (spaceName && gpsUrl) {
+      metaParts.push(`<a class="loc-link" href="${gpsUrl}" target="_blank" rel="noopener" title="View location">${escapeHtml(spaceName)} ↗</a>`);
+    } else if (spaceName) {
+      metaParts.push(`<span style="color:#6b7280;">${escapeHtml(spaceName)}</span>`);
+    } else if (gpsUrl) {
+      metaParts.push(`<a class="loc-link" href="${gpsUrl}" target="_blank" rel="noopener">Location ↗</a>`);
+    }
     metaParts.push(`<button class="btn-small" data-edit="${e.id}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Edit</button>`);
 
     return `<tr class="entry-row1">
@@ -807,9 +812,9 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function formatLocLink(entry) {
+function formatGpsUrl(entry) {
   const lat = entry.clock_in_lat || entry.clock_out_lat;
   const lng = entry.clock_in_lng || entry.clock_out_lng;
-  if (!lat || !lng) return '<span style="color:var(--text-muted)">—</span>';
-  return `<a class="loc-link" href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener" title="${lat}, ${lng}">Map</a>`;
+  if (!lat || !lng) return null;
+  return `https://www.google.com/maps?q=${lat},${lng}`;
 }
