@@ -489,10 +489,10 @@ function renderCards(spacesToRender) {
     const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
       ? fmtDate(space.availableFrom)
       : 'NOW';
-    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
+    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open';
 
     const fromBadgeClass = availFromStr === 'NOW' ? 'available' : 'occupied';
-    const untilBadgeClass = availUntilStr === 'Open-ended' ? 'available' : 'occupied';
+    const untilBadgeClass = availUntilStr === 'Open' ? 'available' : 'occupied';
 
     let badges = `<span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>`;
     badges += `<span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>`;
@@ -620,7 +620,7 @@ function renderTable(spacesToRender) {
     const availFromStr = space.availableFrom && space.availableFrom > getAustinToday()
       ? fmtDate(space.availableFrom)
       : 'NOW';
-    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open-ended';
+    const availUntilStr = space.availableUntil ? fmtDate(space.availableUntil) : 'Open';
 
     let statusBadge = space.isAvailable
       ? '<span class="badge badge-circle available" title="Available">A</span>'
