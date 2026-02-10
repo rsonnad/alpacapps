@@ -139,9 +139,9 @@ class HoursService {
 
     const existingSet = new Set((existing || []).map(e => e.app_user_id));
 
-    // Filter out users who already have a profile, and the bot user
+    // Filter out users who already have a profile, bot user, and demon role
     return (allUsers || []).filter(u =>
-      !existingSet.has(u.id) && u.email !== 'bot@alpacaplayhouse.com'
+      !existingSet.has(u.id) && u.email !== 'bot@alpacaplayhouse.com' && u.role !== 'demon'
     );
   }
 
