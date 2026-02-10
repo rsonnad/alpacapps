@@ -867,8 +867,8 @@ function renderUsers() {
                   : ''
                 }
                 ${isCurrentUser
-                  ? '-'
-                  : `<button class="btn-danger" onclick="removeUser('${u.id}')">Remove</button>`
+                  ? ''
+                  : `<button class="btn-danger btn-small" onclick="removeUser('${u.id}')" title="Remove user">&times;</button>`
                 }
               </td>
             </tr>
@@ -952,6 +952,7 @@ let permModalUserId = null;
 let permModalUserRole = null;
 let permModalRoleDefaults = new Set();
 let permModalOverrides = new Map(); // key → boolean (granted)
+let permModalInitialOverrides = null; // snapshot of overrides at modal open, for dirty detection
 let allRoleMappings = null; // permission_key → [roles], cached across modal opens
 
 async function showPermissionsModal(userId) {
@@ -1000,9 +1001,17 @@ async function showPermissionsModal(userId) {
     const stateClass = override === true ? 'perm-granted' :
                        override === false ? 'perm-revoked' : '';
     const roles = (allRoleMappings[perm.key] || []).sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b));
-    const rolesHtml = roles.map(r =>
-      `<span class="perm-role-chip" style="background:${r === 'admin' || r === 'oracle' ? '#fef3c7' : r === 'staff' ? '#e0e7ff' : r === 'resident' ? '#d1fae5' : r === 'associate' ? '#fce7f3' : '#e5e7eb'};color:${r === 'admin' || r === 'oracle' ? '#92400e' : r === 'staff' ? '#3730a3' : r === 'resident' ? '#065f46' : r === 'associate' ? '#9d174d' : '#6b7280'}">${roleAbbrev[r] || r}</span>`
-    ).join('');
+    const roleColors = {
+      oracle:    { bg: '#92400e', color: '#fff' },
+      admin:     { bg: '#b45309', color: '#fff' },
+      staff:     { bg: '#3730a3', color: '#fff' },
+      resident:  { bg: '#065f46', color: '#fff' },
+      associate: { bg: '#9d174d', color: '#fff' },
+    };
+    const rolesHtml = roles.map(r => {
+      const c = roleColors[r] || { bg: '#6b7280', color: '#fff' };
+      return `<span class="perm-role-chip" style="background:${c.bg};color:${c.color};">${roleAbbrev[r] || r}</span>`;
+    }).join('');
     return `<tr class="${stateClass} ${indent ? 'pt-indent' : ''}" data-key="${perm.key}" data-role-default="${isRoleDefault}">
       <td class="pt-check"><input type="checkbox" ${isEffective ? 'checked' : ''} onchange="togglePermOverride(this, '${perm.key}', ${isRoleDefault})"></td>
       <td class="pt-name">${indent ? '↳ ' : ''}${perm.label}</td>
@@ -1040,7 +1049,31 @@ async function showPermissionsModal(userId) {
   }
 
   document.getElementById('permissionCategories').innerHTML = html;
+  // Snapshot initial state for dirty detection
+  permModalInitialOverrides = new Map(permModalOverrides);
+  updateSaveButtonState();
   document.getElementById('permissionsModal').classList.remove('hidden');
+}
+
+function updateSaveButtonState() {
+  const saveBtn = document.getElementById('permSaveBtn');
+  if (!saveBtn) return;
+  // Compare current overrides to initial snapshot
+  let dirty = false;
+  if (permModalInitialOverrides.size !== permModalOverrides.size) {
+    dirty = true;
+  } else {
+    for (const [k, v] of permModalOverrides) {
+      if (permModalInitialOverrides.get(k) !== v) { dirty = true; break; }
+    }
+    if (!dirty) {
+      for (const k of permModalInitialOverrides.keys()) {
+        if (!permModalOverrides.has(k)) { dirty = true; break; }
+      }
+    }
+  }
+  saveBtn.disabled = !dirty;
+  saveBtn.style.opacity = dirty ? '1' : '0.4';
 }
 
 function togglePermOverride(checkbox, key, isRoleDefault) {
@@ -1061,6 +1094,7 @@ function togglePermOverride(checkbox, key, isRoleDefault) {
     permModalOverrides.delete(key);
     row.className = indentClass.trim();
   }
+  updateSaveButtonState();
 }
 
 function closePermissionsModal() {
