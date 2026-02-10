@@ -755,6 +755,12 @@ window._disconnectTesla = async function(accountId) {
 
 // Connect Tesla account via OAuth flow
 window._connectTesla = async function(accountId) {
+  // Immediate visual feedback on the clicked button
+  try {
+    const btn = event?.target?.closest?.('button') || event?.target;
+    if (btn) { btn.disabled = true; btn.textContent = 'Connecting\u2026'; btn.style.opacity = '0.6'; }
+  } catch(_) {}
+
   // Build Tesla OAuth URL — callback page gets a fresh session from localStorage
   const state = `${accountId}`;
   const params = new URLSearchParams({
