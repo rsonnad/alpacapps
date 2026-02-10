@@ -4,6 +4,7 @@ import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { emailService } from '../../shared/email-service.js';
 import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
 import { hasPermission } from '../../shared/auth.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // Timeout configuration
 const DB_TIMEOUT_MS = 10000; // 10 seconds for database operations
@@ -423,13 +424,14 @@ function showInvitationModal(email, role) {
   const roleDescriptions = {
     admin: 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)',
     staff: 'staff access (view all spaces and occupant details)',
+    demo: 'demo access (explore the product; names and amounts are sample data only)',
     resident: 'resident access (cameras, lighting, and house info)',
     associate: 'associate access (cameras, lighting, and house info)',
     public: 'public access (view available spaces)',
   };
   const roleDescription = roleDescriptions[role] || roleDescriptions.resident;
 
-  const roleLabels = { admin: 'an admin', staff: 'a staff member', resident: 'a resident', associate: 'an associate', public: 'a public user' };
+  const roleLabels = { admin: 'an admin', staff: 'a staff member', demo: 'a demo user', resident: 'a resident', associate: 'an associate', public: 'a public user' };
   const inviteText = `Hi,
 
 You've been invited to access AlpacApp as ${roleLabels[role] || 'a user'}.
@@ -824,10 +826,12 @@ function renderUsers() {
           const overrideTitle = isOverride
             ? `Manual override (${u.is_current_resident_override ? 'forced ON' : 'forced OFF'}). Click to reset to auto.`
             : `Auto-derived from assignments. Click to override.`;
+          const displayName = isDemoUser() ? redactString(u.display_name || '-', 'name') : (u.display_name || '-');
+          const personName = isDemoUser() ? redactString(getPersonName(u.person_id), 'name') : getPersonName(u.person_id);
           return `
             <tr>
               <td>
-                ${u.display_name || '-'}
+                <span class="${isDemoUser() ? 'demo-redacted' : ''}">${displayName}</span>
                 ${isCurrentUser ? '<span class="you-tag">You</span>' : ''}
               </td>
               <td>${u.email}</td>
@@ -835,10 +839,11 @@ function renderUsers() {
                 <select
                   class="role-select"
                   data-user-id="${u.id}"
-                  ${isCurrentUser ? 'disabled' : ''}
+                  ${isCurrentUser || isDemoUser() ? 'disabled' : ''}
                   onchange="updateUserRole('${u.id}', this.value)"
                 >
                   <option value="public" ${u.role === 'public' ? 'selected' : ''}>Public</option>
+                  <option value="demo" ${u.role === 'demo' ? 'selected' : ''}>Demo</option>
                   <option value="associate" ${u.role === 'associate' ? 'selected' : ''}>Associate</option>
                   <option value="resident" ${u.role === 'resident' ? 'selected' : ''}>Resident</option>
                   <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>Staff</option>
@@ -855,9 +860,9 @@ function renderUsers() {
               </td>
               <td class="person-cell">
                 ${u.person_id
-                  ? `<span class="person-link" title="Click to unlink">${getPersonName(u.person_id)}</span>
-                     <button class="btn-unlink" onclick="unlinkPerson('${u.id}')" title="Unlink person">&times;</button>`
-                  : `<button class="btn-text btn-small" onclick="showLinkPersonModal('${u.id}', '${u.email}')">Link</button>`
+                  ? `<span class="person-link ${isDemoUser() ? 'demo-redacted' : ''}" title="Click to unlink">${personName}</span>
+                     ${isDemoUser() ? '' : `<button class="btn-unlink" onclick="unlinkPerson('${u.id}')" title="Unlink person">&times;</button>`}`
+                  : (isDemoUser() ? '—' : `<button class="btn-text btn-small" onclick="showLinkPersonModal('${u.id}', '${u.email}')">Link</button>`)
                 }
               </td>
               <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
@@ -991,8 +996,8 @@ async function showPermissionsModal(userId) {
     }
   }
 
-  const roleOrder = ['associate', 'resident', 'staff', 'admin', 'oracle'];
-  const roleAbbrev = { associate: 'asc', resident: 'res', staff: 'stf', admin: 'adm', oracle: 'orc' };
+  const roleOrder = ['associate', 'resident', 'demo', 'staff', 'admin', 'oracle'];
+  const roleAbbrev = { associate: 'asc', resident: 'res', demo: 'dem', staff: 'stf', admin: 'adm', oracle: 'orc' };
 
   function renderRow(perm, indent) {
     const isRoleDefault = permModalRoleDefaults.has(perm.key);
@@ -1005,6 +1010,7 @@ async function showPermissionsModal(userId) {
       oracle:    { bg: '#92400e', color: '#fff' },
       admin:     { bg: '#b45309', color: '#fff' },
       staff:     { bg: '#3730a3', color: '#fff' },
+      demo:      { bg: '#6b7280', color: '#fff' },
       resident:  { bg: '#065f46', color: '#fff' },
       associate: { bg: '#9d174d', color: '#fff' },
     };

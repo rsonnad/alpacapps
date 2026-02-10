@@ -1,5 +1,5 @@
--- Migration 019: Add demo role for product demos (view-only, redacted sensitive data)
--- Run in Supabase SQL Editor after 018.
+-- Migration 020: Add demo role for product demos (view-only, redacted sensitive data)
+-- Run in Supabase SQL Editor after 019.
 -- Does not change behavior for existing roles.
 
 -- ============================================

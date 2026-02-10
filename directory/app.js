@@ -6,6 +6,7 @@
 import { supabase } from '../shared/supabase.js';
 import { initAuth, getAuthState } from '../shared/auth.js';
 import { renderHeader, renderFooter, initSiteComponents } from '../shared/site-components.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // =============================================
 // CONSTANTS
@@ -17,6 +18,7 @@ const ROLE_LABELS = {
   staff: 'Staff',
   resident: 'Resident',
   associate: 'Associate',
+  demo: 'Demo',
   public: 'Guest'
 };
 
@@ -162,7 +164,8 @@ function renderProfile(user, ctx) {
   html += '<div class="dir-card">';
 
   // --- Header: avatar, name, badges ---
-  const name = user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous';
+  const nameRaw = user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous';
+  const name = (isDemoUser() && !isSelf) ? redactString(nameRaw, 'name') : nameRaw;
   const initials = getInitials(name);
   const avatarHtml = user.avatar_url
     ? `<img src="${esc(user.avatar_url)}" alt="${esc(name)}">`
@@ -178,7 +181,7 @@ function renderProfile(user, ctx) {
 
   html += `<div class="dir-header">
     <div class="dir-avatar">${avatarHtml}</div>
-    <h1 class="dir-name">${esc(name)}</h1>
+    <h1 class="dir-name ${(isDemoUser() && !isSelf) ? 'demo-redacted' : ''}">${esc(name)}</h1>
     <div class="dir-badges">${badgesHtml}</div>
   </div>`;
 

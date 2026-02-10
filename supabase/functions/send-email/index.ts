@@ -538,11 +538,25 @@ Best regards,
 Alpaca Playhouse`
       };
 
-    case "staff_invitation":
-      const roleLabel = data.role === 'admin' ? 'an admin' : 'a staff member';
-      const roleDescription = data.role === 'admin'
-        ? 'full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)'
-        : 'staff access (view all spaces and occupant details)';
+    case "staff_invitation": {
+      const roleLabels: Record<string, string> = {
+        admin: "an admin",
+        staff: "a staff member",
+        demo: "a demo user",
+        resident: "a resident",
+        associate: "an associate",
+        public: "a public user",
+      };
+      const roleDescriptions: Record<string, string> = {
+        admin: "full admin access (view all spaces, occupant details, edit spaces, manage photos, and invite users)",
+        staff: "staff access (view all spaces and occupant details)",
+        demo: "demo access (explore the product; names and amounts are sample data only)",
+        resident: "resident access (cameras, lighting, and house info)",
+        associate: "associate access (cameras, lighting, and house info)",
+        public: "public access (view available spaces)",
+      };
+      const roleLabel = roleLabels[data.role as string] ?? "a user";
+      const roleDescription = roleDescriptions[data.role as string] ?? "access to the platform";
       return {
         subject: "You're Invited to GenAlpaca Spaces",
         html: `
@@ -581,6 +595,7 @@ If you have any questions, reply to this email.
 Best regards,
 GenAlpaca Team`
       };
+    }
 
     // ===== RENTAL INVITE =====
     case "invite_to_apply":

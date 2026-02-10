@@ -10,6 +10,7 @@ import {
   DIRECTION,
   STATUS
 } from '../../shared/accounting-service.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // State
 let transactions = [];
@@ -97,6 +98,11 @@ function formatCurrency(amount) {
     style: 'currency',
     currency: 'USD'
   }).format(amount || 0);
+}
+
+function formatCurrencyDisplay(amount) {
+  if (isDemoUser()) return redactString(formatCurrency(amount), 'amount');
+  return formatCurrency(amount);
 }
 
 function formatDate(dateStr) {
@@ -267,25 +273,25 @@ function buildMonthColumn(m, isCurrent, isSummary, occOverride, windowSize) {
         </div>
         <div class="month-row refunds">
           <span class="month-row-label"><span class="month-row-dot refunds"></span>Refunds</span>
-          <span class="month-row-value">${m.refunds > 0 ? '-' : ''}${formatCurrency(m.refunds)}</span>
+          <span class="month-row-value ${isDemoUser() ? 'demo-redacted' : ''}">${m.refunds > 0 ? '-' : ''}${formatCurrencyDisplay(m.refunds)}</span>
         </div>
         <div class="month-row separator"></div>
         <div class="month-row total-received">
           <span class="month-row-label">Total In</span>
-          <span class="month-row-value">${formatCurrency(m.income)}</span>
+          <span class="month-row-value ${isDemoUser() ? 'demo-redacted' : ''}">${formatCurrencyDisplay(m.income)}</span>
         </div>
         <div class="month-row total-refunded">
           <span class="month-row-label">Total Out</span>
-          <span class="month-row-value">${m.expenses > 0 ? '-' : ''}${formatCurrency(m.expenses)}</span>
+          <span class="month-row-value ${isDemoUser() ? 'demo-redacted' : ''}">${m.expenses > 0 ? '-' : ''}${formatCurrencyDisplay(m.expenses)}</span>
         </div>
         <div class="month-row separator"></div>
         <div class="month-row net">
           <span class="month-row-label">Net</span>
-          <span class="month-row-value ${netClass}">${formatCurrency(m.net)}</span>
+          <span class="month-row-value ${netClass} ${isDemoUser() ? 'demo-redacted' : ''}">${formatCurrencyDisplay(m.net)}</span>
         </div>
         <div class="month-row pending">
           <span class="month-row-label"><span class="month-row-dot pending"></span>Pending</span>
-          <span class="month-row-value">${formatCurrency(m.pending || 0)}</span>
+          <span class="month-row-value ${isDemoUser() ? 'demo-redacted' : ''}">${formatCurrencyDisplay(m.pending || 0)}</span>
         </div>
         ${occSection}
       </div>
@@ -404,23 +410,25 @@ function renderTransactionRow(tx) {
   const dirIcon = tx.direction === 'income' ? '+' : '-';
   const amountClass = tx.direction === 'income' ? 'amount-income' : 'amount-expense';
   const prefix = tx.direction === 'expense' ? '-' : '';
-  const personName = tx.person_name || (tx.person ? `${tx.person.first_name} ${tx.person.last_name}` : '');
+  const personNameRaw = tx.person_name || (tx.person ? `${tx.person.first_name} ${tx.person.last_name}` : '');
+  const personName = isDemoUser() ? redactString(personNameRaw || '—', 'name') : (personNameRaw || '—');
   const description = tx.description || '';
   const displayDesc = personName ? `${personName}${description ? ' — ' + description : ''}` : description || '—';
 
-  // Determine if refund is possible (Square + completed + income)
-  const canRefund = tx.direction === 'income' && tx.payment_method === 'square' && tx.status === 'completed' && tx.square_payment_id;
+  const canRefund = tx.direction === 'income' && tx.payment_method === 'square' && tx.status === 'completed' && tx.square_payment_id && !isDemoUser();
 
   const rowClass = tx.status === 'voided' ? 'voided' : (tx.is_test ? 'test-row' : '');
   const testBadge = tx.is_test ? ' <span class="test-badge">sandbox</span>' : '';
+
+  const amountDisplay = isDemoUser() ? redactString(prefix + formatCurrency(tx.amount), 'amount') : (prefix + formatCurrency(tx.amount));
 
   return `
     <tr class="${rowClass}">
       <td style="white-space: nowrap;">${formatDate(tx.transaction_date)}</td>
       <td><span class="direction-badge ${tx.direction}">${dirIcon}</span></td>
       <td><span class="category-badge">${CATEGORY_LABELS[tx.category] || tx.category}</span>${testBadge}</td>
-      <td class="col-description" title="${escapeHtml(displayDesc)}">${escapeHtml(displayDesc)}</td>
-      <td style="text-align: right;" class="${amountClass}">${prefix}${formatCurrency(tx.amount)}</td>
+      <td class="col-description ${isDemoUser() ? 'demo-redacted' : ''}" title="${escapeHtml(displayDesc)}">${escapeHtml(displayDesc)}</td>
+      <td style="text-align: right;" class="${amountClass} ${isDemoUser() ? 'demo-redacted' : ''}">${amountDisplay}</td>
       <td class="col-method"><span class="method-badge">${PAYMENT_METHOD_LABELS[tx.payment_method] || tx.payment_method || '—'}</span></td>
       <td class="col-status"><span class="tx-status-badge ${tx.status}">${tx.status}</span></td>
       <td>

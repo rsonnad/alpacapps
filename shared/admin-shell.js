@@ -218,11 +218,13 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     const userRole = state.appUser?.role;
     let meetsRequirement;
     if (requiredPermission) {
-      // Permission-based access (preferred)
       meetsRequirement = state.hasPermission?.(requiredPermission);
+    } else if (userRole === 'demo') {
+      const tabDef = ALL_ADMIN_TABS.find(t => t.id === activeTab);
+      const tabPermission = tabDef?.permission;
+      meetsRequirement = !!(tabPermission && state.hasPermission?.(tabPermission));
     } else {
-      // Legacy role-based access (backward compat)
-      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
@@ -245,15 +247,35 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       } else {
         document.body.classList.remove('is-admin');
       }
+      if (state.appUser.role === 'demo') {
+        document.body.classList.add('is-demo-mode');
+      } else {
+        document.body.classList.remove('is-demo-mode');
+      }
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
+      const isDemo = state.appUser.role === 'demo';
       const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
 
       renderContextSwitcher(state.appUser?.role, resolvedSection);
-      // Render tab navigation (pass full auth state for permission checks)
       renderTabNav(activeTab, state, resolvedSection);
 
-      // Sign out handlers (only bind once)
+      let demoBanner = document.getElementById('demoModeBanner');
+      if (isDemo && document.getElementById('appContent')) {
+        const appContent = document.getElementById('appContent');
+        if (!demoBanner) {
+          demoBanner = document.createElement('div');
+          demoBanner.id = 'demoModeBanner';
+          demoBanner.className = 'demo-mode-banner';
+          demoBanner.setAttribute('role', 'status');
+          demoBanner.textContent = "You're viewing the app in demo mode. Names and dollar amounts are sample data only.";
+          appContent.insertBefore(demoBanner, appContent.firstChild);
+        }
+        demoBanner.classList.remove('hidden');
+      } else if (demoBanner) {
+        demoBanner.classList.add('hidden');
+      }
+
       if (!pageContentShown) {
         const handleSignOut = async () => {
           await signOut();

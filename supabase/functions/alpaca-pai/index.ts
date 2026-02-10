@@ -56,6 +56,7 @@ const ROLE_LEVEL: Record<string, number> = {
   staff: 2,
   resident: 1,
   associate: 1,
+  demo: 1,
 };
 
 const GEMINI_URL =
@@ -231,7 +232,7 @@ async function buildUserScope(
   return {
     role: appUser.role,
     userLevel,
-    displayName: appUser.display_name || appUser.email,
+    displayName: appUser.role === "demo" ? "Demo User" : (appUser.display_name || appUser.email),
     appUserId: appUser.id || "",
     assignedSpaceIds,
     allAccessibleSpaceIds,
@@ -1874,36 +1875,66 @@ async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> 
 // =============================================
 
 async function handleChatRequest(req: Request, body: any, supabase: any): Promise<Response> {
-  // 1. Auth
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return jsonResponse({ error: "Unauthorized" }, 401);
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-
-  const userToken = authHeader.replace("Bearer ", "");
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(userToken);
-  if (authError || !user) {
-    return jsonResponse({ error: "Invalid token" }, 401);
-  }
-
-  // Check granular permission: use_pai
-  const { appUser, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, user.id, "use_pai");
-  if (!hasPaiPerm) {
-    return jsonResponse({ error: "Insufficient permissions" }, 403);
-  }
-  const userLevel = ROLE_LEVEL[appUser?.role] || 0;
-
-  // 2. Parse request
   const { message, conversationHistory = [] }: PaiRequest = body;
   const context = body.context || {};
   const isEmailChannel = context.source === "email";
   if (!message?.trim()) {
     return jsonResponse({ error: "Message is required" }, 400);
+  }
+
+  const authHeader = req.headers.get("Authorization");
+  const token = authHeader?.replace("Bearer ", "") ?? "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  let appUser: any;
+  let userLevel: number;
+
+  // Email channel: resend-inbound-webhook calls with service role key (no user JWT)
+  if (isEmailChannel && token === serviceKey) {
+    const senderEmail = (context.sender || "").trim().toLowerCase();
+    if (senderEmail) {
+      const { data: appUserRow } = await supabase
+        .from("app_users")
+        .select("id, auth_user_id, role, display_name, email, person_id")
+        .ilike("email", senderEmail)
+        .limit(1)
+        .maybeSingle();
+      if (appUserRow?.auth_user_id) {
+        const { appUser: resolved, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, appUserRow.auth_user_id, "use_pai");
+        if (hasPaiPerm && resolved) {
+          appUser = resolved;
+          userLevel = ROLE_LEVEL[appUser.role] ?? 1;
+        }
+      }
+    }
+    if (!appUser) {
+      appUser = {
+        id: "",
+        role: "resident",
+        display_name: context.sender || "Email sender",
+        email: context.sender,
+        person_id: null,
+      };
+      userLevel = ROLE_LEVEL.resident ?? 1;
+    }
+  } else {
+    // Normal auth: require user JWT
+    if (!authHeader) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return jsonResponse({ error: "Invalid token" }, 401);
+    }
+    const { appUser: au, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, user.id, "use_pai");
+    if (!hasPaiPerm) {
+      return jsonResponse({ error: "Insufficient permissions" }, 403);
+    }
+    appUser = au;
+    userLevel = ROLE_LEVEL[appUser?.role] ?? 0;
   }
 
   console.log(`PAI ${isEmailChannel ? "email" : "chat"} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
@@ -2033,14 +2064,16 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
         ? `Done! ${actionsTaken.map(a => a.result).join(". ")}`
         : "I couldn't process that request. Please try again.");
 
-  // Log interaction for kiosk PAI counter
-  try {
-    await supabase.from('pai_interactions').insert({
-      app_user_id: appUser.id,
-      source: 'chat',
-      message_preview: message.substring(0, 100),
-    });
-  } catch (_) { /* non-critical */ }
+  // Log interaction for kiosk PAI counter (skip when email sender has no app_user id)
+  if (appUser.id) {
+    try {
+      await supabase.from('pai_interactions').insert({
+        app_user_id: appUser.id,
+        source: isEmailChannel ? 'email' : 'chat',
+        message_preview: message.substring(0, 100),
+      });
+    } catch (_) { /* non-critical */ }
+  }
 
   return jsonResponse({
     reply,

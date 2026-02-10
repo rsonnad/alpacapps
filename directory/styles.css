@@ -353,3 +353,10 @@
     min-width: unset;
   }
 }
+
+/* Demo mode redacted text (names only on directory) */
+.demo-redacted {
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}

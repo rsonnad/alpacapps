@@ -530,3 +530,32 @@
     font-size: 0.6rem;
   }
 }
+
+/* Demo mode: redacted text and banner (only when role is demo) */
+.demo-redacted {
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+.demo-mode-banner {
+  background: var(--accent-light, #e0f2fe);
+  color: var(--accent, #0369a1);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent, #0369a1);
+}
+
+.demo-mode-banner.hidden {
+  display: none;
+}
+
+body.is-demo-mode #appContent button:not([data-demo-allowed]),
+body.is-demo-mode #appContent [type="submit"]:not([data-demo-allowed]),
+body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
+  pointer-events: none;
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -7,6 +7,7 @@ import { hoursService, HoursService } from '../../shared/hours-service.js';
 import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
 import { payoutService } from '../../shared/payout-service.js';
 import { identityService } from '../../shared/identity-service.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // State
 let associates = [];
@@ -171,9 +172,9 @@ function renderSummary() {
     else unpaidAmt += amt;
   }
   document.getElementById('sumHours').textContent = HoursService.formatHoursDecimal(totalMins);
-  document.getElementById('sumEarned').textContent = HoursService.formatCurrency(totalAmt);
-  document.getElementById('sumPaid').textContent = HoursService.formatCurrency(paidAmt);
-  document.getElementById('sumUnpaid').textContent = HoursService.formatCurrency(unpaidAmt);
+  document.getElementById('sumEarned').textContent = formatCurrencyDisplay(totalAmt);
+  document.getElementById('sumPaid').textContent = formatCurrencyDisplay(paidAmt);
+  document.getElementById('sumUnpaid').textContent = formatCurrencyDisplay(unpaidAmt);
 }
 
 function renderEntries() {
@@ -191,25 +192,25 @@ function renderEntries() {
     const clockOut = e.clock_out ? HoursService.formatTime(e.clock_out) : '<span class="badge active">Active</span>';
     const mins = parseFloat(e.duration_minutes) || 0;
     const hours = HoursService.formatDuration(mins);
-    const rate = HoursService.formatCurrency(e.hourly_rate);
-    const amount = HoursService.formatCurrency((mins / 60) * parseFloat(e.hourly_rate));
+    const rate = formatCurrencyDisplay(e.hourly_rate);
+    const amount = formatCurrencyDisplay((mins / 60) * parseFloat(e.hourly_rate));
     const status = e.clock_out === null ? '' : (e.is_paid ? '<span class="badge paid">Paid</span>' : '<span class="badge unpaid">Unpaid</span>');
     const desc = e.description ? escapeHtml(e.description.substring(0, 60)) : '<span style="color:var(--text-muted)">—</span>';
     const spaceName = e.space?.name || '<span style="color:var(--text-muted)">—</span>';
     const manualTag = e.is_manual ? ' <span style="font-size:0.6rem;background:#eef2ff;color:#6366f1;padding:0.1rem 0.3rem;border-radius:3px;font-weight:700;">M</span>' : '';
     const loc = formatLocLink(e);
     const checked = selectedIds.has(e.id) ? 'checked' : '';
-    const canCheck = e.clock_out && !e.is_paid;
+    const canCheck = !isDemoUser() && e.clock_out && !e.is_paid;
 
     return `<tr>
       <td class="cb">${canCheck ? `<input type="checkbox" class="entry-cb" data-id="${e.id}" ${checked}>` : ''}</td>
-      <td>${escapeHtml(name)}${manualTag}</td>
+      <td class="${isDemoUser() ? 'demo-redacted' : ''}">${escapeHtml(name)}${manualTag}</td>
       <td>${HoursService.formatDate(date)}</td>
       <td>${clockIn}</td>
       <td>${clockOut}</td>
       <td>${hours}</td>
-      <td>${rate}</td>
-      <td><strong>${amount}</strong></td>
+      <td class="${isDemoUser() ? 'demo-redacted' : ''}">${rate}</td>
+      <td class="${isDemoUser() ? 'demo-redacted' : ''}"><strong>${amount}</strong></td>
       <td>${status}</td>
       <td title="${escapeHtml(e.description || '')}">${desc}</td>
       <td>${spaceName}</td>
@@ -236,16 +237,17 @@ function renderAssociateConfig() {
     const idBadge = renderIdBadge(idStatus);
     const idActions = renderIdActions(a, idStatus);
 
+    const rateDisplay = isDemoUser() ? redactString('$' + rate.toFixed(2), 'amount') : ('$' + rate.toFixed(2));
     return `<div class="assoc-card" data-profile-id="${a.id}">
-      <h4>
+      <h4 class="${isDemoUser() ? 'demo-redacted' : ''}">
         ${escapeHtml(name)}
         <span class="role-tag ${role}">${role}</span>
       </h4>
       <p class="detail">${escapeHtml(a.app_user?.email || '')}</p>
       <p class="detail">Payment: ${escapeHtml(method)}${handle ? ' — ' + escapeHtml(handle) : ''}</p>
       <div class="detail" style="margin-top:0.25rem;">ID: ${idBadge} ${idActions}</div>
-      <div class="rate-highlight">
-        <span class="rate-value">$${rate.toFixed(2)}</span>
+      <div class="rate-highlight ${isDemoUser() ? 'demo-redacted' : ''}">
+        <span class="rate-value">${rateDisplay}</span>
         <span class="rate-unit">/ hour</span>
       </div>
       <div class="rate-row">
@@ -785,7 +787,13 @@ function renderWorkGroups() {
 // =============================================
 function getAssocName(assocOrProfile) {
   const u = assocOrProfile.app_user || assocOrProfile;
-  return u?.display_name || `${u?.first_name || ''} ${u?.last_name || ''}`.trim() || u?.email || '?';
+  const raw = u?.display_name || `${u?.first_name || ''} ${u?.last_name || ''}`.trim() || u?.email || '?';
+  return isDemoUser() ? redactString(raw, 'name') : raw;
+}
+
+function formatCurrencyDisplay(amt) {
+  const s = HoursService.formatCurrency(amt);
+  return isDemoUser() ? redactString(s, 'amount') : s;
 }
 
 function escapeHtml(str) {
