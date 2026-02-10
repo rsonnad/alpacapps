@@ -432,23 +432,26 @@ function handleSort(column) {
   renderSpacesView();
 }
 
-function getSpaceCategoryLabel() {
+function getSpaceCategoryType() {
   const d = document.getElementById('showDwellings')?.checked ?? true;
   const e = document.getElementById('showEventSpaces')?.checked ?? true;
   const o = document.getElementById('showOther')?.checked ?? true;
-  if (d && !e && !o) return 'Dwellings';
-  if (!d && e && !o) return 'Event Spaces';
-  if (!d && !e && o) return 'Other Spaces';
-  if (d && e && !o) return 'Dwellings & Events';
-  if (d && !e && o) return 'Dwellings & Other';
-  if (!d && e && o) return 'Events & Other';
-  return 'All Spaces';
+  if (d && e && o) return 'total';
+  if (d && !e && !o) return 'dwelling';
+  if (!d && e && !o) return 'event';
+  if (!d && !e && o) return 'other';
+  if (d && e && !o) return 'dwelling & event';
+  if (d && !e && o) return 'dwelling & other';
+  if (!d && e && o) return 'event & other';
+  if (!d && !e && !o) return 'total';
+  return 'total';
 }
 
 function renderSpacesView() {
   const filtered = getFilteredSpaces();
-  document.getElementById('spacesHeading').textContent = getSpaceCategoryLabel();
-  document.getElementById('spacesCount').textContent = filtered.length;
+  const type = getSpaceCategoryType();
+  const el = document.getElementById('spacesCount');
+  el.innerHTML = `<strong>${filtered.length}</strong> ${type} spaces`;
   renderCards(filtered);
   renderTable(filtered);
 }

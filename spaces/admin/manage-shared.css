@@ -122,17 +122,17 @@
 }
 
 #spacesCount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.45rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: var(--bg-muted, #f3f4f6);
-  border-radius: 999px;
+  font-family: var(--font-heading, inherit);
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text-muted, #8c8c8c);
+  letter-spacing: 0.01em;
+}
+
+#spacesCount strong {
+  font-weight: 700;
+  color: var(--text, #1a1a1a);
+  font-size: 1.15rem;
 }
 
 .filter-checkboxes {

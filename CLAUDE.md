@@ -292,6 +292,16 @@ laundry_watchers    - Who is watching which appliance for cycle-end notification
                       (app_user_id [FK→app_users], appliance_id [FK→lg_appliances])
 ```
 
+### Cloudflare R2 & Document Storage
+```
+r2_config       - Cloudflare R2 configuration (single row, id=1)
+                  (account_id, bucket_name, public_url, is_active)
+document_index  - Documents stored in R2 for PAI lookup
+                  (title, description, keywords [text[]], source_url,
+                   file_type, file_size_bytes, storage_backend [supabase/r2],
+                   is_active, uploaded_by, created_at, updated_at)
+```
+
 ### AI Image Generation
 ```
 image_gen_jobs  - Async image generation job queue
@@ -643,6 +653,7 @@ Use these exact vendor strings:
 | `lg_thinq` | LG ThinQ API |
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
+| `cloudflare_r2` | Cloudflare R2 object storage |
 
 ### Categories (Granular)
 
@@ -737,9 +748,10 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 ## Supabase Details
 
 - Anon key is in `shared/supabase.js` (safe to expose, RLS protects data)
-- Storage buckets:
+- Storage buckets (Supabase Storage):
   - `housephotos` - Media/photos
   - `lease-documents` - Generated and signed lease PDFs
+- External storage: Cloudflare R2 bucket `alpacapps` for documents/manuals (see Cloudflare R2 section)
 
 ## External Systems
 
@@ -925,7 +937,21 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Parent cascade**: Blocking parent space blocks all child spaces
 - **DB columns on spaces**: `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`, `airbnb_blocked_dates`
 
-### Google Drive
+### Cloudflare R2 (Object Storage)
+- **Account**: Cloudflare AlpacApps (wingsiebird@gmail.com)
+- **Bucket**: `alpacapps` (APAC region)
+- **S3 API**: `https://<account_id>.r2.cloudflarestorage.com`
+- **Public URL**: `https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev`
+- **Auth**: S3-compatible API with AWS Signature V4
+- **Supabase Secrets**: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
+- **DB config**: `r2_config` table (single row, id=1)
+- **Shared helper**: `supabase/functions/_shared/r2-upload.ts` — `uploadToR2()`, `deleteFromR2()`, `getR2PublicUrl()`
+- **Key paths in bucket**: `documents/` (manuals, guides for PAI lookup)
+- **Document tracking**: `document_index` table maps files to R2 URLs with metadata for PAI's `lookup_document` tool
+- **Pricing**: 10 GB free, $0.015/GB-mo beyond that, zero egress fees
+- **Legacy**: Google Drive folder still has old rental agreements (not programmatically accessed)
+
+### Google Drive (Legacy)
 - Rental agreements stored in a shared folder (legacy)
 - Not programmatically accessed
 
@@ -1138,6 +1164,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - `PollManager` class for visibility-based polling (pauses when backgrounded)
    - OTA updates via `@capgo/capacitor-updater` (no App Store resubmission for code changes)
    - Build: `cd mobile && npm run sync` → open in Xcode/Android Studio → Run
+37. **Cloudflare R2 Object Storage** - File storage backend replacing Google Drive
+   - Bucket `alpacapps` on Cloudflare (APAC region), public dev URL enabled
+   - S3-compatible API with AWS Signature V4 authentication
+   - Shared helper: `supabase/functions/_shared/r2-upload.ts` (`uploadToR2`, `deleteFromR2`, `getR2PublicUrl`)
+   - DB: `r2_config` (credentials/config), `document_index` (file metadata for PAI lookup)
+   - Files stored under `documents/` prefix (manuals, guides)
+   - Supabase secrets: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL
+   - Migrated 2 PDFs from Supabase Storage `instructions-and-manuals` bucket to R2
+   - 10 GB free, zero egress fees, $0.015/GB-mo beyond free tier
 
 ## Testing Changes
 
