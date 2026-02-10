@@ -434,15 +434,10 @@ SPACES:
 - Use the search_spaces tool to answer questions about availability, pricing, amenities, or room details — do NOT guess.
 - Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
 
-  // Access codes
-  const codeEntries = Object.entries(scope.spaceAccessCodes);
-  if (codeEntries.length) {
-    parts.push(`\nACCESS CODES FOR YOUR SPACES:`);
-    for (const [spaceName, code] of codeEntries) {
-      parts.push(`- ${spaceName}: ${code}`);
-    }
-    parts.push(`Only share these codes with the person asking. These are private to their assigned spaces.`);
-  }
+  // Codes & passwords
+  parts.push(`\nCODES & PASSWORDS:
+Use the lookup_codes tool when someone asks about access codes, door codes, WiFi passwords, or credentials.
+Do NOT guess codes — always look them up. Only share results appropriate for the user's role.`);
 
   // Document library
   parts.push(`\nDOCUMENT LIBRARY:
@@ -755,6 +750,22 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["url", "message"],
+    },
+  },
+  {
+    name: "lookup_codes",
+    description:
+      "Look up access codes, door codes, WiFi passwords, or other credentials for the property. Use this when someone asks about codes, passwords, or how to access something.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "What the user is looking for (e.g., 'laundry door code', 'wifi password', 'front door', 'garage code')",
+        },
+      },
+      required: ["query"],
     },
   },
   {
@@ -1338,6 +1349,77 @@ async function executeToolCall(
         return `OK: Link sent via text message to ${scope.callerPhone}`;
       }
 
+      case "lookup_codes": {
+        if (scope.role === "demo") return "Access codes are not available in demo mode.";
+        const query = (args.query || "").toLowerCase();
+        const results: string[] = [];
+
+        // 1. Check space access codes from scope
+        for (const [spaceName, code] of Object.entries(scope.spaceAccessCodes)) {
+          if (spaceName.toLowerCase().includes(query) || query.includes(spaceName.toLowerCase())) {
+            results.push(`${spaceName} access code: ${code}`);
+          }
+        }
+
+        // 2. Check password vault
+        const supabaseAdmin2 = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const allowedCategories = scope.userLevel >= 3
+          ? null  // admin: all categories
+          : scope.userLevel >= 2
+            ? ["house", "platform", "service"]
+            : ["house"];
+
+        let vaultQ = supabaseAdmin2
+          .from("password_vault")
+          .select("service, username, password, category, space_id, notes")
+          .eq("is_active", true)
+          .ilike("service", `%${query}%`);
+
+        if (allowedCategories) {
+          vaultQ = vaultQ.in("category", allowedCategories);
+        }
+
+        const { data: vaultEntries } = await vaultQ;
+
+        for (const entry of vaultEntries || []) {
+          // Filter space-specific entries by user access
+          if (entry.space_id && scope.userLevel < 2 && !scope.allAccessibleSpaceIds.includes(entry.space_id)) {
+            continue;
+          }
+          let line = `${entry.service}: ${entry.password}`;
+          if (entry.username) line += ` (username: ${entry.username})`;
+          if (entry.notes) line += ` — ${entry.notes}`;
+          results.push(line);
+        }
+
+        // 3. If no exact match, try broader search for generic terms
+        if (!results.length) {
+          const genericTerms = ["code", "access", "door", "password", "wifi", "key"];
+          if (genericTerms.some(t => query.includes(t))) {
+            for (const [spaceName, code] of Object.entries(scope.spaceAccessCodes)) {
+              results.push(`${spaceName}: ${code}`);
+            }
+            // Also fetch all vault entries in allowed categories
+            let broadQ = supabaseAdmin2
+              .from("password_vault")
+              .select("service, username, password, category, space_id, notes")
+              .eq("is_active", true);
+            if (allowedCategories) broadQ = broadQ.in("category", allowedCategories);
+            const { data: broadEntries } = await broadQ;
+            for (const entry of broadEntries || []) {
+              if (entry.space_id && scope.userLevel < 2 && !scope.allAccessibleSpaceIds.includes(entry.space_id)) continue;
+              let line = `${entry.service}: ${entry.password}`;
+              if (entry.username) line += ` (username: ${entry.username})`;
+              if (entry.notes) line += ` — ${entry.notes}`;
+              results.push(line);
+            }
+          }
+        }
+
+        if (!results.length) return "No matching codes or passwords found for your query. Try being more specific (e.g., 'wifi', 'front door', 'laundry').";
+        return results.join("\n");
+      }
+
       case "lookup_document": {
         const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
         const searchQuery = (args.query || "").toLowerCase();
@@ -1640,6 +1722,7 @@ function buildVapiToolsList(scope: UserScope): any[] {
   if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(findTool("control_vehicle")));
   tools.push(vapiToolWrapper(findTool("get_device_status")));
   tools.push(vapiToolWrapper(findTool("search_spaces")));
+  tools.push(vapiToolWrapper(findTool("lookup_codes")));
   tools.push(vapiToolWrapper(findTool("lookup_document")));
   // Voice callers can have links texted to them
   if (scope.callerPhone) tools.push(vapiToolWrapper(findTool("send_link")));

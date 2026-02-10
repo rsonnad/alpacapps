@@ -1333,7 +1333,7 @@ Review in Admin: ${data.admin_url}`
               <h2 style="color: #e0d68a; margin: 0;">PAI</h2>
               <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Prompt Alpaca Intelligence</p>
             </div>
-            <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
+            <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none;">
               <div style="white-space: pre-wrap; line-height: 1.6;">${data.reply_body || ''}</div>
               ${data.original_body ? `
               <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
@@ -1341,6 +1341,11 @@ Review in Admin: ${data.admin_url}`
               <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${data.original_body}</div>
               ` : ''}
             </div>
+            ${data.pai_art_url ? `
+            <div style="border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden;">
+              <img src="${data.pai_art_url}" alt="PAI - Prompt Alpaca Intelligence" style="width: 100%; height: auto; display: block;" />
+            </div>
+            ` : '<div style="border-radius: 0 0 12px 12px; height: 4px; background: #1a1a2e;"></div>'}
             <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
               This is an automated reply from PAI at Alpaca Playhouse. Reply to this email to continue the conversation.
             </p>

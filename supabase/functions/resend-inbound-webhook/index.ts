@@ -381,6 +381,25 @@ async function checkSpamThresholdAndAlert(
  * Call the send-email edge function to send a PAI reply.
  * Uses service role key so the invocation is accepted; passes from/reply_to so reply is from PAI.
  */
+async function getRandomPaiArtUrl(supabase: any): Promise<string | null> {
+  try {
+    // Fetch all media tagged with 'pai-email-art'
+    const { data: tagged } = await supabase
+      .from("media_tag_assignments")
+      .select("media_id, media:media_id(url)")
+      .eq("tag_id", "533354e0-662a-48a8-9f62-4f174a1b7adf"); // pai-email-art tag
+
+    if (!tagged?.length) return null;
+
+    // Pick a random one
+    const pick = tagged[Math.floor(Math.random() * tagged.length)];
+    return pick?.media?.url || null;
+  } catch (err) {
+    console.warn("Failed to fetch PAI art:", err.message);
+    return null;
+  }
+}
+
 async function sendPaiReply(
   supabase: any,
   to: string,
@@ -390,6 +409,9 @@ async function sendPaiReply(
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+  // Fetch a random PAI art image for the email footer
+  const paiArtUrl = await getRandomPaiArtUrl(supabase);
 
   const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
     method: "POST",
@@ -404,6 +426,7 @@ async function sendPaiReply(
         reply_body: replyBody,
         original_subject: originalSubject,
         original_body: originalBody.substring(0, 500),
+        pai_art_url: paiArtUrl,
       },
       from: "PAI <pai@alpacaplayhouse.com>",
       reply_to: "pai@alpacaplayhouse.com",

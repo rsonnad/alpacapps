@@ -46,108 +46,110 @@ function statusDot(online) {
 /* ── Data Fetchers (all DB, no live API) ── */
 
 async function fetchCameras() {
-  const { data } = await supabase
-    .from('camera_streams')
-    .select('camera_name, location, quality, is_active')
-    .eq('is_active', true)
-    .order('camera_name');
-  if (!data) return [];
-  // Group by camera_name
-  const map = new Map();
-  for (const s of data) {
-    if (!map.has(s.camera_name)) {
-      map.set(s.camera_name, { name: s.camera_name, location: s.location, qualities: [] });
+  try {
+    const { data, error } = await supabase
+      .from('camera_streams')
+      .select('camera_name, location, quality, is_active')
+      .eq('is_active', true)
+      .order('camera_name');
+    if (error) { console.warn('Cameras fetch error:', error); return []; }
+    if (!data) return [];
+    const map = new Map();
+    for (const s of data) {
+      if (!map.has(s.camera_name)) {
+        map.set(s.camera_name, { name: s.camera_name, location: s.location, qualities: [] });
+      }
+      map.get(s.camera_name).qualities.push(s.quality);
     }
-    map.get(s.camera_name).qualities.push(s.quality);
-  }
-  return [...map.values()];
+    return [...map.values()];
+  } catch (e) { console.warn('Cameras fetch failed:', e); return []; }
 }
 
 async function fetchLighting() {
-  // Fetch groups + child devices + models in parallel
-  const [groupsRes, childrenRes, modelsRes] = await Promise.all([
-    supabase.from('govee_devices')
-      .select('device_id, name, area, display_order')
-      .eq('is_group', true).eq('is_active', true)
-      .order('display_order'),
-    supabase.from('govee_devices')
-      .select('device_id, name, sku, parent_group_id, area')
-      .eq('is_group', false).eq('is_active', true)
-      .order('name'),
-    supabase.from('govee_models')
-      .select('sku, model_name'),
-  ]);
-  const groups = groupsRes.data || [];
-  const children = childrenRes.data || [];
-  const models = new Map((modelsRes.data || []).map(m => [m.sku, m.model_name]));
+  try {
+    const [groupsRes, childrenRes, modelsRes] = await Promise.all([
+      supabase.from('govee_devices')
+        .select('device_id, name, area, display_order')
+        .eq('is_group', true).eq('is_active', true)
+        .order('display_order'),
+      supabase.from('govee_devices')
+        .select('device_id, name, sku, parent_group_id, area')
+        .eq('is_group', false).eq('is_active', true)
+        .order('name'),
+      supabase.from('govee_models')
+        .select('sku, model_name'),
+    ]);
+    const groups = groupsRes.data || [];
+    const children = childrenRes.data || [];
+    const models = new Map((modelsRes.data || []).map(m => [m.sku, m.model_name]));
 
-  // Count children per group and collect model names
-  const rows = groups.map(g => {
-    const kids = children.filter(c => c.parent_group_id === g.device_id);
-    const modelSet = new Set(kids.map(c => models.get(c.sku) || c.sku).filter(Boolean));
-    return {
-      name: g.name,
-      area: g.area,
-      deviceCount: kids.length,
-      models: [...modelSet].join(', ') || '—',
-    };
-  });
-
-  // Add ungrouped devices by area
-  const ungrouped = children.filter(c => !c.parent_group_id);
-  const byArea = new Map();
-  for (const u of ungrouped) {
-    if (!byArea.has(u.area)) byArea.set(u.area, []);
-    byArea.get(u.area).push(u);
-  }
-  for (const [area, devs] of byArea) {
-    const modelSet = new Set(devs.map(d => models.get(d.sku) || d.sku));
-    rows.push({
-      name: `${area} (ungrouped)`,
-      area,
-      deviceCount: devs.length,
-      models: [...modelSet].join(', ') || '—',
+    const rows = groups.map(g => {
+      const kids = children.filter(c => c.parent_group_id === g.device_id);
+      const modelSet = new Set(kids.map(c => models.get(c.sku) || c.sku).filter(Boolean));
+      return { name: g.name, area: g.area, deviceCount: kids.length, models: [...modelSet].join(', ') || '—' };
     });
-  }
 
-  return rows;
+    const ungrouped = children.filter(c => !c.parent_group_id);
+    const byArea = new Map();
+    for (const u of ungrouped) {
+      if (!byArea.has(u.area)) byArea.set(u.area, []);
+      byArea.get(u.area).push(u);
+    }
+    for (const [area, devs] of byArea) {
+      const modelSet = new Set(devs.map(d => models.get(d.sku) || d.sku));
+      rows.push({ name: `${area} (ungrouped)`, area, deviceCount: devs.length, models: [...modelSet].join(', ') || '—' });
+    }
+    return rows;
+  } catch (e) { console.warn('Lighting fetch failed:', e); return []; }
 }
 
 async function fetchSonos() {
-  const { data } = await supabase
-    .from('sonos_zones')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order');
-  return data || [];
+  try {
+    const { data, error } = await supabase
+      .from('sonos_zones')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order');
+    if (error) { console.warn('Sonos fetch error:', error); return []; }
+    return data || [];
+  } catch (e) { console.warn('Sonos fetch failed:', e); return []; }
 }
 
 async function fetchClimate() {
-  const { data } = await supabase
-    .from('nest_devices')
-    .select('room_name, device_type, display_order, last_state, is_active')
-    .eq('is_active', true)
-    .eq('device_type', 'thermostat')
-    .order('display_order');
-  return data || [];
+  try {
+    const { data, error } = await supabase
+      .from('nest_devices')
+      .select('room_name, device_type, display_order, last_state, is_active')
+      .eq('is_active', true)
+      .eq('device_type', 'thermostat')
+      .order('display_order');
+    if (error) { console.warn('Climate fetch error:', error); return []; }
+    return data || [];
+  } catch (e) { console.warn('Climate fetch failed:', e); return []; }
 }
 
 async function fetchVehicles() {
-  const { data } = await supabase
-    .from('vehicles')
-    .select('name, make, model, year, color, vehicle_state, last_state, last_synced_at, is_active')
-    .eq('is_active', true)
-    .order('display_order');
-  return data || [];
+  try {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('name, make, model, year, color, vehicle_state, last_state, last_synced_at, is_active')
+      .eq('is_active', true)
+      .order('display_order');
+    if (error) { console.warn('Vehicles fetch error:', error); return []; }
+    return data || [];
+  } catch (e) { console.warn('Vehicles fetch failed:', e); return []; }
 }
 
 async function fetchLaundry() {
-  const { data } = await supabase
-    .from('lg_appliances')
-    .select('name, device_type, model, last_state, last_synced_at, is_active')
-    .eq('is_active', true)
-    .order('display_order');
-  return data || [];
+  try {
+    const { data, error } = await supabase
+      .from('lg_appliances')
+      .select('name, device_type, model, last_state, last_synced_at, is_active')
+      .eq('is_active', true)
+      .order('display_order');
+    if (error) { console.warn('Laundry fetch error:', error); return []; }
+    return data || [];
+  } catch (e) { console.warn('Laundry fetch failed:', e); return []; }
 }
 
 /* ── Row Renderers ── */
@@ -266,8 +268,8 @@ function buildSection(cat, count, theadHtml, tbodyHtml) {
       <summary class="device-section__header">
         <span class="device-section__chevron"></span>
         <span class="device-section__label">${cat.label}</span>
+        <a href="${cat.href}" class="device-section__link" onclick="event.stopPropagation()">${cat.linkLabel} →</a>
         <span class="device-section__count">${count}</span>
-        <a href="${cat.href}" class="device-section__link">${cat.linkLabel} →</a>
       </summary>
       <div class="device-section__body">
         <div class="device-table-wrap">

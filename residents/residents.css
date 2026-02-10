@@ -5165,12 +5165,10 @@ span.sonos-library-item__star.starred {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   cursor: pointer;
   user-select: none;
   list-style: none;
-  font-weight: 600;
-  font-size: 0.95rem;
 }
 
 .device-section__header::-webkit-details-marker { display: none; }
