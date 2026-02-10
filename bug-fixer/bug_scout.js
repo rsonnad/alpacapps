@@ -81,7 +81,12 @@ async function gitCreateBranchAndCommit(description, reportId) {
   return { commitSha: stdout.trim(), branchName };
 }
 
-async function gitMergeBranchToMain(branchName) {
+function buildBugScoutMachineName(report) {
+  const email = (report?.reporter_email || 'unknown').toLowerCase();
+  return `bug-scout-${email}`;
+}
+
+async function gitMergeBranchToMain(branchName, report) {
   // Switch to main
   await execAsync('git checkout main', { cwd: REPO_DIR });
   await execAsync('git pull origin main', { cwd: REPO_DIR });
@@ -92,7 +97,11 @@ async function gitMergeBranchToMain(branchName) {
   // Bump version before pushing (atomic DB increment + HTML update)
   let version = 'unknown';
   try {
-    const { stdout: versionOut } = await execAsync('bash scripts/bump-version.sh', { cwd: REPO_DIR });
+    const machineName = buildBugScoutMachineName(report);
+    const { stdout: versionOut } = await execAsync('bash scripts/bump-version.sh', {
+      cwd: REPO_DIR,
+      env: { ...process.env, AAP_MACHINE_NAME: machineName },
+    });
     version = versionOut.trim();
     log('info', 'Version bumped', { version });
     // Commit the version bump
@@ -519,7 +528,7 @@ async function processBugReport(report) {
       log('info', 'Fix pushed to branch', { branch: branchName, commit: commitSha });
 
       // 7. Merge branch to main (with version bump)
-      const mainSha = await gitMergeBranchToMain(branchName);
+      const mainSha = await gitMergeBranchToMain(branchName, report);
       log('info', 'Merged to main', { branch: branchName, mainSha });
 
       // 8. Update report
