@@ -720,6 +720,26 @@
     .pick-rank.silver { background: linear-gradient(135deg, #c4b5cb, #a78baf); color: #1a1a1a; }
     .pick-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
     .pick-rank.blue { background: var(--accent); color: #fff; }
+    .pick-rank.star { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1a; width: 42px; height: 42px; font-size: 1.3rem; }
+    .pick-card.featured {
+      border: 2px solid var(--purple);
+      background: linear-gradient(135deg, rgba(147,51,234,0.03), var(--surface));
+      box-shadow: 0 2px 12px rgba(147,51,234,0.10);
+      position: relative;
+    }
+    .pick-card.featured::before {
+      content: 'OUR TOP PICK';
+      position: absolute;
+      top: -10px;
+      left: 1.25rem;
+      background: linear-gradient(135deg, var(--purple), #7c5cbf);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+    }
     .pick-info h4 {
       font-size: 0.95rem;
       font-weight: 700;
@@ -1827,7 +1847,7 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
 
 // ── Top 5 Picks ──
 // Long Range only — Performance excluded (safety liability for young driver).
-// Ranked by value: price + HW4 status + deal score. All compared against LR MSRP $49,990.
+// #1 is the starred top pick (2025 FSD included). Rest ranked by value.
 function renderTopPicks() {
   const picks = [];
 
@@ -1836,18 +1856,34 @@ function renderTopPicks() {
     v.trim === 'Long Range' && (v.hwConf === 'confirmed' || v.hw === 'HW4')
   );
 
-  // Pick 1: User's specific pick — 2023 LR, $26,995, 84,892 mi, HW4 likely
-  const userPick = VEHICLES.find(v => v.vin === '7SAYGDEE3PF755314');
-  if (userPick) picks.push({
-    v: userPick,
-    tag: 'Best Value — Cheapest HW4 Long Range',
+  // ★ Pick 1: FSD Included — 2025 LR, low miles, newest, FSD transfers at resale
+  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included' && v.trim === 'Long Range');
+  if (fsdPick) {
+    const deal = getDealScore(fsdPick);
+    picks.push({
+      v: fsdPick,
+      tag: 'Best Overall Pick — FSD + Low Miles + 2025',
+      tagColor: 'var(--purple)',
+      tagBg: 'var(--purple-soft)',
+      why: `2025 model, only ${fmtMi(fsdPick.mileage)}, confirmed HW4, and $8,000 FSD already purchased. ${fmt$(deal.savings)} total savings vs buying new + FSD. The FSD transfers at resale — adds $5–8K to future value. Subscribing would cost $6,091 (NPV at 9%) over 7 years and adds $0 at resale. This is the complete package.`,
+      rank: 'star',
+      featured: true
+    });
+  }
+
+  // Pick 2: Cheapest HW4 Long Range — best entry price
+  const cheapestLR = [...lrHW4].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => a.price - b.price)[0];
+  if (cheapestLR) picks.push({
+    v: cheapestLR,
+    tag: 'Cheapest HW4 Long Range',
     tagColor: 'var(--green)',
     tagBg: 'var(--green-soft)',
-    why: `The absolute cheapest Long Range with HW4 near Chicago — ${fmt$(49990 - userPick.price)} under new MSRP. ${fmtMi(userPick.mileage)} is early youth for an EV (300K+ mile lifespan). HW4 likely based on late-2023 VIN sequence.`,
+    why: `Lowest price Long Range with HW4 near Chicago — ${fmt$(49990 - cheapestLR.price)} under new MSRP. ${cheapestLR.mileage ? fmtMi(cheapestLR.mileage) + ' is early youth for an EV (300K+ mile lifespan).' : ''} ${cheapestLR.hwConf === 'likely' ? 'HW4 likely based on late-2023 VIN sequence.' : 'Confirmed HW4.'}`,
     rank: 'gold'
   });
 
-  // Pick 2: Cheapest confirmed HW4 LR (2024+)
+  // Pick 3: Cheapest confirmed HW4 (2024+)
   const confirmedLR = lrHW4.filter(v => v.hwConf === 'confirmed' && !picks.find(p => p.v === v));
   const cheapestConfirmed = [...confirmedLR].sort((a, b) => a.price - b.price)[0];
   if (cheapestConfirmed) picks.push({
@@ -1859,7 +1895,7 @@ function renderTopPicks() {
     rank: 'silver'
   });
 
-  // Pick 3: Best deal score among remaining LR HW4 (highest adjusted savings)
+  // Pick 4: Best adjusted value (highest savings after mileage penalty)
   const remaining = [...lrHW4].filter(v => !picks.find(p => p.v === v))
     .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
   if (remaining[0]) {
@@ -1874,21 +1910,7 @@ function renderTopPicks() {
     });
   }
 
-  // Pick 4: FSD Included — transfers at resale, NPV advantage
-  const fsdPick = VEHICLES.find(v => v.fsd === 'FSD Included' && v.trim === 'Long Range');
-  if (fsdPick && !picks.find(p => p.v === fsdPick)) {
-    const deal = getDealScore(fsdPick);
-    picks.push({
-      v: fsdPick,
-      tag: 'FSD Included — Best Long-Term Value',
-      tagColor: 'var(--purple)',
-      tagBg: 'var(--purple-soft)',
-      why: `$8,000 FSD already paid — transfers at resale, adding $5–8K to future value. Total savings of ${fmt$(deal.savings)} vs new + FSD. Subscribing costs $6,091 NPV and adds $0 at resale.`,
-      rank: 'blue'
-    });
-  }
-
-  // Pick 5: Next best value from remaining
+  // Pick 5: Next best value
   const remaining2 = [...lrHW4].filter(v => !picks.find(p => p.v === v))
     .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
   if (remaining2[0]) {
@@ -1907,8 +1929,8 @@ function renderTopPicks() {
   pickContainer.innerHTML = picks.slice(0, 5).map((p, i) => {
     const deal = getDealScore(p.v);
     return `
-      <div class="pick-card">
-        <div class="pick-rank ${p.rank}">${i + 1}</div>
+      <div class="pick-card${p.featured ? ' featured' : ''}">
+        <div class="pick-rank ${p.rank}">${p.featured ? '\u2605' : i + 1}</div>
         <div class="pick-info">
           <h4>${p.v.year} Model Y ${p.v.trim}${p.v.fsd === 'FSD Included' ? ' + FSD' : ''}</h4>
           <div class="pick-why">${p.why}</div>
@@ -1916,8 +1938,8 @@ function renderTopPicks() {
         </div>
         <div class="pick-price-col">
           <div class="price">${fmt$(p.v.price)}</div>
-          <div class="savings">${fmt$(deal.savings)} off new</div>
-          <a href="${p.v.link}" target="_blank" rel="noopener">View &rarr;</a>
+          <div class="savings">${fmt$(deal.savings)} off new${p.v.fsd === 'FSD Included' ? ' + FSD' : ''}</div>
+          <a href="${p.v.link}" target="_blank" rel="noopener">View \u2192</a>
         </div>
       </div>`;
   }).join('');
