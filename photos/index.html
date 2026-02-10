@@ -24,7 +24,7 @@
       <a href="/" class="aap-header__logo">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
               <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
-        <span title="Site version" class="aap-header__version">v260210.58 4:02p</span>
+        <span title="Site version" class="aap-header__version">v260210.61 4:29p</span>
       </a>
 
       <nav class="aap-nav" id="aap-nav">
@@ -67,39 +67,26 @@
     </div>
   </section>
 
-  <!-- Highlights Gallery -->
+  <!-- Google Photos Link Banner -->
   <section class="highlights-gallery" id="highlightsGallery">
     <div class="highlights-gallery__header">
       <h2>Property Highlights</h2>
       <p>Explore the beauty of the Austin Alpaca Playhouse</p>
-    </div>
-
-    <div class="highlights-gallery__grid" id="galleryGrid">
-      <!-- Photos populated by JS in masonry layout -->
-    </div>
-
-    <div class="highlights-gallery__loading" id="galleryLoading">
-      <div class="gallery-spinner"></div>
-      <p>Loading gallery...</p>
+      <a href="https://photos.app.goo.gl/xtwEryJCwoFuyw5U7" target="_blank" rel="noopener" class="gallery-album-link">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        View Photo Album on Google Photos
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-left: 0.5rem;">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
     </div>
   </section>
-
-  <!-- Lightbox for full-size viewing -->
-  <div class="gallery-lightbox" id="galleryLightbox">
-    <button class="gallery-lightbox__close" id="lightboxClose" aria-label="Close">&times;</button>
-    <button class="gallery-lightbox__nav gallery-lightbox__nav--prev" id="lightboxPrev" aria-label="Previous">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-    </button>
-    <img id="lightboxImage" src="" alt="">
-    <button class="gallery-lightbox__nav gallery-lightbox__nav--next" id="lightboxNext" aria-label="Next">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
-    <div class="gallery-lightbox__counter" id="lightboxCounter">1 / 97</div>
-  </div>
 
   <!-- Content -->
   <div class="aap-content">
@@ -468,16 +455,15 @@
   </footer>
 
   <style>
-    /* Highlights Gallery Styles - Google Photos Style Grid */
+    /* Highlights Gallery Banner */
     .highlights-gallery {
       background: #1a1a1a;
-      padding: 2rem 0 3rem;
+      padding: 3rem 0;
       margin-top: -1px;
     }
 
     .highlights-gallery__header {
       text-align: center;
-      margin-bottom: 1.5rem;
       padding: 0 1rem;
     }
 
@@ -491,196 +477,40 @@
     .highlights-gallery__header p {
       color: rgba(255,255,255,0.7);
       font-size: 1rem;
-      margin: 0;
+      margin: 0 0 1.5rem;
     }
 
-    .highlights-gallery__grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      padding: 0 4px;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-
-    .gallery-item {
-      flex-grow: 1;
-      height: 200px;
-      cursor: pointer;
-      overflow: hidden;
-      position: relative;
-      background: #2a2a2a;
-    }
-
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
-    .gallery-item:hover img {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
-
-    /* Vary row heights for visual interest */
-    .gallery-item:nth-child(5n+1) { height: 250px; }
-    .gallery-item:nth-child(5n+2) { height: 200px; }
-    .gallery-item:nth-child(5n+3) { height: 220px; }
-    .gallery-item:nth-child(5n+4) { height: 180px; }
-    .gallery-item:nth-child(5n+5) { height: 240px; }
-
-    /* Loading state */
-    .highlights-gallery__loading {
-      display: flex;
-      flex-direction: column;
+    .gallery-album-link {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 4rem 1rem;
-      color: rgba(255,255,255,0.7);
+      padding: 0.875rem 2rem;
+      background: var(--aap-accent, #c9a87c);
+      color: #1a1a1a;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.2s;
     }
 
-    .highlights-gallery__loading.hidden {
-      display: none;
-    }
-
-    .gallery-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.2);
-      border-top-color: var(--aap-accent, #c9a87c);
-      border-radius: 50%;
-      animation: gallery-spin 0.8s linear infinite;
-      margin-bottom: 1rem;
-    }
-
-    @keyframes gallery-spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Lightbox */
-    .gallery-lightbox {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.95);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .gallery-lightbox.open {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-
-    .gallery-lightbox img {
-      max-width: 90vw;
-      max-height: 90vh;
-      object-fit: contain;
-    }
-
-    .gallery-lightbox__close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      cursor: pointer;
-      font-size: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      z-index: 10;
-    }
-
-    .gallery-lightbox__close:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .gallery-lightbox__nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      z-index: 10;
-    }
-
-    .gallery-lightbox__nav:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .gallery-lightbox__nav--prev { left: 1rem; }
-    .gallery-lightbox__nav--next { right: 1rem; }
-
-    .gallery-lightbox__counter {
-      position: absolute;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 0.5rem 1.5rem;
-      border-radius: 24px;
-      font-size: 0.9rem;
-      font-weight: 500;
+    .gallery-album-link:hover {
+      background: #d4b78e;
+      transform: translateY(-2px);
     }
 
     @media (max-width: 768px) {
       .highlights-gallery {
-        padding: 1.5rem 0 2rem;
+        padding: 2rem 0;
       }
 
       .highlights-gallery__header h2 {
         font-size: 1.5rem;
       }
 
-      .highlights-gallery__grid {
-        gap: 2px;
-        padding: 0 2px;
+      .gallery-album-link {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
       }
-
-      .gallery-item,
-      .gallery-item:nth-child(5n+1),
-      .gallery-item:nth-child(5n+2),
-      .gallery-item:nth-child(5n+3),
-      .gallery-item:nth-child(5n+4),
-      .gallery-item:nth-child(5n+5) {
-        height: 120px;
-        min-width: calc(33.333% - 2px);
-      }
-
-      .gallery-lightbox__nav {
-        width: 44px;
-        height: 44px;
-      }
-
-      .gallery-lightbox__nav--prev { left: 0.5rem; }
-      .gallery-lightbox__nav--next { right: 0.5rem; }
     }
 
     .photo-section {
@@ -814,144 +644,7 @@
       });
     });
 
-    // Highlights Gallery - Google Photos Style Grid
-    (async function initGallery() {
-      const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
-      const HIGHLIGHTS_TAG_ID = 'ba1b6478-21a1-4374-b4e2-96e9dce8635e';
-
-      const loadingEl = document.getElementById('galleryLoading');
-      const gridEl = document.getElementById('galleryGrid');
-      const lightbox = document.getElementById('galleryLightbox');
-      const lightboxImage = document.getElementById('lightboxImage');
-      const lightboxCounter = document.getElementById('lightboxCounter');
-      const lightboxClose = document.getElementById('lightboxClose');
-      const lightboxPrev = document.getElementById('lightboxPrev');
-      const lightboxNext = document.getElementById('lightboxNext');
-
-      let photos = [];
-      let currentIndex = 0;
-
-      // Fetch highlights photos
-      try {
-        // First, get all media IDs that have the highlights tag, ordered by display_order
-        const tagResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/media_tag_assignments?tag_id=eq.${HIGHLIGHTS_TAG_ID}&select=media_id,display_order&order=display_order`,
-          {
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-          }
-        );
-
-        if (!tagResponse.ok) throw new Error('Failed to fetch tags');
-
-        const tagAssignments = await tagResponse.json();
-
-        if (tagAssignments.length === 0) {
-          loadingEl.innerHTML = '<p>No photos available yet.</p>';
-          return;
-        }
-
-        // Then get the full media data for those IDs
-        const taggedIds = tagAssignments.map(t => t.media_id);
-        const mediaResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/media?select=id,url,title,caption&id=in.(${taggedIds.join(',')})`,
-          {
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-          }
-        );
-
-        if (!mediaResponse.ok) throw new Error('Failed to fetch media');
-
-        const mediaData = await mediaResponse.json();
-
-        if (mediaData.length === 0) {
-          loadingEl.innerHTML = '<p>No photos available yet.</p>';
-          return;
-        }
-
-        // Combine and sort by display_order
-        photos = tagAssignments.map(ta => {
-          const media = mediaData.find(m => m.id === ta.media_id);
-          return { ...media, display_order: ta.display_order };
-        }).filter(p => p.url); // Filter out any that didn't match
-
-        // Hide loading, render grid
-        loadingEl.classList.add('hidden');
-
-        // Render photo grid
-        gridEl.innerHTML = photos.map((photo, index) => `
-          <div class="gallery-item" data-index="${index}">
-            <img src="${photo.url}" alt="${photo.title || photo.caption || 'Alpaca Playhouse photo'}" loading="lazy">
-          </div>
-        `).join('');
-
-        // Click on grid item to open lightbox
-        gridEl.addEventListener('click', (e) => {
-          const item = e.target.closest('.gallery-item');
-          if (item) {
-            currentIndex = parseInt(item.dataset.index);
-            openLightbox();
-          }
-        });
-
-        // Lightbox controls
-        lightboxClose.addEventListener('click', closeLightbox);
-        lightboxPrev.addEventListener('click', (e) => {
-          e.stopPropagation();
-          navigateLightbox(-1);
-        });
-        lightboxNext.addEventListener('click', (e) => {
-          e.stopPropagation();
-          navigateLightbox(1);
-        });
-
-        // Click outside image to close
-        lightbox.addEventListener('click', (e) => {
-          if (e.target === lightbox) closeLightbox();
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-          if (!lightbox.classList.contains('open')) return;
-          if (e.key === 'Escape') closeLightbox();
-          if (e.key === 'ArrowLeft') navigateLightbox(-1);
-          if (e.key === 'ArrowRight') navigateLightbox(1);
-        });
-
-      } catch (error) {
-        console.error('Gallery error:', error);
-        loadingEl.innerHTML = '<p>Unable to load gallery. Please try again later.</p>';
-      }
-
-      function openLightbox() {
-        lightboxImage.src = photos[currentIndex].url;
-        lightboxImage.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
-        lightboxCounter.textContent = `${currentIndex + 1} / ${photos.length}`;
-        lightbox.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-
-      function closeLightbox() {
-        lightbox.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-
-      function navigateLightbox(direction) {
-        currentIndex += direction;
-        if (currentIndex < 0) currentIndex = photos.length - 1;
-        if (currentIndex >= photos.length) currentIndex = 0;
-
-        lightboxImage.src = photos[currentIndex].url;
-        lightboxImage.alt = photos[currentIndex].title || photos[currentIndex].caption || 'Alpaca Playhouse photo';
-        lightboxCounter.textContent = `${currentIndex + 1} / ${photos.length}`;
-      }
-    })();
+    // No gallery JS needed - using Google Photos link instead
   </script>
 </body>
 </html>
