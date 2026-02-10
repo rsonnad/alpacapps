@@ -1847,13 +1847,18 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
 
 // ── Top 5 Picks ──
 // Long Range only — Performance excluded (safety liability for young driver).
-// #1 is the starred top pick (2025 FSD included). Rest ranked by value.
+// ★ #1 is the starred top pick (2025 FSD included).
+// Confirmed HW4 (2024+) prioritized over "likely" HW4 (2023).
+// Unconfirmed HW4 gets a prominent verification warning — older, creates buying friction.
 function renderTopPicks() {
   const picks = [];
 
-  // Only Long Range models with HW4 (confirmed or likely)
-  const lrHW4 = VEHICLES.filter(v =>
-    v.trim === 'Long Range' && (v.hwConf === 'confirmed' || v.hw === 'HW4')
+  // Separate pools: confirmed HW4 LR vs likely HW4 LR
+  const confirmedLR = VEHICLES.filter(v =>
+    v.trim === 'Long Range' && v.hwConf === 'confirmed'
+  );
+  const likelyLR = VEHICLES.filter(v =>
+    v.trim === 'Long Range' && v.hwConf === 'likely' && v.hw === 'HW4'
   );
 
   // ★ Pick 1: FSD Included — 2025 LR, low miles, newest, FSD transfers at resale
@@ -1871,69 +1876,76 @@ function renderTopPicks() {
     });
   }
 
-  // Pick 2: Cheapest HW4 Long Range — best entry price
-  const cheapestLR = [...lrHW4].filter(v => !picks.find(p => p.v === v))
+  // Pick 2: Cheapest confirmed HW4 LR — no guesswork, guaranteed future-proof
+  const cheapestConfirmed = [...confirmedLR].filter(v => !picks.find(p => p.v === v))
     .sort((a, b) => a.price - b.price)[0];
-  if (cheapestLR) picks.push({
-    v: cheapestLR,
-    tag: 'Cheapest HW4 Long Range',
-    tagColor: 'var(--green)',
-    tagBg: 'var(--green-soft)',
-    why: `Lowest price Long Range with HW4 near Chicago — ${fmt$(49990 - cheapestLR.price)} under new MSRP. ${cheapestLR.mileage ? fmtMi(cheapestLR.mileage) + ' is early youth for an EV (300K+ mile lifespan).' : ''} ${cheapestLR.hwConf === 'likely' ? 'HW4 likely based on late-2023 VIN sequence.' : 'Confirmed HW4.'}`,
-    rank: 'gold'
-  });
-
-  // Pick 3: Cheapest confirmed HW4 (2024+)
-  const confirmedLR = lrHW4.filter(v => v.hwConf === 'confirmed' && !picks.find(p => p.v === v));
-  const cheapestConfirmed = [...confirmedLR].sort((a, b) => a.price - b.price)[0];
   if (cheapestConfirmed) picks.push({
     v: cheapestConfirmed,
     tag: 'Cheapest Confirmed HW4',
-    tagColor: 'var(--teal)',
-    tagBg: 'var(--teal-soft)',
-    why: `Guaranteed HW4 (2024 model year = no guessing). ${fmt$(49990 - cheapestConfirmed.price)} less than new. ${cheapestConfirmed.mileage ? fmtMi(cheapestConfirmed.mileage) + ' — barely broken in for an EV.' : ''}`,
-    rank: 'silver'
+    tagColor: 'var(--green)',
+    tagBg: 'var(--green-soft)',
+    why: `Guaranteed HW4 (2024+ = no guessing). ${fmt$(49990 - cheapestConfirmed.price)} less than new MSRP. ${cheapestConfirmed.mileage ? fmtMi(cheapestConfirmed.mileage) + ' — barely broken in for an EV.' : ''} No verification needed — buy with confidence.`,
+    rank: 'gold'
   });
 
-  // Pick 4: Best adjusted value (highest savings after mileage penalty)
-  const remaining = [...lrHW4].filter(v => !picks.find(p => p.v === v))
-    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
-  if (remaining[0]) {
-    const deal = getDealScore(remaining[0]);
+  // Pick 3: Next best confirmed HW4 value
+  const nextConfirmed = [...confirmedLR].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
+  if (nextConfirmed) {
+    const deal = getDealScore(nextConfirmed);
     picks.push({
-      v: remaining[0],
-      tag: 'Best Adjusted Value',
+      v: nextConfirmed,
+      tag: 'Best Value — Confirmed HW4',
+      tagColor: 'var(--teal)',
+      tagBg: 'var(--teal-soft)',
+      why: `${fmt$(deal.adjustedSavings)} net savings after mileage adjustment. Confirmed HW4 — guaranteed FSD-eligible. ${nextConfirmed.mileage ? fmtMi(nextConfirmed.mileage) + '.' : ''}`,
+      rank: 'silver'
+    });
+  }
+
+  // Pick 4: Another strong confirmed pick
+  const thirdConfirmed = [...confirmedLR].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)[0];
+  if (thirdConfirmed) {
+    const deal = getDealScore(thirdConfirmed);
+    picks.push({
+      v: thirdConfirmed,
+      tag: 'Strong Pick — Confirmed HW4',
       tagColor: 'var(--green)',
       tagBg: 'var(--green-soft)',
-      why: `Highest deal score after mileage adjustment — ${fmt$(deal.adjustedSavings)} in net savings vs new. Sweet spot of low price and reasonable mileage.`,
+      why: `Confirmed HW4, ${fmt$(deal.adjustedSavings)} net savings. ${thirdConfirmed.mileage ? fmtMi(thirdConfirmed.mileage) + '.' : ''} ${thirdConfirmed.year === 2025 ? '2025 model year.' : '2024 model year.'}`,
       rank: 'bronze'
     });
   }
 
-  // Pick 5: Next best value
-  const remaining2 = [...lrHW4].filter(v => !picks.find(p => p.v === v))
-    .sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings);
-  if (remaining2[0]) {
-    const deal = getDealScore(remaining2[0]);
-    picks.push({
-      v: remaining2[0],
-      tag: 'Strong Value Pick',
-      tagColor: 'var(--accent)',
-      tagBg: 'var(--accent-soft)',
-      why: `${fmt$(deal.adjustedSavings)} net savings after mileage adjustment. ${remaining2[0].hwConf === 'confirmed' ? 'Confirmed' : 'Likely'} HW4 with ${remaining2[0].mileage ? fmtMi(remaining2[0].mileage) : 'low miles'}.`,
-      rank: 'blue'
-    });
-  }
+  // Pick 5: Cheapest likely-HW4 as a budget option (with prominent verification warning)
+  const cheapestLikely = [...likelyLR].filter(v => !picks.find(p => p.v === v))
+    .sort((a, b) => a.price - b.price)[0];
+  if (cheapestLikely) picks.push({
+    v: cheapestLikely,
+    tag: 'Budget Option — HW4 Unverified',
+    tagColor: 'var(--yellow)',
+    tagBg: 'var(--yellow-soft)',
+    why: `Cheapest Long Range with likely HW4 — ${fmt$(49990 - cheapestLikely.price)} under new MSRP. ${cheapestLikely.mileage ? fmtMi(cheapestLikely.mileage) + '.' : ''} Significant savings, but older (2023) and HW4 is not guaranteed.`,
+    rank: 'blue',
+    unverified: true
+  });
 
   const pickContainer = document.getElementById('pickCards');
   pickContainer.innerHTML = picks.slice(0, 5).map((p, i) => {
     const deal = getDealScore(p.v);
+    const verifyWarning = p.unverified
+      ? `<div style="margin-top:0.5rem;padding:0.5rem 0.7rem;background:var(--yellow-soft);border:1px solid var(--yellow-border);border-radius:8px;font-size:0.78rem;color:var(--yellow);">
+           <strong>\u26a0\ufe0f Verification required:</strong> HW4 is <em>likely</em> based on late-2023 VIN sequence, but not confirmed. Ask the dealer to verify the hardware version before buying. If it's HW3, this car will not be eligible for unsupervised FSD. This is a 2023 model — older, more mileage, and this uncertainty creates real buying friction vs. confirmed 2024+ options above.
+         </div>`
+      : '';
     return `
       <div class="pick-card${p.featured ? ' featured' : ''}">
-        <div class="pick-rank ${p.rank}">${p.featured ? '\u2605' : i + 1}</div>
+        <div class="pick-rank ${p.rank}">${p.featured ? '\u2605' : (i + 1)}</div>
         <div class="pick-info">
           <h4>${p.v.year} Model Y ${p.v.trim}${p.v.fsd === 'FSD Included' ? ' + FSD' : ''}</h4>
           <div class="pick-why">${p.why}</div>
+          ${verifyWarning}
           <span class="pick-tag" style="background:${p.tagBg};color:${p.tagColor};border:1px solid ${p.tagColor}33;">${p.tag}</span>
         </div>
         <div class="pick-price-col">
