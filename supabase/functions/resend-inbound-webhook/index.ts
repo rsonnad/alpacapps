@@ -375,6 +375,7 @@ async function checkSpamThresholdAndAlert(
 
 /**
  * Call the send-email edge function to send a PAI reply.
+ * Uses service role key so the invocation is accepted; passes from/reply_to so reply is from PAI.
  */
 async function sendPaiReply(
   supabase: any,
@@ -384,13 +385,13 @@ async function sendPaiReply(
   originalBody: string
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
   const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${supabaseAnonKey}`,
+      Authorization: `Bearer ${serviceKey}`,
     },
     body: JSON.stringify({
       type: "pai_email_reply",
@@ -400,7 +401,8 @@ async function sendPaiReply(
         original_subject: originalSubject,
         original_body: originalBody.substring(0, 500),
       },
-      sender_type: "pai",
+      from: "PAI <pai@alpacaplayhouse.com>",
+      reply_to: "pai@alpacaplayhouse.com",
     }),
   });
 
@@ -512,6 +514,17 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Heuristic: treat short "other" emails that look like questions as questions so we still reply.
+ */
+function looksLikeQuestion(subject: string, body: string): boolean {
+  const combined = `${(subject || "").trim()} ${(body || "").trim()}`.toLowerCase();
+  if (combined.length > 500) return false;
+  if (combined.includes("?")) return true;
+  const questionPhrases = ["can i ", "can we ", "could i ", "may i ", "how do ", "how can ", "is it ok", "is it okay", "are we ", "do you ", "does the ", "should i ", "would it "];
+  return questionPhrases.some((p) => combined.includes(p));
 }
 
 /**
@@ -663,8 +676,12 @@ async function handlePaiEmail(
         bodyText || bodyHtml || ""
       );
     }
-  } else if (classification.type === "question" || classification.type === "command") {
-    // === QUESTION or COMMAND: Forward to PAI, send reply ===
+  } else if (
+    classification.type === "question" ||
+    classification.type === "command" ||
+    (classification.type === "other" && looksLikeQuestion(subject, bodyText || bodyHtml))
+  ) {
+    // === QUESTION or COMMAND (or other that looks like a question): Forward to PAI, send reply ===
     const message = bodyText || bodyHtml || subject;
 
     try {
