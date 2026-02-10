@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Projects - AlpacAPPs</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="../spaces/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
+  <style>
+    :root {
+      --p1: #ef4444; --p1-bg: #fef2f2;
+      --p2: #f59e0b; --p2-bg: #fffbeb;
+      --p3: #3b82f6; --p3-bg: #eff6ff;
+      --p4: #6b7280; --p4-bg: #f9fafb;
+    }
+
+    .app-container { max-width: 700px; margin: 0 auto; padding: 1rem; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .stat-chip .num { font-size: 1rem; }
+    .stat-chip.open .num { color: #2563eb; }
+    .stat-chip.in-progress .num { color: #d97706; }
+    .stat-chip.done .num { color: #16a34a; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar select, .filter-bar input {
+      padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.85rem; background: var(--bg-card); flex: 1; min-width: 100px;
+    }
+    .filter-bar .btn-my-tasks {
+      padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--accent); color: var(--accent); background: transparent;
+      cursor: pointer; white-space: nowrap;
+    }
+    .filter-bar .btn-my-tasks.active {
+      background: var(--accent); color: #fff;
+    }
+
+    /* Task cards */
+    .task-group { margin-bottom: 1.5rem; }
+    .task-group-header {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-muted); margin-bottom: 0.5rem; padding-left: 0.25rem;
+    }
+
+    .task-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: box-shadow 0.15s;
+    }
+    .task-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .task-card.done { opacity: 0.6; }
+
+    .task-card-top { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .task-priority {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .task-priority.p1 { background: var(--p1-bg); color: var(--p1); }
+    .task-priority.p2 { background: var(--p2-bg); color: var(--p2); }
+    .task-priority.p3 { background: var(--p3-bg); color: var(--p3); }
+    .task-priority.p4 { background: var(--p4-bg); color: var(--p4); }
+    .task-priority.pnone { background: #f3f4f6; color: #9ca3af; }
+
+    .task-card-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .task-card.done .task-title { text-decoration: line-through; color: var(--text-muted); }
+
+    .task-meta {
+      display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem;
+      font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap;
+    }
+    .task-location { display: flex; align-items: center; gap: 0.2rem; }
+
+    .task-assignee {
+      padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600;
+      background: #e0e7ff; color: #3730a3; white-space: nowrap;
+    }
+
+    .task-notes {
+      margin-top: 0.4rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .task-completed-date { font-size: 0.75rem; color: #16a34a; margin-top: 0.2rem; }
+
+    .task-actions {
+      display: flex; gap: 0.4rem; margin-top: 0.5rem;
+    }
+    .task-actions button {
+      padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      cursor: pointer; transition: background 0.1s;
+    }
+    .task-actions button:hover { background: var(--border); }
+    .task-actions .btn-start { border-color: #d97706; color: #d97706; }
+    .task-actions .btn-start:hover { background: #fffbeb; }
+    .task-actions .btn-done { border-color: #16a34a; color: #16a34a; }
+    .task-actions .btn-done:hover { background: #f0fdf4; }
+    .task-actions .btn-reopen { border-color: #6b7280; color: #6b7280; }
+
+    .empty-state {
+      text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.95rem;
+    }
+
+    .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <!-- Shell injects nav here -->
+  <div id="appNav"></div>
+  <div id="toastContainer"></div>
+
+  <div class="app-container" id="mainContent" style="display:none">
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-chip open"><span class="num" id="statOpen">0</span> Open</div>
+      <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
+      <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <button class="btn-my-tasks" id="btnMyTasks">My Tasks</button>
+      <select id="filterAssignee">
+        <option value="">All People</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">Open + In Progress</option>
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+        <option value="all">All</option>
+      </select>
+      <select id="filterPriority">
+        <option value="">All Priorities</option>
+        <option value="1">P1 - Urgent</option>
+        <option value="2">P2 - High</option>
+        <option value="3">P3 - Medium</option>
+        <option value="4">P4 - Low</option>
+      </select>
+    </div>
+
+    <!-- Task list -->
+    <div id="taskList">
+      <div class="loading">Loading tasks...</div>
+    </div>
+  </div>
+
+  <span title="Site version" style="display:none">v260210.51 3:50p</span>
+  <script type="module" src="projects.js"></script>
+</body>
+</html>

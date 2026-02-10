@@ -257,7 +257,8 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
       const isDemo = state.appUser.role === 'demon';
-      const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
+      const hasAdminPerms = state.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+      const resolvedSection = section === 'admin' && (userIsAdmin || hasAdminPerms) ? 'admin' : 'staff';
 
       renderContextSwitcher(state.appUser?.role, resolvedSection);
       renderTabNav(activeTab, state, resolvedSection);

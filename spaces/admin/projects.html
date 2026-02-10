@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Projects - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <style>
+    :root {
+      --p1: #ef4444; --p1-bg: #fef2f2;
+      --p2: #f59e0b; --p2-bg: #fffbeb;
+      --p3: #3b82f6; --p3-bg: #eff6ff;
+      --p4: #6b7280; --p4-bg: #f9fafb;
+    }
+
+    .projects-page { max-width: 1100px; }
+
+    /* Summary cards */
+    .summary-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .summary-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.75rem 1rem; text-align: center;
+    }
+    .summary-card .num { font-size: 1.5rem; font-weight: 700; }
+    .summary-card .label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .summary-card.open .num { color: #2563eb; }
+    .summary-card.in-progress .num { color: #d97706; }
+    .summary-card.done .num { color: #16a34a; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .toolbar select, .toolbar input[type="text"] {
+      padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.85rem; background: var(--bg-card);
+    }
+    .toolbar input[type="text"] { flex: 1; min-width: 150px; }
+    .btn-add {
+      padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      border: none; background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .btn-add:hover { opacity: 0.9; }
+
+    /* Task table */
+    .task-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .task-table th {
+      text-align: left; padding: 0.6rem 0.75rem; border-bottom: 2px solid var(--border);
+      font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
+      cursor: pointer; white-space: nowrap; user-select: none;
+    }
+    .task-table th:hover { color: var(--text); }
+    .task-table td {
+      padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .task-table tr:hover td { background: var(--bg); }
+    .task-table tr.done td { opacity: 0.55; }
+    .task-table .title-cell { max-width: 350px; }
+    .task-table .title-text { font-weight: 600; }
+    .task-table tr.done .title-text { text-decoration: line-through; }
+    .task-table .notes-text { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* Priority badge */
+    .priority-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 5px; font-size: 0.68rem; font-weight: 800;
+    }
+    .priority-badge.p1 { background: var(--p1-bg); color: var(--p1); }
+    .priority-badge.p2 { background: var(--p2-bg); color: var(--p2); }
+    .priority-badge.p3 { background: var(--p3-bg); color: var(--p3); }
+    .priority-badge.p4 { background: var(--p4-bg); color: var(--p4); }
+
+    /* Status badge */
+    .status-badge {
+      padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .status-badge.open { background: #dbeafe; color: #1e40af; }
+    .status-badge.in_progress { background: #fef3c7; color: #92400e; }
+    .status-badge.done { background: #d1fae5; color: #065f46; }
+
+    /* Assignee badge */
+    .assignee-badge {
+      padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600;
+      background: #e0e7ff; color: #3730a3; white-space: nowrap;
+    }
+
+    /* Action buttons */
+    .row-actions { display: flex; gap: 0.3rem; }
+    .row-actions button {
+      padding: 0.2rem 0.5rem; border-radius: 5px; font-size: 0.75rem; border: 1px solid var(--border);
+      background: var(--bg-card); cursor: pointer; color: var(--text);
+    }
+    .row-actions button:hover { background: var(--border); }
+    .row-actions .btn-del { color: #ef4444; border-color: #fca5a5; }
+    .row-actions .btn-del:hover { background: #fef2f2; }
+
+    /* Bulk actions */
+    .bulk-bar {
+      display: none; padding: 0.5rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 8px; margin-bottom: 0.75rem; align-items: center; gap: 0.5rem; font-size: 0.85rem;
+    }
+    .bulk-bar.visible { display: flex; }
+    .bulk-bar select { padding: 0.3rem; border-radius: 6px; border: 1px solid var(--border); font-size: 0.82rem; }
+    .bulk-bar button {
+      padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;
+      border: none; background: var(--accent); color: #fff; cursor: pointer;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--bg-card); border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 500px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;
+    }
+    .modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; }
+    .modal-box label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-muted); }
+    .modal-box input, .modal-box select, .modal-box textarea {
+      width: 100%; box-sizing: border-box; padding: 0.5rem; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.9rem; margin-bottom: 0.75rem; font-family: inherit;
+    }
+    .modal-box textarea { min-height: 60px; resize: vertical; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem; }
+    .modal-actions .btn-save {
+      padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+      border: none; background: var(--accent); color: #fff; cursor: pointer;
+    }
+    .modal-actions .btn-cancel {
+      padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.9rem;
+      border: 1px solid var(--border); background: var(--bg); cursor: pointer; color: var(--text);
+    }
+
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      .task-table th.hide-mobile, .task-table td.hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="appNav"></div>
+  <div id="toastContainer"></div>
+
+  <div class="manage-page projects-page" id="mainContent" style="display:none">
+    <div class="manage-header">
+      <h1>Projects</h1>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-cards" id="summaryCards">
+      <div class="summary-card"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
+      <div class="summary-card open"><div class="num" id="statOpen">0</div><div class="label">Open</div></div>
+      <div class="summary-card in-progress"><div class="num" id="statInProgress">0</div><div class="label">In Progress</div></div>
+      <div class="summary-card done"><div class="num" id="statDone">0</div><div class="label">Done</div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Search tasks...">
+      <select id="filterAssignee"><option value="">All People</option></select>
+      <select id="filterStatus">
+        <option value="">Open + In Progress</option>
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+        <option value="all">All</option>
+      </select>
+      <select id="filterPriority">
+        <option value="">All Priorities</option>
+        <option value="1">P1</option>
+        <option value="2">P2</option>
+        <option value="3">P3</option>
+        <option value="4">P4</option>
+      </select>
+      <button class="btn-add" id="btnAddTask">+ Add Task</button>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-bar" id="bulkBar">
+      <span id="bulkCount">0</span> selected
+      <select id="bulkAssignee"><option value="">Reassign to...</option></select>
+      <button id="btnBulkReassign">Reassign</button>
+      <select id="bulkStatus">
+        <option value="">Change status...</option>
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      <button id="btnBulkStatus">Apply</button>
+    </div>
+
+    <!-- Table -->
+    <div style="overflow-x:auto">
+      <table class="task-table">
+        <thead>
+          <tr>
+            <th style="width:30px"><input type="checkbox" id="selectAll"></th>
+            <th style="width:40px">P</th>
+            <th>Task</th>
+            <th>Assignee</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th class="hide-mobile" style="width:80px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody">
+          <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-box">
+      <h3 id="modalTitle">Add Task</h3>
+      <input type="hidden" id="editTaskId">
+
+      <label>Title *</label>
+      <input type="text" id="inputTitle" required>
+
+      <label>Notes</label>
+      <textarea id="inputNotes"></textarea>
+
+      <label>Priority</label>
+      <select id="inputPriority">
+        <option value="">None</option>
+        <option value="1">P1 - Urgent</option>
+        <option value="2">P2 - High</option>
+        <option value="3">P3 - Medium</option>
+        <option value="4">P4 - Low</option>
+      </select>
+
+      <label>Location</label>
+      <select id="inputSpace">
+        <option value="">None</option>
+      </select>
+
+      <label>Location Note</label>
+      <input type="text" id="inputLocationLabel" placeholder="e.g. Electronics, Attic...">
+
+      <label>Assigned To</label>
+      <select id="inputAssignee">
+        <option value="">Unassigned</option>
+      </select>
+
+      <label>Status</label>
+      <select id="inputStatus">
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnModalCancel">Cancel</button>
+        <button class="btn-save" id="btnModalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <span title="Site version" style="display:none">v260210.51 3:50p</span>
+  <script type="module" src="projects.js"></script>
+</body>
+</html>

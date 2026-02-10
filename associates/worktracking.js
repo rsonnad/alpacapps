@@ -48,6 +48,7 @@ async function initApp() {
   setupEventListeners();
   requestLocation();
   await loadSpaces();
+  await loadTasksForSelector();
   await refreshAll();
 }
 
@@ -135,6 +136,28 @@ function getSelectedSpaceId() {
 function getSelectedTaskId() {
   const sel = document.getElementById('taskSelector');
   return sel ? (sel.value || null) : null;
+}
+
+async function loadTasksForSelector() {
+  try {
+    const userId = authState?.appUser?.id;
+    const tasks = userId
+      ? await projectService.getOpenTasksForUser(userId)
+      : await projectService.getAllTasks({ status: 'all' });
+    const sel = document.getElementById('taskSelector');
+    if (!sel) return;
+    // Keep the first "No specific task" option
+    while (sel.options.length > 1) sel.remove(1);
+    (tasks || []).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      const location = t.space?.name || '';
+      opt.textContent = location ? `${t.title} (${location})` : t.title;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Failed to load tasks:', err);
+  }
 }
 
 // =============================================

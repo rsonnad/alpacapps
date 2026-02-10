@@ -216,7 +216,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
     if (requiredPermission) {
       meetsRequirement = state.hasPermission?.(requiredPermission);
     } else {
-      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, resident: 1, associate: 1 };
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
