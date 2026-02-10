@@ -303,7 +303,134 @@
   color: var(--text-muted);
 }
 
-/* Modal additions */
+/* Modal form styling — clean up labels, inputs, spacing */
+#faqModal .modal-body,
+#linkModal .modal-body,
+#contextEntryModal .modal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+#faqModal .modal-body label,
+#linkModal .modal-body label,
+#contextEntryModal .modal-body label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+#faqModal .modal-body label:first-of-type,
+#linkModal .modal-body label:first-of-type,
+#contextEntryModal .modal-body label:first-of-type {
+  margin-top: 0;
+}
+
+#faqModal .modal-body input,
+#faqModal .modal-body textarea,
+#linkModal .modal-body input,
+#linkModal .modal-body textarea,
+#contextEntryModal .modal-body input,
+#contextEntryModal .modal-body textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: var(--bg, #fafaf8);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#faqModal .modal-body input:focus,
+#faqModal .modal-body textarea:focus,
+#linkModal .modal-body input:focus,
+#linkModal .modal-body textarea:focus,
+#contextEntryModal .modal-body input:focus,
+#contextEntryModal .modal-body textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 136, 58, 0.1);
+  background: var(--bg-card);
+}
+
+#faqModal .modal-body textarea,
+#linkModal .modal-body textarea,
+#contextEntryModal .modal-body textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Context Entry modal — bottom row: order + toggle inline */
+.ce-bottom-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border, #e6e2d9);
+}
+
+.ce-order-group {
+  flex: 0 0 80px;
+}
+
+.ce-order-group label {
+  margin-top: 0 !important;
+}
+
+.ce-order-group input[type="number"] {
+  width: 80px;
+  text-align: center;
+}
+
+.ce-toggle-label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text) !important;
+  margin: 0 0 0.35rem !important;
+  user-select: none;
+}
+
+.ce-toggle-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Checkbox labels inside FAQ/Link modals */
+#faqModal .checkbox-label,
+#linkModal .checkbox-label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 1.25rem !important;
+}
+
+#faqModal .checkbox-label input[type="checkbox"],
+#linkModal .checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .form-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
