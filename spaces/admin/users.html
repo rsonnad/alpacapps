@@ -442,7 +442,7 @@
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
           <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
         </a>
-        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.80 8:16a</span>
+        <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v260210.81 8:22a</span>
         <span id="roleBadge" class="role-badge">Admin</span>
       </div>
       <div class="header-controls">
@@ -602,6 +602,17 @@
     .perm-group-header .pg-icon { font-size: 0.85rem; opacity: 0.7; }
     .perm-group-header .pg-count { font-size: 0.6rem; font-weight: 400; opacity: 0.5; margin-left: auto; }
 
+    .perm-col-headers {
+      display: flex; align-items: center; padding: 0.2rem 0.75rem;
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f9f9f9;
+      position: sticky; top: 0; z-index: 2;
+    }
+    .perm-col-headers .pch-check { width: 26px; flex-shrink: 0; }
+    .perm-col-headers .pch-name { width: 30%; flex-shrink: 0; }
+    .perm-col-headers .pch-desc { flex: 1; }
+    .perm-col-headers .pch-roles { width: 20%; text-align: right; flex-shrink: 0; }
+
     .perm-table { width: 100%; border-collapse: collapse; }
     .perm-table td { padding: 0.25rem 0.75rem; font-size: 0.8rem; vertical-align: middle; border-bottom: 1px solid rgba(0,0,0,0.04); }
     .perm-table tr:last-child td { border-bottom: none; }
@@ -624,6 +635,9 @@
       .perm-table .pt-desc { display: none; }
       .perm-table .pt-roles { display: none; }
       .perm-table .pt-name { width: auto; }
+      .perm-col-headers .pch-desc { display: none; }
+      .perm-col-headers .pch-roles { display: none; }
+      .perm-col-headers .pch-name { width: auto; }
     }
   </style>
 

@@ -887,23 +887,23 @@ function renderUsers() {
 // Each group maps DB permission keys → a visual section with icon, label, and background tint.
 // "admin_key" is the matching admin_resident permission to indent under this group.
 const PERM_GROUPS = [
-  // -- Resident smart-home tabs --
-  { id: 'cameras',  icon: '📹', label: 'Cameras',  bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
-    keys: ['view_cameras', 'use_camera_ptz', 'use_camera_talkback'], adminKey: null },
+  // -- Resident smart-home tabs (matches GUI tab order: Lighting → Music → Cameras → Climate → Laundry → Cars → Profile → PAI) --
   { id: 'lighting', icon: '💡', label: 'Lighting', bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
     keys: ['view_lighting', 'control_lighting'], adminKey: 'admin_lighting_settings' },
-  { id: 'climate',  icon: '🌡️', label: 'Climate',  bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
-    keys: ['view_climate', 'control_climate'], adminKey: 'admin_climate_settings' },
   { id: 'music',    icon: '🎵', label: 'Music',    bg: '#f3effc', headerBg: '#e2dafc', headerColor: '#5b3fa0',
     keys: ['view_music', 'control_music'], adminKey: 'admin_music_settings' },
+  { id: 'cameras',  icon: '📹', label: 'Cameras',  bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
+    keys: ['view_cameras', 'use_camera_ptz', 'use_camera_talkback'], adminKey: null },
+  { id: 'climate',  icon: '🌡️', label: 'Climate',  bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
+    keys: ['view_climate', 'control_climate'], adminKey: 'admin_climate_settings' },
   { id: 'laundry',  icon: '🧺', label: 'Laundry',  bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
     keys: ['view_laundry'], adminKey: 'admin_laundry_settings' },
   { id: 'cars',     icon: '🚗', label: 'Vehicles', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
     keys: ['view_cars', 'control_cars'], adminKey: 'admin_cars_settings' },
-  { id: 'pai',      icon: '🦙', label: 'PAI',      bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
-    keys: ['use_pai'], adminKey: 'admin_pai_settings' },
   { id: 'profile',  icon: '👤', label: 'Profile',  bg: '#f5f5f5', headerBg: '#e8e8e8', headerColor: '#555',
     keys: ['view_profile', 'edit_profile'], adminKey: null },
+  { id: 'pai',      icon: '🦙', label: 'PAI',      bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
+    keys: ['use_pai'], adminKey: 'admin_pai_settings' },
   // -- Staff admin tabs --
   { id: 'spaces',   icon: '🏠', label: 'Spaces',   bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
     keys: ['view_spaces', 'manage_spaces'], adminKey: null },
@@ -941,7 +941,7 @@ const PERM_GROUPS = [
 
 // Super-sections that group the above
 const PERM_SUPER_SECTIONS = [
-  { label: 'Resident', groupIds: ['cameras','lighting','climate','music','laundry','cars','pai','profile'] },
+  { label: 'Resident', groupIds: ['lighting','music','cameras','climate','laundry','cars','profile','pai'] },
   { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo'] },
   { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting'] },
   { label: 'Associate',groupIds: ['associate'] },
@@ -1021,8 +1021,18 @@ async function showPermissionsModal(userId) {
   }
 
   let html = '';
+  let isFirstSection = true;
   for (const section of PERM_SUPER_SECTIONS) {
     html += `<div class="perm-super-section">${section.label}</div>`;
+    if (isFirstSection) {
+      html += `<div class="perm-col-headers">
+        <span class="pch-check"></span>
+        <span class="pch-name">Permission</span>
+        <span class="pch-desc">Description</span>
+        <span class="pch-roles">Included in</span>
+      </div>`;
+      isFirstSection = false;
+    }
     for (const gid of section.groupIds) {
       const group = PERM_GROUPS.find(g => g.id === gid);
       if (!group) continue;
