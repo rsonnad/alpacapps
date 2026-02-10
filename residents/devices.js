@@ -1,60 +1,386 @@
 /**
- * Devices Page - Hub of device categories with links to Cameras, Lighting, Music, etc.
- * Only shows cards for categories the user has permission to access.
+ * Devices Page — Unified device inventory.
+ * Fetches all device data from Supabase and renders expandable sections
+ * with tabular rows per device category.
  */
 
 import { initResidentPage } from '../shared/resident-shell.js';
+import { supabase } from '../shared/supabase.js';
 
-const DEVICE_CATEGORIES = [
-  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras', description: 'Live feeds, PTZ, talkback' },
-  { id: 'lighting', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting', description: 'Govee lights, groups, scenes' },
-  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music', description: 'Sonos zones, playback, volume' },
-  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate', description: 'Nest thermostats, weather' },
-  { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry', description: 'Washer & dryer status' },
-  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars', description: 'Tesla vehicles, lock, flash' },
+const COLLAPSE_KEY = 'devices-collapsed';
+
+const CATEGORIES = [
+  { id: 'cameras',  label: 'Cameras',      href: 'cameras.html',  linkLabel: 'Camera Feeds' },
+  { id: 'lighting', label: 'Lighting',      href: 'lighting.html', linkLabel: 'Lighting Controls' },
+  { id: 'music',    label: 'Music',          href: 'sonos.html',    linkLabel: 'Sonos Controls' },
+  { id: 'climate',  label: 'Climate',        href: 'climate.html',  linkLabel: 'Climate Controls' },
+  { id: 'cars',     label: 'Vehicles',       href: 'cars.html',     linkLabel: 'Vehicle Controls' },
+  { id: 'laundry',  label: 'Laundry',        href: 'laundry.html',  linkLabel: 'Laundry Status' },
 ];
 
-const ICONS = {
-  cameras: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>',
-  lighting: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21h6M12 3a6 6 0 00-4 10.5V17h8v-3.5A6 6 0 0012 3z"/></svg>',
-  music: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>',
-  climate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>',
-  laundry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>',
-  cars: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14M7.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM16.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M5 12l1.5-4.5h11L19 12"/></svg>',
-};
+/* ── Helpers ── */
+
+function timeAgo(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function esc(s) {
+  if (!s) return '—';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function statusDot(online) {
+  const cls = online ? 'status-live' : 'status-offline';
+  return `<span class="status-dot ${cls}"></span>`;
+}
+
+/* ── Data Fetchers (all DB, no live API) ── */
+
+async function fetchCameras() {
+  const { data } = await supabase
+    .from('camera_streams')
+    .select('camera_name, location, quality, is_active')
+    .eq('is_active', true)
+    .order('camera_name');
+  if (!data) return [];
+  // Group by camera_name
+  const map = new Map();
+  for (const s of data) {
+    if (!map.has(s.camera_name)) {
+      map.set(s.camera_name, { name: s.camera_name, location: s.location, qualities: [] });
+    }
+    map.get(s.camera_name).qualities.push(s.quality);
+  }
+  return [...map.values()];
+}
+
+async function fetchLighting() {
+  // Fetch groups + child devices + models in parallel
+  const [groupsRes, childrenRes, modelsRes] = await Promise.all([
+    supabase.from('govee_devices')
+      .select('device_id, name, area, display_order')
+      .eq('is_group', true).eq('is_active', true)
+      .order('display_order'),
+    supabase.from('govee_devices')
+      .select('device_id, name, sku, parent_group_id, area')
+      .eq('is_group', false).eq('is_active', true)
+      .order('name'),
+    supabase.from('govee_models')
+      .select('sku, model_name'),
+  ]);
+  const groups = groupsRes.data || [];
+  const children = childrenRes.data || [];
+  const models = new Map((modelsRes.data || []).map(m => [m.sku, m.model_name]));
+
+  // Count children per group and collect model names
+  const rows = groups.map(g => {
+    const kids = children.filter(c => c.parent_group_id === g.device_id);
+    const modelSet = new Set(kids.map(c => models.get(c.sku) || c.sku).filter(Boolean));
+    return {
+      name: g.name,
+      area: g.area,
+      deviceCount: kids.length,
+      models: [...modelSet].join(', ') || '—',
+    };
+  });
+
+  // Add ungrouped devices by area
+  const ungrouped = children.filter(c => !c.parent_group_id);
+  const byArea = new Map();
+  for (const u of ungrouped) {
+    if (!byArea.has(u.area)) byArea.set(u.area, []);
+    byArea.get(u.area).push(u);
+  }
+  for (const [area, devs] of byArea) {
+    const modelSet = new Set(devs.map(d => models.get(d.sku) || d.sku));
+    rows.push({
+      name: `${area} (ungrouped)`,
+      area,
+      deviceCount: devs.length,
+      models: [...modelSet].join(', ') || '—',
+    });
+  }
+
+  return rows;
+}
+
+async function fetchSonos() {
+  const { data } = await supabase
+    .from('sonos_zones')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order');
+  return data || [];
+}
+
+async function fetchClimate() {
+  const { data } = await supabase
+    .from('nest_devices')
+    .select('room_name, device_type, display_order, last_state, is_active')
+    .eq('is_active', true)
+    .eq('device_type', 'thermostat')
+    .order('display_order');
+  return data || [];
+}
+
+async function fetchVehicles() {
+  const { data } = await supabase
+    .from('vehicles')
+    .select('name, make, model, year, color, vehicle_state, last_state, last_synced_at, is_active')
+    .eq('is_active', true)
+    .order('display_order');
+  return data || [];
+}
+
+async function fetchLaundry() {
+  const { data } = await supabase
+    .from('lg_appliances')
+    .select('name, device_type, model, last_state, last_synced_at, is_active')
+    .eq('is_active', true)
+    .order('display_order');
+  return data || [];
+}
+
+/* ── Row Renderers ── */
+
+function renderCameraRows(cameras) {
+  if (!cameras.length) return emptyRow(3);
+  return cameras.map(c => `
+    <tr>
+      <td class="dt-name">${esc(c.name)}</td>
+      <td>${esc(c.location)}</td>
+      <td>${c.qualities.map(q => `<span class="dt-badge">${q}</span>`).join(' ')}</td>
+    </tr>
+  `).join('');
+}
+
+function renderLightingRows(groups) {
+  if (!groups.length) return emptyRow(4);
+  return groups.map(g => `
+    <tr>
+      <td class="dt-name">${esc(g.name)}</td>
+      <td>${esc(g.area)}</td>
+      <td class="dt-num">${g.deviceCount}</td>
+      <td class="dt-secondary">${esc(g.models)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderSonosRows(zones) {
+  if (!zones.length) return emptyRow(3, 'No zones synced yet');
+  return zones.map(z => {
+    const st = z.last_state || {};
+    const playback = st.playbackState || '—';
+    const vol = st.volume != null ? `${st.volume}%` : '—';
+    return `
+      <tr>
+        <td class="dt-name">${esc(z.room_name)}</td>
+        <td>${playback === 'PLAYING' ? statusDot(true) : statusDot(false)} ${esc(playback)}</td>
+        <td class="dt-num">${vol}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderClimateRows(devices) {
+  if (!devices.length) return emptyRow(5);
+  return devices.map(d => {
+    const s = d.last_state || {};
+    const temp = s.currentTempF != null ? `${Math.round(s.currentTempF)}°F` : '—';
+    const humidity = s.humidity != null ? `${s.humidity}%` : '—';
+    const mode = s.mode || '—';
+    const hvac = s.hvacStatus || 'OFF';
+    const online = s.connectivity === 'ONLINE';
+    return `
+      <tr>
+        <td class="dt-name">${statusDot(online)} ${esc(d.room_name)}</td>
+        <td class="dt-num">${temp}</td>
+        <td class="dt-num">${humidity}</td>
+        <td>${esc(mode)}</td>
+        <td>${hvac === 'HEATING' ? '🔥' : hvac === 'COOLING' ? '❄️' : '—'} ${esc(hvac)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderVehicleRows(vehicles) {
+  if (!vehicles.length) return emptyRow(6);
+  return vehicles.map(v => {
+    const s = v.last_state || {};
+    const battery = s.battery_level != null ? `${s.battery_level}%` : '—';
+    const status = v.vehicle_state || '—';
+    const locked = s.locked != null ? (s.locked ? '🔒' : '🔓') : '—';
+    const charging = s.charging_state || '—';
+    return `
+      <tr>
+        <td class="dt-name">${esc(v.name)}</td>
+        <td class="dt-secondary">${esc(v.make)} ${esc(v.model)} ${v.year || ''}</td>
+        <td class="dt-num">${battery}</td>
+        <td>${esc(status)}</td>
+        <td>${locked}</td>
+        <td class="dt-secondary">${timeAgo(v.last_synced_at)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderLaundryRows(appliances) {
+  if (!appliances.length) return emptyRow(4, 'No appliances configured');
+  return appliances.map(a => {
+    const s = a.last_state || {};
+    const state = s.currentState || 'UNKNOWN';
+    const remaining = (s.remainHour || s.remainMinute)
+      ? `${s.remainHour ? s.remainHour + 'h ' : ''}${s.remainMinute || 0}m`
+      : '—';
+    return `
+      <tr>
+        <td class="dt-name">${esc(a.name)}</td>
+        <td>${esc(a.device_type)}</td>
+        <td>${esc(state)}</td>
+        <td class="dt-num">${remaining}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function emptyRow(cols, msg = 'No devices') {
+  return `<tr><td colspan="${cols}" class="dt-empty">${msg}</td></tr>`;
+}
+
+/* ── Section Builder ── */
+
+function buildSection(cat, count, theadHtml, tbodyHtml) {
+  const collapsed = getCollapsed();
+  const isOpen = !collapsed.includes(cat.id);
+  return `
+    <details class="device-section" ${isOpen ? 'open' : ''} data-section="${cat.id}">
+      <summary class="device-section__header">
+        <span class="device-section__chevron"></span>
+        <span class="device-section__label">${cat.label}</span>
+        <span class="device-section__count">${count}</span>
+        <a href="${cat.href}" class="device-section__link">${cat.linkLabel} →</a>
+      </summary>
+      <div class="device-section__body">
+        <div class="device-table-wrap">
+          <table class="device-table">
+            <thead><tr>${theadHtml}</tr></thead>
+            <tbody>${tbodyHtml}</tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+function th(label) { return `<th>${label}</th>`; }
+
+/* ── Collapse Persistence ── */
+
+function getCollapsed() {
+  try { return JSON.parse(localStorage.getItem(COLLAPSE_KEY) || '[]'); } catch { return []; }
+}
+
+function saveCollapsed(list) {
+  localStorage.setItem(COLLAPSE_KEY, JSON.stringify(list));
+}
+
+function initCollapseListeners(container) {
+  container.querySelectorAll('.device-section').forEach(det => {
+    det.addEventListener('toggle', () => {
+      const id = det.dataset.section;
+      let collapsed = getCollapsed();
+      if (det.open) {
+        collapsed = collapsed.filter(c => c !== id);
+      } else {
+        if (!collapsed.includes(id)) collapsed.push(id);
+      }
+      saveCollapsed(collapsed);
+    });
+  });
+}
+
+/* ── Main ── */
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
     activeTab: 'devices',
     requiredRole: 'resident',
     onReady: (state) => {
-      renderDeviceCards(state);
+      renderInventory(state);
     },
   });
 });
 
-function renderDeviceCards(state) {
-  const grid = document.getElementById('devicesGrid');
-  if (!grid) return;
+async function renderInventory() {
+  const container = document.getElementById('devicesGrid');
+  if (!container) return;
+  container.innerHTML = '<p class="text-muted" style="padding:1rem">Loading devices...</p>';
 
-  const role = state.appUser?.role;
-  const hasAllDeviceAccess = ['admin', 'staff', 'oracle'].includes(role);
-  const allowed = DEVICE_CATEGORIES.filter(cat =>
-    hasAllDeviceAccess || state.hasPermission?.(cat.permission)
-  );
-  if (allowed.length === 0) {
-    grid.innerHTML = '<p class="text-muted" style="padding:1rem;">No device categories available for your account.</p>';
-    return;
-  }
+  // Fetch all device data in parallel
+  const [cameras, lighting, sonos, climate, vehicles, laundry] = await Promise.all([
+    fetchCameras(),
+    fetchLighting(),
+    fetchSonos(),
+    fetchClimate(),
+    fetchVehicles(),
+    fetchLaundry(),
+  ]);
 
-  grid.innerHTML = allowed.map(cat => `
-    <a href="${cat.href}" class="device-card" data-device="${cat.id}">
-      <span class="device-card__icon">${ICONS[cat.id] || ''}</span>
-      <div class="device-card__body">
-        <span class="device-card__label">${cat.label}</span>
-        ${cat.description ? `<span class="device-card__desc">${cat.description}</span>` : ''}
-      </div>
-      <span class="device-card__arrow" aria-hidden="true">→</span>
-    </a>
-  `).join('');
+  const totalDevices = cameras.length
+    + lighting.reduce((s, g) => s + g.deviceCount, 0)
+    + sonos.length
+    + climate.length
+    + vehicles.length
+    + laundry.length;
+
+  let html = `<p class="device-summary">${totalDevices} devices across ${CATEGORIES.length} categories</p>`;
+
+  // Cameras
+  const camCat = CATEGORIES.find(c => c.id === 'cameras');
+  html += buildSection(camCat, cameras.length,
+    th('Camera') + th('Location') + th('Qualities'),
+    renderCameraRows(cameras));
+
+  // Lighting (groups)
+  const lightCat = CATEGORIES.find(c => c.id === 'lighting');
+  const totalLights = lighting.reduce((s, g) => s + g.deviceCount, 0);
+  html += buildSection(lightCat, `${lighting.length} groups · ${totalLights} devices`,
+    th('Group') + th('Area') + th('Devices') + th('Models'),
+    renderLightingRows(lighting));
+
+  // Music (Sonos)
+  const musicCat = CATEGORIES.find(c => c.id === 'music');
+  html += buildSection(musicCat, sonos.length,
+    th('Zone') + th('State') + th('Volume'),
+    renderSonosRows(sonos));
+
+  // Climate
+  const climateCat = CATEGORIES.find(c => c.id === 'climate');
+  html += buildSection(climateCat, climate.length,
+    th('Room') + th('Temp') + th('Humidity') + th('Mode') + th('HVAC'),
+    renderClimateRows(climate));
+
+  // Vehicles
+  const carCat = CATEGORIES.find(c => c.id === 'cars');
+  html += buildSection(carCat, vehicles.length,
+    th('Name') + th('Vehicle') + th('Battery') + th('Status') + th('Lock') + th('Synced'),
+    renderVehicleRows(vehicles));
+
+  // Laundry
+  const laundryCat = CATEGORIES.find(c => c.id === 'laundry');
+  html += buildSection(laundryCat, laundry.length,
+    th('Name') + th('Type') + th('State') + th('Remaining'),
+    renderLaundryRows(laundry));
+
+  container.innerHTML = html;
+  initCollapseListeners(container);
 }
