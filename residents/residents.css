@@ -5143,3 +5143,88 @@ span.sonos-library-item__star.starred {
     font-size: 1.2rem;
   }
 }
+
+/* ===== DEVICES HUB PAGE ===== */
+.devices-intro {
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.device-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.device-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.device-card__icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent, #d4883a);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.device-card__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.device-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.device-card__label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.device-card__desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.device-card__arrow {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.device-card:hover .device-card__arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 768px) {
+  .devices-grid {
+    grid-template-columns: 1fr;
+  }
+}
