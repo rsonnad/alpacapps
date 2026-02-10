@@ -2,6 +2,7 @@
  * Public Shell - injects shared header + mobile nav
  */
 import { renderHeader, initSiteComponents } from './site-components.js';
+import { setupVersionInfo } from './version-info.js';
 
 export function initPublicPage(options = {}) {
   const headerTarget = document.getElementById('siteHeader');
@@ -20,6 +21,7 @@ export function initPublicPage(options = {}) {
   });
 
   initSiteComponents();
+  setupVersionInfo();
 }
 
 if (typeof window !== 'undefined') {

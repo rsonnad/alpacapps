@@ -216,11 +216,15 @@ ul, ol {
 }
 
 .aap-header__version {
-  font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 500;
-  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  margin-left: 0.4rem;
   cursor: pointer;
+}
+
+.aap-header--dark .aap-header__version {
+  color: rgba(34, 34, 34, 0.7);
 }
 
 /* Hide wordmark on mobile to prevent overlap with hamburger */

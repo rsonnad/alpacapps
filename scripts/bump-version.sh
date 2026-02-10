@@ -25,7 +25,7 @@
 set -euo pipefail
 
 # Parse arguments
-MODEL_CODE=""
+MODEL_CODE="${AAP_MODEL_CODE:-}"
 while [[ $# -gt 0 ]]; do
   case $1 in
     --model)

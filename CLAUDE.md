@@ -508,17 +508,15 @@ This site deploys directly to GitHub Pages from the `main` branch. There is no b
 
 ### REQUIRED: Bump Version Before Every Push
 
-**You MUST run `./scripts/bump-version.sh --model MODEL_CODE` before committing and pushing.** This is not optional.
+**You MUST run `./scripts/bump-version.sh` before committing and pushing.** This is not optional.
 
-**Model self-reporting:** You MUST pass your model code via the `--model` flag. Use a short identifier in `x0.0` format:
-- Claude Opus 4.6 → `o4.6`
-- Claude Sonnet 4 → `s4.0`
-- Gemini 2.5 → `g2.5`
-- GPT-4o → `g4o`
-- Cursor (unknown model) → `cur`
-- If you don't know your exact model, use the closest short identifier you can. **Never omit the --model flag.**
+**Model + machine self-reporting (required):**
+- Model: set `AAP_MODEL_CODE` (or pass `--model` to the wrapper)
+- Machine: set `AAP_MACHINE_NAME` or add a `.machine-name` file (gitignored)
 
-The model code is stored in `version.json` and displayed next to the version string on every page (in orange). The hover tooltip and click modal show which AI model created each branch.
+If you don't know your exact model, use a best-effort label like `gpt-5.2-codex` or `cur`.
+
+The model + machine are stored in `version.json` and shown in the hover tooltip and click modal.
 
 The script:
 1. Atomically increments the version in the `site_config` DB table (format: `vYYMMDD.NN H:MMa/p`)
@@ -529,9 +527,14 @@ The script:
 **Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the script pattern-matches and updates. If you add a new HTML page, you MUST include a version string in the same format so the bump script catches it.
 
 ```bash
-# Full deploy workflow:
-./scripts/bump-version.sh --model o4.6   # MUST run first — bumps version in DB + all HTML files
-git add <files>                           # Stage your changes AND the bumped HTML files
+# Full deploy workflow (recommended):
+export AAP_MODEL_CODE="gpt-5.2-codex"
+export AAP_MACHINE_NAME="rahulio-macair"
+./scripts/push-main.sh                     # bumps version, commits, pushes
+
+# Manual deploy workflow:
+./scripts/bump-version.sh                  # MUST run first — bumps version in DB + all HTML files
+git add <files>                            # Stage your changes AND the bumped HTML files
 git commit -m "Description"
 git push
 # Changes are live in 1-2 minutes
