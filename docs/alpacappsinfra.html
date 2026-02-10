@@ -889,7 +889,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260210.62 6:53a</span>
+<span data-site-version style="display:none;">v260210.65 7:04a</span>
 <div id="siteHeader"></div>
 
 <div class="hero" style="padding-top: calc(80px + 3.5rem);">
@@ -1974,50 +1974,48 @@ function recalcCost() {
   var notes = lines.filter(function(l) { return l.note; }).map(function(l) { return l.label + ': ' + l.note; });
   var noteEl = document.getElementById('calc-note');
   if (tier === 'basic' && total === 0) {
-    noteEl.textContent = 'The basic tier runs entirely on free tiers. Claude Code\'s free plan works for small projects.';
+    noteEl.textContent = 'Runs entirely on free tiers. You\'ll outgrow this when you exceed 500 MB of database or 1 GB of file storage.';
   } else if (notes.length > 0) {
     noteEl.innerHTML = notes.join('<br>');
   } else {
     noteEl.textContent = 'All selected services stay within free tiers at this complexity level.';
   }
 
-  // Scope / "What this looks like"
+  // Scope — "Max activity at this level"
   var scopes = {
     basic: [
-      '5\u201310 pages (landing, about, contact, etc.)',
-      '1\u20132 database tables',
-      'A contact form or simple booking form',
-      'Basic admin dashboard to view submissions',
-      '~100 photos or files in storage',
-      'A weekend to a week of Claude Code work',
-      'Public-facing info site with a backend',
-      'No user accounts needed'
+      'Unlimited pages on GitHub Pages (soft cap: 1 GB repo, 100 GB bandwidth/mo)',
+      '500 MB database storage on Supabase free tier',
+      '1 GB file storage (photos, documents)',
+      '50,000 monthly active users (Supabase Auth)',
+      '500,000 edge function calls/month',
+      '3,000 emails/month (Resend free tier)',
+      '25 e-signature documents/month (SignWell free)',
+      'Claude Code free tier: light usage with daily limits'
     ],
     complicated: [
-      '15\u201330 pages across public + admin views',
-      '10\u201320 database tables with relationships',
-      'User accounts with roles (admin, staff, customer)',
-      'Email + SMS notifications to customers',
-      'Payment collection via credit card',
-      'Document generation and e-signatures',
-      '1,000\u20135,000 photos/files in storage',
-      'A few weeks of Claude Code building, then maintenance'
+      'Everything in Basic, plus:',
+      '~250 SMS/month on Telnyx ($1/mo number + $0.004/SMS)',
+      'Unlimited payment transactions (Square charges % per txn only)',
+      'Gemini AI: ~3,000 API calls/month at $10/mo',
+      'Claude Code: Max plan ($100) for the first month of heavy building, then Pro ($20/mo) for maintenance and tweaks',
+      'Still on Supabase free tier (500 MB DB, 1 GB storage)',
+      'Outgrow this tier if you exceed 500 MB of data or 1 GB of files'
     ],
     hyper: [
-      '50+ pages across multiple portals',
-      '30+ database tables with complex relationships',
-      'AI-powered chat, voice assistant, image generation',
-      'Smart home/IoT control (lights, climate, cameras)',
-      'Mobile app on iPhone and/or Android',
-      '20,000+ photos/files, video streaming',
-      'Background workers polling external APIs',
-      'Ongoing weekly development and new features'
+      'Supabase Pro ($25/mo): 8 GB DB, 100 GB storage, unlimited API requests',
+      'Gemini AI: ~15,000+ API calls/month at $50/mo',
+      'Claude Code: Max ($100/mo) or Max+ ($200/mo) for ongoing heavy development',
+      'Higher SMS volume: ~3,000/month on Telnyx',
+      'Background workers on a $4\u2013$12/mo server (DigitalOcean)',
+      'Mobile app on both app stores',
+      'Outgrow this tier if you need dedicated servers, custom ML models, or enterprise SLAs'
     ]
   };
 
   var scopeEl = document.getElementById('calc-scope');
   var scopeItems = scopes[tier] || [];
-  var scopeHtml = '<strong>What this looks like at this level</strong><ul>';
+  var scopeHtml = '<strong>Max activity at this level</strong><ul>';
   scopeItems.forEach(function(item) { scopeHtml += '<li>' + item + '</li>'; });
   scopeHtml += '</ul>';
   scopeEl.innerHTML = scopeHtml;
