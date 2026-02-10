@@ -68,25 +68,25 @@ Example:
 
 ### 4.1 Auth & role
 
-- [ ] **Migration:** Extend `app_users.role` and `user_invitations.role` checks to include `'demo'` (and `'oracle'`/`'public'` if not already).
-- [ ] **auth.js:** Include `'demo'` in cached role list and in any role-based redirects so demo users get the same shell as residents + staff (resident shell + context switcher to admin).
-- [ ] **Permissions:** Define `role_permissions` for `demo`: grant **view-only** permissions for all admin tabs (view_spaces, view_rentals, view_events, view_media, view_sms, view_hours, view_faq, view_voice, view_todo, view_users, view_settings, view_templates, view_accounting, etc.) and resident tabs; **no** edit permissions (no edit_spaces, edit_rentals, etc.).
+- [x] **Migration:** Extend `app_users.role` and `user_invitations.role` checks to include `'demo'` (and `'oracle'`/`'public'` if not already).
+- [x] **auth.js:** Include `'demo'` in cached role list and in any role-based redirects so demo users get the same shell as residents + staff (resident shell + context switcher to admin).
+- [x] **Permissions:** Define `role_permissions` for `demo`: grant **view-only** permissions for all admin tabs (view_spaces, view_rentals, view_events, view_media, view_sms, view_hours, view_faq, view_voice, view_todo, view_users, view_settings, view_templates, view_accounting, etc.) and resident tabs; **no** edit permissions (no edit_spaces, edit_rentals, etc.).
 - [ ] **RLS / Edge functions:** Where today you check `role IN ('admin','staff')` for write access, keep writes for admin/staff only; demo never gets write. For read, allow demo where staff can read, but optionally have edge functions return redacted payloads for demo (or rely on client-side redaction only – see below).
 
 ### 4.2 Shell & navigation
 
-- [ ] **admin-shell.js:** Demo users see all the same tabs as staff (or a subset you choose) but every admin page runs in “demo mode” (read-only UI + redaction).
-- [ ] **resident-shell.js:** Demo already has resident permissions; ensure they see resident tabs and can use PAI.
-- [ ] **Context switcher:** Show “Resident” and “Admin” (or “Dashboard”) for demo; no “Staff” actions, only view.
+- [x] **admin-shell.js:** Demo users see all the same tabs as staff (or a subset you choose) but every admin page runs in "demo mode" (read-only UI + redaction).
+- [x] **resident-shell.js:** Demo already has resident permissions; ensure they see resident tabs and can use PAI.
+- [x] **Context switcher:** Show "Resident" and "Admin" (or "Dashboard") for demo; no "Staff" actions, only view.
 
 ### 4.3 Redaction
 
-- [ ] **Shared redaction helper:** e.g. `shared/demo-redact.js`:
+- [x] **Shared redaction helper:** e.g. `shared/demo-redact.js`:
   - `isDemoUser()` (from auth state).
   - `redactString(value, type?)` → returns plausible fake + applies character-mask pattern (every 3rd–5th char → black box).
   - `redactObject(obj, schema)` for common shapes (person, payment, assignment, etc.) so each page doesn’t reimplement.
-- [ ] **CSS:** `.demo-redacted` (bold, boxy font, optional border/background so it looks intentionally fake).
-- [ ] **Per-page:** On every admin (and optionally directory) page, when `isDemoUser()`:
+- [x] **CSS:** `.demo-redacted` (bold, boxy font, optional border/background so it looks intentionally fake).
+- [x] **Per-page:** On every admin (and optionally directory) page, when `isDemoUser()`:
   - Replace sensitive fields in the data with `redactString` / `redactObject` before rendering.
   - Disable all create/update/delete buttons or hide them.
   - Optionally show a slim banner: “You’re viewing the app in demo mode. Sensitive data is replaced with sample data.”
@@ -108,14 +108,14 @@ Example:
 
 ### 4.5 Invite UI & email
 
-- [ ] **users.html:** Add `<option value="demo">Demo (view product with sample data)</option>` (or “Demon” if you prefer).
-- [ ] **users.js:** Include `demo` in `roleDescriptions` and `roleLabels` for invite modal and copy.
-- [ ] **send-email (staff_invitation):** Map `demo` to a friendly label and short description (e.g. “demo access – explore the product with sample data where sensitive”).
+- [x] **users.html:** Add `<option value="demo">Demo (view product with sample data)</option>` (or "Demon" if you prefer).
+- [x] **users.js:** Include `demo` in `roleDescriptions` and `roleLabels` for invite modal and copy.
+- [ ] **send-email (staff_invitation):** Map `demo` to a friendly label and short description (e.g. "demo access – explore the product with sample data where sensitive").
 
 ### 4.6 PAI / Chat
 
 - [ ] **alpaca-pai:** Demo users can send messages and get answers; avoid including real PII in context for demo users (e.g. strip or redact person names/emails from tool results when caller is demo).
-- [ ] **pai-widget:** No change needed beyond auth; demo user already “resident+” for chat.
+- [x] **pai-widget:** No change needed beyond auth; demo user already "resident+" for chat.
 
 ### 4.7 Optional: RLS redaction
 

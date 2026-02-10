@@ -4,6 +4,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // =============================================
 // STATE
@@ -529,11 +530,12 @@ async function loadPayPalConfig() {
       }
     }
 
-    // Populate credential fields
-    document.getElementById('paypalSandboxClientId').value = config.sandbox_client_id || '';
-    document.getElementById('paypalSandboxClientSecret').value = config.sandbox_client_secret || '';
-    document.getElementById('paypalClientId').value = config.client_id || '';
-    document.getElementById('paypalClientSecret').value = config.client_secret || '';
+    // Populate credential fields (hide in demo mode)
+    const hideVal = (v) => isDemoUser() ? redactString(v, 'password') : (v || '');
+    document.getElementById('paypalSandboxClientId').value = hideVal(config.sandbox_client_id);
+    document.getElementById('paypalSandboxClientSecret').value = hideVal(config.sandbox_client_secret);
+    document.getElementById('paypalClientId').value = hideVal(config.client_id);
+    document.getElementById('paypalClientSecret').value = hideVal(config.client_secret);
 
   } catch (error) {
     console.error('Error loading PayPal config:', error);
@@ -691,14 +693,15 @@ async function loadInboundSms() {
     }
 
     container.innerHTML = messages.map(msg => {
-      const senderName = msg.person
+      const rawSender = msg.person
         ? `${msg.person.first_name || ''} ${msg.person.last_name || ''}`.trim()
         : msg.from_number;
+      const senderName = isDemoUser() ? redactString(rawSender, 'name') : rawSender;
       const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
       return `
         <div data-action="open-sms" data-person-id="${msg.person_id || ''}" data-from-number="${msg.from_number}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <strong style="font-size: 0.85rem;">${senderName}</strong>
+            <strong style="font-size: 0.85rem;${isDemoUser() ? ' font-family: ui-monospace, monospace; font-weight: 700;' : ''}">${senderName}</strong>
             <span class="text-muted" style="font-size: 0.75rem;">${time}</span>
           </div>
           <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${msg.body}</p>

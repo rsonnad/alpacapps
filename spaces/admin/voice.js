@@ -1,6 +1,7 @@
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { voiceService } from '../../shared/voice-service.js';
 import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 let authState = null;
 let allAssistants = [];
@@ -42,8 +43,8 @@ async function loadConfig() {
   const config = await voiceService.getConfig();
   if (!config) return;
 
-  document.getElementById('vapiApiKey').value = config.api_key || '';
-  document.getElementById('vapiPhoneNumberId').value = config.phone_number_id || '';
+  document.getElementById('vapiApiKey').value = isDemoUser() ? redactString(config.api_key, 'password') : (config.api_key || '');
+  document.getElementById('vapiPhoneNumberId').value = isDemoUser() ? redactString(config.phone_number_id, 'password') : (config.phone_number_id || '');
   document.getElementById('voiceTestMode').checked = config.test_mode || false;
   document.getElementById('voiceActive').checked = config.is_active || false;
 
@@ -72,7 +73,8 @@ async function loadStats() {
   const stats = await voiceService.getStats();
   document.getElementById('statTotalCalls').textContent = stats.totalCalls;
   document.getElementById('statTotalMinutes').textContent = stats.totalMinutes;
-  document.getElementById('statTotalCost').textContent = `$${stats.totalCostDollars}`;
+  document.getElementById('statTotalCost').textContent = isDemoUser() ? redactString(`$${stats.totalCostDollars}`, 'amount') : `$${stats.totalCostDollars}`;
+  document.getElementById('statTotalCost').classList.toggle('demo-redacted', isDemoUser());
 }
 
 // =============================================
@@ -267,29 +269,33 @@ function renderCalls() {
       </thead>
       <tbody>
         ${allCalls.map(c => {
+          const demo = isDemoUser();
+          const demoClass = demo ? ' demo-redacted' : '';
           const date = new Date(c.created_at);
           const timeStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
             ' ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-          const callerName = c.person
+          const rawCallerName = c.person
             ? `${c.person.first_name || ''} ${c.person.last_name || ''}`.trim()
             : null;
+          const callerName = demo && rawCallerName ? redactString(rawCallerName, 'name') : rawCallerName;
           const callerDisplay = callerName || c.caller_phone || 'Unknown';
           const duration = c.duration_seconds != null
             ? `${Math.floor(c.duration_seconds / 60)}:${String(c.duration_seconds % 60).padStart(2, '0')}`
             : '--';
-          const cost = c.cost_cents != null ? `$${(c.cost_cents / 100).toFixed(2)}` : '--';
+          const rawCost = c.cost_cents != null ? `$${(c.cost_cents / 100).toFixed(2)}` : '--';
+          const cost = demo && c.cost_cents != null ? redactString(rawCost, 'amount') : rawCost;
           const statusClass = c.status === 'ended' ? 'ended' : c.status === 'in-progress' ? 'active' : 'other';
 
           return `
             <tr class="voice-call-row" onclick="window._viewCall('${c.id}')">
               <td>${timeStr}</td>
               <td>
-                <div>${escapeHtml(callerDisplay)}</div>
+                <div class="${demoClass}">${escapeHtml(callerDisplay)}</div>
                 ${callerName && c.caller_phone ? `<div class="text-muted" style="font-size:0.75rem;">${c.caller_phone}</div>` : ''}
               </td>
               <td>${duration}</td>
               <td><span class="voice-status voice-status--${statusClass}">${c.status}</span></td>
-              <td>${cost}</td>
+              <td class="${demoClass}">${cost}</td>
               <td>${c.summary ? '<span title="Has summary" style="cursor:help;">📋</span>' : ''}</td>
             </tr>
           `;
@@ -304,9 +310,10 @@ async function viewCall(id) {
   if (!call) return;
 
   const body = document.getElementById('callDetailBody');
-  const callerName = call.person
+  const rawDetailCallerName = call.person
     ? `${call.person.first_name || ''} ${call.person.last_name || ''}`.trim()
     : null;
+  const callerName = isDemoUser() && rawDetailCallerName ? redactString(rawDetailCallerName, 'name') : rawDetailCallerName;
 
   let transcriptHtml = '';
   if (call.transcript && Array.isArray(call.transcript)) {
@@ -340,7 +347,7 @@ async function viewCall(id) {
       <div><strong>Duration:</strong> ${duration}</div>
       <div><strong>Status:</strong> ${call.status}</div>
       <div><strong>Ended Reason:</strong> ${call.ended_reason || '--'}</div>
-      <div><strong>Cost:</strong> ${call.cost_cents != null ? `$${(call.cost_cents / 100).toFixed(2)}` : '--'}</div>
+      <div><strong>Cost:</strong> ${isDemoUser() && call.cost_cents != null ? `<span class="demo-redacted">${redactString(`$${(call.cost_cents / 100).toFixed(2)}`, 'amount')}</span>` : (call.cost_cents != null ? `$${(call.cost_cents / 100).toFixed(2)}` : '--')}</div>
       <div><strong>Assistant:</strong> ${call.assistant?.name || '--'}</div>
     </div>
     ${call.summary ? `

@@ -16,6 +16,7 @@ import {
   initAdminPage,
   setupLightbox
 } from '../../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // =============================================
 // STATE
@@ -70,7 +71,10 @@ async function loadEvents() {
     // Populate person dropdown
     const personSelect = document.getElementById('newEventPersonId');
     personSelect.innerHTML = '<option value="">Select a person...</option>' +
-      allPeople.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name}</option>`).join('');
+      allPeople.map(p => {
+        const pName = isDemoUser() ? redactString(`${p.first_name} ${p.last_name}`, 'name') : `${p.first_name} ${p.last_name}`;
+        return `<option value="${p.id}">${pName}</option>`;
+      }).join('');
 
     renderEventPipeline();
     initEventCalendarControls();
@@ -135,7 +139,10 @@ function renderEventPipeline() {
 
 function renderEventCard(req, isCompact = false) {
   const person = req.person;
-  const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+  const demo = isDemoUser();
+  const rawClientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+  const clientName = demo ? redactString(rawClientName, 'name') : rawClientName;
+  const demoClass = demo ? ' demo-redacted' : '';
 
   const eventDate = req.event_date
     ? formatDateAustin(req.event_date, { month: 'short', day: 'numeric' })
@@ -153,7 +160,8 @@ function renderEventCard(req, isCompact = false) {
   const timeDisplay = req.event_start_time ? formatTime(req.event_start_time) : '';
 
   const rentalFee = parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE;
-  const feeDisplay = rentalFee === 0 ? 'Complementary' : `$${rentalFee}`;
+  const rawFeeDisplay = rentalFee === 0 ? 'Complementary' : `$${rentalFee}`;
+  const feeDisplay = demo && rentalFee !== 0 ? redactString(rawFeeDisplay, 'amount') : rawFeeDisplay;
 
   const testBadge = req.is_test ? '<span class="test-badge">TEST</span>' : '';
 
@@ -167,12 +175,12 @@ function renderEventCard(req, isCompact = false) {
         ${testBadge}
       </div>
       <div class="card-body">
-        <div class="client-name">${clientName}</div>
+        <div class="client-name${demoClass}">${clientName}</div>
         ${req.organization_name ? `<div class="text-muted" style="font-size: 0.75rem;">${req.organization_name}</div>` : ''}
       </div>
       <div class="card-footer">
         <span class="guest-count">${req.approved_max_guests || req.expected_guests || '?'} guests</span>
-        <span class="fee-display">${feeDisplay}</span>
+        <span class="fee-display${demoClass}">${feeDisplay}</span>
       </div>
     </div>
   `;
@@ -319,7 +327,8 @@ function renderEventCalendar() {
     dayEvents.forEach(event => {
       const status = event.request_status || 'submitted';
       const person = event.person;
-      const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+      const rawCalClientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+      const calClientName = isDemoUser() ? redactString(rawCalClientName, 'name') : rawCalClientName;
       const formatTime = (timeStr) => {
         if (!timeStr) return '';
         const [hours, minutes] = timeStr.split(':');
@@ -330,15 +339,17 @@ function renderEventCalendar() {
       };
       const timeDisplay = event.event_start_time ? formatTime(event.event_start_time) : '';
       const rentalFee = parseFloat(event.rental_fee) || eventService.DEFAULT_FEES?.RENTAL_FEE || 0;
+      const rawCalFee = rentalFee === 0 ? 'Complementary' : `$${rentalFee}`;
+      const calFee = isDemoUser() && rentalFee !== 0 ? redactString(rawCalFee, 'amount') : rawCalFee;
 
       const tooltipData = JSON.stringify({
         name: event.event_name || 'Unnamed Event',
-        client: clientName,
+        client: calClientName,
         org: event.organization_name || '-',
         time: event.event_start_time ? `${formatTime(event.event_start_time)} - ${formatTime(event.event_end_time)}` : '-',
         guests: event.expected_guests || '?',
-        fee: rentalFee === 0 ? 'Complementary' : `$${rentalFee}`,
-        deposit: event.security_deposit ? `$${event.security_deposit}` : 'N/A',
+        fee: calFee,
+        deposit: isDemoUser() && event.security_deposit ? redactString(`$${event.security_deposit}`, 'amount') : (event.security_deposit ? `$${event.security_deposit}` : 'N/A'),
         status: status.replace('_', ' ')
       }).replace(/"/g, '&quot;');
 
@@ -404,7 +415,9 @@ window.openEventDetail = async function(requestId) {
   if (!req) return;
 
   const person = req.person;
-  const clientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+  const demo = isDemoUser();
+  const rawDetailClientName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+  const detailClientName = demo ? redactString(rawDetailClientName, 'name') : rawDetailClientName;
 
   // Show modal
   document.getElementById('eventDetailModal').classList.remove('hidden');
@@ -417,7 +430,9 @@ window.openEventDetail = async function(requestId) {
 
   // Event Info tab
   document.getElementById('eventInfoName').textContent = req.event_name || '-';
-  document.getElementById('eventInfoClient').textContent = clientName;
+  const clientEl = document.getElementById('eventInfoClient');
+  clientEl.textContent = detailClientName;
+  clientEl.classList.toggle('demo-redacted', demo);
   document.getElementById('eventInfoEmail').textContent = person?.email || '-';
   document.getElementById('eventInfoPhone').textContent = person?.phone || '-';
   document.getElementById('eventInfoOrg').textContent = req.organization_name || '-';
@@ -550,11 +565,18 @@ function updateEventDepositsTab(req) {
   const rentalFee = parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE;
   const reservationFee = parseFloat(req.reservation_fee) || eventService.DEFAULT_FEES.RESERVATION_FEE;
   const cleaningDeposit = parseFloat(req.cleaning_deposit) || eventService.DEFAULT_FEES.CLEANING_DEPOSIT;
+  const demo = isDemoUser();
 
-  // Update amounts
-  document.getElementById('eventReservationDepositAmount').textContent = `$${reservationFee}`;
-  document.getElementById('eventCleaningDepositAmount').textContent = `$${cleaningDeposit}`;
-  document.getElementById('eventRentalFeeAmount').textContent = `$${rentalFee}`;
+  // Update amounts (redact for demo)
+  const resAmtEl = document.getElementById('eventReservationDepositAmount');
+  resAmtEl.textContent = demo ? redactString(`$${reservationFee}`, 'amount') : `$${reservationFee}`;
+  resAmtEl.classList.toggle('demo-redacted', demo);
+  const cleanAmtEl = document.getElementById('eventCleaningDepositAmount');
+  cleanAmtEl.textContent = demo ? redactString(`$${cleaningDeposit}`, 'amount') : `$${cleaningDeposit}`;
+  cleanAmtEl.classList.toggle('demo-redacted', demo);
+  const rentalAmtEl = document.getElementById('eventRentalFeeAmount');
+  rentalAmtEl.textContent = demo ? redactString(`$${rentalFee}`, 'amount') : `$${rentalFee}`;
+  rentalAmtEl.classList.toggle('demo-redacted', demo);
 
   // Update statuses
   document.getElementById('eventReservationDepositStatus').textContent =

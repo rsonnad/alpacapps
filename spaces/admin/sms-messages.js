@@ -4,6 +4,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // =============================================
 // STATE
@@ -72,7 +73,8 @@ async function loadPeople() {
     const filterPerson = document.getElementById('filterPerson');
     filterPerson.innerHTML = '<option value="">All People</option>' +
       allPeople.map(p => {
-        const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+        const rawName = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+        const name = isDemoUser() ? redactString(rawName, 'name') : rawName;
         return `<option value="${p.id}">${name}</option>`;
       }).join('');
   } catch (error) {
@@ -128,9 +130,10 @@ function renderMessages() {
 
   container.innerHTML = Object.entries(messagesByDate).map(([date, messages]) => {
     const messagesHtml = messages.map(msg => {
-      const senderName = msg.person
+      const rawSmsSender = msg.person
         ? `${msg.person.first_name || ''} ${msg.person.last_name || ''}`.trim()
         : msg.from_number || msg.to_number || 'Unknown';
+      const senderName = isDemoUser() ? redactString(rawSmsSender, 'name') : rawSmsSender;
       const time = new Date(msg.created_at).toLocaleString('en-US', {
         hour: 'numeric',
         minute: '2-digit'
@@ -153,7 +156,7 @@ function renderMessages() {
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               ${directionIcon}
-              <strong style="font-size: 0.9rem;">${senderName}</strong>
+              <strong style="font-size: 0.9rem;${isDemoUser() ? ' font-family: ui-monospace, monospace;' : ''}">${senderName}</strong>
               ${statusBadge}
             </div>
             <span class="text-muted" style="font-size: 0.75rem;">${time}</span>

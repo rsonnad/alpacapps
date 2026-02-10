@@ -4,6 +4,7 @@
 
 import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // =============================================
 // STATE
@@ -136,6 +137,7 @@ function renderGrid() {
   }
 
   const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+  const demo = isDemoUser();
 
   const headerRow = `
     <div class="vault-col-header">
@@ -146,18 +148,22 @@ function renderGrid() {
     </div>`;
 
   const rows = entries.map(e => {
-    const isRevealed = revealedPasswords.has(e.id);
+    const isRevealed = !demo && revealedPasswords.has(e.id);
     const subtitleParts = [];
-    if (e.username) subtitleParts.push(escapeHtml(e.username));
+    if (e.username) subtitleParts.push(demo ? `<span class="demo-redacted">${redactString(e.username, 'password')}</span>` : escapeHtml(e.username));
     if (e.space && e.space.name) subtitleParts.push(escapeHtml(e.space.name));
-    if (e.url) subtitleParts.push(`<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
+    if (e.url) subtitleParts.push(demo ? `<span class="demo-redacted">${redactString('url', 'password')}</span>` : `<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${prettifyUrl(e.url)}</a>`);
     if (e.notes) subtitleParts.push(`<span style="font-style:italic">${escapeHtml(e.notes)}</span>`);
 
     const pwDisplay = e.password
-      ? (isRevealed
-        ? escapeHtml(e.password) + (isRoomDoor(e) ? (/fuego|spartan/i.test(e.service) ? ' <span style="color:#9a3412;font-weight:600;font-family:system-ui">#</span>' : ' <span style="color:#16a34a;font-family:system-ui">\u2713</span>') : '')
-        : MASK)
+      ? (demo
+        ? `<span class="demo-redacted">${redactString('', 'password')}</span>`
+        : (isRevealed
+          ? escapeHtml(e.password) + (isRoomDoor(e) ? (/fuego|spartan/i.test(e.service) ? ' <span style="color:#9a3412;font-weight:600;font-family:system-ui">#</span>' : ' <span style="color:#16a34a;font-family:system-ui">\u2713</span>') : '')
+          : MASK))
       : '<span style="color:var(--text-muted);font-style:italic;font-family:inherit;font-size:0.78rem">\u2014</span>';
+
+    const disableActions = demo || !e.password;
 
     return `
       <div class="vault-card" data-id="${e.id}">
@@ -168,10 +174,10 @@ function renderGrid() {
         <span class="vault-card-category" data-cat="${e.category}">${e.category}</span>
         <span class="vault-pw-cell ${isRevealed ? '' : 'masked'}" id="pw-${e.id}">${pwDisplay}</span>
         <div class="vault-actions">
-          <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
-          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${!e.password ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
-          <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy all details">${SHARE_SVG}</button>
-          <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit">${EDIT_SVG}</button>
+          <button class="vault-btn-icon" data-action="toggle-pw" data-id="${e.id}" title="${isRevealed ? 'Hide' : 'Reveal'}"${disableActions ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${isRevealed ? EYE_OFF_SVG : EYE_SVG}</button>
+          <button class="vault-btn-icon" data-action="copy-field" data-id="${e.id}" data-field="password" title="Copy password"${disableActions ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${COPY_SVG}</button>
+          <button class="vault-btn-icon" data-action="share" data-id="${e.id}" title="Copy all details"${demo ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${SHARE_SVG}</button>
+          <button class="vault-btn-icon" data-action="edit" data-id="${e.id}" title="Edit"${demo ? ' disabled style="opacity:0.3;cursor:default"' : ''}>${EDIT_SVG}</button>
         </div>
       </div>`;
   }).join('');

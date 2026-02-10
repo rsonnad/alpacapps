@@ -24,6 +24,7 @@ import {
   initAdminPage,
   setupLightbox
 } from '../../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../../shared/demo-redact.js';
 
 // =============================================
 // STATE
@@ -156,7 +157,12 @@ function populateRentalDropdowns() {
   const personSelect = document.getElementById('newAppPersonId');
   if (personSelect) {
     personSelect.innerHTML = '<option value="">Select a person...</option>' +
-      allPeople.map(p => `<option value="${p.id}">${p.first_name || ''} ${p.last_name || ''} (${p.email || 'no email'})</option>`).join('');
+      allPeople.map(p => {
+        const pName = isDemoUser()
+          ? redactString(`${p.first_name || ''} ${p.last_name || ''}`, 'name')
+          : `${p.first_name || ''} ${p.last_name || ''}`;
+        return `<option value="${p.id}">${pName} (${p.email || 'no email'})</option>`;
+      }).join('');
   }
 
   // Populate space dropdown for new applications (no rate info - just space name)
@@ -245,16 +251,26 @@ function renderPipelineCard(app) {
     : idStatus === 'link_sent' ? '<span title="ID Pending" style="color: #999; margin-left: 4px;">&#128737;</span>'
     : '';
 
+  const demo = isDemoUser();
+  const cardName = demo
+    ? `<span class="demo-redacted">${redactString(`${person.first_name || ''} ${person.last_name || ''}`, 'name')}</span>`
+    : `${person.first_name || ''} ${person.last_name || ''}`;
+  const rateDisplay = app.approved_rate
+    ? (demo
+      ? `<div class="rate demo-redacted">${redactString('$' + app.approved_rate, 'amount')}</div>`
+      : `<div class="rate">$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}</div>`)
+    : '';
+
   return `
     <div class="pipeline-card" data-id="${app.id}">
       <div class="card-header">
-        <span class="applicant-name">${person.first_name || ''} ${person.last_name || ''}${idBadge}</span>
+        <span class="applicant-name">${cardName}${idBadge}</span>
         ${testBadge}
         <span class="days-ago">${days}d</span>
       </div>
       <div class="card-body">
         <div class="space-name">${displayName}</div>
-        ${app.approved_rate ? `<div class="rate">$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}</div>` : ''}
+        ${rateDisplay}
       </div>
       ${subStatus ? `
         <div class="card-footer">
@@ -281,11 +297,14 @@ function renderDenied() {
     } else {
       container.innerHTML = denied.map(app => {
         const person = app.person || {};
+        const deniedName = isDemoUser()
+          ? `<span class="demo-redacted">${redactString(`${person.first_name || ''} ${person.last_name || ''}`, 'name')}</span>`
+          : `${person.first_name || ''} ${person.last_name || ''}`;
         return `
           <div class="space-item" style="cursor: pointer;" onclick="window.openRentalDetail('${app.id}')">
             <div class="space-item-info">
               <div class="space-item-details">
-                <h3>${person.first_name || ''} ${person.last_name || ''}</h3>
+                <h3>${deniedName}</h3>
                 <small>denied - ${app.denial_reason || 'No reason given'}</small>
               </div>
             </div>
@@ -469,7 +488,9 @@ function renderAssignmentsTable() {
 
   sorted.forEach(assignment => {
     const person = assignment.person || {};
-    const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+    const rawTenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+    const tenantName = isDemoUser() ? redactString(rawTenantName, 'name') : rawTenantName;
+    const demoClass = isDemoUser() ? ' demo-redacted' : '';
 
     // Get space names
     const spaceIds = assignment.assignment_spaces?.map(as => as.space_id) || [];
@@ -489,9 +510,10 @@ function renderAssignmentsTable() {
       ? formatDateAustin(effectiveEndDate, { month: 'short', day: 'numeric', year: 'numeric' })
       : 'Ongoing';
 
-    const rate = assignment.rate_amount
+    const rawRate = assignment.rate_amount
       ? `$${assignment.rate_amount}/${assignment.rate_term || 'mo'}`
       : (assignment.monthly_rent ? `$${assignment.monthly_rent}/mo` : '-');
+    const rate = isDemoUser() && rawRate !== '-' ? redactString(rawRate, 'amount') : rawRate;
 
     const statusClass = assignment.status.replace(/_/g, '-');
     const statusLabel = assignment.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -500,14 +522,14 @@ function renderAssignmentsTable() {
       <tr class="clickable-row" data-assignment-id="${assignment.id}">
         <td>
           <div class="tenant-cell">
-            <strong>${tenantName}</strong>
+            <strong class="${demoClass}">${tenantName}</strong>
             ${person.email ? `<div class="tenant-email">${person.email}</div>` : ''}
           </div>
         </td>
         <td>${spaceNames}</td>
         <td>${startDate}</td>
         <td>${endDate}</td>
-        <td>${rate}</td>
+        <td class="${demoClass}">${rate}</td>
         <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
       </tr>
     `;
@@ -534,8 +556,11 @@ async function openAssignmentDetail(assignmentId) {
   const person = assignment.person || {};
 
   // Set title
-  const tenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
-  document.getElementById('assignmentDetailTitle').textContent = tenantName;
+  const rawAssignTenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+  const assignTenantName = isDemoUser() ? redactString(rawAssignTenantName, 'name') : rawAssignTenantName;
+  const assignTitleEl = document.getElementById('assignmentDetailTitle');
+  assignTitleEl.textContent = assignTenantName;
+  assignTitleEl.classList.toggle('demo-redacted', isDemoUser());
 
   // Status badge
   const statusBadge = document.getElementById('assignmentDetailStatus');
@@ -544,7 +569,8 @@ async function openAssignmentDetail(assignmentId) {
   statusBadge.className = `status-badge ${assignment.status.replace(/_/g, '-')}`;
 
   // Tenant info (read-only)
-  document.getElementById('assignmentTenantName').textContent = tenantName;
+  document.getElementById('assignmentTenantName').textContent = assignTenantName;
+  document.getElementById('assignmentTenantName').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('assignmentTenantEmail').textContent = person.email || '-';
   document.getElementById('assignmentTenantPhone').textContent = person.phone || '-';
 
@@ -806,9 +832,12 @@ function renderCalendar() {
         }
       }
 
-      const rate = assignment.rate_amount
+      if (isDemoUser()) tenantName = redactString(tenantName, 'name');
+
+      const rawCalRate = assignment.rate_amount
         ? `$${assignment.rate_amount}/${assignment.rate_term || 'mo'}`
         : (assignment.monthly_rent ? `$${assignment.monthly_rent}/mo` : '');
+      const rate = isDemoUser() && rawCalRate ? redactString(rawCalRate, 'amount') : rawCalRate;
 
       const tooltipData = JSON.stringify({
         tenant: tenantName,
@@ -817,7 +846,7 @@ function renderCalendar() {
         start: formatDateAustin(startDate, { month: 'short', day: 'numeric', year: 'numeric' }),
         end: endDate ? formatDateAustin(endDate, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Ongoing',
         rate: rate || 'N/A',
-        deposit: assignment.deposit_amount ? `$${assignment.deposit_amount}` : 'N/A',
+        deposit: isDemoUser() && assignment.deposit_amount ? redactString(`$${assignment.deposit_amount}`, 'amount') : (assignment.deposit_amount ? `$${assignment.deposit_amount}` : 'N/A'),
         status: assignment.status
       }).replace(/"/g, '&quot;');
 
@@ -941,8 +970,11 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   const approvedSpace = app.approved_space;
 
   // Update header
-  const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || '-';
-  document.getElementById('detailTitle').textContent = fullName;
+  const rawFullName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || '-';
+  const fullName = isDemoUser() ? redactString(rawFullName, 'name') : rawFullName;
+  const detailTitleEl = document.getElementById('detailTitle');
+  detailTitleEl.textContent = fullName;
+  detailTitleEl.classList.toggle('demo-redacted', isDemoUser());
   const statusBadge = document.getElementById('detailStatus');
   statusBadge.textContent = app.application_status;
   statusBadge.className = `status-badge ${app.application_status}`;
@@ -969,6 +1001,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   // ===== APPLICANT TAB =====
   // Contact Info
   document.getElementById('detailApplicantName').textContent = fullName;
+  document.getElementById('detailApplicantName').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('detailApplicantEmail').textContent = person.email || '-';
   document.getElementById('detailApplicantPhone').textContent = person.phone || '-';
   document.getElementById('detailApplicantDOB').textContent =
@@ -1090,15 +1123,19 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   // ===== DEPOSITS TAB =====
   renderPaymentSummary(app);
 
-  document.getElementById('moveInDepositAmount').textContent =
-    rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
+  const moveInAmtEl = document.getElementById('moveInDepositAmount');
+  const moveInAmtRaw = rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
+  moveInAmtEl.textContent = isDemoUser() ? redactString(moveInAmtRaw, 'amount') : moveInAmtRaw;
+  moveInAmtEl.classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('moveInDepositStatus').textContent =
     app.move_in_deposit_paid ? 'Paid' : 'Pending';
   document.getElementById('moveInDepositStatus').className =
     `deposit-status ${app.move_in_deposit_paid ? 'paid' : ''}`;
 
-  document.getElementById('securityDepositAmount').textContent =
-    rentalService.formatCurrency(app.security_deposit_amount || 0);
+  const secDepAmtEl = document.getElementById('securityDepositAmount');
+  const secDepAmtRaw = rentalService.formatCurrency(app.security_deposit_amount || 0);
+  secDepAmtEl.textContent = isDemoUser() ? redactString(secDepAmtRaw, 'amount') : secDepAmtRaw;
+  secDepAmtEl.classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('securityDepositStatus').textContent =
     app.security_deposit_paid ? 'Paid' : (app.security_deposit_amount > 0 ? 'Pending' : 'N/A');
   document.getElementById('securityDepositStatus').className =
