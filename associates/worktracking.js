@@ -200,11 +200,17 @@ function updateClockUI() {
 }
 
 async function handleClockIn() {
+  const spaceId = getSelectedSpaceId();
+  if (!spaceId) {
+    showToast('Please select a space before clocking in', 'error');
+    document.getElementById('spaceSelector').focus();
+    return;
+  }
   const btn = document.getElementById('clockBtn');
   btn.disabled = true;
   try {
     const loc = await getLocation();
-    activeEntry = await hoursService.clockIn(profile.id, { ...(loc || {}), spaceId: getSelectedSpaceId(), taskId: getSelectedTaskId() });
+    activeEntry = await hoursService.clockIn(profile.id, { ...(loc || {}), spaceId, taskId: getSelectedTaskId() });
     showToast('Clocked in!', 'success');
     updateClockUI();
     await refreshToday();
@@ -730,6 +736,10 @@ async function handleManualSubmit() {
 
   if (!date || !clockIn || !clockOut) {
     showToast('Please fill in date, clock in, and clock out times', 'error');
+    return;
+  }
+  if (!getSelectedSpaceId()) {
+    showToast('Please select a space', 'error');
     return;
   }
   if (!manualReason) {

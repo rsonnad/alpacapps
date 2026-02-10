@@ -345,6 +345,7 @@ class HoursService {
     if (updates.clock_out !== undefined) allowed.clock_out = updates.clock_out;
     if (updates.description !== undefined) allowed.description = updates.description;
     if (updates.hourly_rate !== undefined) allowed.hourly_rate = updates.hourly_rate;
+    if (updates.space_id !== undefined) allowed.space_id = updates.space_id;
     allowed.updated_at = new Date().toISOString();
 
     // Recompute duration if both clock_in and clock_out present

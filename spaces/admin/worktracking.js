@@ -74,7 +74,7 @@ function setDefaultDates() {
 async function loadAll() {
   // Load associates first — work groups need the associates array for member dropdowns
   await loadAssociates();
-  await Promise.all([loadEntries(), loadWorkGroups()]);
+  await Promise.all([loadEntries(), loadWorkGroups(), loadSpacesForEntryModal()]);
 }
 
 async function loadAssociates() {
@@ -162,6 +162,26 @@ function renderEntryAssociateSelect() {
   }
 }
 
+let allSpaces = [];
+async function loadSpacesForEntryModal() {
+  try {
+    const { data, error } = await supabase
+      .from('spaces')
+      .select('id, name')
+      .eq('is_archived', false)
+      .order('name');
+    if (error) throw error;
+    allSpaces = data || [];
+    const sel = document.getElementById('entrySpace');
+    sel.innerHTML = '<option value="">Select space...</option>';
+    for (const s of allSpaces) {
+      sel.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)}</option>`;
+    }
+  } catch (err) {
+    console.error('Failed to load spaces for entry modal:', err);
+  }
+}
+
 function renderSummary() {
   let totalMins = 0, totalAmt = 0, paidAmt = 0, unpaidAmt = 0;
   for (const e of entries) {
@@ -211,7 +231,9 @@ function renderEntries() {
     } else if (spaceName) {
       metaParts.push(`<span style="color:#6b7280;">${escapeHtml(spaceName)}</span>`);
     } else if (gpsUrl) {
-      metaParts.push(`<a class="loc-link" href="${gpsUrl}" target="_blank" rel="noopener">Location ↗</a>`);
+      metaParts.push(`<a class="loc-link" href="${gpsUrl}" target="_blank" rel="noopener">Unknown ↗</a>`);
+    } else {
+      metaParts.push(`<span style="color:#6b7280;">Unknown</span>`);
     }
     metaParts.push(`<button class="btn-small" data-edit="${e.id}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Edit</button>`);
 
@@ -670,6 +692,7 @@ function openAddEntry() {
   document.getElementById('entryClockIn').value = '';
   document.getElementById('entryClockOut').value = '';
   document.getElementById('entryDescription').value = '';
+  document.getElementById('entrySpace').value = '';
   // Pre-select current filter associate
   const filterAssoc = document.getElementById('filterAssociate').value;
   if (filterAssoc) document.getElementById('entryAssociate').value = filterAssoc;
@@ -686,11 +709,13 @@ function openEditEntry(entryId) {
   document.getElementById('entryClockOut').value = entry.clock_out ? new Date(entry.clock_out).toTimeString().slice(0, 5) : '';
   document.getElementById('entryDescription').value = entry.description || '';
   document.getElementById('entryAssociate').value = entry.associate_id;
+  document.getElementById('entrySpace').value = entry.space?.id || '';
   document.getElementById('addEntryModal').classList.add('open');
 }
 
 async function confirmSaveEntry() {
   const assocId = document.getElementById('entryAssociate').value;
+  const spaceId = document.getElementById('entrySpace').value;
   const date = document.getElementById('entryDate').value;
   const clockInTime = document.getElementById('entryClockIn').value;
   const clockOutTime = document.getElementById('entryClockOut').value;
@@ -698,6 +723,10 @@ async function confirmSaveEntry() {
 
   if (!assocId || !date || !clockInTime) {
     showToast('Associate, date, and clock-in time are required', 'warning');
+    return;
+  }
+  if (!spaceId) {
+    showToast('Please select a space', 'warning');
     return;
   }
 
@@ -720,14 +749,16 @@ async function confirmSaveEntry() {
       await hoursService.updateEntry(editingEntryId, {
         clock_in: clockIn,
         clock_out: clockOutAdjusted,
-        description
+        description,
+        space_id: spaceId
       });
       showToast('Entry updated', 'success');
     } else {
       await hoursService.createManualEntry(assocId, {
         clockIn,
         clockOut: clockOutAdjusted,
-        description
+        description,
+        spaceId
       });
       showToast('Entry added', 'success');
     }
