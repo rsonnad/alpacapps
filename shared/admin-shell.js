@@ -5,6 +5,8 @@
 
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
+import { renderHeader, initSiteComponents } from './site-components.js';
+import { setupVersionInfo } from './version-info.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -183,6 +185,31 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
 }
 
 // =============================================
+// SITE NAV INJECTION
+// =============================================
+let siteNavInitialized = false;
+
+function injectSiteNav() {
+  if (siteNavInitialized) return;
+  const target = document.getElementById('siteHeader');
+  if (!target) return;
+
+  const versionEl = document.querySelector('[data-site-version]');
+  const version = versionEl?.textContent?.trim() || '';
+
+  target.innerHTML = renderHeader({
+    transparent: false,
+    light: false,
+    version,
+    showRoleBadge: true,
+  });
+
+  initSiteComponents();
+  setupVersionInfo();
+  siteNavInitialized = true;
+}
+
+// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -232,10 +259,27 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     }
 
     if (state.appUser && meetsRequirement) {
+      injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('unauthorizedOverlay')?.classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-      renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
+
+      // Render user info into site nav auth container (replaces Sign In link)
+      const siteAuthEl = document.getElementById('aapHeaderAuth');
+      const legacyUserInfo = document.getElementById('userInfo');
+      if (siteAuthEl) {
+        renderUserInfo(siteAuthEl, state.appUser, '/residents/profile.html');
+        siteAuthEl.classList.add('user-info');
+        // Hide Sign In link
+        const signInLink = document.getElementById('aapSignInLink');
+        if (signInLink) signInLink.style.display = 'none';
+        const mobileSignInLink = document.getElementById('aapMobileSignInLink');
+        if (mobileSignInLink) mobileSignInLink.closest('li')?.remove();
+        // Hide legacy user info container if site nav is active
+        if (legacyUserInfo) legacyUserInfo.style.display = 'none';
+      } else if (legacyUserInfo) {
+        renderUserInfo(legacyUserInfo, state.appUser, '/residents/profile.html');
+      }
 
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
@@ -243,6 +287,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
         const role = state.appUser.role || 'staff';
         roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
         roleBadge.className = 'role-badge ' + role;
+        roleBadge.style.display = '';
       }
       if (['admin', 'oracle'].includes(state.appUser.role)) {
         document.body.classList.add('is-admin');

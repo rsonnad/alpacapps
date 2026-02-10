@@ -9,6 +9,7 @@ import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } 
 import { errorLogger } from './error-logger.js';
 import { initPaiWidget } from './pai-widget.js';
 import { setupVersionInfo } from './version-info.js';
+import { renderHeader, initSiteComponents } from './site-components.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -178,6 +179,31 @@ function escapeHtml(s) {
 }
 
 // =============================================
+// SITE NAV INJECTION
+// =============================================
+let siteNavInitialized = false;
+
+function injectSiteNav() {
+  if (siteNavInitialized) return;
+  const target = document.getElementById('siteHeader');
+  if (!target) return;
+
+  const versionEl = document.querySelector('[data-site-version]');
+  const version = versionEl?.textContent?.trim() || '';
+
+  target.innerHTML = renderHeader({
+    transparent: false,
+    light: false,
+    version,
+    showRoleBadge: true,
+  });
+
+  initSiteComponents();
+  setupVersionInfo();
+  siteNavInitialized = true;
+}
+
+// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -223,9 +249,24 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
     }
 
     if (state.appUser && meetsRequirement) {
+      injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-      renderUserInfo(document.getElementById('userInfo'), state.appUser, 'profile.html');
+
+      // Render user info into site nav auth container (replaces Sign In link)
+      const siteAuthEl = document.getElementById('aapHeaderAuth');
+      const legacyUserInfo = document.getElementById('userInfo');
+      if (siteAuthEl) {
+        renderUserInfo(siteAuthEl, state.appUser, 'profile.html');
+        siteAuthEl.classList.add('user-info');
+        const signInLink = document.getElementById('aapSignInLink');
+        if (signInLink) signInLink.style.display = 'none';
+        const mobileSignInLink = document.getElementById('aapMobileSignInLink');
+        if (mobileSignInLink) mobileSignInLink.closest('li')?.remove();
+        if (legacyUserInfo) legacyUserInfo.style.display = 'none';
+      } else if (legacyUserInfo) {
+        renderUserInfo(legacyUserInfo, state.appUser, 'profile.html');
+      }
 
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
