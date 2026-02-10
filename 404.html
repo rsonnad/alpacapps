@@ -58,12 +58,32 @@
       '/kiosk/': '/kiosk/index.html',
     };
 
+    // Reserved top-level paths (existing directories/files — never treat as user slugs)
+    const RESERVED_PATHS = [
+      'spaces', 'residents', 'associates', 'login', 'shared', 'mobile',
+      'supabase', 'auth', 'scripts', 'visiting', 'visiting-1', 'lost',
+      'index', 'directory', 'kiosk', 'welcome', 'photos', 'sundays',
+      'orientation', 'overnight', 'worktrade', 'contact', 'community',
+      'events', 'mistiq', 'docs', 'assets', 'styles',
+      'bug-reporter-extension', 'bug-reporter-firefox', 'bug-fixer',
+      'feature-builder', 'camera-event-poller', 'image-gen',
+      'lg-poller', 'tesla-poller', 'spirit-whisper-worker',
+      'migrations', '.well-known', 'alpacapps'
+    ];
+
     // Check if it's a known path (preserve query params AND hash for OAuth callbacks)
     if (validPaths[path]) {
       window.location.replace(validPaths[path] + window.location.search + window.location.hash);
     } else {
-      // Unknown path - redirect to spaces
-      window.location.replace('/spaces/');
+      // Check if this is a user slug (single root-level segment like /haydn)
+      const segments = path.replace(/^\/|\/$/g, '').split('/');
+      if (segments.length === 1 && segments[0] && !RESERVED_PATHS.includes(segments[0].toLowerCase())) {
+        // Looks like a personal directory URL — redirect to directory template
+        window.location.replace('/directory/?slug=' + encodeURIComponent(segments[0].toLowerCase()));
+      } else {
+        // Unknown path - redirect to spaces
+        window.location.replace('/spaces/');
+      }
     }
   </script>
   <style>

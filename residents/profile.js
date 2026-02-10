@@ -37,7 +37,7 @@ async function loadProfile() {
   const [profileRes, ownedRes, driverRes] = await Promise.all([
     supabase
       .from('app_users')
-      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, vehicle_limit, is_current_resident, person_id')
+      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
       .eq('id', currentUser.id)
       .single(),
     supabase
@@ -76,7 +76,13 @@ async function loadProfile() {
   }
 
   renderProfile();
+  renderPersonalUrl();
   renderVehicles();
+
+  // Auto-generate slug if not set
+  if (!profileData.slug) {
+    await autoGenerateSlug();
+  }
 
   // Check for Tesla OAuth return
   const urlParams = new URLSearchParams(window.location.search);
@@ -611,6 +617,27 @@ function bindEvents() {
 
   // Save
   document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+
+  // Personal URL
+  document.getElementById('copyUrlBtn')?.addEventListener('click', () => {
+    const slug = profileData.slug;
+    if (slug) {
+      navigator.clipboard.writeText(`https://alpacaplayhouse.com/${slug}`);
+      showToast('URL copied!', 'success');
+    }
+  });
+  document.getElementById('editSlugBtn')?.addEventListener('click', () => {
+    document.getElementById('slugEditContainer').style.display = '';
+    document.getElementById('editSlugBtn').style.display = 'none';
+    document.getElementById('slugInput').value = profileData.slug || '';
+    document.getElementById('slugError').style.display = 'none';
+    document.getElementById('slugInput').focus();
+  });
+  document.getElementById('saveSlugBtn')?.addEventListener('click', saveSlug);
+  document.getElementById('cancelSlugBtn')?.addEventListener('click', () => {
+    document.getElementById('slugEditContainer').style.display = 'none';
+    document.getElementById('editSlugBtn').style.display = '';
+  });
 
   // Add link
   document.getElementById('addLinkBtn').addEventListener('click', () => {
@@ -1225,6 +1252,139 @@ async function removeDriver(vehicleId, userId) {
     await reloadVehicles();
   } catch (err) {
     showToast('Failed to remove driver: ' + err.message, 'error');
+  }
+}
+
+// =============================================
+// PERSONAL URL / SLUG
+// =============================================
+
+const RESERVED_SLUGS = [
+  'spaces', 'residents', 'associates', 'login', 'shared', 'mobile',
+  'supabase', 'auth', 'scripts', 'visiting', 'visiting-1', 'lost',
+  'index', 'directory', 'kiosk', 'welcome', 'photos', 'sundays',
+  'orientation', 'overnight', 'worktrade', 'contact', 'community',
+  'events', 'mistiq', 'docs', 'assets', 'styles', 'alpacapps',
+  'bug-reporter-extension', 'bug-reporter-firefox', 'bug-fixer',
+  'feature-builder', 'camera-event-poller', 'image-gen',
+  'lg-poller', 'tesla-poller', 'spirit-whisper-worker', 'migrations',
+];
+
+function renderPersonalUrl() {
+  const section = document.getElementById('personalUrlSection');
+  if (!section) return;
+
+  const slug = profileData.slug;
+  const urlEl = document.getElementById('personalUrl');
+  const openBtn = document.getElementById('openUrlBtn');
+  const copyBtn = document.getElementById('copyUrlBtn');
+
+  if (slug) {
+    urlEl.textContent = `alpacaplayhouse.com/${slug}`;
+    openBtn.href = `/${slug}`;
+    openBtn.style.display = '';
+    copyBtn.style.display = '';
+  } else {
+    urlEl.textContent = 'Not set yet';
+    openBtn.style.display = 'none';
+    copyBtn.style.display = '';
+  }
+}
+
+function validateSlug(slug) {
+  if (!slug) return 'URL cannot be empty';
+  if (slug.length < 2) return 'Must be at least 2 characters';
+  if (slug.length > 30) return 'Must be 30 characters or less';
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) && slug.length > 1) return 'Only lowercase letters, numbers, and hyphens (cannot start/end with hyphen)';
+  if (!/^[a-z0-9]+$/.test(slug) && slug.length === 1) return 'Must be at least 2 characters';
+  if (RESERVED_SLUGS.includes(slug)) return 'This URL is reserved';
+  return null;
+}
+
+async function saveSlug() {
+  const input = document.getElementById('slugInput');
+  const errorEl = document.getElementById('slugError');
+  const slug = input.value.trim().toLowerCase();
+
+  const validationError = validateSlug(slug);
+  if (validationError) {
+    errorEl.textContent = validationError;
+    errorEl.style.display = '';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+
+  // Check uniqueness
+  const { data: existing } = await supabase
+    .from('app_users')
+    .select('id')
+    .eq('slug', slug)
+    .neq('id', currentUser.id)
+    .maybeSingle();
+
+  if (existing) {
+    errorEl.textContent = 'This URL is already taken';
+    errorEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('saveSlugBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ slug })
+      .eq('id', currentUser.id);
+
+    if (error) throw error;
+
+    profileData.slug = slug;
+    renderPersonalUrl();
+    document.getElementById('slugEditContainer').style.display = 'none';
+    document.getElementById('editSlugBtn').style.display = '';
+    showToast('Personal URL updated!', 'success');
+  } catch (err) {
+    showToast('Failed to update URL: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save';
+  }
+}
+
+async function autoGenerateSlug() {
+  const baseName = profileData.first_name || profileData.display_name || profileData.email?.split('@')[0] || '';
+  let candidate = baseName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 30);
+
+  if (!candidate || candidate.length < 2) return;
+  if (RESERVED_SLUGS.includes(candidate)) return;
+
+  // Check availability
+  const { data: conflict } = await supabase
+    .from('app_users')
+    .select('id')
+    .eq('slug', candidate)
+    .neq('id', currentUser.id)
+    .maybeSingle();
+
+  if (conflict) {
+    candidate += Math.floor(Math.random() * 100);
+  }
+
+  try {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ slug: candidate })
+      .eq('id', currentUser.id);
+
+    if (!error) {
+      profileData.slug = candidate;
+      renderPersonalUrl();
+    }
+  } catch (e) {
+    // Silent — non-critical
   }
 }
 
