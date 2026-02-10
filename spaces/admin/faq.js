@@ -639,8 +639,62 @@ window.editAutoEntry = function(id) {
   });
 };
 
+/**
+ * Show an undo toast — returns a promise that resolves to true if delete should proceed,
+ * or false if the user clicked Undo.
+ */
+function showUndoToast(message, duration = 8000) {
+  return new Promise(resolve => {
+    const container = document.getElementById('toastContainer');
+    if (!container) { resolve(true); return; }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast warning';
+    toast.innerHTML = `
+      <span class="toast-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></span>
+      <span class="toast-message">${message}</span>
+      <button class="toast-undo-btn">Undo</button>
+    `;
+
+    const undoBtn = toast.querySelector('.toast-undo-btn');
+    let settled = false;
+
+    undoBtn.addEventListener('click', () => {
+      if (settled) return;
+      settled = true;
+      toast.classList.add('toast-exit');
+      setTimeout(() => toast.remove(), 200);
+      resolve(false);
+    });
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      toast.classList.add('toast-exit');
+      setTimeout(() => toast.remove(), 200);
+      resolve(true);
+    }, duration);
+  });
+}
+
 window.deleteFaq = async function(id) {
-  if (!confirm('Delete this FAQ entry?')) return;
+  // Optimistically remove from UI
+  const removedIndex = faqEntries.findIndex(e => e.id === id);
+  if (removedIndex === -1) return;
+  const removed = faqEntries.splice(removedIndex, 1)[0];
+  renderAll();
+
+  const shouldDelete = await showUndoToast('FAQ entry deleted');
+
+  if (!shouldDelete) {
+    // Undo — restore item
+    faqEntries.splice(removedIndex, 0, removed);
+    renderAll();
+    showToast('Restored', 'success');
+    return;
+  }
 
   try {
     const { error } = await supabase
@@ -649,11 +703,11 @@ window.deleteFaq = async function(id) {
       .eq('id', id);
 
     if (error) throw error;
-    showToast('FAQ entry deleted', 'success');
-    await loadFaqEntries();
-    renderAll();
   } catch (error) {
     console.error('Error deleting FAQ:', error);
+    // Restore on failure
+    faqEntries.splice(removedIndex, 0, removed);
+    renderAll();
     showToast('Failed to delete FAQ entry', 'error');
   }
 };
@@ -728,7 +782,19 @@ window.saveLink = async function() {
 };
 
 window.deleteLink = async function(id) {
-  if (!confirm('Delete this context link?')) return;
+  const removedIndex = contextLinks.findIndex(l => l.id === id);
+  if (removedIndex === -1) return;
+  const removed = contextLinks.splice(removedIndex, 1)[0];
+  renderAll();
+
+  const shouldDelete = await showUndoToast('Link deleted');
+
+  if (!shouldDelete) {
+    contextLinks.splice(removedIndex, 0, removed);
+    renderAll();
+    showToast('Restored', 'success');
+    return;
+  }
 
   try {
     const { error } = await supabase
@@ -737,11 +803,10 @@ window.deleteLink = async function(id) {
       .eq('id', id);
 
     if (error) throw error;
-    showToast('Link deleted', 'success');
-    await loadContextLinks();
-    renderAll();
   } catch (error) {
     console.error('Error deleting link:', error);
+    contextLinks.splice(removedIndex, 0, removed);
+    renderAll();
     showToast('Failed to delete link', 'error');
   }
 };
@@ -817,7 +882,19 @@ window.saveContextEntry = async function() {
 };
 
 window.deleteContextEntry = async function(id) {
-  if (!confirm('Delete this context entry? You\'ll need to recompile for changes to take effect.')) return;
+  const removedIndex = contextEntries.findIndex(e => e.id === id);
+  if (removedIndex === -1) return;
+  const removed = contextEntries.splice(removedIndex, 1)[0];
+  renderAll();
+
+  const shouldDelete = await showUndoToast('Context entry deleted — recompile to take effect');
+
+  if (!shouldDelete) {
+    contextEntries.splice(removedIndex, 0, removed);
+    renderAll();
+    showToast('Restored', 'success');
+    return;
+  }
 
   try {
     const { error } = await supabase
@@ -825,11 +902,10 @@ window.deleteContextEntry = async function(id) {
       .delete()
       .eq('id', id);
     if (error) throw error;
-    showToast('Context entry deleted', 'success');
-    await loadContextEntries();
-    renderAll();
   } catch (error) {
     console.error('Error deleting context entry:', error);
+    contextEntries.splice(removedIndex, 0, removed);
+    renderAll();
     showToast('Failed to delete context entry', 'error');
   }
 };

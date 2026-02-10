@@ -1727,6 +1727,25 @@ body.is-admin .admin-only {
   color: var(--accent);
 }
 
+/* Undo button inside toast */
+.toast-undo-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid #F59E0B;
+  color: #F59E0B;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toast-undo-btn:hover {
+  background: #F59E0B;
+  color: #fff;
+}
+
 /* Mobile toast positioning (safe area for notched phones) */
 @media (max-width: 768px) {
   .toast-container {
