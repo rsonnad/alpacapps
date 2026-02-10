@@ -144,7 +144,7 @@ function renderUserInfo(el, appUser, profileHref) {
     </button>
     <div class="user-menu-dropdown hidden">
       <a href="${profileHref}" class="user-menu-item">Profile</a>
-      <button class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
+      <button type="button" class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
 
   const trigger = el.querySelector('.user-menu-trigger');
@@ -155,9 +155,11 @@ function renderUserInfo(el, appUser, profileHref) {
     dropdown.classList.toggle('hidden', open);
     trigger.setAttribute('aria-expanded', !open);
   });
-  document.addEventListener('click', () => {
-    dropdown.classList.add('hidden');
-    trigger.setAttribute('aria-expanded', 'false');
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && trigger !== e.target && !trigger.contains(e.target)) {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
@@ -241,14 +243,21 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
       // Render tab navigation (pass full auth state for permission checks)
       renderResidentTabNav(activeTab, state);
 
-      // Sign out handlers + PAI widget + version info (only bind once)
+      // Sign out handlers + PAI widget + version info (only bind once). Use delegation on userInfo so header dropdown Sign Out is reliable.
       if (!pageContentShown) {
         const handleSignOut = async () => {
           await signOut();
           window.location.href = '/login/';
         };
         document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
-        document.getElementById('headerSignOutBtn')?.addEventListener('click', handleSignOut);
+        const userInfo = document.getElementById('userInfo');
+        userInfo?.addEventListener('click', (e) => {
+          if (e.target.closest('#headerSignOutBtn') || e.target.closest('.user-menu-signout')) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSignOut();
+          }
+        });
         initPaiWidget();
         setupVersionInfo();
       }
