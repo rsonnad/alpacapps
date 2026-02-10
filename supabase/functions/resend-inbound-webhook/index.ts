@@ -220,7 +220,11 @@ async function handleSpecialLogic(
 // PAI EMAIL HANDLER
 // =============================================
 
-type PaiEmailClassification = "question" | "document" | "command" | "other";
+type PaiEmailClassification = "question" | "document" | "command" | "spam" | "other";
+
+/** Spam emails per rolling window that triggers an admin alert. */
+const PAI_SPAM_ALERT_THRESHOLD = 10;
+const PAI_SPAM_WINDOW_HOURS = 24;
 
 interface PaiClassificationResult {
   type: PaiEmailClassification;
@@ -246,16 +250,17 @@ async function classifyPaiEmail(
   const prompt = `You are an email classifier for PAI (Property AI Assistant) at Alpaca Playhouse, a residential property.
 
 Classify this email into ONE of these categories:
-- "question" — Asking about the property, amenities, policies, move-in, availability, etc.
-- "document" — Sending a document (manual, guide, receipt, etc.) for storage/reference. Has attachments or mentions sending a file.
-- "command" — Requesting a smart home action (lights, music, thermostat, locks, etc.)
-- "other" — Spam, marketing, unrelated, or can't be classified.
+- "spam" — Unsolicited marketing, phishing, scams, newsletters the recipient didn't sign up for, SEO pitches, link spam, crypto spam, adult content, automated bot messages, or any clearly unwanted bulk email. When in doubt between spam and other, lean toward spam.
+- "question" — A real person asking about the property, amenities, policies, move-in, availability, etc.
+- "document" — A real person sending a document (manual, guide, receipt, etc.) for storage/reference. Has attachments or mentions sending a file.
+- "command" — A real person requesting a smart home action (lights, music, thermostat, locks, etc.)
+- "other" — Legitimate but unrelated email that doesn't fit the above categories.
 
 Email subject: ${subject}
 Email body (first 1000 chars): ${bodyText.substring(0, 1000)}
 Has attachments: ${hasAttachments}
 
-Respond with ONLY a JSON object: {"type": "question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
+Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
 
   try {
     const res = await fetch(
@@ -289,7 +294,7 @@ Respond with ONLY a JSON object: {"type": "question|document|command|other", "co
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       return {
-        type: ["question", "document", "command", "other"].includes(parsed.type) ? parsed.type : "other",
+        type: ["question", "document", "command", "spam", "other"].includes(parsed.type) ? parsed.type : "other",
         confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
         summary: parsed.summary || "",
       };
@@ -299,6 +304,72 @@ Respond with ONLY a JSON object: {"type": "question|document|command|other", "co
   } catch (err) {
     console.error("Gemini classification error:", err.message);
     return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message };
+  }
+}
+
+/**
+ * Check recent spam volume and send admin alert if threshold is crossed.
+ * Only alerts once per window (checks if an alert was already sent recently).
+ */
+async function checkSpamThresholdAndAlert(
+  supabase: any,
+  senderEmail: string,
+  summary: string
+): Promise<void> {
+  try {
+    const windowStart = new Date(Date.now() - PAI_SPAM_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+
+    // Count spam in the rolling window
+    const { count, error } = await supabase
+      .from("inbound_emails")
+      .select("id", { count: "exact", head: true })
+      .eq("special_logic_type", "pai")
+      .eq("route_action", "spam_blocked")
+      .gte("created_at", windowStart);
+
+    if (error) {
+      console.error("Error checking spam count:", error);
+      return;
+    }
+
+    const spamCount = count || 0;
+    console.log(`PAI spam count in last ${PAI_SPAM_WINDOW_HOURS}h: ${spamCount}`);
+
+    // Only alert at the threshold crossing (not on every spam after)
+    if (spamCount === PAI_SPAM_ALERT_THRESHOLD) {
+      console.log(`PAI spam threshold (${PAI_SPAM_ALERT_THRESHOLD}) reached, alerting admin`);
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+
+      // Get admin emails
+      const { data: admins } = await supabase
+        .from("app_users")
+        .select("email")
+        .eq("role", "admin");
+      const adminEmails = admins?.map((a: any) => a.email) || ["alpacaplayhouse@gmail.com"];
+
+      await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          type: "pai_email_reply",
+          to: adminEmails,
+          data: {
+            reply_body: `<strong>Spam Alert:</strong> pai@alpacaplayhouse.com has received <strong>${spamCount} spam emails</strong> in the last ${PAI_SPAM_WINDOW_HOURS} hours.\n\nMost recent: from ${senderEmail} — "${summary}"\n\nAll spam is being silently dropped (no replies sent). If this continues, consider removing the address from public-facing pages or adding domain-level filtering.`,
+            original_subject: "PAI Spam Alert",
+            original_body: "",
+          },
+          sender_type: "auto",
+          subject: `PAI Spam Alert: ${spamCount} spam emails in ${PAI_SPAM_WINDOW_HOURS}h`,
+        }),
+      });
+    }
+  } catch (err) {
+    console.error("Spam threshold check error:", err.message);
   }
 }
 
@@ -493,6 +564,21 @@ async function handlePaiEmail(
   }
 
   // Handle based on classification
+  if (classification.type === "spam") {
+    // === SPAM: Silently drop, log, check threshold ===
+    console.log(`PAI email classified as spam, dropping silently: "${classification.summary}"`);
+
+    // Update the inbound_emails record to mark as spam
+    await supabase
+      .from("inbound_emails")
+      .update({ route_action: "spam_blocked" })
+      .eq("id", emailRecord.id);
+
+    // Check if we've crossed the alert threshold
+    await checkSpamThresholdAndAlert(supabase, senderEmail, classification.summary);
+    return;
+  }
+
   if (classification.type === "document" && hasAttachments) {
     // === DOCUMENT: Download, upload to R2, index, notify admin ===
     const uploadedFiles: Array<{ name: string; type: string; size: string }> = [];

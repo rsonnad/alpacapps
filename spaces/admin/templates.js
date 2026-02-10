@@ -1,5 +1,6 @@
 /**
- * Templates - Lease and Event Agreement Template Management
+ * Templates - Document & Email Template Management
+ * Two-panel layout: sidebar navigation + editor panel
  */
 
 import { supabase } from '../../shared/supabase.js';
@@ -15,23 +16,37 @@ import { formatDateAustin } from '../../shared/timezone.js';
 // =============================================
 
 let authState = null;
+let activeSection = null; // 'lease' | 'event' | 'worktrade' | email template_key
+let emailTemplateList = [];
+let currentEmailTemplateKey = null;
+
+const SENDER_LABELS = {
+  team: 'Team',
+  auto: 'Automaton',
+  noreply: 'No-Reply',
+  payments: 'Payments',
+};
+
+const SECTION_IDS = {
+  lease: 'leaseTemplateSection',
+  event: 'eventTemplateSection',
+  worktrade: 'worktradeTemplateSection',
+};
 
 // =============================================
 // INITIALIZATION
 // =============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize auth and admin page
   authState = await initAdminPage({
     activeTab: 'templates',
-    requiredRole: 'admin', // Templates require admin access
+    requiredRole: 'admin',
     section: 'admin',
     onReady: async (state) => {
-      // Load templates panel
       await loadTemplatesPanel();
-
-      // Set up event listeners
+      await loadEmailNav();
       setupEventListeners();
+      setupMobileSidebar();
     }
   });
 });
@@ -61,17 +76,13 @@ async function loadTemplatesPanel() {
       document.getElementById('templateName').value = template.name;
       document.getElementById('templateContent').value = template.content;
     } else {
-      // Load default template
       document.getElementById('templateContent').value = leaseTemplateService.getDefaultTemplate();
     }
   } catch (e) {
     console.error('Error loading lease template:', e);
   }
 
-  // Load template history
   await loadTemplateHistory();
-
-  // Load SignWell config
   await loadSignwellConfig();
 
   // Load event placeholder reference
@@ -94,14 +105,12 @@ async function loadTemplatesPanel() {
       document.getElementById('eventTemplateName').value = eventTemplate.name;
       document.getElementById('eventTemplateContent').value = eventTemplate.content;
     } else {
-      // Load default template
       document.getElementById('eventTemplateContent').value = eventTemplateService.getDefaultTemplate();
     }
   } catch (e) {
     console.error('Error loading event template:', e);
   }
 
-  // Load event template history
   await loadEventTemplateHistory();
 
   // Load worktrade placeholder reference
@@ -124,16 +133,285 @@ async function loadTemplatesPanel() {
       document.getElementById('worktradeTemplateName').value = worktradeTemplate.name;
       document.getElementById('worktradeTemplateContent').value = worktradeTemplate.content;
     } else {
-      // Load default template
       document.getElementById('worktradeTemplateContent').value = worktradeTemplateService.getDefaultTemplate();
     }
   } catch (e) {
     console.error('Error loading worktrade template:', e);
   }
 
-  // Load worktrade template history
   await loadWorktradeTemplateHistory();
 }
+
+// =============================================
+// EMAIL NAV — populate sidebar with grouped email templates
+// =============================================
+
+async function loadEmailNav() {
+  try {
+    emailTemplateList = await emailTemplateService.getAllTemplates();
+    renderEmailNav(emailTemplateList);
+    // Update welcome stats
+    renderWelcomeStats();
+  } catch (e) {
+    console.error('Error loading email templates for nav:', e);
+  }
+}
+
+function renderEmailNav(templates) {
+  const container = document.getElementById('emailNavItems');
+  const countBadge = document.getElementById('emailTemplateCount');
+  if (!container) return;
+
+  countBadge.textContent = templates.length;
+
+  // Group by category
+  const categories = emailTemplateService.getCategories();
+  const catMap = Object.fromEntries(categories.map(c => [c.key, c]));
+  const grouped = {};
+
+  for (const t of templates) {
+    if (!grouped[t.category]) grouped[t.category] = [];
+    grouped[t.category].push(t);
+  }
+
+  // Render category groups
+  let html = '';
+  for (const cat of categories) {
+    const items = grouped[cat.key] || [];
+    if (items.length === 0) continue;
+
+    // Check localStorage for collapsed state
+    const isCollapsed = localStorage.getItem(`tmpl_cat_${cat.key}`) === '1';
+
+    html += `<div class="tmpl-nav-category" data-category="${cat.key}">`;
+    html += `<div class="tmpl-nav-category-header" data-cat="${cat.key}">
+      <span class="cat-arrow ${isCollapsed ? 'collapsed' : ''}">&#9660;</span>
+      <span class="cat-dot" style="background:${cat.color}"></span>
+      <span>${cat.label}</span>
+      <span class="cat-count">${items.length}</span>
+    </div>`;
+    html += `<div class="tmpl-nav-category-items ${isCollapsed ? 'collapsed' : ''}" data-cat-items="${cat.key}" style="${isCollapsed ? 'max-height:0' : `max-height:${items.length * 40}px`}">`;
+
+    for (const t of items) {
+      const keyLabel = t.template_key.replace(/_/g, ' ');
+      html += `<button class="tmpl-nav-item email-item" data-type="email" data-key="${t.template_key}" title="${t.description || keyLabel}">
+        <span class="tmpl-nav-icon" style="background:${cat.color}"></span>
+        <span class="tmpl-nav-text">${keyLabel}</span>
+      </button>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Add category toggle handlers
+  container.querySelectorAll('.tmpl-nav-category-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const catKey = header.dataset.cat;
+      const items = container.querySelector(`[data-cat-items="${catKey}"]`);
+      const arrow = header.querySelector('.cat-arrow');
+      const isNowCollapsed = !items.classList.contains('collapsed');
+
+      if (isNowCollapsed) {
+        items.classList.add('collapsed');
+        arrow.classList.add('collapsed');
+        localStorage.setItem(`tmpl_cat_${catKey}`, '1');
+      } else {
+        items.classList.remove('collapsed');
+        arrow.classList.remove('collapsed');
+        localStorage.removeItem(`tmpl_cat_${catKey}`);
+        // Set a proper max-height for the animation
+        const childCount = items.querySelectorAll('.tmpl-nav-item').length;
+        items.style.maxHeight = `${childCount * 40}px`;
+      }
+    });
+  });
+
+  // Add click handlers on email nav items
+  container.querySelectorAll('.tmpl-nav-item.email-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectTemplate('email', btn.dataset.key);
+    });
+  });
+}
+
+function renderWelcomeStats() {
+  const statsEl = document.getElementById('tmplWelcomeStats');
+  if (!statsEl) return;
+
+  statsEl.innerHTML = `
+    <div class="tmpl-welcome-stat">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Documents</span>
+    </div>
+    <div class="tmpl-welcome-stat">
+      <span class="stat-num">${emailTemplateList.length}</span>
+      <span class="stat-label">Email Templates</span>
+    </div>
+  `;
+}
+
+// =============================================
+// NAVIGATION — select a template
+// =============================================
+
+function selectTemplate(type, key) {
+  // Hide all sections
+  document.getElementById('tmplWelcome').style.display = 'none';
+  document.getElementById('leaseTemplateSection').style.display = 'none';
+  document.getElementById('eventTemplateSection').style.display = 'none';
+  document.getElementById('worktradeTemplateSection').style.display = 'none';
+  document.getElementById('emailEditorView').style.display = 'none';
+
+  // Clear all active states in sidebar
+  document.querySelectorAll('.tmpl-nav-item').forEach(item => item.classList.remove('active'));
+
+  // Set active state on clicked item
+  const navItem = document.querySelector(`.tmpl-nav-item[data-key="${key}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  // Show appropriate section
+  if (type === 'email') {
+    editEmailTemplate(key);
+    activeSection = key;
+  } else {
+    const sectionId = SECTION_IDS[type];
+    if (sectionId) {
+      document.getElementById(sectionId).style.display = 'block';
+      activeSection = type;
+    }
+  }
+
+  // Close mobile sidebar
+  closeMobileSidebar();
+}
+
+// =============================================
+// SEARCH
+// =============================================
+
+function setupSearch() {
+  const searchInput = document.getElementById('tmplSearch');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    filterSidebar(query);
+  });
+}
+
+function filterSidebar(query) {
+  // Filter document template items
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"]').forEach(item => {
+    const text = item.querySelector('.tmpl-nav-text').textContent.toLowerCase();
+    item.style.display = text.includes(query) || !query ? '' : 'none';
+  });
+
+  // Filter email nav items
+  document.querySelectorAll('.tmpl-nav-item.email-item').forEach(item => {
+    const text = item.querySelector('.tmpl-nav-text').textContent.toLowerCase();
+    const title = (item.getAttribute('title') || '').toLowerCase();
+    const match = text.includes(query) || title.includes(query) || !query;
+    item.style.display = match ? '' : 'none';
+  });
+
+  // Show/hide category headers based on visible children
+  document.querySelectorAll('.tmpl-nav-category').forEach(cat => {
+    const visibleItems = cat.querySelectorAll('.tmpl-nav-item.email-item:not([style*="display: none"])');
+    cat.style.display = visibleItems.length > 0 || !query ? '' : 'none';
+
+    // Auto-expand categories with search results
+    if (query && visibleItems.length > 0) {
+      const items = cat.querySelector('.tmpl-nav-category-items');
+      const arrow = cat.querySelector('.cat-arrow');
+      if (items && items.classList.contains('collapsed')) {
+        items.classList.remove('collapsed');
+        arrow.classList.remove('collapsed');
+        items.style.maxHeight = `${visibleItems.length * 40}px`;
+      }
+    }
+  });
+
+  // Show/hide the Documents group label
+  const docGroup = document.querySelector('.tmpl-nav-group');
+  if (docGroup) {
+    const visibleDocs = docGroup.querySelectorAll('.tmpl-nav-item:not([style*="display: none"])');
+    const groupLabel = docGroup.querySelector('.tmpl-nav-group-label');
+    if (groupLabel) groupLabel.style.display = visibleDocs.length > 0 || !query ? '' : 'none';
+  }
+}
+
+// =============================================
+// MOBILE SIDEBAR
+// =============================================
+
+function setupMobileSidebar() {
+  // Add mobile toggle button and backdrop
+  const toggle = document.createElement('button');
+  toggle.className = 'tmpl-mobile-toggle';
+  toggle.id = 'tmplMobileToggle';
+  toggle.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="17" y2="6"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="14" x2="17" y2="14"/></svg>';
+  toggle.title = 'Show template list';
+  document.body.appendChild(toggle);
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'tmpl-sidebar-backdrop';
+  backdrop.id = 'tmplSidebarBackdrop';
+  document.body.appendChild(backdrop);
+
+  toggle.addEventListener('click', () => {
+    document.getElementById('tmplSidebar').classList.add('open');
+    backdrop.classList.add('open');
+  });
+
+  backdrop.addEventListener('click', closeMobileSidebar);
+}
+
+function closeMobileSidebar() {
+  document.getElementById('tmplSidebar')?.classList.remove('open');
+  document.getElementById('tmplSidebarBackdrop')?.classList.remove('open');
+}
+
+// =============================================
+// EVENT LISTENERS
+// =============================================
+
+function setupEventListeners() {
+  // Document template nav items
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectTemplate(btn.dataset.type, btn.dataset.key);
+    });
+  });
+
+  // Lease template buttons
+  document.getElementById('loadDefaultTemplateBtn')?.addEventListener('click', loadDefaultTemplate);
+  document.getElementById('saveTemplateBtn')?.addEventListener('click', saveTemplate);
+  document.getElementById('saveSignwellConfigBtn')?.addEventListener('click', saveSignwellConfig);
+
+  // Event template buttons
+  document.getElementById('loadDefaultEventTemplateBtn')?.addEventListener('click', loadDefaultEventTemplate);
+  document.getElementById('saveEventTemplateBtn')?.addEventListener('click', saveEventTemplate);
+
+  // Work trade template buttons
+  document.getElementById('loadDefaultWorktradeTemplateBtn')?.addEventListener('click', loadDefaultWorktradeTemplate);
+  document.getElementById('saveWorktradeTemplateBtn')?.addEventListener('click', saveWorktradeTemplate);
+
+  // Email template buttons
+  document.getElementById('emailPreviewBtn')?.addEventListener('click', emailPreviewTemplate);
+  document.getElementById('emailSaveBtn')?.addEventListener('click', emailSaveTemplate);
+  document.getElementById('emailPreviewCloseBtn')?.addEventListener('click', () => {
+    document.getElementById('emailPreviewModal').style.display = 'none';
+  });
+
+  // Search
+  setupSearch();
+}
+
+// =============================================
+// LEASE TEMPLATE FUNCTIONS
+// =============================================
 
 async function loadTemplateHistory() {
   try {
@@ -159,7 +437,6 @@ async function loadTemplateHistory() {
       </tr>
     `).join('');
 
-    // Add click handlers
     tbody.querySelectorAll('[data-action="load-template"]').forEach(btn => {
       btn.addEventListener('click', () => loadTemplate(btn.dataset.id));
     });
@@ -214,7 +491,6 @@ async function saveTemplate() {
     return;
   }
 
-  // Validate template
   const validation = leaseTemplateService.validateTemplate(content);
   const validationDiv = document.getElementById('templateValidation');
 
@@ -284,7 +560,6 @@ async function loadEventTemplateHistory() {
       </tr>
     `).join('');
 
-    // Add click handlers
     tbody.querySelectorAll('[data-action="load-event-template"]').forEach(btn => {
       btn.addEventListener('click', () => loadEventTemplate(btn.dataset.id));
     });
@@ -339,7 +614,6 @@ async function saveEventTemplate() {
     return;
   }
 
-  // Validate template
   const validation = eventTemplateService.validateTemplate(content);
   const validationDiv = document.getElementById('eventTemplateValidation');
 
@@ -409,7 +683,6 @@ async function loadWorktradeTemplateHistory() {
       </tr>
     `).join('');
 
-    // Add click handlers
     tbody.querySelectorAll('[data-action="load-worktrade-template"]').forEach(btn => {
       btn.addEventListener('click', () => loadWorktradeTemplate(btn.dataset.id));
     });
@@ -464,7 +737,6 @@ async function saveWorktradeTemplate() {
     return;
   }
 
-  // Validate template
   const validation = worktradeTemplateService.validateTemplate(content);
   const validationDiv = document.getElementById('worktradeTemplateValidation');
 
@@ -548,127 +820,8 @@ async function saveSignwellConfig() {
 }
 
 // =============================================
-// EVENT LISTENERS
-// =============================================
-
-function setupEventListeners() {
-  // Template type selector
-  document.getElementById('templateTypeSelector')?.addEventListener('change', (e) => {
-    const type = e.target.value;
-    document.getElementById('leaseTemplateSection').style.display = type === 'lease' ? 'block' : 'none';
-    document.getElementById('eventTemplateSection').style.display = type === 'event' ? 'block' : 'none';
-    document.getElementById('worktradeTemplateSection').style.display = type === 'worktrade' ? 'block' : 'none';
-    document.getElementById('emailTemplateSection').style.display = type === 'email' ? 'block' : 'none';
-    if (type === 'email') loadEmailTemplates();
-  });
-
-  // Lease template buttons
-  document.getElementById('loadDefaultTemplateBtn')?.addEventListener('click', loadDefaultTemplate);
-  document.getElementById('saveTemplateBtn')?.addEventListener('click', saveTemplate);
-  document.getElementById('saveSignwellConfigBtn')?.addEventListener('click', saveSignwellConfig);
-
-  // Event template buttons
-  document.getElementById('loadDefaultEventTemplateBtn')?.addEventListener('click', loadDefaultEventTemplate);
-  document.getElementById('saveEventTemplateBtn')?.addEventListener('click', saveEventTemplate);
-
-  // Work trade template buttons
-  document.getElementById('loadDefaultWorktradeTemplateBtn')?.addEventListener('click', loadDefaultWorktradeTemplate);
-  document.getElementById('saveWorktradeTemplateBtn')?.addEventListener('click', saveWorktradeTemplate);
-
-  // Email template buttons
-  document.getElementById('emailBackToListBtn')?.addEventListener('click', emailBackToList);
-  document.getElementById('emailPreviewBtn')?.addEventListener('click', emailPreviewTemplate);
-  document.getElementById('emailSaveBtn')?.addEventListener('click', emailSaveTemplate);
-  document.getElementById('emailPreviewCloseBtn')?.addEventListener('click', () => {
-    document.getElementById('emailPreviewModal').style.display = 'none';
-  });
-}
-
-// =============================================
 // EMAIL TEMPLATE FUNCTIONS
 // =============================================
-
-let emailTemplateList = [];
-let currentEmailTemplateKey = null;
-let emailCategoryFilterValue = null;
-
-const SENDER_LABELS = {
-  team: 'Team',
-  auto: 'Automaton',
-  noreply: 'No-Reply',
-  payments: 'Payments',
-};
-
-async function loadEmailTemplates() {
-  try {
-    emailTemplateList = await emailTemplateService.getAllTemplates(emailCategoryFilterValue);
-    renderEmailCategoryFilter();
-    renderEmailTemplateList();
-  } catch (e) {
-    console.error('Error loading email templates:', e);
-    showToast('Error loading email templates', 'error');
-  }
-}
-
-function renderEmailCategoryFilter() {
-  const container = document.getElementById('emailCategoryFilter');
-  if (!container) return;
-
-  const categories = emailTemplateService.getCategories();
-  const allActive = !emailCategoryFilterValue ? 'btn-primary' : '';
-
-  container.innerHTML = `
-    <button class="btn-small ${allActive}" data-cat="">All</button>
-    ${categories.map(c => {
-      const active = emailCategoryFilterValue === c.key ? 'btn-primary' : '';
-      return `<button class="btn-small ${active}" data-cat="${c.key}">${c.label}</button>`;
-    }).join('')}
-  `;
-
-  container.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      emailCategoryFilterValue = btn.dataset.cat || null;
-      loadEmailTemplates();
-    });
-  });
-}
-
-function renderEmailTemplateList() {
-  const tbody = document.getElementById('emailTemplateListBody');
-  if (!tbody) return;
-
-  if (emailTemplateList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates found</td></tr>';
-    return;
-  }
-
-  const categories = emailTemplateService.getCategories();
-  const catMap = Object.fromEntries(categories.map(c => [c.key, c]));
-
-  tbody.innerHTML = emailTemplateList.map(t => {
-    const cat = catMap[t.category] || { label: t.category, color: '#666' };
-    const sender = SENDER_LABELS[t.sender_type] || t.sender_type;
-    const keyLabel = t.template_key.replace(/_/g, ' ');
-    return `
-      <tr>
-        <td>
-          <strong style="text-transform:capitalize;">${keyLabel}</strong>
-          ${t.description ? `<br><span class="text-muted" style="font-size:0.85em;">${t.description}</span>` : ''}
-        </td>
-        <td><span class="status-badge" style="background:${cat.color};color:#fff;font-size:0.75em;">${cat.label}</span></td>
-        <td style="font-size:0.85em;">${sender}</td>
-        <td>v${t.version}</td>
-        <td>
-          <button class="btn-small" data-action="edit-email-template" data-key="${t.template_key}">Edit</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  tbody.querySelectorAll('[data-action="edit-email-template"]').forEach(btn => {
-    btn.addEventListener('click', () => editEmailTemplate(btn.dataset.key));
-  });
-}
 
 async function editEmailTemplate(templateKey) {
   try {
@@ -705,8 +858,7 @@ async function editEmailTemplate(templateKey) {
     // Load version history
     await loadEmailVersionHistory(templateKey);
 
-    // Show editor, hide list
-    document.getElementById('emailListView').style.display = 'none';
+    // Show editor
     document.getElementById('emailEditorView').style.display = 'block';
     document.getElementById('emailTemplateValidation').style.display = 'none';
   } catch (e) {
@@ -765,13 +917,6 @@ async function loadEmailVersionHistory(templateKey) {
   } catch (e) {
     console.error('Error loading email version history:', e);
   }
-}
-
-function emailBackToList() {
-  currentEmailTemplateKey = null;
-  document.getElementById('emailEditorView').style.display = 'none';
-  document.getElementById('emailListView').style.display = 'block';
-  loadEmailTemplates();
 }
 
 async function emailSaveTemplate() {
