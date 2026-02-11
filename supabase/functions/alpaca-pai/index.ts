@@ -476,6 +476,31 @@ The property has a library of instruction manuals and guides for equipment on-si
 Use the lookup_document tool when someone asks about programming, operating, maintaining, or troubleshooting property equipment (locks, swim spa, appliances, etc.).
 Do NOT guess at instructions — always look them up.`);
 
+  // Data management (manage_data tool)
+  parts.push(`\nDATA MANAGEMENT (manage_data tool):
+You can create, read, update, and delete operational data. Use manage_data for:
+- tasks/projects: { title, notes, priority (1=urgent..4=low), assigned_name, space_name, status (open/in_progress/done) }
+- people: { first_name, last_name, email, phone, type }
+- assignments: bookings with person_id, start_date, end_date, status, space_ids[]
+- bug_reports: { title, description, page_url, severity, status }
+- time_entries: associate work hours (clock_in, clock_out, space_id)
+- events: event hosting requests
+- documents: instruction manuals and guides
+- sms: send/view SMS messages
+- vehicles: vehicle fleet data
+- users: app user accounts (staff+ only)
+- faq: FAQ/knowledge base entries (admin only)
+- feature_requests: feature build queue (staff+ only)
+- password_vault: access codes and credentials
+- invitations: user invitations
+- payments: ledger entries
+- media: photos and media library
+
+For tasks: "assigned_name" accepts a first name (e.g. "Jon") — the API resolves it.
+For tasks: "space_name" accepts a partial name (e.g. "outhouse") — the API resolves it.
+List filters: { status, priority, assigned_name, search, space_name, space_id }
+Always use manage_data instead of guessing about data — look it up!`);
+
   // Feature building (staff+ only)
   if (scope.userLevel >= 2) {
     parts.push(`\nFEATURE BUILDING (staff+ only):
@@ -812,6 +837,44 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["query"],
+    },
+  },
+  {
+    name: "manage_data",
+    description:
+      "Create, read, update, or delete data in the property management system. Use this for tasks/projects, people, assignments/bookings, bug reports, time entries, events, documents, SMS messages, vehicles, and other operational data. This is the primary tool for all data operations — always prefer this over guessing.",
+    parameters: {
+      type: "object",
+      properties: {
+        resource: {
+          type: "string",
+          enum: [
+            "tasks", "people", "assignments", "spaces", "bug_reports",
+            "time_entries", "events", "documents", "sms", "vehicles",
+            "users", "faq", "feature_requests", "password_vault",
+            "invitations", "payments", "media",
+          ],
+          description: "The data resource to operate on",
+        },
+        action: {
+          type: "string",
+          enum: ["list", "get", "create", "update", "delete"],
+          description: "The operation to perform",
+        },
+        id: {
+          type: "string",
+          description: "Record UUID (required for get/update/delete)",
+        },
+        data: {
+          type: "object",
+          description: "Fields to set (for create/update). For tasks: { title, notes, priority (1-4), assigned_name, space_name, status }. For people: { first_name, last_name, email, phone, type }. For bug_reports: { title, description, page_url, severity }.",
+        },
+        filters: {
+          type: "object",
+          description: "Filter criteria (for list). Examples: { status: 'open' }, { assigned_name: 'Jon' }, { search: 'keyword' }, { space_name: 'outhouse' }",
+        },
+      },
+      required: ["resource", "action"],
     },
   },
 ];
@@ -1578,6 +1641,44 @@ async function executeToolCall(
         };
 
         return statusMessages[latest.status] || `Status: ${latest.status}`;
+      }
+
+      case "manage_data": {
+        // Route to the centralized API edge function
+        const apiPayload: any = {
+          resource: args.resource,
+          action: args.action,
+        };
+        if (args.id) apiPayload.id = args.id;
+        if (args.data) apiPayload.data = args.data;
+        if (args.filters) apiPayload.filters = args.filters;
+        // Default reasonable limits for PAI queries
+        apiPayload.limit = 25;
+
+        const apiResp = await fetch(`${supabaseUrl}/functions/v1/api`, {
+          method: "POST",
+          headers: edgeFnHeaders,
+          body: JSON.stringify(apiPayload),
+        });
+
+        const apiResult = await apiResp.json();
+        if (apiResult.error) {
+          return `API error (${apiResult.code || apiResp.status}): ${apiResult.error}`;
+        }
+
+        // Format response for Gemini
+        const data = apiResult.data;
+        if (Array.isArray(data)) {
+          if (data.length === 0) return `No ${args.resource} found matching the criteria.`;
+          const count = apiResult.count ?? data.length;
+          // Compact JSON for Gemini to interpret
+          return `Found ${count} ${args.resource}:\n${JSON.stringify(data, null, 1)}`;
+        }
+        if (data && typeof data === "object") {
+          if (data.deleted) return `Successfully deleted the ${args.resource} record.`;
+          return `${args.action === "create" ? "Created" : "Updated"} ${args.resource}:\n${JSON.stringify(data, null, 1)}`;
+        }
+        return `Operation completed: ${JSON.stringify(apiResult)}`;
       }
 
       default:
