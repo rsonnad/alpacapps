@@ -16,7 +16,7 @@ BEGIN
       TO authenticated
       USING (
         metadata->>'app_user_id' IN (
-          SELECT id::text FROM app_users WHERE auth_id = auth.uid()
+          SELECT id::text FROM app_users WHERE auth_user_id = auth.uid()
         )
       );
   END IF;
@@ -33,7 +33,7 @@ BEGIN
       TO authenticated
       WITH CHECK (
         metadata->>'app_user_id' IN (
-          SELECT id::text FROM app_users WHERE auth_id = auth.uid()
+          SELECT id::text FROM app_users WHERE auth_user_id = auth.uid()
         )
       );
   END IF;
@@ -50,7 +50,7 @@ BEGIN
       TO authenticated
       USING (
         metadata->>'app_user_id' IN (
-          SELECT id::text FROM app_users WHERE auth_id = auth.uid()
+          SELECT id::text FROM app_users WHERE auth_user_id = auth.uid()
         )
       );
   END IF;
