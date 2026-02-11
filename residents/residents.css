@@ -4614,6 +4614,244 @@ span.sonos-library-item__star.starred {
 }
 
 /* =============================================
+   ASK PAI - FULL PAGE CHAT
+   ============================================= */
+
+.askpai-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+/* Input area — sticky at top */
+.askpai-input-area {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.askpai-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: border-color 0.15s;
+}
+
+.askpai-input-row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px rgba(212,136,58,0.12);
+}
+
+.askpai-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.askpai-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text);
+  padding: 0.4rem 0;
+}
+
+.askpai-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.askpai-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.askpai-send-btn:hover:not(:disabled) {
+  background: var(--text);
+  transform: scale(1.05);
+}
+
+.askpai-send-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.askpai-send-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Welcome message */
+.askpai-welcome {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.askpai-welcome-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.askpai-welcome-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.askpai-welcome-text strong {
+  font-size: 0.95rem;
+}
+
+.askpai-welcome-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+}
+
+.askpai-welcome-text p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary, var(--text-muted));
+}
+
+/* Chat history */
+.askpai-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual messages */
+.askpai-msg {
+  display: flex;
+  gap: 0.65rem;
+  max-width: 100%;
+}
+
+.askpai-msg--user {
+  flex-direction: row-reverse;
+}
+
+.askpai-msg-avatar {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.askpai-msg-content {
+  max-width: 80%;
+  min-width: 0;
+}
+
+.askpai-msg-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.askpai-msg-text {
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-lg, 16px);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.askpai-msg--ai .askpai-msg-text {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+}
+
+.askpai-msg--user .askpai-msg-text {
+  background: var(--accent);
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.askpai-msg--error .askpai-msg-text {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* Action badges */
+.askpai-msg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.askpai-action-badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* Typing indicator (reuses pai-typing-dots from widget CSS) */
+.askpai-typing .askpai-msg-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .askpai-page {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .askpai-input-area {
+    padding: 0.75rem 0;
+  }
+
+  .askpai-msg-content {
+    max-width: 88%;
+  }
+
+  .askpai-input::placeholder {
+    font-size: 0.82rem;
+  }
+}
+
+/* =============================================
    PROFILE PAGE
    ============================================= */
 

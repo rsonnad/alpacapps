@@ -248,6 +248,15 @@ export function setupVersionInfo() {
 
   injectStyles();
 
+  // Immediately fetch version.json and overwrite the displayed version
+  // so all pages show the same live version regardless of HTML caching
+  fetchVersionInfo().then(info => {
+    const d = resolveInfo(info);
+    if (d && d.version && d.version !== '—') {
+      span.textContent = d.version;
+    }
+  });
+
   // Tooltip
   const tip = document.createElement('div');
   tip.className = 'vi-tooltip';

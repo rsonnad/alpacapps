@@ -46,20 +46,32 @@
 
     <div class="manage-tabs" id="tabNav"></div>
 
-    <main class="manage-content">
-      <section class="section">
-        <div class="section-header">
-          <h2>Ask PAI</h2>
+    <main class="manage-content askpai-page">
+      <!-- Input form at top -->
+      <div class="askpai-input-area">
+        <div class="askpai-input-row">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png"
+               alt="PAI" class="askpai-avatar">
+          <input type="text" id="askpaiInput" class="askpai-input"
+                 placeholder="Ask PAI anything... try &quot;turn on garage lights&quot; or &quot;play music in the lounge&quot;"
+                 autocomplete="off" maxlength="500">
+          <button id="askpaiSend" class="askpai-send-btn" disabled aria-label="Send">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
         </div>
-        <div class="section-body">
-          <p class="devices-intro">
-            Use the chat bubble in the bottom-right corner to ask PAI questions or control home systems.
-          </p>
-          <p class="text-muted" style="font-size:0.9rem;">
-            Tip: ask things like "turn on garage lights", "set thermostat to 72", or "play music in the lounge."
-          </p>
+      </div>
+
+      <!-- Chat history below -->
+      <div class="askpai-history" id="askpaiHistory">
+        <div class="askpai-welcome">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png"
+               alt="PAI" class="askpai-welcome-avatar">
+          <div class="askpai-welcome-text">
+            <strong>PAI</strong> <span class="askpai-welcome-subtitle">Prompt Alpaca Intelligence</span>
+            <p>Hey! I'm PAI, your spirit guardian and smart home assistant. I can control lights, music, thermostats, and vehicles. Ask me anything!</p>
+          </div>
         </div>
-      </section>
+      </div>
     </main>
   </div>
 
