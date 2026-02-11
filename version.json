@@ -1,12 +1,12 @@
 {
-  "version": "v260211.38 11:39a",
-  "release": 38,
-  "sha": "3fa21b33",
-  "fullSha": "3fa21b33b9bfcfbb168dac1b1b23f1aa53712770",
+  "version": "v260211.39 11:46a",
+  "release": 39,
+  "sha": "bc928e61",
+  "fullSha": "bc928e61bfb2e224fb5c1de8b789d2b63ee3091d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 17:39:00+00",
-  "commits": [{"sha":"3fa21b33","message":"Better error for sign-in with no account: show \"No account found\" with sign-up options","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 17:46:40+00",
+  "commits": [{"sha":"bc928e61","message":"Minimal whitespace: inline device count, tighter gaps everywhere","author":"Rahul Sonnad"}]
 }
