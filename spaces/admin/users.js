@@ -24,6 +24,7 @@ function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation time
 let authState = null;
 let users = [];
 let invitations = [];
+let prospectTokens = {}; // invitation_id → access_token record
 let peopleSuggestions = []; // For typeahead
 
 // DOM elements (set after DOM ready)
@@ -112,6 +113,17 @@ async function loadInvitations() {
     }
 
     invitations = data || [];
+
+    // Load access tokens for prospect invitations
+    const prospectInvIds = invitations.filter(i => i.role === 'prospect').map(i => i.id);
+    prospectTokens = {};
+    if (prospectInvIds.length > 0) {
+      const { data: tokens } = await supabase
+        .from('access_tokens')
+        .select('*')
+        .in('invitation_id', prospectInvIds);
+      (tokens || []).forEach(t => { prospectTokens[t.invitation_id] = t; });
+    }
   } catch (timeoutError) {
     console.error('Invitations load timeout:', timeoutError.message);
     showToast('Loading invitations timed out. Please refresh the page.', 'error');
@@ -251,61 +263,89 @@ function selectTypeaheadItem(person) {
 }
 
 async function inviteUser(email, role, personInfo = {}) {
-  // Validate email
-  if (!email || !email.includes('@')) {
-    showToast('Please enter a valid email address', 'warning');
-    return;
+  const isProspect = role === 'prospect';
+
+  // For prospects, use name as identifier if no email; otherwise validate email
+  if (!isProspect) {
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid email address', 'warning');
+      return;
+    }
   }
 
-  // Check if user already exists
-  const existing = users.find(u => u.email.toLowerCase() === email);
-  if (existing) {
-    showToast('This user already has an account', 'warning');
-    return;
+  // Use a placeholder email for prospects if none provided
+  const effectiveEmail = email && email.includes('@') ? email.toLowerCase() : null;
+
+  if (!isProspect && effectiveEmail) {
+    // Check if user already exists
+    const existing = users.find(u => u.email.toLowerCase() === effectiveEmail);
+    if (existing) {
+      showToast('This user already has an account', 'warning');
+      return;
+    }
+
+    // Check if invitation already pending
+    const pendingInvite = invitations.find(i => i.email.toLowerCase() === effectiveEmail);
+    if (pendingInvite) {
+      showToast('An invitation is already pending for this email', 'warning');
+      return;
+    }
   }
 
-  // Check if invitation already pending
-  const pendingInvite = invitations.find(i => i.email.toLowerCase() === email);
-  if (pendingInvite) {
-    showToast('An invitation is already pending for this email', 'warning');
-    return;
+  // For prospects, require at least a name or email
+  if (isProspect && !effectiveEmail && !personInfo.firstName && !personInfo.lastName) {
+    // Use the raw input as a name
+    const rawInput = document.getElementById('inviteEmail').value.trim();
+    if (!rawInput) {
+      showToast('Please enter a name or email for the prospect', 'warning');
+      return;
+    }
+    personInfo.firstName = rawInput;
   }
 
   try {
     // If name or phone provided, upsert into people table
     const { firstName, lastName, phone } = personInfo;
     if (firstName || lastName || phone) {
-      const personData = { email };
+      const personData = {};
+      if (effectiveEmail) personData.email = effectiveEmail;
       if (firstName) personData.first_name = firstName;
       if (lastName) personData.last_name = lastName;
       if (phone) personData.phone = phone;
 
-      // Check if person already exists with this email
-      const { data: existingPerson } = await supabase
-        .from('people')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
+      if (effectiveEmail) {
+        // Check if person already exists with this email
+        const { data: existingPerson } = await supabase
+          .from('people')
+          .select('id')
+          .eq('email', effectiveEmail)
+          .maybeSingle();
 
-      if (existingPerson) {
-        // Update existing person with any new info
-        const updates = {};
-        if (firstName) updates.first_name = firstName;
-        if (lastName) updates.last_name = lastName;
-        if (phone) updates.phone = phone;
-        await supabase.from('people').update(updates).eq('id', existingPerson.id);
+        if (existingPerson) {
+          const updates = {};
+          if (firstName) updates.first_name = firstName;
+          if (lastName) updates.last_name = lastName;
+          if (phone) updates.phone = phone;
+          await supabase.from('people').update(updates).eq('id', existingPerson.id);
+        } else {
+          personData.first_name = firstName || 'Unknown';
+          await supabase.from('people').insert(personData);
+        }
       } else {
-        // Create new person record
+        // No email — create person record with name only
         personData.first_name = firstName || 'Unknown';
         await supabase.from('people').insert(personData);
       }
     }
 
+    // For prospects, use a placeholder email if none provided
+    const inviteEmail = effectiveEmail || `prospect-${Date.now()}@noemail.local`;
+
     // Create invitation record
     const { data: newInvite, error } = await supabase
       .from('user_invitations')
       .insert({
-        email: email,
+        email: inviteEmail,
         role: role,
         invited_by: authState.appUser?.id
       })
@@ -314,6 +354,29 @@ async function inviteUser(email, role, personInfo = {}) {
 
     if (error) throw error;
 
+    // For prospects, also create an access token linked to this invitation
+    let accessToken = null;
+    if (isProspect) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 14);
+
+      const prospectLabel = [firstName, lastName].filter(Boolean).join(' ') || effectiveEmail || 'Prospect';
+
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('access_tokens')
+        .insert({
+          label: prospectLabel,
+          created_by: authState.appUser?.id,
+          expires_at: expiresAt.toISOString(),
+          invitation_id: newInvite.id,
+        })
+        .select()
+        .single();
+
+      if (tokenError) throw tokenError;
+      accessToken = tokenData.token;
+    }
+
     // Clear form fields
     document.getElementById('inviteEmail').value = '';
     document.getElementById('inviteFirstName').value = '';
@@ -321,11 +384,15 @@ async function inviteUser(email, role, personInfo = {}) {
     document.getElementById('invitePhone').value = '';
 
     await loadInvitations();
-    await loadPeople(); // Refresh typeahead suggestions
+    await loadPeople();
     render();
 
-    // Show invitation text modal (email not sent yet)
-    showInvitationModal(email, role);
+    // Show invitation modal
+    if (isProspect && accessToken) {
+      showProspectLinkModal(accessToken, [firstName, lastName].filter(Boolean).join(' ') || effectiveEmail || 'Prospect');
+    } else {
+      showInvitationModal(inviteEmail, role);
+    }
 
   } catch (error) {
     console.error('Error inviting user:', error);
@@ -428,6 +495,7 @@ function showInvitationModal(email, role) {
     resident: 'resident access (cameras, lighting, and house info)',
     associate: 'associate access (cameras, lighting, and house info)',
     public: 'public access (view available spaces)',
+    prospect: 'prospect access (view available spaces via link, no login required)',
   };
   const roleDescription = roleDescriptions[role] || roleDescriptions.resident;
 
@@ -466,6 +534,40 @@ function closeInviteModal() {
   currentInviteEmail = null;
   currentInviteRole = null;
 }
+
+function showProspectLinkModal(token, name) {
+  const url = `${window.location.origin}/spaces/?access=${token}`;
+  const modal = document.getElementById('inviteTextModal');
+  const textarea = document.getElementById('inviteTextContent');
+
+  // Override modal content for prospect link
+  modal.querySelector('.modal-header h2').textContent = 'Access Link Ready';
+  modal.querySelector('.modal-body > p').textContent = `Share this link with ${name}. It gives them access to browse spaces without logging in. Expires in 14 days.`;
+  textarea.value = url;
+  textarea.style.height = '60px';
+
+  // Hide the send email button for prospects
+  document.getElementById('sendInviteEmailBtn').style.display = 'none';
+
+  modal.classList.remove('hidden');
+
+  // Auto-copy
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Access link copied to clipboard!', 'success');
+  }).catch(() => {});
+}
+
+// Override close to reset modal state
+const _originalCloseInviteModal = closeInviteModal;
+window.closeInviteModal = function() {
+  _originalCloseInviteModal();
+  // Reset modal to default state
+  const modal = document.getElementById('inviteTextModal');
+  modal.querySelector('.modal-header h2').textContent = 'Invitation Ready';
+  modal.querySelector('.modal-body > p').textContent = 'The invitation has been created. Copy the text below and send it via email or message:';
+  document.getElementById('inviteTextContent').style.height = '250px';
+  document.getElementById('sendInviteEmailBtn').style.display = '';
+};
 
 async function sendInviteEmail() {
   if (!currentInviteEmail || !currentInviteRole) {
@@ -522,6 +624,49 @@ async function revokeInvitation(invitationId) {
     showToast('Failed to revoke: ' + error.message, 'error');
   }
 }
+
+window.copyProspectLink = async function(token) {
+  const url = `${window.location.origin}/spaces/?access=${token}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Access link copied to clipboard', 'success');
+  } catch (err) {
+    const input = document.createElement('input');
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    showToast('Access link copied to clipboard', 'success');
+  }
+};
+
+window.revokeProspectToken = async function(tokenId, invitationId) {
+  if (!confirm('Revoke this access link? The prospect will lose access.')) return;
+
+  try {
+    // Revoke the access token
+    const { error: tokenError } = await supabase
+      .from('access_tokens')
+      .update({ is_revoked: true })
+      .eq('id', tokenId);
+    if (tokenError) throw tokenError;
+
+    // Also revoke the invitation
+    const { error: invError } = await supabase
+      .from('user_invitations')
+      .update({ status: 'revoked' })
+      .eq('id', invitationId);
+    if (invError) throw invError;
+
+    await loadInvitations();
+    render();
+    showToast('Prospect access revoked', 'success');
+  } catch (error) {
+    console.error('Error revoking prospect access:', error);
+    showToast('Failed to revoke: ' + error.message, 'error');
+  }
+};
 
 async function updateUserRole(userId, newRole) {
   try {
@@ -741,27 +886,61 @@ function renderInvitations() {
       <tbody>
         ${uniqueInvitations.map(inv => {
           const isExpired = new Date(inv.expires_at) < getAustinToday();
-          const emailStatus = getEmailStatus(inv);
+          const isProspect = inv.role === 'prospect';
+          const token = isProspect ? prospectTokens[inv.id] : null;
+          const tokenExpired = token && new Date(token.expires_at) < new Date();
+          const tokenRevoked = token && token.is_revoked;
+
+          // For prospects: show label or email; hide placeholder emails
+          const displayEmail = isProspect
+            ? (token?.label || (inv.email.includes('@noemail.local') ? '—' : inv.email))
+            : (isDemoUser() ? `<span class="demo-redacted">${redactString(inv.email, 'email')}</span>` : inv.email);
+
+          // For prospects: show link status instead of email status
+          let statusHtml;
+          if (isProspect && token) {
+            const clicks = token.use_count || 0;
+            const lastUsed = token.last_used_at ? formatDateAustin(token.last_used_at, { month: 'short', day: 'numeric' }) : null;
+            if (tokenRevoked) {
+              statusHtml = '<span class="email-status status-not-sent">Revoked</span>';
+            } else if (tokenExpired) {
+              statusHtml = `<span class="email-status status-not-sent">Expired</span>${clicks ? ` <span class="send-count">(${clicks} click${clicks !== 1 ? 's' : ''})</span>` : ''}`;
+            } else if (clicks > 0) {
+              statusHtml = `<span class="email-status status-sent-recent">Clicked ${clicks}x</span>${lastUsed ? ` <span class="send-count">(${lastUsed})</span>` : ''}`;
+            } else {
+              statusHtml = '<span class="email-status status-not-sent">Not clicked</span>';
+            }
+          } else {
+            const emailStatus = getEmailStatus(inv);
+            statusHtml = `<span class="email-status ${emailStatus.class}">${emailStatus.text}</span>${inv.email_send_count > 1 ? ` <span class="send-count">(${inv.email_send_count}x)</span>` : ''}`;
+          }
+
+          // Expiration: for prospects show token expiry
+          const expiresAt = isProspect && token ? token.expires_at : inv.expires_at;
+          const effectiveExpired = isProspect ? (tokenExpired || tokenRevoked) : isExpired;
+
           return `
-            <tr class="${isExpired ? 'expired-row' : ''}">
-              <td>${isDemoUser() ? `<span class="demo-redacted">${redactString(inv.email, 'email')}</span>` : inv.email}</td>
+            <tr class="${effectiveExpired ? 'expired-row' : ''}">
+              <td>${displayEmail}</td>
               <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
+              <td>${statusHtml}</td>
               <td>
-                <span class="email-status ${emailStatus.class}">${emailStatus.text}</span>
-                ${inv.email_send_count > 1 ? `<span class="send-count">(${inv.email_send_count}x)</span>` : ''}
-              </td>
-              <td>
-                <span class="${isExpired ? 'expired-text' : ''}">${formatDateAustin(inv.expires_at, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                ${isExpired ? '<span class="expired-badge">Expired</span>' : ''}
+                <span class="${effectiveExpired ? 'expired-text' : ''}">${formatDateAustin(expiresAt, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                ${effectiveExpired ? '<span class="expired-badge">' + (tokenRevoked ? 'Revoked' : 'Expired') + '</span>' : ''}
               </td>
               <td class="actions-cell">
-                <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">
-                  ${isExpired ? 'Resend & Extend' : 'Resend'}
-                </button>
-                <button class="btn-text" onclick="showInvitationModal('${inv.email}', '${inv.role}')" title="Copy invite text">
-                  Copy
-                </button>
-                <button class="btn-danger btn-small" onclick="revokeInvitation('${inv.id}')">Revoke</button>
+                ${isProspect && token ? `
+                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}')" title="Copy access link">Copy Link</button>` : ''}
+                  ${!tokenRevoked ? `<button class="btn-danger btn-small" onclick="revokeProspectToken('${token.id}', '${inv.id}')">Revoke</button>` : ''}
+                ` : `
+                  <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">
+                    ${isExpired ? 'Resend & Extend' : 'Resend'}
+                  </button>
+                  <button class="btn-text" onclick="showInvitationModal('${inv.email}', '${inv.role}')" title="Copy invite text">
+                    Copy
+                  </button>
+                  <button class="btn-danger btn-small" onclick="revokeInvitation('${inv.id}')">Revoke</button>
+                `}
               </td>
             </tr>
           `;
@@ -842,6 +1021,7 @@ function renderUsers() {
                   ${isCurrentUser || isDemoUser() ? 'disabled' : ''}
                   onchange="updateUserRole('${u.id}', this.value)"
                 >
+                  <option value="prospect" ${u.role === 'prospect' ? 'selected' : ''}>Prospect</option>
                   <option value="public" ${u.role === 'public' ? 'selected' : ''}>Public</option>
                   <option value="demon" ${u.role === 'demon' ? 'selected' : ''}>Demon</option>
                   <option value="associate" ${u.role === 'associate' ? 'selected' : ''}>Associate</option>

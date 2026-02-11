@@ -64,8 +64,7 @@ async function loadSettingsPanel() {
     loadInboundSms(),
     loadForwardingRules(),
     loadDisplays(),
-    loadTodayFact(),
-    loadAccessLinks()
+    loadTodayFact()
   ]);
 }
 
@@ -1257,9 +1256,6 @@ function setupEventListeners() {
   document.getElementById('saveDisplayBtn')?.addEventListener('click', handleSaveDisplay);
   document.getElementById('deleteDisplayBtn')?.addEventListener('click', handleDeleteDisplay);
   document.getElementById('regenerateFactBtn')?.addEventListener('click', handleRegenerateFact);
-
-  // Access links
-  document.getElementById('generateAccessLinkBtn')?.addEventListener('click', generateAccessLink);
 }
 
 // =============================================
@@ -1479,128 +1475,3 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// =============================================
-// ACCESS LINKS
-// =============================================
-
-async function loadAccessLinks() {
-  const container = document.getElementById('accessLinksList');
-  if (!container) return;
-
-  try {
-    const { data, error } = await supabase
-      .from('access_tokens')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    const links = data || [];
-
-    if (links.length === 0) {
-      container.innerHTML = '<p class="text-muted">No access links yet. Click "Generate Link" to create one.</p>';
-      return;
-    }
-
-    const now = new Date();
-    container.innerHTML = `
-      <table class="data-table" style="font-size:0.85rem;">
-        <thead><tr>
-          <th>Label</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Expires</th>
-          <th>Actions</th>
-        </tr></thead>
-        <tbody>
-          ${links.map(link => {
-            const expired = new Date(link.expires_at) < now;
-            const revoked = link.is_revoked;
-            const status = revoked ? 'Revoked' : expired ? 'Expired' : 'Active';
-            const statusClass = revoked ? 'color:var(--text-muted)' : expired ? 'color:var(--text-muted)' : 'color:var(--success-color, #22c55e)';
-            const created = new Date(link.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const expires = new Date(link.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            return `<tr>
-              <td>${escapeHtml(link.label) || '<span class="text-muted">—</span>'}</td>
-              <td><span style="${statusClass};font-weight:600">${status}</span></td>
-              <td>${created}</td>
-              <td>${expires}</td>
-              <td style="display:flex;gap:0.5rem;">
-                ${!revoked && !expired ? `
-                  <button class="btn-small" onclick="copyAccessLink('${escapeHtml(link.token)}')">Copy URL</button>
-                  <button class="btn-small btn-danger" onclick="revokeAccessLink('${link.id}')">Revoke</button>
-                ` : ''}
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
-  } catch (err) {
-    console.error('Failed to load access links:', err);
-    container.innerHTML = '<p class="text-muted">Failed to load access links.</p>';
-  }
-}
-
-async function generateAccessLink() {
-  const label = prompt('Optional label (e.g., "For Sarah"):') || null;
-
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 14);
-
-  try {
-    const { data, error } = await supabase
-      .from('access_tokens')
-      .insert({
-        label,
-        created_by: authState?.appUser?.id || null,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    const url = `${window.location.origin}/spaces/?access=${data.token}`;
-    await navigator.clipboard.writeText(url);
-    showToast('Access link created and copied to clipboard!', 'success');
-    await loadAccessLinks();
-  } catch (err) {
-    console.error('Failed to generate access link:', err);
-    showToast('Failed to generate access link', 'error');
-  }
-}
-
-window.copyAccessLink = async function(token) {
-  const url = `${window.location.origin}/spaces/?access=${token}`;
-  try {
-    await navigator.clipboard.writeText(url);
-    showToast('Link copied to clipboard', 'success');
-  } catch (err) {
-    // Fallback: select a temp input
-    const input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    showToast('Link copied to clipboard', 'success');
-  }
-};
-
-window.revokeAccessLink = async function(id) {
-  if (!confirm('Revoke this access link? Anyone using it will lose access.')) return;
-
-  try {
-    const { error } = await supabase
-      .from('access_tokens')
-      .update({ is_revoked: true })
-      .eq('id', id);
-
-    if (error) throw error;
-    showToast('Access link revoked', 'success');
-    await loadAccessLinks();
-  } catch (err) {
-    console.error('Failed to revoke access link:', err);
-    showToast('Failed to revoke link', 'error');
-  }
-};

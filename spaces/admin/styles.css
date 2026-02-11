@@ -104,6 +104,11 @@
   color: #5b21b6;
 }
 
+.role-badge.prospect {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
 .user-info {
   position: relative;
   font-size: 0.875rem;

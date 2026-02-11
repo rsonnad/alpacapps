@@ -320,6 +320,11 @@
   color: #5b21b6;
 }
 
+.role-badge.prospect {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
 /* Button danger */
 .btn-danger {
   padding: 0.375rem 0.75rem;
