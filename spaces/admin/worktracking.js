@@ -570,8 +570,11 @@ async function recalcSelected() {
       showToast('All selected entries already match current rates', 'info');
     }
     await loadEntries();
+    btn.textContent = 'Recalced';
+    setTimeout(() => { btn.textContent = 'Recalc'; }, 2000);
   } catch (err) {
     showToast('Failed to recalculate: ' + err.message, 'error');
+    btn.textContent = 'Recalc';
   } finally {
     btn.disabled = false;
     updateMarkPaidButton();
