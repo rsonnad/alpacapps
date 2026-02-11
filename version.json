@@ -1,12 +1,12 @@
 {
-  "version": "v260211.08 7:46a",
-  "release": 8,
-  "sha": "c475659b",
-  "fullSha": "c475659b4b23e637f5fa4a036c83b10a5873556a",
+  "version": "",
+  "release": 9,
+  "sha": "669ce2a0",
+  "fullSha": "669ce2a0467b0904b7a5350c728c0da7123e9cc0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 13:46:46+00",
-  "commits": [{"sha":"c475659b","message":"Unify tab UI: consistent positioning, no-spinner navigation, site header on all pages","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:09:23+00",
+  "commits": [{"sha":"669ce2a0","message":"Enrich PAI imagery prompt with full backstory and scene randomization","author":"Rahul Sonnad"}]
 }
