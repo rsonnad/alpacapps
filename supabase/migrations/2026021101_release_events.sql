@@ -5,7 +5,7 @@ CREATE SEQUENCE IF NOT EXISTS release_event_seq AS bigint;
 
 CREATE TABLE IF NOT EXISTS release_events (
   seq bigint PRIMARY KEY DEFAULT nextval('release_event_seq'),
-  display_version text GENERATED ALWAYS AS ('r' || lpad(seq::text, 9, '0')) STORED,
+  display_version text,  -- computed by record_release_event() as vYYMMDD.NN H:MMa
   push_sha text NOT NULL UNIQUE,
   branch text NOT NULL DEFAULT 'main',
   compare_from_sha text,
@@ -116,6 +116,11 @@ DECLARE
   v_event release_events;
   v_commit jsonb;
   v_idx integer := 0;
+  v_austin_ts timestamp;
+  v_date_str text;
+  v_day_count integer;
+  v_time_str text;
+  v_display text;
 BEGIN
   IF p_push_sha IS NULL OR length(trim(p_push_sha)) = 0 THEN
     RAISE EXCEPTION 'p_push_sha is required';
@@ -125,20 +130,27 @@ BEGIN
     p_compare_to_sha := p_push_sha;
   END IF;
 
+  -- Compute display version in Austin local time (America/Chicago).
+  -- Format: vYYMMDD.NN H:MMa  where NN = daily counter (01, 02, …)
+  v_austin_ts := COALESCE(p_pushed_at, now()) AT TIME ZONE 'America/Chicago';
+  v_date_str  := to_char(v_austin_ts, 'YYMMDD');
+
+  SELECT COUNT(*) INTO v_day_count
+  FROM release_events
+  WHERE to_char(pushed_at AT TIME ZONE 'America/Chicago', 'YYMMDD') = v_date_str;
+
+  v_time_str := to_char(v_austin_ts, 'FMHH12:MI')
+    || CASE WHEN EXTRACT(HOUR FROM v_austin_ts) < 12 THEN 'a' ELSE 'p' END;
+
+  v_display := 'v' || v_date_str || '.' || lpad((v_day_count + 1)::text, 2, '0') || ' ' || v_time_str;
+
+  -- Upsert: on conflict (same push SHA), keep existing display_version.
   INSERT INTO release_events (
-    push_sha,
-    branch,
-    compare_from_sha,
-    compare_to_sha,
-    pushed_at,
-    actor_login,
-    actor_id,
-    source,
-    model_code,
-    machine_name,
-    metadata
+    display_version, push_sha, branch, compare_from_sha, compare_to_sha,
+    pushed_at, actor_login, actor_id, source, model_code, machine_name, metadata
   )
   VALUES (
+    v_display,
     p_push_sha,
     COALESCE(NULLIF(trim(p_branch), ''), 'main'),
     NULLIF(trim(p_compare_from_sha), ''),
@@ -151,8 +163,8 @@ BEGIN
     NULLIF(trim(p_machine_name), ''),
     COALESCE(p_metadata, '{}'::jsonb)
   )
-  ON CONFLICT (push_sha) DO UPDATE
-  SET
+  ON CONFLICT (push_sha) DO UPDATE SET
+    display_version = release_events.display_version,  -- keep existing on idempotent re-run
     updated_at = now(),
     branch = EXCLUDED.branch,
     compare_from_sha = COALESCE(release_events.compare_from_sha, EXCLUDED.compare_from_sha),
@@ -166,26 +178,18 @@ BEGIN
     metadata = COALESCE(release_events.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb)
   RETURNING * INTO v_event;
 
+  -- Insert commits (only if none exist yet for this release).
   IF jsonb_typeof(COALESCE(p_commits, '[]'::jsonb)) = 'array' THEN
     IF NOT EXISTS (
-      SELECT 1
-      FROM release_event_commits
-      WHERE release_seq = v_event.seq
+      SELECT 1 FROM release_event_commits WHERE release_seq = v_event.seq
     ) THEN
       FOR v_commit IN
         SELECT value FROM jsonb_array_elements(COALESCE(p_commits, '[]'::jsonb))
       LOOP
         v_idx := v_idx + 1;
         INSERT INTO release_event_commits (
-          release_seq,
-          ordinal,
-          commit_sha,
-          commit_short,
-          author_name,
-          author_email,
-          committed_at,
-          message,
-          metadata
+          release_seq, ordinal, commit_sha, commit_short,
+          author_name, author_email, committed_at, message, metadata
         )
         VALUES (
           v_event.seq,

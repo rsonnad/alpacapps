@@ -5430,6 +5430,18 @@ span.sonos-library-item__star.starred {
   transform: rotate(-90deg);
 }
 
+.device-section__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--accent, #3d8b7a);
+}
+
+.device-section__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
 .device-section__label {
   flex-shrink: 0;
   font-size: 1.1rem;

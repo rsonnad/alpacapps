@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function renderDeviceCards(state) {
-  const grid = document.getElementById('devicesGrid');
-  if (!grid) return;
+  const list = document.getElementById('devicesList');
+  if (!list) return;
 
   const role = state.appUser?.role;
   const hasAllDeviceAccess = ['admin', 'staff', 'oracle'].includes(role);
@@ -45,18 +45,27 @@ function renderDeviceCards(state) {
     hasAllDeviceAccess || state.hasPermission?.(cat.permission)
   );
   if (allowed.length === 0) {
-    grid.innerHTML = '<p class="text-muted" style="padding:1rem;">No device categories available for your account.</p>';
+    list.innerHTML = '<p class="text-muted" style="padding:1rem;">No device categories available for your account.</p>';
     return;
   }
 
-  grid.innerHTML = allowed.map(cat => `
-    <a href="${cat.href}" class="device-card" data-device="${cat.id}">
-      <span class="device-card__icon">${ICONS[cat.id] || ''}</span>
-      <div class="device-card__body">
-        <span class="device-card__label">${cat.label}</span>
-        ${cat.description ? `<span class="device-card__desc">${cat.description}</span>` : ''}
+  list.innerHTML = allowed.map(cat => `
+    <details class="device-section" data-device="${cat.id}">
+      <summary class="device-section__header">
+        <span class="device-section__chevron"></span>
+        <span class="device-section__icon">${ICONS[cat.id] || ''}</span>
+        <span class="device-section__label">${cat.label}</span>
+        <a href="${cat.href}" class="device-section__link">Open →</a>
+      </summary>
+      <div class="device-section__body" style="padding: 0.75rem 1rem;">
+        ${cat.description ? `<p style="margin:0 0 0.75rem;color:var(--text-muted,#888);font-size:0.88rem;">${cat.description}</p>` : ''}
+        <a href="${cat.href}" class="btn-primary" style="display:inline-block;font-size:0.85rem;padding:0.4rem 1rem;">Go to ${cat.label}</a>
       </div>
-      <span class="device-card__arrow" aria-hidden="true">→</span>
-    </a>
+    </details>
   `).join('');
+
+  /* Prevent clicks on the "Open →" link from toggling the details */
+  list.querySelectorAll('.device-section__link').forEach(link => {
+    link.addEventListener('click', e => e.stopPropagation());
+  });
 }
