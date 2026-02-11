@@ -108,6 +108,7 @@ fi
 # Gather exact commits included in this push range (in chronological order).
 FIXES_JSON="[]"
 CHANGE_ENTRIES=""
+COMMIT_SUMMARY_ENTRIES=""
 RANGE_SPEC=""
 if [ -n "$COMPARE_FROM_SHA" ] && [ "$COMPARE_FROM_SHA" != "0000000000000000000000000000000000000000" ]; then
   RANGE_SPEC="$COMPARE_FROM_SHA..$COMPARE_TO_SHA"
@@ -132,9 +133,18 @@ if [ -n "$LOG_LINES" ]; then
     esc_subject=$(json_escape "$subject")
     [ -n "$CHANGE_ENTRIES" ] && CHANGE_ENTRIES="$CHANGE_ENTRIES,"
     CHANGE_ENTRIES="$CHANGE_ENTRIES{\"sha\":\"$esc_sha\",\"short\":\"$esc_short\",\"author_name\":\"$esc_author_name\",\"author_email\":\"$esc_author_email\",\"committed_at\":\"$esc_committed_at\",\"message\":\"$esc_subject\"}"
+    [ -n "$COMMIT_SUMMARY_ENTRIES" ] && COMMIT_SUMMARY_ENTRIES="$COMMIT_SUMMARY_ENTRIES,"
+    COMMIT_SUMMARY_ENTRIES="$COMMIT_SUMMARY_ENTRIES{\"sha\":\"$esc_sha\",\"message\":\"$esc_subject\"}"
   done <<< "$LOG_LINES"
 fi
 [ -n "$CHANGE_ENTRIES" ] && FIXES_JSON="[$CHANGE_ENTRIES]"
+
+COMMIT_COUNT=0
+if [ -n "$LOG_LINES" ]; then
+  COMMIT_COUNT=$(printf "%s\n" "$LOG_LINES" | wc -l | tr -d ' ')
+fi
+COMMIT_SUMMARIES_JSON="[]"
+[ -n "$COMMIT_SUMMARY_ENTRIES" ] && COMMIT_SUMMARIES_JSON="[$COMMIT_SUMMARY_ENTRIES]"
 
 # 1) Record idempotent release event in DB and retrieve canonical sequence/version.
 SAFE_PUSH_SHA=$(sql_escape "$PUSH_SHA")
@@ -147,7 +157,7 @@ SAFE_ACTOR_ID=$(sql_escape "$ACTOR_ID")
 SAFE_SOURCE=$(sql_escape "$SOURCE")
 SAFE_MODEL_CODE=$(sql_escape "$MODEL_CODE")
 SAFE_MACHINE_NAME=$(sql_escape "$MACHINE_NAME")
-SAFE_METADATA=$(sql_escape "{\"workflow\":\"bump-version.sh\"}")
+SAFE_METADATA=$(sql_escape "{\"workflow\":\"bump-version.sh\",\"commit_count\":$COMMIT_COUNT,\"commit_summaries\":$COMMIT_SUMMARIES_JSON}")
 SAFE_FIXES_JSON=$(sql_escape "$FIXES_JSON")
 
 RELEASE_ROW=$($PSQL "$DB_URL" -t -A --no-psqlrc -F $'\t' -c "

@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const { data: historyRows, error: historyError } = await supabase
       .from('release_events')
-      .select('seq, display_version, push_sha, branch, pushed_at, actor_login, actor_id, source, compare_from_sha, compare_to_sha, model_code, machine_name')
+      .select('seq, display_version, push_sha, branch, pushed_at, actor_login, actor_id, source, compare_from_sha, compare_to_sha, model_code, machine_name, metadata')
       .order('seq', { ascending: false })
       .limit(historyLimit);
     if (historyError) throw historyError;
