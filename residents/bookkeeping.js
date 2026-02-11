@@ -106,10 +106,30 @@ async function loadApplications(personId) {
 }
 
 async function loadPayments(personId) {
+  // rental_payments links via rental_application_id and assignment_id, not person_id
+  // First resolve the person's application and assignment IDs
+  const [appRes, assignRes] = await Promise.all([
+    supabase.from('rental_applications').select('id').eq('person_id', personId),
+    supabase.from('assignments').select('id').eq('person_id', personId),
+  ]);
+
+  if (appRes.error) throw appRes.error;
+  if (assignRes.error) throw assignRes.error;
+
+  const appIds = (appRes.data || []).map(a => a.id);
+  const assignIds = (assignRes.data || []).map(a => a.id);
+
+  if (!appIds.length && !assignIds.length) return [];
+
+  // Build OR filter for payments linked to this person's applications or assignments
+  const filters = [];
+  if (appIds.length) filters.push(`rental_application_id.in.(${appIds.join(',')})`);
+  if (assignIds.length) filters.push(`assignment_id.in.(${assignIds.join(',')})`);
+
   const { data, error } = await supabase
     .from('rental_payments')
     .select('*')
-    .eq('person_id', personId)
+    .or(filters.join(','))
     .order('paid_date', { ascending: false })
     .order('created_at', { ascending: false });
 
