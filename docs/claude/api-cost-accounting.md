@@ -41,6 +41,7 @@
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
+| `alpacapps_api` | Internal REST API calls (self-tracking) |
 
 ## Categories (Granular)
 
@@ -76,8 +77,11 @@
 | `airbnb_ical_sync` | Airbnb calendar sync |
 | `r2_document_upload` | Document upload to Cloudflare R2 |
 | `pai_email_classification` | PAI email classification via Gemini |
+| `api_spaces_list` | Internal API: spaces list calls |
+| `api_tasks_create` | Internal API: task creation calls |
+| `api_{resource}_{action}` | Internal API: auto-generated per resource/action |
 
-**When adding a new feature that uses an API, add a new category.**
+**When adding a new feature that uses an API, add a new category.** The centralized API auto-logs calls as `api_{resource}_{action}` categories under the `alpacapps_api` vendor.
 
 ## How to Log (Edge Functions)
 

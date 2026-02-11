@@ -40,3 +40,4 @@
 36. **Mobile App (Capacitor 8)** - iOS/Android, 5 tabs, dark theme, OTA updates via Capgo
 37. **Cloudflare R2 Object Storage** - Replaced Google Drive, S3-compatible, zero egress
 38. **PAI Email Inbox** - `pai@alpacaplayhouse.com` classifies and responds via Gemini
+39. **Centralized Internal REST API** - Single `POST /functions/v1/api` endpoint for all entity CRUD. 20 resources (spaces, people, assignments, tasks, users, profile, vehicles, media, payments, bug_reports, time_entries, events, documents, sms, faq, invitations, password_vault, feature_requests, pai_config, tesla_accounts). Role-based RBAC (0=public → 4=oracle). Smart fuzzy name/space resolution, auto-timestamps, soft deletes, row-level scoping. PAI integration via `manage_data` tool. Shared modules: `api-permissions.ts`, `api-helpers.ts`. Deployed with `--no-verify-jwt`.

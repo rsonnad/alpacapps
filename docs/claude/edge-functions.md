@@ -38,6 +38,7 @@
 | `contact-form` | Public contact form submission handler |
 | `event-payment-reminder` | Daily cron: 10-day payment reminders for events |
 | `ask-question` | PAI Q&A backend |
+| `api` | **Centralized Internal REST API** — single permissioned endpoint for all entity CRUD (20 resources). Role-based access (0=public, 1=resident, 2=staff, 3=admin, 4=oracle). Smart name/space resolution, auto-timestamps, row-level scoping. See `API.md`. |
 
 ## Deployment Flags
 
@@ -47,7 +48,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 ```
 sonos-control, govee-control, nest-control, resend-inbound-webhook,
 telnyx-webhook, whatsapp-webhook, signwell-webhook, tesla-command, lg-control,
-alpaca-pai, verify-identity, vapi-server, vapi-webhook, paypal-webhook
+alpaca-pai, verify-identity, vapi-server, vapi-webhook, paypal-webhook, api
 ```
 
 ### Default JWT verification (all others):

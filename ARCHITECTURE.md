@@ -773,10 +773,17 @@ This is UI-level only, not enforced at database level. For true security, implem
 
 ### OpenClaw Answers "Who lives in Skyloft?"
 1. Discord user asks question
-2. OpenClaw uses SKILL.md for API reference
-3. Queries: `GET /rest/v1/spaces?name=ilike.*Skyloft*`
-4. Gets space_id, queries assignments
+2. OpenClaw uses SKILL.md / API.md for API reference
+3. Calls: `POST /functions/v1/api` with `{ resource: "assignments", action: "list", filters: { active: true } }`
+4. API returns assignments with person and space joins
 5. Returns tenant info
+
+### PAI Creates a Task via API
+1. User tells PAI: "Add fix door handle to the project list, assign to Jon for the outhouse"
+2. PAI calls `manage_data` tool → routes to `POST /functions/v1/api`
+3. API fuzzy-matches "Jon" → app_user, "outhouse" → space
+4. Creates task with resolved `assigned_to` and `space_id`
+5. PAI confirms: "Created task 'fix door handle' assigned to Jon in Outhouse"
 
 ### New Booking Created
 1. Add person to `people` table
@@ -891,10 +898,19 @@ When generating lease agreements, the system calculates credits toward first mon
 - Folder: `1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ`
 - Now superseded by Supabase storage + SignWell
 
+### Centralized Internal REST API
+- Single edge function at `POST /functions/v1/api`
+- Replaces ad-hoc Supabase queries with a permissioned gateway
+- 20 resources: spaces, people, assignments, tasks, users, profile, vehicles, media, payments, bug_reports, time_entries, events, documents, sms, faq, invitations, password_vault, feature_requests, pai_config, tesla_accounts
+- Role-based access: 0=public, 1=resident, 2=staff, 3=admin, 4=oracle
+- Smart behaviors: fuzzy name/space resolution, auto-timestamps, row-level scoping
+- Auth: Bearer JWT, service role key, or future X-API-Key
+- Full reference: `API.md`
+
 ### OpenClaw (Discord Bot)
 - Separate system on DigitalOcean
-- Uses SKILL.md for API knowledge
-- Can query/update Supabase directly
+- Uses SKILL.md and API.md for API knowledge
+- Can query/update via centralized API or Supabase directly
 - Sends bank transaction text to `record-payment` Edge Function for AI-matched payment recording
 
 ### Google Gemini (AI Matching)
@@ -1968,7 +1984,7 @@ The mobile app uses the green alpaca head logo:
 ## Related Documentation
 
 - `README.md` - Quick setup
-- `API.md` - Full REST API reference (includes Edge Function docs)
+- `API.md` - Full REST API reference (centralized API + Edge Function docs)
 - `SKILL.md` - OpenClaw integration
 - `HOMEAUTOMATION.md` - Home automation system (Sonos, UniFi, cameras)
 - `bug-reporter-extension/install.html` - Tester installation guide

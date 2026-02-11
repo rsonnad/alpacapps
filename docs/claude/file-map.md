@@ -84,8 +84,18 @@
 ## Associate View (`/associates/`)
 - `worktracking.html` / `worktracking.js` - Clock in/out, timesheets, work photos, payment prefs
 
+## Supabase Shared Modules (`/supabase/functions/_shared/`)
+- `permissions.ts` - Permission checking helpers
+- `api-permissions.ts` - API permission matrix & role levels (20 resources, 5 role levels)
+- `api-helpers.ts` - API auth resolution, response builders, fuzzy lookups, query helpers
+- `r2-upload.ts` - Cloudflare R2 upload/delete helpers
+- `template-engine.ts` - Email template rendering
+
+## Centralized API (`/supabase/functions/api/`)
+- `index.ts` - **Internal REST API gateway** — single `POST /functions/v1/api` endpoint for all entity CRUD. Dispatches to 20 resource handlers with role-based RBAC, smart name/space resolution, auto-timestamps, and row-level scoping. PAI's `manage_data` tool routes through this. See `API.md` for full reference.
+
 ## Other Documentation
-- `architecture.md` - Full system documentation
-- `API.md` - REST API reference for Supabase
+- `ARCHITECTURE.md` - Full system documentation
+- `API.md` - Centralized REST API reference (20 resources, auth, permissions, examples)
 - `SKILL.md` - OpenClaw bot integration guide
 - `HOMEAUTOMATION.md` - Home automation system (Sonos, UniFi, cameras)
