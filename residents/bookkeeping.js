@@ -15,12 +15,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadBookkeeping(appUser) {
+  console.log('[bookkeeping] Loading for appUser:', { id: appUser?.id, email: appUser?.email, person_id: appUser?.person_id, role: appUser?.role });
+
   const personId = await resolvePersonId(appUser);
+  console.log('[bookkeeping] Resolved personId:', personId);
+
   if (!personId) {
-    renderNoData('bookkeepingSummary', 'No linked person record was found for this user.');
-    renderNoData('paymentsList', 'No payments found.');
-    renderNoData('ownedAssets', 'No owned items found.');
-    renderNoData('rentalTerms', 'No rental terms found.');
+    renderEmptyState('bookkeepingSummary', 'No linked person record found', 'Your user account is not linked to a person record in the system. An admin can link your account on the Users page.');
+    renderEmptyState('paymentsList', 'No payments to show', 'Once your account is linked, your payment history will appear here.');
+    renderEmptyState('ownedAssets', 'No ownership data', 'Space assignments and vehicle links will appear here once your account is linked.');
+    renderEmptyState('rentalTerms', 'No rental terms', 'Your lease and rental details will appear here once your account is linked.');
     return;
   }
 
@@ -32,27 +36,49 @@ async function loadBookkeeping(appUser) {
       loadVehicles(personId),
     ]);
 
+    console.log('[bookkeeping] Data loaded:', {
+      applications: applications.length,
+      payments: payments.length,
+      assignments: assignments.length,
+      vehicles: vehicles.length,
+    });
+
     renderSummary(payments, assignments, vehicles);
     renderPayments(payments);
     renderOwnedAssets(assignments, vehicles);
     renderRentalTerms(applications, assignments);
   } catch (err) {
-    console.error('Failed to load bookkeeping data:', err);
+    console.error('[bookkeeping] Failed to load data:', err);
     showToast('Failed to load bookkeeping data', 'error');
   }
 }
 
 async function resolvePersonId(appUser) {
-  if (appUser?.person_id) return appUser.person_id;
-  if (!appUser?.email) return null;
+  if (appUser?.person_id) {
+    console.log('[bookkeeping] Using appUser.person_id:', appUser.person_id);
+    return appUser.person_id;
+  }
+  if (!appUser?.email) {
+    console.warn('[bookkeeping] No person_id and no email on appUser — cannot resolve person');
+    return null;
+  }
 
+  console.log('[bookkeeping] No person_id on appUser, looking up by email:', appUser.email);
   const { data, error } = await supabase
     .from('people')
     .select('id')
     .eq('email', appUser.email)
     .limit(1);
 
-  if (error || !data?.length) return null;
+  if (error) {
+    console.warn('[bookkeeping] Error looking up person by email:', error);
+    return null;
+  }
+  if (!data?.length) {
+    console.warn('[bookkeeping] No person record found for email:', appUser.email);
+    return null;
+  }
+  console.log('[bookkeeping] Resolved person by email lookup:', data[0].id);
   return data[0].id;
 }
 
@@ -168,7 +194,7 @@ function renderPayments(payments) {
   const el = document.getElementById('paymentsList');
   if (!el) return;
   if (!payments.length) {
-    renderNoData('paymentsList', 'No payments have been recorded yet.');
+    renderNoData('paymentsList', 'No payments have been recorded yet. Payments will appear here as they are logged.');
     return;
   }
 
@@ -229,7 +255,7 @@ function renderOwnedAssets(assignments, vehicles) {
         </div>
       </div>
     `).join('')
-    : '<p class="text-muted">No vehicles currently linked to your account.</p>';
+    : '<p style="color:var(--text-muted,#7d6f74);font-size:0.85rem;padding:0.5rem 0">No vehicles currently linked to your account.</p>';
 
   const rentedSpacesHtml = spaceCards.length
     ? spaceCards.map(space => `
@@ -244,7 +270,7 @@ function renderOwnedAssets(assignments, vehicles) {
         </div>
       </div>
     `).join('')
-    : '<p class="text-muted">No current space assignments.</p>';
+    : '<p style="color:var(--text-muted,#7d6f74);font-size:0.85rem;padding:0.5rem 0">No current space assignments.</p>';
 
   el.innerHTML = `
     <div class="bookkeeping-subsection">
@@ -262,7 +288,7 @@ function renderRentalTerms(applications, assignments) {
   const el = document.getElementById('rentalTerms');
   if (!el) return;
   if (!applications.length && !assignments.length) {
-    renderNoData('rentalTerms', 'No rental terms found.');
+    renderNoData('rentalTerms', 'No rental terms found. Active assignments and applications will appear here.');
     return;
   }
 
@@ -308,7 +334,18 @@ function getFirstAssignedSpaceName(assignment) {
 function renderNoData(containerId, message) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  el.innerHTML = `<p class="text-muted">${escapeHtml(message)}</p>`;
+  el.innerHTML = `<p style="color:var(--text-muted,#7d6f74);font-size:0.88rem;padding:0.5rem 0">${escapeHtml(message)}</p>`;
+}
+
+function renderEmptyState(containerId, title, subtitle) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div style="padding:1rem;border:1px dashed var(--border,#e6e2d9);border-radius:var(--radius,8px);text-align:center">
+      <p style="font-weight:600;font-size:0.92rem;margin:0 0 0.25rem;color:var(--text,#2a1f23)">${escapeHtml(title)}</p>
+      <p style="font-size:0.82rem;margin:0;color:var(--text-muted,#7d6f74)">${escapeHtml(subtitle)}</p>
+    </div>
+  `;
 }
 
 function toTitleCase(value) {
