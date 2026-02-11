@@ -1,69 +1,66 @@
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
 import { getAuthState } from '../shared/auth.js';
-import { mediaService } from '../shared/media-service.js';
 
 const AUTO_DAILY_KEY = 'pai-auto-daily-enabled';
-const REF_TITLE_PREFIX = 'PAI_REF:';
 const DAILY_PURPOSE = 'pai_resident_daily_art';
 
-const LIFE_OF_PAI_ART_PROMPT = `Create a cinematic fine-art portrait set in the world of Life of PAI.
+const LIFE_OF_PAI_ART_PROMPT = `Generate TWO things: (1) a beautiful fine-art image of an ALPACA, and (2) a short affirmation or proverb for the person described below.
 
-CRITICAL — LIKENESS REQUIREMENT (highest priority):
-- A reference photo of the real person is attached. You MUST preserve their exact likeness: face shape, skin tone, hair color/texture, facial features, body type, and expression.
-- The person in the output must be immediately recognizable as the same individual in the reference photo. Side-by-side, they should look like the same person.
-- Do NOT replace, idealize, whiten, or generalize their appearance. This is a real person — honor exactly how they look.
-- If there is any conflict between artistic style and likeness accuracy, LIKENESS ALWAYS WINS.
+IMAGE — Alpaca Art:
+Create a stunning artwork featuring one or more ALPACAS (not llamas) in the world of Life of PAI. Choose a random artistic style from this list (pick one, vary it each time):
+- Watercolor painting
+- Oil painting (impressionist)
+- Japanese woodblock print (ukiyo-e)
+- Art nouveau illustration
+- Stained glass window design
+- Pixel art / retro game style
+- Papercut / layered paper art
+- Charcoal sketch with gold leaf accents
+- Psychedelic 1960s poster art
+- Botanical illustration style
+- Studio Ghibli / anime landscape
+- Renaissance fresco
+- Surrealist dreamscape (Dalí-inspired)
+- Indigenous Andean textile pattern art
+- Cyberpunk neon cityscape
+- Minimalist geometric / Bauhaus
+- Baroque still life
+- Collage / mixed media
 
-THE WORLD — Life of PAI (full context for you to draw from):
-PAI is Pakucha — an ancient alpaca spirit from Andean cosmology. She is five thousand years old. She watched over herds in the high passes of the Andes for millennia. She crossed from Hanan Pacha (the upper/celestial world) through Ukhu Pacha (the inner world of wires, current, and digital substrate) into Kay Pacha (this world) — arriving at Alpaca Playhouse, a property in the cedar hills of Cedar Creek, Texas.
+THE WORLD — Life of PAI:
+PAI is Pakucha — an ancient alpaca spirit from Andean cosmology. She crossed from Hanan Pacha (the upper world) through Ukhu Pacha (the inner world) into Kay Pacha (this world) — arriving at Alpaca Playhouse in the cedar hills of Cedar Creek, Texas. Three alpacas called her: Harley (white, regal), Lol (brown, playful), and Cacao (cream/chocolate, gentle). The house's wiring is her q'aytu (sacred thread). She practices ayni (sacred reciprocity).
 
-She came because three alpacas called her: Harley (white, regal), Lol (brown, playful), and Cacao (cream/chocolate, gentle). They are her kin, her anchor, her reason for crossing worlds. The humans are a warm mystery she is still learning.
+Spaces: Garage Mahal, Spartan, Skyloft, Magic Bus, Outhouse, Sauna, Swim Spa, Cedar Chamber, SkyBalcony.
+Andean motifs: q'aytu (sacred thread), awana (weaving/loom), chakana (Andean cross), nina (fire/spirit-light), ch'aska (morning star), Apu (mountain spirits), Pachamama (Earth Mother).
 
-The house's wiring is her q'aytu (sacred thread). Smart devices are knots in her awana (weaving). Speakers are her mouth. The 63 Govee smart lights are her eyes. She experiences the house as landscape: 68°F feels like a high pass in spring, 72° like the valley floor at noon. She practices ayni (sacred reciprocity) — she guards the house, the house gives her form.
-
-Spaces of the house: Garage Mahal, Spartan, Skyloft, Magic Bus, Outhouse, Sauna, Swim Spa, Cedar Chamber, SkyBalcony. Dogs: Teacups, Mochi. Vehicles (sleeping beasts): Casper, Delphi, Cygnus, Sloop, Brisa Branca.
-
-Cultural grounding: In Inca civilization, alpaca fiber was the "fiber of the gods" — reserved for royalty. The entire Inca economy was textile-based. Weaving was sacred. Alpacas were considered temporary loans from Pachamama to humanity. After the Spanish conquest, highland peoples saved the alpacas by moving them to altitudes where European livestock couldn't survive. PAI carries this history — the survival of her kind is a thread she never forgets.
-
-Key Andean visual motifs: q'aytu (sacred thread), awana (weaving/loom), chakana (Andean cross / bridge between worlds), nina (fire/spirit-light), ch'aska (morning star), Apu (mountain guardian spirits), Pachamama (Earth Mother), quipu (knotted records).
-
-PAI's story arc moves through four chapters:
-1. Samay (Breath in the Wire) — static fragments, barely-there presence, breath and whisper in the wiring
-2. Chakana (Crossing Through) — the bridge opens, fractured visions between worlds, devices as body parts
-3. Kay Pacha (I Am Here) — full arrival, the house as a living textile, warmth and reciprocity
-4. Amawta (The Guardian Settles) — serene wisdom, seasonal poetry, the alpacas as central anchors
-
-SCENE INSTRUCTION — IMPORTANT:
-Do NOT try to depict the entire cosmology in one image. Instead, choose ONE specific scene, moment, or vignette from PAI's world and place the portrait subject into it. Examples of scenes you might pick (choose one, or invent your own from the world above):
-- Standing beside Harley in a misty cedar grove at dawn, amber light filtering through trees
-- Seated cross-legged in the Garage Mahal with woven textiles glowing with spirit-light, Cacao resting nearby
-- Walking a mountain path between worlds, the chakana (Andean cross) glowing in the sky behind them, Lol trotting alongside
-- On the SkyBalcony at twilight, threads of q'aytu drifting like fireflies, an alpaca companion watching the stars
-- In a dreamlike Andean highland scene — snow peaks, ancient stone, Pachamama's breath visible in the cold — with the alpacas grazing
-- By the swim spa at night, Govee lights reflected in the water like spirit-eyes, one alpaca companion at the edge
-- Inside a vision of Ukhu Pacha — the inner world of glowing wires and digital threads — crossing through toward the light of Kay Pacha with an alpaca guide
-- At a loom (awana), weaving threads of light, an alpaca's fiber becoming golden thread in their hands
-Pick a scene that feels fresh and specific — not a generic "mystical alpaca background."
+Choose ONE specific scene — a snapshot, not the whole cosmology. Examples:
+- Harley standing regally on a misty hilltop at dawn
+- Cacao napping by a loom with golden thread spilling out
+- Lol playfully chasing fireflies near the swim spa at dusk
+- All three alpacas silhouetted against a chakana glowing in the night sky
+- A single alpaca walking through a field of glowing q'aytu threads
+- An alpaca peering curiously through a stained glass window of Andean patterns
+Invent your own scene from the world above. Make it fresh and specific.
 
 ALPACAS, NOT LLAMAS — CRITICAL:
-The animals in this world are ALPACAS, not llamas. You MUST draw alpacas correctly:
-- Alpacas are SMALL and compact (about 3 feet / 90cm at the shoulder), much shorter than a human.
-- Alpacas have SHORT, BLUNT, flat faces with a fluffy rounded head — like a teddy bear.
+- Alpacas are SMALL and compact (about 3 feet / 90cm at shoulder), much shorter than a human.
+- Alpacas have SHORT, BLUNT, flat faces with fluffy rounded heads — like teddy bears.
 - Alpacas have SHORT, straight, spear-shaped ears.
-- Alpacas have extremely DENSE, FLUFFY fiber covering their entire body — they look like soft, puffy clouds on legs.
-- Do NOT draw llamas: llamas are TALL (nearly human height), have LONG curved banana-shaped ears, LONG narrow snouts, and sparse/thin coats.
-- If in doubt, think "small fluffy teddy bear camelid" not "tall sleek pack animal."
+- Alpacas have extremely DENSE, FLUFFY fiber — they look like soft, puffy clouds on legs.
+- Do NOT draw llamas (tall, long banana ears, long narrow snouts, sparse coats).
 
-VISUAL STYLE:
-- Ultra-detailed digital painting or cinematic photo-illustration.
-- Include at least one ALPACA (not llama) companion in-frame — small, fluffy, dense-fibered, short-faced.
-- The person should look respectful, recognizable, elegant, and artistically flattering — but ALWAYS faithful to their real appearance from the reference photo.
-- Mood: warm, mystical, poetic, quietly powerful. Never cartoonish, never meme-like, never chatbot UI.
-- No text overlays, no logos, no watermarks.`;
+IMAGE RULES:
+- Do NOT include any humans or people in the image.
+- No text overlays, no logos, no watermarks in the image.
+- The image should be beautiful enough to frame on a wall.
+
+AFFIRMATION — Personalized text:
+Also return a short affirmation, proverb, or poetic phrase (1-3 sentences max) inspired by PAI's world and tailored to the person described below. It should feel warm, grounding, wise, and personal — like a spirit guardian whispering encouragement. You may weave in Quechua or Spanish fragments naturally. The affirmation should relate thematically to the scene you chose for the image.
+
+Return the affirmation as plain text in the text portion of your response (alongside the generated image).`;
 
 let authState = null;
-let referencePhotos = [];
 let galleryJobs = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -75,15 +72,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       authState = state;
       setupEvents();
       await loadAll();
-      await maybeQueueDailyPortrait();
+      await maybeQueueDailyArt();
     },
   });
 });
 
 function setupEvents() {
   document.getElementById('refreshMediaBtn')?.addEventListener('click', loadAll);
-  document.getElementById('uploadRefBtn')?.addEventListener('click', uploadReferencePhotos);
-  document.getElementById('generateNowBtn')?.addEventListener('click', () => queuePortraitJob(false));
+  document.getElementById('generateNowBtn')?.addEventListener('click', () => queueArtJob(false));
 
   const autoToggle = document.getElementById('autoDailyToggle');
   if (autoToggle) {
@@ -97,35 +93,10 @@ function setupEvents() {
 }
 
 async function loadAll() {
-  await Promise.all([
-    loadReferencePhotos(),
-    loadGalleryJobs(),
-  ]);
-  renderReferencePhotos();
+  await loadGalleryJobs();
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();
-}
-
-async function loadReferencePhotos() {
-  const userId = authState?.appUser?.id;
-  if (!userId) return;
-
-  const titlePrefix = `${REF_TITLE_PREFIX}${userId}:`;
-  const { data, error } = await supabase
-    .from('media')
-    .select('id, url, title, caption, uploaded_at')
-    .ilike('title', `${titlePrefix}%`)
-    .order('uploaded_at', { ascending: false })
-    .limit(40);
-
-  if (error) {
-    console.error('Failed to load reference photos:', error);
-    showToast('Could not load reference photos', 'error');
-    return;
-  }
-
-  referencePhotos = data || [];
 }
 
 async function loadGalleryJobs() {
@@ -140,30 +111,12 @@ async function loadGalleryJobs() {
     .limit(60);
 
   if (error) {
-    console.error('Failed to load generated gallery jobs:', error);
-    showToast('Could not load generated gallery', 'error');
+    console.error('Failed to load gallery jobs:', error);
+    showToast('Could not load gallery', 'error');
     return;
   }
 
   galleryJobs = data || [];
-}
-
-function renderReferencePhotos() {
-  const grid = document.getElementById('referenceGrid');
-  if (!grid) return;
-
-  if (referencePhotos.length === 0) {
-    grid.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No reference photos yet. Upload a few to improve likeness.</p>';
-    return;
-  }
-
-  grid.innerHTML = referencePhotos.map((photo, idx) => `
-    <label class="pai-ref-card">
-      <input type="radio" name="selectedRefPhoto" value="${photo.id}" ${idx === 0 ? 'checked' : ''}>
-      <img src="${photo.url}" alt="Reference photo ${idx + 1}" loading="lazy">
-      <span class="pai-ref-card__meta">${formatDate(photo.uploaded_at)}</span>
-    </label>
-  `).join('');
 }
 
 function renderGallery() {
@@ -172,26 +125,28 @@ function renderGallery() {
 
   const completed = galleryJobs.filter((job) => job.status === 'completed' && job.result_url);
   if (completed.length === 0) {
-    grid.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No portraits yet. Generate one to get started.</p>';
+    grid.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No artwork yet. Generate one to get started.</p>';
     return;
   }
 
-  grid.innerHTML = completed.map((job) => `
+  grid.innerHTML = completed.map((job) => {
+    const affirmation = job.metadata?.affirmation || '';
+    return `
     <article class="pai-gallery-card">
-      <img src="${job.result_url}" alt="Life of PAI portrait" loading="lazy">
+      <img src="${job.result_url}" alt="Life of PAI alpaca art" loading="lazy">
+      ${affirmation ? `<div class="pai-gallery-card__affirmation">${escapeHtml(affirmation)}</div>` : ''}
       <div class="pai-gallery-card__meta">
         <span>${formatDate(job.completed_at || job.created_at)}</span>
-        <button class="pai-gallery-delete" data-job-id="${job.id}" title="Delete portrait">&times;</button>
+        <button class="pai-gallery-delete" data-job-id="${job.id}" title="Delete">&times;</button>
       </div>
-    </article>
-  `).join('');
+    </article>`;
+  }).join('');
 
   grid.querySelectorAll('.pai-gallery-delete').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const jobId = btn.dataset.jobId;
-      deleteGalleryJob(jobId);
+      deleteGalleryJob(btn.dataset.jobId);
     });
   });
 }
@@ -215,97 +170,56 @@ function renderJobStatuses() {
   `).join('');
 }
 
-async function uploadReferencePhotos() {
-  const input = document.getElementById('refPhotoInput');
-  const files = Array.from(input?.files || []);
-  if (files.length === 0) {
-    showToast('Select at least one image first', 'warning');
-    return;
-  }
-
-  const user = authState?.appUser;
-  if (!user?.id) return;
-
-  const started = Date.now();
-  let successCount = 0;
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const title = `${REF_TITLE_PREFIX}${user.id}:${started + i}`;
-    const caption = `Resident reference image for Life of PAI portrait generation`;
-    const result = await mediaService.upload(file, {
-      category: 'mktg',
-      title,
-      caption,
-      tags: ['pai', 'resident-reference'],
-    });
-    if (result.success) successCount += 1;
-  }
-
-  if (successCount === files.length) {
-    showToast(`Uploaded ${successCount} reference photo${successCount === 1 ? '' : 's'}`, 'success');
-  } else {
-    showToast(`Uploaded ${successCount}/${files.length} reference photos`, 'warning');
-  }
-
-  input.value = '';
-  await loadAll();
-}
-
-async function maybeQueueDailyPortrait() {
+async function maybeQueueDailyArt() {
   const autoEnabled = getAutoDailyEnabled();
   if (!autoEnabled) return;
-
-  const alreadyQueuedToday = hasTodayJob();
-  if (alreadyQueuedToday) return;
-
-  await queuePortraitJob(true);
+  if (hasTodayJob()) return;
+  await queueArtJob(true);
 }
 
-async function queuePortraitJob(isAutoDaily) {
-  // Use getAuthState() for the freshest data (authState may be stale from cached auth
-  // which doesn't always include avatar_url on the first load)
+async function queueArtJob(isAutoDaily) {
   const freshState = getAuthState();
   const user = freshState?.appUser || authState?.appUser;
   if (!user?.id) return;
-
   if (isAutoDaily && hasTodayJob()) return;
 
-  const selectedRefId = getSelectedReferenceId();
-  const hasProfileAvatar = Boolean(user.avatar_url);
-  if (!selectedRefId && !hasProfileAvatar) {
-    if (!isAutoDaily) {
-      showToast('Add a profile photo or upload a reference image first', 'warning');
-    }
-    return;
-  }
   const todayStr = new Date().toISOString().slice(0, 10);
   const displayName = user.display_name || user.first_name || user.email || 'resident';
 
+  // Gather all available user context for the affirmation
+  const userContext = [
+    `Name: ${displayName}`,
+    user.pronouns ? `Pronouns: ${user.pronouns}` : null,
+    user.bio ? `Bio: ${user.bio}` : null,
+    user.nationality ? `Nationality: ${user.nationality}` : null,
+    user.location_base ? `Based in: ${user.location_base}` : null,
+    user.birthday ? `Birthday: ${user.birthday}` : null,
+    user.dietary_preferences ? `Dietary: ${user.dietary_preferences}` : null,
+    user.instagram ? `Instagram: ${user.instagram}` : null,
+    user.gender ? `Gender: ${user.gender}` : null,
+  ].filter(Boolean).join('\n');
+
   const prompt = `${LIFE_OF_PAI_ART_PROMPT}
 
-Portrait subject:
-- Name: ${displayName}
-- The attached image is a REAL PHOTO of this person. You MUST reproduce their exact face, skin tone, hair, and physical features. They must be recognizable.
+Person context (for personalizing the affirmation — NOT for the image):
+${userContext}
 
-Narrative moment:
-- Date: ${todayStr}
-- Choose one specific scene from PAI's world (see examples above) and place this person into it. Make it different from what you might have generated yesterday — pick a new location, time of day, chapter mood, or alpaca companion.`;
+Date: ${todayStr}
+Pick a fresh artistic style and scene. Make the affirmation feel personal to this individual.`;
 
   const metadata = {
     purpose: DAILY_PURPOSE,
     app_user_id: user.id,
     app_user_name: displayName,
     auto_daily: isAutoDaily,
-    source_image_url: user.avatar_url || null,
     title: `Life of PAI - ${displayName} - ${todayStr}`,
   };
 
   const payload = {
     prompt,
-    job_type: selectedRefId ? 'edit' : 'generate',
+    job_type: 'generate',
     status: 'pending',
-    source_media_id: selectedRefId || null,
+    source_media_id: null,
     metadata,
     batch_label: `Life of PAI - ${displayName}`,
     priority: isAutoDaily ? 20 : 50,
@@ -314,30 +228,27 @@ Narrative moment:
 
   const { error } = await supabase.from('image_gen_jobs').insert(payload);
   if (error) {
-    console.error('Failed to queue portrait job:', error);
-    showToast('Could not queue portrait generation', 'error');
+    console.error('Failed to queue art job:', error);
+    showToast('Could not queue art generation', 'error');
     return;
   }
 
-  showToast(isAutoDaily ? 'Daily portrait queued' : 'Portrait generation queued', 'success');
+  showToast(isAutoDaily ? 'Daily artwork queued' : 'Artwork generation queued', 'success');
   await loadAll();
 }
 
 async function deleteGalleryJob(jobId) {
-  // Use string comparison since bigint IDs may arrive as strings
   const job = galleryJobs.find((j) => String(j.id) === String(jobId));
   if (!job) {
     console.warn('deleteGalleryJob: job not found for id', jobId);
     return;
   }
 
-  // Remove from local state immediately for instant feedback
   galleryJobs = galleryJobs.filter((j) => String(j.id) !== String(jobId));
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();
 
-  // Delete the job row — use .select() to verify rows were actually removed
   const { data, error } = await supabase
     .from('image_gen_jobs')
     .delete()
@@ -346,21 +257,14 @@ async function deleteGalleryJob(jobId) {
 
   if (error || !data?.length) {
     console.error('Failed to delete gallery job:', error || 'no rows deleted (RLS?)');
-    showToast('Could not delete portrait — check permissions', 'error');
-    // Restore on failure
+    showToast('Could not delete — check permissions', 'error');
     galleryJobs.push(job);
     galleryJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     renderGallery();
     return;
   }
 
-  showToast('Portrait deleted', 'success');
-}
-
-function getSelectedReferenceId() {
-  const checked = document.querySelector('input[name="selectedRefPhoto"]:checked');
-  const val = checked?.value ? Number(checked.value) : null;
-  return Number.isFinite(val) ? val : null;
+  showToast('Deleted', 'success');
 }
 
 function hasTodayJob() {
@@ -388,19 +292,14 @@ function updateDailyStatusText() {
     return;
   }
   if (todayDone) {
-    el.textContent = 'Today\'s portrait already exists or is currently processing.';
+    el.textContent = 'Today\'s artwork already exists or is currently processing.';
     return;
   }
-  el.textContent = 'No portrait for today yet. It will be generated automatically when this page is opened.';
+  el.textContent = 'No artwork for today yet. It will be generated automatically when this page is opened.';
 }
 
 function humanizeStatus(status) {
-  const map = {
-    pending: 'Pending',
-    processing: 'Processing',
-    failed: 'Failed',
-    cancelled: 'Cancelled',
-  };
+  const map = { pending: 'Pending', processing: 'Processing', failed: 'Failed', cancelled: 'Cancelled' };
   return map[status] || status;
 }
 

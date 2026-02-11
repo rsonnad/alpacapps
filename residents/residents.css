@@ -725,9 +725,19 @@
 
 .pai-gallery-card img {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
+}
+
+.pai-gallery-card__affirmation {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text, #333);
+  font-style: italic;
+  border-top: 1px solid var(--border, #eee);
+  background: var(--surface-subtle, #fafaf8);
 }
 
 .pai-gallery-card__meta {

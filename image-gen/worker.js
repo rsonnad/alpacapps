@@ -61,18 +61,10 @@ async function downloadImage(url) {
 async function generateImage(prompt, sourceBase64 = null, sourceMimeType = null) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-  // Build request parts with image sandwiched between likeness instructions.
-  // This interleaving is critical: Gemini needs to SEE the face early and be
-  // told to reproduce it, BEFORE getting the scene/backstory context.
-  let requestParts;
+  // Build request parts: text prompt + optional source image for editing jobs
+  const requestParts = [{ text: prompt }];
   if (sourceBase64) {
-    requestParts = [
-      { text: 'REFERENCE PHOTO — Study this image carefully. This is the REAL person who must appear in the portrait. Memorize their exact face shape, skin tone, hair color/texture, ethnicity, and features. The output MUST look like this specific person:' },
-      { inlineData: { mimeType: sourceMimeType, data: sourceBase64 } },
-      { text: `Now generate a portrait of the EXACT person shown above. Their face, skin tone, hair, and ethnicity must match the reference photo precisely. Do not substitute a different-looking person.\n\n${prompt}` },
-    ];
-  } else {
-    requestParts = [{ text: prompt }];
+    requestParts.push({ inlineData: { mimeType: sourceMimeType, data: sourceBase64 } });
   }
 
   const response = await fetch(url, {
@@ -284,7 +276,14 @@ async function processJob(job) {
     // 6. Calculate cost
     const cost = calculateCost(result.inputTokens, result.outputTokens);
 
-    // 7. Update job as completed
+    // 7. Save affirmation text into metadata if Gemini returned text alongside image
+    const updatedMetadata = { ...job.metadata };
+    if (result.textResponse) {
+      updatedMetadata.affirmation = result.textResponse.trim();
+      log('info', 'Affirmation extracted', { id: job.id, text: result.textResponse.substring(0, 120) });
+    }
+
+    // 8. Update job as completed
     await supabase.from('image_gen_jobs')
       .update({
         status: 'completed',
@@ -295,6 +294,7 @@ async function processJob(job) {
         estimated_cost_usd: cost,
         completed_at: new Date().toISOString(),
         error_message: null,
+        metadata: updatedMetadata,
       })
       .eq('id', job.id);
 
