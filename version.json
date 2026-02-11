@@ -1,12 +1,12 @@
 {
-  "version": "v260211.66 2:55p",
-  "release": 66,
-  "sha": "4c405f19",
-  "fullSha": "4c405f19f84b69cdd10c4f100e807d54e4657112",
+  "version": "v260211.67 2:57p",
+  "release": 67,
+  "sha": "401d4d19",
+  "fullSha": "401d4d1918c131d6f363a2435fe4a09596543701",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:55:22+00",
-  "commits": [{"sha":"4c405f19","message":"Update architecture and config docs for centralized Internal REST API","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:57:16+00",
+  "commits": [{"sha":"401d4d19","message":"Redesign invitation email: beautiful dark header, alpaca banner, AlpacApps branding","author":"Rahul Sonnad"}]
 }
