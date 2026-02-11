@@ -1,12 +1,12 @@
 {
-  "version": "r000000003",
-  "release": 3,
-  "sha": "afbbbff3",
-  "fullSha": "afbbbff3a6d8cff2cfccaee7d9c371b4a2ea2284",
+  "version": "r000000004",
+  "release": 4,
+  "sha": "899a8dbb",
+  "fullSha": "899a8dbbc4f2870a130fb635b346d9ffc338be3f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 13:15:01+00",
-  "commits": [{"sha":"afbbbff3","message":"Fix device tab: hide resident tabs on device pages, add missing device-card CSS","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 13:17:33+00",
+  "commits": [{"sha":"899a8dbb","message":"Update cursor rules for r-format versioning and add commit_summaries to bump script","author":"Rahul Sonnad"}]
 }
