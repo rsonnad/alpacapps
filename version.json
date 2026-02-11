@@ -1,12 +1,12 @@
 {
-  "version": "v260211.17 8:33a",
-  "release": 17,
-  "sha": "7f90a3f4",
-  "fullSha": "7f90a3f40c8c715810836fbe9a6b2f42a3af9183",
+  "version": "v260211.18 8:35a",
+  "release": 18,
+  "sha": "7bcf6b54",
+  "fullSha": "7bcf6b54da737f4aa1d52d48ddac35b4314d5345",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:33:57+00",
-  "commits": [{"sha":"7f90a3f4","message":"Restore camera sort by model type then name alphabetically","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:35:29+00",
+  "commits": [{"sha":"7bcf6b54","message":"Fix devices layout: stack sections as vertical rows, not card grid","author":"Rahul Sonnad"}]
 }
