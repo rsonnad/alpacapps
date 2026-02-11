@@ -1,12 +1,18 @@
 {
-  "version": "v260211.18 8:35a",
-  "release": 18,
-  "sha": "7bcf6b54",
-  "fullSha": "7bcf6b54da737f4aa1d52d48ddac35b4314d5345",
+  "version": "r000000001",
+  "release": 1,
+  "sha": "2397f8c6",
+  "fullSha": "2397f8c65dcc51816b19ddff7eb0f0dee0524aa8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:35:29+00",
-  "commits": [{"sha":"7bcf6b54","message":"Fix devices layout: stack sections as vertical rows, not card grid","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11T13:03:49Z",
+  "commits": [
+    {
+      "sha": "2397f8c6",
+      "message": "Fix version bump workflow parse failure.",
+      "author": "Rahul Sonnad"
+    }
+  ]
 }
