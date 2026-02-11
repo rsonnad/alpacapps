@@ -1048,7 +1048,7 @@ ${data.message || 'No message'}`
             <img src="${data.photo_url}" style="max-width: 200px; border-radius: 8px; border: 1px solid #eee;" />
             ` : ''}
 
-            ${data.email ? `<p style="margin-top: 24px;"><a href="mailto:${data.email}" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">Reply to ${data.name || data.email}</a></p>` : ''}
+            <p style="margin-top: 24px;"><a href="https://alpacaplayhouse.com/spaces/admin/rentals.html" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">View in Rentals Pipeline</a></p>
           </div>
         `,
         text: `${data.name || 'Someone'} submitted an inquiry from alpacaplayhouse.com
