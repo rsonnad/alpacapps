@@ -1,12 +1,12 @@
 {
-  "version": "v260211.19 8:46a",
-  "release": 19,
-  "sha": "9a8b184d",
-  "fullSha": "9a8b184d5de89b5b864d355c6b58a4f69e795620",
+  "version": "v260211.20 8:48a",
+  "release": 20,
+  "sha": "43dd5d0e",
+  "fullSha": "43dd5d0e0d4c3e727ffe3a9b304c3223a9a5fffd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:46:00+00",
-  "commits": [{"sha":"b8f7d636","message":"Fix gallery delete: UUID IDs were converted to NaN by Number()","author":"Rahul Sonnad"},{"sha":"15c4d978","message":"Add vehicle Onsite column and spaces address/GPS fields","author":"Rahul Sonnad"},{"sha":"9a8b184d","message":"resolve version.json conflict","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:48:33+00",
+  "commits": [{"sha":"43dd5d0e","message":"Fix RLS policy: use auth_user_id column (not auth_id) for app_users","author":"Rahul Sonnad"}]
 }
