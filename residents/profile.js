@@ -1178,7 +1178,7 @@ async function startTeslaOAuth() {
       audience: 'https://fleet-api.prd.na.vn.cloud.tesla.com',
     });
 
-    window.location.href = `https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/authorize?${params.toString()}`;
+    window.location.href = `https://auth.tesla.com/oauth2/v3/authorize?${params.toString()}`;
   } catch (err) {
     console.error('Tesla OAuth start failed:', err);
     showToast('Failed to start Tesla connection: ' + err.message, 'error');

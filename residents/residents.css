@@ -4655,6 +4655,7 @@ span.sonos-library-item__star.starred {
   width: 32px;
   height: 32px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .askpai-input {
@@ -4718,6 +4719,7 @@ span.sonos-library-item__star.starred {
   width: 40px;
   height: 40px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .askpai-welcome-text {
@@ -4764,6 +4766,7 @@ span.sonos-library-item__star.starred {
   height: 28px;
   flex-shrink: 0;
   margin-top: 0.15rem;
+  object-fit: contain;
 }
 
 .askpai-msg-content {

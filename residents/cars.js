@@ -773,7 +773,7 @@ window._connectTesla = async function(accountId) {
     audience: 'https://fleet-api.prd.na.vn.cloud.tesla.com',
   });
 
-  window.location.href = `https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/authorize?${params.toString()}`;
+  window.location.href = `https://auth.tesla.com/oauth2/v3/authorize?${params.toString()}`;
 };
 
 // =============================================

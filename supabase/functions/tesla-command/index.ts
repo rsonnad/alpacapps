@@ -106,7 +106,7 @@ serve(async (req) => {
         return jsonResponse({ error: "Token response missing tokens" }, 500);
       }
 
-      // Save tokens to account
+      // Save tokens to account — clear needs_reauth since we have fresh tokens
       const { error: updateErr } = await supabase
         .from("tesla_accounts")
         .update({
@@ -117,6 +117,7 @@ serve(async (req) => {
           ).toISOString(),
           last_token_refresh_at: new Date().toISOString(),
           last_error: null,
+          needs_reauth: false,
           updated_at: new Date().toISOString(),
         })
         .eq("id", body.account_id);
@@ -194,10 +195,31 @@ serve(async (req) => {
       );
     }
 
+    // Check if account needs re-authorization
+    if (account.needs_reauth) {
+      return jsonResponse(
+        { error: "Tesla account needs re-authorization. Please reconnect from the Cars page." },
+        401
+      );
+    }
+
     const apiBase = account.fleet_api_base || DEFAULT_FLEET_API_BASE;
 
-    // 5. Get valid access token (refresh if needed)
-    const accessToken = await getValidAccessToken(supabase, account, apiBase);
+    // 5. Get valid access token (with retry-on-401 pattern)
+    let accessToken: string;
+    try {
+      accessToken = await getValidAccessToken(supabase, account, apiBase);
+    } catch (err) {
+      // If refresh failed, mark account for re-auth if it's a login_required error
+      if (err.message?.includes("login_required") || err.message?.includes("invalid_grant")) {
+        await markNeedsReauth(supabase, account.id, err.message);
+        return jsonResponse(
+          { error: "Tesla session expired. Please reconnect your Tesla account.", needs_reauth: true },
+          401
+        );
+      }
+      throw err;
+    }
 
     // 6. If vehicle is asleep and command is not wake_up, wake it first
     if (command !== "wake_up" && vehicle.vehicle_state === "asleep") {
@@ -226,19 +248,46 @@ serve(async (req) => {
         .eq("id", vehicle.id);
     }
 
-    // 7. Send command
+    // 7. Send command (with retry on 401)
     const commandUrl = `${apiBase}/api/1/vehicles/${vehicle.vehicle_api_id}${commandConfig.pathSuffix}`;
     console.log(
       `Sending ${command} to ${vehicle.name} (${vehicle.vehicle_api_id})`
     );
 
-    const cmdResponse = await fetch(commandUrl, {
+    let cmdResponse = await fetch(commandUrl, {
       method: commandConfig.method,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
+
+    // Retry once on 401: re-read token from DB (poller may have refreshed it)
+    if (cmdResponse.status === 401) {
+      console.log(`Command got 401, attempting token re-read and retry...`);
+      try {
+        accessToken = await retryWithFreshToken(supabase, account, apiBase);
+        cmdResponse = await fetch(commandUrl, {
+          method: commandConfig.method,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (retryErr) {
+        if (retryErr.message?.includes("login_required") || retryErr.message?.includes("invalid_grant")) {
+          await markNeedsReauth(supabase, account.id, retryErr.message);
+          return jsonResponse(
+            { error: "Tesla session expired. Please reconnect your Tesla account.", needs_reauth: true },
+            401
+          );
+        }
+        return jsonResponse(
+          { error: `Command failed after token refresh: ${retryErr.message}` },
+          500
+        );
+      }
+    }
 
     if (!cmdResponse.ok) {
       const errText = await cmdResponse.text();
@@ -332,7 +381,59 @@ async function wakeVehicle(
 }
 
 // ============================================
-// Token refresh (same pattern as worker)
+// Mark account as needing re-authorization
+// ============================================
+async function markNeedsReauth(supabase: any, accountId: number, reason: string) {
+  console.error(`Marking account ${accountId} for re-auth: ${reason}`);
+  await supabase
+    .from("tesla_accounts")
+    .update({
+      needs_reauth: true,
+      last_error: `Re-authorization required: ${reason}`,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", accountId);
+}
+
+// ============================================
+// Retry with fresh token from DB
+// Re-reads the account in case the poller already refreshed it.
+// If the token in DB is the same (stale), attempts a full refresh.
+// ============================================
+async function retryWithFreshToken(
+  supabase: any,
+  staleAccount: any,
+  apiBase: string
+): Promise<string> {
+  // Re-read account from DB — the poller may have already refreshed
+  const { data: freshAccount, error } = await supabase
+    .from("tesla_accounts")
+    .select("*")
+    .eq("id", staleAccount.id)
+    .single();
+
+  if (error || !freshAccount) {
+    throw new Error("Failed to re-read account");
+  }
+
+  // If DB has a different (newer) access token, use it
+  if (
+    freshAccount.access_token &&
+    freshAccount.access_token !== staleAccount.access_token &&
+    freshAccount.token_expires_at &&
+    new Date(freshAccount.token_expires_at) > new Date(Date.now() + 60 * 1000)
+  ) {
+    console.log(`Using token refreshed by poller for account ${freshAccount.id}`);
+    return freshAccount.access_token;
+  }
+
+  // Same token — attempt our own refresh
+  console.log(`Token still stale, refreshing ourselves for account ${freshAccount.id}`);
+  return await refreshToken(supabase, freshAccount, apiBase);
+}
+
+// ============================================
+// Token refresh (with login_required detection)
 // ============================================
 async function getValidAccessToken(
   supabase: any,
@@ -347,8 +448,36 @@ async function getValidAccessToken(
     }
   }
 
+  // Token expired or missing — re-read from DB first (poller may have refreshed)
+  const { data: freshAccount } = await supabase
+    .from("tesla_accounts")
+    .select("*")
+    .eq("id", account.id)
+    .single();
+
+  if (freshAccount?.access_token && freshAccount.token_expires_at) {
+    const expiresAt = new Date(freshAccount.token_expires_at);
+    if (expiresAt > new Date(Date.now() + 60 * 1000)) {
+      console.log(`Using token refreshed by poller for account ${account.id}`);
+      return freshAccount.access_token;
+    }
+  }
+
+  // Still expired — do our own refresh
+  const acctToRefresh = freshAccount || account;
+  return await refreshToken(supabase, acctToRefresh, apiBase);
+}
+
+// ============================================
+// Core token refresh logic
+// ============================================
+async function refreshToken(
+  supabase: any,
+  account: any,
+  apiBase: string
+): Promise<string> {
   if (!account.refresh_token) {
-    throw new Error("No refresh token available");
+    throw new Error("No refresh token available — login_required");
   }
 
   console.log(`Refreshing Fleet API token for account ${account.id}`);
@@ -358,9 +487,6 @@ async function getValidAccessToken(
     client_id: account.fleet_client_id,
     client_secret: account.fleet_client_secret,
     refresh_token: account.refresh_token,
-    scope:
-      "openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds",
-    audience: apiBase,
   });
 
   const tokenResponse = await fetch(TESLA_TOKEN_URL, {
@@ -370,10 +496,18 @@ async function getValidAccessToken(
   });
 
   const tokenData = await tokenResponse.json();
+
+  // Detect terminal auth failures that require user re-authorization
   if (tokenData.error) {
-    throw new Error(
-      `Token refresh failed: ${tokenData.error_description || tokenData.error}`
-    );
+    const errMsg = tokenData.error_description || tokenData.error;
+    if (
+      tokenData.error === "login_required" ||
+      tokenData.error === "invalid_grant" ||
+      tokenResponse.status === 401
+    ) {
+      throw new Error(`login_required: ${errMsg}`);
+    }
+    throw new Error(`Token refresh failed: ${errMsg}`);
   }
 
   if (!tokenData.access_token) {
@@ -388,10 +522,11 @@ async function getValidAccessToken(
     ).toISOString(),
     last_token_refresh_at: new Date().toISOString(),
     last_error: null,
+    needs_reauth: false,
     updated_at: new Date().toISOString(),
   };
 
-  // Fleet API refresh tokens may or may not rotate
+  // Fleet API refresh tokens rotate — save the new one
   if (tokenData.refresh_token) {
     updateData.refresh_token = tokenData.refresh_token;
   }
