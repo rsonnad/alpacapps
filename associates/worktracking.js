@@ -45,6 +45,11 @@ async function initApp() {
     return;
   }
 
+  if (!profile) {
+    showToast('No hours profile found — contact an admin to set you up', 'error');
+    return;
+  }
+
   setupEventListeners();
   requestLocation();
   await loadSpaces();

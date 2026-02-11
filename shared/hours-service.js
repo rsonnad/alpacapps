@@ -42,8 +42,8 @@ class HoursService {
     if (fetchErr) throw fetchErr;
     if (existing) return existing;
 
-    // Only auto-create for actual associates
-    if (userRole !== 'associate') return null;
+    // Auto-create for associates and staff who access the hours page
+    if (!['associate', 'staff'].includes(userRole)) return null;
 
     // Create new profile
     const { data: created, error: createErr } = await supabase
