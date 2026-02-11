@@ -536,8 +536,8 @@
 
     .photo-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
     }
 
     .photo-card {
@@ -554,36 +554,59 @@
 
     .photo-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
 
     /* Thumbnail area at top of card */
     .photo-card__thumb {
       width: 100%;
-      aspect-ratio: 16 / 10;
-      background: linear-gradient(135deg, #f0ebe4, #e2d9ce);
+      height: 140px;
+      background: linear-gradient(145deg, #e8ddd2, #d4c4b0);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--aap-accent, #c9a87c);
       position: relative;
       overflow: hidden;
+      flex-shrink: 0;
     }
 
-    .photo-card__thumb svg {
-      opacity: 0.7;
+    .photo-card__thumb > svg {
+      width: 56px;
+      height: 56px;
+      opacity: 0.5;
       transition: opacity 0.2s, transform 0.2s;
     }
 
-    .photo-card:hover .photo-card__thumb svg {
-      opacity: 1;
-      transform: scale(1.1);
+    .photo-card:hover .photo-card__thumb > svg {
+      opacity: 0.8;
+      transform: scale(1.15);
+    }
+
+    /* Google Photos badge on album cards */
+    .photo-card__thumb::after {
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 4px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+      background-size: 12px;
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
     /* Image-based thumbnails (videos) */
     .photo-card__thumb--img {
-      background: #000;
-      padding: 0;
+      background: #111;
+      height: 160px;
+    }
+
+    .photo-card__thumb--img::after {
+      display: none;
     }
 
     .photo-card__thumb--img img {
@@ -591,12 +614,11 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity 0.2s, transform 0.3s;
+      transition: transform 0.3s;
     }
 
     .photo-card:hover .photo-card__thumb--img img {
       transform: scale(1.05);
-      opacity: 0.85;
     }
 
     /* Play button overlay for videos */
@@ -605,9 +627,9 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 56px;
-      height: 56px;
-      background: rgba(0,0,0,0.6);
+      width: 52px;
+      height: 52px;
+      background: rgba(0,0,0,0.65);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -617,6 +639,8 @@
     }
 
     .photo-card__play svg {
+      width: 28px !important;
+      height: 28px !important;
       opacity: 1 !important;
       margin-left: 3px;
     }
@@ -633,14 +657,13 @@
 
     /* Card info area */
     .photo-card__info {
-      padding: 1rem 1.25rem;
-      text-align: left;
+      padding: 0.875rem 1rem;
     }
 
     .photo-card__info h3 {
       font-size: 0.95rem;
       font-weight: 600;
-      margin: 0 0 0.2rem;
+      margin: 0 0 0.15rem;
       line-height: 1.3;
     }
 
@@ -651,19 +674,27 @@
       line-height: 1.3;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
       .photo-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
       }
 
-      .photo-card__thumb svg {
-        width: 32px;
-        height: 32px;
+      .photo-card__thumb {
+        height: 100px;
+      }
+
+      .photo-card__thumb > svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      .photo-card__thumb--img {
+        height: 110px;
       }
 
       .photo-card__info {
-        padding: 0.75rem;
+        padding: 0.625rem 0.75rem;
       }
 
       .photo-card__info h3 {
@@ -671,17 +702,17 @@
       }
 
       .photo-card__info p {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
       }
 
       .photo-card__play {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
       }
 
       .photo-card__play svg {
-        width: 28px;
-        height: 28px;
+        width: 22px !important;
+        height: 22px !important;
       }
     }
   </style>
