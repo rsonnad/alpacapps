@@ -460,7 +460,11 @@ async function renderInventory() {
     + vehicles.length
     + laundry.length;
 
-  let html = `<p class="device-summary">${totalDevices} devices across ${CATEGORIES.length} categories</p>`;
+  // Populate inline meta count in section header
+  const metaEl = document.getElementById('devicesMeta');
+  if (metaEl) metaEl.textContent = `${totalDevices} in ${CATEGORIES.length} categories`;
+
+  let html = '';
 
   // Cameras
   const camCat = CATEGORIES.find(c => c.id === 'cameras');

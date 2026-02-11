@@ -652,7 +652,7 @@ body.admin-mode .admin-only {
 
 /* Main content */
 main {
-  padding: 0.5rem 2rem;
+  padding: 0.25rem 2rem 0.5rem;
   max-width: 1600px;
   margin: 0 auto;
 }

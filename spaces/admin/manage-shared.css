@@ -9,8 +9,8 @@
 .manage-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -20,7 +20,7 @@
 
 /* Prevent layout shift while JS populates tabs */
 .manage-tabs:empty {
-  min-height: 30px;
+  min-height: 28px;
 }
 
 /* Context switcher — centering wrapper aligns with .manage-tabs */
@@ -28,7 +28,7 @@
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding: 0.2rem 2rem;
+  padding: 0.15rem 2rem;
 }
 
 /* Inner pill with the rounded background */
@@ -70,11 +70,11 @@
 }
 
 .manage-tab {
-  padding: 0.3rem 0.85rem;
+  padding: 0.25rem 0.75rem;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 500;
