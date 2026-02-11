@@ -64,6 +64,7 @@ async function loadCameras() {
       grouped[stream.camera_name] = {
         name: stream.camera_name,
         location: stream.location,
+        model: stream.camera_model,
         protectUrl: stream.protect_share_url,
         protectCameraId: stream.protect_camera_id,
         streams: {},
@@ -217,7 +218,7 @@ function renderCameras() {
             ${cam.streams.med ? '<option value="med" selected>Med</option>' : ''}
             ${cam.streams.high ? '<option value="high">High</option>' : ''}
           </select>
-          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}</span>
+          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}${cam.model ? ` · ${cam.model}` : ''}</span>
         </div>
       </div>
       <div class="camera-card__video" id="video-container-${i}" data-cam="${i}">

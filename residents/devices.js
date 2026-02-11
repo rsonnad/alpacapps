@@ -50,7 +50,7 @@ async function fetchCameras() {
   try {
     const { data, error } = await supabase
       .from('camera_streams')
-      .select('camera_name, location, quality, is_active')
+      .select('camera_name, location, quality, camera_model, is_active')
       .eq('is_active', true)
       .order('camera_name');
     if (error) { console.warn('Cameras fetch error:', error); return []; }
@@ -58,7 +58,7 @@ async function fetchCameras() {
     const map = new Map();
     for (const s of data) {
       if (!map.has(s.camera_name)) {
-        map.set(s.camera_name, { name: s.camera_name, location: s.location, qualities: [] });
+        map.set(s.camera_name, { name: s.camera_name, location: s.location, model: s.camera_model, qualities: [] });
       }
       map.get(s.camera_name).qualities.push(s.quality);
     }
@@ -197,11 +197,12 @@ async function fetchLaundry() {
 /* ── Row Renderers ── */
 
 function renderCameraRows(cameras) {
-  if (!cameras.length) return emptyRow(3);
+  if (!cameras.length) return emptyRow(4);
   return cameras.map(c => `
     <tr>
       <td class="dt-name">${esc(c.name)}</td>
       <td>${esc(c.location)}</td>
+      <td class="dt-secondary">${esc(c.model)}</td>
       <td>${c.qualities.map(q => `<span class="dt-badge">${q}</span>`).join(' ')}</td>
     </tr>
   `).join('');
@@ -409,7 +410,7 @@ async function renderInventory() {
   // Cameras
   const camCat = CATEGORIES.find(c => c.id === 'cameras');
   html += buildSection(camCat, cameras.length,
-    th('Camera') + th('Location') + th('Qualities'),
+    th('Camera') + th('Location') + th('Type') + th('Qualities'),
     renderCameraRows(cameras));
 
   // Lighting (groups)
