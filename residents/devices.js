@@ -62,7 +62,9 @@ async function fetchCameras() {
       }
       map.get(s.camera_name).qualities.push(s.quality);
     }
-    return [...map.values()];
+    return [...map.values()].sort((a, b) =>
+      (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
+    );
   } catch (e) { console.warn('Cameras fetch failed:', e); return []; }
 }
 
