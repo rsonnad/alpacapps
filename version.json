@@ -1,12 +1,12 @@
 {
-  "version": "v260211.06 7:33a",
-  "release": 6,
-  "sha": "1a1b813b",
-  "fullSha": "1a1b813b1e08eda6557733fb149b21f897a0c32b",
+  "version": "v260211.07 7:45a",
+  "release": 7,
+  "sha": "c4ffb8b6",
+  "fullSha": "c4ffb8b613872e4336125d331550ca20db77adff",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 13:33:02+00",
-  "commits": [{"sha":"1a1b813b","message":"Sync version.json to new vYYMMDD.NN format after migration","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 13:45:23+00",
+  "commits": [{"sha":"c4ffb8b6","message":"Strengthen PAI imagery prompt: enforce likeness fidelity and enrich backstory","author":"Rahul Sonnad"}]
 }
