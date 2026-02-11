@@ -39,6 +39,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     a { color: #2d3142; }
+    .detail { font-size: 0.85rem; color: #888; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -92,14 +93,16 @@
       }
 
       try {
-        // No user session needed — the edge function handles exchangeCode without auth.
-        // The OAuth code is single-use and tied to the account's client_id/secret.
+        // Exchange the authorization code for tokens via the edge function.
+        // Send Authorization: Bearer <anon_key> so the request passes through
+        // even if the edge function is deployed without --no-verify-jwt.
         const fnUrl = SUPABASE_URL + '/functions/v1/tesla-command';
         const fnRes = await fetch(fnUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
             action: 'exchangeCode',
@@ -108,10 +111,15 @@
           }),
         });
 
-        const data = await fnRes.json().catch(() => null);
+        let data = null;
+        try { data = await fnRes.json(); } catch(_) {}
 
         if (!fnRes.ok) {
           const detail = data?.error || `HTTP ${fnRes.status}`;
+          // Provide more helpful messages for common errors
+          if (fnRes.status === 401) {
+            throw new Error('Authorization service unavailable. The edge function may need redeployment with --no-verify-jwt. Please contact the admin.');
+          }
           throw new Error(detail);
         }
 
@@ -131,15 +139,18 @@
         `;
 
         // Auto-redirect after 2 seconds
-        if (isProfileFlow) {
-          setTimeout(() => { window.location.href = backUrl; }, 2000);
-        }
+        setTimeout(() => { window.location.href = backUrl; }, 2000);
       } catch (err) {
         console.error('Token exchange failed:', err);
+
+        const backUrl = isProfileFlow ? '/residents/profile.html' : '/residents/cars.html';
+        const backLabel = isProfileFlow ? 'Profile' : 'Cars page';
+
         card.innerHTML = `
           <h2 class="error">Connection Failed</h2>
           <p>${err.message}</p>
-          <p>Please try again from the <a href="/residents/cars.html">Cars page</a>.</p>
+          <p>Please try again from the <a href="${backUrl}">${backLabel}</a>.</p>
+          <p class="detail">If this keeps happening, the OAuth authorization code may have expired. Try starting the connection flow again.</p>
         `;
       }
     }

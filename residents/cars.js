@@ -173,7 +173,7 @@ async function loadVehicles() {
 async function loadAccounts() {
   let query = supabase
     .from('tesla_accounts')
-    .select('id, owner_name, tesla_email, is_active, last_error, refresh_token, updated_at, app_user_id')
+    .select('id, owner_name, tesla_email, is_active, last_error, needs_reauth, refresh_token, updated_at, app_user_id')
     .order('id', { ascending: true });
 
   // Non-admins only see their own accounts
@@ -651,20 +651,28 @@ function renderSettings() {
 
   list.innerHTML = accounts.map(acc => {
     const hasError = !!acc.last_error;
+    const needsReauth = !!acc.needs_reauth;
     const hasToken = !!acc.refresh_token;
-    const isHealthy = hasToken && !hasError;
+    const isHealthy = hasToken && !hasError && !needsReauth;
 
     const statusDot = isHealthy
       ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--available, #27ae60);margin-right:0.4rem;"></span>'
       : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--occupied, #e74c3c);margin-right:0.4rem;"></span>';
-    const statusText = isHealthy ? 'Connected' : hasError ? 'Needs reconnection' : 'Not connected';
 
-    const errorHtml = hasError
-      ? `<div style="font-size:0.8rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Token expired \u2014 click Reconnect to re-authorize with Tesla.</div>`
-      : '';
+    let statusText = 'Not connected';
+    if (needsReauth) statusText = 'Re-authorization required';
+    else if (isHealthy) statusText = 'Connected';
+    else if (hasError) statusText = 'Needs reconnection';
+
+    let errorHtml = '';
+    if (needsReauth) {
+      errorHtml = `<div style="font-size:0.8rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;font-weight:500;">Session expired \u2014 click Reconnect to re-authorize with Tesla.</div>`;
+    } else if (hasError) {
+      errorHtml = `<div style="font-size:0.8rem;color:var(--occupied, #e74c3c);margin-top:0.25rem;">Token error \u2014 click Reconnect to re-authorize with Tesla.</div>`;
+    }
 
     let connectBtn;
-    if (hasError) {
+    if (needsReauth || hasError) {
       connectBtn = `<button class="btn-primary" onclick="window._connectTesla(${acc.id})" style="background:var(--occupied,#e74c3c);border-color:var(--occupied,#e74c3c);">Reconnect</button>`;
     } else if (isHealthy) {
       connectBtn = `<button class="btn-secondary" onclick="window._disconnectTesla(${acc.id})" style="color:var(--occupied,#e74c3c);border-color:var(--occupied,#e74c3c);">Disconnect</button>`;
@@ -705,6 +713,14 @@ window._sendCommand = async function(vehicleId, command) {
 
     if (data?.error) {
       const detail = data.details ? ` (${data.details})` : '';
+      // If the account needs re-authorization, show a prominent message
+      if (data.needs_reauth) {
+        showToast('Tesla session expired. Please go to Settings and click Reconnect.', 'error');
+        // Refresh accounts to show the re-auth state in settings
+        await loadAccounts();
+        renderSettings();
+        return;
+      }
       showToast(`${command.replace(/_/g, ' ')}: ${data.error}${detail}`, 'error');
       return;
     }
@@ -740,6 +756,7 @@ window._disconnectTesla = async function(accountId) {
       access_token: null,
       token_expires_at: null,
       last_error: null,
+      needs_reauth: false,
       updated_at: new Date().toISOString(),
     })
     .eq('id', accountId);

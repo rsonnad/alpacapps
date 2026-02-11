@@ -495,15 +495,32 @@ async function refreshToken(
     body: params.toString(),
   });
 
-  const tokenData = await tokenResponse.json();
+  // Check for non-OK response first (may return HTML error page)
+  if (!tokenResponse.ok) {
+    let errText = "";
+    try { errText = await tokenResponse.text(); } catch (_) {}
+    errText = errText.substring(0, 200).replace(/<[^>]*>/g, "").trim();
+    // 400/401/403 from the token endpoint all mean the refresh token is invalid
+    if (tokenResponse.status === 400 || tokenResponse.status === 401 || tokenResponse.status === 403) {
+      throw new Error(`login_required: Token refresh returned ${tokenResponse.status}: ${errText}`);
+    }
+    throw new Error(`Token refresh failed ${tokenResponse.status}: ${errText}`);
+  }
+
+  // Parse JSON (Tesla may return HTML even on 200 in edge cases)
+  let tokenData: any;
+  try {
+    tokenData = await tokenResponse.json();
+  } catch (_) {
+    throw new Error("login_required: Token response was not valid JSON (likely auth page redirect)");
+  }
 
   // Detect terminal auth failures that require user re-authorization
   if (tokenData.error) {
     const errMsg = tokenData.error_description || tokenData.error;
     if (
       tokenData.error === "login_required" ||
-      tokenData.error === "invalid_grant" ||
-      tokenResponse.status === 401
+      tokenData.error === "invalid_grant"
     ) {
       throw new Error(`login_required: ${errMsg}`);
     }

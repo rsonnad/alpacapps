@@ -6,6 +6,12 @@
  * Each tesla_accounts row represents a separate Tesla account.
  * Fleet API credentials (client_id, client_secret) stored per account.
  * Refresh tokens rotate on every refresh (single-use).
+ *
+ * Robust 401 handling:
+ * - On 401 from Tesla API: re-read account from DB (edge function may have refreshed)
+ * - If DB token is newer, retry with it
+ * - If DB token is stale, attempt our own refresh
+ * - On terminal auth failure (login_required/invalid_grant), set needs_reauth flag
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -54,7 +60,7 @@ async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
   }
 
   if (response.status === 401) {
-    throw new Error('Token expired or invalid (401)');
+    throw Object.assign(new Error('Token expired or invalid (401)'), { status: 401 });
   }
 
   if (response.status === 412) {
@@ -74,20 +80,11 @@ async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
 }
 
 // ============================================
-// Token Refresh (Fleet API, single-use tokens!)
+// Core Token Refresh
 // ============================================
-async function refreshTokenIfNeeded(account) {
-  // If token is still valid (with 5-min buffer), return it
-  if (
-    account.access_token &&
-    account.token_expires_at &&
-    new Date(account.token_expires_at) > new Date(Date.now() + 5 * 60 * 1000)
-  ) {
-    return account.access_token;
-  }
-
+async function refreshToken(account) {
   if (!account.refresh_token) {
-    throw new Error('No refresh token available');
+    throw Object.assign(new Error('No refresh token available — login_required'), { terminal: true });
   }
 
   if (!account.fleet_client_id || !account.fleet_client_secret) {
@@ -96,14 +93,11 @@ async function refreshTokenIfNeeded(account) {
 
   log('info', 'Refreshing token', { accountId: account.id, owner: account.owner_name });
 
-  // Fleet API token refresh requires client_id + client_secret + audience
   const params = new URLSearchParams({
     grant_type: 'refresh_token',
     client_id: account.fleet_client_id,
     client_secret: account.fleet_client_secret,
     refresh_token: account.refresh_token,
-    scope: 'openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds',
-    audience: account.fleet_api_base || DEFAULT_FLEET_API_BASE,
   });
 
   const response = await fetch(TESLA_TOKEN_URL, {
@@ -112,28 +106,67 @@ async function refreshTokenIfNeeded(account) {
     body: params.toString(),
   });
 
+  // Check for non-OK response first (may return HTML error page)
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Token refresh failed ${response.status}: ${text.substring(0, 200)}`);
+    let errText;
+    try { errText = await response.text(); } catch (_) { errText = ''; }
+    // Truncate and sanitize HTML
+    errText = errText.substring(0, 200).replace(/<[^>]*>/g, '').trim();
+    // 400/401/403 from the token endpoint all mean the refresh token is invalid
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      throw Object.assign(
+        new Error(`login_required: Token refresh returned ${response.status}: ${errText}`),
+        { terminal: true }
+      );
+    }
+    throw new Error(`Token refresh failed ${response.status}: ${errText}`);
   }
 
-  const data = await response.json();
+  // Parse JSON response (Tesla may return HTML even on 200 in edge cases)
+  let data;
+  try {
+    data = await response.json();
+  } catch (parseErr) {
+    throw Object.assign(
+      new Error(`login_required: Token response was not valid JSON (likely auth page redirect)`),
+      { terminal: true }
+    );
+  }
 
-  if (!data.access_token || !data.refresh_token) {
-    throw new Error('Token refresh response missing tokens');
+  // Detect terminal auth failures that require user re-authorization
+  if (data.error) {
+    const errMsg = data.error_description || data.error;
+    if (
+      data.error === 'login_required' ||
+      data.error === 'invalid_grant'
+    ) {
+      throw Object.assign(new Error(`login_required: ${errMsg}`), { terminal: true });
+    }
+    throw new Error(`Token refresh failed: ${errMsg}`);
+  }
+
+  if (!data.access_token) {
+    throw new Error('Token refresh response missing access_token');
   }
 
   // CRITICAL: Save new refresh_token IMMEDIATELY (old one is now invalid)
+  const updateData = {
+    access_token: data.access_token,
+    token_expires_at: new Date(Date.now() + data.expires_in * 1000).toISOString(),
+    last_token_refresh_at: new Date().toISOString(),
+    last_error: null,
+    needs_reauth: false,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Fleet API refresh tokens rotate — always save the new one
+  if (data.refresh_token) {
+    updateData.refresh_token = data.refresh_token;
+  }
+
   const { error: updateErr } = await supabase
     .from('tesla_accounts')
-    .update({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      token_expires_at: new Date(Date.now() + data.expires_in * 1000).toISOString(),
-      last_token_refresh_at: new Date().toISOString(),
-      last_error: null,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', account.id);
 
   if (updateErr) {
@@ -146,6 +179,95 @@ async function refreshTokenIfNeeded(account) {
 
   log('info', 'Token refreshed', { accountId: account.id });
   return data.access_token;
+}
+
+// ============================================
+// Get valid access token (with DB re-read)
+// ============================================
+async function getValidAccessToken(account) {
+  // If token is still valid (with 5-min buffer), return it
+  if (
+    account.access_token &&
+    account.token_expires_at &&
+    new Date(account.token_expires_at) > new Date(Date.now() + 5 * 60 * 1000)
+  ) {
+    return { token: account.access_token, account };
+  }
+
+  // Token expired — re-read from DB first (edge function may have refreshed)
+  const { data: freshAccount } = await supabase
+    .from('tesla_accounts')
+    .select('*')
+    .eq('id', account.id)
+    .single();
+
+  if (freshAccount?.access_token && freshAccount.token_expires_at) {
+    const expiresAt = new Date(freshAccount.token_expires_at);
+    if (expiresAt > new Date(Date.now() + 60 * 1000)) {
+      log('info', 'Using token refreshed elsewhere', { accountId: account.id });
+      return { token: freshAccount.access_token, account: freshAccount };
+    }
+  }
+
+  // Still expired — do our own refresh
+  const acctToRefresh = freshAccount || account;
+  const token = await refreshToken(acctToRefresh);
+  return { token, account: acctToRefresh };
+}
+
+// ============================================
+// Retry API call on 401 (re-read token from DB, then refresh if needed)
+// ============================================
+async function retryOn401(account, apiCall) {
+  try {
+    return await apiCall(account._currentToken);
+  } catch (err) {
+    if (err.status !== 401) throw err;
+
+    log('warn', 'Got 401, re-reading account from DB...', { accountId: account.id });
+
+    // Re-read account — another process (edge function) may have refreshed
+    const { data: freshAccount } = await supabase
+      .from('tesla_accounts')
+      .select('*')
+      .eq('id', account.id)
+      .single();
+
+    if (!freshAccount) throw new Error('Failed to re-read account');
+
+    // If DB has a newer token, try with it
+    if (
+      freshAccount.access_token &&
+      freshAccount.access_token !== account._currentToken &&
+      freshAccount.token_expires_at &&
+      new Date(freshAccount.token_expires_at) > new Date(Date.now() + 60 * 1000)
+    ) {
+      log('info', 'Found newer token in DB, retrying...', { accountId: account.id });
+      account._currentToken = freshAccount.access_token;
+      return await apiCall(freshAccount.access_token);
+    }
+
+    // Same token — attempt our own refresh
+    log('info', 'Token still stale, refreshing ourselves...', { accountId: account.id });
+    const newToken = await refreshToken(freshAccount);
+    account._currentToken = newToken;
+    return await apiCall(newToken);
+  }
+}
+
+// ============================================
+// Mark account as needing re-authorization
+// ============================================
+async function markNeedsReauth(accountId, reason) {
+  log('error', `Marking account ${accountId} for re-auth`, { reason });
+  await supabase
+    .from('tesla_accounts')
+    .update({
+      needs_reauth: true,
+      last_error: `Re-authorization required: ${reason}`,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', accountId);
 }
 
 // ============================================
@@ -210,39 +332,66 @@ function parseVehicleState(data) {
 // Poll a single account
 // ============================================
 async function pollAccount(account) {
+  // Skip accounts that need re-authorization
+  if (account.needs_reauth) {
+    log('warn', 'Account needs re-auth, skipping', { accountId: account.id, owner: account.owner_name });
+    return;
+  }
+
   let accessToken;
   try {
-    accessToken = await refreshTokenIfNeeded(account);
+    const result = await getValidAccessToken(account);
+    accessToken = result.token;
+    account = result.account; // Use potentially-refreshed account data
   } catch (err) {
     log('error', 'Token refresh failed', {
       accountId: account.id,
       owner: account.owner_name,
       error: err.message,
     });
-    await supabase
-      .from('tesla_accounts')
-      .update({ last_error: err.message, updated_at: new Date().toISOString() })
-      .eq('id', account.id);
+
+    // Terminal auth failure — mark for re-auth, don't keep retrying
+    if (err.terminal) {
+      await markNeedsReauth(account.id, err.message);
+    } else {
+      await supabase
+        .from('tesla_accounts')
+        .update({ last_error: err.message, updated_at: new Date().toISOString() })
+        .eq('id', account.id);
+    }
     return;
   }
 
+  // Store current token on account object for retryOn401 to track
+  account._currentToken = accessToken;
+
   const apiBase = account.fleet_api_base || DEFAULT_FLEET_API_BASE;
 
-  // 1. Get vehicle list (does NOT wake sleeping cars)
+  // 1. Get vehicle list (does NOT wake sleeping cars) — with 401 retry
   let vehicleList;
   try {
-    vehicleList = await teslaApi(accessToken, '/api/1/vehicles', apiBase);
+    vehicleList = await retryOn401(account, (token) =>
+      teslaApi(token, '/api/1/vehicles', apiBase)
+    );
   } catch (err) {
     log('error', 'Vehicle list fetch failed', {
       accountId: account.id,
       error: err.message,
     });
-    await supabase
-      .from('tesla_accounts')
-      .update({ last_error: err.message, updated_at: new Date().toISOString() })
-      .eq('id', account.id);
+
+    if (err.terminal) {
+      await markNeedsReauth(account.id, err.message);
+    } else {
+      await supabase
+        .from('tesla_accounts')
+        .update({ last_error: err.message, updated_at: new Date().toISOString() })
+        .eq('id', account.id);
+    }
     return;
   }
+
+  // Update current token from retry (may have changed)
+  accessToken = account._currentToken;
 
   const vehicles = vehicleList?.response || [];
   if (!vehicles.length) {
@@ -294,10 +443,12 @@ async function pollAccount(account) {
     if (!dbVehicle.vehicle_config && v.state === 'online') {
       try {
         await new Promise(r => setTimeout(r, API_DELAY_MS));
-        const configData = await teslaApi(
-          accessToken,
-          `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('vehicle_config')}`,
-          apiBase
+        const configData = await retryOn401(account, (token) =>
+          teslaApi(
+            token,
+            `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('vehicle_config')}`,
+            apiBase
+          )
         );
         if (configData.response?.vehicle_config) {
           await supabase
@@ -342,10 +493,12 @@ async function pollAccount(account) {
     await new Promise(r => setTimeout(r, API_DELAY_MS));
 
     try {
-      const vehicleData = await teslaApi(
-        accessToken,
-        `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state')}`,
-        apiBase
+      const vehicleData = await retryOn401(account, (token) =>
+        teslaApi(
+          token,
+          `/api/1/vehicles/${v.id}/vehicle_data?endpoints=${encodeURIComponent('location_data;charge_state;climate_state;vehicle_state;drive_state')}`,
+          apiBase
+        )
       );
 
       if (vehicleData.sleeping) {
@@ -383,6 +536,11 @@ async function pollAccount(account) {
         name: dbVehicle.name,
         error: err.message,
       });
+      // If terminal, mark for reauth — otherwise just log
+      if (err.terminal) {
+        await markNeedsReauth(account.id, err.message);
+        return; // Stop processing this account
+      }
     }
   }
 
