@@ -1,12 +1,12 @@
 {
   "version": "",
-  "release": 11,
-  "sha": "0e791504",
-  "fullSha": "0e791504822168bae663fddb164ca16bf7fa494f",
+  "release": 12,
+  "sha": "a215a69e",
+  "fullSha": "a215a69e4ba94a9d1cb129e7e6a72485039a84b1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:17:44+00",
-  "commits": [{"sha":"0e791504","message":"Add explicit alpaca-vs-llama visual guidance to PAI imagery prompt","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:19:03+00",
+  "commits": [{"sha":"a215a69e","message":"Fix likeness by interleaving reference photo between instructions","author":"Rahul Sonnad"}]
 }
