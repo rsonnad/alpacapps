@@ -122,6 +122,7 @@ function renderResidentTabNav(activeTab, authState) {
 
   if (isDevicePage) {
     tabsContainer.innerHTML = '';
+    tabsContainer.style.display = 'none';
     renderDeviceSubTabNav(activeTab, authState);
     return;
   }

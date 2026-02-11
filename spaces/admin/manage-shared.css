@@ -23,6 +23,17 @@
   min-height: 28px;
 }
 
+/* When a second tab bar exists (device sub-tabs), hide the empty first one */
+.manage-tabs:empty + .manage-tabs {
+  /* The sibling selector existing means the empty bar is visible; hide it */
+}
+.manage-tabs:empty:has(+ .manage-tabs) {
+  min-height: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
 /* Context switcher — centering wrapper aligns with .manage-tabs */
 .context-switcher {
   max-width: 1200px;
