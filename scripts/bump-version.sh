@@ -81,8 +81,11 @@ fi
 if [ -z "$ACTOR_LOGIN" ]; then
   ACTOR_LOGIN=$(git log -1 --pretty='%an' 2>/dev/null || echo "unknown")
 fi
+if [ -z "$ACTOR_LOGIN" ]; then
+  ACTOR_LOGIN="${USER:-unknown}"
+fi
 if [ -z "$SOURCE" ]; then
-  SOURCE="unknown"
+  SOURCE="local-script"
 fi
 if [ -z "$PUSHED_AT" ]; then
   PUSHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -95,7 +98,7 @@ if [ -z "$MODEL_CODE" ]; then
     gemini/*) MODEL_CODE="gemini" ;;
     gpt/*) MODEL_CODE="gpt" ;;
     cursor/*) MODEL_CODE="cursor" ;;
-    *) MODEL_CODE="" ;;
+    *) MODEL_CODE="cur" ;;
   esac
 fi
 
@@ -103,6 +106,15 @@ fi
 MACHINE_NAME="${AAP_MACHINE_NAME:-}"
 if [ -z "$MACHINE_NAME" ] && [ -f "$PROJECT_ROOT/.machine-name" ]; then
   MACHINE_NAME=$(tr -d '\r' < "$PROJECT_ROOT/.machine-name" | head -n 1)
+fi
+if [ -z "$MACHINE_NAME" ] && command -v scutil >/dev/null 2>&1; then
+  MACHINE_NAME=$(scutil --get ComputerName 2>/dev/null || echo "")
+fi
+if [ -z "$MACHINE_NAME" ]; then
+  MACHINE_NAME=$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo "")
+fi
+if [ -z "$MACHINE_NAME" ]; then
+  MACHINE_NAME="unknown-machine"
 fi
 
 # Gather exact commits included in this push range (in chronological order).
@@ -193,6 +205,9 @@ NEW_DISPLAY_VERSION=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $2}')
 RELEASE_PUSHED_AT=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $3}')
 RELEASE_ACTOR=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $4}')
 RELEASE_SOURCE=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $5}')
+if [ -z "$RELEASE_PUSHED_AT" ]; then RELEASE_PUSHED_AT="$PUSHED_AT"; fi
+if [ -z "$RELEASE_ACTOR" ]; then RELEASE_ACTOR="$ACTOR_LOGIN"; fi
+if [ -z "$RELEASE_SOURCE" ]; then RELEASE_SOURCE="$SOURCE"; fi
 
 # Keep existing single-row site_config.version in sync for legacy readers.
 $PSQL "$DB_URL" -t -A --no-psqlrc -c "
@@ -229,6 +244,7 @@ fi
 SAFE_JSON_VERSION=$(json_escape "$NEW_DISPLAY_VERSION")
 SAFE_JSON_MODEL=$(json_escape "$MODEL_CODE")
 SAFE_JSON_MACHINE=$(json_escape "$MACHINE_NAME")
+SAFE_JSON_USER=$(json_escape "$RELEASE_ACTOR")
 SAFE_JSON_COMMIT=$(json_escape "$COMMIT_HASH")
 SAFE_JSON_FULL_COMMIT=$(json_escape "$FULL_HASH")
 SAFE_JSON_TIMESTAMP=$(json_escape "$ISO_TIMESTAMP")
@@ -245,6 +261,7 @@ cat > "$PROJECT_ROOT/version.json" << ENDJSON
   "version": "$SAFE_JSON_VERSION",
   "model": "$SAFE_JSON_MODEL",
   "machine": "$SAFE_JSON_MACHINE",
+  "user": "$SAFE_JSON_USER",
   "commit": "$SAFE_JSON_COMMIT",
   "full_commit": "$SAFE_JSON_FULL_COMMIT",
   "timestamp": "$SAFE_JSON_TIMESTAMP",

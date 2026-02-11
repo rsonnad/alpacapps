@@ -47,6 +47,7 @@ function esc(str) {
 /** Human-readable labels for model codes (tooltip/modal) */
 const MODEL_DISPLAY_NAMES = {
   'modl a': 'Cursor Auto',
+  'modl-a': 'Cursor Auto',
   'composer-1.5': 'Composer 1.5',
   'opus-4.6': 'Claude Opus 4.6',
   'gpt-5.3-codex': 'GPT 5.3 Codex',
@@ -62,6 +63,61 @@ const MODEL_DISPLAY_NAMES = {
 };
 function modelDisplayName(code) {
   return (code && MODEL_DISPLAY_NAMES[code]) || code || '';
+}
+
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  }
+  return '';
+}
+
+function dominantValue(mapObj) {
+  if (!mapObj || typeof mapObj !== 'object') return '';
+  const counts = new Map();
+  Object.values(mapObj).forEach((v) => {
+    if (typeof v === 'string' && v.trim()) {
+      const key = v.trim();
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  });
+  let best = '';
+  let bestCount = 0;
+  for (const [key, count] of counts.entries()) {
+    if (count > bestCount) {
+      best = key;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+function coAuthorFromChanges(changes) {
+  if (!Array.isArray(changes)) return '';
+  for (const change of changes) {
+    const msg = String(change?.msg || change?.message || '');
+    const match = msg.match(/Co-Authored-By:\s*([^<\n]+)/i);
+    if (match && match[1]) return match[1].trim();
+  }
+  return '';
+}
+
+function platformMachineHint() {
+  try {
+    const raw = firstNonEmpty(
+      navigator.userAgentData?.platform,
+      navigator.platform,
+    );
+    if (!raw) return '';
+    const p = raw.toLowerCase();
+    if (p.includes('mac')) return 'Mac';
+    if (p.includes('win')) return 'Windows';
+    if (p.includes('linux')) return 'Linux';
+    return raw;
+  } catch {
+    return '';
+  }
 }
 
 /** Extract short ID from bugfix branch name like "bugfix/20260209-79aa46b3-..." → "79aa46b3" */
@@ -283,12 +339,33 @@ function showVersionModal(info) {
       }).join('');
     }
 
-    // Build model and machine line for header (always show so user knows where they go)
-    const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
-    const machineLabel = (info.machine && info.machine.trim()) || '—';
-    const releaseSeq = release.seq ?? '—';
-    const releaseActor = release.actor_login || '—';
-    const releaseSource = release.source || '—';
+    // Build metadata lines with backward-compatible fallbacks for older version.json formats.
+    const rawModel = firstNonEmpty(
+      info.model,
+      release.model,
+      info.model_code,
+      info.ai_model,
+      dominantValue(models),
+    );
+    const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
+    const machineLabel = firstNonEmpty(
+      info.machine,
+      release.machine,
+      info.machine_name,
+      info.hostname,
+      info.host,
+      platformMachineHint(),
+    ) || '—';
+    const releaseSeq = firstNonEmpty(String(release.seq ?? ''), info.release_seq, info.seq) || '—';
+    const releaseActor = firstNonEmpty(
+      release.actor_login,
+      info.user,
+      info.actor,
+      info.author,
+      info.release_actor,
+      coAuthorFromChanges(changes),
+    ) || '—';
+    const releaseSource = firstNonEmpty(release.source, info.source) || '—';
     const releasedAt = fmtTime(release.pushed_at || info.timestamp);
 
     overlay.innerHTML = `
@@ -374,11 +451,32 @@ export function setupVersionInfo() {
     if (!info) {
       tooltip.innerHTML = '<div class="vi-tooltip-version">Build info unavailable</div>';
     } else {
-      const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
-      const machineLabel = (info.machine && info.machine.trim()) || '—';
+      const rawModel = firstNonEmpty(
+        info.model,
+        info.release?.model,
+        info.model_code,
+        info.ai_model,
+        dominantValue(info.models || {}),
+      );
+      const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
+      const machineLabel = firstNonEmpty(
+        info.machine,
+        info.release?.machine,
+        info.machine_name,
+        info.hostname,
+        info.host,
+        platformMachineHint(),
+      ) || '—';
       const release = info.release || {};
-      const releaseSeq = release.seq ?? '—';
-      const releaseActor = release.actor_login || '—';
+      const releaseSeq = firstNonEmpty(String(release.seq ?? ''), info.release_seq, info.seq) || '—';
+      const releaseActor = firstNonEmpty(
+        release.actor_login,
+        info.user,
+        info.actor,
+        info.author,
+        info.release_actor,
+        coAuthorFromChanges(info.changes || []),
+      ) || '—';
       tooltip.innerHTML = [
         `<div class="vi-tooltip-version">${esc(info.version)}</div>`,
         `<div class="vi-tooltip-stats">Release: <span>#${esc(String(releaseSeq))}</span> by ${esc(releaseActor)}</div>`,
