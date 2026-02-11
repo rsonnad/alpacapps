@@ -1,12 +1,12 @@
 {
-  "version": "v260211.32 10:34a",
-  "release": 32,
-  "sha": "911f95e3",
-  "fullSha": "911f95e3f2b20450064acc424816be5300919b2c",
+  "version": "v260211.33 10:39a",
+  "release": 33,
+  "sha": "2341fa07",
+  "fullSha": "2341fa07403cac0b8b7153c7383b37b284114d6a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 16:34:35+00",
-  "commits": [{"sha":"911f95e3","message":"Aggressively reduce whitespace: header, tabs, sections, content gaps","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:39:09+00",
+  "commits": [{"sha":"2341fa07","message":"Add UDM Pro connection reference as cursor rule","author":"Rahul Sonnad"}]
 }
