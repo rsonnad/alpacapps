@@ -657,7 +657,7 @@ Alpaca Playhouse`
             </div>
             <div style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0;">
               <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
-              <p style="margin:4px 0 0;color:#bbb;font-size:11px;">GenAlpaca Residency</p>
+              <p style="margin:4px 0 0;color:#bbb;font-size:11px;">AlpacApps &bull; Alpaca Playhouse</p>
             </div>
           </div>
         `,
@@ -760,50 +760,80 @@ Alpaca Playhouse`
       };
       const roleLabel = roleLabels[data.role as string] ?? "a user";
       const roleDescription = roleDescriptions[data.role as string] ?? "access to the platform";
+      const bannerUrl = "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/invite-banner-ghibli.png";
       return {
-        subject: "You're Invited to GenAlpaca Spaces",
+        subject: "You're Invited to Alpaca Playhouse",
         html: `
-          <h2>You've Been Invited!</h2>
-          <p>Hi,</p>
-          <p>You've been invited to access <strong>GenAlpaca Spaces</strong> as ${roleLabel}.</p>
-          <p>You will have ${roleDescription}.</p>
-          <h3>Getting Started</h3>
-          <ol>
-            <li>Click the button below to go to the login page</li>
-            <li>Create your account using <strong>${data.email}</strong> — either:
-              <ul style="margin-top: 6px;">
-                <li><strong>Continue with Google</strong> (fastest — one tap if you're signed into Google)</li>
-                <li><strong>Sign Up</strong> tab to create an email &amp; password</li>
-              </ul>
-            </li>
-          </ol>
-          <p>Your access has already been pre-approved, so you'll have immediate access once you create your account.</p>
-          <p style="margin: 30px 0;">
-            <a href="${data.login_url}" style="background: #4CAF50; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Create Account</a>
-          </p>
-          <p style="color: #666; font-size: 14px;">If you have any questions, reply to this email.</p>
-          <p>Best regards,<br>GenAlpaca Team</p>
+          <div style="max-width:600px;margin:0 auto;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+            <!-- Header with gradient -->
+            <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:40px 32px 24px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Welcome to AlpacApps</h1>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:15px;font-weight:400;">Alpaca Playhouse &bull; Cedar Creek, Texas</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:32px;">
+              <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 16px;">Hi there,</p>
+              <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 16px;">You've been invited to join <strong style="color:#0f3460;">Alpaca Playhouse</strong> as ${roleLabel}. You'll have ${roleDescription}.</p>
+
+              <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 24px;">Your access is <strong>pre-approved</strong> — just create your account and you're in.</p>
+
+              <!-- CTA Button -->
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${data.login_url}" style="background:linear-gradient(135deg,#c2410c 0%,#ea580c 100%);color:#ffffff;padding:16px 40px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:700;font-size:16px;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(194,65,12,0.3);">Sign in to AlpacApps</a>
+              </div>
+
+              <!-- Getting started card -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px 24px;margin:24px 0;">
+                <p style="color:#64748b;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 12px;">Getting Started</p>
+                <table style="width:100%;border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:6px 12px 6px 0;vertical-align:top;color:#c2410c;font-weight:700;font-size:14px;width:24px;">1.</td>
+                    <td style="padding:6px 0;color:#475569;font-size:14px;line-height:1.5;">Click the button above to go to the login page</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 12px 6px 0;vertical-align:top;color:#c2410c;font-weight:700;font-size:14px;">2.</td>
+                    <td style="padding:6px 0;color:#475569;font-size:14px;line-height:1.5;">Sign in with <strong>${data.email}</strong> using <strong>Continue with Google</strong> (one tap) or create a password</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 12px 6px 0;vertical-align:top;color:#c2410c;font-weight:700;font-size:14px;">3.</td>
+                    <td style="padding:6px 0;color:#475569;font-size:14px;line-height:1.5;">That's it — you'll have immediate access</td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="color:#94a3b8;font-size:13px;text-align:center;margin:24px 0 0;">Questions? Just reply to this email.</p>
+            </div>
+
+            <!-- Alpaca art banner -->
+            <div style="padding:0;">
+              <img src="${bannerUrl}" alt="Alpaca Playhouse" style="width:100%;display:block;border-radius:0;" />
+            </div>
+
+            <!-- Footer -->
+            <div style="background:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">Alpaca Playhouse &bull; 160 Still Forest Dr, Cedar Creek, TX 78612</p>
+              <p style="margin:6px 0 0;color:#cbd5e1;font-size:11px;">AlpacApps &bull; Where the herd gathers</p>
+            </div>
+          </div>
         `,
-        text: `You've Been Invited!
+        text: `Welcome to Alpaca Playhouse!
 
-Hi,
+Hi there,
 
-You've been invited to access GenAlpaca Spaces as ${roleLabel}.
+You've been invited to join Alpaca Playhouse as ${roleLabel}. You'll have ${roleDescription}.
 
-You will have ${roleDescription}.
+Your access is pre-approved — just create your account and you're in.
 
 Getting Started:
 1. Go to: ${data.login_url}
-2. Create your account using ${data.email} — either:
-   - "Continue with Google" (fastest — one tap if you're signed into Google)
-   - "Sign Up" tab to create an email & password
+2. Sign in with ${data.email} — use "Continue with Google" (one tap) or create a password
+3. That's it — you'll have immediate access
 
-Your access has already been pre-approved, so you'll have immediate access once you create your account.
+Questions? Just reply to this email.
 
-If you have any questions, reply to this email.
-
-Best regards,
-GenAlpaca Team`
+— The AlpacApps Team
+Alpaca Playhouse • 160 Still Forest Dr, Cedar Creek, TX 78612`
       };
     }
 
