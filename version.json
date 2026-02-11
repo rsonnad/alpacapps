@@ -1,12 +1,12 @@
 {
-  "version": "v260211.69 3:05p",
-  "release": 69,
-  "sha": "4dda3ce1",
-  "fullSha": "4dda3ce12965869ca68e9287458e30f2d9e6aec3",
+  "version": "v260211.70 3:17p",
+  "release": 70,
+  "sha": "4615533c",
+  "fullSha": "4615533c43e08e80e7a23fcadb8b8c73372890e4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 21:05:14+00",
-  "commits": [{"sha":"4dda3ce1","message":"Redesign staff_invitation DB template: dark header, alpaca banner, AlpacApps branding","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 21:17:59+00",
+  "commits": [{"sha":"4615533c","message":"Fix invitation email contrast + PAI sender name + send to residents","author":"Rahul Sonnad"}]
 }
