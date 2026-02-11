@@ -182,7 +182,7 @@ async function loadVehicles(personId) {
   // Vehicles are linked to people via the vehicle_drivers junction table
   const { data, error } = await supabase
     .from('vehicle_drivers')
-    .select('vehicle:vehicle_id(id, name, make, model, year, color, is_active, display_order)')
+    .select('vehicle:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, is_active, display_order)')
     .eq('person_id', personId);
 
   if (error) throw error;
@@ -283,8 +283,8 @@ function renderOwnedAssets(assignments, vehicles) {
     ? vehicles.map(v => `
       <div class="bookkeeping-item-card">
         <div>
-          <div class="bookkeeping-item-title">${escapeHtml(v.name || `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim() || 'Vehicle')}</div>
-          <div class="bookkeeping-item-meta">${escapeHtml([v.year, v.make, v.model].filter(Boolean).join(' ')) || 'Vehicle'}</div>
+          <div class="bookkeeping-item-title">${escapeHtml(v.name || `${v.year || ''} ${v.vehicle_make || ''} ${v.vehicle_model || ''}`.trim() || 'Vehicle')}</div>
+          <div class="bookkeeping-item-meta">${escapeHtml([v.year, v.vehicle_make, v.vehicle_model].filter(Boolean).join(' ')) || 'Vehicle'}</div>
         </div>
         <div class="bookkeeping-item-right">
           <span class="bookkeeping-chip">Driver</span>
