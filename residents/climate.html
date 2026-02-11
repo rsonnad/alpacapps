@@ -122,6 +122,9 @@
     </main>
   </div>
 
+  <!-- Instant chrome: skip spinner for returning users -->
+  <script>try{var c=localStorage.getItem('genalpaca-cached-auth');if(c&&JSON.parse(c).appUser){document.getElementById('loadingOverlay').style.display='none';document.getElementById('appContent').classList.remove('hidden')}}catch(e){}</script>
+
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script type="module" src="thermostat.js"></script>
 </body>

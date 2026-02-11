@@ -5,6 +5,9 @@
 
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
+import { renderHeader, initSiteComponents } from './site-components.js';
+import { setupVersionInfo } from './version-info.js';
+import { setupVersionInfo } from './version-info.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -24,7 +27,7 @@ const ALL_ADMIN_TABS = [
   { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff' },
   { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'paiimagery', label: 'PAI Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
+  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
@@ -175,7 +178,7 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   ];
 
   const safeSection = hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff';
-  switcher.innerHTML = tabs.map(tab => {
+  const btns = tabs.map(tab => {
     if (tab.id === 'admin' && !hasAdminPerms) {
       return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
     }
@@ -183,6 +186,32 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');
+  switcher.innerHTML = `<div class="context-switcher-pill">${btns}</div>`;
+}
+
+// =============================================
+// SITE NAV INJECTION
+// =============================================
+let siteNavInitialized = false;
+
+function injectSiteNav() {
+  if (siteNavInitialized) return;
+  const target = document.getElementById('siteHeader');
+  if (!target) return;
+
+  const versionEl = document.querySelector('[data-site-version]');
+  const version = versionEl?.textContent?.trim() || '';
+
+  target.innerHTML = renderHeader({
+    transparent: false,
+    light: false,
+    version,
+    showRoleBadge: true,
+  });
+
+  initSiteComponents();
+  setupVersionInfo();
+  siteNavInitialized = true;
 }
 
 // =============================================
@@ -235,9 +264,24 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     }
 
     if (state.appUser && meetsRequirement) {
+      injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-      renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
+
+      // Render user info into site nav auth container (replaces Sign In link)
+      const siteAuthEl = document.getElementById('aapHeaderAuth');
+      const legacyUserInfo = document.getElementById('userInfo');
+      if (siteAuthEl) {
+        renderUserInfo(siteAuthEl, state.appUser, '/residents/profile.html');
+        siteAuthEl.classList.add('user-info');
+        const signInLink = document.getElementById('aapSignInLink');
+        if (signInLink) signInLink.style.display = 'none';
+        const mobileSignInLink = document.getElementById('aapMobileSignInLink');
+        if (mobileSignInLink) mobileSignInLink.closest('li')?.remove();
+        if (legacyUserInfo) legacyUserInfo.style.display = 'none';
+      } else if (legacyUserInfo) {
+        renderUserInfo(legacyUserInfo, state.appUser, '/residents/profile.html');
+      }
 
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
@@ -286,7 +330,15 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
           window.location.href = '/login/';
         };
         document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
-        document.getElementById('headerSignOutBtn')?.addEventListener('click', handleSignOut);
+        const userInfoEl = document.getElementById('userInfo') || document.getElementById('aapHeaderAuth');
+        userInfoEl?.addEventListener('click', (e) => {
+          if (e.target.closest('#headerSignOutBtn') || e.target.closest('.user-menu-signout')) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSignOut();
+          }
+        });
+        setupVersionInfo();
       }
 
       pageContentShown = true;

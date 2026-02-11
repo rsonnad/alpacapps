@@ -18,22 +18,25 @@
   padding-right: 2rem;
 }
 
-/* When inside manage-container, let container handle alignment */
-.manage-container .manage-tabs {
-  max-width: none;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 0;
-  padding-right: 0;
+/* Prevent layout shift while JS populates tabs */
+.manage-tabs:empty {
+  min-height: 42px;
 }
 
-/* Context switcher (Resident / Staff toggle) */
+/* Context switcher — centering wrapper aligns with .manage-tabs */
 .context-switcher {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.75rem 2rem;
+}
+
+/* Inner pill with the rounded background */
+.context-switcher-pill {
   display: inline-flex;
   background: var(--border);
   border-radius: 8px;
   padding: 3px;
-  margin: 0.75rem 0 0.75rem 2rem;
 }
 
 .context-switcher-btn {
@@ -402,7 +405,8 @@
   }
 
   .context-switcher {
-    margin-left: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .manage-tab {

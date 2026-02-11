@@ -227,7 +227,7 @@ function renderContextSwitcher() {
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
   const activeContext = DEVICE_PAGE_PATHS.has(currentPath) ? 'devices' : 'resident';
 
-  switcher.innerHTML = tabs.map(tab => {
+  const btns = tabs.map(tab => {
     if (tab.id === 'admin' && !hasAdminPerms) {
       return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
     }
@@ -235,6 +235,7 @@ function renderContextSwitcher() {
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');
+  switcher.innerHTML = `<div class="context-switcher-pill">${btns}</div>`;
 }
 
 // =============================================
