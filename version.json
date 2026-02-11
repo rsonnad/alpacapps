@@ -1,12 +1,12 @@
 {
   "version": "",
-  "release": 12,
-  "sha": "a215a69e",
-  "fullSha": "a215a69e4ba94a9d1cb129e7e6a72485039a84b1",
+  "release": 13,
+  "sha": "af402c46",
+  "fullSha": "af402c466afdd314fe2c3fb92c10b8112d33c1a3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:19:03+00",
-  "commits": [{"sha":"a215a69e","message":"Fix likeness by interleaving reference photo between instructions","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:21:29+00",
+  "commits": [{"sha":"af402c46","message":"Fix camera alphabetical sorting after grouping","author":"Rahul Sonnad"}]
 }
