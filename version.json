@@ -1,12 +1,12 @@
 {
-  "version": "v260211.31 10:20a",
-  "release": 31,
-  "sha": "51834ebc",
-  "fullSha": "51834ebc9fcd8b5a759560fade7c04da9da58c00",
+  "version": "v260211.32 10:34a",
+  "release": 32,
+  "sha": "911f95e3",
+  "fullSha": "911f95e3f2b20450064acc424816be5300919b2c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 16:20:23+00",
-  "commits": [{"sha":"9bbd605d","message":"Photos page: reorder sections, add thumbnail cards","author":"Rahul Sonnad"},{"sha":"51834ebc","message":"Update alpacapps submodule: fix Square sandbox error for real users","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:34:35+00",
+  "commits": [{"sha":"911f95e3","message":"Aggressively reduce whitespace: header, tabs, sections, content gaps","author":"Rahul Sonnad"}]
 }
