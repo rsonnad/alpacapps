@@ -1,12 +1,12 @@
 {
-  "version": "v260211.41 12:50p",
-  "release": 41,
-  "sha": "093cd03b",
-  "fullSha": "093cd03b6dac37a95c809382392e964a2bb64cf6",
+  "version": "v260211.42 12:52p",
+  "release": 42,
+  "sha": "f0c14cc9",
+  "fullSha": "f0c14cc983577281892b44ed351b5bebd0e445be",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 18:50:05+00",
-  "commits": [{"sha":"093cd03b","message":"Fix infra page header: add missing site.css link + add nav links to user dropdowns","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 18:52:58+00",
+  "commits": [{"sha":"f0c14cc9","message":"Add CC/BCC support to send-email edge function","author":"Rahul Sonnad"}]
 }
