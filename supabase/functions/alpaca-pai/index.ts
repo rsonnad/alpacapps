@@ -289,6 +289,7 @@ interface PaiConfig {
   amenities: string;
   chat_addendum: string;
   email_addendum: string;
+  discord_addendum: string;
   house_rules: string;
 }
 
@@ -319,6 +320,7 @@ You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean
 - Multiple indoor and outdoor living spaces`,
   chat_addendum: "",
   email_addendum: "",
+  discord_addendum: "",
   house_rules: "",
 };
 
@@ -328,7 +330,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
     const [configResult, faqResult] = await Promise.all([
       supabase
         .from("pai_config")
-        .select("identity, property_info, amenities, chat_addendum, email_addendum")
+        .select("identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum")
         .eq("id", 1)
         .single(),
       supabase
@@ -353,6 +355,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
         amenities: data.amenities || DEFAULT_PAI_CONFIG.amenities,
         chat_addendum: data.chat_addendum || "",
         email_addendum: data.email_addendum || "",
+        discord_addendum: data.discord_addendum || "",
         house_rules: houseRules,
       };
     }
@@ -2012,6 +2015,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   const { message, conversationHistory = [] }: PaiRequest = body;
   const context = body.context || {};
   const isEmailChannel = context.source === "email";
+  const isDiscordChannel = context.source === "discord";
   if (!message?.trim()) {
     return jsonResponse({ error: "Message is required" }, 400);
   }
@@ -2047,6 +2051,36 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
         role: "resident",
         display_name: context.sender || "Email sender",
         email: context.sender,
+        person_id: null,
+      };
+      userLevel = ROLE_LEVEL.resident ?? 1;
+    }
+  } else if (isDiscordChannel && token === serviceKey) {
+    // Discord channel: pai-discord bot calls with service role key + discord_user_id
+    const discordUserId = (context.discord_user_id || "").trim();
+    const discordUserName = context.discord_user_name || "Discord user";
+    if (discordUserId) {
+      const { data: appUserRow } = await supabase
+        .from("app_users")
+        .select("id, auth_user_id, role, display_name, email, person_id")
+        .eq("discord_id", discordUserId)
+        .limit(1)
+        .maybeSingle();
+      if (appUserRow?.auth_user_id) {
+        const { appUser: resolved, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, appUserRow.auth_user_id, "use_pai");
+        if (hasPaiPerm && resolved) {
+          appUser = resolved;
+          userLevel = ROLE_LEVEL[appUser.role] ?? 1;
+        }
+      }
+    }
+    if (!appUser) {
+      // Unknown Discord user — give basic resident-level access
+      appUser = {
+        id: "",
+        role: "resident",
+        display_name: discordUserName,
+        email: null,
         person_id: null,
       };
       userLevel = ROLE_LEVEL.resident ?? 1;
@@ -2095,7 +2129,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     userLevel = ROLE_LEVEL[targetUser.role] ?? 0;
   }
 
-  console.log(`PAI ${isEmailChannel ? "email" : "chat"} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
+  const channelLabel = isEmailChannel ? "email" : isDiscordChannel ? "discord" : "chat";
+  console.log(`PAI ${channelLabel} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
 
   // 3. Build scope and load PAI config in parallel
   const [scope, paiConfig] = await Promise.all([
@@ -2118,7 +2153,9 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let systemPrompt = buildSystemPrompt(scope, paiConfig);
   if (isEmailChannel && paiConfig.email_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.email_addendum.trim();
-  } else if (!isEmailChannel && paiConfig.chat_addendum?.trim()) {
+  } else if (isDiscordChannel && paiConfig.discord_addendum?.trim()) {
+    systemPrompt += "\n\n" + paiConfig.discord_addendum.trim();
+  } else if (!isEmailChannel && !isDiscordChannel && paiConfig.chat_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.chat_addendum.trim();
   }
 
@@ -2227,7 +2264,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     try {
       await supabase.from('pai_interactions').insert({
         app_user_id: appUser.id,
-        source: isEmailChannel ? 'email' : 'chat',
+        source: channelLabel,
         message_preview: message.substring(0, 100),
       });
     } catch (_) { /* non-critical */ }
