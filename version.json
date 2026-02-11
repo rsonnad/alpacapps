@@ -1,12 +1,12 @@
 {
-  "version": "v260211.52 1:53p",
-  "release": 52,
-  "sha": "ac45008d",
-  "fullSha": "ac45008de4e01da8d3939b81c3e08b0863f7bca7",
+  "version": "v260211.53 1:57p",
+  "release": 53,
+  "sha": "37add759",
+  "fullSha": "37add759ae19d3261e8ea666d534329ca4927ab9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:53:28+00",
-  "commits": [{"sha":"ac45008d","message":"Darken hero overlay + heavier text shadow for readability","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:57:08+00",
+  "commits": [{"sha":"37add759","message":"Fix nav whitespace inconsistency and devices location column width","author":"Rahul Sonnad"}]
 }
