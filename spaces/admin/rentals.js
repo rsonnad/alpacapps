@@ -1203,21 +1203,33 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     rentalService.formatCurrency(app.approved_rate);
   loadRentHistory(app.assignment_id);
 
-  // Status tracker and action buttons
+  // Status tracker, action pane, and action buttons
   updateRentalStatusTracker(app);
+  updateActionPane(app);
   updateRentalActions(app);
 
-  // Re-evaluate action buttons when terms fields change
+  // Re-evaluate action buttons and action pane when terms fields change
   ['termSpace', 'termRate', 'termMoveIn'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.onchange = el.oninput = () => updateRentalActions(app);
+      el.onchange = el.oninput = () => {
+        updateRentalActions(app);
+        updateActionPane(app);
+      };
     }
   });
 
   // Show the detail page (hide pipeline)
   showApplicantDetailPage();
   history.replaceState(null, '', window.location.pathname + window.location.search + '#applicant=' + applicationId);
+
+  // Stage-aware default tab (only when no explicit tab was requested)
+  if (activeTab === 'applicant') {
+    const stage = rentalService.getPipelineStage(app);
+    if (stage === 'applications' && app.application_status === 'under_review') activeTab = 'terms';
+    else if (stage === 'approved' || stage === 'contract') activeTab = 'documents';
+    else if (stage === 'deposit') activeTab = 'deposits';
+  }
 
   // Set active tab
   switchDetailTab(activeTab);
@@ -1240,6 +1252,284 @@ function switchDetailTab(tabName) {
   page.querySelectorAll('.detail-tab-content').forEach(c => {
     c.classList.toggle('active', c.id === tabName + 'Tab');
   });
+}
+
+// =============================================
+// ACTION PANE - Wizard-like stage guidance
+// =============================================
+
+function updateActionPane(app) {
+  const stage = rentalService.getPipelineStage(app);
+  const pane = document.getElementById('actionPane');
+  if (!pane) return;
+
+  renderActionPaneProgress(stage);
+
+  const guidance = document.getElementById('actionPaneGuidance');
+  const actions = document.getElementById('actionPaneActions');
+
+  switch (stage) {
+    case 'community_fit':
+      renderCommunityFitPane(app, guidance, actions);
+      break;
+    case 'applications':
+      renderApplicationsPane(app, guidance, actions);
+      break;
+    case 'approved':
+      renderApprovedPane(app, guidance, actions);
+      break;
+    case 'contract':
+      renderContractPane(app, guidance, actions);
+      break;
+    case 'deposit':
+      renderDepositPane(app, guidance, actions);
+      break;
+    case 'ready':
+      renderReadyPane(app, guidance, actions);
+      break;
+    default:
+      guidance.innerHTML = '';
+      actions.innerHTML = '';
+  }
+}
+
+function renderActionPaneProgress(currentStage) {
+  const stages = [
+    { key: 'community_fit', label: 'Community Fit' },
+    { key: 'applications', label: 'Application' },
+    { key: 'approved', label: 'Approved' },
+    { key: 'contract', label: 'Contract' },
+    { key: 'deposit', label: 'Deposit' },
+    { key: 'ready', label: 'Ready' },
+  ];
+
+  const container = document.getElementById('actionPaneProgress');
+  if (!container) return;
+  const currentIndex = stages.findIndex(s => s.key === currentStage);
+
+  container.innerHTML = stages.map((s, i) => {
+    const state = i < currentIndex ? 'complete' : i === currentIndex ? 'active' : 'pending';
+    const dot = state === 'complete' ? '&#10003;' : (i + 1);
+    return `
+      <div class="action-step ${state}">
+        <div class="action-step-dot">${dot}</div>
+        <div class="action-step-label">${s.label}</div>
+      </div>
+      ${i < stages.length - 1 ? `<div class="action-step-connector ${i < currentIndex ? 'complete' : ''}"></div>` : ''}
+    `;
+  }).join('');
+}
+
+function renderCommunityFitPane(app, guidance, actions) {
+  const person = app.person || {};
+  const accomm = ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || 'Flexible';
+  const referral = person.referral_source || 'Not specified';
+
+  guidance.innerHTML = `
+    <div class="action-pane-instruction">
+      <strong>Review this person's community fit responses, then decide.</strong>
+    </div>
+    <div class="action-pane-context">
+      Accommodation: <strong>${accomm}</strong> &middot; Referral: <strong>${referral}</strong>
+    </div>
+  `;
+
+  if (app.invited_to_apply_at) {
+    actions.innerHTML = `
+      <span class="action-pane-waiting"><span class="waiting-dot"></span> Invited ${rentalService.formatDate(app.invited_to_apply_at)}</span>
+      <button class="btn-secondary" onclick="inviteToApplyAction()">Re-send Link</button>
+      <button class="btn-secondary" onclick="denyApplication()">Deny</button>
+    `;
+  } else {
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="inviteToApplyAction()">Invite to Apply</button>
+      <button class="btn-secondary" onclick="denyApplication()">Deny</button>
+    `;
+  }
+}
+
+function renderApplicationsPane(app, guidance, actions) {
+  if (app.application_status === 'submitted') {
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>New application received.</strong> Start your review to evaluate this applicant.
+      </div>
+    `;
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="startReviewApplication()">Start Review</button>
+      <button class="btn-secondary" onclick="denyApplication()">Deny</button>
+    `;
+  } else {
+    // under_review — show terms checklist
+    const hasSpace = !!(document.getElementById('termSpace')?.value || app.approved_space_id);
+    const rateVal = document.getElementById('termRate')?.value || app.approved_rate;
+    const hasRate = !!(rateVal && parseFloat(rateVal) > 0);
+    const hasMoveIn = !!(document.getElementById('termMoveIn')?.value || app.approved_move_in);
+    const allFilled = hasSpace && hasRate && hasMoveIn;
+
+    const spaceName = app.approved_space?.name || app.desired_space?.name || '';
+    const rateDisplay = hasRate ? rentalService.formatCurrency(parseFloat(rateVal)) + '/' + (app.approved_rate_term || 'mo') : '';
+    const moveInDisplay = hasMoveIn ? rentalService.formatDate(document.getElementById('termMoveIn')?.value || app.approved_move_in) : '';
+
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>Set the rental terms, then approve.</strong>
+      </div>
+      <div class="action-pane-checklist">
+        <div class="checklist-row ${hasSpace ? 'done' : 'missing'}">
+          ${hasSpace ? '&#10003;' : '&#9675;'} Space assigned${hasSpace && spaceName ? `<span class="checklist-value">${spaceName}</span>` : ''}
+        </div>
+        <div class="checklist-row ${hasRate ? 'done' : 'missing'}">
+          ${hasRate ? '&#10003;' : '&#9675;'} Rate set${hasRate ? `<span class="checklist-value">${rateDisplay}</span>` : ''}
+        </div>
+        <div class="checklist-row ${hasMoveIn ? 'done' : 'missing'}">
+          ${hasMoveIn ? '&#10003;' : '&#9675;'} Move-in date${hasMoveIn ? `<span class="checklist-value">${moveInDisplay}</span>` : ''}
+        </div>
+      </div>
+      ${!allFilled ? '<div class="action-pane-hint">Fill in the Terms tab below to continue.</div>' : ''}
+    `;
+
+    actions.innerHTML = allFilled
+      ? `<button class="btn-primary action-pane-cta" onclick="approveApplication()">Approve Application</button>
+         <button class="btn-secondary" onclick="denyApplication()">Deny</button>`
+      : `<button class="btn-primary action-pane-cta" disabled>Approve Application</button>
+         <button class="btn-secondary" onclick="switchDetailTab('terms')">Go to Terms</button>
+         <button class="btn-secondary" onclick="denyApplication()">Deny</button>`;
+  }
+}
+
+function renderApprovedPane(app, guidance, actions) {
+  const spaceName = app.approved_space?.name || 'Not set';
+  const rate = app.approved_rate ? rentalService.formatCurrency(app.approved_rate) + '/' + (app.approved_rate_term || 'mo') : 'Not set';
+  const moveIn = app.approved_move_in ? rentalService.formatDate(app.approved_move_in) : 'Not set';
+
+  guidance.innerHTML = `
+    <div class="action-pane-instruction">
+      <strong>Generate the rental agreement for signing.</strong>
+    </div>
+    <div class="action-pane-context">
+      Space: <strong>${spaceName}</strong> &middot; Rate: <strong>${rate}</strong> &middot; Move-in: <strong>${moveIn}</strong>
+    </div>
+  `;
+
+  actions.innerHTML = `
+    <button class="btn-primary action-pane-cta" onclick="generateAgreement()">Generate Agreement</button>
+    <button class="btn-secondary" onclick="switchDetailTab('terms')">Edit Terms</button>
+  `;
+}
+
+function renderContractPane(app, guidance, actions) {
+  const agStatus = app.agreement_status || 'pending';
+
+  if (agStatus === 'generated') {
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>The agreement PDF is ready.</strong> Send it for e-signature.
+      </div>
+    `;
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="sendForSignatureAction()">Send for Signature</button>
+    `;
+  } else if (agStatus === 'sent') {
+    const sentDate = app.agreement_sent_at ? rentalService.formatDate(app.agreement_sent_at) : '';
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>Waiting for the applicant to sign.</strong>
+      </div>
+      ${sentDate ? `<div class="action-pane-context">Sent on <strong>${sentDate}</strong></div>` : ''}
+    `;
+    actions.innerHTML = `
+      <span class="action-pane-waiting"><span class="waiting-dot"></span> Awaiting signature</span>
+      <button class="btn-secondary" onclick="checkSignatureStatusAction()">Check Status</button>
+      <button class="btn-secondary" onclick="resendSignatureAction()">Resend Request</button>
+    `;
+  } else if (agStatus === 'signed') {
+    const signedDate = app.agreement_signed_at ? rentalService.formatDate(app.agreement_signed_at) : '';
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>Agreement signed!</strong> Collect deposits to continue.
+      </div>
+      ${signedDate ? `<div class="action-pane-context">Signed on <strong>${signedDate}</strong></div>` : ''}
+    `;
+    actions.innerHTML = `
+      <button class="btn-secondary" onclick="switchDetailTab('deposits')">View Deposits</button>
+    `;
+  }
+}
+
+function renderDepositPane(app, guidance, actions) {
+  const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
+  const secAmt = app.security_deposit_amount || 0;
+  const moveInPaid = !!app.move_in_deposit_paid;
+  const secPaid = !!app.security_deposit_paid;
+  const depStatus = app.deposit_status || 'pending';
+
+  const checklist = [];
+  checklist.push(`
+    <div class="checklist-row ${moveInPaid ? 'done' : 'missing'}">
+      ${moveInPaid ? '&#10003;' : '&#9675;'} Move-in deposit<span class="checklist-value">${rentalService.formatCurrency(moveInAmt)}</span>
+    </div>
+  `);
+  if (secAmt > 0) {
+    checklist.push(`
+      <div class="checklist-row ${secPaid ? 'done' : 'missing'}">
+        ${secPaid ? '&#10003;' : '&#9675;'} Security deposit<span class="checklist-value">${rentalService.formatCurrency(secAmt)}</span>
+      </div>
+    `);
+  }
+
+  const allReceived = moveInPaid && (secAmt === 0 || secPaid);
+
+  guidance.innerHTML = `
+    <div class="action-pane-instruction">
+      <strong>${allReceived ? 'All deposits received.' : 'Collect deposits before move-in.'}</strong>
+      ${allReceived ? ' Confirm to proceed.' : ''}
+    </div>
+    <div class="action-pane-checklist">
+      ${checklist.join('')}
+    </div>
+  `;
+
+  if (allReceived || depStatus === 'received') {
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="confirmDeposit()">Confirm Deposit</button>
+    `;
+  } else {
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="switchDetailTab('deposits')">Record Payment</button>
+      ${!app.deposit_requested_at ? '<button class="btn-secondary" onclick="switchDetailTab(\'deposits\')">Send Deposit Request</button>' : ''}
+    `;
+  }
+}
+
+function renderReadyPane(app, guidance, actions) {
+  const spaceName = app.approved_space?.name || '';
+  const moveIn = app.approved_move_in ? rentalService.formatDate(app.approved_move_in) : '';
+  const agSigned = app.agreement_status === 'signed';
+  const depConfirmed = app.deposit_status === 'confirmed';
+
+  guidance.innerHTML = `
+    <div class="action-pane-instruction">
+      <strong>Everything's in order. Confirm move-in to create the assignment.</strong>
+    </div>
+    <div class="action-pane-checklist">
+      <div class="checklist-row done">&#10003; Agreement signed</div>
+      <div class="checklist-row done">&#10003; Deposits confirmed</div>
+      ${spaceName ? `<div class="checklist-row done">&#10003; Space: <span class="checklist-value">${spaceName}</span></div>` : ''}
+      ${moveIn ? `<div class="checklist-row done">&#10003; Move-in: <span class="checklist-value">${moveIn}</span></div>` : ''}
+    </div>
+  `;
+
+  if (agSigned) {
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="confirmMoveIn()">Confirm Move-in</button>
+    `;
+  } else {
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" disabled title="Agreement must be signed first">Confirm Move-in</button>
+      <button class="btn-secondary" onclick="switchDetailTab('documents')">View Agreement</button>
+    `;
+  }
 }
 
 function updateRentalStatusTracker(app) {

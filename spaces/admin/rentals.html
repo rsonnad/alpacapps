@@ -48,7 +48,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260211.05 12:23a</span>
+    <span data-site-version style="display:none">v260211.07 12:35a</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -131,8 +131,8 @@
             </div>
           </div>
 
-          <!-- Status Tracker -->
-          <div id="detailStatusTracker" class="status-tracker">
+          <!-- Status Tracker (hidden, kept for tab badge updates) -->
+          <div id="detailStatusTracker" class="status-tracker" style="display:none">
             <div class="tracker-step" id="detailTrackerTerms">
               <div class="tracker-icon">📋</div>
               <div class="tracker-label">Terms</div>
@@ -155,6 +155,15 @@
               <div class="tracker-icon">🏠</div>
               <div class="tracker-label">Move-in</div>
               <div class="tracker-detail" id="detailTrackerMoveInDetail">—</div>
+            </div>
+          </div>
+
+          <!-- Action Pane - Wizard-like stage guidance -->
+          <div id="actionPane" class="action-pane">
+            <div class="action-pane-progress" id="actionPaneProgress"></div>
+            <div class="action-pane-body">
+              <div class="action-pane-guidance" id="actionPaneGuidance"></div>
+              <div class="action-pane-actions" id="actionPaneActions"></div>
             </div>
           </div>
 
