@@ -389,7 +389,7 @@ async function inviteUser(email, role, personInfo = {}) {
 
     // Show invitation modal
     if (isProspect && accessToken) {
-      showProspectLinkModal(accessToken, [firstName, lastName].filter(Boolean).join(' ') || effectiveEmail || 'Prospect');
+      showProspectLinkModal(accessToken, [firstName, lastName].filter(Boolean).join(' ') || effectiveEmail || 'Prospect', effectiveEmail);
     } else {
       showInvitationModal(inviteEmail, role);
     }
@@ -483,6 +483,8 @@ async function resendInvitation(invitationId) {
 // Store current invitation details for sending email
 let currentInviteEmail = null;
 let currentInviteRole = null;
+let currentProspectToken = null;
+let currentProspectName = null;
 
 function showInvitationModal(email, role) {
   currentInviteEmail = email;
@@ -535,22 +537,35 @@ function closeInviteModal() {
   currentInviteRole = null;
 }
 
-function showProspectLinkModal(token, name) {
+function showProspectLinkModal(token, name, email) {
   const url = `https://alpacaplayhouse.com/spaces/?access=${token}`;
+  const firstName = name && name !== 'Prospect' ? name.split(' ')[0] : '';
 
-  const inviteText = `Hi${name && name !== 'Prospect' ? ' ' + name.split(' ')[0] : ''},
+  const inviteText = `Hi${firstName ? ' ' + firstName : ''},
 
-You've been invited to browse available spaces at Alpaca Playhouse.
+You've been invited to browse available spaces at Alpaca Playhouse, a unique co-living community in Cedar Creek, Texas.
 
-No login or account is needed — just click the link below to start browsing:
+No account or login is needed — just click the link below to start browsing:
 
 ${url}
 
-This link is personal to you and will expire in 14 days.
+You'll be able to see photos, amenities, pricing, and availability for all of our spaces. This link is personal to you and will expire in 14 days.
 
-You'll be able to see photos, amenities, pricing, and availability for all of our spaces.
+When you're ready, you can also:
+• Apply for a rental space: https://alpacaplayhouse.com/spaces/apply/
+• Host an event: https://alpacaplayhouse.com/spaces/hostevent/
 
-If you have any questions or would like to schedule a tour, feel free to reply to this message or email team@alpacaplayhouse.com.`;
+If you have any questions or would like to schedule a tour, feel free to reply to this message or email team@alpacaplayhouse.com.
+
+Yours,
+The Alpaca Playhouse Community Team`;
+
+  // Store state for email sending
+  currentProspectToken = token;
+  currentProspectName = firstName;
+  const hasRealEmail = email && email.includes('@') && !email.includes('@noemail.local');
+  currentInviteEmail = hasRealEmail ? email : null;
+  currentInviteRole = 'prospect';
 
   const modal = document.getElementById('inviteTextModal');
   const textarea = document.getElementById('inviteTextContent');
@@ -558,19 +573,23 @@ If you have any questions or would like to schedule a tour, feel free to reply t
   modal.querySelector('.modal-header h2').textContent = 'Invitation Ready';
   modal.querySelector('.modal-body > p').textContent = 'The invitation has been created. Copy the text below and send it via email or message:';
   textarea.value = inviteText;
-  textarea.style.height = '250px';
+  textarea.style.height = '300px';
 
-  // Hide the send email button for prospects (they don't have accounts to email to)
-  document.getElementById('sendInviteEmailBtn').style.display = 'none';
+  // Show send email button only if prospect has a real email
+  const sendBtn = document.getElementById('sendInviteEmailBtn');
+  sendBtn.style.display = hasRealEmail ? '' : 'none';
 
   modal.classList.remove('hidden');
 }
 
-// Override close to reset modal state (restore send email button hidden by prospect flow)
+// Override close to reset modal state
 const _originalCloseInviteModal = closeInviteModal;
 window.closeInviteModal = function() {
   _originalCloseInviteModal();
+  currentProspectToken = null;
+  currentProspectName = null;
   document.getElementById('sendInviteEmailBtn').style.display = '';
+  document.getElementById('inviteTextContent').style.height = '250px';
 };
 
 async function sendInviteEmail() {
@@ -585,6 +604,31 @@ async function sendInviteEmail() {
   btn.disabled = true;
 
   try {
+    // Handle prospect emails differently
+    if (currentInviteRole === 'prospect' && currentProspectToken) {
+      const accessUrl = `https://alpacaplayhouse.com/spaces/?access=${currentProspectToken}`;
+      const emailResult = await emailService.sendProspectInvitation(currentInviteEmail, currentProspectName, accessUrl);
+
+      if (emailResult.success) {
+        // Update invitation email tracking
+        const invitation = invitations.find(i => i.email.toLowerCase() === currentInviteEmail.toLowerCase());
+        if (invitation) {
+          const currentCount = invitation.email_send_count || 0;
+          await supabase
+            .from('user_invitations')
+            .update({ email_sent_at: new Date().toISOString(), email_send_count: currentCount + 1 })
+            .eq('id', invitation.id);
+        }
+        showToast('Email sent to ' + currentInviteEmail, 'success');
+        closeInviteModal();
+        await loadInvitations();
+        render();
+      } else {
+        showToast('Failed to send email. Try copying the invite text manually.', 'error');
+      }
+      return;
+    }
+
     const invitation = invitations.find(i => i.email.toLowerCase() === currentInviteEmail.toLowerCase());
     if (!invitation) {
       showToast('Invitation not found', 'error');
@@ -629,8 +673,8 @@ async function revokeInvitation(invitationId) {
   }
 }
 
-window.copyProspectLink = function(token, label) {
-  showProspectLinkModal(token, label || 'Prospect');
+window.copyProspectLink = function(token, label, email) {
+  showProspectLinkModal(token, label || 'Prospect', email || null);
 };
 
 window.revokeProspectToken = async function(tokenId, invitationId) {
@@ -922,7 +966,7 @@ function renderInvitations() {
               </td>
               <td class="actions-cell">
                 ${isProspect && token ? `
-                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}', '${(token.label || 'Prospect').replace(/'/g, "\\'")}')" title="Copy invitation text">Copy</button>` : ''}
+                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}', '${(token.label || 'Prospect').replace(/'/g, "\\'")}', '${inv.email.includes('@noemail.local') ? '' : inv.email.replace(/'/g, "\\'")}')" title="Copy invitation text">Copy</button>` : ''}
                   ${!tokenRevoked ? `<button class="btn-danger btn-small" onclick="revokeProspectToken('${token.id}', '${inv.id}')">Revoke</button>` : ''}
                 ` : `
                   <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">

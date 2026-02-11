@@ -27,6 +27,7 @@ export const EMAIL_TYPES = {
   EVENT_INVITATION: 'event_invitation',
   GENERAL_INVITATION: 'general_invitation',
   STAFF_INVITATION: 'staff_invitation',
+  PROSPECT_INVITATION: 'prospect_invitation',
   // Rental invite
   INVITE_TO_APPLY: 'invite_to_apply',
   // Identity verification
@@ -337,6 +338,19 @@ export const emailService = {
       email,
       role,
       login_url: loginUrl,
+    });
+  },
+
+  /**
+   * Send prospect invitation email with access link (no login required)
+   * @param {string} email - Recipient email
+   * @param {string} firstName - Prospect's first name (optional)
+   * @param {string} accessUrl - The access link URL
+   */
+  async sendProspectInvitation(email, firstName, accessUrl) {
+    return sendEmail(EMAIL_TYPES.PROSPECT_INVITATION, email, {
+      first_name: firstName || '',
+      access_url: accessUrl,
     });
   },
 

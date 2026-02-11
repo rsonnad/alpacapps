@@ -29,6 +29,7 @@ type EmailType =
   | "event_invitation"
   | "general_invitation"
   | "staff_invitation"
+  | "prospect_invitation"
   // Admin notifications
   | "admin_event_request"
   | "admin_rental_application"
@@ -757,6 +758,48 @@ Best regards,
 GenAlpaca Team`
       };
     }
+
+    case "prospect_invitation":
+      return {
+        subject: "You're Invited to Browse Spaces - Alpaca Playhouse",
+        html: `
+          <h2>Welcome${data.first_name ? ', ' + data.first_name : ''}!</h2>
+          <p>You've been invited to browse available spaces at <strong>Alpaca Playhouse</strong>, a unique co-living community in Cedar Creek, Texas.</p>
+          <p>No account or login is needed — just click the button below to start browsing. You'll be able to see photos, amenities, pricing, and availability for all of our spaces.</p>
+          <p style="margin: 30px 0; text-align: center;">
+            <a href="${data.access_url}" style="background: #c2410c; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Browse Available Spaces</a>
+          </p>
+          <p style="color: #666; font-size: 14px;">This link is personal to you and will expire in 14 days.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p>When you're ready, you can also:</p>
+          <ul style="line-height: 1.8;">
+            <li><a href="https://alpacaplayhouse.com/spaces/apply/">Apply for a rental space</a></li>
+            <li><a href="https://alpacaplayhouse.com/spaces/hostevent/">Host an event</a></li>
+          </ul>
+          <p>If you have any questions or would like to schedule a tour, just reply to this email.</p>
+          <p>Yours,<br>The Alpaca Playhouse Community Team</p>
+        `,
+        text: `Welcome${data.first_name ? ', ' + data.first_name : ''}!
+
+You've been invited to browse available spaces at Alpaca Playhouse, a unique co-living community in Cedar Creek, Texas.
+
+No account or login is needed — just click the link below to start browsing:
+
+${data.access_url}
+
+You'll be able to see photos, amenities, pricing, and availability for all of our spaces.
+
+This link is personal to you and will expire in 14 days.
+
+When you're ready, you can also:
+- Apply for a rental space: https://alpacaplayhouse.com/spaces/apply/
+- Host an event: https://alpacaplayhouse.com/spaces/hostevent/
+
+If you have any questions or would like to schedule a tour, just reply to this email.
+
+Yours,
+The Alpaca Playhouse Community Team`
+      };
 
     // ===== RENTAL INVITE =====
     case "invite_to_apply":
