@@ -839,19 +839,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Load Tesla account settings (self-service for all users)
       await loadAccounts();
       renderSettings();
-
-      // Auto-retry Tesla connect if redirected back after session expiry
-      const retryAccountId = new URLSearchParams(window.location.search).get('tesla_retry');
-      if (retryAccountId) {
-        // Clean URL
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-        // Small delay so page is fully rendered, then auto-trigger connect
-        setTimeout(() => {
-          showToast('Retrying Tesla connection...', 'info');
-          window._connectTesla(parseInt(retryAccountId));
-        }, 500);
-      }
     },
   });
 });

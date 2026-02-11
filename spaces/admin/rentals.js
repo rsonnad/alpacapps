@@ -2476,8 +2476,8 @@ async function updateDocumentsTabState(app) {
   const noTemplateWarning = document.getElementById('noTemplateWarning');
   const leasePreview = document.getElementById('leasePreview');
 
-  // Reset visibility
-  generateSection.style.display = 'block';
+  // Reset visibility — hide generate section by default (Action Pane CTA handles initial generation)
+  generateSection.style.display = 'none';
   pdfSection.style.display = 'none';
   signatureSection.style.display = 'none';
   noTemplateWarning.style.display = 'none';
@@ -2497,6 +2497,7 @@ async function updateDocumentsTabState(app) {
     currentAgreementData = await rentalService.getAgreementData(app.id);
 
     if (!currentLeaseTemplate) {
+      generateSection.style.display = 'block';
       noTemplateWarning.style.display = 'block';
       return;
     }
@@ -2914,10 +2915,24 @@ async function sendForSignature() {
     const emailResult = await emailService.sendLeaseSent({ person: app.person });
 
     // Automatically send deposit request email with payment instructions
+    // Include ID verification link if not yet verified
+    let idUploadUrl = null;
+    if (app.identity_verification_status !== 'verified') {
+      try {
+        const { uploadUrl } = await identityService.requestVerification(
+          currentApplicationId, app.person_id, authState?.user?.email
+        );
+        idUploadUrl = uploadUrl;
+      } catch (e) {
+        console.warn('Could not generate ID upload link:', e);
+      }
+    }
     const depositApp = {
       person: app.person,
       move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
       security_deposit: app.security_deposit_amount || 0,
+      identity_verification_status: app.identity_verification_status,
+      id_upload_url: idUploadUrl,
     };
     const depositEmailResult = await emailService.sendDepositRequested(depositApp);
 

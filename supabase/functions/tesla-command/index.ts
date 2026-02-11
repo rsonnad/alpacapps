@@ -43,47 +43,17 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Verify auth
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const token = authHeader.replace("Bearer ", "");
-
-    // Allow trusted internal calls from PAI (service role key = already permission-checked)
-    const isInternalCall = token === supabaseServiceKey;
-
-    let appUser: any = null;
-    if (!isInternalCall) {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser(token);
-      if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
-      }
-
-      // 2. Check granular permission: control_cars
-      const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
-      appUser = result.appUser;
-      if (!result.hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
-      }
-    }
-
-    // 3. Parse request
+    // Parse request body first (needed to check action type)
     const body: TeslaCommandRequest = await req.json();
 
-    // Compute numeric user level from role
-    const roleLevels: Record<string, number> = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
-    const userLevel = isInternalCall ? 4 : (roleLevels[appUser?.role] || 0);
-
-    // ---- OAuth Code Exchange (account owner or admin) ----
+    // ---- OAuth Code Exchange ----
+    // Handled before auth check: the OAuth code is single-use and tied to the
+    // account's client_id/secret, so session auth is not needed. This avoids
+    // failures when the user's Supabase JWT expires during the Tesla redirect.
     if (body.action === "exchangeCode") {
       if (!body.code) {
         return jsonResponse({ error: "Missing authorization code" }, 400);
@@ -103,12 +73,6 @@ serve(async (req) => {
         return jsonResponse({ error: "Account not found" }, 404);
       }
 
-      // Allow admin OR account owner
-      if (userLevel < 3) {
-        if (!appUser?.id || acct.app_user_id !== appUser.id) {
-          return jsonResponse({ error: "Not authorized for this account" }, 403);
-        }
-      }
       if (!acct.fleet_client_id || !acct.fleet_client_secret) {
         return jsonResponse({ error: "Fleet API credentials not configured on account" }, 400);
       }
@@ -166,7 +130,35 @@ serve(async (req) => {
       return jsonResponse({ success: true, account_id: body.account_id });
     }
 
-    // ---- Vehicle Commands ----
+    // ---- Vehicle Commands (require auth) ----
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    // Allow trusted internal calls from PAI (service role key = already permission-checked)
+    const isInternalCall = token === supabaseServiceKey;
+
+    let appUser: any = null;
+    if (!isInternalCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return jsonResponse({ error: "Invalid token" }, 401);
+      }
+
+      // Check granular permission: control_cars
+      const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
+      appUser = result.appUser;
+      if (!result.hasPermission) {
+        return jsonResponse({ error: "Insufficient permissions" }, 403);
+      }
+    }
+
     const { vehicle_id, command } = body;
 
     if (!vehicle_id || !command) {

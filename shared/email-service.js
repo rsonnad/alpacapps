@@ -170,6 +170,7 @@ export const emailService = {
     const moveInDeposit = application.move_in_deposit || application.approved_rate || 0;
     const securityDeposit = application.security_deposit || 0;
     const totalDue = moveInDeposit + securityDeposit;
+    const needsId = application.identity_verification_status !== 'verified';
 
     return sendEmail(EMAIL_TYPES.DEPOSIT_REQUESTED, person.email, {
       first_name: person.first_name,
@@ -177,6 +178,8 @@ export const emailService = {
       security_deposit: securityDeposit,
       total_due: totalDue,
       due_date: dueDate ? formatDate(dueDate) : null,
+      needs_id_verification: needsId,
+      id_upload_url: application.id_upload_url || null,
     });
   },
 

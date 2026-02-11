@@ -274,6 +274,15 @@ Alpaca Playhouse`
             <li>Zelle: alpacaplayhouse@gmail.com</li>
           </ul>
           <p>Please include your name in the payment memo.</p>
+          ${data.needs_id_verification ? `
+          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
+            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
+            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.</p>
+            ${data.id_upload_url
+              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
+              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
+          </div>
+          ` : ''}
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Deposit Payment Request
@@ -292,7 +301,11 @@ Payment Methods:
 - Zelle: alpacaplayhouse@gmail.com
 
 Please include your name in the payment memo.
-
+${data.needs_id_verification ? `
+ID VERIFICATION REQUIRED
+We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.
+${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
+` : ''}
 Best regards,
 Alpaca Playhouse`
       };
@@ -406,6 +419,15 @@ Alpaca Playhouse`
             ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
           </ul>
           <p>Please include your name and "${data.period || 'rent'}" in the payment memo.</p>
+          ${data.needs_id_verification ? `
+          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
+            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
+            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+            ${data.id_upload_url
+              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
+              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
+          </div>
+          ` : ''}
           <p>Thank you!</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -419,7 +441,11 @@ Payment Methods:
 ${data._payment_methods_text || '- Contact us for payment options'}
 
 Please include your name and "${data.period || 'rent'}" in the payment memo.
-
+${data.needs_id_verification ? `
+ID VERIFICATION REQUIRED
+We also need a copy of your government-issued photo ID to complete your rental setup.
+${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
+` : ''}
 Thank you!
 
 Best regards,
@@ -439,6 +465,15 @@ Alpaca Playhouse`
           <ul style="list-style:none;padding-left:0;">
             ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
           </ul>
+          ${data.needs_id_verification ? `
+          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
+            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
+            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+            ${data.id_upload_url
+              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
+              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
+          </div>
+          ` : ''}
           <p>If you're experiencing difficulties, please reach out to discuss options.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -453,7 +488,11 @@ Please submit payment as soon as possible to avoid any additional fees or action
 
 Payment Methods:
 ${data._payment_methods_text || '- Contact us for payment options'}
-
+${data.needs_id_verification ? `
+ID VERIFICATION REQUIRED
+We also need a copy of your government-issued photo ID to complete your rental setup.
+${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
+` : ''}
 If you're experiencing difficulties, please reach out to discuss options.
 
 Best regards,
