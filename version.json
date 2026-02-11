@@ -1,12 +1,12 @@
 {
-  "version": "v260211.28 9:48a",
-  "release": 28,
-  "sha": "7fc3a527",
-  "fullSha": "7fc3a527b0b09549fbfccbcaefaa055d226513f0",
+  "version": "v260211.29 10:18a",
+  "release": 29,
+  "sha": "6e5ac743",
+  "fullSha": "6e5ac7430e9a2f10e96a3ad9efe936c21dc87e7d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:48:45+00",
-  "commits": [{"sha":"7fc3a527","message":"Add diagnostic logging and visible empty states to bookkeeping page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:18:55+00",
+  "commits": [{"sha":"6e5ac743","message":"Fix photo card thumbnails: larger icons, better alignment, YouTube thumbs","author":"Rahul Sonnad"}]
 }
