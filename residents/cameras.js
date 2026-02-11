@@ -15,6 +15,12 @@ let deviceScope = null;
 // Camera settings cache (keyed by protectCameraId)
 let cameraSettings = {};
 
+// Blink snapshot refresh intervals
+const blinkRefreshIntervals = {};
+const BLINK_REFRESH_MS = 60000; // refresh snapshot every 60s
+const BLINK_STORAGE_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos';
+const BLINK_SNAPSHOT_PATH = 'cameras/blink-latest.jpg';
+
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
 const SENSORS_PROXY_BASE = 'https://cam.alpacaplayhouse.com/sensors';
@@ -219,7 +225,48 @@ function renderCameras() {
     return;
   }
 
-  grid.innerHTML = cameras.map((cam, i) => `
+  grid.innerHTML = cameras.map((cam, i) => {
+    const isBlink = cam.model === 'Blink';
+
+    if (isBlink) {
+      // Blink camera: snapshot-only card (no HLS video)
+      return `
+    <div class="camera-card" data-cam-index="${i}">
+      <div class="camera-card__label">
+        <span class="status-dot status-live" id="dot-${i}" title="Cloud camera"></span>
+        <span>${cam.name}</span>
+        <div class="camera-card__controls">
+          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''} · Blink (snapshot)</span>
+        </div>
+      </div>
+      <div class="camera-card__video blink-snapshot-container" id="video-container-${i}" data-cam="${i}">
+        <img id="blink-img-${i}" class="blink-snapshot-img"
+          src="${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}"
+          alt="${cam.name} snapshot"
+          onerror="this.style.opacity='0.3'"
+          onload="this.style.opacity='1'"
+        />
+        <div class="camera-card__overlay hidden" id="overlay-${i}">
+          <div class="camera-card__loading">Loading snapshot...</div>
+        </div>
+        <div class="blink-snapshot-badge" id="blink-badge-${i}">
+          <span class="blink-snapshot-time" id="blink-time-${i}">Refreshing...</span>
+        </div>
+        <!-- Expand button -->
+        <button class="camera-card__expand" data-cam="${i}" title="Fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        </button>
+      </div>
+    </div>`;
+    }
+
+    // Standard HLS camera card
+    return `
     <div class="camera-card" data-cam-index="${i}">
       <div class="camera-card__label">
         <span class="status-dot" id="dot-${i}"></span>
@@ -293,8 +340,8 @@ function renderCameras() {
         </div>
       </div>
       ` : ''}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   // Bind quality selectors
   grid.querySelectorAll('.quality-select').forEach(select => {
@@ -374,8 +421,12 @@ function renderCameras() {
     });
   });
 
-  // Start all streams at low quality
+  // Start all streams at low quality (or snapshot refresh for Blink)
   cameras.forEach((cam, i) => {
+    if (cam.model === 'Blink') {
+      startBlinkSnapshotRefresh(i);
+      return;
+    }
     const defaultQuality = cam.streams.low ? 'low' : (cam.streams.med ? 'med' : 'high');
     currentQualities[i] = defaultQuality;
     const select = grid.querySelector(`.quality-select[data-cam="${i}"]`);
@@ -520,6 +571,50 @@ function startStream(camIndex, quality, videoElementId) {
       loadingEl.textContent = 'Browser not supported';
     }
     if (dot) dot.className = 'status-dot status-offline';
+  }
+}
+
+// =============================================
+// BLINK SNAPSHOT REFRESH
+// =============================================
+function startBlinkSnapshotRefresh(camIndexOrKey) {
+  // Supports grid cameras (numeric index) and lightbox ('lb')
+  const isLightbox = camIndexOrKey === 'lb';
+  const img = isLightbox
+    ? document.getElementById('lb-blink-img')
+    : document.getElementById(`blink-img-${camIndexOrKey}`);
+  const timeEl = isLightbox ? null : document.getElementById(`blink-time-${camIndexOrKey}`);
+  const dot = isLightbox ? null : document.getElementById(`dot-${camIndexOrKey}`);
+  if (!img) return;
+
+  function refreshSnapshot() {
+    const url = `${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}`;
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      img.src = url;
+      img.style.opacity = '1';
+      if (dot) dot.className = 'status-dot status-live';
+      if (timeEl) timeEl.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+    };
+    tempImg.onerror = () => {
+      if (dot) dot.className = 'status-dot status-connecting';
+      if (timeEl) timeEl.textContent = 'Snapshot unavailable';
+    };
+    tempImg.src = url;
+  }
+
+  // Initial load
+  refreshSnapshot();
+
+  // Periodic refresh
+  if (blinkRefreshIntervals[camIndexOrKey]) clearInterval(blinkRefreshIntervals[camIndexOrKey]);
+  blinkRefreshIntervals[camIndexOrKey] = setInterval(refreshSnapshot, BLINK_REFRESH_MS);
+}
+
+function stopBlinkSnapshotRefresh(camIndex) {
+  if (blinkRefreshIntervals[camIndex]) {
+    clearInterval(blinkRefreshIntervals[camIndex]);
+    delete blinkRefreshIntervals[camIndex];
   }
 }
 
@@ -845,15 +940,40 @@ function openLightbox(camIndex) {
   document.getElementById('cameraLightbox').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 
-  // Start stream
-  retryCount['lb'] = 0;
-  startStream(camIndex, lightboxQuality, 'lb-video');
+  // Handle Blink snapshot vs HLS stream
+  const lbVideo = document.getElementById('lb-video');
+  let lbBlinkImg = document.getElementById('lb-blink-img');
+
+  if (cam.model === 'Blink') {
+    // Hide video, show snapshot image
+    if (lbVideo) lbVideo.style.display = 'none';
+    if (!lbBlinkImg) {
+      lbBlinkImg = document.createElement('img');
+      lbBlinkImg.id = 'lb-blink-img';
+      lbBlinkImg.className = 'blink-snapshot-img';
+      lbBlinkImg.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#111';
+      lbVideo.parentNode.insertBefore(lbBlinkImg, lbVideo);
+    }
+    lbBlinkImg.style.display = 'block';
+    lbBlinkImg.src = `${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}`;
+    // Start refresh in lightbox
+    startBlinkSnapshotRefresh('lb');
+  } else {
+    // Standard HLS - hide Blink image if present
+    if (lbVideo) lbVideo.style.display = '';
+    if (lbBlinkImg) lbBlinkImg.style.display = 'none';
+    retryCount['lb'] = 0;
+    startStream(camIndex, lightboxQuality, 'lb-video');
+  }
 }
 
 function closeLightbox() {
   lightboxOpen = false;
   document.getElementById('cameraLightbox').classList.add('hidden');
   document.body.style.overflow = '';
+
+  // Clean up Blink snapshot refresh in lightbox
+  stopBlinkSnapshotRefresh('lb');
 
   // Clean up lightbox HLS
   if (activeHls['lb']) {
