@@ -1,12 +1,12 @@
 {
-  "version": "r000000004",
-  "release": 4,
-  "sha": "899a8dbb",
-  "fullSha": "899a8dbbc4f2870a130fb635b346d9ffc338be3f",
+  "version": "r000000005",
+  "release": 5,
+  "sha": "6144cd6d",
+  "fullSha": "6144cd6d6e79307fb1da24225989ede685a0d146",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 13:17:33+00",
-  "commits": [{"sha":"899a8dbb","message":"Update cursor rules for r-format versioning and add commit_summaries to bump script","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 13:29:57+00",
+  "commits": [{"sha":"6144cd6d","message":"Rewrite versioning system: vYYMMDD.NN format with r00001 in tooltip/modal","author":"Rahul Sonnad"}]
 }
