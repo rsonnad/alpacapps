@@ -1,12 +1,12 @@
 {
-  "version": "v260211.42 12:52p",
-  "release": 42,
-  "sha": "f0c14cc9",
-  "fullSha": "f0c14cc983577281892b44ed351b5bebd0e445be",
+  "version": "v260211.43 1:16p",
+  "release": 43,
+  "sha": "3f5c4d38",
+  "fullSha": "3f5c4d3804e51b6ff64c97269889b22f2926d4f7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 18:52:58+00",
-  "commits": [{"sha":"f0c14cc9","message":"Add CC/BCC support to send-email edge function","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:16:39+00",
+  "commits": [{"sha":"3f5c4d38","message":"Fix login redirect loop for new Google OAuth users","author":"Rahul Sonnad"}]
 }
