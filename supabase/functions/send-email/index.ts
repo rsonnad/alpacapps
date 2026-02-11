@@ -1725,6 +1725,8 @@ serve(async (req) => {
       body: JSON.stringify({
         from: from || sender.from,
         to: Array.isArray(to) ? to : [to],
+        ...(cc ? { cc: Array.isArray(cc) ? cc : [cc] } : {}),
+        ...(bcc ? { bcc: Array.isArray(bcc) ? bcc : [bcc] } : {}),
         reply_to: reply_to || sender.reply_to,
         subject: customSubject || rendered.subject,
         html: rendered.html,
