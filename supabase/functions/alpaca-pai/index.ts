@@ -2113,7 +2113,6 @@ async function executeToolCall(
           if (!resp.ok) {
             return `Failed to capture snapshot from ${camera.name}: HTTP ${resp.status}`;
           }
-          // We can't return binary to Gemini, but we can confirm success and return the URL
           return `OK: Snapshot captured from ${camera.name} (${camera.location}). The snapshot was taken successfully. The camera shows the live view from ${camera.location}. (Direct snapshot link: ${snapshotUrl})`;
         } catch (err) {
           return `Error taking snapshot from ${camera.name}: ${err.message}`;
@@ -2322,12 +2321,23 @@ function buildVapiToolsList(scope: UserScope): any[] {
   tools.push(vapiToolWrapper(findTool("search_spaces")));
   tools.push(vapiToolWrapper(findTool("lookup_codes")));
   tools.push(vapiToolWrapper(findTool("lookup_document")));
+  // Laundry status available to all
+  if (scope.laundryAppliances.length) {
+    tools.push(vapiToolWrapper(findTool("get_laundry_status")));
+    tools.push(vapiToolWrapper(findTool("control_laundry")));
+  }
+  // Weather available to all
+  tools.push(vapiToolWrapper(findTool("get_weather")));
+  // Camera snapshots
+  if (scope.cameras.some((c) => c.protectId)) tools.push(vapiToolWrapper(findTool("take_snapshot")));
   // Voice callers can have links texted to them
   if (scope.callerPhone) tools.push(vapiToolWrapper(findTool("send_link")));
-  // Staff+ can build features via voice too
+  // Staff+ can build features, send notifications, create payment links via voice too
   if (scope.userLevel >= 2) {
     tools.push(vapiToolWrapper(findTool("build_feature")));
     tools.push(vapiToolWrapper(findTool("check_feature_status")));
+    tools.push(vapiToolWrapper(findTool("send_notification")));
+    tools.push(vapiToolWrapper(findTool("create_payment_link")));
   }
   return tools;
 }
@@ -2393,6 +2403,8 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       nestDevices: [],
       teslaVehicles: [],
       cameras: [],
+      laundryAppliances: [],
+      spaceAccessCodes: {},
     };
     systemPrompt = buildSystemPrompt(minimalScope, paiConfig);
   }
@@ -2483,6 +2495,8 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
     nestDevices: [],
     teslaVehicles: [],
     cameras: [],
+    laundryAppliances: [],
+    spaceAccessCodes: {},
   };
   let systemPrompt = buildSystemPrompt(scope || minimalScope, paiConfig);
   if (assistant.system_prompt?.trim()) {
