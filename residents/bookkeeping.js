@@ -28,29 +28,45 @@ async function loadBookkeeping(appUser) {
     return;
   }
 
-  try {
-    const [applications, payments, assignments, vehicles] = await Promise.all([
-      loadApplications(personId),
-      loadPayments(personId),
-      loadAssignments(personId),
-      loadVehicles(personId),
-    ]);
+  // Load each data source independently so one failure doesn't block the rest
+  const safeLoad = async (name, fn) => {
+    try {
+      return await fn();
+    } catch (err) {
+      console.error(`[bookkeeping] Failed to load ${name}:`, err);
+      return null; // null signals failure for this section
+    }
+  };
 
-    console.log('[bookkeeping] Data loaded:', {
-      applications: applications.length,
-      payments: payments.length,
-      assignments: assignments.length,
-      vehicles: vehicles.length,
-    });
+  const [applications, payments, assignments, vehicles] = await Promise.all([
+    safeLoad('applications', () => loadApplications(personId)),
+    safeLoad('payments', () => loadPayments(personId)),
+    safeLoad('assignments', () => loadAssignments(personId)),
+    safeLoad('vehicles', () => loadVehicles(personId)),
+  ]);
 
-    renderSummary(payments, assignments, vehicles);
-    renderPayments(payments);
-    renderOwnedAssets(assignments, vehicles);
-    renderRentalTerms(applications, assignments);
-  } catch (err) {
-    console.error('[bookkeeping] Failed to load data:', err);
-    showToast('Failed to load bookkeeping data', 'error');
+  const failures = [];
+  if (applications === null) failures.push('applications');
+  if (payments === null) failures.push('payments');
+  if (assignments === null) failures.push('assignments');
+  if (vehicles === null) failures.push('vehicles');
+
+  if (failures.length) {
+    console.warn('[bookkeeping] Some sections failed to load:', failures);
+    showToast(`Some bookkeeping data could not be loaded (${failures.join(', ')})`, 'error');
   }
+
+  console.log('[bookkeeping] Data loaded:', {
+    applications: applications?.length ?? 'FAILED',
+    payments: payments?.length ?? 'FAILED',
+    assignments: assignments?.length ?? 'FAILED',
+    vehicles: vehicles?.length ?? 'FAILED',
+  });
+
+  renderSummary(payments || [], assignments || [], vehicles || []);
+  renderPayments(payments || []);
+  renderOwnedAssets(assignments || [], vehicles || []);
+  renderRentalTerms(applications || [], assignments || []);
 }
 
 async function resolvePersonId(appUser) {
