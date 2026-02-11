@@ -1,12 +1,12 @@
 {
-  "version": "v260211.68 2:58p",
-  "release": 68,
-  "sha": "439daa12",
-  "fullSha": "439daa12537b51e729cbe3882c8ea89755ff7914",
+  "version": "v260211.69 3:05p",
+  "release": 69,
+  "sha": "4dda3ce1",
+  "fullSha": "4dda3ce12965869ca68e9287458e30f2d9e6aec3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:58:11+00",
-  "commits": [{"sha":"439daa12","message":"PAI concierge: expose all APIs (7 new tools)","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 21:05:14+00",
+  "commits": [{"sha":"4dda3ce1","message":"Redesign staff_invitation DB template: dark header, alpaca banner, AlpacApps branding","author":"Rahul Sonnad"}]
 }
