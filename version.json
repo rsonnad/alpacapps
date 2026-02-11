@@ -1,12 +1,12 @@
 {
   "version": "",
-  "release": 9,
-  "sha": "669ce2a0",
-  "fullSha": "669ce2a0467b0904b7a5350c728c0da7123e9cc0",
+  "release": 10,
+  "sha": "f72940ea",
+  "fullSha": "f72940ea4d91ac9e2568538e5552fc12fbfe960e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:09:23+00",
-  "commits": [{"sha":"669ce2a0","message":"Enrich PAI imagery prompt with full backstory and scene randomization","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:14:02+00",
+  "commits": [{"sha":"f72940ea","message":"Add single-click delete to Life of PAI daily gallery portraits","author":"Rahul Sonnad"}]
 }
