@@ -154,6 +154,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `contact-form/` - Public contact form submission handler
 - `event-payment-reminder/` - Daily cron: 10-day payment reminders for events
 - `ask-question/` - PAI Q&A backend
+- `api/` - **Centralized Internal REST API** — single permissioned endpoint for all entity CRUD (spaces, people, tasks, assignments, vehicles, media, payments, bug_reports, time_entries, events, documents, sms, faq, invitations, password_vault, feature_requests, pai_config, tesla_accounts). Role-based access control (0=public → 4=oracle). Smart behaviors: fuzzy name/space resolution, auto-timestamps, row-level scoping. See `API.md` for full reference.
 
 **Edge Function Deployment Flags:**
 Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to prevent Supabase's gateway from rejecting valid user tokens before they reach the function code.
@@ -173,6 +174,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
 | `vapi-webhook` | `supabase functions deploy vapi-webhook --no-verify-jwt` |
 | `paypal-webhook` | `supabase functions deploy paypal-webhook --no-verify-jwt` |
+| `api` | `supabase functions deploy api --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -1190,6 +1192,21 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - New templates: `pai_email_reply`, `pai_document_received` in send-email
    - New sender: `pai` in SENDER_MAP (`PAI <pai@alpacaplayhouse.com>`)
    - Loop guard prevents feedback loops (self-sent emails to pai@)
+
+39. **Centralized Internal REST API** - Single permissioned edge function for all entity CRUD
+   - `supabase/functions/api/index.ts` — main router with 20 resource handlers
+   - `supabase/functions/_shared/api-permissions.ts` — permission matrix (5 levels: 0=public → 4=oracle)
+   - `supabase/functions/_shared/api-helpers.ts` — auth resolution, response builders, query helpers
+   - Endpoint: `POST /functions/v1/api` with `{ resource, action, id?, data?, filters? }`
+   - Auth: Bearer JWT, service role key, or future X-API-Key
+   - Resources: spaces, people, assignments, tasks, users, profile, vehicles, media, payments, bug_reports, time_entries, events, documents, sms, faq, invitations, password_vault, feature_requests, pai_config, tesla_accounts
+   - Smart behaviors: fuzzy name/space resolution on tasks, auto-timestamps, duration computation, role-based vault filtering, rate limiting on feature requests
+   - Row-level scoping: residents/associates only see own assignments, time entries, events
+   - Soft deletes: spaces (is_archived), documents (is_active), vault (is_active), vehicles (is_active)
+   - PAI `manage_data` tool: routes through the API for all data operations, replacing inline query patterns
+   - Database schema context added to PAI system prompt
+   - API usage logged to `api_usage_log` table
+   - Full reference: `API.md`
 
 ## Testing Changes
 
