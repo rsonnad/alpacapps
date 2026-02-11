@@ -44,26 +44,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 // DATA
 // =============================================
 async function loadCameras() {
-  const { data, error } = await supabase
-    .from('camera_streams')
-    .select('*')
-    .eq('is_active', true)
-    .order('camera_name')
-    .order('quality');
+  const [streamsRes, spacesRes] = await Promise.all([
+    supabase.from('camera_streams').select('*').eq('is_active', true).order('camera_name').order('quality'),
+    supabase.from('camera_space_map').select('camera_name, space:space_id(name)'),
+  ]);
 
-  if (error) {
-    console.error('Failed to load camera streams:', error);
+  if (streamsRes.error) {
+    console.error('Failed to load camera streams:', streamsRes.error);
     showToast('Failed to load cameras', 'error');
     return;
   }
 
+  // Build space name lookup: camera_name -> "Space1, Space2"
+  const spaceMap = {};
+  if (spacesRes.data) {
+    for (const row of spacesRes.data) {
+      if (!spaceMap[row.camera_name]) spaceMap[row.camera_name] = [];
+      if (row.space?.name) spaceMap[row.camera_name].push(row.space.name);
+    }
+    for (const key of Object.keys(spaceMap)) {
+      spaceMap[key] = spaceMap[key].sort().join(', ');
+    }
+  }
+
   // Group by camera_name
   const grouped = {};
-  for (const stream of data) {
+  for (const stream of streamsRes.data) {
     if (!grouped[stream.camera_name]) {
       grouped[stream.camera_name] = {
         name: stream.camera_name,
-        location: stream.location,
+        location: spaceMap[stream.camera_name] || stream.location,
         model: stream.camera_model,
         protectUrl: stream.protect_share_url,
         protectCameraId: stream.protect_camera_id,

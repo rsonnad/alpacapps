@@ -48,17 +48,27 @@ function statusDot(online) {
 
 async function fetchCameras() {
   try {
-    const { data, error } = await supabase
-      .from('camera_streams')
-      .select('camera_name, location, quality, camera_model, is_active')
-      .eq('is_active', true)
-      .order('camera_name');
-    if (error) { console.warn('Cameras fetch error:', error); return []; }
-    if (!data) return [];
+    const [streamsRes, spacesRes] = await Promise.all([
+      supabase.from('camera_streams').select('camera_name, location, quality, camera_model, is_active').eq('is_active', true).order('camera_name'),
+      supabase.from('camera_space_map').select('camera_name, space:space_id(name)'),
+    ]);
+    if (streamsRes.error) { console.warn('Cameras fetch error:', streamsRes.error); return []; }
+    if (!streamsRes.data) return [];
+    // Build space name lookup
+    const spaceMap = {};
+    if (spacesRes.data) {
+      for (const row of spacesRes.data) {
+        if (!spaceMap[row.camera_name]) spaceMap[row.camera_name] = [];
+        if (row.space?.name) spaceMap[row.camera_name].push(row.space.name);
+      }
+      for (const key of Object.keys(spaceMap)) {
+        spaceMap[key] = spaceMap[key].sort().join(', ');
+      }
+    }
     const map = new Map();
-    for (const s of data) {
+    for (const s of streamsRes.data) {
       if (!map.has(s.camera_name)) {
-        map.set(s.camera_name, { name: s.camera_name, location: s.location, model: s.camera_model, qualities: [] });
+        map.set(s.camera_name, { name: s.camera_name, location: spaceMap[s.camera_name] || s.location, model: s.camera_model, qualities: [] });
       }
       map.get(s.camera_name).qualities.push(s.quality);
     }
