@@ -1,12 +1,12 @@
 {
-  "version": "v260211.61 2:44p",
-  "release": 61,
-  "sha": "9960301d",
-  "fullSha": "9960301d8bf2bda323d7aae76c6c89f20c64562a",
+  "version": "v260211.62 2:46p",
+  "release": 62,
+  "sha": "d4a7a5b0",
+  "fullSha": "d4a7a5b02f98d0476e75d7d7236fd1ec4af244e7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:44:05+00",
-  "commits": [{"sha":"9960301d","message":"Add comprehensive API documentation and update CLAUDE.md","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:46:30+00",
+  "commits": [{"sha":"d4a7a5b0","message":"Fix Photos page version display: add data-site-version to header span","author":"Rahul Sonnad"}]
 }
