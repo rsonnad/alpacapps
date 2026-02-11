@@ -1,12 +1,12 @@
 {
-  "version": "v260211.46 1:30p",
-  "release": 46,
-  "sha": "0cdfbe72",
-  "fullSha": "0cdfbe720bc19b7e1c3c1413fd7e334e6a370958",
+  "version": "v260211.47 1:42p",
+  "release": 47,
+  "sha": "5170a8b6",
+  "fullSha": "5170a8b6f73f6262f510f066e409e0016aaaecbc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:30:54+00",
-  "commits": [{"sha":"0cdfbe72","message":"Context switcher: more space above, less below","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:42:06+00",
+  "commits": [{"sha":"5170a8b6","message":"Fix phantom 28px gap: hide empty first tab bar on device pages","author":"Rahul Sonnad"}]
 }
