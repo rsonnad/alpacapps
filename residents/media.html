@@ -48,38 +48,22 @@
     <main class="manage-content resident-media-page">
       <section class="section">
         <div class="section-header">
-          <h2>Life of PAI Portraits</h2>
+          <h2>Life of PAI</h2>
           <button id="refreshMediaBtn" class="btn-small">Refresh</button>
         </div>
         <div class="section-body">
           <p class="devices-intro">
-            Each day, PAI can generate an artistic portrait of you in her world using your profile photo and your reference images.
+            Each day, PAI creates a unique alpaca artwork in a random artistic style with a personal affirmation just for you.
           </p>
           <div class="pai-daily-controls">
             <label class="settings-toggle">
               <input type="checkbox" id="autoDailyToggle">
-              <span class="settings-toggle-label">Auto-generate daily portrait</span>
-              <span class="settings-toggle-hint">Creates one new image each day when available.</span>
+              <span class="settings-toggle-label">Auto-generate daily artwork</span>
+              <span class="settings-toggle-hint">Creates one new piece each day when you visit.</span>
             </label>
-            <button id="generateNowBtn" class="btn-primary">Generate Today's Portrait</button>
+            <button id="generateNowBtn" class="btn-primary">Generate Today's Artwork</button>
           </div>
           <p id="dailyStatusText" class="text-muted" style="font-size:0.85rem;"></p>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-header">
-          <h2>Your Reference Photos</h2>
-        </div>
-        <div class="section-body">
-          <p class="text-muted" style="font-size:0.85rem;margin-bottom:0.75rem;">
-            Add selfies or portraits so PAI can render you more accurately.
-          </p>
-          <div class="pai-ref-upload-row">
-            <input type="file" id="refPhotoInput" accept="image/jpeg,image/png,image/webp" multiple>
-            <button id="uploadRefBtn" class="btn-small">Upload Selected</button>
-          </div>
-          <div id="referenceGrid" class="pai-ref-grid"></div>
         </div>
       </section>
 
@@ -95,8 +79,8 @@
     </main>
   </div>
 
-  <!-- Instant chrome: skip spinner for returning users -->
-  <script>try{var c=localStorage.getItem('genalpaca-cached-auth');if(c&&JSON.parse(c).appUser){document.getElementById('loadingOverlay').style.display='none';document.getElementById('appContent').classList.remove('hidden')}}catch(e){}</script>
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../shared/instant-chrome.js"></script>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script type="module" src="media.js"></script>

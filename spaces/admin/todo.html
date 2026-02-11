@@ -249,8 +249,8 @@
     </main>
   </div>
 
-  <!-- Instant chrome: skip spinner for returning users -->
-  <script>try{var c=localStorage.getItem('genalpaca-cached-auth');if(c&&JSON.parse(c).appUser){document.getElementById('loadingOverlay').style.display='none';document.getElementById('appContent').classList.remove('hidden')}}catch(e){}</script>
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../../shared/instant-chrome.js"></script>
 
   <script type="module" src="../../shared/version-info.js"></script>
   <script type="module" src="todo.js"></script>
