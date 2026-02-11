@@ -1,12 +1,12 @@
 {
-  "version": "v260211.39 11:46a",
-  "release": 39,
-  "sha": "bc928e61",
-  "fullSha": "bc928e61bfb2e224fb5c1de8b789d2b63ee3091d",
+  "version": "v260211.40 12:41p",
+  "release": 40,
+  "sha": "cdf3fdec",
+  "fullSha": "cdf3fdecc3333696bf40b5a2bcf938ef01650c84",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 17:46:40+00",
-  "commits": [{"sha":"bc928e61","message":"Minimal whitespace: inline device count, tighter gaps everywhere","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 18:41:17+00",
+  "commits": [{"sha":"cdf3fdec","message":"Fix Pages deploy: remove bogus self-referencing submodule entry","author":"Rahul Sonnad"}]
 }
