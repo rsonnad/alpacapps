@@ -1,12 +1,12 @@
 {
-  "version": "v260211.50 1:48p",
-  "release": 50,
-  "sha": "9892c6c6",
-  "fullSha": "9892c6c6a2b420954045566ed21ee0e3e408715b",
+  "version": "v260211.51 1:50p",
+  "release": 51,
+  "sha": "b0d5ac15",
+  "fullSha": "b0d5ac1562e4443bd74cd54202f720820260d1c7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:48:17+00",
-  "commits": [{"sha":"9892c6c6","message":"Fix bookkeeping vehicles query: use vehicle_make/vehicle_model columns","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:50:28+00",
+  "commits": [{"sha":"b0d5ac15","message":"Fix version mismatch across cached pages by fetching live version from version.json","author":"Rahul Sonnad"}]
 }
