@@ -242,7 +242,7 @@ function renderCameraRows(cameras) {
   return cameras.map(c => `
     <tr>
       <td class="dt-name">${esc(c.name)}</td>
-      <td>${esc(c.location)}</td>
+      <td class="dt-location" title="${esc(c.location)}">${esc(c.location)}</td>
       <td class="dt-secondary">${esc(c.model)}</td>
       <td>${c.qualities.map(q => `<span class="dt-badge">${q}</span>`).join(' ')}</td>
     </tr>
@@ -254,7 +254,7 @@ function renderLightingRows(groups) {
   return groups.map(g => `
     <tr>
       <td class="dt-name">${esc(g.name)}</td>
-      <td>${esc(g.area)}</td>
+      <td class="dt-location" title="${esc(g.area)}">${esc(g.area)}</td>
       <td class="dt-num">${g.deviceCount}</td>
       <td class="dt-secondary">${esc(g.models)}</td>
     </tr>

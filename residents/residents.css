@@ -5809,6 +5809,13 @@ span.sonos-library-item__star.starred {
   font-size: 0.8rem;
 }
 
+.dt-location {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dt-empty {
   text-align: center;
   color: var(--text-muted);
