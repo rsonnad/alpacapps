@@ -137,14 +137,34 @@ $PSQL "$DB_URL" -t -A --no-psqlrc -c "
 " >/dev/null 2>&1 || true
 
 # ── 2) rewrite version string in all HTML files ─────────────────────
-PAT='\(v[0-9]\{6\}\.[0-9]\{2\}\( [0-9]\{1,2\}:[0-9]\{2\}[ap]\)\{0,1\}\|r[0-9]\{9\}\)'
+# Strategy: target spans by attribute/class name (robust even if content is empty).
 IS_GNU=false; sed --version 2>/dev/null | grep -q 'GNU' && IS_GNU=true
 
-find . -name "*.html" -not -path "./.git/*" -exec grep -l '\(v[0-9]\{6\}\.[0-9]\{2\}\|r[0-9]\{9\}\)' {} \; | while read -r f; do
+do_sed() {
   if [ "$IS_GNU" = true ]; then
-    sed -i "s/$PAT/$VER/g" "$f"
+    sed -i "$1" "$2"
   else
-    sed -i '' "s/$PAT/$VER/g" "$f"
+    sed -i '' "$1" "$2"
+  fi
+}
+
+find . -name "*.html" -not -path "./.git/*" | while read -r f; do
+  changed=false
+  # 1) data-site-version spans: replace content between > and </
+  if grep -q 'data-site-version' "$f"; then
+    do_sed "s/\(data-site-version[^>]*>\)[^<]*/\1$VER/" "$f"
+    changed=true
+  fi
+  # 2) site-nav__version spans: replace content between > and </
+  if grep -q 'site-nav__version' "$f"; then
+    do_sed "s/\(site-nav__version[^>]*>\)[^<]*/\1$VER/" "$f"
+    changed=true
+  fi
+  # 3) Fallback: pattern-match any remaining version strings (v or r format)
+  if grep -q '\(v[0-9]\{6\}\.[0-9]\{2\}\|r[0-9]\{9\}\)' "$f"; then
+    PAT='\(v[0-9]\{6\}\.[0-9]\{2\}\( [0-9]\{1,2\}:[0-9]\{2\}[ap]\)\{0,1\}\|r[0-9]\{9\}\)'
+    do_sed "s/$PAT/$VER/g" "$f"
+    changed=true
   fi
 done
 
