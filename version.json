@@ -1,12 +1,12 @@
 {
-  "version": "v260211.54 1:59p",
-  "release": 54,
-  "sha": "4dd0450d",
-  "fullSha": "4dd0450db78c9dd41f131e29ae7fdc98c1b64c2d",
+  "version": "v260211.55 2:08p",
+  "release": 55,
+  "sha": "c09351e6",
+  "fullSha": "c09351e6505cb2032fd051c35e317a1e480463f7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:59:58+00",
-  "commits": [{"sha":"4dd0450d","message":"Move sensor setup guide to /house/pages, add blank sensor list page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:08:29+00",
+  "commits": [{"sha":"c09351e6","message":"Fix squished PAI logos on Ask PAI page","author":"Rahul Sonnad"}]
 }
