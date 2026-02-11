@@ -1,12 +1,12 @@
 {
-  "version": "v260211.53 1:57p",
-  "release": 53,
-  "sha": "37add759",
-  "fullSha": "37add759ae19d3261e8ea666d534329ca4927ab9",
+  "version": "v260211.54 1:59p",
+  "release": 54,
+  "sha": "4dd0450d",
+  "fullSha": "4dd0450db78c9dd41f131e29ae7fdc98c1b64c2d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:57:08+00",
-  "commits": [{"sha":"37add759","message":"Fix nav whitespace inconsistency and devices location column width","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:59:58+00",
+  "commits": [{"sha":"4dd0450d","message":"Move sensor setup guide to /house/pages, add blank sensor list page","author":"Rahul Sonnad"}]
 }
