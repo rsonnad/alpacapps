@@ -220,7 +220,7 @@ function renderEntries() {
     const spaceName = e.space?.name || '';
     const manualTag = e.is_manual ? ' <span style="font-size:0.6rem;background:#eef2ff;color:#6366f1;padding:0.1rem 0.3rem;border-radius:3px;font-weight:700;">M</span>' : '';
     const checked = selectedIds.has(e.id) ? 'checked' : '';
-    const canCheck = !isDemoUser() && e.clock_out && !e.is_paid;
+    const canCheck = !isDemoUser() && e.clock_out;
     const gpsUrl = formatGpsUrl(e);
 
     // Build second row meta items
@@ -402,6 +402,9 @@ function setupEventListeners() {
     if (editBtn) openEditEntry(editBtn.dataset.edit);
   });
 
+  // Recalc
+  document.getElementById('btnRecalc').addEventListener('click', recalcSelected);
+
   // Mark paid
   document.getElementById('btnMarkPaid').addEventListener('click', openPaidModal);
   document.getElementById('paidCancel').addEventListener('click', () => document.getElementById('paidModal').classList.remove('open'));
@@ -525,20 +528,66 @@ function setupEventListeners() {
 
 function updateMarkPaidButton() {
   const btn = document.getElementById('btnMarkPaid');
-  btn.disabled = selectedIds.size === 0;
-  btn.textContent = selectedIds.size > 0
-    ? `Mark ${selectedIds.size} as Paid`
+  const recalcBtn = document.getElementById('btnRecalc');
+  const unpaidSelected = entries.filter(e => selectedIds.has(e.id) && !e.is_paid);
+  btn.disabled = unpaidSelected.length === 0;
+  recalcBtn.disabled = selectedIds.size === 0;
+  btn.textContent = unpaidSelected.length > 0
+    ? `Mark ${unpaidSelected.length} as Paid`
     : 'Mark Selected as Paid';
+  recalcBtn.textContent = selectedIds.size > 0
+    ? `Recalc ${selectedIds.size}`
+    : 'Recalc Selected';
+}
+
+// =============================================
+// RECALC RATES
+// =============================================
+async function recalcSelected() {
+  if (selectedIds.size === 0) return;
+  const btn = document.getElementById('btnRecalc');
+  btn.disabled = true;
+  btn.textContent = 'Recalculating...';
+
+  try {
+    const selectedEntries = entries.filter(e => selectedIds.has(e.id));
+    let updated = 0;
+    let skipped = 0;
+
+    for (const entry of selectedEntries) {
+      const assoc = associates.find(a => a.id === entry.associate_id);
+      if (!assoc) { skipped++; continue; }
+      const currentRate = parseFloat(assoc.hourly_rate) || 0;
+      const entryRate = parseFloat(entry.hourly_rate) || 0;
+      if (currentRate === entryRate) { skipped++; continue; }
+
+      await hoursService.updateEntry(entry.id, { hourly_rate: currentRate });
+      updated++;
+    }
+
+    if (updated > 0) {
+      showToast(`Recalculated ${updated} ${updated === 1 ? 'entry' : 'entries'}${skipped ? ` (${skipped} unchanged)` : ''}`, 'success');
+    } else {
+      showToast('All selected entries already match current rates', 'info');
+    }
+    await loadEntries();
+  } catch (err) {
+    showToast('Failed to recalculate: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    updateMarkPaidButton();
+  }
 }
 
 // =============================================
 // MARK PAID FLOW
 // =============================================
 function openPaidModal() {
-  if (selectedIds.size === 0) return;
+  // Only mark unpaid entries
+  const selectedEntries = entries.filter(e => selectedIds.has(e.id) && !e.is_paid);
+  if (selectedEntries.length === 0) return;
   // Compute summary of selected entries
   let totalMins = 0, totalAmt = 0;
-  const selectedEntries = entries.filter(e => selectedIds.has(e.id));
   for (const e of selectedEntries) {
     const mins = parseFloat(e.duration_minutes) || 0;
     totalMins += mins;
