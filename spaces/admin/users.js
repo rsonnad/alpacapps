@@ -536,36 +536,40 @@ function closeInviteModal() {
 }
 
 function showProspectLinkModal(token, name) {
-  const url = `${window.location.origin}/spaces/?access=${token}`;
+  const url = `https://alpacaplayhouse.com/spaces/?access=${token}`;
+
+  const inviteText = `Hi${name && name !== 'Prospect' ? ' ' + name.split(' ')[0] : ''},
+
+You've been invited to browse available spaces at Alpaca Playhouse.
+
+No login or account is needed — just click the link below to start browsing:
+
+${url}
+
+This link is personal to you and will expire in 14 days.
+
+You'll be able to see photos, amenities, pricing, and availability for all of our spaces.
+
+If you have any questions or would like to schedule a tour, feel free to reply to this message or email team@alpacaplayhouse.com.`;
+
   const modal = document.getElementById('inviteTextModal');
   const textarea = document.getElementById('inviteTextContent');
 
-  // Override modal content for prospect link
-  modal.querySelector('.modal-header h2').textContent = 'Access Link Ready';
-  modal.querySelector('.modal-body > p').textContent = `Share this link with ${name}. It gives them access to browse spaces without logging in. Expires in 14 days.`;
-  textarea.value = url;
-  textarea.style.height = '60px';
+  modal.querySelector('.modal-header h2').textContent = 'Invitation Ready';
+  modal.querySelector('.modal-body > p').textContent = 'The invitation has been created. Copy the text below and send it via email or message:';
+  textarea.value = inviteText;
+  textarea.style.height = '250px';
 
-  // Hide the send email button for prospects
+  // Hide the send email button for prospects (they don't have accounts to email to)
   document.getElementById('sendInviteEmailBtn').style.display = 'none';
 
   modal.classList.remove('hidden');
-
-  // Auto-copy
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('Access link copied to clipboard!', 'success');
-  }).catch(() => {});
 }
 
-// Override close to reset modal state
+// Override close to reset modal state (restore send email button hidden by prospect flow)
 const _originalCloseInviteModal = closeInviteModal;
 window.closeInviteModal = function() {
   _originalCloseInviteModal();
-  // Reset modal to default state
-  const modal = document.getElementById('inviteTextModal');
-  modal.querySelector('.modal-header h2').textContent = 'Invitation Ready';
-  modal.querySelector('.modal-body > p').textContent = 'The invitation has been created. Copy the text below and send it via email or message:';
-  document.getElementById('inviteTextContent').style.height = '250px';
   document.getElementById('sendInviteEmailBtn').style.display = '';
 };
 
@@ -625,20 +629,8 @@ async function revokeInvitation(invitationId) {
   }
 }
 
-window.copyProspectLink = async function(token) {
-  const url = `${window.location.origin}/spaces/?access=${token}`;
-  try {
-    await navigator.clipboard.writeText(url);
-    showToast('Access link copied to clipboard', 'success');
-  } catch (err) {
-    const input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    showToast('Access link copied to clipboard', 'success');
-  }
+window.copyProspectLink = function(token, label) {
+  showProspectLinkModal(token, label || 'Prospect');
 };
 
 window.revokeProspectToken = async function(tokenId, invitationId) {
@@ -930,7 +922,7 @@ function renderInvitations() {
               </td>
               <td class="actions-cell">
                 ${isProspect && token ? `
-                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}')" title="Copy access link">Copy Link</button>` : ''}
+                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}', '${(token.label || 'Prospect').replace(/'/g, "\\'")}')" title="Copy invitation text">Copy</button>` : ''}
                   ${!tokenRevoked ? `<button class="btn-danger btn-small" onclick="revokeProspectToken('${token.id}', '${inv.id}')">Revoke</button>` : ''}
                 ` : `
                   <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">
