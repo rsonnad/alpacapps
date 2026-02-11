@@ -1,12 +1,12 @@
 {
-  "version": "v260211.58 2:39p",
-  "release": 58,
-  "sha": "98b8997c",
-  "fullSha": "98b8997c73e253051bc0c65e141df7f695c8ba05",
+  "version": "v260211.60 2:40p",
+  "release": 60,
+  "sha": "11dfb12e",
+  "fullSha": "11dfb12e0f5da9760eff4cff2462cff168ec445c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:39:02+00",
-  "commits": [{"sha":"98b8997c","message":"Add centralized Internal REST API + PAI manage_data tool","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:40:22+00",
+  "commits": [{"sha":"11dfb12e","message":"Add Prompt Library section to CLAUDE.md schema docs","author":"Rahul Sonnad"}]
 }
