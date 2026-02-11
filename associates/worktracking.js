@@ -352,12 +352,13 @@ async function handlePhotoUpload(file) {
 
   try {
     // Upload via media service
-    const media = await mediaService.uploadMedia(file, { category: 'projects' });
+    const result = await mediaService.upload(file, { category: 'projects' });
+    if (!result.success) throw new Error(result.error || 'Upload failed');
 
     // Create work photo record
     await hoursService.createWorkPhoto({
       associateId: profile.id,
-      mediaId: media.id,
+      mediaId: result.media.id,
       timeEntryId: activeEntry?.id || null,
       photoType: selectedPhotoType,
       workDate: new Date().toISOString().split('T')[0]
