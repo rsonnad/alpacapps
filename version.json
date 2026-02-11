@@ -1,12 +1,12 @@
 {
-  "version": "v260211.26 9:45a",
-  "release": 26,
-  "sha": "6f898911",
-  "fullSha": "6f898911d95ddea2cae5ef00b3a4396b49ebd145",
+  "version": "v260211.28 9:48a",
+  "release": 28,
+  "sha": "7fc3a527",
+  "fullSha": "7fc3a527b0b09549fbfccbcaefaa055d226513f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:45:45+00",
-  "commits": [{"sha":"7f686f0a","message":"Fix mobile file upload: use native label triggers, simplify accept","author":"Rahul Sonnad"},{"sha":"6f898911","message":"Deploy alpaca-only prompt to Supabase + affirmation CSS","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 15:48:45+00",
+  "commits": [{"sha":"7fc3a527","message":"Add diagnostic logging and visible empty states to bookkeeping page","author":"Rahul Sonnad"}]
 }
