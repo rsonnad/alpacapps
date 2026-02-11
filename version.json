@@ -1,12 +1,12 @@
 {
-  "version": "v260211.37 11:37a",
-  "release": 37,
-  "sha": "83d9a595",
-  "fullSha": "83d9a595886fbeaf9087eb0a955e71bf931212f8",
+  "version": "v260211.38 11:39a",
+  "release": 38,
+  "sha": "3fa21b33",
+  "fullSha": "3fa21b33b9bfcfbb168dac1b1b23f1aa53712770",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 17:37:11+00",
-  "commits": [{"sha":"83d9a595","message":"Fix invitation email: clarify that new users need to create an account","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 17:39:00+00",
+  "commits": [{"sha":"3fa21b33","message":"Better error for sign-in with no account: show \"No account found\" with sign-up options","author":"Rahul Sonnad"}]
 }
