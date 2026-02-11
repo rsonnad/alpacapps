@@ -4,6 +4,9 @@ HOMEAUTOMATION.local.md
 .mcp.json
 .machine-name
 
+# Nested repo clone (used by bug-fixer on droplet)
+alpacapps/
+
 # OS files
 .DS_Store
 
