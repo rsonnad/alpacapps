@@ -1,12 +1,12 @@
 {
-  "version": "v260211.24 9:37a",
-  "release": 24,
-  "sha": "83698d74",
-  "fullSha": "83698d74454ce251d9d046111cf6195ef3f94575",
+  "version": "v260211.25 9:38a",
+  "release": 25,
+  "sha": "cff0278f",
+  "fullSha": "cff0278f7b9b9bec009ecad61203c87889dedda3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:37:35+00",
-  "commits": [{"sha":"7c9ca82c","message":"PAI imagery: alpaca-only art + personalized affirmations","author":"Rahul Sonnad"},{"sha":"83698d74","message":"Fix bookkeeping page 400 error: use vehicle_drivers junction table","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 15:38:31+00",
+  "commits": [{"sha":"cff0278f","message":"Photos page: reorder sections, add thumbnail cards","author":"Rahul Sonnad"}]
 }
