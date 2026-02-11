@@ -1131,6 +1131,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editIsSecret').checked = space.is_secret || false;
   document.getElementById('editCanBeDwelling').checked = space.can_be_dwelling !== false;
   document.getElementById('editCanBeEvent').checked = space.can_be_event || false;
+  document.getElementById('editIsMicro').checked = space.is_micro || false;
 
   // Populate amenity checkboxes
   await renderAmenityCheckboxes(space);
@@ -1312,6 +1313,7 @@ async function handleEditSpaceSubmit() {
       is_secret: getChecked('editIsSecret'),
       can_be_dwelling: getChecked('editCanBeDwelling'),
       can_be_event: getChecked('editCanBeEvent'),
+      is_micro: getChecked('editIsMicro'),
     };
 
     const { error } = await supabase
