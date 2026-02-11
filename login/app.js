@@ -90,6 +90,7 @@ function getRedirectTarget(role) {
  */
 async function init() {
   // Fast path: check cached auth first for instant redirect
+  // (only if we have a fully resolved role, not 'pending')
   try {
     const raw = localStorage.getItem(CACHED_AUTH_KEY);
     if (raw) {
@@ -110,19 +111,32 @@ async function init() {
   showState('loading');
 
   try {
-    // Check if we already have a Supabase session
-    console.log('[LOGIN]', 'Checking for existing Supabase session...');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      console.log('[LOGIN]', 'Active session found, redirecting', { email: session.user.email });
-      sessionStorage.removeItem('genalpaca-login-redirect');
-      window.location.href = redirectUrl;
-      return;
+    // Run initAuth which handles both existing sessions and OAuth callbacks (PKCE code exchange)
+    console.log('[LOGIN]', 'Running initAuth() (handles existing session + OAuth callback)...');
+    await initAuth();
+
+    // If role is still 'pending', wait for handleAuthChange() to finish resolving the role.
+    // This prevents redirecting to /spaces/admin/ before we know the user's actual role,
+    // which caused a redirect loop for new users (admin page rejects non-admin → back to login).
+    let state = getAuthState();
+    if (state.isAuthenticated && state.isPending) {
+      console.log('[LOGIN]', 'Role is pending, waiting for full resolution...');
+      await new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.log('[LOGIN]', 'Timed out waiting for role resolution after 12s');
+          resolve();
+        }, 12000);
+        const unsub = onAuthStateChange((newState) => {
+          if (!newState.isPending) {
+            console.log('[LOGIN]', 'Role resolved:', newState.role);
+            clearTimeout(timeout);
+            unsub();
+            resolve();
+          }
+        });
+      });
     }
 
-    // No existing session, wait for auth init (handles OAuth callback)
-    console.log('[LOGIN]', 'No session, running initAuth() (handles OAuth callback)...');
-    await initAuth();
     checkAuthAndRedirect();
   } catch (error) {
     console.error('[LOGIN]', 'Auth init error:', error);
