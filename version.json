@@ -1,12 +1,12 @@
 {
-  "version": "v260211.14 8:25a",
-  "release": 14,
-  "sha": "7423451e",
-  "fullSha": "7423451e68cd57bea282846061bcd745bfeb7f85",
+  "version": "v260211.15 8:28a",
+  "release": 15,
+  "sha": "fdcdb1c7",
+  "fullSha": "fdcdb1c71c7edab23d52d92be24e888e67b2df3b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:25:50+00",
-  "commits": [{"sha":"7423451e","message":"Fix versioning: update original migration to use vYYMMDD.NN function","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:28:04+00",
+  "commits": [{"sha":"fdcdb1c7","message":"Fix version display: target spans by attribute/class, not content","author":"Rahul Sonnad"}]
 }
