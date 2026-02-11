@@ -7,6 +7,28 @@ import { initAuth, requireAuth } from '../shared/auth.js';
 // App state
 let spaces = [];
 let currentView = 'card';
+let accessTokenMode = false; // true when viewing via access link (no auth)
+
+/**
+ * Validate an access token against the DB.
+ * Returns true if token is valid, not revoked, and not expired.
+ */
+async function validateAccessToken(token) {
+  try {
+    const { data, error } = await supabase
+      .from('access_tokens')
+      .select('id, expires_at, is_revoked')
+      .eq('token', token)
+      .single();
+    if (error || !data) return false;
+    if (data.is_revoked) return false;
+    if (new Date(data.expires_at) < new Date()) return false;
+    return true;
+  } catch (e) {
+    console.error('[access-token] Validation failed:', e);
+    return false;
+  }
+}
 
 // Trigger daily error digest check (runs in background, doesn't block page load)
 async function triggerErrorDigest() {
@@ -52,16 +74,45 @@ const spaceDetailModal = document.getElementById('spaceDetailModal');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  // Require login — redirect to /login/ if not authenticated
-  await initAuth();
-  if (!requireAuth('/login/')) return;
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Check for access token in URL or sessionStorage (allows unauthenticated viewing)
+  const urlToken = urlParams.get('access');
+  const sessionToken = sessionStorage.getItem('genalpaca-access-token');
+
+  if (urlToken) {
+    const valid = await validateAccessToken(urlToken);
+    if (valid) {
+      accessTokenMode = true;
+      sessionStorage.setItem('genalpaca-access-token', urlToken);
+      // Strip token from URL to prevent accidental sharing
+      const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('access');
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  } else if (sessionToken) {
+    // Re-validate stored token (may have been revoked or expired)
+    const valid = await validateAccessToken(sessionToken);
+    if (valid) {
+      accessTokenMode = true;
+    } else {
+      sessionStorage.removeItem('genalpaca-access-token');
+    }
+  }
+
+  if (!accessTokenMode) {
+    // Normal auth flow — require login
+    await initAuth();
+    if (!requireAuth('/login/')) return;
+  }
   document.body.classList.add('authed');
 
   // Public header: show profile when signed in, Sign In link when not
-  initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
+  if (!accessTokenMode) {
+    initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
+  }
 
   // Check for URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
   const directSpaceId = urlParams.get('id');
   const viewParam = urlParams.get('view');
 

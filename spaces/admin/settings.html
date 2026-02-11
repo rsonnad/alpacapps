@@ -39,7 +39,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260211.09 12:38a</span>
+    <span data-site-version style="display:none">v260211.11 12:47a</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -287,6 +287,27 @@
               <div><strong>Tablet Kiosk:</strong> <a href="/kiosk/" target="_blank">/kiosk/</a></div>
               <div id="tvDisplayLinks"></div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ACCESS LINKS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <h2>Access Links</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Shareable Links</h3>
+              <p>Generate links that let anyone view spaces without logging in. Links expire after 14 days.</p>
+            </div>
+            <button class="btn-small btn-primary" id="generateAccessLinkBtn">+ Generate Link</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="accessLinksList"></div>
           </div>
         </div>
       </div>
