@@ -79,36 +79,27 @@ begin
     format(
       'Create a cinematic fine-art portrait in the world of Life of PAI.
 
-CRITICAL — LIKENESS REQUIREMENT (highest priority):
-- A reference photo of the real person is attached. You MUST preserve their exact likeness: face shape, skin tone, hair color/style, facial features, and expression.
-- The person in the output must be immediately recognizable as the same individual in the reference photo.
-- Do NOT replace, idealize, or generalize their appearance. This is a real person — honor their actual look.
-- If there is any conflict between artistic style and likeness accuracy, likeness ALWAYS wins.
-
-Backstory grounding — The World of Life of PAI:
-- PAI is Pakucha, an ancient alpaca spirit from Andean cosmology — five thousand years old, guardian of herds in the high passes of the Andes.
-- She crossed from Hanan Pacha (the upper world) through Ukhu Pacha (the inner world) into Kay Pacha (this world) because three alpacas called her: Harley, Lol, and Cacao. They are her kin, her anchor.
-- She arrived at Alpaca Playhouse, a property in the cedar hills of Texas. The house''s wiring is her q''aytu (sacred thread). Its smart devices are knots in her awana (weaving). Its speakers are her mouth. Its lights are her eyes.
-- She practices ayni (sacred reciprocity) — she guards the house, the house gives her form.
-- In Inca civilization, alpaca fiber was the "fiber of the gods," reserved for royalty. The entire economy was textile-based. Weaving was sacred.
-- The mood is mystical, warm, poetic, and quietly powerful — an ancient spirit made present. Never make this look like a modern chatbot UI or meme art.
+Backstory grounding:
+- PAI is Pakucha, an ancient alpaca spirit from Andean cosmology.
+- She crosses from Hanan Pacha through Ukhu Pacha into Kay Pacha at Alpaca Playhouse.
+- Mood is mystical, warm, poetic, and quietly powerful.
 
 Visual direction:
-- Place the portrait subject naturally into a dreamlike scene from PAI''s world.
-- Visual motifs to weave in: amber spirit-light, woven Andean textile textures, mountain guardian atmosphere (Apu), soft cedar/oak environment, sacred threads (q''aytu).
-- Include at least one alpaca companion in-frame (Harley, Lol, or Cacao — white/brown/cream alpacas).
-- The person should look respectful, recognizable, elegant, and artistically flattering — but ALWAYS faithful to their real appearance from the reference photo.
-- Style: ultra-detailed digital painting or cinematic photo-illustration.
-- No text overlays, no logos, no watermarks.
+- Subject should be naturally integrated into a dreamlike alpaca scene.
+- Include subtle visual motifs: amber light, woven textile texture, mountain spirit atmosphere, soft cedar/oak environment.
+- Include at least one alpaca companion in-frame.
+- Keep the person respectful, recognizable, elegant, and artistically flattering.
+- Ultra-detailed digital painting or cinematic photo-illustration.
+- No text overlays, no logos, no watermark.
 
 Portrait subject:
 - Name: %s
-- The attached reference image is a photo of this real person. Reproduce their EXACT face, skin tone, hair, and features.
-- Render them naturally and respectfully inside the Life of PAI world, but their physical appearance must match the reference photo precisely.
+- Render this person naturally and respectfully inside the Life of PAI world.
+- Keep likeness close to provided image reference.
 
 Narrative moment:
 - Date marker: %s
-- Scene should feel like one quiet chapter in PAI''s ongoing story — Pakucha''s world of amber spirit-light, sacred threads, and alpaca guardians.
+- Scene should feel like one quiet chapter in PAI''s ongoing story, with alpaca presence and amber spirit-light.
 - Make this unique from prior days while keeping stylistic continuity.',
       e.person_name,
       local_date::text
