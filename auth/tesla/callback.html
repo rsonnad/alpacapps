@@ -99,15 +99,34 @@
           auth: { storageKey: 'genalpaca-auth', autoRefreshToken: true, persistSession: true }
         });
 
-        // Force a token refresh — the access token may have expired during the Tesla OAuth redirect
-        const { data: { session: refreshedSession }, error: refreshErr } = await sb.auth.refreshSession();
-        // Fall back to cached session if refresh fails (token might still be valid)
-        const { data: { session: cachedSession }, error: sessErr } = refreshErr
-          ? await sb.auth.getSession()
-          : { data: { session: refreshedSession }, error: null };
-        const session = refreshedSession || cachedSession;
+        // Try multiple approaches to get a valid session:
+        // 1. refreshSession() - gets a fresh JWT using the refresh token
+        // 2. getSession() - returns cached session (may have a valid token if < 1hr old)
+        let session = null;
+        const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
+        if (!refreshErr && refreshData?.session?.access_token) {
+          session = refreshData.session;
+          console.log('Using refreshed session');
+        } else {
+          console.warn('refreshSession failed:', refreshErr?.message);
+          const { data: cachedData } = await sb.auth.getSession();
+          if (cachedData?.session?.access_token) {
+            session = cachedData.session;
+            console.log('Using cached session');
+          }
+        }
+
         if (!session?.access_token) {
-          throw new Error('Your session has expired. Please log in again from the Cars page and retry.');
+          // No session at all — redirect back to Cars page so they can log in and retry
+          const retryUrl = isProfileFlow
+            ? `/residents/profile.html?tesla_retry=${accountId}`
+            : `/residents/cars.html?tesla_retry=${accountId}`;
+          card.innerHTML = `
+            <h2 class="error">Session Expired</h2>
+            <p>Your login session expired during the Tesla authorization.</p>
+            <p>Please <a href="${retryUrl}">go back</a>, make sure you're logged in, and try connecting again.</p>
+          `;
+          return;
         }
 
         const fnUrl = SUPABASE_URL + '/functions/v1/tesla-command';
@@ -126,10 +145,22 @@
         });
 
         const data = await fnRes.json().catch(() => null);
-        const fnError = fnRes.ok ? null : { message: data?.error || `HTTP ${fnRes.status}` };
 
-        if (fnError) {
-          const detail = data?.error || fnError.message || 'Function call failed';
+        // If we got 401, the session is expired/invalid despite our refresh attempt
+        if (fnRes.status === 401) {
+          const retryUrl = isProfileFlow
+            ? `/residents/profile.html?tesla_retry=${accountId}`
+            : `/residents/cars.html?tesla_retry=${accountId}`;
+          card.innerHTML = `
+            <h2 class="error">Session Expired</h2>
+            <p>Your login session expired during the Tesla authorization.</p>
+            <p>Please <a href="${retryUrl}">go back</a>, make sure you're logged in, and try connecting again.</p>
+          `;
+          return;
+        }
+
+        if (!fnRes.ok) {
+          const detail = data?.error || `HTTP ${fnRes.status}`;
           throw new Error(detail);
         }
 
