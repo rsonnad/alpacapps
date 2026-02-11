@@ -57,7 +57,7 @@ create policy "prompts_insert_admin"
   with check (
     exists (
       select 1 from public.app_users
-      where supabase_auth_id = auth.uid()
+      where auth_user_id = auth.uid()
         and role in ('admin', 'staff')
     )
   );
@@ -68,7 +68,7 @@ create policy "prompts_update_admin"
   using (
     exists (
       select 1 from public.app_users
-      where supabase_auth_id = auth.uid()
+      where auth_user_id = auth.uid()
         and role in ('admin', 'staff')
     )
   );
@@ -79,7 +79,7 @@ create policy "prompts_delete_admin"
   using (
     exists (
       select 1 from public.app_users
-      where supabase_auth_id = auth.uid()
+      where auth_user_id = auth.uid()
         and role in ('admin', 'staff')
     )
   );
