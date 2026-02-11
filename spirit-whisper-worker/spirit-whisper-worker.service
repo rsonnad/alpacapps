@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca Spirit Whisper Worker
+Description=AlpacApps Spirit Whisper Worker
 After=network.target
 
 [Service]

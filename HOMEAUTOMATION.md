@@ -1,6 +1,6 @@
 # Home Automation System
 
-Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at GenAlpaca Residency.
+Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at AlpacApps Residency.
 
 > **See `HOMEAUTOMATION.local.md` for IP addresses, credentials, and sensitive configuration.**
 > That file is gitignored and contains Tailscale IPs, WiFi passwords, and API credentials.

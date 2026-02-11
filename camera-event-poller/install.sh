@@ -6,7 +6,7 @@
 
 set -e
 
-echo "=== GenAlpaca Camera Event Poller - Installation ==="
+echo "=== AlpacApps Camera Event Poller - Installation ==="
 
 WORKER_DIR="/opt/camera-event-poller"
 

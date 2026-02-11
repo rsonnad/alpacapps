@@ -50,7 +50,7 @@ async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
   const response = await fetch(`${apiBase}${path}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      'User-Agent': 'GenAlpacaPoller/1.0',
+      'User-Agent': 'AlpacAppsPoller/1.0',
     },
   });
 

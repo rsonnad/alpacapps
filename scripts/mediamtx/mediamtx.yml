@@ -1,5 +1,5 @@
 ###############################################
-# MediaMTX Configuration — GenAlpaca Residency
+# MediaMTX Configuration — AlpacApps Residency
 # Restreams UniFi Protect RTSPS cameras as RTSP/HLS/WebRTC
 #
 # NOTE: We use go2rtc instead of MediaMTX for HLS streaming.

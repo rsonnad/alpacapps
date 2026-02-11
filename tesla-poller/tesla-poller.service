@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca Tesla Vehicle Data Poller
+Description=AlpacApps Tesla Vehicle Data Poller
 After=network.target
 
 [Service]

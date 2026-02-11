@@ -1,4 +1,4 @@
--- GenAlpaca SSO Authentication Migrations
+-- AlpacApps SSO Authentication Migrations
 -- Run these in your Supabase SQL Editor in order
 
 -- ============================================

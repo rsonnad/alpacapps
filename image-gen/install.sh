@@ -6,7 +6,7 @@
 
 set -e
 
-echo "=== GenAlpaca Image Gen Worker - Installation ==="
+echo "=== AlpacApps Image Gen Worker - Installation ==="
 
 WORKER_DIR="/opt/image-gen"
 

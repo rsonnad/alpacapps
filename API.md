@@ -1,6 +1,6 @@
 # AlpacApps API Reference
 
-Centralized REST API for the GenAlpaca property management system. All entity CRUD operations route through a single permissioned endpoint.
+Centralized REST API for the AlpacApps property management system. All entity CRUD operations route through a single permissioned endpoint.
 
 ---
 

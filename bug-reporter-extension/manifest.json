@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "GenAlpaca Bug Reporter",
+  "name": "AlpacApps Bug Reporter",
   "version": "1.0.0",
-  "description": "Capture, annotate, and submit bug reports for GenAlpaca",
+  "description": "Capture, annotate, and submit bug reports for AlpacApps",
   "permissions": ["activeTab", "tabs", "storage"],
   "host_permissions": ["https://aphrrfprbixmhissnjfn.supabase.co/*"],
   "action": {

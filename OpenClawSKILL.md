@@ -1,6 +1,6 @@
-# GenAlpaca Property Management Skill
+# AlpacApps Property Management Skill
 
-Manage the GenAlpaca Residency property system - spaces, tenants, photos, and bookings.
+Manage the AlpacApps Residency property system - spaces, tenants, photos, and bookings.
 
 ## Configuration
 

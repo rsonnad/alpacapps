@@ -1,6 +1,6 @@
 # Future Plans & Features
 
-A running list of planned improvements and new features for AlpacApps / GenAlpaca. Not committed to a timeline—these are backlog / ideas.
+A running list of planned improvements and new features for AlpacApps / AlpacApps. Not committed to a timeline—these are backlog / ideas.
 
 ---
 

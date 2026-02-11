@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca LG Appliance Data Poller
+Description=AlpacApps LG Appliance Data Poller
 After=network.target
 
 [Service]

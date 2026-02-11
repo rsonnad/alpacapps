@@ -1,6 +1,6 @@
-# GenAlpaca Ops
+# AlpacApps Ops
 
-Property management UI for GenAlpaca Residency.
+Property management UI for AlpacApps Residency.
 
 ## Setup
 

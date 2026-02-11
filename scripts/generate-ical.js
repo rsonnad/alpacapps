@@ -96,7 +96,7 @@ function generateIcal(spaceName, spaceSlug, assignments) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    `PRODID:-//GenAlpaca//${spaceName}//EN`,
+    `PRODID:-//AlpacApps//${spaceName}//EN`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${spaceName}`,

@@ -1,5 +1,5 @@
 /**
- * Timezone utilities for GenAlpaca
+ * Timezone utilities for AlpacApps
  * All dates should be displayed in Austin, Texas timezone (America/Chicago)
  * regardless of the user's browser timezone.
  */

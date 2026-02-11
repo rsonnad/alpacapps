@@ -16,7 +16,7 @@ PLIST_FILE="$HOME/Library/LaunchAgents/com.mediamtx.plist"
 UDM_HOST="192.168.1.1"
 UDM_PORT="7441"
 
-echo "=== MediaMTX Setup for GenAlpaca ==="
+echo "=== MediaMTX Setup for AlpacApps ==="
 echo ""
 
 # Step 1: Install MediaMTX via Homebrew

@@ -58,7 +58,7 @@ export const SENDER_MAP: Record<
     reply_to: "auto@alpacaplayhouse.com",
   },
   noreply: {
-    from: "GenAlpaca <noreply@alpacaplayhouse.com>",
+    from: "AlpacApps <noreply@alpacaplayhouse.com>",
     reply_to: "team@alpacaplayhouse.com",
   },
   payments: {

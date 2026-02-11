@@ -524,7 +524,7 @@ To reject: Update bug_reports.status to 'skipped'.
   }
 
   const emailBody = `
-GenAlpaca Daily Error Digest
+AlpacApps Daily Error Digest
 ============================
 Period: ${sinceDate.toLocaleString()} to ${now.toLocaleString()}
 Total Errors: ${errorCount}
@@ -548,8 +548,8 @@ View the error_logs table in Supabase for full details.
   if (RESEND_API_KEY) {
     try {
       const subject = pendingApproval && pendingApproval.length > 0
-        ? `[GenAlpaca] Error Digest: ${errorCount} error(s), ${pendingApproval.length} awaiting approval`
-        : `[GenAlpaca] Daily Error Digest: ${errorCount} error(s)`;
+        ? `[AlpacApps] Error Digest: ${errorCount} error(s), ${pendingApproval.length} awaiting approval`
+        : `[AlpacApps] Daily Error Digest: ${errorCount} error(s)`;
 
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',

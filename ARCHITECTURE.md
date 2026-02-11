@@ -1,10 +1,10 @@
-# GenAlpaca System Architecture
+# AlpacApps System Architecture
 
-Comprehensive documentation for the GenAlpaca property management system.
+Comprehensive documentation for the AlpacApps property management system.
 
 ## Overview
 
-GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, Cedar Creek, TX). The system tracks spaces, tenants, bookings, payments, and photos.
+AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, Cedar Creek, TX). The system tracks spaces, tenants, bookings, payments, and photos.
 
 ## Components
 
@@ -39,7 +39,8 @@ GenAlpaca manages rental spaces at GenAlpaca Residency (160 Still Forest Drive, 
         │                                 │
         │  ┌─────────────────────────┐    │
         │  │    Edge Functions       │    │
-        │  │  (29 serverless funcs)  │    │
+        │  │  (30 serverless funcs)  │    │
+        │  │  incl. Centralized API  │    │
         │  └─────────────────────────┘    │
         │                                 │
         │  Project: aphrrfprbixmhissnjfn  │
@@ -137,8 +138,15 @@ alpacapps/
 │   ├── version-info.js     # Version badge click handler
 │   └── timezone.js         # Timezone utilities (Austin/Chicago)
 │
-├── supabase/               # Supabase Edge Functions (29 functions)
+├── supabase/               # Supabase Edge Functions (30 functions)
 │   └── functions/
+│       ├── _shared/           # Shared modules across edge functions
+│       │   ├── permissions.ts      # Permission checking helpers
+│       │   ├── api-permissions.ts  # API permission matrix & role levels
+│       │   ├── api-helpers.ts      # API auth resolution, response builders, query helpers
+│       │   ├── r2-upload.ts        # Cloudflare R2 upload/delete helpers
+│       │   └── template-engine.ts  # Email template rendering
+│       ├── api/               # Centralized Internal REST API (20 resources, role-based RBAC)
 │       ├── signwell-webhook/  # E-signature completion webhook
 │       ├── event-payment-reminder/  # Daily cron: 10-day payment reminders
 │       ├── process-square-payment/  # Square payment processing
@@ -1560,7 +1568,7 @@ systemctl start bug-fixer
 **systemd Service File (`bug-fixer.service`):**
 ```ini
 [Unit]
-Description=GenAlpaca Bug Fixer Worker
+Description=AlpacApps Bug Fixer Worker
 After=network.target
 
 [Service]

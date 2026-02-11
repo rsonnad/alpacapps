@@ -6,7 +6,7 @@
 
 set -e
 
-echo "=== GenAlpaca Tesla Poller - Installation ==="
+echo "=== AlpacApps Tesla Poller - Installation ==="
 
 WORKER_DIR="/opt/tesla-poller"
 

@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca Image Generation Worker
+Description=AlpacApps Image Generation Worker
 After=network.target
 
 [Service]

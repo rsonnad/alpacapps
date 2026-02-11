@@ -76,7 +76,7 @@ Details and implementation are in **§ 10 (Hosted workers: multi-instance, tenan
 - Add **`org_id`** to all tenant-scoped tables (~50): spaces, people, assignments, app_users, media, rental_applications, sms_messages, govee_devices, nest_devices, vehicles, configs, etc.
 - **Config tables:** move from “single row id=1” to “one row per org” (e.g. `telnyx_config(org_id, ...)` with unique on org_id).
 - **RLS:** every policy includes `org_id = (SELECT org_id FROM app_users WHERE auth_user_id = auth.uid())` (and handle service role for cron/webhooks).
-- Backfill: existing data gets one default `org_id` (e.g. “GenAlpaca Residency”).
+- Backfill: existing data gets one default `org_id` (e.g. “AlpacApps Residency”).
 - Identify **global** tables (e.g. `govee_models` SKU lookup) and leave them without `org_id` or make them org-optional.
 
 ### 4.2 Auth and onboarding (Medium — ~1–2 weeks)

@@ -1,5 +1,5 @@
 [Unit]
-Description=GenAlpaca Camera Event Poller
+Description=AlpacApps Camera Event Poller
 After=network.target
 
 [Service]

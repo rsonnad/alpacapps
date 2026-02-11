@@ -6,7 +6,7 @@
 
 set -e
 
-echo "=== GenAlpaca Bug Fixer - Installation ==="
+echo "=== AlpacApps Bug Fixer - Installation ==="
 
 # ---- Prerequisites ----
 echo ""
@@ -106,7 +106,7 @@ echo ""
 echo "Installing systemd service..."
 cat > /etc/systemd/system/bug-fixer.service << 'SVCEOF'
 [Unit]
-Description=GenAlpaca Bug Fixer Worker
+Description=AlpacApps Bug Fixer Worker
 After=network.target
 
 [Service]

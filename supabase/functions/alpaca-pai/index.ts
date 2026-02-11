@@ -44,6 +44,14 @@ interface UserScope {
   cameras: Array<{
     name: string;
     location: string;
+    protectId: string | null;
+  }>;
+  laundryAppliances: Array<{
+    id: number;
+    name: string;
+    deviceType: string;
+    lastState: any;
+    lastSyncedAt: string | null;
   }>;
   spaceAccessCodes: Record<string, string>;
 }
@@ -177,8 +185,8 @@ async function buildUserScope(
     dwellingMap[s.id] = s.can_be_dwelling === true;
   }
 
-  // 3. Load Govee, Nest, vehicles, and camera_streams in parallel
-  const [goveeResult, nestResult, vehiclesResult, cameraResult] = await Promise.all([
+  // 3. Load Govee, Nest, vehicles, camera_streams, and laundry in parallel
+  const [goveeResult, nestResult, vehiclesResult, cameraResult, laundryResult] = await Promise.all([
     supabase
       .from("govee_devices")
       .select("device_id, name, area, space_id, sku")
@@ -196,15 +204,21 @@ async function buildUserScope(
       .eq("is_active", true),
     supabase
       .from("camera_streams")
-      .select("camera_name, location")
+      .select("camera_name, location, protect_camera_id")
       .eq("is_active", true)
       .order("camera_name"),
+    supabase
+      .from("lg_appliances")
+      .select("id, name, device_type, last_state, last_synced_at")
+      .eq("is_active", true)
+      .order("display_order"),
   ]);
 
   const goveeGroups = goveeResult?.data || [];
   const nestDevices = nestResult?.data || [];
   const teslaVehicles = vehiclesResult?.data || [];
   const cameraStreams = cameraResult?.data || [];
+  const laundryAppliances = laundryResult?.data || [];
 
   const accessibleGovee = goveeGroups.filter(
     (g: any) => {
@@ -276,6 +290,14 @@ async function buildUserScope(
     cameras: uniqueCameras.map((c: any) => ({
       name: c.camera_name,
       location: c.location,
+      protectId: c.protect_camera_id || null,
+    })),
+    laundryAppliances: laundryAppliances.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      deviceType: a.device_type,
+      lastState: a.last_state,
+      lastSyncedAt: a.last_synced_at,
     })),
     spaceAccessCodes,
   };
@@ -440,11 +462,34 @@ Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get
   if (scope.cameras.length) {
     parts.push(`\nCAMERAS (live feeds available to all residents):`);
     for (const c of scope.cameras) {
-      parts.push(`- "${c.name}" (${c.location})`);
+      parts.push(`- "${c.name}" (${c.location}${c.protectId ? `, snapshot_id: ${c.protectId}` : ""})`);
     }
     parts.push(`View live feeds at: https://alpacaplayhouse.com/residents/cameras.html
-When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.`);
+When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.
+You can take camera snapshots using the take_snapshot tool — useful when someone asks "what does the backyard look like right now?" or "can you check the front door?".`);
   }
+
+  // Laundry
+  if (scope.laundryAppliances.length) {
+    parts.push(`\nLAUNDRY (LG Smart Washer & Dryer):`);
+    for (const a of scope.laundryAppliances) {
+      let stateStr = "";
+      if (a.lastState) {
+        const st = a.lastState;
+        stateStr = ` [${st.state || "unknown"}${st.remainingTime ? `, ${st.remainingTime} min remaining` : ""}]`;
+      }
+      parts.push(`- "${a.name}" (${a.deviceType}, id: ${a.id})${stateStr}`);
+    }
+    parts.push(`Use get_laundry_status to check current washer/dryer status (cycle progress, time remaining, etc.).
+Use control_laundry with action "watch" to subscribe a user to cycle-end push notifications, or "unwatch" to unsubscribe.
+Common states — Washer: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, END. Dryer: POWER_OFF, INITIAL, RUNNING, PAUSE, END.`);
+  }
+
+  // Weather
+  parts.push(`\nWEATHER:
+Use the get_weather tool when someone asks about the weather, temperature, rain, or forecast.
+Returns current conditions and a 48-hour hourly forecast for the property location (Cedar Creek, TX).
+Useful for questions like "is it going to rain?", "what's the temperature outside?", "should I bring an umbrella?".`);
 
   // House rules & policies (from faq_context_entries)
   if (paiConfig.house_rules) {
@@ -508,6 +553,26 @@ You can build new pages and features on request. Use the build_feature tool when
 Examples: "build me a page that shows Tesla battery levels", "create a dashboard with camera feeds and vehicle info"
 Safe changes (new standalone pages) deploy automatically. Changes that touch existing functionality go to a branch for team review.
 Use check_feature_status to report on the progress of the most recent build.`);
+  }
+
+  // Communication (staff+ only)
+  if (scope.userLevel >= 2) {
+    parts.push(`\nCOMMUNICATION (staff+ only):
+Use the send_notification tool to send emails or SMS messages on behalf of the property.
+- Email: Send templated or custom HTML emails via Resend
+- SMS: Send text messages via Telnyx
+Examples: "email John about the rent due date", "text all tenants about the water shutoff tomorrow", "send a payment reminder to Sarah"
+Always confirm the recipient and message content before sending.
+For bulk messages, use manage_data with resource "sms" for tracking, or send_notification with type "bulk_announcement".`);
+  }
+
+  // Payment links (staff+ only)
+  if (scope.userLevel >= 2) {
+    parts.push(`\nPAYMENT LINKS (staff+ only):
+Use the create_payment_link tool to generate a Stripe payment link for collecting payments.
+Examples: "create a payment link for $500 for John's security deposit", "generate a rent payment link for $1200"
+The link supports credit/debit cards, ACH bank transfers, and Apple Pay/Google Pay.
+After creating the link, you can share it via send_notification or send_link (in voice mode).`);
   }
 
   return parts.join("\n");
@@ -875,6 +940,146 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["resource", "action"],
+    },
+  },
+  {
+    name: "get_laundry_status",
+    description:
+      "Get the current status of the LG smart washer and dryer. Returns cycle state, time remaining, and whether the user is subscribed to notifications. Use when someone asks about laundry status, washer/dryer progress, or 'is the laundry done?'.",
+    parameters: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "control_laundry",
+    description:
+      "Subscribe or unsubscribe from laundry cycle-end push notifications for a specific appliance (washer or dryer). Use when someone says 'notify me when the washer is done' or 'stop watching the dryer'.",
+    parameters: {
+      type: "object",
+      properties: {
+        appliance_id: {
+          type: "number",
+          description: "The appliance ID from the laundry list",
+        },
+        appliance_name: {
+          type: "string",
+          description: "Human-readable name for confirmation",
+        },
+        action: {
+          type: "string",
+          enum: ["watch", "unwatch"],
+          description: "Subscribe (watch) or unsubscribe (unwatch) from cycle-end notifications",
+        },
+      },
+      required: ["appliance_id", "appliance_name", "action"],
+    },
+  },
+  {
+    name: "get_weather",
+    description:
+      "Get current weather conditions and forecast for the property location (Cedar Creek, TX). Use when someone asks about weather, temperature, rain, or forecast. Returns current temp, humidity, wind, conditions, and hourly forecast.",
+    parameters: {
+      type: "object",
+      properties: {
+        forecast_hours: {
+          type: "number",
+          description: "Number of hours of forecast to include (default 12, max 48)",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "send_notification",
+    description:
+      "Send an email or SMS message on behalf of the property. Staff and admin only. Use for payment reminders, announcements, custom messages, or any outbound communication to tenants/contacts.",
+    parameters: {
+      type: "object",
+      properties: {
+        channel: {
+          type: "string",
+          enum: ["email", "sms"],
+          description: "Communication channel to use",
+        },
+        to: {
+          type: "string",
+          description: "Recipient email address (for email) or phone number in E.164 format like +15551234567 (for SMS)",
+        },
+        recipient_name: {
+          type: "string",
+          description: "Recipient's name for personalization",
+        },
+        subject: {
+          type: "string",
+          description: "Email subject line (required for email, ignored for SMS)",
+        },
+        message: {
+          type: "string",
+          description: "Message body. For email, can include basic HTML. For SMS, plain text only (160 char recommended).",
+        },
+        template_type: {
+          type: "string",
+          description: "Optional: use a pre-built template instead of custom message. Email templates: payment_reminder, payment_received, general_notification, maintenance_update. SMS templates: payment_reminder, general, bulk_announcement.",
+        },
+        template_data: {
+          type: "object",
+          description: "Data to fill template placeholders (e.g., { amount: '$500', due_date: 'Feb 15', period: 'February 2026' })",
+        },
+        person_id: {
+          type: "string",
+          description: "Optional: link to person record UUID for tracking",
+        },
+      },
+      required: ["channel", "to", "message"],
+    },
+  },
+  {
+    name: "take_snapshot",
+    description:
+      "Take a snapshot photo from a security camera. Returns a description or URL of the captured image. Use when someone asks to check a camera, see what's happening outside, or wants a photo from a specific camera.",
+    parameters: {
+      type: "object",
+      properties: {
+        camera_name: {
+          type: "string",
+          description: "Camera name from the camera list (e.g., 'Alpacamera', 'Front Of House', 'Side Yard')",
+        },
+      },
+      required: ["camera_name"],
+    },
+  },
+  {
+    name: "create_payment_link",
+    description:
+      "Create a Stripe payment link for collecting payments. Staff and admin only. Generates a secure URL that accepts credit cards, ACH bank transfers, and digital wallets. Use when someone asks to collect a payment, create an invoice, or send a payment request.",
+    parameters: {
+      type: "object",
+      properties: {
+        amount: {
+          type: "number",
+          description: "Payment amount in dollars (e.g., 299.00)",
+        },
+        description: {
+          type: "string",
+          description: "Payment description shown to the payer (e.g., 'Weekly Rent - Feb 2, 2026', 'Security Deposit')",
+        },
+        person_name: {
+          type: "string",
+          description: "Name of the person being charged (for metadata/tracking)",
+        },
+        person_email: {
+          type: "string",
+          description: "Email of the person being charged (prefills checkout)",
+        },
+        category: {
+          type: "string",
+          enum: ["rent", "security_deposit", "cleaning_fee", "event_fee", "parking", "utility", "other"],
+          description: "Payment category for accounting",
+        },
+      },
+      required: ["amount", "description"],
     },
   },
 ];
@@ -1679,6 +1884,267 @@ async function executeToolCall(
           return `${args.action === "create" ? "Created" : "Updated"} ${args.resource}:\n${JSON.stringify(data, null, 1)}`;
         }
         return `Operation completed: ${JSON.stringify(apiResult)}`;
+      }
+
+      case "get_laundry_status": {
+        // Return laundry status from scope (already loaded from DB)
+        if (!scope.laundryAppliances.length) {
+          return "No laundry appliances are currently configured.";
+        }
+        return scope.laundryAppliances.map((a) => {
+          const st = a.lastState;
+          if (!st) return `${a.name} (${a.deviceType}): no data available`;
+          const state = st.state || "unknown";
+          const parts: string[] = [`${a.name} (${a.deviceType}): ${state}`];
+          if (st.remainingTime && st.remainingTime > 0) parts.push(`${st.remainingTime} min remaining`);
+          if (st.currentCourse) parts.push(`cycle: ${st.currentCourse}`);
+          if (st.currentTemperature) parts.push(`temp: ${st.currentTemperature}`);
+          if (st.spinSpeed) parts.push(`spin: ${st.spinSpeed}`);
+          if (a.lastSyncedAt) {
+            const syncAge = Math.round((Date.now() - new Date(a.lastSyncedAt).getTime()) / 60000);
+            parts.push(`(updated ${syncAge} min ago)`);
+          }
+          return parts.join(" | ");
+        }).join("\n");
+      }
+
+      case "control_laundry": {
+        const appliance = scope.laundryAppliances.find((a) => a.id === args.appliance_id);
+        if (!appliance) {
+          return `Appliance "${args.appliance_name}" not found in your accessible appliances.`;
+        }
+
+        const lgPayload = {
+          action: args.action,
+          applianceId: args.appliance_id,
+        };
+        console.log("PAI → lg-control payload:", JSON.stringify(lgPayload));
+        const resp = await fetch(
+          `${supabaseUrl}/functions/v1/lg-control`,
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(lgPayload) }
+        );
+        const result = await resp.json();
+        console.log("PAI ← lg-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || `HTTP ${resp.status}`;
+          return `Error: ${errMsg}`;
+        }
+        if (args.action === "watch") {
+          return `OK: You'll be notified when ${args.appliance_name} finishes its cycle.`;
+        }
+        return `OK: Stopped watching ${args.appliance_name} for cycle completion.`;
+      }
+
+      case "get_weather": {
+        // Fetch weather config from DB
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const { data: weatherConfig } = await supabaseAdmin
+          .from("weather_config")
+          .select("owm_api_key, latitude, longitude, location_name")
+          .eq("id", 1)
+          .single();
+
+        if (!weatherConfig?.owm_api_key) {
+          return "Weather service is not configured.";
+        }
+
+        const { owm_api_key, latitude, longitude, location_name } = weatherConfig;
+        const forecastHours = Math.min(args.forecast_hours || 12, 48);
+
+        // Try One Call API 3.0, fall back to 2.5
+        let weatherData: any = null;
+        for (const version of ["3.0", "2.5"]) {
+          try {
+            const url = `https://api.openweathermap.org/data/${version}/onecall?lat=${latitude}&lon=${longitude}&units=imperial&exclude=minutely,daily,alerts&appid=${owm_api_key}`;
+            const resp = await fetch(url);
+            if (resp.ok) {
+              weatherData = await resp.json();
+              break;
+            }
+          } catch { /* try next version */ }
+        }
+
+        if (!weatherData) return "Unable to fetch weather data.";
+
+        const current = weatherData.current;
+        const lines: string[] = [];
+        lines.push(`Current weather in ${location_name || "Cedar Creek, TX"}:`);
+        lines.push(`Temperature: ${Math.round(current.temp)}°F (feels like ${Math.round(current.feels_like)}°F)`);
+        lines.push(`Conditions: ${current.weather?.[0]?.description || "unknown"}`);
+        lines.push(`Humidity: ${current.humidity}%, Wind: ${Math.round(current.wind_speed)} mph`);
+        if (current.uvi !== undefined) lines.push(`UV Index: ${current.uvi}`);
+
+        // Rain forecast summary
+        const hourly = (weatherData.hourly || []).slice(0, forecastHours);
+        const rainHours = hourly.filter((h: any) => (h.pop || 0) >= 0.3);
+        if (rainHours.length > 0) {
+          const nextRain = rainHours[0];
+          const rainTime = new Date(nextRain.dt * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" });
+          lines.push(`Rain expected: ${rainHours.length} of next ${forecastHours} hours have ≥30% chance. Next: ${rainTime} (${Math.round(nextRain.pop * 100)}%)`);
+        } else {
+          lines.push(`No significant rain expected in the next ${forecastHours} hours.`);
+        }
+
+        // Compact hourly forecast
+        if (hourly.length > 0) {
+          lines.push(`\nHourly forecast (next ${forecastHours}h):`);
+          for (const h of hourly) {
+            const time = new Date(h.dt * 1000).toLocaleTimeString("en-US", { hour: "numeric", timeZone: "America/Chicago" });
+            const rain = h.pop ? ` (${Math.round(h.pop * 100)}% rain)` : "";
+            lines.push(`${time}: ${Math.round(h.temp)}°F, ${h.weather?.[0]?.description || ""}${rain}`);
+          }
+        }
+
+        // Log API usage (fire-and-forget)
+        supabaseAdmin.from("api_usage_log").insert({
+          vendor: "openweathermap",
+          category: "weather_forecast",
+          endpoint: "onecall",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0, // Free tier
+          metadata: { location: location_name, hours: forecastHours },
+          app_user_id: scope.appUserId || null,
+        }).then(() => {});
+
+        return lines.join("\n");
+      }
+
+      case "send_notification": {
+        // Staff+ only
+        if (scope.userLevel < 2) {
+          return "Permission denied: only staff, admin, and oracle users can send notifications.";
+        }
+
+        if (args.channel === "email") {
+          const emailPayload: any = {
+            to: args.to,
+          };
+          if (args.template_type) {
+            emailPayload.type = args.template_type;
+            emailPayload.data = {
+              ...args.template_data,
+              name: args.recipient_name || "",
+            };
+            if (args.subject) emailPayload.subject = args.subject;
+          } else {
+            emailPayload.type = "custom";
+            emailPayload.data = {
+              html: args.message.replace(/\n/g, "<br>"),
+              subject: args.subject || "Message from Alpaca Playhouse",
+              text: args.message,
+            };
+          }
+
+          console.log("PAI → send-email payload:", JSON.stringify({ ...emailPayload, data: "..." }));
+          const resp = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+          const result = await resp.json();
+          console.log("PAI ← send-email response:", resp.status, JSON.stringify(result));
+          if (!resp.ok || result.error) {
+            return `Error sending email: ${result.error || `HTTP ${resp.status}`}`;
+          }
+          return `OK: Email sent to ${args.to}${args.subject ? ` (subject: "${args.subject}")` : ""}`;
+        }
+
+        if (args.channel === "sms") {
+          const smsPayload: any = {
+            to: args.to,
+          };
+          if (args.template_type) {
+            smsPayload.type = args.template_type;
+            smsPayload.data = {
+              ...args.template_data,
+              name: args.recipient_name || "",
+              message: args.message,
+            };
+          } else {
+            smsPayload.type = "general";
+            smsPayload.data = {
+              name: args.recipient_name || "",
+              message: args.message,
+            };
+          }
+          if (args.person_id) smsPayload.person_id = args.person_id;
+
+          console.log("PAI → send-sms payload:", JSON.stringify(smsPayload));
+          const resp = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+            },
+            body: JSON.stringify(smsPayload),
+          });
+          const result = await resp.json();
+          console.log("PAI ← send-sms response:", resp.status, JSON.stringify(result));
+          if (!resp.ok || result.error) {
+            return `Error sending SMS: ${result.error || `HTTP ${resp.status}`}`;
+          }
+          return `OK: SMS sent to ${args.to}`;
+        }
+
+        return `Unknown channel: ${args.channel}. Use "email" or "sms".`;
+      }
+
+      case "take_snapshot": {
+        const camera = scope.cameras.find(
+          (c) => c.name.toLowerCase() === (args.camera_name || "").toLowerCase()
+        );
+        if (!camera) {
+          const available = scope.cameras.map((c) => c.name).join(", ");
+          return `Camera "${args.camera_name}" not found. Available cameras: ${available}`;
+        }
+        if (!camera.protectId) {
+          return `Camera "${camera.name}" does not support snapshots (no Protect ID configured).`;
+        }
+
+        const snapshotUrl = `https://cam.alpacaplayhouse.com/camera/${camera.protectId}/snapshot`;
+        try {
+          const resp = await fetch(snapshotUrl);
+          if (!resp.ok) {
+            return `Failed to capture snapshot from ${camera.name}: HTTP ${resp.status}`;
+          }
+          // We can't return binary to Gemini, but we can confirm success and return the URL
+          return `OK: Snapshot captured from ${camera.name} (${camera.location}). The snapshot was taken successfully. The camera shows the live view from ${camera.location}. (Direct snapshot link: ${snapshotUrl})`;
+        } catch (err) {
+          return `Error taking snapshot from ${camera.name}: ${err.message}`;
+        }
+      }
+
+      case "create_payment_link": {
+        if (scope.userLevel < 2) {
+          return "Permission denied: only staff and admin users can create payment links.";
+        }
+
+        const paymentPayload: any = {
+          amount: args.amount,
+          description: args.description,
+        };
+        if (args.person_name) paymentPayload.person_name = args.person_name;
+        if (args.person_email) paymentPayload.person_email = args.person_email;
+        if (args.category) paymentPayload.category = args.category;
+
+        console.log("PAI → create-payment-link payload:", JSON.stringify(paymentPayload));
+        const resp = await fetch(`${supabaseUrl}/functions/v1/create-payment-link`, {
+          method: "POST",
+          headers: edgeFnHeaders,
+          body: JSON.stringify(paymentPayload),
+        });
+        const result = await resp.json();
+        console.log("PAI ← create-payment-link response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          return `Error creating payment link: ${result.error || result.details || `HTTP ${resp.status}`}`;
+        }
+        return `OK: Payment link created for $${args.amount} — "${args.description}"\nURL: ${result.url}\nShare this link with the payer.`;
       }
 
       default:

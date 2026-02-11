@@ -1275,7 +1275,7 @@ async function generateDepositRequestMessage(applicationId) {
   const totalDeposit = (app.move_in_deposit_amount || 0) + (app.security_deposit_amount || 0);
 
   let message = `Hi ${app.person?.first_name || 'there'},\n\n`;
-  message += `To secure your space at ${app.approved_space?.name || 'GenAlpaca'}, please send the following:\n\n`;
+  message += `To secure your space at ${app.approved_space?.name || 'AlpacApps'}, please send the following:\n\n`;
   message += `Move-in Deposit: $${app.move_in_deposit_amount || 0}\n`;
 
   if (app.security_deposit_amount > 0) {

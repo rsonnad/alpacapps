@@ -1,4 +1,4 @@
-# CLAUDE.md - GenAlpaca Project Context
+# CLAUDE.md - AlpacApps Project Context
 
 This file provides context for Claude (AI assistant) when working on this codebase.
 
@@ -14,7 +14,7 @@ The `/mistiq/` directory is a **separate, unrelated project** (Mistiq Staffing).
 
 ## Project Overview
 
-GenAlpaca is a property management system for GenAlpaca Residency. It manages rental spaces, tenants, bookings, payments, and photos.
+AlpacApps is a property management system for AlpacApps Residency. It manages rental spaces, tenants, bookings, payments, and photos.
 
 **Tech Stack:**
 - Frontend: Vanilla HTML/CSS/JavaScript (no framework)
