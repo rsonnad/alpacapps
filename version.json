@@ -1,12 +1,12 @@
 {
-  "version": "v260211.49 1:47p",
-  "release": 49,
-  "sha": "75b55262",
-  "fullSha": "75b552628de265edc3e7ea3970cd7725d5593237",
+  "version": "v260211.50 1:48p",
+  "release": 50,
+  "sha": "9892c6c6",
+  "fullSha": "9892c6c6a2b420954045566ed21ee0e3e408715b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:47:28+00",
-  "commits": [{"sha":"75b55262","message":"Fix admin nav disappearing: remove duplicate import in admin-shell.js","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:48:17+00",
+  "commits": [{"sha":"9892c6c6","message":"Fix bookkeeping vehicles query: use vehicle_make/vehicle_model columns","author":"Rahul Sonnad"}]
 }
