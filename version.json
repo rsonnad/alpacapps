@@ -1,12 +1,12 @@
 {
-  "version": "v260211.16 8:30a",
-  "release": 16,
-  "sha": "ad03a786",
-  "fullSha": "ad03a786e3768d35f433500520d27ac79ac65ed8",
+  "version": "v260211.17 8:33a",
+  "release": 17,
+  "sha": "7f90a3f4",
+  "fullSha": "7f90a3f40c8c715810836fbe9a6b2f42a3af9183",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:30:53+00",
-  "commits": [{"sha":"ad03a786","message":"Restore unified device inventory page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:33:57+00",
+  "commits": [{"sha":"7f90a3f4","message":"Restore camera sort by model type then name alphabetically","author":"Rahul Sonnad"}]
 }
