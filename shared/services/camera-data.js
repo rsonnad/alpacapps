@@ -32,6 +32,7 @@ export async function loadCameras() {
       grouped[stream.camera_name] = {
         name: stream.camera_name,
         location: stream.location,
+        model: stream.camera_model,
         protectUrl: stream.protect_share_url,
         protectCameraId: stream.protect_camera_id,
         streams: {},
@@ -39,7 +40,9 @@ export async function loadCameras() {
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
-  return Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
+  return Object.values(grouped).sort((a, b) =>
+    (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
+  );
 }
 
 /**

@@ -330,13 +330,15 @@ async function initCameras() {
   const grouped = {};
   for (const stream of data) {
     if (!grouped[stream.camera_name]) {
-      grouped[stream.camera_name] = { name: stream.camera_name, streams: {} };
+      grouped[stream.camera_name] = { name: stream.camera_name, model: stream.camera_model, streams: {} };
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
 
   // Filter to configured cameras (or all if not specified)
-  let cameras = Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
+  let cameras = Object.values(grouped).sort((a, b) =>
+    (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
+  );
   if (cameraFilter.length > 0) {
     cameras = cameras.filter(c => cameraFilter.includes(c.name));
   }

@@ -223,13 +223,15 @@ async function buildUserScope(
     return allAccessibleSpaceIds.includes(d.space_id);
   });
 
-  // Deduplicate (multiple quality rows per camera) and sort alphabetically
+  // Deduplicate (multiple quality rows per camera) and sort by model type then name
   const seenCameras = new Set<string>();
   const uniqueCameras = (cameraStreams || []).filter((c: any) => {
     if (seenCameras.has(c.camera_name)) return false;
     seenCameras.add(c.camera_name);
     return true;
-  }).sort((a: any, b: any) => (a.camera_name || '').localeCompare(b.camera_name || ''));
+  }).sort((a: any, b: any) =>
+    (a.camera_model || '').localeCompare(b.camera_model || '') || (a.camera_name || '').localeCompare(b.camera_name || '')
+  );
 
   // Build access code map for spaces the user can access
   const spaceAccessCodes: Record<string, string> = {};
