@@ -1,0 +1,248 @@
+---
+description: UDM Pro (UniFi Dream Machine Pro) connection reference — credentials, auth flow, known gotchas, and testing instructions for all sessions.
+globs:
+  - scripts/ptz-proxy/**
+  - camera-event-poller/**
+  - HOMEAUTOMATION.md
+  - supabase/functions/**/index.ts
+alwaysApply: false
+---
+
+# UniFi Dream Machine Pro — Connection Reference
+
+## Network Reachability
+
+The UDM Pro is at **`192.168.1.1`** on the property LAN (`192.168.1.0/24`).
+
+| Location | Can reach UDM? | How |
+|----------|---------------|-----|
+| DO Droplet (`159.89.157.120`) | Yes | Tailscale subnet routing via Alpaca Mac |
+| Alpaca Mac (home server) | Yes | Direct LAN (on Black Rock City WiFi) |
+| Developer laptop / Cursor IDE | **No** | Not on LAN, no Tailscale — use `cam.alpacaplayhouse.com` proxy |
+| Supabase Edge Functions | **No** | Must go through DO droplet proxy |
+| Browser (client-side) | **No** | Must use `cam.alpacaplayhouse.com` proxy |
+
+**If you're in a Cursor session and need to test the UDM Pro, you CANNOT reach `192.168.1.1` directly.** Use the public proxy endpoints instead (see Testing section below).
+
+## Credentials
+
+| Field | Value |
+|-------|-------|
+| **Host** | `192.168.1.1` (HTTPS, port 443, self-signed cert) |
+| **Username** | `alpacaauto` (local-only admin account) |
+| **Password** | Stored in `/opt/ptz-proxy/.env` and `/opt/camera-event-poller/.env` on the DO droplet (env var `UDM_PASS`). **NOT in this repo.** The password is in the gitignored `HOMEAUTOMATION.local.md`. |
+| **Auth method** | Session cookie + CSRF token from JWT (NOT API keys) |
+
+### Environment Variables (on DO Droplet)
+
+```bash
+UDM_HOST=192.168.1.1
+UDM_USER=alpacaauto
+UDM_PASS=<password from HOMEAUTOMATION.local.md>
+```
+
+Used by: `ptz-proxy` (`/opt/ptz-proxy/.env`), `camera-event-poller` (`/opt/camera-event-poller/.env`).
+
+## Authentication Flow
+
+1. `POST https://192.168.1.1/api/auth/login` with `{"username":"alpacaauto","password":"<UDM_PASS>"}`
+2. Response sets a `TOKEN=<jwt>` cookie
+3. Decode the JWT payload (base64) → extract `csrfToken` field
+4. All subsequent requests must include:
+   - `Cookie: TOKEN=<jwt>` header
+   - `X-CSRF-Token: <csrfToken>` header
+5. Sessions last ~24 hours; code refreshes every 12 hours
+6. On 401 responses, re-authenticate and retry once
+
+### Code Pattern (Node.js)
+
+```javascript
+const https = require('https');
+
+// MUST disable TLS verification (self-signed cert)
+const agent = new https.Agent({ rejectUnauthorized: false });
+
+// Login
+const authBody = JSON.stringify({ username: UDM_USER, password: UDM_PASS });
+const res = await httpsRequest({
+  hostname: '192.168.1.1', port: 443,
+  path: '/api/auth/login', method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(authBody) },
+  agent,
+}, authBody);
+
+// Extract TOKEN cookie
+const tokenCookie = res.setCookie.find(c => c.startsWith('TOKEN='));
+const sessionCookie = tokenCookie.split(';')[0]; // "TOKEN=xxx"
+
+// Extract CSRF from JWT
+const jwt = sessionCookie.replace('TOKEN=', '');
+const payloadB64 = jwt.split('.')[1];
+const padded = payloadB64 + '='.repeat((4 - payloadB64.length % 4) % 4);
+const payload = JSON.parse(Buffer.from(padded, 'base64').toString());
+const csrfToken = payload.csrfToken;
+
+// Use in subsequent requests:
+headers: { 'Cookie': sessionCookie, 'X-CSRF-Token': csrfToken }
+```
+
+## Known Gotchas (Common Failure Causes)
+
+### 1. Password contains `!` — bash history expansion
+
+The UDM password contains `!` which bash interprets as history expansion in double-quoted strings.
+
+**WRONG:**
+```bash
+curl -d '{"username":"alpacaauto","password":"abc!def"}' ...   # ! expands
+```
+
+**RIGHT — use a file:**
+```bash
+cat > /tmp/unifi_login.json << 'EOF'
+{"username":"alpacaauto","password":"abc!def"}
+EOF
+curl -d @/tmp/unifi_login.json ...
+```
+
+In Node.js code this is NOT an issue (JSON.stringify handles it), but in any shell script or `curl` command, always use file-based payloads or single-quoted heredocs.
+
+### 2. Self-signed TLS certificate
+
+The UDM Pro uses a self-signed cert. Every HTTPS client must disable cert verification:
+
+- **Node.js:** `new https.Agent({ rejectUnauthorized: false })`
+- **curl:** `-k` flag
+- **Python requests:** `verify=False`
+- **fetch (Deno/Edge Functions):** Not possible without custom agent — use Node.js https module
+
+### 3. CSRF token is REQUIRED for mutating requests
+
+POST/PATCH/DELETE requests will fail with 403 if the `X-CSRF-Token` header is missing. GET requests may work without it but it's best practice to always include it.
+
+### 4. Session expiry (401 errors)
+
+Sessions last ~24 hours. If you get a 401, re-authenticate. Both `ptz-proxy` and `camera-event-poller` implement `withAuthRetry()` that automatically re-auths on 401.
+
+### 5. Tailscale subnet routing must be active
+
+The DO droplet reaches `192.168.1.1` via Tailscale subnet routing through the Alpaca Mac. If the connection fails from the droplet:
+
+1. `tailscale status` on the droplet — check for "accept-routes" warning
+2. `tailscale up --accept-routes` if needed
+3. Verify Alpaca Mac is online and advertising routes
+4. Check IP forwarding on Alpaca Mac: `sysctl net.inet.ip.forwarding` should be `1`
+
+### 6. Protect API vs Network API — different path prefixes
+
+| API | URL prefix | Purpose |
+|-----|-----------|---------|
+| Network | `/proxy/network/api/s/default/` | Firewall, DHCP, WiFi, clients |
+| Protect | `/proxy/protect/api/` | Cameras, sensors, events, snapshots |
+| Auth | `/api/auth/login` | Authentication (shared by both) |
+
+## API Endpoints Quick Reference
+
+### Auth
+```
+POST /api/auth/login  →  Returns TOKEN cookie
+```
+
+### Protect API
+```
+GET  /proxy/protect/api/bootstrap              # Full system config (heavy, cache it)
+GET  /proxy/protect/api/cameras                 # List all cameras
+GET  /proxy/protect/api/cameras/{id}            # Camera details
+PATCH /proxy/protect/api/cameras/{id}           # Update camera settings
+GET  /proxy/protect/api/cameras/{id}/snapshot   # JPEG snapshot
+POST /proxy/protect/api/cameras/{id}/move       # PTZ continuous move
+POST /proxy/protect/api/cameras/{id}/ptz/goto/{slot}  # PTZ preset
+GET  /proxy/protect/api/sensors/{id}            # Sensor state
+GET  /proxy/protect/api/events?start=X&end=Y&types=smartDetectZone  # Smart detection events
+GET  /proxy/protect/api/thumbnails/e-{eventId}  # Event thumbnail
+```
+
+### Network API
+```
+GET  /proxy/network/api/s/default/stat/health        # Network health
+GET  /proxy/network/api/s/default/stat/sta            # Connected clients
+GET  /proxy/network/api/s/default/stat/device         # Network devices
+GET  /proxy/network/api/s/default/rest/firewallrule   # Firewall rules
+GET  /proxy/network/api/s/default/rest/wlanconf       # WiFi configs
+```
+
+## Camera IDs
+
+| Camera | Protect ID | LAN IP |
+|--------|------------|--------|
+| Alpacamera (backyard) | `694c550400317503e400044b` | 192.168.1.173 |
+| Front Of House | `696534fc003eed03e4028eee` | 192.168.1.182 |
+| Side Yard | `696537cc0067ed03e402929c` | 192.168.1.110 |
+
+## Services That Connect to UDM Pro
+
+| Service | Location | Config file | What it does |
+|---------|----------|-------------|-------------|
+| `ptz-proxy` | DO droplet (`/opt/ptz-proxy/`) | `.env` | PTZ control, snapshots, camera settings, sensors |
+| `camera-event-poller` | DO droplet (`/opt/camera-event-poller/`) | `.env` | Smart detection event polling + SMS alerts |
+| `go2rtc` | Alpaca Mac (`~/go2rtc/`) | `go2rtc.yaml` | Camera RTSP restreaming (uses RTSP tokens, not API auth) |
+| `talkback-relay` | Alpaca Mac (`~/talkback-relay/`) | N/A | Two-way audio (direct UDP to camera IPs, no API auth) |
+
+## Testing from Cursor / Developer Machine
+
+Since developer machines can't reach `192.168.1.1`, test through the public proxy at `cam.alpacaplayhouse.com`:
+
+```bash
+# Test auth + camera settings (quick health check)
+curl -sk 'https://cam.alpacaplayhouse.com/camera/694c550400317503e400044b/settings'
+# Expected: {"id":"694c550400317503e400044b","name":"Alpacamera",...}
+
+# Test all cameras
+curl -sk 'https://cam.alpacaplayhouse.com/camera/696534fc003eed03e4028eee/settings'
+curl -sk 'https://cam.alpacaplayhouse.com/camera/696537cc0067ed03e402929c/settings'
+
+# Test snapshot (returns JPEG binary, check HTTP status)
+curl -sk -o /dev/null -w '%{http_code}' 'https://cam.alpacaplayhouse.com/camera/694c550400317503e400044b/snapshot'
+# Expected: 200
+
+# Test sensors
+curl -sk 'https://cam.alpacaplayhouse.com/sensors'
+# Expected: JSON array (may be empty if no UP-SENSE sensors paired)
+```
+
+If these all return valid responses, the full chain is healthy:
+`Your machine → Caddy (cam.alpacaplayhouse.com) → ptz-proxy (port 8901) → UDM Pro (192.168.1.1)`
+
+## Troubleshooting Decision Tree
+
+```
+Connection failing?
+├── From developer machine?
+│   └── Use cam.alpacaplayhouse.com proxy, NOT 192.168.1.1 directly
+├── From DO droplet?
+│   ├── Can't reach 192.168.1.1?
+│   │   └── Tailscale issue → check tailscale status, accept-routes, Alpaca Mac online
+│   ├── Auth returns non-200?
+│   │   ├── 401 → Wrong password, check UDM_PASS in .env
+│   │   ├── 403 → Missing CSRF token, or account locked
+│   │   └── Connection refused → UDM Pro down or IP changed
+│   └── Auth works but API calls fail?
+│       ├── 401 → Session expired, re-authenticate
+│       └── 403 → CSRF token missing or expired
+├── From Supabase Edge Function?
+│   └── Cannot reach UDM directly — must proxy through DO droplet
+└── Shell scripts failing?
+    └── Password has ! character → use file-based payload, not inline JSON
+```
+
+## File Locations in This Repo
+
+| File | Purpose |
+|------|---------|
+| `scripts/ptz-proxy/ptz-proxy.js` | PTZ proxy server (reference auth implementation) |
+| `camera-event-poller/worker.js` | Event poller (identical auth pattern) |
+| `camera-event-poller/install.sh` | Install script with .env template |
+| `scripts/go2rtc/go2rtc.yaml` | Camera RTSP stream config (tokens, not API auth) |
+| `scripts/talkback-relay/talkback-relay.js` | Two-way audio relay |
+| `HOMEAUTOMATION.md` | Full home automation docs (auth examples, endpoints) |
+| `HOMEAUTOMATION.local.md` | **GITIGNORED** — actual password lives here |
