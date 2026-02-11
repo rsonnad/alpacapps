@@ -39,7 +39,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260211.23 2:11a</span>
+    <span data-site-version style="display:none">v260211.25 2:15a</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -55,8 +55,8 @@
         <!-- Page Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
           <div>
-            <h2 style="margin: 0;">SMS Messages</h2>
-            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">All inbound and outbound SMS communications</p>
+            <h2 style="margin: 0;">Messages</h2>
+            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">All inbound and outbound SMS &amp; WhatsApp communications</p>
           </div>
           <div style="display: flex; gap: 0.5rem;">
             <a href="settings.html" class="btn-small btn-secondary">Back to Settings</a>
@@ -66,7 +66,15 @@
 
         <!-- Filters -->
         <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Channel</label>
+              <select id="filterChannel" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                <option value="">All</option>
+                <option value="sms">SMS</option>
+                <option value="whatsapp">WhatsApp</option>
+              </select>
+            </div>
             <div>
               <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Direction</label>
               <select id="filterDirection" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
@@ -100,10 +108,18 @@
   <div id="composeSmsModal" class="modal hidden">
     <div class="modal-content" style="max-width: 500px;">
       <div class="modal-header">
-        <h2 id="composeSmsTitle">Send SMS</h2>
+        <h2 id="composeSmsTitle">Send Message</h2>
         <button class="modal-close" id="closeComposeSmsModal">&times;</button>
       </div>
       <div class="modal-body">
+        <div class="form-group">
+          <label for="composeChannelSelect">Send via</label>
+          <select id="composeChannelSelect" style="width: 100%;">
+            <option value="sms">SMS</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="both">Both SMS &amp; WhatsApp</option>
+          </select>
+        </div>
         <div class="form-group">
           <label for="smsRecipientSelect">Recipient</label>
           <select id="smsRecipientSelect">
@@ -127,7 +143,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" id="cancelComposeSmsBtn">Cancel</button>
-        <button class="btn-primary" id="sendSmsBtn">Send SMS</button>
+        <button class="btn-primary" id="sendSmsBtn">Send Message</button>
       </div>
     </div>
   </div>

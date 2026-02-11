@@ -29,6 +29,7 @@
 | `anthropic` | Claude API (identity verification, bug analysis) |
 | `vapi` | Vapi voice calls |
 | `telnyx` | SMS sending/receiving |
+| `whatsapp` | WhatsApp Cloud API messaging |
 | `resend` | Email sending |
 | `signwell` | E-signature documents |
 | `square` | Payment processing |
@@ -58,6 +59,8 @@
 | `feature_building` | Feature Builder automated implementation |
 | `sms_tenant_notification` | SMS notifications to tenants |
 | `sms_bulk_announcement` | Bulk SMS announcements |
+| `whatsapp_tenant_notification` | WhatsApp notifications to tenants |
+| `whatsapp_bulk_announcement` | Bulk WhatsApp announcements |
 | `email_tenant_notification` | Email notifications to tenants |
 | `email_system_alert` | System alert emails (errors, digests) |
 | `email_payment_receipt` | Payment receipt/confirmation emails |
@@ -114,6 +117,7 @@ await supabase.from('api_usage_log').insert({
 | Claude (Anthropic) | Varies by model |
 | Vapi | ~$0.05-0.15/min |
 | Telnyx SMS | ~$0.004/segment out, ~$0.001/segment in |
+| WhatsApp Cloud API | ~$0.015/utility conv, ~$0.025/marketing conv, $0/service (24h window) |
 | Resend Email | Free tier: 100/day, then $0.00028/email |
 | SignWell | Included (25 docs/month free) |
 | Square | 2.6% + $0.10/transaction |

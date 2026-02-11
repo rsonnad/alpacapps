@@ -15,6 +15,7 @@ let allMessages = [];
 let allPeople = [];
 
 const SEND_SMS_URL = `${SUPABASE_URL}/functions/v1/send-sms`;
+const SEND_WHATSAPP_URL = `${SUPABASE_URL}/functions/v1/send-whatsapp`;
 
 // =============================================
 // INITIALIZATION
@@ -90,12 +91,17 @@ function renderMessages() {
   const container = document.getElementById('messagesList');
 
   // Get filter values
+  const channelFilter = document.getElementById('filterChannel').value;
   const directionFilter = document.getElementById('filterDirection').value;
   const personFilter = document.getElementById('filterPerson').value;
   const searchFilter = document.getElementById('filterSearch').value.toLowerCase();
 
   // Filter messages
   let filteredMessages = allMessages;
+
+  if (channelFilter) {
+    filteredMessages = filteredMessages.filter(m => (m.channel || 'sms') === channelFilter);
+  }
 
   if (directionFilter) {
     filteredMessages = filteredMessages.filter(m => m.direction === directionFilter);
@@ -143,6 +149,11 @@ function renderMessages() {
         ? '<svg width="14" height="14" style="color: #3b82f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>'
         : '<svg width="14" height="14" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
 
+      const isWhatsApp = (msg.channel || 'sms') === 'whatsapp';
+      const channelBadge = isWhatsApp
+        ? '<span style="font-size: 0.65rem; background: #dcfce7; color: #166534; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">WA</span>'
+        : '<span style="font-size: 0.65rem; background: #dbeafe; color: #1e40af; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">SMS</span>';
+
       const statusBadge = msg.status === 'test'
         ? '<span style="font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">TEST</span>'
         : '';
@@ -157,7 +168,7 @@ function renderMessages() {
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               ${directionIcon}
               <strong style="font-size: 0.9rem;${isDemoUser() ? ' font-family: ui-monospace, monospace;' : ''}">${senderName}</strong>
-              ${statusBadge}
+              ${channelBadge}${statusBadge}
             </div>
             <span class="text-muted" style="font-size: 0.75rem;">${time}</span>
           </div>
@@ -193,6 +204,7 @@ function escapeHtml(text) {
 
 function setupEventListeners() {
   // Filters
+  document.getElementById('filterChannel')?.addEventListener('change', renderMessages);
   document.getElementById('filterDirection')?.addEventListener('change', renderMessages);
   document.getElementById('filterPerson')?.addEventListener('change', renderMessages);
   document.getElementById('filterSearch')?.addEventListener('input', renderMessages);
@@ -299,14 +311,16 @@ async function loadSmsConversation(personId) {
   section.classList.remove('hidden');
   thread.innerHTML = messages.map(msg => {
     const isOutbound = msg.direction === 'outbound';
+    const isWA = (msg.channel || 'sms') === 'whatsapp';
     const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     const statusBadge = msg.status === 'test' ? ' <span style="color: #f59e0b; font-size: 0.7rem;">[TEST]</span>' : '';
+    const chBadge = isWA ? ' <span style="color: #166534; font-size: 0.65rem;">WA</span>' : '';
     return `
       <div style="margin-bottom: 0.5rem; text-align: ${isOutbound ? 'right' : 'left'};">
-        <div style="display: inline-block; max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem; background: ${isOutbound ? '#dcf8c6' : '#f0f0f0'}; text-align: left;">
+        <div style="display: inline-block; max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem; background: ${isOutbound ? (isWA ? '#d1fae5' : '#dcf8c6') : '#f0f0f0'}; text-align: left;">
           ${escapeHtml(msg.body)}
         </div>
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">${time}${statusBadge}</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">${time}${chBadge}${statusBadge}</div>
       </div>
     `;
   }).join('');
@@ -319,8 +333,10 @@ async function handleSendSms() {
   const select = document.getElementById('smsRecipientSelect');
   const bodyInput = document.getElementById('smsComposeBody');
   const sendBtn = document.getElementById('sendSmsBtn');
+  const channelSelect = document.getElementById('composeChannelSelect');
   const personId = select.value;
   const messageBody = bodyInput.value.trim();
+  const channel = channelSelect?.value || 'sms';
 
   if (!personId) return showToast('Select a recipient', 'error');
   if (!messageBody) return showToast('Enter a message', 'error');
@@ -344,25 +360,51 @@ async function handleSendSms() {
 
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    const response = await fetch(SEND_SMS_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({
-        type: 'general',
-        to: formattedPhone,
-        data: { message: messageBody },
-        person_id: personId,
-      }),
-    });
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+      'apikey': SUPABASE_ANON_KEY,
+    };
+    const payload = {
+      type: 'general',
+      to: formattedPhone,
+      data: { message: messageBody },
+      person_id: personId,
+    };
 
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Failed to send SMS');
+    const sendPromises = [];
+    const channelsSent = [];
 
-    showToast(`SMS sent to ${person.first_name}${result.test_mode ? ' (test mode)' : ''}`, 'success');
+    // Send via SMS if channel is 'sms' or 'both'
+    if (channel === 'sms' || channel === 'both') {
+      sendPromises.push(
+        fetch(SEND_SMS_URL, { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) })
+          .then(r => r.json().then(d => ({ ok: r.ok, data: d, channel: 'SMS' })))
+      );
+      channelsSent.push('SMS');
+    }
+
+    // Send via WhatsApp if channel is 'whatsapp' or 'both'
+    if (channel === 'whatsapp' || channel === 'both') {
+      sendPromises.push(
+        fetch(SEND_WHATSAPP_URL, { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) })
+          .then(r => r.json().then(d => ({ ok: r.ok, data: d, channel: 'WhatsApp' })))
+      );
+      channelsSent.push('WhatsApp');
+    }
+
+    const results = await Promise.all(sendPromises);
+    const failures = results.filter(r => !r.ok);
+    const successes = results.filter(r => r.ok);
+
+    if (failures.length > 0 && successes.length === 0) {
+      throw new Error(failures.map(f => `${f.channel}: ${f.data.error}`).join('; '));
+    }
+
+    const testMode = successes.some(r => r.data.test_mode);
+    const channelLabel = channelsSent.join(' & ');
+    showToast(`${channelLabel} sent to ${person.first_name}${testMode ? ' (test mode)' : ''}${failures.length > 0 ? ` (${failures[0].channel} failed)` : ''}`, 'success');
+
     bodyInput.value = '';
     document.getElementById('smsCharCount').textContent = '0';
     document.getElementById('smsSegmentCount').textContent = '0';
@@ -372,11 +414,11 @@ async function handleSendSms() {
     await loadMessages();
     renderMessages();
   } catch (error) {
-    console.error('Error sending SMS:', error);
-    showToast(`Failed to send SMS: ${error.message}`, 'error');
+    console.error('Error sending message:', error);
+    showToast(`Failed to send: ${error.message}`, 'error');
   } finally {
     sendBtn.disabled = false;
-    sendBtn.textContent = 'Send SMS';
+    sendBtn.textContent = 'Send Message';
   }
 }
 

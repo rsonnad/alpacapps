@@ -9,6 +9,8 @@
 | `signwell-webhook` | Receives SignWell webhook when documents are signed |
 | `send-sms` | Outbound SMS via Telnyx API |
 | `telnyx-webhook` | Receives inbound SMS from Telnyx |
+| `send-whatsapp` | Outbound WhatsApp messages via Meta Cloud API |
+| `whatsapp-webhook` | Receives inbound WhatsApp messages + delivery status from Meta |
 | `send-email` | Outbound email via Resend API (45+ templates) |
 | `resend-inbound-webhook` | Receives inbound email via Resend webhook, routes/forwards, auto-records Zelle payments |
 | `govee-control` | Proxies requests to Govee Cloud API (resident+ auth) |
@@ -44,7 +46,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 ### `--no-verify-jwt` required:
 ```
 sonos-control, govee-control, nest-control, resend-inbound-webhook,
-telnyx-webhook, signwell-webhook, tesla-command, lg-control,
+telnyx-webhook, whatsapp-webhook, signwell-webhook, tesla-command, lg-control,
 alpaca-pai, verify-identity, vapi-server, vapi-webhook, paypal-webhook
 ```
 

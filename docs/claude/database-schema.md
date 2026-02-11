@@ -38,12 +38,16 @@ media_tags      - Tag definitions (name, color)
 media_tag_assignments - Junction: media <-> tags
 ```
 
-## SMS System
+## SMS & WhatsApp System
 ```
 telnyx_config        - Telnyx API configuration (single row, id=1)
                       (api_key, messaging_profile_id, phone_number, is_active, test_mode)
-sms_messages         - Log of all SMS sent/received
-                      (person_id, direction, from/to_number, body, sms_type, telnyx_id, status)
+whatsapp_config      - WhatsApp Cloud API configuration (single row, id=1)
+                      (access_token, phone_number_id, waba_id, verify_token,
+                       app_secret, phone_number, is_active, test_mode)
+sms_messages         - Log of all SMS and WhatsApp messages sent/received
+                      (person_id, direction, from/to_number, body, sms_type, telnyx_id,
+                       status, channel [sms/whatsapp])
 ```
 
 ## Inbound Email System
