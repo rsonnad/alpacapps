@@ -2983,10 +2983,24 @@ async function sendDepositRequestEmail() {
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
+    // Include ID verification link if not yet verified
+    let idUploadUrl = null;
+    if (app.identity_verification_status !== 'verified') {
+      try {
+        const { uploadUrl } = await identityService.requestVerification(
+          currentApplicationId, app.person_id, authState?.user?.email
+        );
+        idUploadUrl = uploadUrl;
+      } catch (e) {
+        console.warn('Could not generate ID upload link:', e);
+      }
+    }
     const depositApp = {
       person: app.person,
       move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
       security_deposit: app.security_deposit_amount || 0,
+      identity_verification_status: app.identity_verification_status,
+      id_upload_url: idUploadUrl,
     };
     const result = await emailService.sendDepositRequested(depositApp);
 

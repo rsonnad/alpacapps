@@ -408,6 +408,43 @@ Deno.serve(async (req) => {
     let errors = 0;
     const adminDigestItems: OverdueItem[] = [];
 
+    // Pre-fetch ID verification status for all persons with overdue items
+    const personIdVerification = new Map<string, { needsId: boolean; uploadUrl: string | null }>();
+    for (const [personId] of personGroups) {
+      try {
+        const { data: apps } = await supabase
+          .from('rental_applications')
+          .select('identity_verification_status')
+          .eq('person_id', personId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        const latestApp = apps?.[0];
+        const needsId = !latestApp || latestApp.identity_verification_status !== 'verified';
+        let uploadUrl: string | null = null;
+        if (needsId) {
+          // Generate an upload token (7-day expiry)
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 7);
+          const { data: tokenData } = await supabase
+            .from('upload_tokens')
+            .insert({
+              person_id: personId,
+              token_type: 'identity_verification',
+              expires_at: expiresAt.toISOString(),
+            })
+            .select('token')
+            .single();
+          if (tokenData?.token) {
+            uploadUrl = `https://alpacaplayhouse.com/spaces/verify.html?token=${tokenData.token}`;
+          }
+        }
+        personIdVerification.set(personId, { needsId, uploadUrl });
+      } catch (e) {
+        console.warn(`Could not check ID verification for person ${personId}:`, e);
+        personIdVerification.set(personId, { needsId: false, uploadUrl: null });
+      }
+    }
+
     for (const [personId, items] of personGroups) {
       const first = items[0];
       const totalDue = items.reduce((sum, i) => sum + i.amountDue, 0);
@@ -417,6 +454,9 @@ Deno.serve(async (req) => {
 
       // Look up space name
       const spaceName = assignmentSpaceNames.get(first.sourceId) || 'your space';
+
+      // ID verification info
+      const idInfo = personIdVerification.get(personId) || { needsId: false, uploadUrl: null };
 
       // Build table rows for each overdue period
       const periodRows = items.map(item => {
@@ -508,6 +548,16 @@ Deno.serve(async (req) => {
             ${methodCardsHtml}
             ` : ''}
 
+            ${idInfo.needsId ? `
+            <div style="margin:20px 0;padding:16px;background:#fff8e1;border-left:4px solid #f9a825;border-radius:4px;">
+              <p style="margin:0 0 8px;font-weight:bold;color:#333;">ID Verification Required</p>
+              <p style="margin:0;color:#555;font-size:14px;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+              ${idInfo.uploadUrl
+                ? `<p style="margin:12px 0 0;"><a href="${idInfo.uploadUrl}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
+                : `<p style="margin:8px 0 0;color:#555;font-size:14px;">Please reply to this email with a photo of your ID.</p>`}
+            </div>
+            ` : ''}
+
             <p style="color:#888;font-size:13px;margin-top:20px;line-height:1.5;">If you've already sent payment, please disregard this notice &mdash; it may take a day to process.</p>
             <p style="color:#555;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
           </div>
@@ -540,7 +590,11 @@ Or pay with:
 ${payMethodsText}
 
 Please include "${memoText}" in the payment memo.
-
+${idInfo.needsId ? `
+ID VERIFICATION REQUIRED
+We also need a copy of your government-issued photo ID to complete your rental setup.
+${idInfo.uploadUrl ? `Upload here: ${idInfo.uploadUrl}` : 'Please reply to this email with a photo of your ID.'}
+` : ''}
 If you've already sent payment, please disregard this notice.
 
 Best regards,
