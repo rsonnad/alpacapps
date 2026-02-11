@@ -24,6 +24,7 @@ const ALL_ADMIN_TABS = [
   { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff' },
   { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
+  { id: 'paiimagery', label: 'PAI Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
@@ -151,7 +152,7 @@ function escapeHtml(s) {
 }
 
 // =============================================
-// CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
+// CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
 // =============================================
 function renderContextSwitcher(userRole, activeSection = 'staff') {
   const switcher = document.getElementById('contextSwitcher');
@@ -166,6 +167,7 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   }
 
   const tabs = [
+    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
     { id: 'resident', label: 'Residents', href: '/residents/' },
     { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
     { id: 'staff', label: 'Staff', href: '/spaces/admin/' },

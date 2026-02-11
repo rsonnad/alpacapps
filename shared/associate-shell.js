@@ -74,7 +74,7 @@ function renderAssociateTabNav(activeTab) {
 }
 
 // =============================================
-// CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
+// CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
 // =============================================
 function renderContextSwitcher() {
   const switcher = document.getElementById('contextSwitcher');
@@ -88,6 +88,7 @@ function renderContextSwitcher() {
   }
 
   const tabs = [
+    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
     { id: 'resident', label: 'Residents', href: '/residents/' },
     { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
     { id: 'staff', label: 'Staff', href: '/spaces/admin/' },

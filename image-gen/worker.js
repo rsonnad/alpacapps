@@ -228,7 +228,8 @@ async function processJob(job) {
     .eq('id', job.id);
 
   try {
-    // 1. If source_media_id is set, download the source image for editing
+    // 1. If source_media_id is set, download the source image for editing.
+    //    Fallback: metadata.source_image_url (profile photos, etc).
     let sourceBase64 = null;
     let sourceMimeType = null;
     if (job.source_media_id) {
@@ -240,6 +241,14 @@ async function processJob(job) {
       if (srcErr || !sourceMedia) throw new Error(`Source media not found: ${job.source_media_id}`);
       log('info', 'Downloading source image', { id: job.id, url: sourceMedia.url.substring(0, 80) });
       const downloaded = await downloadImage(sourceMedia.url);
+      sourceBase64 = downloaded.base64;
+      sourceMimeType = downloaded.mimeType;
+    } else if (job.metadata?.source_image_url) {
+      log('info', 'Downloading source image from metadata URL', {
+        id: job.id,
+        url: String(job.metadata.source_image_url).substring(0, 80),
+      });
+      const downloaded = await downloadImage(job.metadata.source_image_url);
       sourceBase64 = downloaded.base64;
       sourceMimeType = downloaded.mimeType;
     }

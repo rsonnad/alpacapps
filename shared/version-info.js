@@ -73,36 +73,6 @@ function firstNonEmpty(...values) {
   return '';
 }
 
-function dominantValue(mapObj) {
-  if (!mapObj || typeof mapObj !== 'object') return '';
-  const counts = new Map();
-  Object.values(mapObj).forEach((v) => {
-    if (typeof v === 'string' && v.trim()) {
-      const key = v.trim();
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-  });
-  let best = '';
-  let bestCount = 0;
-  for (const [key, count] of counts.entries()) {
-    if (count > bestCount) {
-      best = key;
-      bestCount = count;
-    }
-  }
-  return best;
-}
-
-function coAuthorFromChanges(changes) {
-  if (!Array.isArray(changes)) return '';
-  for (const change of changes) {
-    const msg = String(change?.msg || change?.message || '');
-    const match = msg.match(/Co-Authored-By:\s*([^<\n]+)/i);
-    if (match && match[1]) return match[1].trim();
-  }
-  return '';
-}
-
 function platformMachineHint() {
   try {
     const raw = firstNonEmpty(
@@ -345,7 +315,6 @@ function showVersionModal(info) {
       release.model,
       info.model_code,
       info.ai_model,
-      dominantValue(models),
     );
     const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
     const machineLabel = firstNonEmpty(
@@ -363,7 +332,6 @@ function showVersionModal(info) {
       info.actor,
       info.author,
       info.release_actor,
-      coAuthorFromChanges(changes),
     ) || '—';
     const releaseSource = firstNonEmpty(release.source, info.source) || '—';
     const releasedAt = fmtTime(release.pushed_at || info.timestamp);
@@ -456,7 +424,6 @@ export function setupVersionInfo() {
         info.release?.model,
         info.model_code,
         info.ai_model,
-        dominantValue(info.models || {}),
       );
       const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
       const machineLabel = firstNonEmpty(
@@ -475,7 +442,6 @@ export function setupVersionInfo() {
         info.actor,
         info.author,
         info.release_actor,
-        coAuthorFromChanges(info.changes || []),
       ) || '—';
       tooltip.innerHTML = [
         `<div class="vi-tooltip-version">${esc(info.version)}</div>`,

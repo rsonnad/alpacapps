@@ -25,22 +25,29 @@ const ADMIN_PERMISSION_KEYS = [
 
 const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars'];
 
-const RESIDENT_CORE_TABS = [
-  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
-  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
-  { id: 'devices', label: 'Devices', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
-];
-
-const RESIDENT_STAFF_TABS = [
-  { id: 'devices', label: 'Devices', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
+const DEVICE_SUBTABS = [
+  { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
   { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
   { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry' },
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
-  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
   { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html', permission: 'view_cameras' },
+];
+
+const RESIDENT_CORE_TABS = [
+  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
+  { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
+  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile' },
+];
+
+const RESIDENT_STAFF_TABS = [
+  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
+  { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
+  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile' },
 ];
 
 // =============================================
@@ -110,10 +117,74 @@ function renderResidentTabNav(activeTab, authState) {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
+
+  renderDeviceSubTabNav(activeTab, authState);
+}
+
+function hasTabAccess(tab, authState) {
+  if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
+    return tab.permissionsAny.some((perm) => authState.hasPermission?.(perm));
+  }
+  return authState.hasPermission?.(tab.permission);
+}
+
+function renderDeviceSubTabNav(activeTab, authState) {
+  const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
+  const devicePageToTab = {
+    'devices.html': 'list',
+    devices: 'list',
+    'lighting.html': 'homeauto',
+    lighting: 'homeauto',
+    'sonos.html': 'music',
+    sonos: 'music',
+    'cameras.html': 'cameras',
+    cameras: 'cameras',
+    'climate.html': 'climate',
+    climate: 'climate',
+    'laundry.html': 'laundry',
+    laundry: 'laundry',
+    'cars.html': 'cars',
+    cars: 'cars',
+    'sensorinstallation.html': 'sensors',
+    sensorinstallation: 'sensors',
+  };
+  const activeDeviceSubTab = devicePageToTab[currentPath] || (activeTab === 'devices' ? 'list' : null);
+  const shouldRenderDeviceSubtabs = activeTab === 'devices' || Boolean(devicePageToTab[currentPath]);
+
+  let subTabContainer = document.getElementById('deviceSubTabNav');
+  if (!shouldRenderDeviceSubtabs) {
+    if (subTabContainer) subTabContainer.remove();
+    return;
+  }
+
+  const visibleSubtabs = DEVICE_SUBTABS.filter((tab) => hasTabAccess(tab, authState));
+  if (visibleSubtabs.length === 0) {
+    if (subTabContainer) subTabContainer.remove();
+    return;
+  }
+
+  if (!subTabContainer) {
+    subTabContainer = document.createElement('div');
+    subTabContainer.id = 'deviceSubTabNav';
+    subTabContainer.className = 'manage-tabs';
+    const tabsContainer = document.querySelector('.manage-tabs');
+    tabsContainer.insertAdjacentElement('afterend', subTabContainer);
+  }
+
+  subTabContainer.innerHTML = visibleSubtabs.map((tab) => {
+    const isActive = tab.id === activeDeviceSubTab;
+    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
+  }).join('');
+}
+
+function normalizeRouteToken(token) {
+  const normalized = String(token || '').trim().toLowerCase();
+  if (!normalized) return '';
+  return normalized.endsWith('.html') ? normalized : normalized;
 }
 
 // =============================================
-// CONTEXT SWITCHER (Resident / Associate / Staff / Admin)
+// CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
 // =============================================
 function renderContextSwitcher() {
   const switcher = document.getElementById('contextSwitcher');
@@ -127,17 +198,39 @@ function renderContextSwitcher() {
   }
 
   const tabs = [
+    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
     { id: 'resident', label: 'Residents', href: '/residents/' },
     { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
     { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
     { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
   ];
 
+  const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
+  const devicePaths = new Set([
+    'devices.html',
+    'devices',
+    'lighting.html',
+    'lighting',
+    'sonos.html',
+    'sonos',
+    'cameras.html',
+    'cameras',
+    'climate.html',
+    'climate',
+    'laundry.html',
+    'laundry',
+    'cars.html',
+    'cars',
+    'sensorinstallation.html',
+    'sensorinstallation',
+  ]);
+  const activeContext = devicePaths.has(currentPath) ? 'devices' : 'resident';
+
   switcher.innerHTML = tabs.map(tab => {
     if (tab.id === 'admin' && !hasAdminPerms) {
       return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
     }
-    const isActive = tab.id === 'resident';
+    const isActive = tab.id === activeContext;
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');

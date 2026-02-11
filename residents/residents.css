@@ -627,6 +627,115 @@
   }
 }
 
+/* ===== RESIDENT MEDIA PAGE ===== */
+.resident-media-page .pai-daily-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.resident-media-page .pai-ref-upload-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.pai-ref-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.pai-ref-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  padding: 0.35rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pai-ref-card input[type="radio"] {
+  align-self: flex-start;
+}
+
+.pai-ref-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.pai-ref-card__meta {
+  font-size: 0.72rem;
+  color: var(--text-muted, #666);
+}
+
+.pai-job-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.pai-job-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.82rem;
+  background: #fff;
+}
+
+.pai-job-status.pending strong,
+.pai-job-status.processing strong {
+  color: #b45309;
+}
+
+.pai-job-status.failed strong {
+  color: #b91c1c;
+}
+
+.pai-job-status small {
+  color: #b91c1c;
+  flex: 1 1 100%;
+}
+
+.pai-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.pai-gallery-card {
+  border: 1px solid var(--border, #ddd);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.pai-gallery-card img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+}
+
+.pai-gallery-card__meta {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-muted, #666);
+}
+
 /* ===== LIGHTING GROUPS ===== */
 .lighting-groups {
   display: flex;

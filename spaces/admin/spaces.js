@@ -717,7 +717,7 @@ async function handleAddSpace(e) {
 
   const { data, error } = await supabase
     .from('spaces')
-    .insert({ name, parent_id: parentId, can_be_dwelling: true, is_listed: false })
+    .insert({ name, parent_id: parentId, can_be_dwelling: true, is_listed: true, is_secret: false })
     .select();
 
   if (error) {
