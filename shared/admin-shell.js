@@ -17,7 +17,7 @@ const STAFF_PERMISSION_KEYS = [
   'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_projects',
 ];
 const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'admin_pai_settings',
 ];
 
 const ALL_ADMIN_TABS = [
@@ -38,6 +38,7 @@ const ALL_ADMIN_TABS = [
   { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
   { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
+  { id: 'pai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
 ];
 
 // =============================================

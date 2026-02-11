@@ -1682,8 +1682,9 @@ async function loadPreviewData() {
 
 // Initialize
 initAdminPage({
-  activeTab: null,
-  requiredRole: 'staff',
-  section: 'staff',
+  activeTab: 'pai',
+  requiredRole: 'admin',
+  requiredPermission: 'admin_pai_settings',
+  section: 'admin',
   onReady: initPaiAdmin
 });

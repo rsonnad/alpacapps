@@ -20,7 +20,7 @@ const STAFF_PERMISSION_KEYS = [
   'view_hours', 'view_faq', 'view_voice', 'view_todo',
 ];
 const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'admin_pai_settings',
 ];
 
 const RESIDENT_TABS = [
