@@ -172,9 +172,17 @@ function renderGallery() {
       <img src="${job.result_url}" alt="Life of PAI portrait" loading="lazy">
       <div class="pai-gallery-card__meta">
         <span>${formatDate(job.completed_at || job.created_at)}</span>
+        <button class="pai-gallery-delete" data-job-id="${job.id}" title="Delete portrait">&times;</button>
       </div>
     </article>
   `).join('');
+
+  grid.querySelectorAll('.pai-gallery-delete').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteGalleryJob(Number(btn.dataset.jobId));
+    });
+  });
 }
 
 function renderJobStatuses() {
@@ -302,6 +310,31 @@ Narrative moment:
 
   showToast(isAutoDaily ? 'Daily portrait queued' : 'Portrait generation queued', 'success');
   await loadAll();
+}
+
+async function deleteGalleryJob(jobId) {
+  const job = galleryJobs.find((j) => j.id === jobId);
+  if (!job) return;
+
+  // Remove from local state immediately for instant feedback
+  galleryJobs = galleryJobs.filter((j) => j.id !== jobId);
+  renderGallery();
+  renderJobStatuses();
+  updateDailyStatusText();
+
+  // Delete the job row (cascades or we clean up media separately)
+  const { error } = await supabase.from('image_gen_jobs').delete().eq('id', jobId);
+  if (error) {
+    console.error('Failed to delete gallery job:', error);
+    showToast('Could not delete portrait', 'error');
+    // Restore on failure
+    galleryJobs.push(job);
+    galleryJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    renderGallery();
+    return;
+  }
+
+  showToast('Portrait deleted', 'success');
 }
 
 function getSelectedReferenceId() {
