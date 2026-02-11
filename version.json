@@ -1,12 +1,12 @@
 {
-  "version": "v260211.67 2:57p",
-  "release": 67,
-  "sha": "401d4d19",
-  "fullSha": "401d4d1918c131d6f363a2435fe4a09596543701",
+  "version": "v260211.68 2:58p",
+  "release": 68,
+  "sha": "439daa12",
+  "fullSha": "439daa12537b51e729cbe3882c8ea89755ff7914",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:57:16+00",
-  "commits": [{"sha":"401d4d19","message":"Redesign invitation email: beautiful dark header, alpaca banner, AlpacApps branding","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:58:11+00",
+  "commits": [{"sha":"439daa12","message":"PAI concierge: expose all APIs (7 new tools)","author":"Rahul Sonnad"}]
 }
