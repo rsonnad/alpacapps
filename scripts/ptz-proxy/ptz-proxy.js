@@ -10,6 +10,8 @@
  *   PATCH /camera/{cameraId}/settings  — update whitelisted camera settings
  *   GET  /sensors                      — returns all Protect sensors from bootstrap
  *   GET  /sensor/{sensorId}            — returns individual sensor state
+ *   GET  /clients                      — returns connected network clients (from UDM Network API)
+ *   GET  /clients?search=blink         — filter clients by hostname/name/oui/mac/ip
  *
  * Auth to UniFi Protect:
  *   Cookie-based with CSRF token from JWT. Caches session for reuse.
@@ -540,9 +542,77 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // ---- Route: GET /clients ----
+    // Returns connected network clients from UDM Network API
+    // Useful for finding device IPs by hostname, MAC, or OUI
+    // Optional query params: ?search=blink (filters by hostname/name/oui/mac/ip)
+    if ((req.url.startsWith('/clients')) && req.method === 'GET') {
+      await ensureAuth();
+
+      const fetchClients = () => httpsRequest({
+        hostname: UDM_HOST,
+        port: 443,
+        path: '/proxy/network/api/s/default/stat/sta',
+        method: 'GET',
+        headers: {
+          'Cookie': sessionCookie,
+          'X-CSRF-Token': csrfToken,
+        },
+      });
+
+      const result = await withAuthRetry(fetchClients);
+
+      if (result.status !== 200) {
+        res.writeHead(result.status, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Clients fetch failed: ${result.status}` }));
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(result.body);
+      } catch {
+        res.writeHead(500, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid response from Network API' }));
+        return;
+      }
+
+      const clients = (parsed.data || parsed || []).map(c => ({
+        ip: c.ip || null,
+        mac: c.mac || null,
+        hostname: c.hostname || null,
+        name: c.name || null,
+        oui: c.oui || null,
+        network: c.network || null,
+        is_wired: c.is_wired || false,
+        last_seen: c.last_seen || null,
+        uptime: c.uptime || null,
+        _id: c._id || null,
+      }));
+
+      // Optional search filter
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const search = (urlObj.searchParams.get('search') || '').toLowerCase();
+
+      const filtered = search
+        ? clients.filter(c =>
+            (c.hostname || '').toLowerCase().includes(search) ||
+            (c.name || '').toLowerCase().includes(search) ||
+            (c.oui || '').toLowerCase().includes(search) ||
+            (c.mac || '').toLowerCase().includes(search) ||
+            (c.ip || '').toLowerCase().includes(search))
+        : clients;
+
+      console.log(`[Clients] Returning ${filtered.length}/${clients.length} client(s)${search ? ` (search: "${search}")` : ''}`);
+
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(filtered));
+      return;
+    }
+
     // ---- 404 ----
     res.writeHead(404, { ...cors, 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}' }));
+    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients' }));
 
   } catch (err) {
     console.error('[Proxy] Error:', err.message);
@@ -554,7 +624,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Camera Control Proxy listening on 127.0.0.1:${PORT}`);
   console.log(`UDM Host: ${UDM_HOST}`);
-  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}`);
+  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients`);
   // Pre-auth on startup
   authenticate().catch(err => console.error('[Auth] Startup auth failed:', err.message));
 });
