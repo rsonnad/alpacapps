@@ -61,10 +61,18 @@ async function downloadImage(url) {
 async function generateImage(prompt, sourceBase64 = null, sourceMimeType = null) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-  // Build request parts: text prompt + optional source image
-  const requestParts = [{ text: prompt }];
+  // Build request parts with image sandwiched between likeness instructions.
+  // This interleaving is critical: Gemini needs to SEE the face early and be
+  // told to reproduce it, BEFORE getting the scene/backstory context.
+  let requestParts;
   if (sourceBase64) {
-    requestParts.push({ inlineData: { mimeType: sourceMimeType, data: sourceBase64 } });
+    requestParts = [
+      { text: 'REFERENCE PHOTO — Study this image carefully. This is the REAL person who must appear in the portrait. Memorize their exact face shape, skin tone, hair color/texture, ethnicity, and features. The output MUST look like this specific person:' },
+      { inlineData: { mimeType: sourceMimeType, data: sourceBase64 } },
+      { text: `Now generate a portrait of the EXACT person shown above. Their face, skin tone, hair, and ethnicity must match the reference photo precisely. Do not substitute a different-looking person.\n\n${prompt}` },
+    ];
+  } else {
+    requestParts = [{ text: prompt }];
   }
 
   const response = await fetch(url, {
