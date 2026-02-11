@@ -1,12 +1,12 @@
 {
-  "version": "v260211.33 10:39a",
-  "release": 33,
-  "sha": "2341fa07",
-  "fullSha": "2341fa07403cac0b8b7153c7383b37b284114d6a",
+  "version": "v260211.34 10:45a",
+  "release": 34,
+  "sha": "db78d201",
+  "fullSha": "db78d201fb0ea485b136050627db982ab8efccb0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 16:39:09+00",
-  "commits": [{"sha":"2341fa07","message":"Add UDM Pro connection reference as cursor rule","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:45:14+00",
+  "commits": [{"sha":"db78d201","message":"Add /clients endpoint to ptz-proxy for network device discovery","author":"Rahul Sonnad"}]
 }
