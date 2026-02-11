@@ -553,7 +553,7 @@ class HoursService {
   async getWorkPhotos(associateId, { dateFrom, dateTo, timeEntryId } = {}) {
     let query = supabase
       .from('work_photos')
-      .select('*, media:media_id(id, url, caption)')
+      .select('*, media:media_id(id, url, caption, media_type, title, mime_type)')
       .eq('associate_id', associateId)
       .order('created_at', { ascending: false });
 

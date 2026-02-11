@@ -84,14 +84,6 @@
     /* Photo Upload */
     .photo-section { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
     .photo-section h3 { margin: 0 0 0.75rem; font-size: 1rem; }
-    .photo-upload-area {
-      border: 2px dashed #d1d5db; border-radius: 10px; padding: 1.5rem; text-align: center;
-      cursor: pointer; transition: border-color 0.2s;
-    }
-    .photo-upload-area:hover { border-color: var(--accent); }
-    .photo-upload-area input[type="file"] { display: none; }
-    .photo-upload-icon { font-size: 2rem; margin-bottom: 0.25rem; }
-    .photo-upload-text { font-size: 0.85rem; color: var(--text-muted); }
     .photo-type-selector { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
     .photo-type-selector button {
       flex: 1; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 6px;
@@ -99,12 +91,35 @@
     }
     .photo-type-selector button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+    .photo-upload-actions { display: flex; gap: 0.75rem; }
+    .photo-action-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem 0.5rem; border: 2px dashed #d1d5db; border-radius: 10px;
+      background: #fff; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+    .photo-action-btn:hover { border-color: var(--accent); background: #f8fafc; }
+    .photo-action-btn:active { background: #f1f5f9; transform: scale(0.98); }
+    .photo-action-btn input[type="file"] { display: none; }
+    .photo-action-icon { font-size: 1.5rem; margin-bottom: 0.2rem; }
+    .photo-action-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .photo-action-hint { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
+
     .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
-    .photo-thumb { border-radius: 6px; overflow: hidden; aspect-ratio: 1; cursor: pointer; }
+    .photo-thumb { border-radius: 6px; overflow: hidden; aspect-ratio: 1; cursor: pointer; position: relative; }
     .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .photo-thumb .type-tag {
       position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff;
       font-size: 0.6rem; padding: 0.1rem 0.3rem; border-radius: 3px;
+    }
+    .photo-thumb.file-thumb {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #f8fafc; border: 1px solid #e5e7eb; gap: 0.2rem;
+    }
+    .photo-thumb.file-thumb .file-icon { font-size: 1.5rem; }
+    .photo-thumb.file-thumb .file-name {
+      font-size: 0.6rem; color: #64748b; text-align: center; padding: 0 0.25rem;
+      word-break: break-all; line-height: 1.2; max-height: 2.4em; overflow: hidden;
     }
 
     /* History Section */
@@ -517,16 +532,24 @@
         </div>
 
         <div class="photo-section">
-          <h3>Work Photos</h3>
+          <h3>Work Photos & Files</h3>
           <div class="photo-type-selector">
             <button class="active" data-photo-type="before">Before</button>
             <button data-photo-type="progress">Progress</button>
             <button data-photo-type="after">After</button>
           </div>
-          <div class="photo-upload-area" id="photoUploadArea">
-            <input type="file" id="photoInput" accept="image/*" capture="environment">
-            <div class="photo-upload-icon">📷</div>
-            <div class="photo-upload-text">Tap to take or upload a photo</div>
+          <div class="photo-upload-actions">
+            <button class="photo-action-btn" id="btnTakePhoto">
+              <input type="file" id="cameraInput" accept="image/*" capture="environment">
+              <span class="photo-action-icon">📷</span>
+              <span class="photo-action-label">Take Photo</span>
+            </button>
+            <button class="photo-action-btn" id="btnUploadFile">
+              <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.heic,.heif,.zip" multiple>
+              <span class="photo-action-icon">📁</span>
+              <span class="photo-action-label">Upload File</span>
+              <span class="photo-action-hint">Photos, docs, PDFs</span>
+            </button>
           </div>
           <div class="photo-grid" id="todayPhotos"></div>
         </div>
@@ -639,8 +662,8 @@
     </div>
   </div>
 
-  <!-- Instant chrome: skip spinner for returning users -->
-  <script>try{var c=localStorage.getItem('genalpaca-cached-auth');if(c&&JSON.parse(c).appUser){document.getElementById('loadingOverlay').style.display='none';document.getElementById('appContent').classList.remove('hidden')}}catch(e){}</script>
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../shared/instant-chrome.js"></script>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script type="module" src="worktracking.js"></script>

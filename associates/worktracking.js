@@ -337,7 +337,22 @@ async function refreshTodayPhotos() {
     grid.innerHTML = photos.map(p => {
       const url = p.media?.url || '';
       const type = PHOTO_TYPE_LABELS[p.photo_type] || p.photo_type;
-      return `<div class="photo-thumb" style="position:relative;" onclick="window.open('${escapeHtml(url)}','_blank')">
+      const mediaType = p.media?.media_type || 'image';
+      const title = p.media?.title || '';
+      const mimeType = p.media?.mime_type || '';
+
+      // Render document/file thumbnails differently from images
+      if (mediaType === 'document' || (!mimeType.startsWith('image/') && mediaType !== 'image')) {
+        const icon = getFileIcon(mimeType, title);
+        const displayName = title || 'File';
+        return `<div class="photo-thumb file-thumb" onclick="window.open('${escapeHtml(url)}','_blank')">
+          <span class="file-icon">${icon}</span>
+          <span class="file-name">${escapeHtml(displayName)}</span>
+          <span class="type-tag">${escapeHtml(type)}</span>
+        </div>`;
+      }
+
+      return `<div class="photo-thumb" onclick="window.open('${escapeHtml(url)}','_blank')">
         <img src="${escapeHtml(url)}" alt="${escapeHtml(type)}" loading="lazy">
         <span class="type-tag">${escapeHtml(type)}</span>
       </div>`;
@@ -345,6 +360,16 @@ async function refreshTodayPhotos() {
   } catch (err) {
     console.error('Failed to load photos:', err);
   }
+}
+
+function getFileIcon(mimeType, filename) {
+  const ext = (filename || '').split('.').pop()?.toLowerCase() || '';
+  if (mimeType === 'application/pdf' || ext === 'pdf') return '📄';
+  if (mimeType.includes('word') || ext === 'doc' || ext === 'docx') return '📝';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || ext === 'xls' || ext === 'xlsx' || ext === 'csv') return '📊';
+  if (mimeType.includes('text') || ext === 'txt') return '📃';
+  if (mimeType.includes('zip') || mimeType.includes('compressed') || ext === 'zip') return '🗜️';
+  return '📎';
 }
 
 async function handlePhotoUpload(file) {
@@ -369,6 +394,68 @@ async function handlePhotoUpload(file) {
     await refreshTodayPhotos();
   } catch (err) {
     showToast('Failed to upload photo: ' + err.message, 'error');
+  }
+}
+
+async function handleFileUpload(file) {
+  if (!file) return;
+
+  // Route images through the existing photo upload handler
+  if (file.type.startsWith('image/')) {
+    return handlePhotoUpload(file);
+  }
+
+  // For non-image files, upload directly to Supabase storage
+  showToast('Uploading file...', 'info', 3000);
+
+  try {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const storagePath = `projects/${timestamp}-${randomId}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('housephotos')
+      .upload(storagePath, file);
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('housephotos')
+      .getPublicUrl(storagePath);
+
+    // Create media record
+    const { data: mediaRecord, error: mediaError } = await supabase
+      .from('media')
+      .insert({
+        url: urlData.publicUrl,
+        storage_provider: 'supabase',
+        storage_path: storagePath,
+        media_type: 'document',
+        mime_type: file.type || 'application/octet-stream',
+        file_size_bytes: file.size,
+        title: file.name,
+        category: 'projects',
+      })
+      .select()
+      .single();
+
+    if (mediaError) throw new Error(mediaError.message);
+
+    // Create work photo record (links the file to this work session)
+    await hoursService.createWorkPhoto({
+      associateId: profile.id,
+      mediaId: mediaRecord.id,
+      timeEntryId: activeEntry?.id || null,
+      photoType: selectedPhotoType,
+      workDate: new Date().toISOString().split('T')[0]
+    });
+
+    showToast('File uploaded!', 'success');
+    await refreshTodayPhotos();
+  } catch (err) {
+    showToast('Failed to upload file: ' + err.message, 'error');
   }
 }
 
@@ -661,12 +748,24 @@ function setupEventListeners() {
     });
   });
 
-  // Photo upload
-  document.getElementById('photoUploadArea').addEventListener('click', () => {
-    document.getElementById('photoInput').click();
+  // Photo upload — Take Photo (camera)
+  document.getElementById('btnTakePhoto').addEventListener('click', () => {
+    document.getElementById('cameraInput').click();
   });
-  document.getElementById('photoInput').addEventListener('change', (e) => {
+  document.getElementById('cameraInput').addEventListener('change', (e) => {
     if (e.target.files[0]) handlePhotoUpload(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // File upload — Upload File (gallery / files)
+  document.getElementById('btnUploadFile').addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+  });
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      handleFileUpload(file);
+    }
     e.target.value = '';
   });
 
