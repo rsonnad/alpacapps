@@ -1,12 +1,12 @@
 {
   "version": "",
-  "release": 10,
-  "sha": "f72940ea",
-  "fullSha": "f72940ea4d91ac9e2568538e5552fc12fbfe960e",
+  "release": 11,
+  "sha": "0e791504",
+  "fullSha": "0e791504822168bae663fddb164ca16bf7fa494f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:14:02+00",
-  "commits": [{"sha":"f72940ea","message":"Add single-click delete to Life of PAI daily gallery portraits","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:17:44+00",
+  "commits": [{"sha":"0e791504","message":"Add explicit alpaca-vs-llama visual guidance to PAI imagery prompt","author":"Rahul Sonnad"}]
 }
