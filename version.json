@@ -1,12 +1,12 @@
 {
-  "version": "v260211.34 10:45a",
-  "release": 34,
-  "sha": "db78d201",
-  "fullSha": "db78d201fb0ea485b136050627db982ab8efccb0",
+  "version": "v260211.35 10:48a",
+  "release": 35,
+  "sha": "7b3735bb",
+  "fullSha": "7b3735bb7b13a17cdf0c38aae1cdc26193c6f915",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 16:45:14+00",
-  "commits": [{"sha":"db78d201","message":"Add /clients endpoint to ptz-proxy for network device discovery","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:48:03+00",
+  "commits": [{"sha":"7b3735bb","message":"Document /clients endpoint, proxy access path, and deployment flow","author":"Rahul Sonnad"}]
 }
