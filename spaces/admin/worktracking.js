@@ -536,9 +536,7 @@ function updateMarkPaidButton() {
   btn.textContent = unpaidSelected.length > 0
     ? `Mark ${unpaidSelected.length} as Paid`
     : 'Mark Selected as Paid';
-  recalcBtn.textContent = selectedIds.size > 0
-    ? `Recalc ${selectedIds.size}`
-    : 'Recalc Selected';
+  recalcBtn.textContent = 'Recalc';
 }
 
 // =============================================
