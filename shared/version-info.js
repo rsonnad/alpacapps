@@ -10,7 +10,7 @@
 let versionInfoCache = null;
 
 function findVersionSpan() {
-  const pat = /^v\d{6}\.\d{2}/;
+  const pat = /^(v\d{6}\.\d{2}|r\d{9})/;
   // Check known classes first, then fall back to scanning spans
   const candidates = [
     ...document.querySelectorAll('.aap-header__version'),
@@ -196,6 +196,7 @@ function showVersionModal(info) {
     const features = info.features || {};
     const branchMeta = info.branch_meta || {};
     const changes = info.changes || [];
+    const release = info.release || {};
     const included = info.included || [];
     const pending = info.pending || [];
     const models = info.models || {};
@@ -239,8 +240,8 @@ function showVersionModal(info) {
       changesHtml = changes.map(c => `<div class="vi-item">
         <div class="vi-item-icon vi-icon-change">&#8226;</div>
         <div class="vi-item-text">
-          <div class="vi-item-desc">${esc(c.msg)}</div>
-          <div class="vi-item-meta">${esc(c.hash)}</div>
+          <div class="vi-item-desc">${esc(c.msg || c.message || '')}</div>
+          <div class="vi-item-meta">${esc(c.hash || c.short || '')}</div>
         </div>
       </div>`).join('');
     } else {
@@ -285,13 +286,18 @@ function showVersionModal(info) {
     // Build model and machine line for header (always show so user knows where they go)
     const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
     const machineLabel = (info.machine && info.machine.trim()) || '—';
+    const releaseSeq = release.seq ?? '—';
+    const releaseActor = release.actor_login || '—';
+    const releaseSource = release.source || '—';
+    const releasedAt = fmtTime(release.pushed_at || info.timestamp);
 
     overlay.innerHTML = `
       <div id="vi-modal">
         <div class="vi-header">
           <div>
             <h2>${esc(info.version)}</h2>
-            <div class="vi-version-sub">${fmtTime(info.timestamp)} · ${esc(info.commit || '?')}</div>
+            <div class="vi-version-sub">${releasedAt} · ${esc(info.commit || '?')}</div>
+            <div class="vi-version-sub" style="margin-top:4px;">Release #${esc(String(releaseSeq))} · by ${esc(releaseActor)} · ${esc(releaseSource)}</div>
             <div class="vi-version-sub" style="margin-top:4px;">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span> · Machine: ${esc(machineLabel)}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>
@@ -370,8 +376,12 @@ export function setupVersionInfo() {
     } else {
       const modelLabel = (info.model && (modelDisplayName(info.model) || info.model)) || '—';
       const machineLabel = (info.machine && info.machine.trim()) || '—';
+      const release = info.release || {};
+      const releaseSeq = release.seq ?? '—';
+      const releaseActor = release.actor_login || '—';
       tooltip.innerHTML = [
         `<div class="vi-tooltip-version">${esc(info.version)}</div>`,
+        `<div class="vi-tooltip-stats">Release: <span>#${esc(String(releaseSeq))}</span> by ${esc(releaseActor)}</div>`,
         `<div class="vi-tooltip-stats">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span></div>`,
         `<div class="vi-tooltip-stats">Machine: ${esc(machineLabel)}</div>`,
         '<div class="vi-tooltip-stats" style="margin-top:6px;font-size:0.8rem;color:#9ca3af;">Click for full build details</div>',

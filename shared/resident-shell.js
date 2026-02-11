@@ -23,8 +23,16 @@ const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'admin_pai_settings',
 ];
 
-const RESIDENT_TABS = [
-  { id: 'devices', label: 'Devices', href: 'devices.html', permission: 'view_lighting' },
+const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars'];
+
+const RESIDENT_CORE_TABS = [
+  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
+  { id: 'devices', label: 'Devices', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
+];
+
+const RESIDENT_STAFF_TABS = [
+  { id: 'devices', label: 'Devices', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
@@ -85,8 +93,18 @@ function renderResidentTabNav(activeTab, authState) {
     }
   }
 
+  const hasStaffPerms = authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
+  const hasAdminPerms = authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+  const isStaffContext = hasStaffPerms || hasAdminPerms;
+  const availableTabs = isStaffContext ? RESIDENT_STAFF_TABS : RESIDENT_CORE_TABS;
+
   // Filter tabs by permission
-  const tabs = RESIDENT_TABS.filter(tab => authState.hasPermission?.(tab.permission));
+  const tabs = availableTabs.filter((tab) => {
+    if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
+      return tab.permissionsAny.some((perm) => authState.hasPermission?.(perm));
+    }
+    return authState.hasPermission?.(tab.permission);
+  });
 
   tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;

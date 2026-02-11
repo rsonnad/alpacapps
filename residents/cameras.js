@@ -6,9 +6,11 @@
 
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
+import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 
 let cameras = []; // grouped by camera_name
 let currentQualities = {}; // track selected quality per cam index
+let deviceScope = null;
 
 // Camera settings cache (keyed by protectCameraId)
 let cameraSettings = {};
@@ -23,9 +25,10 @@ const SENSORS_PROXY_BASE = 'https://cam.alpacaplayhouse.com/sensors';
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
-    activeTab: 'cameras',
+    activeTab: 'devices',
     requiredRole: 'resident',
-    onReady: async () => {
+    onReady: async (authState) => {
+      deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
       await loadCameras();
       renderCameras();
       renderLightbox();
@@ -44,37 +47,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 // DATA
 // =============================================
 async function loadCameras() {
-  const [streamsRes, spacesRes] = await Promise.all([
-    supabase.from('camera_streams').select('*').eq('is_active', true).order('camera_name').order('quality'),
-    supabase.from('camera_space_map').select('camera_name, space:space_id(name)'),
-  ]);
+  const { data, error } = await supabase
+    .from('camera_streams')
+    .select('*')
+    .eq('is_active', true)
+    .order('camera_name')
+    .order('quality');
 
-  if (streamsRes.error) {
-    console.error('Failed to load camera streams:', streamsRes.error);
+  if (error) {
+    console.error('Failed to load camera streams:', error);
     showToast('Failed to load cameras', 'error');
     return;
   }
 
-  // Build space name lookup: camera_name -> "Space1, Space2"
-  const spaceMap = {};
-  if (spacesRes.data) {
-    for (const row of spacesRes.data) {
-      if (!spaceMap[row.camera_name]) spaceMap[row.camera_name] = [];
-      if (row.space?.name) spaceMap[row.camera_name].push(row.space.name);
-    }
-    for (const key of Object.keys(spaceMap)) {
-      spaceMap[key] = spaceMap[key].sort().join(', ');
-    }
-  }
-
   // Group by camera_name
   const grouped = {};
-  for (const stream of streamsRes.data) {
+  for (const stream of data) {
+    if (deviceScope && !deviceScope.fullAccess) {
+      const canAccess = deviceScope.canAccessSpaceId(stream.space_id)
+        || deviceScope.canAccessSpaceName(stream.location)
+        || deviceScope.canAccessSpaceName(stream.camera_name);
+      if (!canAccess) continue;
+    }
+
     if (!grouped[stream.camera_name]) {
       grouped[stream.camera_name] = {
         name: stream.camera_name,
-        location: spaceMap[stream.camera_name] || stream.location,
-        model: stream.camera_model,
+        location: stream.location,
         protectUrl: stream.protect_share_url,
         protectCameraId: stream.protect_camera_id,
         streams: {},
@@ -82,9 +81,7 @@ async function loadCameras() {
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
-  cameras = Object.values(grouped).sort((a, b) =>
-    (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
-  );
+  cameras = Object.values(grouped);
 }
 
 // =============================================
@@ -230,7 +227,7 @@ function renderCameras() {
             ${cam.streams.med ? '<option value="med" selected>Med</option>' : ''}
             ${cam.streams.high ? '<option value="high">High</option>' : ''}
           </select>
-          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}${cam.model ? ` · ${cam.model}` : ''}</span>
+          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}</span>
         </div>
       </div>
       <div class="camera-card__video" id="video-container-${i}" data-cam="${i}">
@@ -921,19 +918,27 @@ async function loadSensors() {
     return;
   }
 
+  const scopedData = (deviceScope && !deviceScope.fullAccess)
+    ? data.filter((meta) =>
+      deviceScope.canAccessSpaceId(meta.space_id)
+      || deviceScope.canAccessSpaceName(meta.location)
+      || deviceScope.canAccessSpaceName(meta.name)
+    )
+    : data;
+
   // Fetch live state from proxy
   try {
     const resp = await fetch(SENSORS_PROXY_BASE);
     if (!resp.ok) throw new Error(`Sensor fetch failed: ${resp.status}`);
     const sensorStates = await resp.json();
 
-    sensors = data.map(meta => {
+    sensors = scopedData.map(meta => {
       const state = sensorStates.find(s => s.id === meta.protect_sensor_id);
       return { meta, state: state || null };
     });
   } catch (err) {
     console.warn('Failed to load sensor states:', err.message);
-    sensors = data.map(meta => ({ meta, state: null }));
+    sensors = scopedData.map(meta => ({ meta, state: null }));
   }
 }
 

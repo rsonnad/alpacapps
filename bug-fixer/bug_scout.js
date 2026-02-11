@@ -94,25 +94,12 @@ async function gitMergeBranchToMain(branchName, report) {
   // Merge the fix branch
   await execAsync(`git merge ${branchName} --no-ff -m "Merge ${branchName} into main"`, { cwd: REPO_DIR });
 
-  // Bump version before pushing (atomic DB increment + HTML update)
-  let version = 'unknown';
-  try {
-    const machineName = buildBugScoutMachineName(report);
-    const { stdout: versionOut } = await execAsync('bash scripts/bump-version.sh', {
-      cwd: REPO_DIR,
-      env: { ...process.env, AAP_MACHINE_NAME: machineName },
-    });
-    version = versionOut.trim();
-    log('info', 'Version bumped', { version });
-    // Commit the version bump
-    await execAsync('git add -A', { cwd: REPO_DIR });
-    await execAsync(`git commit -m "chore: bump version to ${version}"`, { cwd: REPO_DIR });
-  } catch (err) {
-    log('warn', 'Version bump failed, continuing without version update', { error: err.message });
-  }
-
   // Push main
   await execAsync('git push origin main', { cwd: REPO_DIR });
+  log('info', 'Pushed main; release event will be recorded by CI', {
+    source: 'bug_scout',
+    machine: buildBugScoutMachineName(report),
+  });
 
   const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
   return stdout.trim();

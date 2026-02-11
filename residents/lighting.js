@@ -7,6 +7,7 @@
 import { supabase, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
+import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 
 // =============================================
 // CONFIGURATION
@@ -74,6 +75,7 @@ let lastPollTime = null;
 let childrenStateLoaded = {}; // { groupId: true } — tracks which groups have had child states fetched
 let sceneCache = {}; // { sku: [{name, value}] } — client-side scene cache
 let sceneFetching = {}; // { sku: Promise } — dedup concurrent fetches
+let deviceScope = null;
 
 // Debounce timers
 const brightnessTimers = {};
@@ -84,9 +86,10 @@ const colorTimers = {};
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
-    activeTab: 'homeauto',
+    activeTab: 'devices',
     requiredRole: 'resident',
-    onReady: async () => {
+    onReady: async (authState) => {
+      deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
       await loadGroupsFromDB();
       if (hasPermission('admin_lighting_settings')) {
         await loadGoveeSettings();
@@ -154,7 +157,7 @@ async function loadGroupsFromDB() {
     // Load active groups ordered by display_order
     const { data: groups, error: groupErr } = await supabase
       .from('govee_devices')
-      .select('device_id, name, area, display_order')
+      .select('*')
       .eq('is_group', true)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
@@ -164,7 +167,7 @@ async function loadGroupsFromDB() {
     // Load child devices with their SKUs, names, and capabilities
     const { data: children, error: childErr } = await supabase
       .from('govee_devices')
-      .select('device_id, name, sku, parent_group_id, capabilities')
+      .select('*')
       .eq('is_group', false)
       .eq('is_active', true)
       .not('parent_group_id', 'is', null)
@@ -186,9 +189,15 @@ async function loadGroupsFromDB() {
       if (m.segment_count) segmentCountMap[m.sku] = m.segment_count;
     }
 
+    const scopedGroups = applyDeviceScopeToGoveeRecords(groups || []);
+    const scopedGroupIds = new Set(scopedGroups.map(g => g.device_id));
+    const scopedChildren = (children || []).filter(c =>
+      scopedGroupIds.has(c.parent_group_id) || canAccessScopedDevice(c)
+    );
+
     // Build goveeGroups array with children
-    goveeGroups = groups.map(g => {
-      const groupChildren = children.filter(c => c.parent_group_id === g.device_id);
+    goveeGroups = scopedGroups.map(g => {
+      const groupChildren = scopedChildren.filter(c => c.parent_group_id === g.device_id);
       const deviceCount = groupChildren.length || null;
 
       const uniqueModels = [...new Set(
@@ -239,6 +248,19 @@ async function loadGroupsFromDB() {
     console.error('Failed to load groups from DB:', err);
     showToast('Failed to load lighting groups', 'error');
   }
+}
+
+function applyDeviceScopeToGoveeRecords(records) {
+  if (!deviceScope || deviceScope.fullAccess) return records || [];
+  return (records || []).filter(canAccessScopedDevice);
+}
+
+function canAccessScopedDevice(record) {
+  if (!deviceScope || deviceScope.fullAccess) return true;
+  return deviceScope.canAccessSpaceId(record?.space_id)
+    || deviceScope.canAccessSpaceName(record?.space_name)
+    || deviceScope.canAccessSpaceName(record?.area)
+    || deviceScope.canAccessSpaceName(record?.name);
 }
 
 // =============================================

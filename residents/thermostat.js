@@ -6,6 +6,7 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
+import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 
 // =============================================
 // CONFIGURATION
@@ -20,16 +21,18 @@ let thermostats = [];
 let pollTimer = null;
 let lastPollTime = null;
 let currentUserRole = null;
+let deviceScope = null;
 
 // =============================================
 // INITIALIZATION
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
-    activeTab: 'climate',
+    activeTab: 'devices',
     requiredRole: 'resident',
     onReady: async (authState) => {
       currentUserRole = authState.appUser?.role;
+      deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
 
       // Check for OAuth callback code in URL params
       const urlParams = new URLSearchParams(window.location.search);
@@ -120,8 +123,15 @@ async function loadThermostats() {
       roomName: d.room_name,
       displayOrder: d.display_order,
       lanIp: d.lan_ip,
+      spaceId: d.space_id,
       state: d.last_state || null,
     }));
+
+    if (deviceScope && !deviceScope.fullAccess) {
+      thermostats = thermostats.filter((t) =>
+        deviceScope.canAccessSpaceId(t.spaceId) || deviceScope.canAccessSpaceName(t.roomName)
+      );
+    }
   } catch (err) {
     console.error('Failed to load thermostats:', err);
     showToast('Failed to load thermostats', 'error');

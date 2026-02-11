@@ -1136,7 +1136,7 @@ const PERM_GROUPS = [
     keys: ['view_media', 'manage_media'], adminKey: null },
   { id: 'sms',      icon: '💬', label: 'SMS',      bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
     keys: ['view_sms', 'send_sms'], adminKey: null },
-  { id: 'hours',    icon: '⏱️', label: 'Hours',    bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
+  { id: 'hours',    icon: '⏱️', label: 'Workstuff',    bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
     keys: ['view_hours', 'manage_hours'], adminKey: null },
   { id: 'faq',      icon: '❓', label: 'FAQ / AI', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
     keys: ['view_faq', 'manage_faq'], adminKey: null },

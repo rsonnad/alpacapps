@@ -6,6 +6,7 @@
 import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
+import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 
 // =============================================
 // CONFIGURATION
@@ -21,6 +22,7 @@ let pollTimer = null;
 let countdownTimer = null;
 let currentUserRole = null;
 let currentAppUserId = null;
+let deviceScope = null;
 
 // =============================================
 // SVG ICONS
@@ -118,7 +120,13 @@ async function loadAppliances() {
     console.warn('Failed to load appliances:', error.message);
     return;
   }
-  appliances = data || [];
+  appliances = (data || []).filter((appliance) => {
+    if (!deviceScope || deviceScope.fullAccess) return true;
+    return deviceScope.canAccessSpaceId(appliance.space_id)
+      || deviceScope.canAccessSpaceName(appliance.space_name)
+      || deviceScope.canAccessSpaceName(appliance.location)
+      || deviceScope.canAccessSpaceName(appliance.name);
+  });
 }
 
 async function loadWatcherStatus() {
@@ -397,11 +405,12 @@ async function renderAdminSettings() {
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
   initResidentPage({
-    activeTab: 'laundry',
+    activeTab: 'devices',
     requiredRole: 'resident',
-    onReady: async ({ role, appUser }) => {
-      currentUserRole = role;
-      currentAppUserId = appUser?.id;
+    onReady: async (authState) => {
+      currentUserRole = authState.appUser?.role;
+      currentAppUserId = authState.appUser?.id;
+      deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
 
       // Show admin settings
       if (hasPermission('admin_laundry_settings')) {

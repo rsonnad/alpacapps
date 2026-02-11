@@ -1,44 +1,50 @@
 #!/bin/bash
-# bump-version.sh — Atomically increment version number in DB, update all HTML files.
+# bump-version.sh — record one release event per push to main, update HTML, write version.json.
 #
-# Usage: ./scripts/bump-version.sh [--model MODEL_CODE]
+# Usage:
+#   ./scripts/bump-version.sh [--model MODEL_CODE] [--source SOURCE]
+#                             [--push-sha SHA] [--actor LOGIN] [--actor-id ID]
+#                             [--branch BRANCH] [--before-sha SHA] [--after-sha SHA]
+#                             [--pushed-at ISO8601]
 #
-# On main, version is normally bumped by the GitHub Action on push (see
-# .github/workflows/bump-version-on-push.yml). Run this script locally only to
-# test or to regenerate version.json; don't commit a local bump when pushing to main.
-#
-# Options:
-#   --model MODEL_CODE   AI model that created this version (e.g., o4.6, g2.5, s4.0)
-#                        If not provided, infers from branch name pattern or defaults to "unknown"
-#
-# Version format: vYYMMDD.NN H:MMa/p
-#   YYMMDD = date in Austin, TX timezone (America/Chicago)
-#   NN     = zero-padded sequence number, starts at 01 each day
-#   H:MMa/p = timestamp in Austin timezone (e.g., 8:04p)
-#
-# Flow:
-#   1. Atomically increment version in DB using UPDATE ... RETURNING (no race conditions)
-#   2. Find-and-replace the old version string in all HTML files
-#   3. Generate version.json with model tracking info
-#   4. Print the new version to stdout
-#
-# The SQL does the increment in a single atomic statement:
-#   - If same day: bump sequence number
-#   - If new day: reset to .01
+# This script is intended for CI on push to main. It is idempotent per push SHA:
+# repeated runs for the same SHA return the same release sequence/version.
 
 set -euo pipefail
 
+sql_escape() {
+  printf "%s" "$1" | sed "s/'/''/g"
+}
+
+json_escape() {
+  printf "%s" "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
 # Parse arguments
 MODEL_CODE="${AAP_MODEL_CODE:-}"
+SOURCE="${RELEASE_SOURCE:-}"
+PUSH_SHA="${RELEASE_PUSH_SHA:-}"
+ACTOR_LOGIN="${RELEASE_ACTOR_LOGIN:-}"
+ACTOR_ID="${RELEASE_ACTOR_ID:-}"
+BRANCH_NAME="${RELEASE_BRANCH:-}"
+COMPARE_FROM_SHA="${RELEASE_COMPARE_FROM_SHA:-}"
+COMPARE_TO_SHA="${RELEASE_COMPARE_TO_SHA:-}"
+PUSHED_AT="${RELEASE_PUSHED_AT:-}"
+
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --model)
-      MODEL_CODE="$2"
-      shift 2
-      ;;
+    --model) MODEL_CODE="$2"; shift 2 ;;
+    --source) SOURCE="$2"; shift 2 ;;
+    --push-sha) PUSH_SHA="$2"; shift 2 ;;
+    --actor) ACTOR_LOGIN="$2"; shift 2 ;;
+    --actor-id) ACTOR_ID="$2"; shift 2 ;;
+    --branch) BRANCH_NAME="$2"; shift 2 ;;
+    --before-sha) COMPARE_FROM_SHA="$2"; shift 2 ;;
+    --after-sha) COMPARE_TO_SHA="$2"; shift 2 ;;
+    --pushed-at) PUSHED_AT="$2"; shift 2 ;;
     *)
       echo "Unknown option: $1" >&2
-      echo "Usage: ./scripts/bump-version.sh [--model MODEL_CODE]" >&2
+      echo "Usage: ./scripts/bump-version.sh [--model MODEL_CODE] [--source SOURCE] [--push-sha SHA] [--actor LOGIN] [--actor-id ID] [--branch BRANCH] [--before-sha SHA] [--after-sha SHA] [--pushed-at ISO8601]" >&2
       exit 1
       ;;
   esac
@@ -54,69 +60,145 @@ else
   exit 1
 fi
 
-# DB URL: use SUPABASE_DB_URL in CI (e.g. GitHub Actions secret); default for local
-DB_URL="${SUPABASE_DB_URL:-postgres://postgres.aphrrfprbixmhissnjfn:BirdBrain9gres%21@aws-1-us-east-2.pooler.supabase.com:5432/postgres}"
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-
-# Local machine name for version metadata (prefer env var)
-MACHINE_NAME="${AAP_MACHINE_NAME:-}"
-if [ -z "$MACHINE_NAME" ] && [ -f "$PROJECT_ROOT/.machine-name" ]; then
-  MACHINE_NAME=$(cat "$PROJECT_ROOT/.machine-name" | tr -d '\r' | head -n 1)
-fi
-SAFE_MACHINE_NAME=$(echo "$MACHINE_NAME" | sed 's/"/\\"/g')
-
-# Infer model from branch name if not explicitly provided
-if [ -z "$MODEL_CODE" ]; then
-  CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
-  case "$CURRENT_BRANCH" in
-    claude/*)  MODEL_CODE="claude" ;;
-    gemini/*)  MODEL_CODE="gemini" ;;
-    gpt/*)     MODEL_CODE="gpt" ;;
-    cursor/*)  MODEL_CODE="cursor" ;;
-    *)         MODEL_CODE="" ;;  # Will show as empty if truly unknown
-  esac
-fi
-
-# Compute today's date and timestamp in Austin timezone
-TODAY=$(TZ="America/Chicago" date +"%y%m%d")
-TIMESTAMP=$(TZ="America/Chicago" date +"%-I:%M%p" | sed 's/AM/a/;s/PM/p/')
-
-# 1. Atomically increment version in DB and return the new value.
-#    This is a single UPDATE statement — no race condition between read and write.
-#    Logic:
-#      - Extract the date part (chars 2-7) and sequence part (chars 9-10) from current version
-#      - If date matches today: increment sequence
-#      - If new day: reset to 01
-#    Returns the new display version (e.g., "v260207.48 11:43a")
-NEW_DISPLAY_VERSION=$($PSQL "$DB_URL" -t -A --no-psqlrc -c "
-  UPDATE site_config
-  SET
-    version = CASE
-      WHEN substring(version from 2 for 6) = '${TODAY}'
-      THEN 'v${TODAY}.' || lpad((substring(version from 9 for 2)::int + 1)::text, 2, '0') || ' ${TIMESTAMP}'
-      ELSE 'v${TODAY}.01 ${TIMESTAMP}'
-    END,
-    updated_at = now()
-  WHERE id = 1
-  RETURNING version;
-" | head -1)
-
-if [ -z "$NEW_DISPLAY_VERSION" ]; then
-  echo "ERROR: Failed to bump version in site_config" >&2
+DB_URL="${SUPABASE_DB_URL:-}"
+if [ -z "$DB_URL" ]; then
+  echo "ERROR: SUPABASE_DB_URL is required" >&2
   exit 1
 fi
 
-# 2. Replace ANY version string in all HTML files
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
-VERSION_PATTERN='v[0-9]\{6\}\.[0-9]\{2\}\( [0-9]\{1,2\}:[0-9]\{2\}[ap]\)\{0,1\}'
 
-# Detect sed flavor: macOS BSD vs GNU
+if [ -z "$PUSH_SHA" ]; then
+  PUSH_SHA=$(git rev-parse HEAD 2>/dev/null || echo "")
+fi
+if [ -z "$COMPARE_TO_SHA" ]; then
+  COMPARE_TO_SHA="$PUSH_SHA"
+fi
+if [ -z "$BRANCH_NAME" ]; then
+  BRANCH_NAME=$(git branch --show-current 2>/dev/null || echo "main")
+fi
+if [ -z "$ACTOR_LOGIN" ]; then
+  ACTOR_LOGIN=$(git log -1 --pretty='%an' 2>/dev/null || echo "unknown")
+fi
+if [ -z "$SOURCE" ]; then
+  SOURCE="unknown"
+fi
+if [ -z "$PUSHED_AT" ]; then
+  PUSHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+fi
+
+# Infer model from branch name if not explicitly provided.
+if [ -z "$MODEL_CODE" ]; then
+  case "$BRANCH_NAME" in
+    claude/*) MODEL_CODE="claude" ;;
+    gemini/*) MODEL_CODE="gemini" ;;
+    gpt/*) MODEL_CODE="gpt" ;;
+    cursor/*) MODEL_CODE="cursor" ;;
+    *) MODEL_CODE="" ;;
+  esac
+fi
+
+# Local machine name for metadata
+MACHINE_NAME="${AAP_MACHINE_NAME:-}"
+if [ -z "$MACHINE_NAME" ] && [ -f "$PROJECT_ROOT/.machine-name" ]; then
+  MACHINE_NAME=$(tr -d '\r' < "$PROJECT_ROOT/.machine-name" | head -n 1)
+fi
+
+# Gather exact commits included in this push range (in chronological order).
+FIXES_JSON="[]"
+CHANGE_ENTRIES=""
+RANGE_SPEC=""
+if [ -n "$COMPARE_FROM_SHA" ] && [ "$COMPARE_FROM_SHA" != "0000000000000000000000000000000000000000" ]; then
+  RANGE_SPEC="$COMPARE_FROM_SHA..$COMPARE_TO_SHA"
+elif [ -n "$COMPARE_TO_SHA" ]; then
+  RANGE_SPEC="$COMPARE_TO_SHA~1..$COMPARE_TO_SHA"
+fi
+
+if [ -n "$RANGE_SPEC" ]; then
+  LOG_LINES=$(git log --reverse --pretty=format:'%H%x09%h%x09%an%x09%ae%x09%cI%x09%s' "$RANGE_SPEC" 2>/dev/null || true)
+else
+  LOG_LINES=""
+fi
+
+if [ -n "$LOG_LINES" ]; then
+  while IFS=$'\t' read -r sha short author_name author_email committed_at subject; do
+    [ -z "$sha" ] && continue
+    esc_sha=$(json_escape "$sha")
+    esc_short=$(json_escape "$short")
+    esc_author_name=$(json_escape "$author_name")
+    esc_author_email=$(json_escape "$author_email")
+    esc_committed_at=$(json_escape "$committed_at")
+    esc_subject=$(json_escape "$subject")
+    [ -n "$CHANGE_ENTRIES" ] && CHANGE_ENTRIES="$CHANGE_ENTRIES,"
+    CHANGE_ENTRIES="$CHANGE_ENTRIES{\"sha\":\"$esc_sha\",\"short\":\"$esc_short\",\"author_name\":\"$esc_author_name\",\"author_email\":\"$esc_author_email\",\"committed_at\":\"$esc_committed_at\",\"message\":\"$esc_subject\"}"
+  done <<< "$LOG_LINES"
+fi
+[ -n "$CHANGE_ENTRIES" ] && FIXES_JSON="[$CHANGE_ENTRIES]"
+
+# 1) Record idempotent release event in DB and retrieve canonical sequence/version.
+SAFE_PUSH_SHA=$(sql_escape "$PUSH_SHA")
+SAFE_BRANCH=$(sql_escape "$BRANCH_NAME")
+SAFE_COMPARE_FROM=$(sql_escape "$COMPARE_FROM_SHA")
+SAFE_COMPARE_TO=$(sql_escape "$COMPARE_TO_SHA")
+SAFE_PUSHED_AT=$(sql_escape "$PUSHED_AT")
+SAFE_ACTOR_LOGIN=$(sql_escape "$ACTOR_LOGIN")
+SAFE_ACTOR_ID=$(sql_escape "$ACTOR_ID")
+SAFE_SOURCE=$(sql_escape "$SOURCE")
+SAFE_MODEL_CODE=$(sql_escape "$MODEL_CODE")
+SAFE_MACHINE_NAME=$(sql_escape "$MACHINE_NAME")
+SAFE_METADATA=$(sql_escape "{\"workflow\":\"bump-version.sh\"}")
+SAFE_FIXES_JSON=$(sql_escape "$FIXES_JSON")
+
+RELEASE_ROW=$($PSQL "$DB_URL" -t -A --no-psqlrc -F $'\t' -c "
+  SELECT
+    seq::text,
+    display_version,
+    pushed_at::text,
+    actor_login,
+    source
+  FROM record_release_event(
+    '$SAFE_PUSH_SHA',
+    '$SAFE_BRANCH',
+    NULLIF('$SAFE_COMPARE_FROM', ''),
+    NULLIF('$SAFE_COMPARE_TO', ''),
+    '$SAFE_PUSHED_AT'::timestamptz,
+    '$SAFE_ACTOR_LOGIN',
+    NULLIF('$SAFE_ACTOR_ID', ''),
+    '$SAFE_SOURCE',
+    NULLIF('$SAFE_MODEL_CODE', ''),
+    NULLIF('$SAFE_MACHINE_NAME', ''),
+    '$SAFE_METADATA'::jsonb,
+    '$SAFE_FIXES_JSON'::jsonb
+  );
+" | head -1)
+
+if [ -z "$RELEASE_ROW" ]; then
+  echo "ERROR: Failed to record release event" >&2
+  exit 1
+fi
+
+RELEASE_SEQ=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $1}')
+NEW_DISPLAY_VERSION=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $2}')
+RELEASE_PUSHED_AT=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $3}')
+RELEASE_ACTOR=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $4}')
+RELEASE_SOURCE=$(echo "$RELEASE_ROW" | awk -F $'\t' '{print $5}')
+
+# Keep existing single-row site_config.version in sync for legacy readers.
+$PSQL "$DB_URL" -t -A --no-psqlrc -c "
+  UPDATE site_config
+  SET version = '$(sql_escape "$NEW_DISPLAY_VERSION")', updated_at = now()
+  WHERE id = 1;
+" >/dev/null 2>&1 || true
+
+# 2) Replace version string in all HTML files.
+VERSION_PATTERN='\(v[0-9]\{6\}\.[0-9]\{2\}\( [0-9]\{1,2\}:[0-9]\{2\}[ap]\)\{0,1\}\|r[0-9]\{9\}\)'
 IS_GNU_SED=false
 if sed --version 2>/dev/null | grep -q 'GNU'; then
   IS_GNU_SED=true
 fi
 
-find . -name "*.html" -not -path "./.git/*" -exec grep -l 'v[0-9]\{6\}\.[0-9]\{2\}' {} \; | while read -r file; do
+find . -name "*.html" -not -path "./.git/*" -exec grep -l '\(v[0-9]\{6\}\.[0-9]\{2\}\|r[0-9]\{9\}\)' {} \; | while read -r file; do
   if [ "$IS_GNU_SED" = true ]; then
     sed -i "s/$VERSION_PATTERN/$NEW_DISPLAY_VERSION/g" "$file"
   else
@@ -124,179 +206,54 @@ find . -name "*.html" -not -path "./.git/*" -exec grep -l 'v[0-9]\{6\}\.[0-9]\{2
   fi
 done
 
-# 3. Generate version.json with commit hash + branch inclusion info
-#    HEAD at this point includes all merged branches (bump commit comes after).
+# 3) Generate version.json from canonical release data.
 COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 FULL_HASH=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
-ISO_TIMESTAMP=$(TZ="America/Chicago" date -Iseconds 2>/dev/null || TZ="America/Chicago" date +"%Y-%m-%dT%H:%M:%S%z")
+ISO_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# Fetch latest remote refs so branch lists are current
-git fetch --prune origin 2>/dev/null || true
-
-# Included: remote branches already merged into HEAD
-INCLUDED_JSON="[]"
-if git rev-parse HEAD &>/dev/null; then
-  INCLUDED_RAW=$(git branch -r --merged HEAD 2>/dev/null | grep -v 'HEAD\|main$\|master$' || true)
-  if [ -n "$INCLUDED_RAW" ]; then
-    INCLUDED_JSON=$(echo "$INCLUDED_RAW" \
-      | sed 's|^[[:space:]]*||;s|^origin/||' \
-      | sort \
-      | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
-  fi
+CHANGES_JSON="[]"
+if [ -n "$CHANGE_ENTRIES" ]; then
+  CHANGES_JSON="[$CHANGE_ENTRIES]"
 fi
 
-# Pending: remote branches NOT yet merged into HEAD
-PENDING_JSON="[]"
-if git rev-parse HEAD &>/dev/null; then
-  PENDING_RAW=$(git branch -r --no-merged HEAD 2>/dev/null | grep -v 'HEAD\|main$\|master$' || true)
-  if [ -n "$PENDING_RAW" ]; then
-    PENDING_JSON=$(echo "$PENDING_RAW" \
-      | sed 's|^[[:space:]]*||;s|^origin/||' \
-      | sort \
-      | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
-  fi
-fi
+SAFE_JSON_VERSION=$(json_escape "$NEW_DISPLAY_VERSION")
+SAFE_JSON_MODEL=$(json_escape "$MODEL_CODE")
+SAFE_JSON_MACHINE=$(json_escape "$MACHINE_NAME")
+SAFE_JSON_COMMIT=$(json_escape "$COMMIT_HASH")
+SAFE_JSON_FULL_COMMIT=$(json_escape "$FULL_HASH")
+SAFE_JSON_TIMESTAMP=$(json_escape "$ISO_TIMESTAMP")
+SAFE_JSON_PUSH_SHA=$(json_escape "$PUSH_SHA")
+SAFE_JSON_BRANCH=$(json_escape "$BRANCH_NAME")
+SAFE_JSON_COMPARE_FROM=$(json_escape "$COMPARE_FROM_SHA")
+SAFE_JSON_COMPARE_TO=$(json_escape "$COMPARE_TO_SHA")
+SAFE_JSON_RELEASE_PUSHED_AT=$(json_escape "$RELEASE_PUSHED_AT")
+SAFE_JSON_RELEASE_ACTOR=$(json_escape "$RELEASE_ACTOR")
+SAFE_JSON_RELEASE_SOURCE=$(json_escape "$RELEASE_SOURCE")
 
-# 4. Gather recent changes (non-merge, non-bump commits from last 48h)
-CHANGES_JSON=$(git log --oneline --no-merges --since="48 hours ago" 2>/dev/null \
-  | grep -v "chore: bump version\|Bump version\|fix: \[Follow-up\]" \
-  | head -15 \
-  | awk -F' ' '{
-    hash=$1; $1=""; msg=substr($0,2);
-    gsub(/"/, "\\\"", msg);
-    printf "%s{\"hash\":\"%s\",\"msg\":\"%s\"}", (NR>1?",":""), hash, msg
-  }' \
-  | awk 'BEGIN{printf "["} {printf "%s", $0} END{printf "]"}')
-[ -z "$CHANGES_JSON" ] && CHANGES_JSON="[]"
-
-# 5. Gather bug fix details from DB — map branch UUID prefix → diagnosis
-#    Extract diagnosis from fix_summary JSON embedded in Claude Code output
-BUGFIXES_JSON="{}"
-if [ "$INCLUDED_JSON" != "[]" ]; then
-  # Extract bugfix branch UUIDs (first 8 chars of the UUID in branch name)
-  BUGFIX_IDS=$(echo "$INCLUDED_JSON" | tr ',' '\n' | grep 'bugfix/' \
-    | sed 's/.*bugfix\/[0-9]*-//;s/-.*//' | sort -u | tr '\n' ',' | sed 's/,$//')
-
-  if [ -n "$BUGFIX_IDS" ]; then
-    SQL_IN=$(echo "$BUGFIX_IDS" | tr ',' '\n' | awk '{printf "%s\x27%s%%\x27", (NR>1?",":""), $0}')
-    BUGFIXES_JSON=$($PSQL "$DB_URL" -t -A -c "
-      SELECT json_object_agg(
-        left(id::text, 8),
-        json_build_object(
-          'desc', COALESCE(
-            left(regexp_replace(
-              substring(fix_summary from '\"diagnosis\":\s*\"([^\"]+)\"'),
-              '\s+', ' ', 'g'
-            ), 120),
-            left(regexp_replace(fix_summary, '\s+', ' ', 'g'), 120)
-          ),
-          'status', status,
-          'page', page_url
-        )
-      ) FROM bug_reports
-      WHERE id::text LIKE ANY(ARRAY[$SQL_IN])
-    " 2>/dev/null | head -1)
-    [ -z "$BUGFIXES_JSON" ] && BUGFIXES_JSON="{}"
-  fi
-fi
-
-# 6. Gather feature branch details (pending features)
-FEATURES_JSON="{}"
-# Feature branches have format: feature/YYYYMMDD-UUID
-# We can get their commit messages
-if [ "$PENDING_JSON" != "[]" ]; then
-  FEAT_ENTRIES=""
-  for branch in $(echo "$PENDING_JSON" | tr -d '[]"' | tr ',' '\n' | grep 'feature/'); do
-    # Branch name already has origin/ stripped by sed, so add it back for git log
-    FEAT_MSG=$(git log "origin/$branch" --oneline -1 2>/dev/null | cut -d' ' -f2- || true)
-    if [ -n "$FEAT_MSG" ]; then
-      SAFE_MSG=$(echo "$FEAT_MSG" | sed 's/"/\\"/g' | head -c 120)
-      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
-      [ -n "$FEAT_ENTRIES" ] && FEAT_ENTRIES="$FEAT_ENTRIES,"
-      FEAT_ENTRIES="$FEAT_ENTRIES\"$SAFE_BRANCH\":\"$SAFE_MSG\""
-    fi
-  done
-  [ -n "$FEAT_ENTRIES" ] && FEATURES_JSON="{$FEAT_ENTRIES}"
-fi
-
-# 7. Build per-branch model map — infer AI model from branch naming convention
-#    Branch patterns: claude/* → claude, gemini/* → gemini, gpt/* → gpt, cursor/* → cursor
-#    Also reads from commit trailers if present (Model-Code: xxx)
-MODELS_JSON="{}"
-ALL_BRANCHES=$(echo "$INCLUDED_JSON" "$PENDING_JSON" | tr -d '[]' | tr ',' '\n' | tr -d '"' | sort -u)
-if [ -n "$ALL_BRANCHES" ]; then
-  MODEL_ENTRIES=""
-  for branch in $ALL_BRANCHES; do
-    [ -z "$branch" ] && continue
-    BRANCH_MODEL=""
-    # Infer from branch name prefix
-    case "$branch" in
-      claude/*)    BRANCH_MODEL="claude" ;;
-      gemini/*)    BRANCH_MODEL="gemini" ;;
-      gpt/*)       BRANCH_MODEL="gpt" ;;
-      cursor/*)    BRANCH_MODEL="cursor" ;;
-      bugfix/*)    BRANCH_MODEL="claude" ;;  # bugfix branches are typically Claude Code
-      redesign/*)  BRANCH_MODEL="" ;;
-      ui/*)        BRANCH_MODEL="" ;;
-    esac
-    # Try to read Model-Code trailer from the branch's latest commit
-    if [ -z "$BRANCH_MODEL" ]; then
-      TRAILER=$(git log "origin/$branch" -1 --format='%(trailers:key=Model-Code,valueonly)' 2>/dev/null || true)
-      [ -n "$TRAILER" ] && BRANCH_MODEL=$(echo "$TRAILER" | tr -d '[:space:]')
-    fi
-    if [ -n "$BRANCH_MODEL" ]; then
-      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
-      SAFE_MODEL=$(echo "$BRANCH_MODEL" | sed 's/"/\\"/g')
-      [ -n "$MODEL_ENTRIES" ] && MODEL_ENTRIES="$MODEL_ENTRIES,"
-      MODEL_ENTRIES="$MODEL_ENTRIES\"$SAFE_BRANCH\":\"$SAFE_MODEL\""
-    fi
-  done
-  [ -n "$MODEL_ENTRIES" ] && MODELS_JSON="{$MODEL_ENTRIES}"
-fi
-
-# Escape MODEL_CODE for JSON
-SAFE_MODEL_CODE=$(echo "$MODEL_CODE" | sed 's/"/\\"/g')
-
-# 7b. Gather branch metadata (commit hash + commit time) for hover details
-BRANCH_META_JSON="{}"
-BRANCH_LIST=$(echo "$INCLUDED_JSON" "$PENDING_JSON" \
-  | tr -d '[]"' | tr ',' '\n' | sed '/^$/d' | sort -u)
-if [ -n "$BRANCH_LIST" ]; then
-  BRANCH_ENTRIES=""
-  while read -r branch; do
-    [ -z "$branch" ] && continue
-    INFO=$(git log "origin/$branch" -1 --format="%H|%h|%cI" 2>/dev/null || true)
-    if [ -n "$INFO" ]; then
-      FULL_COMMIT="${INFO%%|*}"
-      REST="${INFO#*|}"
-      SHORT_COMMIT="${REST%%|*}"
-      COMMIT_TIME="${REST#*|}"
-      SAFE_BRANCH=$(echo "$branch" | sed 's/"/\\"/g')
-      [ -n "$BRANCH_ENTRIES" ] && BRANCH_ENTRIES="$BRANCH_ENTRIES,"
-      BRANCH_ENTRIES="$BRANCH_ENTRIES\"$SAFE_BRANCH\":{\"full_commit\":\"$FULL_COMMIT\",\"short_commit\":\"$SHORT_COMMIT\",\"commit_time\":\"$COMMIT_TIME\"}"
-    fi
-  done <<< "$BRANCH_LIST"
-  [ -n "$BRANCH_ENTRIES" ] && BRANCH_META_JSON="{$BRANCH_ENTRIES}"
-fi
 cat > "$PROJECT_ROOT/version.json" << ENDJSON
 {
-  "version": "$NEW_DISPLAY_VERSION",
-  "model": "$SAFE_MODEL_CODE",
-  "machine": "$SAFE_MACHINE_NAME",
-  "commit": "$COMMIT_HASH",
-  "full_commit": "$FULL_HASH",
-  "timestamp": "$ISO_TIMESTAMP",
-  "included": $INCLUDED_JSON,
-  "pending": $PENDING_JSON,
+  "version": "$SAFE_JSON_VERSION",
+  "model": "$SAFE_JSON_MODEL",
+  "machine": "$SAFE_JSON_MACHINE",
+  "commit": "$SAFE_JSON_COMMIT",
+  "full_commit": "$SAFE_JSON_FULL_COMMIT",
+  "timestamp": "$SAFE_JSON_TIMESTAMP",
   "changes": $CHANGES_JSON,
-  "bugfixes": $BUGFIXES_JSON,
-  "features": $FEATURES_JSON,
-  "models": $MODELS_JSON,
-  "branch_meta": $BRANCH_META_JSON
+  "release": {
+    "seq": $RELEASE_SEQ,
+    "display_version": "$SAFE_JSON_VERSION",
+    "push_sha": "$SAFE_JSON_PUSH_SHA",
+    "branch": "$SAFE_JSON_BRANCH",
+    "compare_from_sha": "$SAFE_JSON_COMPARE_FROM",
+    "compare_to_sha": "$SAFE_JSON_COMPARE_TO",
+    "pushed_at": "$SAFE_JSON_RELEASE_PUSHED_AT",
+    "actor_login": "$SAFE_JSON_RELEASE_ACTOR",
+    "source": "$SAFE_JSON_RELEASE_SOURCE"
+  }
 }
 ENDJSON
 
-# 8. Output new version (with model if available)
+# 4) Output canonical version.
 if [ -n "$MODEL_CODE" ]; then
   echo "$NEW_DISPLAY_VERSION  [$MODEL_CODE]"
 else

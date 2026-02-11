@@ -1,0 +1,9 @@
+{
+  "name": "alpacapps-scripts",
+  "private": true,
+  "description": "Scripts that need extra deps (PDF, Drive). Run: cd scripts && npm install && node extract-contacts-from-leases.js [dir|--drive]",
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "pdf-parse": "^1.1.1"
+  }
+}

@@ -1,463 +1,62 @@
 /**
- * Devices Page — Unified device inventory.
- * Fetches all device data from Supabase and renders expandable sections
- * with tabular rows per device category.
+ * Devices Page - Hub of device categories with links to Cameras, Lighting, Music, etc.
+ * Only shows cards for categories the user has permission to access.
  */
 
 import { initResidentPage } from '../shared/resident-shell.js';
-import { supabase } from '../shared/supabase.js';
-import { loadZones } from '../shared/services/sonos-data.js';
 
-const COLLAPSE_KEY = 'devices-collapsed';
-
-const CATEGORIES = [
-  { id: 'cameras',  label: 'Cameras',      href: 'cameras.html',  linkLabel: 'Camera Feeds' },
-  { id: 'lighting', label: 'Lighting',      href: 'lighting.html', linkLabel: 'Lighting Controls' },
-  { id: 'music',    label: 'Music',          href: 'sonos.html',    linkLabel: 'Sonos Controls' },
-  { id: 'climate',  label: 'Climate',        href: 'climate.html',  linkLabel: 'Climate Controls' },
-  { id: 'cars',     label: 'Vehicles',       href: 'cars.html',     linkLabel: 'Vehicle Controls' },
-  { id: 'laundry',  label: 'Laundry',        href: 'laundry.html',  linkLabel: 'Laundry Status' },
+const DEVICE_CATEGORIES = [
+  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras', description: 'Live feeds, PTZ, talkback' },
+  { id: 'lighting', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting', description: 'Govee lights, groups, scenes' },
+  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music', description: 'Sonos zones, playback, volume' },
+  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate', description: 'Nest thermostats, weather' },
+  { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry', description: 'Washer & dryer status' },
+  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars', description: 'Tesla vehicles, lock, flash' },
+  { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html', permission: 'view_cameras', description: 'Indoor environment and status sensors' },
 ];
 
-/* ── Helpers ── */
-
-function timeAgo(ts) {
-  if (!ts) return '—';
-  const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function esc(s) {
-  if (!s) return '—';
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function statusDot(online) {
-  const cls = online ? 'status-live' : 'status-offline';
-  return `<span class="status-dot ${cls}"></span>`;
-}
-
-/* ── Data Fetchers (all DB, no live API) ── */
-
-async function fetchCameras() {
-  try {
-    const [streamsRes, spacesRes] = await Promise.all([
-      supabase.from('camera_streams').select('camera_name, location, quality, camera_model, is_active').eq('is_active', true).order('camera_name'),
-      supabase.from('camera_space_map').select('camera_name, space:space_id(name)'),
-    ]);
-    if (streamsRes.error) { console.warn('Cameras fetch error:', streamsRes.error); return []; }
-    if (!streamsRes.data) return [];
-    // Build space name lookup
-    const spaceMap = {};
-    if (spacesRes.data) {
-      for (const row of spacesRes.data) {
-        if (!spaceMap[row.camera_name]) spaceMap[row.camera_name] = [];
-        if (row.space?.name) spaceMap[row.camera_name].push(row.space.name);
-      }
-      for (const key of Object.keys(spaceMap)) {
-        spaceMap[key] = spaceMap[key].sort().join(', ');
-      }
-    }
-    const map = new Map();
-    for (const s of streamsRes.data) {
-      if (!map.has(s.camera_name)) {
-        map.set(s.camera_name, { name: s.camera_name, location: spaceMap[s.camera_name] || s.location, model: s.camera_model, qualities: [] });
-      }
-      map.get(s.camera_name).qualities.push(s.quality);
-    }
-    return [...map.values()].sort((a, b) =>
-      (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
-    );
-  } catch (e) { console.warn('Cameras fetch failed:', e); return []; }
-}
-
-async function fetchLighting() {
-  try {
-    const [groupsRes, childrenRes, modelsRes] = await Promise.all([
-      supabase.from('govee_devices')
-        .select('device_id, name, area, display_order')
-        .eq('is_group', true).eq('is_active', true)
-        .order('display_order'),
-      supabase.from('govee_devices')
-        .select('device_id, name, sku, parent_group_id, area')
-        .eq('is_group', false).eq('is_active', true)
-        .order('name'),
-      supabase.from('govee_models')
-        .select('sku, model_name'),
-    ]);
-    const groups = groupsRes.data || [];
-    const children = childrenRes.data || [];
-    const models = new Map((modelsRes.data || []).map(m => [m.sku, m.model_name]));
-
-    const rows = groups.map(g => {
-      const kids = children.filter(c => c.parent_group_id === g.device_id);
-      const modelSet = new Set(kids.map(c => models.get(c.sku) || c.sku).filter(Boolean));
-      return { name: g.name, area: g.area, deviceCount: kids.length, models: [...modelSet].join(', ') || '—' };
-    });
-
-    const ungrouped = children.filter(c => !c.parent_group_id);
-    const byArea = new Map();
-    for (const u of ungrouped) {
-      if (!byArea.has(u.area)) byArea.set(u.area, []);
-      byArea.get(u.area).push(u);
-    }
-    for (const [area, devs] of byArea) {
-      const modelSet = new Set(devs.map(d => models.get(d.sku) || d.sku));
-      rows.push({ name: `${area} (ungrouped)`, area, deviceCount: devs.length, models: [...modelSet].join(', ') || '—' });
-    }
-    return rows;
-  } catch (e) { console.warn('Lighting fetch failed:', e); return []; }
-}
-
-async function fetchSonos() {
-  // Try live Sonos API first for real-time playback info
-  try {
-    const zoneGroups = await loadZones();
-    if (zoneGroups.length > 0) {
-      // Flatten zone groups into individual zone rows
-      const zones = [];
-      for (const group of zoneGroups) {
-        const state = group.coordinatorState || {};
-        const track = state.currentTrack || {};
-        const playback = state.playbackState || 'STOPPED';
-        const isActive = playback === 'PLAYING' || playback === 'PAUSED_PLAYBACK';
-        for (const member of group.members || []) {
-          zones.push({
-            room_name: member.roomName,
-            playbackState: playback,
-            volume: member.volume,
-            mute: member.mute,
-            // Only show track info when the group is actually playing or paused
-            trackTitle: isActive ? (track.title || '') : '',
-            trackArtist: isActive ? (track.artist || '') : '',
-            isCoordinator: member.isCoordinator,
-            coordinatorName: group.coordinatorName,
-          });
-        }
-      }
-      return zones;
-    }
-  } catch (e) { console.warn('Sonos live fetch failed, falling back to DB:', e); }
-
-  // Fallback: load from DB (sonos_zones table)
-  try {
-    const { data, error } = await supabase
-      .from('sonos_zones')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order');
-    if (error) { console.warn('Sonos DB fetch error:', error); return []; }
-    // Reshape DB rows to match live format
-    return (data || []).map(z => {
-      const st = z.last_state || {};
-      return {
-        room_name: z.room_name,
-        playbackState: st.playbackState || 'STOPPED',
-        volume: st.volume,
-        mute: st.mute,
-        trackTitle: st.trackTitle || '',
-        trackArtist: st.trackArtist || '',
-      };
-    });
-  } catch (e) { console.warn('Sonos fetch failed:', e); return []; }
-}
-
-async function fetchClimate() {
-  try {
-    const { data, error } = await supabase
-      .from('nest_devices')
-      .select('room_name, device_type, display_order, last_state, is_active')
-      .eq('is_active', true)
-      .eq('device_type', 'thermostat')
-      .order('display_order');
-    if (error) { console.warn('Climate fetch error:', error); return []; }
-    return data || [];
-  } catch (e) { console.warn('Climate fetch failed:', e); return []; }
-}
-
-async function fetchVehicles() {
-  try {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('name, vehicle_make, vehicle_model, year, color, vehicle_state, last_state, last_synced_at, is_active')
-      .eq('is_active', true)
-      .order('display_order');
-    if (error) { console.warn('Vehicles fetch error:', error); return []; }
-    return data || [];
-  } catch (e) { console.warn('Vehicles fetch failed:', e); return []; }
-}
-
-async function fetchLaundry() {
-  try {
-    const { data, error } = await supabase
-      .from('lg_appliances')
-      .select('name, device_type, model, last_state, last_synced_at, is_active')
-      .eq('is_active', true)
-      .order('display_order');
-    if (error) { console.warn('Laundry fetch error:', error); return []; }
-    return data || [];
-  } catch (e) { console.warn('Laundry fetch failed:', e); return []; }
-}
-
-/* ── Row Renderers ── */
-
-function renderCameraRows(cameras) {
-  if (!cameras.length) return emptyRow(4);
-  return cameras.map(c => `
-    <tr>
-      <td class="dt-name">${esc(c.name)}</td>
-      <td>${esc(c.location)}</td>
-      <td class="dt-secondary">${esc(c.model)}</td>
-      <td>${c.qualities.map(q => `<span class="dt-badge">${q}</span>`).join(' ')}</td>
-    </tr>
-  `).join('');
-}
-
-function renderLightingRows(groups) {
-  if (!groups.length) return emptyRow(4);
-  return groups.map(g => `
-    <tr>
-      <td class="dt-name">${esc(g.name)}</td>
-      <td>${esc(g.area)}</td>
-      <td class="dt-num">${g.deviceCount}</td>
-      <td class="dt-secondary">${esc(g.models)}</td>
-    </tr>
-  `).join('');
-}
-
-function renderSonosRows(zones) {
-  if (!zones.length) return emptyRow(4, 'No zones — Sonos API unavailable');
-  // Sort: playing first
-  const sorted = [...zones].sort((a, b) => {
-    const playing = x => x.playbackState === 'PLAYING' ? 0 : 1;
-    return playing(a) - playing(b);
-  });
-  return sorted.map(z => {
-    const isPlaying = z.playbackState === 'PLAYING';
-    const isPaused = z.playbackState === 'PAUSED_PLAYBACK';
-    const rowClass = isPlaying ? 'dt-row-playing' : (isPaused ? 'dt-row-paused' : 'dt-row-idle');
-    const vol = z.volume != null ? `${z.volume}%` : '—';
-    const stateLabel = isPlaying ? 'Playing' : isPaused ? 'Paused' : 'Idle';
-    let nowPlaying = '—';
-    if (z.trackTitle) {
-      nowPlaying = esc(z.trackTitle);
-      if (z.trackArtist) nowPlaying += ` <span class="dt-secondary">— ${esc(z.trackArtist)}</span>`;
-    }
-    return `
-      <tr class="${rowClass}">
-        <td class="dt-name">${esc(z.room_name)}</td>
-        <td>${stateLabel}</td>
-        <td>${nowPlaying}</td>
-        <td class="dt-num">${z.mute ? '🔇' : ''} ${vol}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderClimateRows(devices) {
-  if (!devices.length) return emptyRow(5);
-  return devices.map(d => {
-    const s = d.last_state || {};
-    const temp = s.currentTempF != null ? `${Math.round(s.currentTempF)}°F` : '—';
-    const humidity = s.humidity != null ? `${s.humidity}%` : '—';
-    const mode = s.mode || '—';
-    const hvac = s.hvacStatus || 'OFF';
-    const online = s.connectivity === 'ONLINE';
-    return `
-      <tr>
-        <td class="dt-name">${statusDot(online)} ${esc(d.room_name)}</td>
-        <td class="dt-num">${temp}</td>
-        <td class="dt-num">${humidity}</td>
-        <td>${esc(mode)}</td>
-        <td>${hvac === 'HEATING' ? '🔥' : hvac === 'COOLING' ? '❄️' : '—'} ${esc(hvac)}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderVehicleRows(vehicles) {
-  if (!vehicles.length) return emptyRow(6);
-  return vehicles.map(v => {
-    const s = v.last_state || {};
-    const battery = s.battery_level != null ? `${s.battery_level}%` : '—';
-    const status = v.vehicle_state || '—';
-    const locked = s.locked != null ? (s.locked ? '🔒' : '🔓') : '—';
-    return `
-      <tr>
-        <td class="dt-name">${esc(v.name)}</td>
-        <td class="dt-secondary">${esc(v.vehicle_make)} ${esc(v.vehicle_model)} ${v.year || ''}</td>
-        <td class="dt-num">${battery}</td>
-        <td>${esc(status)}</td>
-        <td>${locked}</td>
-        <td class="dt-secondary">${timeAgo(v.last_synced_at)}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderLaundryRows(appliances) {
-  if (!appliances.length) return emptyRow(4, 'No appliances configured');
-  return appliances.map(a => {
-    const s = a.last_state || {};
-    const state = s.currentState || 'UNKNOWN';
-    const remaining = (s.remainHour || s.remainMinute)
-      ? `${s.remainHour ? s.remainHour + 'h ' : ''}${s.remainMinute || 0}m`
-      : '—';
-    return `
-      <tr>
-        <td class="dt-name">${esc(a.name)}</td>
-        <td>${esc(a.device_type)}</td>
-        <td>${esc(state)}</td>
-        <td class="dt-num">${remaining}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function emptyRow(cols, msg = 'No devices') {
-  return `<tr><td colspan="${cols}" class="dt-empty">${msg}</td></tr>`;
-}
-
-/* ── Section Builder ── */
-
-function buildSection(cat, count, theadHtml, tbodyHtml) {
-  const collapsed = getCollapsed();
-  const isOpen = !collapsed.includes(cat.id);
-  return `
-    <details class="device-section" ${isOpen ? 'open' : ''} data-section="${cat.id}">
-      <summary class="device-section__header">
-        <span class="device-section__chevron"></span>
-        <span class="device-section__label">${cat.label}</span>
-        <a href="${cat.href}" class="device-section__link" onclick="event.stopPropagation()">${cat.linkLabel} →</a>
-        <span class="device-section__count">${count}</span>
-      </summary>
-      <div class="device-section__body">
-        <div class="device-table-wrap">
-          <table class="device-table">
-            <thead><tr>${theadHtml}</tr></thead>
-            <tbody>${tbodyHtml}</tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  `;
-}
-
-function th(label) { return `<th>${label}</th>`; }
-
-/* ── Collapse Persistence ── */
-
-function getCollapsed() {
-  try { return JSON.parse(localStorage.getItem(COLLAPSE_KEY) || '[]'); } catch { return []; }
-}
-
-function saveCollapsed(list) {
-  localStorage.setItem(COLLAPSE_KEY, JSON.stringify(list));
-}
-
-function initCollapseListeners(container) {
-  container.querySelectorAll('.device-section').forEach(det => {
-    det.addEventListener('toggle', () => {
-      const id = det.dataset.section;
-      let collapsed = getCollapsed();
-      if (det.open) {
-        collapsed = collapsed.filter(c => c !== id);
-      } else {
-        if (!collapsed.includes(id)) collapsed.push(id);
-      }
-      saveCollapsed(collapsed);
-    });
-  });
-}
-
-/* ── Main ── */
+const ICONS = {
+  cameras: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  lighting: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21h6M12 3a6 6 0 00-4 10.5V17h8v-3.5A6 6 0 0012 3z"/></svg>',
+  music: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>',
+  climate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>',
+  laundry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>',
+  cars: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14M7.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM16.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path d="M5 12l1.5-4.5h11L19 12"/></svg>',
+  sensors: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>',
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
     activeTab: 'devices',
     requiredRole: 'resident',
     onReady: (state) => {
-      renderInventory(state);
+      renderDeviceCards(state);
     },
   });
 });
 
-async function renderInventory() {
-  const container = document.getElementById('devicesGrid');
-  if (!container) return;
-  container.innerHTML = '<p class="text-muted" style="padding:1rem">Loading devices...</p>';
+function renderDeviceCards(state) {
+  const grid = document.getElementById('devicesGrid');
+  if (!grid) return;
 
-  let cameras, lighting, sonos, climate, vehicles, laundry;
-  try {
-    [cameras, lighting, sonos, climate, vehicles, laundry] = await Promise.all([
-      fetchCameras(),
-      fetchLighting(),
-      fetchSonos(),
-      fetchClimate(),
-      fetchVehicles(),
-      fetchLaundry(),
-    ]);
-  } catch (e) {
-    console.error('Device inventory fetch error:', e);
-    container.innerHTML = '<p class="text-muted" style="padding:1rem">Error loading devices. Check console.</p>';
+  const role = state.appUser?.role;
+  const hasAllDeviceAccess = ['admin', 'staff', 'oracle'].includes(role);
+  const allowed = DEVICE_CATEGORIES.filter(cat =>
+    hasAllDeviceAccess || state.hasPermission?.(cat.permission)
+  );
+  if (allowed.length === 0) {
+    grid.innerHTML = '<p class="text-muted" style="padding:1rem;">No device categories available for your account.</p>';
     return;
   }
 
-  const totalDevices = cameras.length
-    + lighting.reduce((s, g) => s + g.deviceCount, 0)
-    + sonos.length
-    + climate.length
-    + vehicles.length
-    + laundry.length;
-
-  let html = `<p class="device-summary">${totalDevices} devices across ${CATEGORIES.length} categories</p>`;
-
-  // Cameras
-  const camCat = CATEGORIES.find(c => c.id === 'cameras');
-  html += buildSection(camCat, cameras.length,
-    th('Camera') + th('Location') + th('Type') + th('Qualities'),
-    renderCameraRows(cameras));
-
-  // Lighting (groups)
-  const lightCat = CATEGORIES.find(c => c.id === 'lighting');
-  const totalLights = lighting.reduce((s, g) => s + g.deviceCount, 0);
-  html += buildSection(lightCat, `${lighting.length} groups · ${totalLights} devices`,
-    th('Group') + th('Area') + th('Devices') + th('Models'),
-    renderLightingRows(lighting));
-
-  // Music (Sonos)
-  const musicCat = CATEGORIES.find(c => c.id === 'music');
-  const playingCount = sonos.filter(z => z.playbackState === 'PLAYING').length;
-  const sonosCount = playingCount > 0 ? `${sonos.length} zones · ${playingCount} playing` : `${sonos.length} zones`;
-  html += buildSection(musicCat, sonosCount,
-    th('Zone') + th('State') + th('Now Playing') + th('Volume'),
-    renderSonosRows(sonos));
-
-  // Climate
-  const climateCat = CATEGORIES.find(c => c.id === 'climate');
-  html += buildSection(climateCat, climate.length,
-    th('Room') + th('Temp') + th('Humidity') + th('Mode') + th('HVAC'),
-    renderClimateRows(climate));
-
-  // Vehicles
-  const carCat = CATEGORIES.find(c => c.id === 'cars');
-  html += buildSection(carCat, vehicles.length,
-    th('Name') + th('Vehicle') + th('Battery') + th('Status') + th('Lock') + th('Synced'),
-    renderVehicleRows(vehicles));
-
-  // Laundry
-  const laundryCat = CATEGORIES.find(c => c.id === 'laundry');
-  html += buildSection(laundryCat, laundry.length,
-    th('Name') + th('Type') + th('State') + th('Remaining'),
-    renderLaundryRows(laundry));
-
-  container.innerHTML = html;
-  initCollapseListeners(container);
+  grid.innerHTML = allowed.map(cat => `
+    <a href="${cat.href}" class="device-card" data-device="${cat.id}">
+      <span class="device-card__icon">${ICONS[cat.id] || ''}</span>
+      <div class="device-card__body">
+        <span class="device-card__label">${cat.label}</span>
+        ${cat.description ? `<span class="device-card__desc">${cat.description}</span>` : ''}
+      </div>
+      <span class="device-card__arrow" aria-hidden="true">→</span>
+    </a>
+  `).join('');
 }

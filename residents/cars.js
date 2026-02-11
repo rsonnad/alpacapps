@@ -815,7 +815,7 @@ async function refreshFromDB() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
-    activeTab: 'cars',
+    activeTab: 'devices',
     requiredRole: 'resident',
     onReady: async (authState) => {
       currentUserRole = authState.appUser?.role;

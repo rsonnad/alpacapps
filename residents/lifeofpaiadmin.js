@@ -4,11 +4,9 @@
 
 import { initAdminPage, showToast } from '../shared/admin-shell.js';
 import { supabase } from '../shared/supabase.js';
-import { hasPermission } from '../shared/auth.js';
 
 let config = null;
 let currentPoolChapter = 1;
-let isAdmin = false;
 let currentAudio = null;
 const previewData = {
   residents: [],
@@ -18,62 +16,49 @@ const previewData = {
   loaded: false,
 };
 
-async function initPaiAdmin(authState) {
-  const role = authState.appUser?.role;
-  isAdmin = hasPermission('admin_pai_settings');
-
-  // Hide admin-only sections for non-admins
-  if (!isAdmin) {
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-  }
-
+async function initPaiAdmin() {
   await loadConfig();
   await loadStats();
-  if (isAdmin) {
-    await loadPreviewData();
-    loadSonosZones();
-  }
+  await loadPreviewData();
+  loadSonosZones();
   await loadWhisperPool(1);
   await loadDeliveryLog();
 
-  // Bind events (admin only)
-  if (isAdmin) {
-    document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
-    document.getElementById('savePromptsBtn').addEventListener('click', savePrompts);
-    document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
-    document.getElementById('testPreviewBtn').addEventListener('click', previewTestWhisper);
-    document.getElementById('regenWhispersBtn').addEventListener('click', regenerateWhispers);
-    document.getElementById('auditionSingleBtn').addEventListener('click', auditionSingleVoice);
-    document.getElementById('auditionBatchBtn').addEventListener('click', auditionBatchVoices);
-    document.getElementById('auditionMatrixBtn').addEventListener('click', auditionMatrix);
-    document.getElementById('auditionPreset').addEventListener('change', (e) => {
-      const sel = e.target;
-      if (!sel.value) return;
-      document.getElementById('auditionText').value = sel.value;
-      const opt = sel.selectedOptions[0];
-      const ch = opt?.dataset?.ch;
-      if (ch) {
-        document.getElementById('auditionChapter').value = ch;
-        refreshDirectorNotes(ch);
-      }
-    });
-    document.getElementById('auditionChapter').addEventListener('change', (e) => {
-      refreshDirectorNotes(e.target.value);
-    });
-    document.getElementById('directorNotesResetBtn').addEventListener('click', resetDirectorNotes);
-    document.getElementById('directorNotesSaveBtn').addEventListener('click', saveDirectorNotes);
-    document.getElementById('directorNotesDuplicateBtn').addEventListener('click', duplicateDirectorNotes);
-    document.getElementById('directorNotesRenameBtn').addEventListener('click', renameDirectorNotes);
-    document.getElementById('directorNotesDeleteBtn').addEventListener('click', deleteDirectorNotes);
-    document.getElementById('directorNotesTextarea').addEventListener('input', () => {
-      const statusEl = document.getElementById('directorNotesStatus');
-      statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes</span>';
-    });
+  document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+  document.getElementById('savePromptsBtn').addEventListener('click', savePrompts);
+  document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
+  document.getElementById('testPreviewBtn').addEventListener('click', previewTestWhisper);
+  document.getElementById('regenWhispersBtn').addEventListener('click', regenerateWhispers);
+  document.getElementById('auditionSingleBtn').addEventListener('click', auditionSingleVoice);
+  document.getElementById('auditionBatchBtn').addEventListener('click', auditionBatchVoices);
+  document.getElementById('auditionMatrixBtn').addEventListener('click', auditionMatrix);
+  document.getElementById('auditionPreset').addEventListener('change', (e) => {
+    const sel = e.target;
+    if (!sel.value) return;
+    document.getElementById('auditionText').value = sel.value;
+    const opt = sel.selectedOptions[0];
+    const ch = opt?.dataset?.ch;
+    if (ch) {
+      document.getElementById('auditionChapter').value = ch;
+      refreshDirectorNotes(ch);
+    }
+  });
+  document.getElementById('auditionChapter').addEventListener('change', (e) => {
+    refreshDirectorNotes(e.target.value);
+  });
+  document.getElementById('directorNotesResetBtn').addEventListener('click', resetDirectorNotes);
+  document.getElementById('directorNotesSaveBtn').addEventListener('click', saveDirectorNotes);
+  document.getElementById('directorNotesDuplicateBtn').addEventListener('click', duplicateDirectorNotes);
+  document.getElementById('directorNotesRenameBtn').addEventListener('click', renameDirectorNotes);
+  document.getElementById('directorNotesDeleteBtn').addEventListener('click', deleteDirectorNotes);
+  document.getElementById('directorNotesTextarea').addEventListener('input', () => {
+    const statusEl = document.getElementById('directorNotesStatus');
+    statusEl.innerHTML = '<span style="color:#E99C48;">Unsaved changes</span>';
+  });
 
-    // Initial population of director's notes (dropdown includes custom styles)
-    populateDirectorNotesDropdown();
-    refreshDirectorNotes(document.getElementById('auditionChapter')?.value || '1');
-  }
+  // Initial population of director's notes (dropdown includes custom styles)
+  populateDirectorNotesDropdown();
+  refreshDirectorNotes(document.getElementById('auditionChapter')?.value || '1');
 
   // Player close button
   document.getElementById('playerClose').addEventListener('click', closePlayer);
@@ -1682,9 +1667,8 @@ async function loadPreviewData() {
 
 // Initialize
 initAdminPage({
-  activeTab: 'pai',
+  activeTab: 'lifeofpai',
   requiredRole: 'admin',
-  requiredPermission: 'admin_pai_settings',
   section: 'admin',
   onReady: initPaiAdmin
 });

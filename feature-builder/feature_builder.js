@@ -81,21 +81,12 @@ async function gitMergeBranchToMain(branchName) {
   await execAsync('git pull origin main', { cwd: REPO_DIR });
   await execAsync(`git merge ${branchName} --no-ff -m "Merge ${branchName} into main"`, { cwd: REPO_DIR });
 
-  // Bump version
-  let version = 'unknown';
-  try {
-    const { stdout: versionOut } = await execAsync('bash scripts/bump-version.sh', { cwd: REPO_DIR });
-    version = versionOut.trim();
-    log('info', 'Version bumped', { version });
-    await execAsync('git add -A', { cwd: REPO_DIR });
-    await execAsync(`git commit -m "chore: bump version to ${version}"`, { cwd: REPO_DIR });
-  } catch (err) {
-    log('warn', 'Version bump failed, continuing', { error: err.message });
-  }
-
   await execAsync('git push origin main', { cwd: REPO_DIR });
+  log('info', 'Pushed main; release event will be recorded by CI', {
+    source: 'feature_builder',
+  });
   const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
-  return { mainSha: stdout.trim(), version };
+  return { mainSha: stdout.trim() };
 }
 
 // ============================================
@@ -572,7 +563,7 @@ async function processFeatureRequest(request) {
     if (safe) {
       // AUTO-MERGE: safe to go live
       log('info', 'Auto-merging to main (safe)', { branch: branchName });
-      const { mainSha, version } = await gitMergeBranchToMain(branchName);
+      const { mainSha } = await gitMergeBranchToMain(branchName);
 
       await updateProgress(request.id, {
         status: 'completed',
@@ -584,13 +575,13 @@ async function processFeatureRequest(request) {
         risk_assessment: buildResult.risk_assessment || { decision: 'auto_merge', reason: 'New files only' },
         claude_turns_used: buildResult.num_turns || null,
         completed_at: new Date().toISOString(),
-        progress_message: `Deployed! Version ${version}. Visit: https://alpacaplayhouse.com${buildResult.page_url || '/residents/'}`,
+        progress_message: `Deployed! Release sequence will be assigned by CI. Visit: https://alpacaplayhouse.com${buildResult.page_url || '/residents/'}`,
       });
 
       log('info', '=== Feature auto-merged and deployed ===', {
         id: request.id,
         branch: branchName,
-        version,
+        release: 'ci-assigned',
         page_url: buildResult.page_url,
       });
 

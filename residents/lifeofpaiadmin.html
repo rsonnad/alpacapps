@@ -470,9 +470,9 @@
   <div id="unauthorizedOverlay" class="loading-overlay hidden">
     <div class="unauthorized-card">
       <h2>Access Denied</h2>
-      <p>You need a resident account to view this page.</p>
+      <p>You need an admin account to view this page.</p>
       <div class="unauthorized-actions">
-        <a href="/spaces/" class="btn-secondary">View Spaces</a>
+        <a href="/spaces/admin/settings.html" class="btn-secondary">Open Admin Settings</a>
         <button id="signOutBtn" class="btn-secondary">Sign Out</button>
       </div>
     </div>
@@ -544,7 +544,7 @@
               <li style="margin-bottom:0.4rem;"><strong>Whisper Generation</strong> (<code>generate-whispers</code> edge function) &mdash; Takes the system prompt (PAI's identity) + generation prompt (chapter instructions) and calls an AI model (Gemini or Claude) to produce whisper templates. Templates include placeholder variables like <code>{resident_name}</code>, <code>{temperature}</code>, <code>{vehicle_name}</code>. Triggered manually from this admin page.</li>
               <li style="margin-bottom:0.4rem;"><strong>Whisper Pool</strong> (<code>spirit_whispers</code> table) &mdash; Stores all generated templates by chapter, with weight (selection probability), voice override, required data fields, and active/inactive status. Managed in the pool section below.</li>
               <li style="margin-bottom:0.4rem;"><strong>Delivery Worker</strong> (<code>spirit-whisper-worker</code> on DO droplet) &mdash; Polls every 60s. Checks: is the system active? Is it within active hours? Has enough time passed since last whisper? Is the daily cap reached? If all pass, picks a weighted-random template, resolves placeholders with live Supabase data, applies chapter-specific TTS tone, and sends to a Sonos zone. Optionally triggers device interactions (Tesla flash, Govee pulse) in Chapter 2+. Logs everything to <code>spirit_whisper_log</code>.</li>
-              <li style="margin-bottom:0.4rem;"><strong>Resident Lore Page</strong> (<code>residents/lifeofpai.html</code>) &mdash; Shows the narrative chapters to residents, plus a log of recent whispers they can listen to. The chapter lore text is culturally grounded in Andean cosmology and alpaca history.</li>
+              <li style="margin-bottom:0.4rem;"><strong>Admin Console</strong> (<code>residents/lifeofpaiadmin.html</code>) &mdash; Unified admin interface for chapter progression, whisper controls, voice auditioning, and delivery visibility.</li>
             </ol>
           </details>
 

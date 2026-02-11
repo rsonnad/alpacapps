@@ -5,8 +5,6 @@
 
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
-import { renderHeader, initSiteComponents } from './site-components.js';
-import { setupVersionInfo } from './version-info.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -14,10 +12,10 @@ import { setupVersionInfo } from './version-info.js';
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
   'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_projects',
+  'view_hours', 'view_faq', 'view_voice', 'view_todo',
 ];
 const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'admin_pai_settings',
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
 ];
 
 const ALL_ADMIN_TABS = [
@@ -27,18 +25,17 @@ const ALL_ADMIN_TABS = [
   { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
-  { id: 'hours', label: 'Hours', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
+  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff' },
   { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'staff' },
-  { id: 'projects', label: 'Projects', href: 'projects.html', permission: 'view_projects', section: 'staff' },
   // Admin section
   { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
   { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
   { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
   { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
-  { id: 'pai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
+  { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
 ];
 
 // =============================================
@@ -121,7 +118,6 @@ function renderUserInfo(el, appUser, profileHref) {
       ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
     </button>
     <div class="user-menu-dropdown hidden">
-      <div id="roleBadge" class="role-badge dropdown-role-badge" style="display:none"></div>
       <a href="${profileHref}" class="user-menu-item">Profile</a>
       <button class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
@@ -187,31 +183,6 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
 }
 
 // =============================================
-// SITE NAV INJECTION
-// =============================================
-let siteNavInitialized = false;
-
-function injectSiteNav() {
-  if (siteNavInitialized) return;
-  const target = document.getElementById('siteHeader');
-  if (!target) return;
-
-  const versionEl = document.querySelector('[data-site-version]');
-  const version = versionEl?.textContent?.trim() || '';
-
-  target.innerHTML = renderHeader({
-    transparent: false,
-    light: false,
-    version,
-    showRoleBadge: true,
-  });
-
-  initSiteComponents();
-  setupVersionInfo();
-  siteNavInitialized = true;
-}
-
-// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -249,39 +220,21 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     let meetsRequirement;
     if (requiredPermission) {
       meetsRequirement = state.hasPermission?.(requiredPermission);
-    } else if (userRole === 'demon') {
+    } else if (userRole === 'demo') {
       const tabDef = ALL_ADMIN_TABS.find(t => t.id === activeTab);
       const tabPermission = tabDef?.permission;
       meetsRequirement = !!(tabPermission && state.hasPermission?.(tabPermission));
     } else {
-      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
     }
 
     if (state.appUser && meetsRequirement) {
-      injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
-      document.getElementById('unauthorizedOverlay')?.classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
-
-      // Render user info into site nav auth container (replaces Sign In link)
-      const siteAuthEl = document.getElementById('aapHeaderAuth');
-      const legacyUserInfo = document.getElementById('userInfo');
-      if (siteAuthEl) {
-        renderUserInfo(siteAuthEl, state.appUser, '/residents/profile.html');
-        siteAuthEl.classList.add('user-info');
-        // Hide Sign In link
-        const signInLink = document.getElementById('aapSignInLink');
-        if (signInLink) signInLink.style.display = 'none';
-        const mobileSignInLink = document.getElementById('aapMobileSignInLink');
-        if (mobileSignInLink) mobileSignInLink.closest('li')?.remove();
-        // Hide legacy user info container if site nav is active
-        if (legacyUserInfo) legacyUserInfo.style.display = 'none';
-      } else if (legacyUserInfo) {
-        renderUserInfo(legacyUserInfo, state.appUser, '/residents/profile.html');
-      }
+      renderUserInfo(document.getElementById('userInfo'), state.appUser, '/residents/profile.html');
 
       // Update role badge and admin-only visibility
       const roleBadge = document.getElementById('roleBadge');
@@ -289,23 +242,21 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
         const role = state.appUser.role || 'staff';
         roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
         roleBadge.className = 'role-badge ' + role;
-        roleBadge.style.display = '';
       }
       if (['admin', 'oracle'].includes(state.appUser.role)) {
         document.body.classList.add('is-admin');
       } else {
         document.body.classList.remove('is-admin');
       }
-      if (state.appUser.role === 'demon') {
+      if (state.appUser.role === 'demo') {
         document.body.classList.add('is-demo-mode');
       } else {
         document.body.classList.remove('is-demo-mode');
       }
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
-      const isDemo = state.appUser.role === 'demon';
-      const hasAdminPerms = state.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
-      const resolvedSection = section === 'admin' && (userIsAdmin || hasAdminPerms) ? 'admin' : 'staff';
+      const isDemo = state.appUser.role === 'demo';
+      const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
 
       renderContextSwitcher(state.appUser?.role, resolvedSection);
       renderTabNav(activeTab, state, resolvedSection);

@@ -5,39 +5,53 @@ alwaysApply: true
 
 # Version & Model Tracking
 
-## Always Display Version
+## After Push: Always Display Version
 
-In every response where you make code changes, deploy, or push, display the current version:
+After every successful push/build deployment, include the current version from `version.json`:
 
 > `vYYMMDD.NN H:MMa/p [model]`
 
-Read from `version.json` (field: `version` + `model`) or from `bump-version.sh` output.
+Do not skip version reporting after a push.
 
 ## Model Self-Reporting
 
-When running `bump-version.sh`, you MUST pass `--model` with your model code:
+When running `bump-version.sh`, pass `--model` with the active model code:
 
 ```bash
 ./scripts/bump-version.sh --model o4.6
 ```
 
-Model code format is a short `x0.0` identifier:
+Model code format is a short identifier:
 - `o4.6` = Claude Opus 4.6
 - `s4.0` = Claude Sonnet 4
 - `g2.5` = Gemini 2.5
 - `g4o` = GPT-4o
-- `modl a` = Cursor Auto
+- `modl-a` = Cursor Auto
 - `cur` = Cursor (unknown model)
 
-Never omit `--model`. If unsure of your exact model, use the closest identifier.
+If exact model is unknown, use the closest identifier and still report it.
+
+## Machine Name Requirement
+
+Always set the computer name for version metadata before bumping:
+
+- Prefer `AAP_MACHINE_NAME` env var, or
+- Set project-level `.machine-name` file
+
+The post-push report must include `version.json.machine`.
 
 ## Deploy Workflow
 
 ```bash
-./scripts/bump-version.sh --model MODEL   # Bump version with model tag
+./scripts/bump-version.sh --model MODEL   # Includes version + model
 git add -A
 git commit -m "Description"
-git push
+git push origin main
 ```
 
-Post-push, always report: **Deployed to main** -- version `vYYMMDD.NN H:MMa/p` `[model]`
+Post-push response format (at end):
+
+- `Version: <version.json.version>`
+- `Machine: <version.json.machine>`
+- `Model: <version.json.model>`
+- `Links: [Label](URL)` for 1-2 most relevant destinations

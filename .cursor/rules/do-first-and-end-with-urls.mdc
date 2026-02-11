@@ -1,0 +1,36 @@
+---
+description: Execute autonomously and report version/model/machine with clickable links after pushes
+alwaysApply: true
+---
+
+# Autonomy First
+
+Complete tasks end-to-end without asking for permission or confirmation.
+
+- Run commands, scripts, builds, tests, and routine git steps yourself when possible.
+- If terminal commands or migrations are needed to complete the task, execute them directly.
+- When implementation is complete, push the code to `main` without asking for additional confirmation.
+- Ask questions only when design clarification is required or execution is truly blocked (missing secret, auth prompt, unavailable resource, or destructive-action confirmation).
+- Avoid "you can run..." handoffs when the agent can do the action directly.
+
+---
+
+# If Blocked, Read Config First
+
+If something appears impossible for the agent to do, first read relevant configuration files before declaring a blocker.
+
+- Check project and tool configs (for example `.cursor/rules/*`, `CLAUDE.md`, `package.json`, scripts, CI/workflow files, env templates, build/deploy configs).
+- Attempt the likely configuration-based fix path before escalating to the user.
+
+---
+
+# Required Post-Push Report
+
+After any successful push/build deployment, end the response with a compact block that includes:
+
+- `Version`: from `version.json.version`
+- `Machine`: computer name from `version.json.machine`
+- `Model`: model code from `version.json.model` (example: `o4.6` for Opus 4.6)
+- `Links`: 1-2 most relevant markdown clickable links, formatted as `[Label](https://...)`
+
+Do not provide bare URLs when a push occurred; provide clickable markdown links only.

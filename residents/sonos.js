@@ -8,6 +8,7 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
+import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 
 // =============================================
 // CONFIGURATION
@@ -34,16 +35,18 @@ let groupingMode = false;
 let groupingSelected = []; // room names selected for grouping
 let scenes = [];           // Array of scene objects from DB (with nested actions)
 let activatingScene = null; // ID of scene currently being activated
+let deviceScope = null;
 
 // =============================================
 // INITIALIZATION
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
-    activeTab: 'music',
+    activeTab: 'devices',
     requiredRole: 'resident',
     onReady: async (state) => {
       userRole = state.appUser?.role;
+      deviceScope = await getResidentDeviceScope(state.appUser, state.hasPermission);
       if (hasPermission('admin_music_settings')) {
         document.body.classList.add('is-staff');
       }
@@ -118,11 +121,19 @@ async function loadZones() {
     for (const group of result) {
       const coord = group.coordinator;
       const members = group.members || [];
+      let visibleMembers = members;
+
+      if (deviceScope && !deviceScope.fullAccess) {
+        if (!deviceScope.canAccessSpaceName(coord?.roomName)) continue;
+        visibleMembers = members.filter((member) => deviceScope.canAccessSpaceName(member?.roomName));
+        if (!visibleMembers.length) continue;
+      }
+
       zoneGroups.push({
         coordinatorName: coord.roomName,
         coordinatorState: coord.state,
         groupState: coord.groupState,
-        members: members.map(m => ({
+        members: visibleMembers.map(m => ({
           roomName: m.roomName,
           volume: m.state?.volume ?? 0,
           mute: m.state?.mute ?? false,

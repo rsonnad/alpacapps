@@ -55,7 +55,7 @@ function injectHTML() {
       </div>
       <div class="pai-panel__messages" id="paiMessages">
         <div class="pai-message pai-message--ai">
-          <div class="pai-message__text">Hey! I'm PAI, your spirit guardian and smart home assistant. I can control lights, music, thermostats, and vehicles. Want to hear my story? Visit <a href="/residents/lifeofpai.html" style="color:var(--accent);">Life of PAI</a>.</div>
+          <div class="pai-message__text">Hey! I'm PAI, your spirit guardian and smart home assistant. I can control lights, music, thermostats, and vehicles.</div>
         </div>
       </div>
       <div class="pai-panel__input">

@@ -230,7 +230,6 @@ interface PaiClassificationResult {
   type: PaiEmailClassification;
   confidence: number;
   summary: string;
-  is_personal: boolean;
 }
 
 /**
@@ -245,7 +244,7 @@ async function classifyPaiEmail(
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
   if (!geminiApiKey) {
     console.warn("GEMINI_API_KEY not set, defaulting to 'other'");
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "No Gemini key", is_personal: false };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "No Gemini key" };
   }
 
   const prompt = `You are an email classifier for PAI (Property AI Assistant) at Alpaca Playhouse, a residential property.
@@ -257,13 +256,11 @@ Classify this email into ONE of these categories:
 - "command" — A real person requesting a smart home action (lights, music, thermostat, locks, etc.)
 - "other" — Legitimate but unrelated email that doesn't fit the above categories.
 
-Also determine if this is a PERSONAL question (about the sender's own situation — their lease, their access code, their payment, their room, their account) vs a GENERAL property question (about amenities, policies, rules, features, cooking, parking, pets, etc. that would be useful in an FAQ).
-
 Email subject: ${subject}
 Email body (first 1000 chars): ${bodyText.substring(0, 1000)}
 Has attachments: ${hasAttachments}
 
-Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary", "is_personal": true|false}`;
+Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
 
   try {
     const res = await fetch(
@@ -280,7 +277,7 @@ Respond with ONLY a JSON object: {"type": "spam|question|document|command|other"
 
     if (!res.ok) {
       console.error(`Gemini classification failed: ${res.status}`);
-      return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Gemini API error", is_personal: false };
+      return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Gemini API error" };
     }
 
     const result = await res.json();
@@ -300,14 +297,13 @@ Respond with ONLY a JSON object: {"type": "spam|question|document|command|other"
         type: ["question", "document", "command", "spam", "other"].includes(parsed.type) ? parsed.type : "other",
         confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
         summary: parsed.summary || "",
-        is_personal: parsed.is_personal === true,
       };
     }
 
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Could not parse", is_personal: false };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: "Could not parse" };
   } catch (err) {
     console.error("Gemini classification error:", err.message);
-    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message, is_personal: false };
+    return { type: hasAttachments ? "document" : "question", confidence: 0.5, summary: err.message };
   }
 }
 
@@ -378,71 +374,45 @@ async function checkSpamThresholdAndAlert(
 }
 
 /**
- * Call the send-email edge function to send a PAI reply.
- * Uses service role key so the invocation is accepted; passes from/reply_to so reply is from PAI.
+ * Send PAI reply email via Resend API directly (avoids edge→edge 401 when calling send-email).
+ * Uses same layout as send-email's pai_email_reply template.
+ * Returns { ok, status } for diagnostics.
  */
-async function getRandomPaiArtUrl(supabase: any): Promise<string | null> {
-  try {
-    // Fetch all media tagged with 'pai-email-art'
-    const { data: tagged } = await supabase
-      .from("media_tag_assignments")
-      .select("media_id, media:media_id(url)")
-      .eq("tag_id", "533354e0-662a-48a8-9f62-4f174a1b7adf"); // pai-email-art tag
-
-    if (!tagged?.length) return null;
-
-    // Pick a random one
-    const pick = tagged[Math.floor(Math.random() * tagged.length)];
-    return pick?.media?.url || null;
-  } catch (err) {
-    console.warn("Failed to fetch PAI art:", err.message);
-    return null;
-  }
-}
-
 async function sendPaiReply(
-  supabase: any,
+  resendApiKey: string,
   to: string,
   replyBody: string,
   originalSubject: string,
   originalBody: string
-): Promise<void> {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY") || "";
-
-  // Fetch a random PAI art image for the email footer
-  const paiArtUrl = await getRandomPaiArtUrl(supabase);
-
+): Promise<{ ok: boolean; status: number }> {
+  const bodySnippet = originalBody.substring(0, 500);
   const subject = `Re: ${originalSubject || "Your message to PAI"}`;
-  const truncatedBody = originalBody.substring(0, 500);
-
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: #1a1a2e; padding: 20px; border-radius: 12px 12px 0 0;">
         <h2 style="color: #e0d68a; margin: 0;">PAI</h2>
-        <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Prompt Alpaca Intelligence</p>
+        <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Property AI Assistant</p>
       </div>
-      <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none;">
-        <div style="white-space: pre-wrap; line-height: 1.6;">${replyBody || ""}</div>
-        ${truncatedBody ? `
+      <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
+        <div style="white-space: pre-wrap; line-height: 1.6;">${(replyBody || "").replace(/</g, "&lt;")}</div>
+        ${bodySnippet ? `
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
         <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Your original message:</p>
-        <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${truncatedBody}</div>
+        <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${bodySnippet.replace(/</g, "&lt;")}</div>
         ` : ""}
       </div>
-      ${paiArtUrl ? `
-      <div style="border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden;">
-        <img src="${paiArtUrl}" alt="PAI - Prompt Alpaca Intelligence" style="width: 100%; height: auto; display: block;" />
-      </div>
-      ` : '<div style="border-radius: 0 0 12px 12px; height: 4px; background: #1a1a2e;"></div>'}
       <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
         This is an automated reply from PAI at Alpaca Playhouse. Reply to this email to continue the conversation.
       </p>
-    </div>
-  `;
+    </div>`;
+  const text = `PAI - Property AI Assistant
 
-  const text = `PAI - Prompt Alpaca Intelligence\n\n${replyBody || ""}\n\n${truncatedBody ? `---\nYour original message:\n${truncatedBody}` : ""}\n\nThis is an automated reply from PAI at Alpaca Playhouse.`;
+${replyBody || ""}
 
-  // Send directly via Resend API (avoids nested edge function call)
+${bodySnippet ? `---\nYour original message:\n${bodySnippet}` : ""}
+
+This is an automated reply from PAI at Alpaca Playhouse.`;
+
   const res = await fetch(`${RESEND_API_URL}/emails`, {
     method: "POST",
     headers: {
@@ -463,22 +433,9 @@ async function sendPaiReply(
     const errText = await res.text();
     console.error(`Failed to send PAI reply: ${res.status} ${errText}`);
   } else {
-    const result = await res.json();
-    console.log(`PAI reply sent to ${to}, resend_id=${result.id}`);
-
-    // Log to api_usage_log
-    try {
-      await supabase.from("api_usage_log").insert({
-        vendor: "resend",
-        category: "email_pai_email_reply",
-        endpoint: "POST /emails",
-        units: 1,
-        unit_type: "emails",
-        estimated_cost_usd: 0.00028,
-        metadata: { resend_id: result.id, to, inbound_subject: originalSubject },
-      });
-    } catch (_) { /* non-critical */ }
+    console.log(`PAI reply sent to ${to}`);
   }
+  return { ok: res.ok, status: res.status };
 }
 
 /**
@@ -639,7 +596,6 @@ async function handlePaiEmail(
         email_from: senderEmail,
         classification: classification.type,
         confidence: classification.confidence,
-        is_personal: classification.is_personal,
       },
     });
   }
@@ -737,7 +693,7 @@ async function handlePaiEmail(
       // Auto-reply to sender
       const fileNames = uploadedFiles.map(f => f.name).join(", ");
       await sendPaiReply(
-        supabase,
+        resendApiKey,
         senderEmail,
         `Thank you for sending ${uploadedFiles.length === 1 ? "the document" : `${uploadedFiles.length} documents`} (${fileNames}). I've received ${uploadedFiles.length === 1 ? "it" : "them"} and ${uploadedFiles.length === 1 ? "it's" : "they're"} now pending admin review before being added to my knowledge base.\n\nYou'll be able to ask me about ${uploadedFiles.length === 1 ? "this document" : "these documents"} once ${uploadedFiles.length === 1 ? "it's" : "they're"} approved.`,
         subject,
@@ -750,12 +706,7 @@ async function handlePaiEmail(
     (classification.type === "other" && looksLikeQuestion(subject, bodyText || bodyHtml))
   ) {
     // === QUESTION or COMMAND (or other that looks like a question): Forward to PAI, send reply ===
-    // Always include subject + body so PAI sees the full context (questions are often in the subject)
-    const strippedBody = (bodyHtml || "").replace(/<[^>]*>/g, "").trim();
-    const bodyContent = bodyText?.trim() || strippedBody || "";
-    const message = bodyContent
-      ? `Subject: ${subject}\n${bodyContent}`
-      : subject;
+    const message = bodyText || bodyHtml || subject;
 
     try {
       // Call the alpaca-pai edge function directly
@@ -785,55 +736,45 @@ async function handlePaiEmail(
         replyText = `Thank you for your email. I've received your ${classification.type === "command" ? "request" : "question"} and I'll have someone from the team follow up with you.\n\nFor faster responses, you can chat with me directly at https://alpacaplayhouse.com/residents/ (requires resident login).`;
       }
 
-      // Store the Q&A in api_usage_log for full audit trail
-      try {
+      const sendResult = await sendPaiReply(resendApiKey, senderEmail, replyText, subject, bodyText || bodyHtml || "");
+      await supabase.from("api_usage_log").insert({
+        vendor: "supabase",
+        category: "pai_email_reply_attempt",
+        metadata: {
+          success: sendResult.ok,
+          status: sendResult.status,
+          to: senderEmail,
+          inbound_email_id: emailRecord.id,
+          pai_status: paiRes?.status,
+          pai_ok: paiRes?.ok,
+        },
+      });
+      if (sendResult.ok) {
         await supabase.from("api_usage_log").insert({
-          vendor: "supabase",
-          category: "pai_email_reply_attempt",
-          estimated_cost_usd: 0,
-          metadata: {
-            to: senderEmail,
-            inbound_email_id: emailRecord.id,
-            pai_ok: paiRes.ok,
-            pai_status: paiRes.status,
-            status: paiRes.status,
-            success: paiRes.ok,
-            question: message.substring(0, 500),
-            reply_preview: replyText.substring(0, 500),
-            is_personal: classification.is_personal,
-          },
+          vendor: "resend",
+          category: "email_pai_email_reply",
+          endpoint: "POST /emails",
+          units: 1,
+          unit_type: "emails",
+          estimated_cost_usd: 0.00028,
+          metadata: { to: senderEmail, inbound_email_id: emailRecord.id },
         });
-      } catch (_) { /* non-critical */ }
-
-      // Log to faq_entries for general (non-personal) questions
-      if (classification.type === "question" && !classification.is_personal && replyText) {
-        try {
-          await supabase.from("faq_entries").insert({
-            question: subject || message.substring(0, 500),
-            ai_answer: replyText,
-            confidence: "HIGH",
-            source: "pai_email",
-            is_published: false,
-            user_email: senderEmail,
-            user_name: senderName,
-          });
-          console.log("PAI email Q&A logged to faq_entries");
-        } catch (faqErr) {
-          console.warn("Failed to log PAI email to faq_entries:", faqErr.message);
-        }
       }
-
-      await sendPaiReply(supabase, senderEmail, replyText, subject, bodyText || bodyHtml || "");
     } catch (err) {
       console.error(`PAI response error: ${err.message}`);
       // Send generic reply on error
-      await sendPaiReply(
-        supabase,
+      const sendResult = await sendPaiReply(
+        resendApiKey,
         senderEmail,
         "Thank you for your email. I've received your message and the team will review it shortly.\n\nFor immediate assistance, you can call us or chat with me at https://alpacaplayhouse.com/residents/.",
         subject,
         bodyText || bodyHtml || ""
       );
+      await supabase.from("api_usage_log").insert({
+        vendor: "supabase",
+        category: "pai_email_reply_attempt",
+        metadata: { success: sendResult.ok, status: sendResult.status, to: senderEmail, inbound_email_id: emailRecord.id, error: String(err?.message || err) },
+      });
     }
   } else {
     // === OTHER: Forward to admin ===
