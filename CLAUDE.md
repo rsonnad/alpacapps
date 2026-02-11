@@ -526,11 +526,11 @@ This site deploys directly to GitHub Pages from the `main` branch. There is no b
 
 ### Version: Bumped automatically on push to main
 
-**Version format:** `r000000NNN` — a strictly sequential release number stored in Supabase. Each push to `main` gets the next number. The version is displayed as `r000000001`, `r000000002`, etc.
+**Version format:** `vYYMMDD.NN H:MMa` — date + daily counter + Austin time (America/Chicago). Example: `v260211.03 5:06a` means the 3rd push on Feb 11 2026, at 5:06 AM Austin time. The version always increments: the date portion increases daily, and the counter `NN` resets each day. A Supabase sequence (`release_event_seq`) guarantees absolute ordering.
 
 **How it works:** A GitHub Action (`bump-version-on-push.yml`) runs on every push to main (except its own `[skip ci]` commits). It:
-1. Records the release event in the `release_events` table (Supabase) via `record_release_event()` — idempotent per push SHA
-2. Rewrites the version string in all HTML files (pattern: `r` + 9 digits)
+1. Records the release event in `release_events` (Supabase) via `record_release_event()` — idempotent per push SHA, computes the version string in Austin time
+2. Rewrites the version string in all HTML files (pattern-matches both `vYYMMDD.NN` and legacy `r` formats)
 3. Writes `version.json` with release details (version, release #, actor, source, model, machine, commits)
 4. Commits and pushes with `[skip ci]`
 
@@ -550,19 +550,19 @@ git pull --rebase origin main
 git push origin main
 ```
 
-**HTML pages:** Every HTML page has a `<span data-site-version>r000000NNN</span>` (or `class="site-nav__version"`) that the bump script updates. New HTML pages should include this span.
+**HTML pages:** Every HTML page has a version string (e.g., `v260211.03 5:06a`) in a `<span data-site-version>` or `class="site-nav__version"` that the bump script updates. New HTML pages should include a version span.
 
 **version.json schema:**
 ```json
 {
-  "version": "r000000001",
-  "release": 1,
+  "version": "v260211.03 5:06a",
+  "release": 3,
   "sha": "abc12345",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runner-name",
-  "pushedAt": "2026-02-11T13:03:49Z",
+  "pushedAt": "2026-02-11T11:06:00Z",
   "commits": [{ "sha": "abc12345", "message": "Fix something", "author": "Name" }]
 }
 ```
@@ -571,7 +571,7 @@ git push origin main
 
 **You MUST display the current version string in every response where you make code changes or deploy.** Read from `version.json`. Format:
 
-> `r000000NNN [model]`
+> `vYYMMDD.NN H:MMa [model]`
 
 This ensures the user always knows which version they're looking at and which AI model produced it.
 

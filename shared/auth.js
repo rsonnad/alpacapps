@@ -72,7 +72,7 @@ function cacheAuthState(user, appUser, role) {
     const cached = {
       email: user?.email,
       userId: user?.id,
-      appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email, person_id: appUser.person_id, is_current_resident: appUser.is_current_resident } : null,
+      appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email, avatar_url: appUser.avatar_url, person_id: appUser.person_id, is_current_resident: appUser.is_current_resident } : null,
       role,
       permissions: Array.from(currentPermissions),
       timestamp: Date.now(),

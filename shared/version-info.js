@@ -63,9 +63,16 @@ function val(...args) {
   return '—';
 }
 
+/** Format release number as r00001 (r + 5-digit zero-padded) */
+function rNum(n) {
+  const num = parseInt(n, 10);
+  return isNaN(num) ? '—' : 'r' + String(num).padStart(5, '0');
+}
+
 /* ── find the version span in the DOM ──────────────────────────────── */
 function findVersionSpan() {
-  const pat = /^r\d{9}/;
+  // Match vYYMMDD.NN (primary) or r000000000 (legacy)
+  const pat = /^(v\d{6}\.\d{2}|r\d{9})/;
   const candidates = [
     ...document.querySelectorAll('.aap-header__version'),
     ...document.querySelectorAll('.site-nav__version'),
@@ -143,10 +150,12 @@ function injectStyles() {
 /* ── resolve fields from version.json (handles both old & new schemas) ─── */
 function resolveInfo(info) {
   if (!info) return null;
-  const r = info.release || {};
+  // New schema: info.release is a number. Old schema: info.release is an object.
+  const r = (typeof info.release === 'object' && info.release !== null) ? info.release : {};
+  const releaseNum = typeof info.release === 'number' ? info.release : (r.seq ?? '');
   return {
     version:  val(info.version, r.display_version),
-    release:  val(String(r.seq ?? ''), String(info.release_num ?? ''), String(info.seq ?? '')),
+    release:  val(String(releaseNum)),
     sha:      val(info.sha, info.commit, shortSha(r.push_sha)),
     fullSha:  val(info.fullSha, info.full_commit, r.push_sha),
     actor:    val(info.actor, r.actor_login, info.user),
@@ -162,7 +171,7 @@ function resolveInfo(info) {
 function tooltipHtml(d) {
   return [
     `<div class="vi-tt-ver">${esc(d.version)}</div>`,
-    `<div class="vi-tt-row">Release: <span>#${esc(d.release)}</span> by ${esc(d.actor)}</div>`,
+    `<div class="vi-tt-row">Release: <span>${esc(rNum(d.release))}</span> by ${esc(d.actor)}</div>`,
     `<div class="vi-tt-row">Model: <span style="color:#d4883a">${esc(modelName(d.model))}</span></div>`,
     `<div class="vi-tt-row">Machine: ${esc(d.machine)}</div>`,
     `<div class="vi-tt-hint">Click for full build details</div>`,
@@ -202,7 +211,7 @@ function showModal(d) {
           <div>
             <h2>${esc(d.version)}</h2>
             <div class="vi-hd-sub">${fmtTime(d.pushedAt)} · ${esc(d.sha)}</div>
-            <div class="vi-hd-sub" style="margin-top:4px">Release #${esc(d.release)} · by ${esc(d.actor)} · ${esc(d.source)}</div>
+            <div class="vi-hd-sub" style="margin-top:4px">${esc(rNum(d.release))} · by ${esc(d.actor)} · ${esc(d.source)}</div>
             <div class="vi-hd-sub" style="margin-top:4px">Model: <span style="color:#d4883a">${esc(modelName(d.model))}</span> · Machine: ${esc(d.machine)}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>

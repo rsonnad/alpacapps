@@ -7,13 +7,13 @@ alwaysApply: true
 
 ## Version Format
 
-Version uses the `r000000NNN` format — a strictly sequential release number from Supabase. Each push to `main` auto-increments. Do NOT use the old `vYYMMDD.NN` format.
+Version uses `vYYMMDD.NN H:MMa` — date + daily counter + Austin time (America/Chicago). Example: `v260211.03 5:06a`. The counter `NN` resets each day. The version always increases (date increments daily, counter increments within a day).
 
 ## After Push: Always Display Version
 
 After every successful push, include the current version from `version.json`:
 
-> `r000000NNN [model]`
+> `vYYMMDD.NN H:MMa [model]`
 
 Do not skip version reporting after a push.
 

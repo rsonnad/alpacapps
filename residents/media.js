@@ -1,5 +1,6 @@
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
+import { getAuthState } from '../shared/auth.js';
 import { mediaService } from '../shared/media-service.js';
 
 const AUTO_DAILY_KEY = 'pai-auto-daily-enabled';
@@ -213,7 +214,10 @@ async function maybeQueueDailyPortrait() {
 }
 
 async function queuePortraitJob(isAutoDaily) {
-  const user = authState?.appUser;
+  // Use getAuthState() for the freshest data (authState may be stale from cached auth
+  // which doesn't always include avatar_url on the first load)
+  const freshState = getAuthState();
+  const user = freshState?.appUser || authState?.appUser;
   if (!user?.id) return;
 
   if (isAutoDaily && hasTodayJob()) return;
