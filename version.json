@@ -1,21 +1,12 @@
 {
-  "version": "r000000002",
+  "version": "r000000003",
+  "release": 3,
+  "sha": "afbbbff3",
+  "fullSha": "afbbbff3a6d8cff2cfccaee7d9c371b4a2ea2284",
+  "actor": "rsonnad",
+  "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "user": "rsonnad",
-  "commit": "5272f0ae",
-  "full_commit": "5272f0ae3044d694838564631da1849490fec0e7",
-  "timestamp": "2026-02-11T13:10:40Z",
-  "changes": [{"sha":"5272f0ae3044d694838564631da1849490fec0e7","short":"5272f0ae","author_name":"Rahul Sonnad","author_email":"rahulio@Rahuls-MacBook-Air-2.local","committed_at":"2026-02-11T18:39:56+05:30","message":"Fix device tab routing and push workspace updates"}],
-  "release": {
-    "seq": 2,
-    "display_version": "r000000002",
-    "push_sha": "5272f0ae3044d694838564631da1849490fec0e7",
-    "branch": "main",
-    "compare_from_sha": "172e6da6c7f47a03f79f58b3b5b1466a7e81ea33",
-    "compare_to_sha": "5272f0ae3044d694838564631da1849490fec0e7",
-    "pushed_at": "2026-02-11 13:09:56+00",
-    "actor_login": "rsonnad",
-    "source": "github-main-push"
-  }
+  "pushedAt": "2026-02-11 13:15:01+00",
+  "commits": [{"sha":"afbbbff3","message":"Fix device tab: hide resident tabs on device pages, add missing device-card CSS","author":"Rahul Sonnad"}]
 }
