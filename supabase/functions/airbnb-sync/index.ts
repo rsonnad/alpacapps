@@ -170,7 +170,10 @@ serve(async (req) => {
               const existingStart = existing.start_date ? new Date(existing.start_date).toISOString().split('T')[0] : null;
               const existingEnd = existing.end_date ? new Date(existing.end_date).toISOString().split('T')[0] : null;
               const newStart = event.dtstart.toISOString().split('T')[0];
-              const newEnd = event.dtend.toISOString().split('T')[0];
+              // iCal DTEND is exclusive (day after last night), subtract 1 to store last occupied night
+              const dtendDate = new Date(event.dtend);
+              dtendDate.setDate(dtendDate.getDate() - 1);
+              const newEnd = dtendDate.toISOString().split('T')[0];
 
               if (existingStart !== newStart || existingEnd !== newEnd) {
                 await supabase
@@ -191,7 +194,10 @@ serve(async (req) => {
               const childIds = childSpacesByParent[space.id] || [];
               if (childIds.length > 0) {
                 const newStart = event.dtstart.toISOString().split('T')[0];
-                const newEnd = event.dtend.toISOString().split('T')[0];
+                // iCal DTEND is exclusive, subtract 1 for last occupied night
+                const dupCheckEnd = new Date(event.dtend);
+                dupCheckEnd.setDate(dupCheckEnd.getDate() - 1);
+                const newEnd = dupCheckEnd.toISOString().split('T')[0];
 
                 // Check if any child space already has an Airbnb assignment with the same dates
                 const { data: childAssignments } = await supabase
@@ -210,13 +216,16 @@ serve(async (req) => {
               }
 
               // Create new assignment
+              // iCal DTEND is exclusive, subtract 1 for last occupied night
+              const insertEnd = new Date(event.dtend);
+              insertEnd.setDate(insertEnd.getDate() - 1);
               const { data: newAssignment, error: createError } = await supabase
                 .from('assignments')
                 .insert({
                   person_id: airbnbGuestId,
                   type: 'dwelling',
                   start_date: event.dtstart.toISOString().split('T')[0],
-                  end_date: event.dtend.toISOString().split('T')[0],
+                  end_date: insertEnd.toISOString().split('T')[0],
                   status: 'active',
                   airbnb_uid: event.uid,
                   notes: `Imported from Airbnb: ${event.summary}`,

@@ -123,6 +123,13 @@ async function loadData(retryCount = 0) {
     const assignments = assignmentsData || [];
     const today = getAustinToday();
 
+    // Add N days to a Date object (returns a new Date)
+    const addDays = (date, n) => {
+      const d = new Date(date);
+      d.setDate(d.getDate() + n);
+      return d;
+    };
+
     // Process spaces
     spaces = (spacesData || []).filter(s => !s.is_archived);
 
@@ -161,21 +168,23 @@ async function loadData(retryCount = 0) {
       };
 
       // Find next assignment (starts after current ends)
+      // end_date = last occupied night, so available = end_date + 2
+      // (checkout day + 1 day cleaning buffer)
       const effectiveEndDate = getEffectiveEndDate(currentAssignment);
       const availableFrom = effectiveEndDate
-        ? parseAustinDate(effectiveEndDate)
+        ? addDays(parseAustinDate(effectiveEndDate), 2)
         : today;
 
       const nextAssignment = spaceAssignments.find(a => {
         if (a === currentAssignment) return false;
         if (!a.start_date) return false;
-        const startDate = new Date(a.start_date);
-        return startDate > availableFrom;
+        const startDate = parseAustinDate(a.start_date);
+        return startDate >= availableFrom;
       });
 
       space.isAvailable = !currentAssignment;
       space.availableFrom = currentAssignment
-        ? (effectiveEndDate ? parseAustinDate(effectiveEndDate) : null)
+        ? (effectiveEndDate ? addDays(parseAustinDate(effectiveEndDate), 2) : null)
         : today;
       space.availableUntil = nextAssignment?.start_date
         ? parseAustinDate(nextAssignment.start_date)
