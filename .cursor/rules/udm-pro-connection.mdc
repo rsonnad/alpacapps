@@ -1,10 +1,12 @@
 ---
-description: UDM Pro (UniFi Dream Machine Pro) connection reference — credentials, auth flow, known gotchas, and testing instructions for all sessions.
+description: UDM Pro (UniFi Dream Machine Pro) connection reference — credentials, auth flow, known gotchas, and testing instructions. Applies when working on cameras, network, UniFi, Protect, or any home automation feature.
 globs:
   - scripts/ptz-proxy/**
   - camera-event-poller/**
-  - HOMEAUTOMATION.md
+  - HOMEAUTOMATION*
   - supabase/functions/**/index.ts
+  - residents/cameras*
+  - shared/services/camera-data*
 alwaysApply: false
 ---
 
@@ -183,42 +185,134 @@ GET  /proxy/network/api/s/default/rest/wlanconf       # WiFi configs
 
 | Service | Location | Config file | What it does |
 |---------|----------|-------------|-------------|
-| `ptz-proxy` | DO droplet (`/opt/ptz-proxy/`) | `.env` | PTZ control, snapshots, camera settings, sensors |
+| `ptz-proxy` | DO droplet (`/opt/ptz-proxy/`) | `.env` | PTZ control, snapshots, camera settings, sensors, **network clients** |
 | `camera-event-poller` | DO droplet (`/opt/camera-event-poller/`) | `.env` | Smart detection event polling + SMS alerts |
 | `go2rtc` | Alpaca Mac (`~/go2rtc/`) | `go2rtc.yaml` | Camera RTSP restreaming (uses RTSP tokens, not API auth) |
 | `talkback-relay` | Alpaca Mac (`~/talkback-relay/`) | N/A | Two-way audio (direct UDP to camera IPs, no API auth) |
 
-## Testing from Cursor / Developer Machine
+## Public Proxy Access (`cam.alpacaplayhouse.com`)
 
-Since developer machines can't reach `192.168.1.1`, test through the public proxy at `cam.alpacaplayhouse.com`:
+Developer machines, Cursor sessions, and browsers cannot reach the UDM Pro directly at `192.168.1.1`. All access goes through a public HTTPS proxy:
+
+```
+Your machine → Caddy (cam.alpacaplayhouse.com, DO droplet)
+                  → ptz-proxy (127.0.0.1:8901, DO droplet)
+                      → UDM Pro (192.168.1.1, via Tailscale subnet routing)
+```
+
+### Proxy Routes (Caddy → ptz-proxy)
+
+Caddy at `cam.alpacaplayhouse.com` forwards these path prefixes to ptz-proxy on port 8901. **Every new ptz-proxy route also needs a `handle` block in the Caddyfile** (`/etc/caddy/Caddyfile` on the DO droplet) or it will return 404.
+
+| Caddy path | ptz-proxy route | UDM API hit |
+|------------|-----------------|-------------|
+| `/ptz/*` | `POST /ptz/{cameraId}` | Protect: cameras/{id}/move, ptz/goto |
+| `/camera/*` | `GET/PATCH /camera/{id}/settings`, `GET /camera/{id}/snapshot` | Protect: cameras/{id} |
+| `/sensors` | `GET /sensors` | Protect: bootstrap |
+| `/sensor/*` | `GET /sensor/{id}` | Protect: sensors/{id} |
+| `/clients*` | `GET /clients`, `GET /clients?search=X` | **Network: stat/sta** |
+| `/api/*` | *(not ptz-proxy)* → go2rtc on Alpaca Mac | HLS streaming |
+| `/talkback/*` | *(not ptz-proxy)* → talkback-relay on Alpaca Mac | Two-way audio |
+
+### Network Client Discovery (`/clients`)
+
+The `/clients` endpoint queries the UDM's Network API for all connected WiFi and wired clients. This is how you find device IPs on the network.
 
 ```bash
-# Test auth + camera settings (quick health check)
+# List ALL connected clients
+curl -sk 'https://cam.alpacaplayhouse.com/clients'
+
+# Search by hostname, name, MAC, OUI, or IP
+curl -sk 'https://cam.alpacaplayhouse.com/clients?search=blink'
+curl -sk 'https://cam.alpacaplayhouse.com/clients?search=amazon'
+curl -sk 'https://cam.alpacaplayhouse.com/clients?search=192.168.1.21'
+curl -sk 'https://cam.alpacaplayhouse.com/clients?search=f0:2f:9e'
+```
+
+Returns JSON array:
+```json
+[{
+  "ip": "192.168.1.212",
+  "mac": "f0:2f:9e:30:9b:ae",
+  "hostname": "Blink-Device",
+  "name": null,
+  "oui": "Amazon Technologies Inc.",
+  "network": "Default",
+  "is_wired": false,
+  "last_seen": 1770828169,
+  "uptime": 943078
+}]
+```
+
+### Known Devices Found via `/clients`
+
+| Device | IP | MAC | OUI | Hostname |
+|--------|-----|-----|-----|----------|
+| Blink Camera | `192.168.1.212` | `f0:2f:9e:30:9b:ae` | Amazon Technologies Inc. | `Blink-Device` |
+
+*(Add more devices here as they're discovered.)*
+
+## Testing from Cursor / Developer Machine
+
+```bash
+# 1. Quick health check — camera settings (tests full auth chain)
 curl -sk 'https://cam.alpacaplayhouse.com/camera/694c550400317503e400044b/settings'
 # Expected: {"id":"694c550400317503e400044b","name":"Alpacamera",...}
 
-# Test all cameras
+# 2. Test all three cameras
 curl -sk 'https://cam.alpacaplayhouse.com/camera/696534fc003eed03e4028eee/settings'
 curl -sk 'https://cam.alpacaplayhouse.com/camera/696537cc0067ed03e402929c/settings'
 
-# Test snapshot (returns JPEG binary, check HTTP status)
+# 3. Snapshot (returns JPEG binary, check HTTP status)
 curl -sk -o /dev/null -w '%{http_code}' 'https://cam.alpacaplayhouse.com/camera/694c550400317503e400044b/snapshot'
 # Expected: 200
 
-# Test sensors
+# 4. Sensors
 curl -sk 'https://cam.alpacaplayhouse.com/sensors'
 # Expected: JSON array (may be empty if no UP-SENSE sensors paired)
+
+# 5. Network clients (find devices on the LAN)
+curl -sk 'https://cam.alpacaplayhouse.com/clients?search=blink'
+# Expected: JSON array with matching clients
 ```
 
-If these all return valid responses, the full chain is healthy:
-`Your machine → Caddy (cam.alpacaplayhouse.com) → ptz-proxy (port 8901) → UDM Pro (192.168.1.1)`
+If all return valid responses, the full chain is healthy.
+
+## Deploying ptz-proxy Changes
+
+The ptz-proxy runs on the DO droplet. Source is in the repo at `scripts/ptz-proxy/ptz-proxy.js`. To deploy after making changes:
+
+```bash
+# 1. Copy the updated file to the droplet
+scp -i ~/.ssh/do_bugfixer scripts/ptz-proxy/ptz-proxy.js root@159.89.157.120:/opt/ptz-proxy/ptz-proxy.js
+
+# 2. Restart the service
+ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 'systemctl restart ptz-proxy'
+
+# 3. Verify it's running
+ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 'systemctl is-active ptz-proxy'
+# Expected: active
+```
+
+**If you added a new route to ptz-proxy**, you also need to add a Caddy `handle` block for the new path prefix in `/etc/caddy/Caddyfile` on the droplet, then reload Caddy:
+
+```bash
+ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 'caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy'
+```
+
+Without the Caddy block, the new route will work at `http://127.0.0.1:8901/...` on the droplet but return 404 via `cam.alpacaplayhouse.com`.
 
 ## Troubleshooting Decision Tree
 
 ```
 Connection failing?
-├── From developer machine?
-│   └── Use cam.alpacaplayhouse.com proxy, NOT 192.168.1.1 directly
+├── From developer machine / Cursor session?
+│   ├── Getting "Not Found" from cam.alpacaplayhouse.com?
+│   │   └── Caddy doesn't have a handle block for that route → add one to Caddyfile
+│   ├── Getting connection timeout?
+│   │   └── DO droplet down, or Caddy not running
+│   └── Getting JSON error from ptz-proxy?
+│       └── ptz-proxy can't auth to UDM → check droplet logs: journalctl -u ptz-proxy -f
 ├── From DO droplet?
 │   ├── Can't reach 192.168.1.1?
 │   │   └── Tailscale issue → check tailscale status, accept-routes, Alpaca Mac online
@@ -235,14 +329,34 @@ Connection failing?
     └── Password has ! character → use file-based payload, not inline JSON
 ```
 
-## File Locations in This Repo
+## File Locations
+
+### In This Repo
 
 | File | Purpose |
 |------|---------|
-| `scripts/ptz-proxy/ptz-proxy.js` | PTZ proxy server (reference auth implementation) |
+| `scripts/ptz-proxy/ptz-proxy.js` | PTZ proxy + network clients (reference auth implementation) |
 | `camera-event-poller/worker.js` | Event poller (identical auth pattern) |
 | `camera-event-poller/install.sh` | Install script with .env template |
 | `scripts/go2rtc/go2rtc.yaml` | Camera RTSP stream config (tokens, not API auth) |
 | `scripts/talkback-relay/talkback-relay.js` | Two-way audio relay |
 | `HOMEAUTOMATION.md` | Full home automation docs (auth examples, endpoints) |
 | `HOMEAUTOMATION.local.md` | **GITIGNORED** — actual password lives here |
+
+### On DO Droplet (`159.89.157.120`)
+
+| Path | Purpose |
+|------|---------|
+| `/opt/ptz-proxy/ptz-proxy.js` | Deployed ptz-proxy (copy from repo) |
+| `/opt/ptz-proxy/.env` | `UDM_HOST`, `UDM_USER`, `UDM_PASS` |
+| `/opt/camera-event-poller/worker.js` | Deployed event poller |
+| `/opt/camera-event-poller/.env` | Same UDM env vars |
+| `/etc/caddy/Caddyfile` | Caddy reverse proxy config (routes → ptz-proxy, go2rtc, talkback) |
+| `/etc/systemd/system/ptz-proxy.service` | systemd unit for ptz-proxy |
+| `/etc/systemd/system/camera-event-poller.service` | systemd unit for event poller |
+
+### SSH Access to Droplet
+
+```bash
+ssh -i ~/.ssh/do_bugfixer root@159.89.157.120
+```
