@@ -443,7 +443,7 @@ async function sendPaiReply(
   const text = `PAI - Prompt Alpaca Intelligence\n\n${replyBody || ""}\n\n${truncatedBody ? `---\nYour original message:\n${truncatedBody}` : ""}\n\nThis is an automated reply from PAI at Alpaca Playhouse.`;
 
   // Send directly via Resend API (avoids nested edge function call)
-  const res = await fetch(RESEND_API_URL, {
+  const res = await fetch(`${RESEND_API_URL}/emails`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${resendApiKey}`,
