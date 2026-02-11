@@ -5592,8 +5592,8 @@ span.sonos-library-item__star.starred {
    DEVICES HUB - Category cards grid
 ============================================= */
 #devicesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   padding: 0.5rem 0;
 }
@@ -5659,8 +5659,4 @@ span.sonos-library-item__star.starred {
   color: var(--accent, #3d8b7a);
 }
 
-@media (max-width: 600px) {
-  #devicesGrid {
-    grid-template-columns: 1fr;
-  }
-}
+/* device-card grid no longer used; sections stack vertically */
