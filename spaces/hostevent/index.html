@@ -2399,6 +2399,8 @@
     });
 
     // Initialize Square SDK
+    let squareIsTestMode = false; // Track which mode SDK was initialized in
+
     async function initializeSquare() {
       if (squarePayments) return;
 
@@ -2408,7 +2410,8 @@
           {
             headers: {
               'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Cache-Control': 'no-cache'
             }
           }
         );
@@ -2416,14 +2419,15 @@
         if (!configResponse.ok) throw new Error('Failed to load Square config');
 
         const [config] = await configResponse.json();
-        const isTestMode = staffTestMode || config.test_mode;
-        const appId = isTestMode ? config.sandbox_app_id : config.production_app_id;
-        const locationId = isTestMode ? config.sandbox_location_id : config.production_location_id;
+        squareIsTestMode = staffTestMode || config.test_mode;
+        const appId = squareIsTestMode ? config.sandbox_app_id : config.production_app_id;
+        const locationId = squareIsTestMode ? config.sandbox_location_id : config.production_location_id;
 
-        const sdkUrl = isTestMode
+        const sdkUrl = squareIsTestMode
           ? 'https://sandbox.web.squarecdn.com/v1/square.js'
           : 'https://web.squarecdn.com/v1/square.js';
 
+        console.log(`[Square] Initializing in ${squareIsTestMode ? 'SANDBOX' : 'PRODUCTION'} mode (config.test_mode=${config.test_mode}, staffTestMode=${staffTestMode})`);
         await loadScript(sdkUrl);
 
         squarePayments = window.Square.payments(appId, locationId);
@@ -2875,8 +2879,13 @@
           const tokenResult = await squareCard.tokenize();
 
           if (tokenResult.status !== 'OK') {
-            const errorMessage = tokenResult.errors?.[0]?.message || 'Card payment failed';
-            throw new Error(errorMessage);
+            const rawMsg = tokenResult.errors?.[0]?.message || 'Card payment failed';
+            // Detect sandbox-mode errors shown to real users and provide a friendly message
+            if (rawMsg.toLowerCase().includes('sandbox') || rawMsg.toLowerCase().includes('test number')) {
+              console.error('[Square] Sandbox error in production context:', rawMsg, { squareIsTestMode, staffTestMode });
+              throw new Error('Payment processing error. Please refresh the page and try again. If the problem persists, contact us.');
+            }
+            throw new Error(rawMsg);
           }
 
           // Create payment record for reservation deposit

@@ -74,6 +74,7 @@ class SquareService {
     const sdkUrl = isTest
       ? 'https://sandbox.web.squarecdn.com/v1/square.js'
       : 'https://web.squarecdn.com/v1/square.js';
+    console.log(`[Square] Loading SDK in ${isTest ? 'SANDBOX' : 'PRODUCTION'} mode`);
 
     return new Promise((resolve, reject) => {
       // Check if already loading
@@ -309,8 +310,13 @@ class SquareService {
     const tokenResult = await this.card.tokenize();
 
     if (tokenResult.status !== 'OK') {
-      const errorMessage = tokenResult.errors?.[0]?.message || 'Card tokenization failed';
-      throw new Error(errorMessage);
+      const rawMsg = tokenResult.errors?.[0]?.message || 'Card tokenization failed';
+      // Detect sandbox-mode errors shown to real users and provide a friendly message
+      if (rawMsg.toLowerCase().includes('sandbox') || rawMsg.toLowerCase().includes('test number')) {
+        console.error('[Square] Sandbox error in production context:', rawMsg, { testMode: this.config?.test_mode });
+        throw new Error('Payment processing error. Please refresh the page and try again. If the problem persists, contact us.');
+      }
+      throw new Error(rawMsg);
     }
 
     // Get default amount for record
