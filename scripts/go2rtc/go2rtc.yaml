@@ -34,11 +34,24 @@ streams:
     - rtspx://192.168.1.1:7441/eLkr5lNQISofL8Go
 
   # Wansview cameras (plain RTSP, not TLS)
-  wansview-1-high:
+  # hi3510 chipset: /live/ch0 = 1920x1080, /live/ch1 = 768x432
+  garage-high:
     - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch0
-  wansview-1-low:
+  garage-low:
     - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch1
-  wansview-4-high:
+  front-cam-high:
     - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch0
-  wansview-4-low:
+  front-cam-low:
     - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch1
+  shed-cam-high:
+    - rtsp://v0H7TTAR:8kRmuNVjy9osqAYS@192.168.1.21:554/live/ch0
+  shed-cam-low:
+    - rtsp://v0H7TTAR:8kRmuNVjy9osqAYS@192.168.1.21:554/live/ch1
+  backyard-cam-high:
+    - rtsp://IHSsv3X9:scbevBv1uBW4n9P7@192.168.1.26:554/live/ch0
+  backyard-cam-low:
+    - rtsp://IHSsv3X9:scbevBv1uBW4n9P7@192.168.1.26:554/live/ch1
+  patio-cam-high:
+    - rtsp://5EZbH9Uf:96bcJZg26H6gQj2b@192.168.1.0:554/live/ch0
+  patio-cam-low:
+    - rtsp://5EZbH9Uf:96bcJZg26H6gQj2b@192.168.1.0:554/live/ch1
