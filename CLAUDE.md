@@ -526,15 +526,21 @@ This site deploys directly to GitHub Pages from the `main` branch. There is no b
 
 ### Version: Bumped automatically on push to main
 
-**Version is incremented only when something is pushed to `main`.** A GitHub Action runs on every push to main (except its own bump commit), updates the version in the `site_config` DB table, rewrites the version string in all HTML files and `version.json`, then commits and pushes with `[skip ci]`. So the version always goes up on main and there is no conflict between Cursor, Claude Code Desktop, or other clients.
+**Version format:** `r000000NNN` — a strictly sequential release number stored in Supabase. Each push to `main` gets the next number. The version is displayed as `r000000001`, `r000000002`, etc.
 
-**One-time setup:** In the repo's GitHub Settings → Secrets and variables → Actions, add a secret:
-- **`SUPABASE_DB_URL`** — full Postgres connection string (e.g. `postgres://postgres.PROJECT_REF:PASSWORD@aws-1-us-east-2.pooler.supabase.com:5432/postgres`). The bump script uses this in CI; locally it uses the default in the script.
+**How it works:** A GitHub Action (`bump-version-on-push.yml`) runs on every push to main (except its own `[skip ci]` commits). It:
+1. Records the release event in the `release_events` table (Supabase) via `record_release_event()` — idempotent per push SHA
+2. Rewrites the version string in all HTML files (pattern: `r` + 9 digits)
+3. Writes `version.json` with release details (version, release #, actor, source, model, machine, commits)
+4. Commits and pushes with `[skip ci]`
 
-**Deploy workflow:** Commit your changes, then push to main. No need to run `bump-version.sh` locally.
+No local version bumping needed. Just push to main and CI handles it.
+
+**One-time setup:** GitHub Settings → Secrets → `SUPABASE_DB_URL` (full Postgres connection string).
+
+**Deploy workflow:**
 
 ```bash
-# Deploy to main (version is bumped by the action after your push):
 git add -A
 git commit -m "Your message"
 ./scripts/push-main.sh                     # pull --rebase, then push
@@ -544,15 +550,28 @@ git pull --rebase origin main
 git push origin main
 ```
 
-**Every HTML page has a hardcoded version string** (e.g., `v260207.82 10:35p`) that the bump script pattern-matches and updates. If you add a new HTML page, include a version string in that format so the action can update it.
+**HTML pages:** Every HTML page has a `<span data-site-version>r000000NNN</span>` (or `class="site-nav__version"`) that the bump script updates. New HTML pages should include this span.
 
-**Local bump (optional):** To test the bump script or regenerate `version.json` locally (e.g. for version hover), run `./scripts/bump-version.sh --model <code>`. Do not commit that bump when pushing to main—the action will bump once per push.
+**version.json schema:**
+```json
+{
+  "version": "r000000001",
+  "release": 1,
+  "sha": "abc12345",
+  "actor": "rsonnad",
+  "source": "github-main-push",
+  "model": "ci",
+  "machine": "runner-name",
+  "pushedAt": "2026-02-11T13:03:49Z",
+  "commits": [{ "sha": "abc12345", "message": "Fix something", "author": "Name" }]
+}
+```
 
 ### REQUIRED: Display Version in Chat
 
-**You MUST display the current public version string in every response where you make code changes or deploy.** Read the version from `version.json` or from the output of `bump-version.sh`. Format:
+**You MUST display the current version string in every response where you make code changes or deploy.** Read from `version.json`. Format:
 
-> `vYYMMDD.NN H:MMa/p [model]`
+> `r000000NNN [model]`
 
 This ensures the user always knows which version they're looking at and which AI model produced it.
 

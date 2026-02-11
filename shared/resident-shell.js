@@ -25,6 +25,17 @@ const ADMIN_PERMISSION_KEYS = [
 
 const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars'];
 
+const DEVICE_PAGE_PATHS = new Set([
+  'devices.html', 'devices',
+  'lighting.html', 'lighting',
+  'sonos.html', 'sonos',
+  'cameras.html', 'cameras',
+  'climate.html', 'climate',
+  'laundry.html', 'laundry',
+  'cars.html', 'cars',
+  'sensorinstallation.html', 'sensorinstallation',
+]);
+
 const DEVICE_SUBTABS = [
   { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
@@ -105,6 +116,16 @@ function renderResidentTabNav(activeTab, authState) {
   const isStaffContext = hasStaffPerms || hasAdminPerms;
   const availableTabs = isStaffContext ? RESIDENT_STAFF_TABS : RESIDENT_CORE_TABS;
 
+  // On device pages, hide resident-level tabs — only show device sub-tabs
+  const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
+  const isDevicePage = activeTab === 'devices' || DEVICE_PAGE_PATHS.has(currentPath);
+
+  if (isDevicePage) {
+    tabsContainer.innerHTML = '';
+    renderDeviceSubTabNav(activeTab, authState);
+    return;
+  }
+
   // Filter tabs by permission
   const tabs = availableTabs.filter((tab) => {
     if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
@@ -117,8 +138,6 @@ function renderResidentTabNav(activeTab, authState) {
     const isActive = tab.id === activeTab;
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
   }).join('');
-
-  renderDeviceSubTabNav(activeTab, authState);
 }
 
 function hasTabAccess(tab, authState) {
@@ -206,25 +225,7 @@ function renderContextSwitcher() {
   ];
 
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
-  const devicePaths = new Set([
-    'devices.html',
-    'devices',
-    'lighting.html',
-    'lighting',
-    'sonos.html',
-    'sonos',
-    'cameras.html',
-    'cameras',
-    'climate.html',
-    'climate',
-    'laundry.html',
-    'laundry',
-    'cars.html',
-    'cars',
-    'sensorinstallation.html',
-    'sensorinstallation',
-  ]);
-  const activeContext = devicePaths.has(currentPath) ? 'devices' : 'resident';
+  const activeContext = DEVICE_PAGE_PATHS.has(currentPath) ? 'devices' : 'resident';
 
   switcher.innerHTML = tabs.map(tab => {
     if (tab.id === 'admin' && !hasAdminPerms) {

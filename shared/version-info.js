@@ -1,397 +1,231 @@
 /**
- * Version Info - Standalone module for version hover tooltip + click modal.
- * Works on any page. Finds the version span by matching the vYYMMDD.NN pattern.
- * Auto-initializes on DOMContentLoaded.
+ * Version Info — hover tooltip + click modal for the site version badge.
+ *
+ * Reads /version.json (written by CI on each push to main) and renders:
+ *   - Hover: version, release #, actor, model, machine
+ *   - Click modal: same, plus list of commits in that push
+ *
+ * Works on any page. Finds the version span by matching class names or the
+ * `r` + 9-digit pattern. Auto-initializes on DOMContentLoaded.
  *
  * Include as: <script type="module" src="/shared/version-info.js"></script>
- * Or import: import { setupVersionInfo } from './version-info.js';
  */
 
-let versionInfoCache = null;
+/* ── cache ─────────────────────────────────────────────────────────── */
+let _cache = null;
 
+async function fetchVersionInfo() {
+  if (_cache) return _cache;
+  try {
+    const r = await fetch('/version.json?_=' + Date.now());
+    if (!r.ok) return null;
+    _cache = await r.json();
+    return _cache;
+  } catch { return null; }
+}
+
+/* ── helpers ────────────────────────────────────────────────────────── */
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      hour12: true, timeZone: 'America/Chicago',
+    });
+  } catch { return iso; }
+}
+
+function shortSha(sha) { return sha ? sha.slice(0, 8) : '—'; }
+
+const MODEL_NAMES = {
+  ci:   'CI',
+  cur:  'Cursor',
+  cursor: 'Cursor',
+  claude: 'Claude',
+  'o4.6': 'Claude Opus 4.6',
+  's4.0': 'Claude Sonnet 4',
+  'g2.5': 'Gemini 2.5',
+  'g4o': 'GPT-4o',
+  gemini: 'Gemini',
+  gpt: 'GPT',
+  'modl-a': 'Cursor Auto',
+  'modl a': 'Cursor Auto',
+};
+function modelName(code) { return (code && MODEL_NAMES[code]) || code || '—'; }
+
+function val(...args) {
+  for (const v of args) {
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  }
+  return '—';
+}
+
+/* ── find the version span in the DOM ──────────────────────────────── */
 function findVersionSpan() {
-  const pat = /^(v\d{6}\.\d{2}|r\d{9})/;
-  // Check known classes first, then fall back to scanning spans
+  const pat = /^r\d{9}/;
   const candidates = [
     ...document.querySelectorAll('.aap-header__version'),
     ...document.querySelectorAll('.site-nav__version'),
     ...document.querySelectorAll('.login-card__version'),
     ...document.querySelectorAll('.header-left span'),
   ];
-  for (const el of candidates) {
-    if (pat.test(el.textContent.trim())) return el;
-  }
-  // Broader fallback
-  for (const span of document.querySelectorAll('span')) {
+  for (const el of candidates) if (pat.test(el.textContent.trim())) return el;
+  for (const span of document.querySelectorAll('span'))
     if (pat.test(span.textContent.trim())) return span;
-  }
   return null;
 }
 
-async function fetchVersionInfo() {
-  if (versionInfoCache) return versionInfoCache;
-  try {
-    const resp = await fetch('/version.json?_=' + Date.now());
-    if (!resp.ok) return null;
-    versionInfoCache = await resp.json();
-    return versionInfoCache;
-  } catch { return null; }
-}
-
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-/** Human-readable labels for model codes (tooltip/modal) */
-const MODEL_DISPLAY_NAMES = {
-  'modl a': 'Cursor Auto',
-  'modl-a': 'Cursor Auto',
-  'composer-1.5': 'Composer 1.5',
-  'opus-4.6': 'Claude Opus 4.6',
-  'gpt-5.3-codex': 'GPT 5.3 Codex',
-  cur: 'Cursor',
-  claude: 'Claude',
-  'o4.6': 'Claude Opus 4.6',
-  's4.0': 'Claude Sonnet 4',
-  'g2.5': 'Gemini 2.5',
-  'g4o': 'GPT-4o',
-  cursor: 'Cursor',
-  gemini: 'Gemini',
-  gpt: 'GPT',
-};
-function modelDisplayName(code) {
-  return (code && MODEL_DISPLAY_NAMES[code]) || code || '';
-}
-
-function firstNonEmpty(...values) {
-  for (const value of values) {
-    if (typeof value === 'string' && value.trim()) return value.trim();
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  }
-  return '';
-}
-
-function platformMachineHint() {
-  try {
-    const raw = firstNonEmpty(
-      navigator.userAgentData?.platform,
-      navigator.platform,
-    );
-    if (!raw) return '';
-    const p = raw.toLowerCase();
-    if (p.includes('mac')) return 'Mac';
-    if (p.includes('win')) return 'Windows';
-    if (p.includes('linux')) return 'Linux';
-    return raw;
-  } catch {
-    return '';
-  }
-}
-
-/** Extract short ID from bugfix branch name like "bugfix/20260209-79aa46b3-..." → "79aa46b3" */
-function branchId(name) {
-  const m = name.match(/bugfix\/\d{8}-([a-f0-9]{8})/);
-  return m ? m[1] : null;
-}
-
-/** Format branch name for display: strip origin/ prefix, shorten UUIDs */
-function shortBranch(name) {
-  return name
-    .replace(/^origin\//, '')
-    .replace(/(bugfix\/\d{8}-[a-f0-9]{8})-[a-f0-9-]+$/, '$1…')
-    .replace(/(feature\/\d{8}-[a-f0-9]{8}).*$/, '$1…');
-}
-
-/** Format ISO timestamp to readable local time */
-function fmtTime(iso) {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Chicago' });
-  } catch { return iso; }
-}
-
+/* ── inject CSS (once) ─────────────────────────────────────────────── */
 function injectStyles() {
   if (document.getElementById('vi-styles')) return;
-  const style = document.createElement('style');
-  style.id = 'vi-styles';
-  style.textContent = `
-    #vi-modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 10000; animation: vi-fadeIn 0.15s ease-out;
-    }
-    @keyframes vi-fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    #vi-modal {
-      background: #fff; border-radius: 14px; padding: 0;
-      max-width: 520px; width: 94%; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    }
-    #vi-modal * { box-sizing: border-box; }
-    .vi-header {
-      padding: 1.25rem 1.5rem 1rem;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex; justify-content: space-between; align-items: flex-start;
-      font-family: inherit;
-    }
-    .vi-header h2 {
-      margin: 0; font-size: 1.5rem; font-weight: 700; color: #111;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    }
-    .vi-header .vi-version-sub {
-      font-size: 0.85rem; color: #666; font-family: ui-monospace, 'SF Mono', Monaco, monospace; margin-top: 2px;
-    }
-    .vi-close {
-      background: none; border: none; font-size: 1.8rem; cursor: pointer;
-      color: #999; line-height: 1; padding: 0 0 0 8px; transition: color 0.15s;
-    }
-    .vi-close:hover { color: #333; }
-    .vi-body { padding: 1rem 1.5rem 1.5rem; font-family: inherit; }
-    .vi-section { margin-bottom: 1.25rem; }
-    .vi-section:last-child { margin-bottom: 0; }
-    .vi-section-title {
-      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex;
-      align-items: center; gap: 6px;
-      font-family: inherit;
-    }
-    .vi-section-title .vi-count {
-      background: #e5e7eb; border-radius: 10px; padding: 1px 7px;
-      font-size: 0.7rem; font-weight: 600;
-    }
-    .vi-item {
-      padding: 0.5rem 0.75rem; display: flex; align-items: flex-start; gap: 8px;
-      font-size: 0.9rem; line-height: 1.4; font-family: inherit;
-      background: #fff; border-bottom: 1px solid #f3f4f6;
-    }
-    .vi-item:nth-child(even) { background: #f9fafb; }
-    .vi-item:last-child { border-bottom: none; }
-    .vi-item-icon {
-      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; margin-top: 2px;
-    }
-    .vi-icon-bug { background: #dcfce7; color: #16a34a; }
-    .vi-icon-feat { background: #dbeafe; color: #2563eb; }
-    .vi-icon-change { background: #f3f4f6; color: #6b7280; }
-    .vi-icon-pending { background: #fef3c7; color: #d97706; }
-    .vi-item-text { flex: 1; min-width: 0; }
-    .vi-item-desc { color: #333; word-break: break-word; }
-    .vi-item-meta {
-      font-size: 0.75rem; color: #6b7280; font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .vi-empty { font-size: 0.85rem; color: #9ca3af; font-style: italic; padding: 0.5rem 0.75rem; font-family: inherit; }
-    .vi-tooltip {
-      position: fixed; background: #1a1a2e; color: #f0f0f0;
-      padding: 10px 16px; border-radius: 10px; font-size: 0.95rem;
-      pointer-events: none; opacity: 0; transition: opacity 0.15s;
-      z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      max-width: 360px; line-height: 1.5;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    .vi-tooltip-version { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-    .vi-tooltip-stats { font-size: 0.8rem; color: #aaa; }
-    .vi-tooltip-stats span { color: #7dd3fc; }
+  const s = document.createElement('style');
+  s.id = 'vi-styles';
+  s.textContent = `
+    /* ── tooltip ─────────────────────────── */
+    .vi-tooltip{position:fixed;background:#1a1a2e;color:#f0f0f0;padding:10px 16px;
+      border-radius:10px;font-size:.95rem;pointer-events:none;opacity:0;
+      transition:opacity .15s;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);
+      max-width:360px;line-height:1.5;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+    .vi-tt-ver{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+    .vi-tt-row{font-size:.8rem;color:#aaa}
+    .vi-tt-row span{color:#7dd3fc}
+    .vi-tt-hint{margin-top:6px;font-size:.75rem;color:#9ca3af}
+
+    /* ── modal overlay ───────────────────── */
+    #vi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);
+      display:flex;align-items:center;justify-content:center;z-index:10000;
+      animation:vi-fade .15s ease-out}
+    @keyframes vi-fade{from{opacity:0}to{opacity:1}}
+    #vi-modal{background:#fff;border-radius:14px;padding:0;
+      max-width:520px;width:94%;max-height:85vh;overflow-y:auto;
+      box-shadow:0 12px 40px rgba(0,0,0,.25);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif}
+    #vi-modal *{box-sizing:border-box}
+
+    /* header */
+    .vi-hd{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid #e5e7eb;
+      display:flex;justify-content:space-between;align-items:flex-start}
+    .vi-hd h2{margin:0;font-size:1.5rem;font-weight:700;color:#111}
+    .vi-hd-sub{font-size:.85rem;color:#666;font-family:ui-monospace,'SF Mono',Monaco,monospace;margin-top:2px}
+    .vi-close{background:none;border:none;font-size:1.8rem;cursor:pointer;
+      color:#999;line-height:1;padding:0 0 0 8px;transition:color .15s}
+    .vi-close:hover{color:#333}
+
+    /* body + sections */
+    .vi-body{padding:1rem 1.5rem 1.5rem}
+    .vi-section{margin-bottom:1.25rem}
+    .vi-section:last-child{margin-bottom:0}
+    .vi-sec-title{font-size:.75rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.05em;margin-bottom:.5rem;display:flex;align-items:center;gap:6px;color:#374151}
+    .vi-count{background:#e5e7eb;border-radius:10px;padding:1px 7px;font-size:.7rem;font-weight:600}
+
+    /* commit rows */
+    .vi-row{padding:.5rem .75rem;display:flex;align-items:flex-start;gap:8px;
+      font-size:.9rem;line-height:1.4;background:#fff;border-bottom:1px solid #f3f4f6}
+    .vi-row:nth-child(even){background:#f9fafb}
+    .vi-row:last-child{border-bottom:none}
+    .vi-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-size:.7rem;
+      margin-top:2px;background:#f3f4f6;color:#6b7280}
+    .vi-txt{flex:1;min-width:0}
+    .vi-msg{color:#333;word-break:break-word}
+    .vi-meta{font-size:.75rem;color:#6b7280;font-family:ui-monospace,'SF Mono',Monaco,monospace;
+      margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vi-empty{font-size:.85rem;color:#9ca3af;font-style:italic;padding:.5rem .75rem}
   `;
-  document.head.appendChild(style);
+  document.head.appendChild(s);
 }
 
-function showVersionModal(info) {
-  document.getElementById('vi-modal-overlay')?.remove();
+/* ── resolve fields from version.json (handles both old & new schemas) ─── */
+function resolveInfo(info) {
+  if (!info) return null;
+  const r = info.release || {};
+  return {
+    version:  val(info.version, r.display_version),
+    release:  val(String(r.seq ?? ''), String(info.release_num ?? ''), String(info.seq ?? '')),
+    sha:      val(info.sha, info.commit, shortSha(r.push_sha)),
+    fullSha:  val(info.fullSha, info.full_commit, r.push_sha),
+    actor:    val(info.actor, r.actor_login, info.user),
+    source:   val(info.source, r.source),
+    model:    val(info.model, r.model_code),
+    machine:  val(info.machine, r.machine_name),
+    pushedAt: info.pushedAt || r.pushed_at || info.timestamp || '',
+    commits:  info.commits || info.changes || [],
+  };
+}
+
+/* ── tooltip content ───────────────────────────────────────────────── */
+function tooltipHtml(d) {
+  return [
+    `<div class="vi-tt-ver">${esc(d.version)}</div>`,
+    `<div class="vi-tt-row">Release: <span>#${esc(d.release)}</span> by ${esc(d.actor)}</div>`,
+    `<div class="vi-tt-row">Model: <span style="color:#d4883a">${esc(modelName(d.model))}</span></div>`,
+    `<div class="vi-tt-row">Machine: ${esc(d.machine)}</div>`,
+    `<div class="vi-tt-hint">Click for full build details</div>`,
+  ].join('');
+}
+
+/* ── modal ─────────────────────────────────────────────────────────── */
+function showModal(d) {
+  document.getElementById('vi-overlay')?.remove();
   injectStyles();
 
   const overlay = document.createElement('div');
-  overlay.id = 'vi-modal-overlay';
+  overlay.id = 'vi-overlay';
 
-  if (!info) {
+  if (!d) {
     overlay.innerHTML = `
       <div id="vi-modal">
-        <div class="vi-header">
-          <div><h2>Build Info</h2></div>
-          <button class="vi-close" data-close>&times;</button>
-        </div>
-        <div class="vi-body">
-          <p style="color:#666;font-size:0.95rem;">No version.json found. Run <code>bump-version.sh</code> to generate.</p>
-        </div>
+        <div class="vi-hd"><div><h2>Build Info</h2></div><button class="vi-close" data-close>&times;</button></div>
+        <div class="vi-body"><p style="color:#666;font-size:.95rem">No version.json found.</p></div>
       </div>`;
   } else {
-    const bugfixes = info.bugfixes || {};
-    const features = info.features || {};
-    const branchMeta = info.branch_meta || {};
-    const changes = info.changes || [];
-    const release = info.release || {};
-    const included = info.included || [];
-    const pending = info.pending || [];
-    const models = info.models || {};
-    const machine = info.machine || '';
-
-    /** Render a small colored model badge for a branch */
-    function modelBadge(branch) {
-      const m = models[branch];
-      if (!m) return '';
-      const label = modelDisplayName(m) || m;
-      return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;background:#fef3e2;color:#d4883a;margin-left:6px;vertical-align:middle;">${esc(label)}</span>`;
-    }
-
-    // Build bug fixes section — match included bugfix branches to descriptions
-    const bugfixBranches = included.filter(b => b.includes('bugfix/'));
-    let bugfixHtml = '';
-    if (bugfixBranches.length > 0) {
-      bugfixHtml = bugfixBranches.map(b => {
-        const bid = branchId(b);
-        const bugInfo = bid && bugfixes[bid];
-        const desc = bugInfo ? bugInfo.desc : shortBranch(b);
-        const page = bugInfo && bugInfo.page ? bugInfo.page : '';
-        const pageName = page ? page.replace(/.*\//, '').replace('.html', '') : '';
-        const meta = branchMeta[b];
-        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
-        return `<div class="vi-item">
-          <div class="vi-item-icon vi-icon-bug">&#10003;</div>
-          <div class="vi-item-text">
-            <div class="vi-item-desc">${esc(desc)}${modelBadge(b)}</div>
-            <div class="vi-item-meta">${bid || shortBranch(b)}${pageName ? ' · ' + esc(pageName) : ''}${timeLabel}</div>
-          </div>
-        </div>`;
-      }).join('');
-    } else {
-      bugfixHtml = '<div class="vi-empty">No bug fixes in this build</div>';
-    }
-
-    // Build recent changes section (non-bugfix commits)
-    let changesHtml = '';
-    if (changes.length > 0) {
-      changesHtml = changes.map(c => `<div class="vi-item">
-        <div class="vi-item-icon vi-icon-change">&#8226;</div>
-        <div class="vi-item-text">
-          <div class="vi-item-desc">${esc(c.msg || c.message || '')}</div>
-          <div class="vi-item-meta">${esc(c.hash || c.short || '')}</div>
-        </div>
-      </div>`).join('');
-    } else {
-      changesHtml = '<div class="vi-empty">No recent changes</div>';
-    }
-
-    // Build pending section
-    let pendingHtml = '';
-    if (pending.length > 0) {
-      pendingHtml = pending.map(b => {
-        const featDesc = features[b] || '';
-        const bid = branchId(b);
-        const meta = branchMeta[b];
-        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
-        return `<div class="vi-item">
-          <div class="vi-item-icon vi-icon-pending">&#9675;</div>
-          <div class="vi-item-text">
-            <div class="vi-item-desc">${featDesc ? esc(featDesc) : esc(shortBranch(b))}${modelBadge(b)}</div>
-            <div class="vi-item-meta">${esc(shortBranch(b))}${timeLabel}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    // Other included branches (non-bugfix)
-    const otherBranches = included.filter(b => !b.includes('bugfix/') && !b.includes('main'));
-    let otherHtml = '';
-    if (otherBranches.length > 0) {
-      otherHtml = otherBranches.map(b => {
-        const meta = branchMeta[b];
-        const timeLabel = meta?.commit_time ? ` · ${fmtTime(meta.commit_time)}` : '';
-        return `<div class="vi-item">
-          <div class="vi-item-icon vi-icon-feat">&#10003;</div>
-          <div class="vi-item-text">
-            <div class="vi-item-desc">${esc(shortBranch(b))}${modelBadge(b)}</div>
-            <div class="vi-item-meta">${esc(shortBranch(b))}${timeLabel}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    // Build metadata lines with backward-compatible fallbacks for older version.json formats.
-    const rawModel = firstNonEmpty(
-      info.model,
-      release.model,
-      info.model_code,
-      info.ai_model,
-    );
-    const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
-    const machineLabel = firstNonEmpty(
-      info.machine,
-      release.machine,
-      info.machine_name,
-      info.hostname,
-      info.host,
-      platformMachineHint(),
-    ) || '—';
-    const releaseSeq = firstNonEmpty(String(release.seq ?? ''), info.release_seq, info.seq) || '—';
-    const releaseActor = firstNonEmpty(
-      release.actor_login,
-      info.user,
-      info.actor,
-      info.author,
-      info.release_actor,
-    ) || '—';
-    const releaseSource = firstNonEmpty(release.source, info.source) || '—';
-    const releasedAt = fmtTime(release.pushed_at || info.timestamp);
+    const commits = d.commits || [];
+    const commitsHtml = commits.length
+      ? commits.map(c => `
+          <div class="vi-row">
+            <div class="vi-dot">&#8226;</div>
+            <div class="vi-txt">
+              <div class="vi-msg">${esc(c.message || c.msg || '')}</div>
+              <div class="vi-meta">${esc(shortSha(c.sha || c.hash || ''))}${c.author ? ' · ' + esc(c.author) : c.author_name ? ' · ' + esc(c.author_name) : ''}</div>
+            </div>
+          </div>`).join('')
+      : '<div class="vi-empty">No commits recorded for this release</div>';
 
     overlay.innerHTML = `
       <div id="vi-modal">
-        <div class="vi-header">
+        <div class="vi-hd">
           <div>
-            <h2>${esc(info.version)}</h2>
-            <div class="vi-version-sub">${releasedAt} · ${esc(info.commit || '?')}</div>
-            <div class="vi-version-sub" style="margin-top:4px;">Release #${esc(String(releaseSeq))} · by ${esc(releaseActor)} · ${esc(releaseSource)}</div>
-            <div class="vi-version-sub" style="margin-top:4px;">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span> · Machine: ${esc(machineLabel)}</div>
+            <h2>${esc(d.version)}</h2>
+            <div class="vi-hd-sub">${fmtTime(d.pushedAt)} · ${esc(d.sha)}</div>
+            <div class="vi-hd-sub" style="margin-top:4px">Release #${esc(d.release)} · by ${esc(d.actor)} · ${esc(d.source)}</div>
+            <div class="vi-hd-sub" style="margin-top:4px">Model: <span style="color:#d4883a">${esc(modelName(d.model))}</span> · Machine: ${esc(d.machine)}</div>
           </div>
           <button class="vi-close" data-close>&times;</button>
         </div>
         <div class="vi-body">
-          ${changes.length > 0 ? `
           <div class="vi-section">
-            <div class="vi-section-title" style="color:#374151;">
-              Recent Changes <span class="vi-count">${changes.length}</span>
-            </div>
-            ${changesHtml}
-          </div>` : ''}
-
-          <div class="vi-section">
-            <div class="vi-section-title" style="color:#16a34a;">
-              Bug Fixes <span class="vi-count">${bugfixBranches.length}</span>
-            </div>
-            ${bugfixHtml}
+            <div class="vi-sec-title">Commits <span class="vi-count">${commits.length}</span></div>
+            ${commitsHtml}
           </div>
-
-          ${otherBranches.length > 0 ? `
-          <div class="vi-section">
-            <div class="vi-section-title" style="color:#2563eb;">
-              Feature Branches <span class="vi-count">${otherBranches.length}</span>
-            </div>
-            ${otherHtml}
-          </div>` : ''}
-
-          ${pending.length > 0 ? `
-          <div class="vi-section">
-            <div class="vi-section-title" style="color:#d97706;">
-              Pending <span class="vi-count">${pending.length}</span>
-            </div>
-            ${pendingHtml}
-          </div>` : ''}
         </div>
       </div>`;
   }
 
-  overlay.addEventListener('click', (e) => {
+  overlay.addEventListener('click', e => {
     if (e.target === overlay || e.target.closest('[data-close]')) overlay.remove();
   });
   document.addEventListener('keydown', function onEsc(e) {
     if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onEsc); }
   });
-
   document.body.appendChild(overlay);
 }
 
+/* ── setup ─────────────────────────────────────────────────────────── */
 export function setupVersionInfo() {
   const span = findVersionSpan();
   if (!span) return;
@@ -400,78 +234,39 @@ export function setupVersionInfo() {
   span.style.textDecoration = 'underline dotted';
   span.style.textUnderlineOffset = '2px';
 
-  // Bump version font size slightly
   const computed = getComputedStyle(span);
-  const currentSize = parseFloat(computed.fontSize);
-  if (currentSize < 10) span.style.fontSize = '0.55rem';
+  if (parseFloat(computed.fontSize) < 10) span.style.fontSize = '0.55rem';
 
-  // Visible string is version only (no model/user); model and branches shown in hover/modal
   injectStyles();
 
-  // Hover tooltip — bigger, shows model and branch info
-  const tooltip = document.createElement('div');
-  tooltip.className = 'vi-tooltip';
-  tooltip.innerHTML = '<div class="vi-tooltip-version">Loading...</div>';
-  document.body.appendChild(tooltip);
+  // Tooltip
+  const tip = document.createElement('div');
+  tip.className = 'vi-tooltip';
+  tip.innerHTML = '<div class="vi-tt-ver">Loading…</div>';
+  document.body.appendChild(tip);
 
   span.addEventListener('mouseenter', async () => {
     const info = await fetchVersionInfo();
-    if (!info) {
-      tooltip.innerHTML = '<div class="vi-tooltip-version">Build info unavailable</div>';
-    } else {
-      const rawModel = firstNonEmpty(
-        info.model,
-        info.release?.model,
-        info.model_code,
-        info.ai_model,
-      );
-      const modelLabel = rawModel ? (modelDisplayName(rawModel) || rawModel) : '—';
-      const machineLabel = firstNonEmpty(
-        info.machine,
-        info.release?.machine,
-        info.machine_name,
-        info.hostname,
-        info.host,
-        platformMachineHint(),
-      ) || '—';
-      const release = info.release || {};
-      const releaseSeq = firstNonEmpty(String(release.seq ?? ''), info.release_seq, info.seq) || '—';
-      const releaseActor = firstNonEmpty(
-        release.actor_login,
-        info.user,
-        info.actor,
-        info.author,
-        info.release_actor,
-      ) || '—';
-      tooltip.innerHTML = [
-        `<div class="vi-tooltip-version">${esc(info.version)}</div>`,
-        `<div class="vi-tooltip-stats">Release: <span>#${esc(String(releaseSeq))}</span> by ${esc(releaseActor)}</div>`,
-        `<div class="vi-tooltip-stats">Model: <span style="color:#d4883a;">${esc(modelLabel)}</span></div>`,
-        `<div class="vi-tooltip-stats">Machine: ${esc(machineLabel)}</div>`,
-        '<div class="vi-tooltip-stats" style="margin-top:6px;font-size:0.8rem;color:#9ca3af;">Click for full build details</div>',
-      ].join('');
-    }
+    const d = resolveInfo(info);
+    tip.innerHTML = d ? tooltipHtml(d) : '<div class="vi-tt-ver">Build info unavailable</div>';
     const rect = span.getBoundingClientRect();
-    tooltip.style.left = Math.min(rect.left, window.innerWidth - 370) + 'px';
-    tooltip.style.top = (rect.bottom + 8) + 'px';
-    tooltip.style.opacity = '1';
+    tip.style.left = Math.min(rect.left, window.innerWidth - 370) + 'px';
+    tip.style.top = (rect.bottom + 8) + 'px';
+    tip.style.opacity = '1';
   });
 
-  span.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = '0';
-  });
+  span.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
 
-  // Click: full modal
   span.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    tooltip.style.opacity = '0';
+    tip.style.opacity = '0';
     const info = await fetchVersionInfo();
-    showVersionModal(info);
+    showModal(resolveInfo(info));
   });
 }
 
-// Auto-initialize when DOM is ready
+// Auto-init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => setupVersionInfo());
 } else {
