@@ -1,12 +1,12 @@
 {
-  "version": "v260211.22 9:35a",
-  "release": 22,
-  "sha": "0b541e62",
-  "fullSha": "0b541e628027ace559899f806776d1858ae2f268",
+  "version": "v260211.23 9:36a",
+  "release": 23,
+  "sha": "73b66352",
+  "fullSha": "73b6635202ad7593b39f17ca15c40391ca1ce316",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:35:09+00",
-  "commits": [{"sha":"0b541e62","message":"Add camera capture and file upload to work hours page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 15:36:31+00",
+  "commits": [{"sha":"73b66352","message":"Fix header flash when switching between tabs","author":"Rahul Sonnad"}]
 }
