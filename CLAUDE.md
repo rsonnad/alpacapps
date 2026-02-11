@@ -313,6 +313,18 @@ image_gen_jobs  - Async image generation job queue
                    priority, created_at, started_at, completed_at)
 ```
 
+### Prompt Library
+```
+prompts         - Versioned prompt library (multiple versions per name)
+                  (name, version, content, category, description,
+                   metadata [jsonb], is_active, created_by [FK→app_users],
+                   created_at, updated_at)
+                  Unique: (name, version); unique partial index on (name) WHERE is_active
+                  Helper functions: get_prompt(name), create_prompt_version(name, content, ...)
+                  Categories: image_gen, email, pai, marketing, general
+                  Seeded prompts: pai_daily_art (v1+v2), alpaca_trio_tech (v1)
+```
+
 ### User & Auth System
 ```
 app_users       - Application users with roles and profiles
