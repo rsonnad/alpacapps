@@ -95,6 +95,7 @@ async function loadSpaces() {
       .from('spaces')
       .select('id, name, parent:parent_id(name)')
       .eq('is_archived', false)
+      .eq('is_micro', false)
       .order('name');
 
     if (error) throw error;

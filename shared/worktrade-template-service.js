@@ -399,7 +399,7 @@ Emergency Contact & Phone #: {{emergency_contact}}
 
 ---
 
-**Payments:** bit.ly/alpacapay
+**Payments:** alpacaplayhouse.com/pay
 `;
 }
 

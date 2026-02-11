@@ -1295,7 +1295,7 @@ async function generateDepositRequestMessage(applicationId) {
     }
   }
 
-  message += `\nPayment link: bit.ly/alpacapay\n\n`;
+  message += `\nPayment link: alpacaplayhouse.com/pay\n\n`;
   message += `Please include your name and "Deposit" in the payment note.\n\n`;
   message += `Let me know once you've sent the payment!\n`;
 

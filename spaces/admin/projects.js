@@ -31,6 +31,7 @@ async function loadSpaces() {
     .from('spaces')
     .select('id, name')
     .eq('is_archived', false)
+    .eq('is_micro', false)
     .order('name');
   spaces = data || [];
 

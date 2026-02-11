@@ -93,7 +93,7 @@ async function loadData(retryCount = 0) {
         id, name, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, can_be_dwelling, can_be_event,
+        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
         parent_id,
         parent:parent_id(name),
         space_amenities(amenity:amenity_id(name)),
@@ -131,7 +131,7 @@ async function loadData(retryCount = 0) {
     };
 
     // Process spaces
-    spaces = (spacesData || []).filter(s => !s.is_archived);
+    spaces = (spacesData || []).filter(s => !s.is_archived && !s.is_micro);
 
     spaces.forEach(space => {
       space.amenities = space.space_amenities?.map(sa => sa.amenity?.name).filter(Boolean) || [];
@@ -591,7 +591,7 @@ async function fetchAndShowSpace(spaceId) {
         id, name, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, can_be_dwelling, can_be_event,
+        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
         parent:parent_id(name),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))

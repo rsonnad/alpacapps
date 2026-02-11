@@ -159,7 +159,7 @@ async function main() {
   }
 
   // Fetch spaces (include parent_id for parent-child deduplication)
-  const spaces = await fetchFromSupabase('spaces?can_be_dwelling=eq.true&is_archived=eq.false&select=id,name,parent_id');
+  const spaces = await fetchFromSupabase('spaces?can_be_dwelling=eq.true&is_archived=eq.false&is_micro=eq.false&select=id,name,parent_id');
   console.log(`Found ${spaces.length} dwelling spaces`);
 
   // Fetch all active assignments with space links (include airbnb_uid for dedup)
