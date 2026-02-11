@@ -1,12 +1,12 @@
 {
-  "version": "v260211.63 2:49p",
-  "release": 63,
-  "sha": "23616769",
-  "fullSha": "23616769713bdfae9cd315a52a47d28f4fca02ea",
+  "version": "v260211.64 2:53p",
+  "release": 64,
+  "sha": "e066f40e",
+  "fullSha": "e066f40e218c5619a866ba8e4bf39bb6390980e5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:49:49+00",
-  "commits": [{"sha":"23616769","message":"Fix prompts table RLS: use auth_user_id (not supabase_auth_id)","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:53:20+00",
+  "commits": [{"sha":"e066f40e","message":"Rebrand GenAlpaca → AlpacApps across codebase","author":"Rahul Sonnad"}]
 }
