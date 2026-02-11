@@ -1,12 +1,12 @@
 {
-  "version": "v260211.25 9:38a",
-  "release": 25,
-  "sha": "cff0278f",
-  "fullSha": "cff0278f7b9b9bec009ecad61203c87889dedda3",
+  "version": "v260211.26 9:45a",
+  "release": 26,
+  "sha": "6f898911",
+  "fullSha": "6f898911d95ddea2cae5ef00b3a4396b49ebd145",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:38:31+00",
-  "commits": [{"sha":"cff0278f","message":"Photos page: reorder sections, add thumbnail cards","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 15:45:45+00",
+  "commits": [{"sha":"7f686f0a","message":"Fix mobile file upload: use native label triggers, simplify accept","author":"Rahul Sonnad"},{"sha":"6f898911","message":"Deploy alpaca-only prompt to Supabase + affirmation CSS","author":"Rahul Sonnad"}]
 }
