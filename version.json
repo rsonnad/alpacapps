@@ -1,12 +1,12 @@
 {
-  "version": "v260211.36 11:35a",
-  "release": 36,
-  "sha": "dd97919c",
-  "fullSha": "dd97919c457250003105c428234e009c6f9c2186",
+  "version": "v260211.37 11:37a",
+  "release": 37,
+  "sha": "83d9a595",
+  "fullSha": "83d9a595886fbeaf9087eb0a955e71bf931212f8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 17:35:16+00",
-  "commits": [{"sha":"dd97919c","message":"feat: add Blink camera snapshot support to camera page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 17:37:11+00",
+  "commits": [{"sha":"83d9a595","message":"Fix invitation email: clarify that new users need to create an account","author":"Rahul Sonnad"}]
 }
