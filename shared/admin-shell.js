@@ -7,7 +7,6 @@ import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } 
 import { errorLogger } from './error-logger.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
-import { setupVersionInfo } from './version-info.js';
 
 // =============================================
 // TAB DEFINITIONS
