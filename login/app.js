@@ -13,6 +13,8 @@ const signUpSuccessContent = document.getElementById('signUpSuccessContent');
 const googleSignInBtn = document.getElementById('googleSignIn');
 const errorMessage = document.getElementById('errorMessage');
 const retryBtn = document.getElementById('retryBtn');
+const noAccountContent = document.getElementById('noAccountContent');
+const noAccountEmail = document.getElementById('noAccountEmail');
 
 // Tab elements
 const tabSignIn = document.getElementById('tabSignIn');
@@ -39,6 +41,7 @@ function showState(state, message = '') {
   loginContent.classList.add('hidden');
   loadingContent.classList.add('hidden');
   errorContent.classList.add('hidden');
+  noAccountContent.classList.add('hidden');
   unauthorizedContent.classList.add('hidden');
   signUpSuccessContent.classList.add('hidden');
 
@@ -52,6 +55,10 @@ function showState(state, message = '') {
     case 'error':
       errorContent.classList.remove('hidden');
       errorMessage.textContent = message || 'An error occurred';
+      break;
+    case 'noAccount':
+      noAccountContent.classList.remove('hidden');
+      if (noAccountEmail) noAccountEmail.textContent = message || '';
       break;
     case 'unauthorized':
       unauthorizedContent.classList.remove('hidden');
@@ -188,7 +195,12 @@ emailPasswordForm.addEventListener('submit', async (e) => {
     await signInWithPassword(email, password);
   } catch (error) {
     console.error('[LOGIN]', 'Email/password sign in error:', error);
-    showState('error', error.message);
+    const msg = error.message || '';
+    if (msg.toLowerCase().includes('invalid login credentials')) {
+      showState('noAccount', email);
+    } else {
+      showState('error', msg);
+    }
   }
 });
 
@@ -272,6 +284,33 @@ retryBtn.addEventListener('click', () => {
   console.log('[LOGIN]', 'Retry clicked');
   showState('login');
 });
+
+// No-account state: switch to Sign Up tab
+const noAccountSignUpBtn = document.getElementById('noAccountSignUp');
+if (noAccountSignUpBtn) {
+  noAccountSignUpBtn.addEventListener('click', () => {
+    showState('login');
+    // Switch to Sign Up tab
+    tabSignUp.classList.add('active');
+    tabSignIn.classList.remove('active');
+    signUpPane.classList.remove('hidden');
+    signInPane.classList.add('hidden');
+    // Pre-fill email if available
+    const email = noAccountEmail?.textContent?.trim();
+    if (email) {
+      const signUpEmailInput = document.getElementById('signUpEmail');
+      if (signUpEmailInput) signUpEmailInput.value = email;
+    }
+  });
+}
+
+// No-account state: try Google instead
+const noAccountGoogleBtn = document.getElementById('noAccountGoogle');
+if (noAccountGoogleBtn) {
+  noAccountGoogleBtn.addEventListener('click', () => {
+    googleSignInBtn.click();
+  });
+}
 
 // Sign out button (for unauthorized users to try another account)
 const signOutBtn = document.getElementById('signOutBtn');
