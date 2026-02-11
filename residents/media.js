@@ -46,9 +46,18 @@ Do NOT try to depict the entire cosmology in one image. Instead, choose ONE spec
 - At a loom (awana), weaving threads of light, an alpaca's fiber becoming golden thread in their hands
 Pick a scene that feels fresh and specific — not a generic "mystical alpaca background."
 
+ALPACAS, NOT LLAMAS — CRITICAL:
+The animals in this world are ALPACAS, not llamas. You MUST draw alpacas correctly:
+- Alpacas are SMALL and compact (about 3 feet / 90cm at the shoulder), much shorter than a human.
+- Alpacas have SHORT, BLUNT, flat faces with a fluffy rounded head — like a teddy bear.
+- Alpacas have SHORT, straight, spear-shaped ears.
+- Alpacas have extremely DENSE, FLUFFY fiber covering their entire body — they look like soft, puffy clouds on legs.
+- Do NOT draw llamas: llamas are TALL (nearly human height), have LONG curved banana-shaped ears, LONG narrow snouts, and sparse/thin coats.
+- If in doubt, think "small fluffy teddy bear camelid" not "tall sleek pack animal."
+
 VISUAL STYLE:
 - Ultra-detailed digital painting or cinematic photo-illustration.
-- Include at least one alpaca companion in-frame.
+- Include at least one ALPACA (not llama) companion in-frame — small, fluffy, dense-fibered, short-faced.
 - The person should look respectful, recognizable, elegant, and artistically flattering — but ALWAYS faithful to their real appearance from the reference photo.
 - Mood: warm, mystical, poetic, quietly powerful. Never cartoonish, never meme-like, never chatbot UI.
 - No text overlays, no logos, no watermarks.`;
