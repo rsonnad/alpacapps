@@ -1,12 +1,12 @@
 {
-  "version": "v260211.48 1:44p",
-  "release": 48,
-  "sha": "cb11b77b",
-  "fullSha": "cb11b77bb0a1fad934201b9d2706aed97d348ff7",
+  "version": "v260211.49 1:47p",
+  "release": 49,
+  "sha": "75b55262",
+  "fullSha": "75b552628de265edc3e7ea3970cd7725d5593237",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:44:11+00",
-  "commits": [{"sha":"cb11b77b","message":"Bookkeeping: isolate query failures to identify which section errors","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:47:28+00",
+  "commits": [{"sha":"75b55262","message":"Fix admin nav disappearing: remove duplicate import in admin-shell.js","author":"Rahul Sonnad"}]
 }
