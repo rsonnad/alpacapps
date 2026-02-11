@@ -1,12 +1,12 @@
 {
-  "version": "v260211.29 10:18a",
-  "release": 29,
-  "sha": "6e5ac743",
-  "fullSha": "6e5ac7430e9a2f10e96a3ad9efe936c21dc87e7d",
+  "version": "v260211.31 10:20a",
+  "release": 31,
+  "sha": "51834ebc",
+  "fullSha": "51834ebc9fcd8b5a759560fade7c04da9da58c00",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 16:18:55+00",
-  "commits": [{"sha":"6e5ac743","message":"Fix photo card thumbnails: larger icons, better alignment, YouTube thumbs","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 16:20:23+00",
+  "commits": [{"sha":"9bbd605d","message":"Photos page: reorder sections, add thumbnail cards","author":"Rahul Sonnad"},{"sha":"51834ebc","message":"Update alpacapps submodule: fix Square sandbox error for real users","author":"Rahul Sonnad"}]
 }
