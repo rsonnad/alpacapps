@@ -79,6 +79,10 @@ serve(async (req) => {
     // 3. Parse request
     const body: TeslaCommandRequest = await req.json();
 
+    // Compute numeric user level from role
+    const roleLevels: Record<string, number> = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
+    const userLevel = isInternalCall ? 4 : (roleLevels[appUser?.role] || 0);
+
     // ---- OAuth Code Exchange (account owner or admin) ----
     if (body.action === "exchangeCode") {
       if (!body.code) {

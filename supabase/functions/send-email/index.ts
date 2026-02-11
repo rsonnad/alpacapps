@@ -54,7 +54,9 @@ type EmailType =
   | "pai_email_reply"
   | "pai_document_received"
   // Payment statement
-  | "payment_statement";
+  | "payment_statement"
+  // Custom (raw HTML passthrough)
+  | "custom";
 
 interface EmailRequest {
   type: EmailType;
@@ -1466,6 +1468,14 @@ ${fileList}
 Files have been uploaded to R2 and added to the document index as inactive (pending admin review).`
       };
     }
+
+    case "custom":
+      if (!data.html) throw new Error("Custom email requires data.html");
+      return {
+        subject: data.subject || "Message from Alpaca Playhouse",
+        html: data.html,
+        text: data.text || "",
+      };
 
     default:
       throw new Error(`Unknown email type: ${type}`);
