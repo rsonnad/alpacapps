@@ -10,7 +10,7 @@ on:
 
 jobs:
   bump:
-    if: ${{ !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'chore: bump version')) }}
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     concurrency:
       group: version-main-sequence
@@ -33,7 +33,6 @@ jobs:
           RELEASE_COMPARE_FROM_SHA: ${{ github.event.before }}
           RELEASE_COMPARE_TO_SHA: ${{ github.sha }}
           RELEASE_ACTOR_LOGIN: ${{ github.actor }}
-          RELEASE_ACTOR_ID: ${{ github.actor_id }}
           RELEASE_BRANCH: main
           RELEASE_PUSHED_AT: ${{ github.event.head_commit.timestamp }}
           RELEASE_SOURCE: github-main-push
