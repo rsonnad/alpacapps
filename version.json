@@ -1,12 +1,12 @@
 {
-  "version": "v260211.60 2:40p",
-  "release": 60,
-  "sha": "11dfb12e",
-  "fullSha": "11dfb12e0f5da9760eff4cff2462cff168ec445c",
+  "version": "v260211.61 2:44p",
+  "release": 61,
+  "sha": "9960301d",
+  "fullSha": "9960301d8bf2bda323d7aae76c6c89f20c64562a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:40:22+00",
-  "commits": [{"sha":"11dfb12e","message":"Add Prompt Library section to CLAUDE.md schema docs","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:44:05+00",
+  "commits": [{"sha":"9960301d","message":"Add comprehensive API documentation and update CLAUDE.md","author":"Rahul Sonnad"}]
 }
