@@ -748,19 +748,13 @@ function setupEventListeners() {
     });
   });
 
-  // Photo upload — Take Photo (camera)
-  document.getElementById('btnTakePhoto').addEventListener('click', () => {
-    document.getElementById('cameraInput').click();
-  });
+  // Photo upload — Take Photo (camera) — label triggers input natively
   document.getElementById('cameraInput').addEventListener('change', (e) => {
     if (e.target.files[0]) handlePhotoUpload(e.target.files[0]);
     e.target.value = '';
   });
 
-  // File upload — Upload File (gallery / files)
-  document.getElementById('btnUploadFile').addEventListener('click', () => {
-    document.getElementById('fileInput').click();
-  });
+  // File upload — Upload File (gallery / files) — label triggers input natively
   document.getElementById('fileInput').addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     for (const file of files) {

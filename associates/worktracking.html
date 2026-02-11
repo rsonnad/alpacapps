@@ -539,17 +539,17 @@
             <button data-photo-type="after">After</button>
           </div>
           <div class="photo-upload-actions">
-            <button class="photo-action-btn" id="btnTakePhoto">
+            <label class="photo-action-btn" for="cameraInput">
               <input type="file" id="cameraInput" accept="image/*" capture="environment">
               <span class="photo-action-icon">📷</span>
               <span class="photo-action-label">Take Photo</span>
-            </button>
-            <button class="photo-action-btn" id="btnUploadFile">
-              <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.heic,.heif,.zip" multiple>
+            </label>
+            <label class="photo-action-btn" for="fileInput">
+              <input type="file" id="fileInput" multiple>
               <span class="photo-action-icon">📁</span>
               <span class="photo-action-label">Upload File</span>
               <span class="photo-action-hint">Photos, docs, PDFs</span>
-            </button>
+            </label>
           </div>
           <div class="photo-grid" id="todayPhotos"></div>
         </div>
