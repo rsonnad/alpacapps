@@ -3,14 +3,14 @@
 .manage-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem 2rem;
 }
 
 .manage-tabs {
   display: flex;
   gap: 0;
   border-bottom: 2px solid var(--border);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -20,7 +20,7 @@
 
 /* Prevent layout shift while JS populates tabs */
 .manage-tabs:empty {
-  min-height: 42px;
+  min-height: 36px;
 }
 
 /* Context switcher — centering wrapper aligns with .manage-tabs */
@@ -28,7 +28,7 @@
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding: 0.75rem 2rem;
+  padding: 0.4rem 2rem;
 }
 
 /* Inner pill with the rounded background */
@@ -70,13 +70,13 @@
 }
 
 .manage-tab {
-  padding: 1rem 2rem;
+  padding: 0.5rem 1.25rem;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
@@ -106,12 +106,12 @@
   border-radius: var(--radius-lg, 12px);
   border: 1px solid rgba(0, 0, 0, 0.04);
   box-shadow: var(--shadow);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   overflow: hidden;
 }
 
 .section-header {
-  padding: 1rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@
 }
 
 .section-body {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
 }
 
 /* Lightbox */
@@ -410,8 +410,8 @@
   }
 
   .manage-tab {
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -426,7 +426,7 @@
   }
 
   .section-body {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .section-filters {
