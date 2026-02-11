@@ -5,11 +5,15 @@ alwaysApply: true
 
 # Version & Model Tracking
 
+## Version Format
+
+Version uses the `r000000NNN` format — a strictly sequential release number from Supabase. Each push to `main` auto-increments. Do NOT use the old `vYYMMDD.NN` format.
+
 ## After Push: Always Display Version
 
-After every successful push/build deployment, include the current version from `version.json`:
+After every successful push, include the current version from `version.json`:
 
-> `vYYMMDD.NN H:MMa/p [model]`
+> `r000000NNN [model]`
 
 Do not skip version reporting after a push.
 
@@ -21,13 +25,14 @@ When running `bump-version.sh`, pass `--model` with the active model code:
 ./scripts/bump-version.sh --model o4.6
 ```
 
-Model code format is a short identifier:
+Model codes:
 - `o4.6` = Claude Opus 4.6
 - `s4.0` = Claude Sonnet 4
 - `g2.5` = Gemini 2.5
 - `g4o` = GPT-4o
 - `modl-a` = Cursor Auto
 - `cur` = Cursor (unknown model)
+- `ci` = GitHub Actions CI
 
 If exact model is unknown, use the closest identifier and still report it.
 
@@ -42,8 +47,9 @@ The post-push report must include `version.json.machine`.
 
 ## Deploy Workflow
 
+Version is bumped automatically by CI on push to main. Do NOT run `bump-version.sh` locally before pushing.
+
 ```bash
-./scripts/bump-version.sh --model MODEL   # Includes version + model
 git add -A
 git commit -m "Description"
 git push origin main

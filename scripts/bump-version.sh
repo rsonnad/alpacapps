@@ -100,7 +100,8 @@ fi
 COMMIT_COUNT=$(echo "$COMMITS_FOR_DB" | python3 -c "import sys,json;print(len(json.loads(sys.stdin.read())))" 2>/dev/null || echo 0)
 
 # ── 1) record release event in DB ────────────────────────────────────
-META="{\"workflow\":\"bump-version.sh\",\"commit_count\":$COMMIT_COUNT}"
+# commit_summaries in metadata = same as COMMITS_FOR_DB (admin releases page reads .sha + .message)
+META="{\"workflow\":\"bump-version.sh\",\"commit_count\":$COMMIT_COUNT,\"commit_summaries\":$COMMITS_FOR_DB}"
 ROW=$($PSQL "$DB_URL" -t -A --no-psqlrc -F $'\t' -c "
   SELECT seq::text, display_version, pushed_at::text, actor_login, source
   FROM record_release_event(
