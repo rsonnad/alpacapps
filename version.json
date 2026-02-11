@@ -1,12 +1,12 @@
 {
-  "version": "v260211.47 1:42p",
-  "release": 47,
-  "sha": "5170a8b6",
-  "fullSha": "5170a8b6f73f6262f510f066e409e0016aaaecbc",
+  "version": "v260211.48 1:44p",
+  "release": 48,
+  "sha": "cb11b77b",
+  "fullSha": "cb11b77bb0a1fad934201b9d2706aed97d348ff7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:42:06+00",
-  "commits": [{"sha":"5170a8b6","message":"Fix phantom 28px gap: hide empty first tab bar on device pages","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:44:11+00",
+  "commits": [{"sha":"cb11b77b","message":"Bookkeeping: isolate query failures to identify which section errors","author":"Rahul Sonnad"}]
 }
