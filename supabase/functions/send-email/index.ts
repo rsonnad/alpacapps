@@ -768,11 +768,16 @@ Alpaca Playhouse`
           <h3>Getting Started</h3>
           <ol>
             <li>Click the button below to go to the login page</li>
-            <li>Sign in with Google using this email address (<strong>${data.email}</strong>)</li>
+            <li>Create your account using <strong>${data.email}</strong> — either:
+              <ul style="margin-top: 6px;">
+                <li><strong>Continue with Google</strong> (fastest — one tap if you're signed into Google)</li>
+                <li><strong>Sign Up</strong> tab to create an email &amp; password</li>
+              </ul>
+            </li>
           </ol>
-          <p>Your access has already been pre-approved, so you'll have immediate access once you sign in.</p>
+          <p>Your access has already been pre-approved, so you'll have immediate access once you create your account.</p>
           <p style="margin: 30px 0;">
-            <a href="${data.login_url}" style="background: #4CAF50; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Sign In to GenAlpaca</a>
+            <a href="${data.login_url}" style="background: #4CAF50; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Create Account</a>
           </p>
           <p style="color: #666; font-size: 14px;">If you have any questions, reply to this email.</p>
           <p>Best regards,<br>GenAlpaca Team</p>
@@ -787,9 +792,11 @@ You will have ${roleDescription}.
 
 Getting Started:
 1. Go to: ${data.login_url}
-2. Click "Sign in with Google" using this email address (${data.email})
+2. Create your account using ${data.email} — either:
+   - "Continue with Google" (fastest — one tap if you're signed into Google)
+   - "Sign Up" tab to create an email & password
 
-Your access has already been pre-approved, so you'll have immediate access once you sign in.
+Your access has already been pre-approved, so you'll have immediate access once you create your account.
 
 If you have any questions, reply to this email.
 
