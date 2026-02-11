@@ -33,7 +33,7 @@ const DEVICE_PAGE_PATHS = new Set([
   'climate.html', 'climate',
   'laundry.html', 'laundry',
   'cars.html', 'cars',
-  'sensorinstallation.html', 'sensorinstallation',
+  'sensors.html', 'sensors',
 ]);
 
 const DEVICE_SUBTABS = [
@@ -44,7 +44,7 @@ const DEVICE_SUBTABS = [
   { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
   { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry' },
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
-  { id: 'sensors', label: 'Sensors', href: 'sensorinstallation.html', permission: 'view_cameras' },
+  { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras' },
 ];
 
 const RESIDENT_CORE_TABS = [
@@ -165,8 +165,8 @@ function renderDeviceSubTabNav(activeTab, authState) {
     laundry: 'laundry',
     'cars.html': 'cars',
     cars: 'cars',
-    'sensorinstallation.html': 'sensors',
-    sensorinstallation: 'sensors',
+    'sensors.html': 'sensors',
+    sensors: 'sensors',
   };
   const activeDeviceSubTab = devicePageToTab[currentPath] || (activeTab === 'devices' ? 'list' : null);
   const shouldRenderDeviceSubtabs = activeTab === 'devices' || Boolean(devicePageToTab[currentPath]);

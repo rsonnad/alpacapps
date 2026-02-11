@@ -85,7 +85,7 @@ const TODO_CATEGORIES = [
       { id: 'sensor-1', title: 'Inventory all UP-SENSE sensors', desc: 'Count and catalog all UniFi Protect UP-SENSE sensors available for installation.' , badge: 'important' },
       { id: 'sensor-2', title: 'Plan sensor placement per space', desc: 'Decide which spaces get sensors: doors, windows, motion, temperature, humidity, light.' },
       { id: 'sensor-3', title: 'Install sensors in common areas', desc: 'Mount sensors at entry points: front door, garage, side yard gate.' , badge: 'important' },
-      { id: 'sensor-4', title: 'Install sensors in individual spaces', desc: 'Mount door/window sensors in each rental space per the <a href="https://alpacaplayhouse.com/residents/sensorinstallation.html" target="_blank">installation guide</a>.' },
+      { id: 'sensor-4', title: 'Install sensors in individual spaces', desc: 'Mount door/window sensors in each rental space per the <a href="https://alpacaplayhouse.com/house/pages/sensorinstallation.html" target="_blank">installation guide</a>.' },
       { id: 'sensor-5', title: 'Adopt sensors in UniFi Protect', desc: 'Add each sensor to the UniFi Protect controller on the UDM Pro.' },
       { id: 'sensor-6', title: 'Configure sensor alerts', desc: 'Set up notifications in UniFi Protect for door open/close, motion, and environmental thresholds.' },
       { id: 'sensor-7', title: 'Build sensor dashboard page', desc: 'Create a resident-facing page showing live sensor data (temperature, humidity, door status).', badge: 'nice' },
