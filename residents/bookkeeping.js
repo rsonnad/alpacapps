@@ -29,7 +29,7 @@ async function loadBookkeeping(appUser) {
       loadApplications(personId),
       loadPayments(personId),
       loadAssignments(personId),
-      loadVehicles(appUser?.id),
+      loadVehicles(personId),
     ]);
 
     renderSummary(payments, assignments, vehicles);
@@ -114,18 +114,22 @@ async function loadAssignments(personId) {
   return data || [];
 }
 
-async function loadVehicles(appUserId) {
-  if (!appUserId) return [];
+async function loadVehicles(personId) {
+  if (!personId) return [];
 
+  // Vehicles are linked to people via the vehicle_drivers junction table
   const { data, error } = await supabase
-    .from('vehicles')
-    .select('id, name, vehicle_make, vehicle_model, year, license_plate')
-    .eq('owner_id', appUserId)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true });
+    .from('vehicle_drivers')
+    .select('vehicle:vehicle_id(id, name, make, model, year, color, is_active, display_order)')
+    .eq('person_id', personId);
 
   if (error) throw error;
-  return data || [];
+
+  // Flatten join rows, keep only active vehicles, sort by display_order
+  return (data || [])
+    .map(d => d.vehicle)
+    .filter(v => v && v.is_active)
+    .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 }
 
 function renderSummary(payments, assignments, vehicles) {
@@ -217,16 +221,15 @@ function renderOwnedAssets(assignments, vehicles) {
     ? vehicles.map(v => `
       <div class="bookkeeping-item-card">
         <div>
-          <div class="bookkeeping-item-title">${escapeHtml(v.name || `${v.year || ''} ${v.vehicle_make || ''} ${v.vehicle_model || ''}`.trim() || 'Vehicle')}</div>
-          <div class="bookkeeping-item-meta">${escapeHtml([v.year, v.vehicle_make, v.vehicle_model].filter(Boolean).join(' ')) || 'Vehicle'}</div>
+          <div class="bookkeeping-item-title">${escapeHtml(v.name || `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim() || 'Vehicle')}</div>
+          <div class="bookkeeping-item-meta">${escapeHtml([v.year, v.make, v.model].filter(Boolean).join(' ')) || 'Vehicle'}</div>
         </div>
         <div class="bookkeeping-item-right">
-          <span class="bookkeeping-chip">Owned</span>
-          ${v.license_plate ? `<span class="bookkeeping-item-meta">${escapeHtml(v.license_plate)}</span>` : ''}
+          <span class="bookkeeping-chip">Driver</span>
         </div>
       </div>
     `).join('')
-    : '<p class="text-muted">No vehicles currently listed as owned.</p>';
+    : '<p class="text-muted">No vehicles currently linked to your account.</p>';
 
   const rentedSpacesHtml = spaceCards.length
     ? spaceCards.map(space => `
