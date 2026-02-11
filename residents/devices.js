@@ -44,6 +44,35 @@ function statusDot(online) {
   return `<span class="status-dot ${cls}"></span>`;
 }
 
+/* ── Property Location ── */
+
+let propertyGps = null;
+
+async function fetchPropertyGps() {
+  try {
+    const { data } = await supabase
+      .from('spaces')
+      .select('gps')
+      .is('parent_id', null)
+      .not('gps', 'is', null)
+      .limit(1)
+      .single();
+    if (data?.gps) propertyGps = data.gps;
+  } catch (e) { console.warn('Property GPS fetch failed:', e); }
+}
+
+/** Haversine distance in meters between two lat/lng points */
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const ONSITE_RADIUS_M = 200; // within 200 meters counts as onsite
+
 /* ── Data Fetchers (all DB, no live API) ── */
 
 async function fetchCameras() {
@@ -283,12 +312,24 @@ function renderClimateRows(devices) {
 }
 
 function renderVehicleRows(vehicles) {
-  if (!vehicles.length) return emptyRow(6);
+  if (!vehicles.length) return emptyRow(7);
   return vehicles.map(v => {
     const s = v.last_state || {};
     const battery = s.battery_level != null ? `${s.battery_level}%` : '—';
     const status = v.vehicle_state || '—';
     const locked = s.locked != null ? (s.locked ? '🔒' : '🔓') : '—';
+
+    // Onsite check: compare vehicle GPS to property GPS
+    let onsiteHtml = '<span class="dt-secondary">—</span>';
+    if (propertyGps && s.latitude != null && s.longitude != null) {
+      const dist = distanceMeters(s.latitude, s.longitude, propertyGps.lat, propertyGps.lng);
+      if (dist <= ONSITE_RADIUS_M) {
+        onsiteHtml = '<span class="dt-badge dt-badge--green">YES</span>';
+      } else {
+        onsiteHtml = '<span class="dt-secondary">No</span>';
+      }
+    }
+
     return `
       <tr>
         <td class="dt-name">${esc(v.name)}</td>
@@ -296,6 +337,7 @@ function renderVehicleRows(vehicles) {
         <td class="dt-num">${battery}</td>
         <td>${esc(status)}</td>
         <td>${locked}</td>
+        <td>${onsiteHtml}</td>
         <td class="dt-secondary">${timeAgo(v.last_synced_at)}</td>
       </tr>
     `;
@@ -403,6 +445,7 @@ async function renderInventory() {
       fetchClimate(),
       fetchVehicles(),
       fetchLaundry(),
+      fetchPropertyGps(),
     ]);
   } catch (e) {
     console.error('Device inventory fetch error:', e);
@@ -449,7 +492,7 @@ async function renderInventory() {
   // Vehicles
   const carCat = CATEGORIES.find(c => c.id === 'cars');
   html += buildSection(carCat, vehicles.length,
-    th('Name') + th('Vehicle') + th('Battery') + th('Status') + th('Lock') + th('Synced'),
+    th('Name') + th('Vehicle') + th('Battery') + th('Status') + th('Lock') + th('Onsite') + th('Synced'),
     renderVehicleRows(vehicles));
 
   // Laundry
