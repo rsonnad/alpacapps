@@ -336,7 +336,7 @@ async function initCameras() {
   }
 
   // Filter to configured cameras (or all if not specified)
-  let cameras = Object.values(grouped);
+  let cameras = Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
   if (cameraFilter.length > 0) {
     cameras = cameras.filter(c => cameraFilter.includes(c.name));
   }

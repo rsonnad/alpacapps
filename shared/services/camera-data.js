@@ -39,7 +39,7 @@ export async function loadCameras() {
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
-  return Object.values(grouped);
+  return Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
