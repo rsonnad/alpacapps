@@ -1,12 +1,12 @@
 {
-  "version": "v260211.43 1:16p",
-  "release": 43,
-  "sha": "3f5c4d38",
-  "fullSha": "3f5c4d3804e51b6ff64c97269889b22f2926d4f7",
+  "version": "v260211.45 1:19p",
+  "release": 45,
+  "sha": "964cd5b2",
+  "fullSha": "964cd5b257ce25af7f959f99a7aeff7aa36f8317",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 19:16:39+00",
-  "commits": [{"sha":"3f5c4d38","message":"Fix login redirect loop for new Google OAuth users","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 19:19:50+00",
+  "commits": [{"sha":"964cd5b2","message":"Remove orphaned alpacapps gitlink that breaks GitHub Pages build","author":"Rahul Sonnad"}]
 }
