@@ -378,12 +378,27 @@ function renderUserMenuHTML(appUser, profileHref) {
   const avatarHtml = avatarUrl
     ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
     : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
+
+  // Role-based navigation links
+  const role = appUser.role || '';
+  const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
+  const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
+
+  let navLinks = '';
+  if (isResident) {
+    navLinks += `<a href="/residents/lighting.html" class="user-menu-item">My Home</a>`;
+  }
+  if (isStaffOrAdmin) {
+    navLinks += `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`;
+  }
+
   return `
     <button class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
       ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
     </button>
     <div class="user-menu-dropdown hidden">
       <a href="${profileHref}" class="user-menu-item">Profile</a>
+      ${navLinks}
       <button class="user-menu-item user-menu-signout" id="publicHeaderSignOutBtn">Sign Out</button>
     </div>`;
 }
@@ -410,7 +425,36 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
     authEl.innerHTML = renderUserMenuHTML(state.appUser, profileHref);
     authEl.classList.add('user-info');
     if (signInEl) signInEl.style.display = 'none';
-    if (mobileSignInEl) mobileSignInEl.closest('li')?.remove();
+
+    // Inject role-based links into mobile nav, replacing the Sign In link
+    if (mobileSignInEl) {
+      const mobileLi = mobileSignInEl.closest('li');
+      const mobileList = mobileLi?.parentElement;
+      if (mobileList && mobileLi) {
+        const role = state.appUser.role || '';
+        const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
+        const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
+
+        // Build mobile nav items for authenticated user
+        const mobileItems = [];
+        if (isResident) {
+          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/lighting.html" class="aap-mobile-nav__link">My Home</a></li>`);
+        }
+        if (isStaffOrAdmin) {
+          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/spaces/admin/spaces.html" class="aap-mobile-nav__link">Manage</a></li>`);
+        }
+        mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/profile.html" class="aap-mobile-nav__link">Profile</a></li>`);
+        mobileItems.push(`<li class="aap-mobile-nav__item"><button class="aap-mobile-nav__link aap-mobile-nav__signout" id="mobileSignOutBtn" style="background:none;border:none;color:#c0392b;cursor:pointer;font:inherit;padding:inherit;width:100%;text-align:left;">Sign Out</button></li>`);
+
+        mobileLi.outerHTML = mobileItems.join('');
+
+        // Bind mobile sign out
+        document.getElementById('mobileSignOutBtn')?.addEventListener('click', async () => {
+          await signOut();
+          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+        });
+      }
+    }
 
     const trigger = authEl.querySelector('.user-menu-trigger');
     const dropdown = authEl.querySelector('.user-menu-dropdown');

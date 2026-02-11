@@ -67,6 +67,8 @@ interface EmailRequest {
   subject?: string;
   from?: string;
   reply_to?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
 }
 
 interface EmailTemplate {
@@ -1698,7 +1700,7 @@ serve(async (req) => {
     }
 
     const body: EmailRequest = await req.json();
-    const { type, to, data, subject: customSubject, from, reply_to } = body;
+    const { type, to, data, subject: customSubject, from, reply_to, cc, bcc } = body;
 
     if (!type || !to || !data) {
       return new Response(

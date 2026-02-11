@@ -1008,7 +1008,7 @@ function renderSchedule() {
       const plannedMins = sched ? sched.scheduled_minutes : 0;
       const actualMins = scheduleActuals[date] || 0;
       const plannedLabel = plannedMins > 0 ? HoursService.formatDuration(plannedMins) : '';
-      const actualLabel = actualMins > 0 ? HoursService.formatDuration(actualMins) : (plannedMins > 0 ? '0m' : '');
+      const actualLabel = actualMins > 0 ? HoursService.formatDuration(actualMins) : (plannedMins > 0 ? '0:00' : '');
       const actualClass = plannedMins > 0
         ? (actualMins >= plannedMins ? 'met' : (actualMins > 0 ? 'partial' : 'none'))
         : 'none';

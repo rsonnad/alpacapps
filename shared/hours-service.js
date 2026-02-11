@@ -828,15 +828,13 @@ class HoursService {
   // ---- Utility ----
 
   /**
-   * Format minutes as "Xh Ym"
+   * Format minutes as "H:MM" (e.g., 0:00, 1:30, 2:05)
    */
   static formatDuration(minutes) {
-    if (!minutes || minutes <= 0) return '0m';
+    if (!minutes || minutes <= 0) return '0:00';
     const h = Math.floor(minutes / 60);
     const m = Math.round(minutes % 60);
-    if (h === 0) return `${m}m`;
-    if (m === 0) return `${h}h`;
-    return `${h}h ${m}m`;
+    return `${h}:${String(m).padStart(2, '0')}`;
   }
 
   /**
