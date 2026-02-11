@@ -188,8 +188,10 @@ function renderGallery() {
 
   grid.querySelectorAll('.pai-gallery-delete').forEach((btn) => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      deleteGalleryJob(Number(btn.dataset.jobId));
+      const jobId = btn.dataset.jobId;
+      deleteGalleryJob(jobId);
     });
   });
 }
@@ -322,20 +324,29 @@ Narrative moment:
 }
 
 async function deleteGalleryJob(jobId) {
-  const job = galleryJobs.find((j) => j.id === jobId);
-  if (!job) return;
+  // Use string comparison since bigint IDs may arrive as strings
+  const job = galleryJobs.find((j) => String(j.id) === String(jobId));
+  if (!job) {
+    console.warn('deleteGalleryJob: job not found for id', jobId);
+    return;
+  }
 
   // Remove from local state immediately for instant feedback
-  galleryJobs = galleryJobs.filter((j) => j.id !== jobId);
+  galleryJobs = galleryJobs.filter((j) => String(j.id) !== String(jobId));
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();
 
-  // Delete the job row (cascades or we clean up media separately)
-  const { error } = await supabase.from('image_gen_jobs').delete().eq('id', jobId);
-  if (error) {
-    console.error('Failed to delete gallery job:', error);
-    showToast('Could not delete portrait', 'error');
+  // Delete the job row — use .select() to verify rows were actually removed
+  const { data, error } = await supabase
+    .from('image_gen_jobs')
+    .delete()
+    .eq('id', jobId)
+    .select('id');
+
+  if (error || !data?.length) {
+    console.error('Failed to delete gallery job:', error || 'no rows deleted (RLS?)');
+    showToast('Could not delete portrait — check permissions', 'error');
     // Restore on failure
     galleryJobs.push(job);
     galleryJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
