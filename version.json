@@ -1,12 +1,12 @@
 {
-  "version": "v260211.15 8:28a",
-  "release": 15,
-  "sha": "fdcdb1c7",
-  "fullSha": "fdcdb1c71c7edab23d52d92be24e888e67b2df3b",
+  "version": "v260211.16 8:30a",
+  "release": 16,
+  "sha": "ad03a786",
+  "fullSha": "ad03a786e3768d35f433500520d27ac79ac65ed8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 14:28:04+00",
-  "commits": [{"sha":"fdcdb1c7","message":"Fix version display: target spans by attribute/class, not content","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 14:30:53+00",
+  "commits": [{"sha":"ad03a786","message":"Restore unified device inventory page","author":"Rahul Sonnad"}]
 }
