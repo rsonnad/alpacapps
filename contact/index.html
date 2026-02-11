@@ -522,8 +522,11 @@
   <li><a href="/community/" class="aap-nav__link">Community</a></li>
   <li><a href="/photos/" class="aap-nav__link">Photos</a></li>
   <li><a href="/contact/" class="aap-nav__link aap-nav__link--active">Contact</a></li>
+  <li><a href="/login/" class="aap-nav__link" id="aapSignInLink">Sign In</a></li>
 </ul>
       </nav>
+
+      <div id="aapHeaderAuth" class="aap-header-auth"></div>
 
       <button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">
         <span class="aap-menu-toggle__bar"></span>
@@ -543,6 +546,7 @@
   <li class="aap-mobile-nav__item"><a href="/community/" class="aap-mobile-nav__link">Community</a></li>
   <li class="aap-mobile-nav__item"><a href="/photos/" class="aap-mobile-nav__link">Photos</a></li>
   <li class="aap-mobile-nav__item"><a href="/contact/" class="aap-mobile-nav__link aap-mobile-nav__link--active">Contact</a></li>
+  <li class="aap-mobile-nav__item"><a href="/login/" class="aap-mobile-nav__link" id="aapMobileSignInLink">Sign In</a></li>
 </ul>
   </div>
 
@@ -780,6 +784,7 @@
   <script type="module">
     import { initChatWidget, askQuestion, submitUnansweredQuestion } from '/shared/chat-widget.js';
     import { saveVisitor, getVisitor } from '/shared/visitor-identity.js';
+    import { initPublicHeaderAuth } from '/shared/site-components.js';
 
     let currentQuestion = '';
     let currentAnswer = '';
@@ -788,6 +793,12 @@
     // Initialize on load
     document.addEventListener('DOMContentLoaded', async () => {
       await initChatWidget();
+
+      // Initialize auth state to show user profile or Sign In link
+      initPublicHeaderAuth({
+        authContainerId: 'aapHeaderAuth',
+        signInLinkId: 'aapSignInLink',
+      });
 
       // Load SMS number from Supabase (dynamic import so it can't break the page)
       try {
