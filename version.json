@@ -1,12 +1,12 @@
 {
-  "version": "v260211.05 7:29a",
-  "release": 5,
-  "sha": "6144cd6d",
-  "fullSha": "6144cd6d6e79307fb1da24225989ede685a0d146",
+  "version": "v260211.06 7:33a",
+  "release": 6,
+  "sha": "1a1b813b",
+  "fullSha": "1a1b813b1e08eda6557733fb149b21f897a0c32b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 13:29:57+00",
-  "commits": [{"sha":"6144cd6d","message":"Rewrite versioning system: vYYMMDD.NN format with r00001 in tooltip/modal","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 13:33:02+00",
+  "commits": [{"sha":"1a1b813b","message":"Sync version.json to new vYYMMDD.NN format after migration","author":"Rahul Sonnad"}]
 }
