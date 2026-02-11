@@ -1,12 +1,12 @@
 {
-  "version": "v260211.23 9:36a",
-  "release": 23,
-  "sha": "73b66352",
-  "fullSha": "73b6635202ad7593b39f17ca15c40391ca1ce316",
+  "version": "v260211.24 9:37a",
+  "release": 24,
+  "sha": "83698d74",
+  "fullSha": "83698d74454ce251d9d046111cf6195ef3f94575",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 15:36:31+00",
-  "commits": [{"sha":"73b66352","message":"Fix header flash when switching between tabs","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 15:37:35+00",
+  "commits": [{"sha":"7c9ca82c","message":"PAI imagery: alpaca-only art + personalized affirmations","author":"Rahul Sonnad"},{"sha":"83698d74","message":"Fix bookkeeping page 400 error: use vehicle_drivers junction table","author":"Rahul Sonnad"}]
 }
