@@ -1848,6 +1848,7 @@ window.denyApplication = async function() {
 };
 
 window.generateAgreement = async function() {
+  await generateLeasePdf();
   switchDetailTab('documents');
 };
 
