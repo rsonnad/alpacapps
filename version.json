@@ -1,12 +1,12 @@
 {
-  "version": "v260211.65 2:54p",
-  "release": 65,
-  "sha": "6a3226ca",
-  "fullSha": "6a3226ca3d775f32d2cb462ebb2013d261b63737",
+  "version": "v260211.66 2:55p",
+  "release": 66,
+  "sha": "4c405f19",
+  "fullSha": "4c405f19f84b69cdd10c4f100e807d54e4657112",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-11 20:54:13+00",
-  "commits": [{"sha":"6a3226ca","message":"Rebrand remaining GenAlpaca → AlpacApps in resend-inbound-webhook","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-11 20:55:22+00",
+  "commits": [{"sha":"4c405f19","message":"Update architecture and config docs for centralized Internal REST API","author":"Rahul Sonnad"}]
 }
