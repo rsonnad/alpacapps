@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Brand Guide - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260211.69 3:05p</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content" id="brandContent">
+
+      <!-- Hero intro -->
+      <div class="brand-hero">
+        <h1>Brand Style Guide</h1>
+        <p class="brand-hero-sub">Single source of truth for Alpaca Playhouse branding across emails, web, and collateral. All values are stored in the database and can be updated by admins.</p>
+      </div>
+
+      <!-- ===== IDENTITY ===== -->
+      <section class="brand-section" id="sectionIdentity">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Brand Identity
+        </h2>
+
+        <div class="brand-card">
+          <h3>Brand Names</h3>
+          <div class="brand-names-grid" id="brandNames">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== LOGOS ===== -->
+      <section class="brand-section" id="sectionLogos">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Logos &amp; Wordmarks
+        </h2>
+
+        <div class="brand-card">
+          <h3>Primary Logos</h3>
+          <p class="brand-hint">Always use the correct variant for light or dark backgrounds. Never stretch, rotate, or recolor the logo.</p>
+          <div class="brand-logo-grid" id="logoGrid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Logo Sizing</h3>
+          <div class="brand-sizes-table" id="logoSizes">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== COLOR PALETTE ===== -->
+      <section class="brand-section" id="sectionColors">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20 7 7 0 0 1 0-14 3 3 0 0 1 0 6 1 1 0 0 1 0-2"/></svg>
+          Color Palette
+        </h2>
+
+        <div class="brand-card">
+          <h3>Primary Colors</h3>
+          <div class="brand-swatch-grid" id="primaryColors">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Status Colors</h3>
+          <div class="brand-swatch-grid" id="statusColors">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Semantic Colors</h3>
+          <div class="brand-swatch-grid" id="semanticColors">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TYPOGRAPHY ===== -->
+      <section class="brand-section" id="sectionTypography">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          Typography
+        </h2>
+
+        <div class="brand-card">
+          <h3>Font Family</h3>
+          <div id="fontFamily">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Type Scale</h3>
+          <div id="typeScale">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Font Weights</h3>
+          <div id="fontWeights">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VISUAL ELEMENTS ===== -->
+      <section class="brand-section" id="sectionVisual">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Visual Elements
+        </h2>
+
+        <div class="brand-card">
+          <h3>Border Radius</h3>
+          <div class="brand-radius-demo" id="radiusDemo">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Shadows</h3>
+          <div class="brand-shadow-demo" id="shadowDemo">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Buttons</h3>
+          <div class="brand-button-demo" id="buttonDemo">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== EMAIL TEMPLATE ===== -->
+      <section class="brand-section" id="sectionEmail">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email Template
+        </h2>
+
+        <div class="brand-card">
+          <h3>Standard Email Layout</h3>
+          <p class="brand-hint">All emails should use this branded wrapper. The header, footer, button styles, and callout boxes are standardized.</p>
+          <div class="brand-email-preview" id="emailPreview">
+            <!-- Populated by JS: full rendered email preview -->
+          </div>
+        </div>
+
+        <div class="brand-card">
+          <h3>Email Components</h3>
+          <div class="brand-email-components" id="emailComponents">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RAW CONFIG ===== -->
+      <section class="brand-section" id="sectionRaw">
+        <h2 class="brand-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Raw Configuration
+        </h2>
+
+        <div class="brand-card">
+          <h3>brand_config JSON</h3>
+          <p class="brand-hint">This is the raw JSON stored in the <code>brand_config</code> database table. Changes here propagate to all emails and collateral.</p>
+          <pre class="brand-json" id="rawJson"></pre>
+          <p class="brand-hint" style="margin-top:12px;font-size:0.8em;">Last updated: <span id="lastUpdated">—</span></p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="brand.js"></script>
+</body>
+</html>

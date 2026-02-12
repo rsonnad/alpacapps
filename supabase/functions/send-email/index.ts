@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { renderTemplate, SENDER_MAP } from "../_shared/template-engine.ts";
+import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -1745,6 +1746,27 @@ serve(async (req) => {
     // Determine sender from DB template's sender_type, with fallback
     const sender = SENDER_MAP[rendered.senderType] || SENDER_MAP.team;
 
+    // Templates that already include their own full HTML layout and should NOT be wrapped
+    const SKIP_BRAND_WRAP: EmailType[] = [
+      "custom",            // raw HTML passthrough
+      "staff_invitation",  // has its own full branded layout
+      "pai_email_reply",   // PAI-branded layout
+      "payment_statement", // has its own full layout
+    ];
+
+    // Wrap email content in the branded shell (header, footer, consistent styling)
+    let finalHtml = rendered.html;
+    if (!SKIP_BRAND_WRAP.includes(type)) {
+      try {
+        finalHtml = await wrapEmailHtml(rendered.html, {
+          preheader: rendered.subject,
+        });
+      } catch (wrapErr) {
+        console.warn("Brand wrapper failed, sending unwrapped:", wrapErr);
+        // Fall through with unwrapped HTML
+      }
+    }
+
     // Send email via Resend
     const response = await fetch(RESEND_API_URL, {
       method: "POST",
@@ -1759,7 +1781,7 @@ serve(async (req) => {
         ...(bcc ? { bcc: Array.isArray(bcc) ? bcc : [bcc] } : {}),
         reply_to: reply_to || sender.reply_to,
         subject: customSubject || rendered.subject,
-        html: rendered.html,
+        html: finalHtml,
         text: rendered.text,
       }),
     });

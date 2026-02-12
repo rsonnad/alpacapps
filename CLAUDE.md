@@ -52,6 +52,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `pdf-service.js` - PDF generation from markdown using jsPDF
 - `signwell-service.js` - SignWell e-signature API integration
 - `email-service.js` - Email sending via Resend
+- `brand-config.js` - Brand configuration loader (colors, fonts, logos from DB)
 - `sms-service.js` - SMS sending via Telnyx (mirrors email-service.js pattern)
 - `square-service.js` - Square payment processing (client-side tokenization)
 - `hours-service.js` - Associate hours tracking (clock in/out, time entries)
@@ -105,6 +106,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `worktracking.html` / `worktracking.js` - Admin hours management for associates
 - `sms-messages.html` / `sms-messages.js` - SMS conversation viewer
 - `templates.html` / `templates.js` - Lease/event template editor
+- `brand.html` / `brand.js` - Brand style guide (colors, logos, typography, email preview)
 - `settings.html` / `settings.js` - System settings (SignWell, Telnyx, fees, etc.)
 - `users.html` / `users.js` - User management + invitations
 - Shows occupant info, visibility controls, edit capabilities
@@ -127,7 +129,8 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
 - `telnyx-webhook/` - Receives inbound SMS from Telnyx
-- `send-email/` - Outbound email via Resend API (45+ templates)
+- `send-email/` - Outbound email via Resend API (45+ templates, branded wrapper)
+- `_shared/email-brand-wrapper.ts` - Branded email shell (header/footer/buttons from brand_config)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards, auto-records Zelle payments
 - `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
 - `alpaca-pai/` - PAI chat + voice assistant: Gemini-powered natural language smart home control + property Q&A + Vapi voice calling (resident+ auth)
@@ -338,6 +341,15 @@ app_users       - Application users with roles and profiles
                    facebook_url, instagram_url, linkedin_url, x_url,
                    created_at, last_sign_in_at)
 user_invitations - Pending user invitations (email, role, invited_by, expires_at)
+```
+
+### Brand Configuration
+```
+brand_config    - Singleton (id=1) brand configuration stored as JSONB
+                  (config [jsonb], updated_at, updated_by [FK→app_users])
+                  Contains: brand names, color palette, typography, logos,
+                  visual elements, email template tokens
+                  Readable by all (anon), writable by admin only
 ```
 
 ### Associate Hours & Payouts
@@ -1207,6 +1219,17 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - Database schema context added to PAI system prompt
    - API usage logged to `api_usage_log` table
    - Full reference: `API.md`
+40. **Brand Style Guide & Email Consistency** - Centralized brand configuration
+   - `brand_config` DB table (singleton JSONB) stores all brand tokens: colors, fonts, logos, visual elements, email template specs
+   - `shared/brand-config.js` — client-side loader with DB fetch + hardcoded fallback
+   - `supabase/functions/_shared/email-brand-wrapper.ts` — branded email shell (header with logo+wordmark, consistent body, footer with address+tagline)
+   - `spaces/admin/brand.html` + `brand.js` — visual style guide page showing all brand elements
+   - All non-custom emails now wrapped in branded shell (header, footer, button styles, callout boxes)
+   - Skip list: `custom`, `staff_invitation`, `pai_email_reply`, `payment_statement` (have their own layouts)
+   - Brand page shows: identity, logos, color palette, typography, visual elements, email preview, raw JSON config
+   - Colors: warm alpaca palette (cream `#faf9f6`, amber accent `#d4883a`, dark `#1c1618`)
+   - Font: DM Sans (300-700 weights)
+   - Logos: alpaca head icon + wordmark in dark/light variants (Supabase Storage)
 
 ## Testing Changes
 
