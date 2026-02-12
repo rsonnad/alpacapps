@@ -6,10 +6,12 @@
 
 import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { mediaService } from '../../shared/media-service.js';
 
 let authState = null;
 let pollTimer = null;
 let hasActiveBuild = false;
+let pendingAttachments = []; // { id, file, url, name, size, type, uploading }
 
 // =============================================
 // INIT
@@ -47,7 +49,100 @@ function setupPromptBox() {
   });
 
   submitBtn.addEventListener('click', () => submitFeatureRequest());
+
+  // File inputs
+  document.getElementById('cameraInput').addEventListener('change', (e) => handleFiles(e.target.files));
+  document.getElementById('fileInput').addEventListener('change', (e) => handleFiles(e.target.files));
 }
+
+// =============================================
+// FILE ATTACHMENTS
+// =============================================
+async function handleFiles(fileList) {
+  if (!fileList?.length) return;
+
+  for (const file of fileList) {
+    if (file.size > 10 * 1024 * 1024) {
+      showToast(`${file.name} is too large (max 10 MB)`, 'warning');
+      continue;
+    }
+
+    const id = Math.random().toString(36).substring(2, 10);
+    const entry = { id, file, url: null, name: file.name, size: file.size, type: file.type, uploading: true };
+    pendingAttachments.push(entry);
+    renderThumbs();
+
+    try {
+      // Compress images > 500KB
+      let uploadFile = file;
+      const isImage = file.type.startsWith('image/');
+      if (isImage && file.size > 500 * 1024) {
+        try {
+          const compressed = await mediaService.compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+          if (compressed.size < file.size) uploadFile = compressed;
+        } catch { /* use original */ }
+      }
+
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2, 8);
+      const ext = file.name.split('.').pop().toLowerCase();
+      const storagePath = `appdev/${timestamp}-${randomId}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('housephotos')
+        .upload(storagePath, uploadFile);
+
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { data: urlData } = supabase.storage
+        .from('housephotos')
+        .getPublicUrl(storagePath);
+
+      entry.url = urlData.publicUrl;
+      entry.uploading = false;
+      renderThumbs();
+    } catch (err) {
+      showToast(`Upload failed: ${err.message}`, 'error');
+      pendingAttachments = pendingAttachments.filter(a => a.id !== id);
+      renderThumbs();
+    }
+  }
+
+  // Reset file inputs
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('fileInput').value = '';
+}
+
+function removeAttachment(id) {
+  pendingAttachments = pendingAttachments.filter(a => a.id !== id);
+  renderThumbs();
+}
+
+function renderThumbs() {
+  const container = document.getElementById('attachThumbs');
+  if (!pendingAttachments.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = pendingAttachments.map(att => {
+    const isImage = att.type.startsWith('image/');
+    const preview = isImage && att.file
+      ? `<img src="${URL.createObjectURL(att.file)}" alt="">`
+      : `<div class="appdev-thumb-file">${escapeHtml(att.name)}</div>`;
+
+    return `
+      <div class="appdev-thumb ${att.uploading ? 'uploading' : ''}" data-id="${att.id}">
+        ${preview}
+        ${att.uploading ? '<div class="appdev-thumb-progress" style="width:50%"></div>' : ''}
+        <button class="appdev-thumb-remove" onclick="window._removeAttachment('${att.id}')">&times;</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Expose for inline onclick
+window._removeAttachment = removeAttachment;
 
 async function submitFeatureRequest() {
   const textarea = document.getElementById('featurePrompt');
@@ -59,10 +154,21 @@ async function submitFeatureRequest() {
     return;
   }
 
+  // Check if any uploads still in progress
+  if (pendingAttachments.some(a => a.uploading)) {
+    showToast('Please wait for uploads to finish.', 'warning');
+    return;
+  }
+
   submitBtn.disabled = true;
   submitBtn.textContent = 'Submitting...';
 
   try {
+    // Build attachments array (only successfully uploaded)
+    const attachments = pendingAttachments
+      .filter(a => a.url)
+      .map(a => ({ url: a.url, name: a.name, size: a.size, type: a.type }));
+
     const { error } = await supabase.from('feature_requests').insert({
       requester_user_id: authState.appUser?.id || null,
       requester_name: authState.appUser?.display_name || authState.email || 'Unknown',
@@ -70,12 +176,15 @@ async function submitFeatureRequest() {
       requester_email: authState.email || null,
       description,
       status: 'pending',
+      attachments: attachments.length ? attachments : [],
     });
 
     if (error) throw error;
 
     showToast('Feature request submitted! Claudero will pick it up shortly.', 'success');
     textarea.value = '';
+    pendingAttachments = [];
+    renderThumbs();
     document.getElementById('charCount').textContent = '0 chars';
     await loadHistory();
   } catch (err) {
@@ -209,6 +318,7 @@ function renderHistory(requests) {
         </div>
         <div class="appdev-request-body">
           <div class="appdev-request-desc">${escapeHtml(req.description)}</div>
+          ${renderAttachments(req.attachments)}
           <ul class="appdev-timeline">
             ${chain.map(item => renderTimelineItem(item)).join('')}
           </ul>
@@ -390,6 +500,19 @@ function buildReviewDetails(req) {
   }
 
   return parts.join('');
+}
+
+function renderAttachments(attachments) {
+  if (!attachments?.length) return '';
+  return `<div class="appdev-attachments">
+    ${attachments.map(att => {
+      const isImage = att.type?.startsWith('image/');
+      if (isImage) {
+        return `<a href="${att.url}" target="_blank"><img src="${att.url}" alt="${escapeHtml(att.name)}"></a>`;
+      }
+      return `<a href="${att.url}" target="_blank" class="file-link">${escapeHtml(att.name)}</a>`;
+    }).join('')}
+  </div>`;
 }
 
 function getTimelineClass(status) {

@@ -314,6 +314,127 @@
     }
     .appdev-file-list li { margin: 0.15rem 0; }
 
+    /* Attachments upload */
+    .appdev-attach-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .appdev-attach-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0.75rem;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .appdev-attach-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .appdev-attach-btn input[type="file"] {
+      display: none;
+    }
+    .appdev-thumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .appdev-thumb {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .appdev-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .appdev-thumb-file {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      font-size: 0.6rem;
+      text-align: center;
+      padding: 0.25rem;
+      word-break: break-all;
+      color: var(--text-muted);
+    }
+    .appdev-thumb-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 10px;
+      line-height: 18px;
+      text-align: center;
+      padding: 0;
+    }
+    .appdev-thumb-remove:hover { background: #ef4444; }
+    .appdev-thumb.uploading {
+      opacity: 0.5;
+    }
+    .appdev-thumb-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      transition: width 0.2s;
+    }
+
+    /* Attachment thumbnails in history */
+    .appdev-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+    .appdev-attachments a {
+      display: block;
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .appdev-attachments img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .appdev-attachments .file-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      text-align: center;
+      color: var(--text-muted);
+      background: var(--bg);
+      text-decoration: none;
+      padding: 0.2rem;
+      word-break: break-all;
+    }
+
     /* Follow-up badge */
     .appdev-followup-badge {
       display: inline-block;
@@ -378,6 +499,17 @@
       <div class="appdev-prompt-card">
         <label for="featurePrompt">Describe the feature you want built or modified</label>
         <textarea id="featurePrompt" class="appdev-textarea" placeholder="e.g. Add a page that shows the current weather forecast for Cedar Creek with hourly temps and rain probability..."></textarea>
+        <div class="appdev-attach-row">
+          <label class="appdev-attach-btn">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment">
+            <span>📷</span> Take Photo
+          </label>
+          <label class="appdev-attach-btn">
+            <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.txt,.md,.csv,.json">
+            <span>📎</span> Attach Files
+          </label>
+        </div>
+        <div class="appdev-thumbs" id="attachThumbs"></div>
         <div class="appdev-submit-row">
           <span class="char-count" id="charCount">0 chars</span>
           <button class="appdev-submit-btn" id="submitBtn" disabled>Submit to Claudero</button>

@@ -313,10 +313,18 @@ async function buildPrompt(request) {
     // Interpolate {{placeholders}} with request data
     const spec = request.structured_spec || {};
     const context = spec.context || {};
+    // Build attachments context string
+    const attachments = request.attachments || [];
+    const attachmentContext = attachments.length
+      ? `\n\nATTACHED FILES (${attachments.length}):\n` + attachments.map((a, i) =>
+          `${i + 1}. ${a.name} (${a.type}, ${Math.round(a.size / 1024)}KB): ${a.url}`
+        ).join('\n')
+      : '';
+
     const vars = {
       requester_name: request.requester_name || 'Unknown',
       requester_role: request.requester_role || 'staff',
-      description: request.description || '',
+      description: (request.description || '') + attachmentContext,
       parent_context: context.parent_request_id ? 'true' : '',
       parent_request_id: context.parent_request_id || '',
       parent_version: context.parent_version || '',
@@ -348,7 +356,7 @@ The site is deployed to GitHub Pages (static HTML/JS, no build step). Backend is
 
 FEATURE REQUEST from ${request.requester_name} (${request.requester_role}):
 ${request.description}
-
+${(request.attachments || []).length ? '\nATTACHED FILES (' + request.attachments.length + '):\n' + request.attachments.map((a, i) => `${i + 1}. ${a.name} (${a.type}): ${a.url}`).join('\n') : ''}
 Suggested page name: ${pageName}
 Data sources: ${dataSources}
 
