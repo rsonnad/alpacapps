@@ -1,12 +1,12 @@
 {
-  "version": "v260211.74 10:02p",
-  "release": 74,
-  "sha": "cf8b39cd",
-  "fullSha": "cf8b39cd11ff8b660020935fc15e0182d5b822be",
+  "version": "v260211.75 10:13p",
+  "release": 75,
+  "sha": "9c1670dc",
+  "fullSha": "9c1670dc2e44857876b31f4276d60ec55656663a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 04:02:40+00",
-  "commits": [{"sha":"cf8b39cd","message":"Fix brand page: use initAdminPage instead of nonexistent initAdminShell","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 04:13:10+00",
+  "commits": [{"sha":"9c1670dc","message":"Add full PayPal integration: checkout, webhooks, email parsing, preferred payment method","author":"Rahul Sonnad"}]
 }
