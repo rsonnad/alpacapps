@@ -1,12 +1,12 @@
 {
-  "version": "v260212.35 3:10p",
-  "release": 113,
-  "sha": "78b2f632",
-  "fullSha": "78b2f63224fbf2c69f23855fb2b2c684d7007ba7",
+  "version": "v260212.36 3:11p",
+  "release": 114,
+  "sha": "a38cef29",
+  "fullSha": "a38cef2952fbef24f4c3e2fcd6f1b7b31d66e434",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 21:10:18+00",
-  "commits": [{"sha":"78b2f632","message":"Add Sonos network optimization log + apply UDM Pro best practices","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 21:11:45+00",
+  "commits": [{"sha":"a38cef29","message":"Fix pay page: logo aspect ratio, clickable Venmo/PayPal links, tighter spacing","author":"Rahul Sonnad"}]
 }
