@@ -18,19 +18,37 @@ let allItems = [];     // flat array for stats
 // =============================================
 
 async function loadData() {
-  const [catRes, itemRes] = await Promise.all([
-    supabase.from('todo_categories').select('*').order('display_order'),
-    supabase.from('todo_items').select('*, checked_by_user:checked_by(display_name)').order('display_order')
-  ]);
+  try {
+    const [catRes, itemRes] = await Promise.all([
+      supabase.from('todo_categories').select('*').order('display_order'),
+      supabase.from('todo_items').select('*').order('display_order')
+    ]);
 
-  if (catRes.error) { console.error('Failed to load categories:', catRes.error); showToast('Failed to load data', 'error'); return; }
-  if (itemRes.error) { console.error('Failed to load items:', itemRes.error); showToast('Failed to load data', 'error'); return; }
+    if (catRes.error) { console.error('Failed to load categories:', catRes.error); showToast('Failed to load categories', 'error'); }
+    if (itemRes.error) { console.error('Failed to load items:', itemRes.error); showToast('Failed to load items', 'error'); }
 
-  allItems = itemRes.data || [];
-  categories = (catRes.data || []).map(cat => ({
-    ...cat,
-    items: allItems.filter(i => i.category_id === cat.id)
-  }));
+    allItems = itemRes.data || [];
+
+    // Load display names for checked items
+    const checkedUserIds = [...new Set(allItems.filter(i => i.checked_by).map(i => i.checked_by))];
+    if (checkedUserIds.length > 0) {
+      const { data: users } = await supabase.from('app_users').select('id, display_name').in('id', checkedUserIds);
+      const userMap = Object.fromEntries((users || []).map(u => [u.id, u.display_name]));
+      allItems.forEach(item => {
+        if (item.checked_by && userMap[item.checked_by]) {
+          item.checked_by_user = { display_name: userMap[item.checked_by] };
+        }
+      });
+    }
+
+    categories = (catRes.data || []).map(cat => ({
+      ...cat,
+      items: allItems.filter(i => i.category_id === cat.id)
+    }));
+  } catch (err) {
+    console.error('loadData error:', err);
+    showToast('Failed to load data', 'error');
+  }
 
   render();
 }
