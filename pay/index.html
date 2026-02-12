@@ -164,6 +164,27 @@
       margin-top: 0.25rem;
     }
 
+    /* PayPal section */
+    .paypal-section { margin-bottom: 1.5rem; }
+    .paypal-section.hidden { display: none; }
+    #paypal-button-container {
+      min-height: 55px;
+      margin-bottom: 0.5rem;
+    }
+    .paypal-divider {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+      color: #aaa;
+      font-size: 0.85rem;
+    }
+    .paypal-divider::before, .paypal-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .paypal-divider span { padding: 0 1rem; }
+
     /* Tabs */
     .pay-tabs {
       display: flex;
@@ -397,10 +418,17 @@
           <!-- Error message -->
           <div class="pay-error" id="payError"></div>
 
+          <!-- PayPal Button (primary, shown first) -->
+          <div class="paypal-section" id="paypalSection">
+            <div id="paypal-button-container"></div>
+          </div>
+
+          <div class="paypal-divider" id="paypalDivider"><span>or pay another way</span></div>
+
           <!-- Tabs: Card/Bank vs Other -->
           <div class="pay-tabs">
             <button class="pay-tab active" data-tab="stripe" id="tabStripe">Card / Bank</button>
-            <button class="pay-tab" data-tab="other" id="tabOther">Venmo / Zelle / PayPal</button>
+            <button class="pay-tab" data-tab="other" id="tabOther">Venmo / Zelle / Other</button>
           </div>
 
           <!-- Stripe Payment Element -->
@@ -431,6 +459,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
+  <!-- PayPal JS SDK (loaded dynamically after fetching client ID) -->
 
   <script>
     const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
@@ -481,6 +510,9 @@
       });
     });
 
+    let paypalClientId = null;
+    let paypalPaymentRecordId = null;
+
     // ---- Initialize ----
     async function init() {
       // If preset amount, show summary instead of input
@@ -511,8 +543,8 @@
       // Load payment methods
       await loadPaymentMethods();
 
-      // Initialize Stripe
-      await initStripe();
+      // Initialize PayPal (preferred) and Stripe in parallel
+      await Promise.all([initPayPal(), initStripe()]);
 
       // Update button text
       updatePayBtnText();
@@ -584,6 +616,119 @@
           </div>
         `;
       }).join('');
+    }
+
+    // ---- PayPal ----
+    async function initPayPal() {
+      try {
+        // Get PayPal client ID from our edge function
+        const configRes = await fetch(`${SUPABASE_URL}/functions/v1/paypal-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ action: 'get_config' }),
+        });
+        const configData = await configRes.json();
+
+        if (!configData.success || !configData.client_id) {
+          console.log('PayPal not configured, hiding button');
+          document.getElementById('paypalSection').style.display = 'none';
+          document.getElementById('paypalDivider').style.display = 'none';
+          return;
+        }
+
+        paypalClientId = configData.client_id;
+
+        // Load PayPal JS SDK dynamically
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD&intent=capture`;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+
+        // Render PayPal button
+        paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'blue',
+            shape: 'rect',
+            label: 'pay',
+            height: 48,
+          },
+
+          createOrder: async () => {
+            const amount = getAmount();
+            if (amount < 0.50) {
+              showError('Please enter an amount of at least $0.50');
+              throw new Error('Amount too low');
+            }
+
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/paypal-checkout`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+              body: JSON.stringify({
+                action: 'create_order',
+                amount,
+                description: payDescInput.value || presetDesc || 'Payment',
+                payment_type: presetPaymentType || 'rent',
+                reference_type: presetRefType || 'direct_payment',
+                reference_id: presetRefId || undefined,
+                person_id: presetPersonId || undefined,
+                person_name: presetPersonName || undefined,
+                buyer_email: presetEmail || undefined,
+              }),
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+              showError(data.error || 'Failed to create PayPal order');
+              throw new Error(data.error);
+            }
+
+            paypalPaymentRecordId = data.payment_record_id;
+            return data.order_id;
+          },
+
+          onApprove: async (data) => {
+            try {
+              const res = await fetch(`${SUPABASE_URL}/functions/v1/paypal-checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+                body: JSON.stringify({
+                  action: 'capture_order',
+                  order_id: data.orderID,
+                  payment_record_id: paypalPaymentRecordId,
+                }),
+              });
+              const captureData = await res.json();
+
+              if (captureData.success) {
+                showSuccess();
+              } else {
+                showError(captureData.error || 'Payment capture failed');
+              }
+            } catch (err) {
+              showError('Payment processing error. Please contact us.');
+              console.error('PayPal capture error:', err);
+            }
+          },
+
+          onError: (err) => {
+            console.error('PayPal error:', err);
+            showError('PayPal payment failed. Please try another method.');
+          },
+
+          onCancel: () => {
+            console.log('PayPal payment cancelled');
+          },
+        }).render('#paypal-button-container');
+
+      } catch (err) {
+        console.error('PayPal init error:', err);
+        document.getElementById('paypalSection').style.display = 'none';
+        document.getElementById('paypalDivider').style.display = 'none';
+      }
     }
 
     // ---- Stripe ----

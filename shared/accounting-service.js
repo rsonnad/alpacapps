@@ -183,6 +183,8 @@ class AccountingService {
       assignment_id: data.assignmentId || data.assignment_id || null,
       event_request_id: data.eventRequestId || data.event_request_id || null,
       square_payment_id: data.squarePaymentId || data.square_payment_id || null,
+      paypal_payment_id: data.paypalPaymentId || data.paypal_payment_id || null,
+      paypal_transaction_id: data.paypalTransactionId || data.paypal_transaction_id || null,
       rental_payment_id: data.rentalPaymentId || data.rental_payment_id || null,
       event_payment_id: data.eventPaymentId || data.event_payment_id || null,
       source_payment_id: data.sourcePaymentId || data.source_payment_id || null,

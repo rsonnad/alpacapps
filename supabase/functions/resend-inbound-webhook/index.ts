@@ -872,6 +872,99 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
   return null;
 }
 
+// =============================================
+// PAYPAL PAYMENT EMAIL PARSING
+// =============================================
+
+interface PayPalPaymentEmail {
+  amount: number;
+  senderName: string;
+  senderEmail: string | null;
+  transactionId: string | null;
+  source: string; // "paypal_notification", "paypal_receipt"
+}
+
+/**
+ * Parse PayPal payment notification emails.
+ * Handles multiple PayPal email formats:
+ * - "You've received $X.XX from Name" (instant notification)
+ * - "You received a payment of $X.XX from Name" (payment received)
+ * - "Name sent you $X.XX" (money received)
+ * - "Payment received: $X.XX" with sender details
+ */
+function parsePayPalPayment(bodyText: string, fromAddress: string): PayPalPaymentEmail | null {
+  // Only process emails from PayPal
+  const fromLower = fromAddress.toLowerCase();
+  if (!fromLower.includes("paypal") && !fromLower.includes("service@paypal.com") && !fromLower.includes("service@intl.paypal.com")) {
+    return null;
+  }
+
+  const normalized = bodyText.replace(/\s+/g, " ");
+
+  // Pattern 1: "You've received $X.XX from Name"
+  const receivedPattern1 = /(?:You['']ve received|You received|received a payment of) \$([\d,]+\.\d{2})(?: USD)? from (.+?)(?:\s*\.|$|!|\s+for\b)/im;
+  const match1 = normalized.match(receivedPattern1);
+  if (match1) {
+    const txMatch = normalized.match(/Transaction ID[:\s]*([A-Z0-9]+)/i);
+    return {
+      amount: parseFloat(match1[1].replace(/,/g, "")),
+      senderName: match1[2].trim(),
+      senderEmail: null,
+      transactionId: txMatch?.[1] || null,
+      source: "paypal_notification",
+    };
+  }
+
+  // Pattern 2: "Name sent you $X.XX"
+  const sentPattern = /(.+?) sent you \$([\d,]+\.\d{2})/im;
+  const match2 = normalized.match(sentPattern);
+  if (match2) {
+    const txMatch = normalized.match(/Transaction ID[:\s]*([A-Z0-9]+)/i);
+    return {
+      amount: parseFloat(match2[2].replace(/,/g, "")),
+      senderName: match2[1].trim(),
+      senderEmail: null,
+      transactionId: txMatch?.[1] || null,
+      source: "paypal_notification",
+    };
+  }
+
+  // Pattern 3: "Payment of $X.XX received" or "Payment received: $X.XX"
+  const paymentReceivedPattern = /[Pp]ayment (?:of \$([\d,]+\.\d{2}) received|received[:\s]+\$([\d,]+\.\d{2}))/;
+  const match3 = normalized.match(paymentReceivedPattern);
+  if (match3) {
+    const amt = match3[1] || match3[2];
+    // Try to find sender
+    const senderMatch = normalized.match(/(?:from|sender|paid by)[:\s]+(.+?)(?:\s*\.|$|!)/i);
+    const txMatch = normalized.match(/Transaction ID[:\s]*([A-Z0-9]+)/i);
+    return {
+      amount: parseFloat(amt.replace(/,/g, "")),
+      senderName: senderMatch?.[1]?.trim() || "Unknown",
+      senderEmail: null,
+      transactionId: txMatch?.[1] || null,
+      source: "paypal_receipt",
+    };
+  }
+
+  // Pattern 4: Generic amount extraction from PayPal emails as fallback
+  const genericAmount = normalized.match(/\$([\d,]+\.\d{2})/);
+  if (genericAmount) {
+    const nameMatch = normalized.match(/(?:from|sender|paid by)[:\s]+(.+?)(?:\s*\.|$|!|\s+for\b)/i);
+    const txMatch = normalized.match(/Transaction ID[:\s]*([A-Z0-9]+)/i);
+    if (nameMatch) {
+      return {
+        amount: parseFloat(genericAmount[1].replace(/,/g, "")),
+        senderName: nameMatch[1].trim(),
+        senderEmail: null,
+        transactionId: txMatch?.[1] || null,
+        source: "paypal_receipt",
+      };
+    }
+  }
+
+  return null;
+}
+
 /**
  * Try to match a Zelle sender name to a person in the people table.
  */
@@ -1440,12 +1533,28 @@ async function sendPaymentNotification(
         <p><a href="${adminUrl}">View Application</a></p>
       </div>
     `;
+  } else if (type === "auto_recorded_paypal") {
+    subject = `PayPal Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#003087;">&#x2705; PayPal Payment Auto-Recorded</h2>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">PayPal</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${details.category || 'other'}</td></tr>
+        </table>
+        ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#003087;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
+      </div>
+    `;
   } else if (type === "unparseable") {
     subject = "Unrecognized Payment Email";
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
         <h2 style="color:#999;">&#x2709; Unrecognized Payment Email</h2>
-        <p>An email was sent to payments@ but could not be parsed as a Zelle payment. It has been forwarded for manual review.</p>
+        <p>An email was sent to payments@ but could not be parsed as a payment notification (tried Zelle and PayPal patterns). It has been forwarded for manual review.</p>
       </div>
     `;
   }
@@ -1474,6 +1583,7 @@ async function sendPaymentNotification(
 
 /**
  * Main handler for payments@ emails.
+ * Attempts to parse both Zelle and PayPal payment notifications.
  */
 async function handlePaymentEmail(
   emailRecord: any,
@@ -1481,11 +1591,20 @@ async function handlePaymentEmail(
   resendApiKey: string
 ): Promise<void> {
   const bodyText = emailRecord.body_text || "";
+  const fromAddress = emailRecord.from_address || "";
 
-  // 1. Parse the Zelle payment
+  // 1a. Try to parse as PayPal payment first
+  const paypalParsed = parsePayPalPayment(bodyText, fromAddress);
+  if (paypalParsed) {
+    console.log(`Parsed PayPal payment: $${paypalParsed.amount} from ${paypalParsed.senderName}, txn=${paypalParsed.transactionId}`);
+    await handleParsedPayPalPayment(supabase, resendApiKey, paypalParsed, emailRecord);
+    return;
+  }
+
+  // 1b. Try to parse as Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse Zelle payment from email, notifying admin");
+    console.log("Could not parse payment from email (tried Zelle + PayPal), notifying admin");
     await sendPaymentNotification(resendApiKey, "unparseable", {
       parsed: { amount: 0, senderName: "Unknown", confirmationNumber: null },
       personName: "",
@@ -1550,6 +1669,221 @@ async function handlePaymentEmail(
     applicationId: "",
     pendingApps: pendingAppsHtml,
   });
+}
+
+/**
+ * Handle a parsed PayPal payment notification email.
+ * Matches sender to person, records in ledger, and optionally
+ * reconciles against pending deposit applications.
+ */
+async function handleParsedPayPalPayment(
+  supabase: any,
+  resendApiKey: string,
+  paypal: PayPalPaymentEmail,
+  emailRecord: any
+): Promise<void> {
+  // Dedup: if we have a transaction ID, check if already recorded
+  if (paypal.transactionId) {
+    const { data: existing } = await supabase
+      .from("ledger")
+      .select("id")
+      .eq("paypal_transaction_id", paypal.transactionId)
+      .single();
+
+    if (existing) {
+      console.log(`PayPal transaction ${paypal.transactionId} already recorded, skipping`);
+      return;
+    }
+  }
+
+  // Try to match sender to a person
+  const nameMatch = await matchByName(supabase, paypal.senderName);
+
+  if (nameMatch) {
+    // Check if there's a pending deposit application
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      console.log(`PayPal payment matched to deposit application: ${nameMatch.name}, app=${application.id}`);
+      // Auto-record as deposit (reuse Zelle deposit recording with PayPal method)
+      await autoRecordPayPalDeposit(supabase, application, paypal, nameMatch, resendApiKey);
+      return;
+    }
+
+    // No deposit application — check for active assignment (likely rent)
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, rate_amount")
+      .eq("person_id", nameMatch.person_id)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("start_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    // Record as rent or general payment
+    const category = assignment ? "rent" : "other";
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category,
+      amount: paypal.amount,
+      payment_method: "paypal",
+      transaction_date: new Date().toISOString().split("T")[0],
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      assignment_id: assignment?.id || null,
+      paypal_transaction_id: paypal.transactionId || null,
+      status: "completed",
+      description: `PayPal payment from ${nameMatch.name}`,
+      notes: paypal.senderEmail ? `PayPal email: ${paypal.senderEmail}` : null,
+      recorded_by: "system:paypal-email",
+      is_test: false,
+    });
+
+    console.log(`Recorded PayPal payment: $${paypal.amount} from ${nameMatch.name} as ${category}`);
+
+    // Notify admin of auto-recorded payment
+    await sendPaymentNotification(resendApiKey, "auto_recorded_paypal", {
+      parsed: { amount: paypal.amount, senderName: paypal.senderName, confirmationNumber: paypal.transactionId },
+      personName: nameMatch.name,
+      applicationId: "",
+      category,
+    });
+    return;
+  }
+
+  // No name match — try amount matching (same as Zelle Tier 2)
+  const amountMatches = await matchByAmount(supabase, paypal.amount);
+
+  if (amountMatches.length === 1) {
+    console.log(`PayPal amount match: $${paypal.amount} → ${amountMatches[0].person.first_name} ${amountMatches[0].person.last_name}`);
+    // Use same confirmation flow as Zelle
+    const zelleEquiv: ZellePayment = {
+      amount: paypal.amount,
+      senderName: paypal.senderName,
+      confirmationNumber: paypal.transactionId,
+      bank: "paypal",
+    };
+    await createConfirmationRequest(supabase, resendApiKey, zelleEquiv, amountMatches[0], emailRecord.id);
+    return;
+  }
+
+  // No match — notify admin
+  console.log("PayPal payment: no match found, notifying admin");
+  await sendPaymentNotification(resendApiKey, "no_match", {
+    parsed: { amount: paypal.amount, senderName: paypal.senderName, confirmationNumber: paypal.transactionId },
+    personName: "",
+    applicationId: "",
+    pendingApps: "",
+  });
+}
+
+/**
+ * Auto-record a PayPal deposit payment (mirrors autoRecordDeposit for Zelle).
+ */
+async function autoRecordPayPalDeposit(
+  supabase: any,
+  application: any,
+  paypal: PayPalPaymentEmail,
+  nameMatch: { person_id: string; name: string },
+  resendApiKey: string
+): Promise<void> {
+  const moveIn = application.move_in_deposit_amount || 0;
+  const security = application.security_deposit_amount || 0;
+  const totalDeposit = moveIn + security;
+  const today = new Date().toISOString().split("T")[0];
+
+  // Record move-in deposit
+  if (moveIn > 0) {
+    await supabase.from("rental_payments").insert({
+      rental_application_id: application.id,
+      payment_type: "move_in_deposit",
+      amount: moveIn,
+      payment_method: "paypal",
+      transaction_date: today,
+      transaction_id: paypal.transactionId || null,
+      status: "paid",
+      recorded_by: "system:paypal-email",
+    });
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "move_in_deposit",
+      amount: moveIn,
+      payment_method: "paypal",
+      transaction_date: today,
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      rental_application_id: application.id,
+      paypal_transaction_id: paypal.transactionId || null,
+      status: "completed",
+      description: `Move-in deposit from ${nameMatch.name} (PayPal)`,
+      recorded_by: "system:paypal-email",
+    });
+  }
+
+  // Record security deposit
+  if (security > 0) {
+    await supabase.from("rental_payments").insert({
+      rental_application_id: application.id,
+      payment_type: "security_deposit",
+      amount: security,
+      payment_method: "paypal",
+      transaction_date: today,
+      transaction_id: paypal.transactionId || null,
+      status: "paid",
+      recorded_by: "system:paypal-email",
+    });
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "security_deposit",
+      amount: security,
+      payment_method: "paypal",
+      transaction_date: today,
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      rental_application_id: application.id,
+      paypal_transaction_id: paypal.transactionId ? `${paypal.transactionId}-sec` : null,
+      status: "completed",
+      description: `Security deposit from ${nameMatch.name} (PayPal)`,
+      recorded_by: "system:paypal-email",
+    });
+  }
+
+  // Handle overpayment as rent credit
+  if (paypal.amount > totalDeposit && totalDeposit > 0) {
+    const overpayment = paypal.amount - totalDeposit;
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category: "rent",
+      amount: overpayment,
+      payment_method: "paypal",
+      transaction_date: today,
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      rental_application_id: application.id,
+      paypal_transaction_id: paypal.transactionId ? `${paypal.transactionId}-over` : null,
+      status: "completed",
+      description: `Rent credit from overpayment by ${nameMatch.name} (PayPal)`,
+      recorded_by: "system:paypal-email",
+    });
+  }
+
+  // Update application deposit status
+  await supabase
+    .from("rental_applications")
+    .update({ deposit_status: "paid", deposit_paid_at: new Date().toISOString() })
+    .eq("id", application.id);
+
+  // Notify admin
+  await sendPaymentNotification(resendApiKey, "auto_recorded_paypal", {
+    parsed: { amount: paypal.amount, senderName: paypal.senderName, confirmationNumber: paypal.transactionId },
+    personName: nameMatch.name,
+    applicationId: application.id,
+    category: "deposit",
+  });
+
+  console.log(`Auto-recorded PayPal deposit: $${paypal.amount} from ${nameMatch.name} for app ${application.id}`);
 }
 
 /**
