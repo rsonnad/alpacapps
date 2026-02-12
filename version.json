@@ -1,12 +1,12 @@
 {
-  "version": "v260212.09 12:28p",
-  "release": 86,
-  "sha": "50f7ddab",
-  "fullSha": "50f7ddaba67dbe0c98133d41b4dc02505463a723",
+  "version": "v260212.10 12:29p",
+  "release": 88,
+  "sha": "ef9bc6bf",
+  "fullSha": "ef9bc6bf7ac12f359efb50a5fe6f5e14466767c4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 18:28:02+00",
-  "commits": [{"sha":"50f7ddab","message":"Add native PAI Discord bot, replace OpenClaw paibot","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 18:29:25+00",
+  "commits": [{"sha":"ef9bc6bf","message":"Update infra page: Discord Bot → Background Workers with accurate pricing","author":"Rahul Sonnad"}]
 }
