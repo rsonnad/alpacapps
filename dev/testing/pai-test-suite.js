@@ -400,6 +400,51 @@ function generateTestQuestions(data) {
     difficulty: 'medium',
   });
 
+  // --- Category: Access Codes & Passwords ---
+  // Door codes from spaces.access_code + password_vault (house category)
+  questions.push({
+    category: 'access_codes',
+    question: 'What is the door code for the Skyloft?',
+    expectedKeywords: ['7654'],
+    difficulty: 'easy',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'How do I get into the Garage Mahal?',
+    expectedKeywords: ['7777'],
+    difficulty: 'easy',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'What is the front door code?',
+    expectedKeywords: ['3486'],
+    difficulty: 'easy',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'What are the WiFi passwords?',
+    expectedKeywords: ['iiiiiiii', 'popopopo'],
+    difficulty: 'easy',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'What is the code for the Spartan Trailer?',
+    expectedKeywords: ['9753'],
+    difficulty: 'easy',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'What are all the door codes for the property?',
+    expectedKeywords: ['3486', '7777', '7654'],
+    difficulty: 'medium',
+  });
+  questions.push({
+    category: 'access_codes',
+    question: 'How do I access the Pequeño Largo Suite?',
+    expectedKeywords: ['8765'],
+    difficulty: 'easy',
+  });
+
   // --- Category: Conversational / personality ---
   questions.push({
     category: 'personality',
