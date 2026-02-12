@@ -7,300 +7,278 @@
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>Pay - Alpaca Playhouse</title>
 
-  <!-- Shared site styles (nav, footer, etc.) -->
+  <!-- Shared site styles (nav, footer) -->
   <link rel="stylesheet" href="/styles/site.css">
 
   <style>
-    /* Main container */
-    .pay-container {
-      max-width: 520px;
+    body { background: #f5f5f0; }
+
+    /* Pay page container */
+    .pay-wrap {
+      max-width: 600px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
 
-    /* Card */
+    /* Main card — matches email template design */
     .pay-card {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
+    /* Header — dark gradient like email */
     .pay-card__header {
-      background: linear-gradient(135deg, #2d3024 0%, #3a3f30 100%);
-      padding: 2rem;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 32px;
       text-align: center;
-      color: white;
     }
     .pay-card__header h1 {
-      font-size: 1.5rem;
+      color: white;
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.5px;
       font-weight: 600;
-      margin-bottom: 0.25rem;
     }
     .pay-card__header p {
-      font-size: 0.9rem;
-      opacity: 0.7;
+      color: rgba(255,255,255,0.7);
+      margin: 8px 0 0;
+      font-size: 14px;
     }
 
-    .pay-card__body { padding: 2rem; }
+    /* Body */
+    .pay-card__body { padding: 32px; }
 
-    /* Amount input */
-    .amount-group { margin-bottom: 1.5rem; }
-    .amount-group label {
+    /* Greeting */
+    .pay-greeting {
+      color: #333;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .pay-subtext {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    /* Amount & description inputs */
+    .pay-field { margin-bottom: 20px; }
+    .pay-field__label {
       display: block;
-      font-size: 0.8rem;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       color: #888;
-      margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 6px;
     }
-    .amount-input-wrap {
+    .pay-field__input {
+      width: 100%;
+      font-size: 16px;
+      font-family: inherit;
+      padding: 12px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .pay-field__input:focus { border-color: #16213e; }
+    .pay-field__input--amount {
+      font-size: 24px;
+      font-weight: 700;
+      padding-left: 32px;
+    }
+    .pay-field__dollar {
       position: relative;
-      display: flex;
-      align-items: center;
     }
-    .amount-input-wrap .dollar-sign {
+    .pay-field__dollar::before {
+      content: '$';
       position: absolute;
-      left: 1rem;
-      font-size: 1.5rem;
-      font-weight: 600;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      font-weight: 700;
       color: #333;
       pointer-events: none;
     }
-    .amount-input {
-      width: 100%;
-      font-size: 1.5rem;
-      font-weight: 600;
-      padding: 0.75rem 1rem 0.75rem 2.25rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .amount-input:focus { border-color: #2d3024; }
 
-    /* Description */
-    .desc-group { margin-bottom: 1.5rem; }
-    .desc-group label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #888;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .desc-input {
-      width: 100%;
-      font-size: 0.95rem;
-      padding: 0.65rem 0.85rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .desc-input:focus { border-color: #2d3024; }
-
-    /* Summary box */
+    /* Preset summary — orange left border like email */
     .pay-summary {
-      background: #f8f9f6;
-      border-left: 4px solid #2d3024;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      border-radius: 0 10px 10px 0;
+      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+      border-left: 4px solid #e65100;
+      padding: 20px;
+      margin-bottom: 24px;
+      border-radius: 0 8px 8px 0;
     }
     .pay-summary__label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #888;
+      font-size: 13px;
+      color: #e65100;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.25rem;
+      margin-bottom: 4px;
     }
     .pay-summary__amount {
-      font-size: 2rem;
+      font-size: 28px;
       font-weight: 700;
-      color: #2d3024;
+      color: #bf360c;
     }
     .pay-summary__desc {
-      font-size: 0.95rem;
-      color: #555;
-      margin-top: 0.25rem;
-    }
-    .pay-summary__person {
-      font-size: 0.85rem;
-      color: #888;
-      margin-top: 0.25rem;
-    }
-
-    /* Section heading */
-    .section-heading {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Payment method cards */
-    .method-card {
-      border: 2px solid #eee;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.65rem;
-      transition: all 0.2s;
-      cursor: default;
-    }
-    .method-card:hover {
-      border-color: #ccc;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .method-card__top {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .method-card__icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .method-card__icon svg {
-      width: 22px;
-      height: 22px;
-      color: white;
-    }
-    .method-card__info { flex: 1; min-width: 0; }
-    .method-card__name {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #333;
-      margin-bottom: 0.15rem;
-    }
-    .method-card__handle {
-      font-size: 0.85rem;
-      color: #666;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-    }
-    .method-card__fee {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .method-card__fee--free {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-    .method-card__fee--low {
-      background: #fff3e0;
+      font-size: 14px;
       color: #e65100;
+      margin-top: 4px;
     }
-    .method-card__note {
-      font-size: 0.8rem;
-      color: #888;
-      margin-top: 0.5rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid #f0f0f0;
-      line-height: 1.4;
-    }
-    .method-card__note strong { color: #c62828; font-weight: 700; }
 
-    /* Stripe ACH section */
-    .stripe-divider {
-      display: flex;
-      align-items: center;
-      margin: 1.5rem 0 1rem;
-      color: #bbb;
-      font-size: 0.8rem;
+    /* Error */
+    .pay-error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
     }
-    .stripe-divider::before, .stripe-divider::after {
-      content: '';
-      flex: 1;
+    .pay-error.visible { display: block; }
+
+    /* Payment methods section — matches email template */
+    .pay-methods {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .pay-methods__title {
+      margin: 0 0 12px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    .pay-methods__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .pay-methods__row {
       border-bottom: 1px solid #eee;
     }
-    .stripe-divider span { padding: 0 0.75rem; }
-
-    .stripe-card {
-      border: 2px solid #eee;
-      border-radius: 12px;
-      padding: 1.25rem;
-      transition: border-color 0.2s;
+    .pay-methods__row td {
+      padding: 10px 0;
+      vertical-align: middle;
     }
-    .stripe-card__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
+    .pay-methods__badge {
+      display: inline-block;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      width: 55px;
+      text-align: center;
     }
-    .stripe-card__title {
-      font-weight: 700;
-      font-size: 0.95rem;
+    .pay-methods__handle {
+      margin-left: 10px;
+      font-weight: 600;
       color: #333;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
-    .stripe-card__title svg {
-      width: 20px;
-      height: 20px;
-      color: #635bff;
-    }
-    .stripe-card__badge {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.7rem;
-      color: #aaa;
-    }
-    .stripe-card__badge svg { height: 14px; width: auto; }
-    .stripe-card__desc {
-      font-size: 0.82rem;
+    .pay-methods__note {
+      margin-left: 6px;
       color: #888;
-      margin-bottom: 1rem;
+      font-size: 12px;
+    }
+    .pay-methods__free {
+      float: right;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
     }
 
-    .stripe-section { display: block; }
+    /* Memo reminder — matches email */
+    .pay-memo {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    /* Divider */
+    .pay-divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      color: #bbb;
+      font-size: 13px;
+    }
+    .pay-divider::before, .pay-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .pay-divider span { padding: 0 12px; }
+
+    /* Stripe ACH section */
+    .pay-stripe-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .pay-stripe-desc {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 16px;
+    }
     #payment-element {
       min-height: 80px;
-      margin-bottom: 1rem;
+      margin-bottom: 16px;
     }
+
+    /* CTA button — matches email orange gradient */
     .pay-btn {
+      display: inline-block;
       width: 100%;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 700;
+      background: linear-gradient(135deg, #e65100 0%, #bf360c 100%);
       color: white;
-      background: #635bff;
+      padding: 16px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(230,81,0,0.3);
       border: none;
-      border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
-      letter-spacing: 0.3px;
+      text-align: center;
+      font-family: inherit;
     }
-    .pay-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,91,255,0.3); }
+    .pay-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(230,81,0,0.4); }
     .pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .pay-btn__sub {
+      display: block;
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+    }
 
-    /* Success state */
+    /* Success */
     .pay-success {
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 32px 16px;
       display: none;
     }
     .pay-success.visible { display: block; }
-    .pay-success__icon {
+    .pay-success__check {
       width: 64px;
       height: 64px;
       background: #e8f5e9;
@@ -308,25 +286,31 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1rem;
+      margin: 0 auto 16px;
     }
-    .pay-success__icon svg { width: 32px; height: 32px; color: #2e7d32; }
-    .pay-success h2 { color: #2e7d32; margin-bottom: 0.5rem; }
-    .pay-success p { color: #666; font-size: 0.95rem; }
+    .pay-success__check svg { width: 32px; height: 32px; color: #2e7d32; }
+    .pay-success h2 { color: #2e7d32; margin-bottom: 8px; font-size: 20px; }
+    .pay-success p { color: #666; font-size: 15px; }
 
-    /* Error */
-    .pay-error {
-      background: #ffebee;
-      color: #c62828;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      display: none;
+    /* Card footer — matches email */
+    .pay-card__footer {
+      background: #f5f5f5;
+      padding: 20px 32px;
+      text-align: center;
+      border-top: 1px solid #e0e0e0;
     }
-    .pay-error.visible { display: block; }
+    .pay-card__footer p {
+      margin: 0;
+      color: #999;
+      font-size: 12px;
+    }
+    .pay-card__footer p + p {
+      margin-top: 4px;
+      color: #bbb;
+      font-size: 11px;
+    }
 
-    /* Loading spinner */
+    /* Spinner */
     .spinner {
       display: inline-block;
       width: 18px;
@@ -336,38 +320,26 @@
       border-top-color: white;
       animation: spin 0.6s linear infinite;
       vertical-align: middle;
-      margin-right: 0.5rem;
+      margin-right: 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Memo reminder */
-    .memo-reminder {
-      background: #faf8f0;
-      border: 1px solid #e8e0c8;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      margin-top: 0.75rem;
-      font-size: 0.82rem;
-      color: #8a7540;
-      line-height: 1.4;
-    }
-
     /* Responsive */
-    @media (max-width: 540px) {
-      .pay-container { margin: 1rem auto; }
-      .pay-card__body { padding: 1.25rem; }
-      .pay-card__header { padding: 1.5rem; }
-      .pay-summary__amount { font-size: 1.5rem; }
+    @media (max-width: 640px) {
+      .pay-wrap { margin: 1rem auto; }
+      .pay-card__body { padding: 20px; }
+      .pay-card__header { padding: 24px; }
+      .pay-summary__amount { font-size: 22px; }
     }
   </style>
 </head>
 <body>
-  <!-- Standard site header (nav injected by public-shell.js) -->
+  <!-- Standard site header -->
   <span data-site-version style="display:none;">v260212.28 2:40p</span>
   <div id="siteHeader"></div>
 
-  <!-- Page content -->
-  <div class="pay-container">
+  <!-- Pay page -->
+  <div class="pay-wrap">
     <div class="pay-card">
       <div class="pay-card__header">
         <h1>Alpaca Playhouse</h1>
@@ -375,9 +347,9 @@
       </div>
 
       <div class="pay-card__body">
-        <!-- Success state -->
+        <!-- Success -->
         <div class="pay-success" id="successState">
-          <div class="pay-success__icon">
+          <div class="pay-success__check">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
@@ -386,66 +358,58 @@
           <p id="successMessage">Thank you for your payment. A confirmation email will be sent shortly.</p>
         </div>
 
-        <!-- Payment form -->
+        <!-- Form -->
         <div id="paymentForm">
           <!-- Preset summary -->
           <div class="pay-summary" id="presetSummary" style="display:none;">
             <div class="pay-summary__label">Amount Due</div>
             <div class="pay-summary__amount" id="summaryAmount"></div>
             <div class="pay-summary__desc" id="summaryDesc"></div>
-            <div class="pay-summary__person" id="summaryPerson"></div>
           </div>
 
-          <!-- Amount input -->
-          <div class="amount-group" id="amountGroup">
-            <label for="payAmount">Payment Amount</label>
-            <div class="amount-input-wrap">
-              <span class="dollar-sign">$</span>
-              <input type="number" id="payAmount" class="amount-input" placeholder="0.00" min="0.50" step="0.01">
+          <!-- Amount -->
+          <div class="pay-field" id="amountGroup">
+            <label class="pay-field__label" for="payAmount">Payment Amount</label>
+            <div class="pay-field__dollar">
+              <input type="number" id="payAmount" class="pay-field__input pay-field__input--amount" placeholder="0.00" min="0.50" step="0.01">
             </div>
           </div>
 
-          <!-- Description input -->
-          <div class="desc-group" id="descGroup">
-            <label for="payDesc">What is this payment for?</label>
-            <input type="text" id="payDesc" class="desc-input" placeholder="e.g. February rent, security deposit">
+          <!-- Description -->
+          <div class="pay-field" id="descGroup">
+            <label class="pay-field__label" for="payDesc">What is this payment for?</label>
+            <input type="text" id="payDesc" class="pay-field__input" placeholder="e.g. February rent, security deposit">
           </div>
 
-          <!-- Error message -->
+          <!-- Error -->
           <div class="pay-error" id="payError"></div>
 
-          <!-- Free payment methods (from DB) -->
-          <div class="section-heading">Send Payment To</div>
-          <div id="methodCards"></div>
-          <div class="memo-reminder" id="memoReminder" style="display:none;">
-            Include your <strong style="color:#8a7540;">name</strong> and <strong style="color:#8a7540;">what it's for</strong> in the memo or note.
+          <!-- Payment methods (from DB) — styled like email template -->
+          <div class="pay-methods" id="methodsSection" style="display:none;">
+            <p class="pay-methods__title">Payment Methods</p>
+            <table class="pay-methods__table" id="methodCards">
+              <tbody></tbody>
+            </table>
           </div>
 
-          <!-- Stripe ACH (automated) -->
-          <div class="stripe-divider"><span>or pay online</span></div>
+          <p class="pay-memo" id="memoReminder" style="display:none;">Please include your name and what the payment is for in the memo.</p>
 
-          <div class="stripe-card">
-            <div class="stripe-card__header">
-              <div class="stripe-card__title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                  <line x1="1" y1="10" x2="23" y2="10"></line>
-                </svg>
-                Bank Transfer (ACH)
-              </div>
-              <div class="stripe-card__badge">
-                <span class="method-card__fee method-card__fee--low">0.8% fee</span>
-              </div>
-            </div>
-            <div class="stripe-card__desc">Automated bank transfer &mdash; securely connects to your bank account</div>
-            <div class="stripe-section" id="stripeSection">
-              <div id="payment-element"></div>
-              <button class="pay-btn" id="payBtn" disabled>
-                Pay via Bank Transfer
-              </button>
-            </div>
+          <!-- Stripe ACH divider -->
+          <div class="pay-divider"><span>or pay online via bank transfer</span></div>
+
+          <div id="stripeSection">
+            <div id="payment-element"></div>
+            <button class="pay-btn" id="payBtn" disabled>
+              Pay via Bank Transfer
+            </button>
+            <span class="pay-btn__sub">Secure payment via Stripe &bull; 0.8% fee, capped at $5</span>
           </div>
         </div>
+      </div>
+
+      <div class="pay-card__footer">
+        <p>160 Still Forest Drive, Cedar Creek, TX 78612</p>
+        <p>AlpacApps &bull; Alpaca Playhouse</p>
       </div>
     </div>
   </div>
@@ -457,35 +421,23 @@
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-footer__icon">
         <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-footer__wordmark">
       </div>
-
       <div class="aap-footer__social">
         <a href="https://www.facebook.com/alpacaplayhouse" target="_blank" rel="noopener" aria-label="Facebook">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </a>
         <a href="https://instagram.com/alpacaplayhouseatx" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-            <circle cx="12" cy="12" r="4"/>
-            <circle cx="18" cy="6" r="1" fill="currentColor"/>
-          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor"/></svg>
         </a>
       </div>
-
-      <p class="aap-footer__copyright">
-        &copy; 2025 Austin Alpaca Playhouse. All rights reserved.<br>
-        160 Still Forest Drive, Cedar Creek, TX 78612
-      </p>
+      <p class="aap-footer__copyright">&copy; 2025 Austin Alpaca Playhouse. All rights reserved.<br>160 Still Forest Drive, Cedar Creek, TX 78612</p>
     </div>
   </footer>
 
-  <!-- Supabase -->
+  <!-- Supabase + Stripe -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
 
-  <!-- Standard site nav initialization -->
+  <!-- Site nav -->
   <script type="module">
     import { initPublicPage } from '../shared/public-shell.js';
     initPublicPage({ transparent: false, light: false, activePage: '' });
@@ -497,7 +449,6 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Parse URL params
     const params = new URLSearchParams(window.location.search);
     const presetAmount = params.get('amount');
     const presetDesc = params.get('description') || params.get('desc') || '';
@@ -508,55 +459,44 @@
     const presetRefType = params.get('reference_type') || 'assignment';
     const presetRefId = params.get('reference_id') || '';
 
-    // DOM refs
     const payAmountInput = document.getElementById('payAmount');
     const payDescInput = document.getElementById('payDesc');
-    const amountGroup = document.getElementById('amountGroup');
-    const descGroup = document.getElementById('descGroup');
-    const presetSummary = document.getElementById('presetSummary');
     const payBtn = document.getElementById('payBtn');
     const payError = document.getElementById('payError');
-    const paymentForm = document.getElementById('paymentForm');
-    const successState = document.getElementById('successState');
-    const successMessage = document.getElementById('successMessage');
-    const stripeSection = document.getElementById('stripeSection');
 
-    let stripe = null;
-    let elements = null;
-    let paymentElement = null;
-    let clientSecret = null;
-    let paymentRecordId = null;
+    let stripe = null, elements = null, paymentElement = null, clientSecret = null, paymentRecordId = null;
 
-    // Method icons (inline SVG paths)
-    const METHOD_ICONS = {
-      zelle: { bg: '#6c1cd3', svg: '<path d="M5 4h14l-9 8h9v3H5l9-8H5z" fill="white" stroke="none"/>' },
-      venmo: { bg: '#3d95ce', svg: '<path d="M18 4.5c.6 1 .85 2.05.85 3.35 0 4.15-3.55 9.55-6.45 13.35H6.8L4.5 5.1l5.3-.5 1.3 10.45c1.2-1.95 2.7-5.05 2.7-7.15 0-1.2-.2-2.05-.55-2.7L18 4.5z" fill="white" stroke="none"/>' },
-      paypal: { bg: '#003087', svg: '<path d="M7.5 20.5l.75-4.75h2.3c3.6 0 5.95-2.8 6.4-5.6.45-2.8-1.2-4.65-4.8-4.65H7.85L5 20.5h2.5zm2.25-14h2.7c1.8 0 2.5.85 2.25 2.4-.3 1.75-1.6 2.85-3.3 2.85H9.2l1.05-5.25h-.5z" fill="white" stroke="none"/>' },
+    // Badge colors matching email template
+    const BADGE_COLORS = {
+      zelle: '#6c1cd3',
+      venmo: '#3d95ce',
+      paypal: '#003087',
+      bank_ach: '#333',
+      cash: '#2e7d32',
+      check: '#555',
     };
 
-    // ---- Initialize ----
     async function init() {
       if (presetAmount) {
         const amt = parseFloat(presetAmount);
         if (!isNaN(amt) && amt > 0) {
-          presetSummary.style.display = 'block';
-          document.getElementById('summaryAmount').textContent = `$${amt.toFixed(2)}`;
+          document.getElementById('presetSummary').style.display = 'block';
+          document.getElementById('summaryAmount').textContent = '$' + amt.toFixed(2);
           if (presetDesc) document.getElementById('summaryDesc').textContent = presetDesc;
-          if (presetPersonName) document.getElementById('summaryPerson').textContent = `Payment by ${presetPersonName}`;
-          amountGroup.style.display = 'none';
+          document.getElementById('amountGroup').style.display = 'none';
           payAmountInput.value = amt;
         }
       }
-
       if (presetDesc) {
         payDescInput.value = presetDesc;
-        if (presetAmount) descGroup.style.display = 'none';
+        if (presetAmount) document.getElementById('descGroup').style.display = 'none';
       }
 
-      await Promise.all([loadPaymentMethods(), initStripe()]);
+      // Load both in parallel
+      const [methodsResult] = await Promise.allSettled([loadPaymentMethods(), initStripe()]);
       updatePayBtnText();
 
-      payAmountInput.addEventListener('input', () => {
+      payAmountInput.addEventListener('input', function() {
         updatePayBtnText();
         if (clientSecret) { clientSecret = null; paymentRecordId = null; }
       });
@@ -565,74 +505,64 @@
     function getAmount() { return parseFloat(payAmountInput.value) || 0; }
 
     function updatePayBtnText() {
-      const amt = getAmount();
-      payBtn.textContent = amt > 0 ? `Pay $${amt.toFixed(2)} via Bank Transfer` : 'Pay via Bank Transfer';
+      var amt = getAmount();
+      payBtn.textContent = amt > 0 ? 'Pay $' + amt.toFixed(2) + ' via Bank Transfer' : 'Pay via Bank Transfer';
     }
 
-    // ---- Payment methods from DB ----
+    // Load payment methods — styled exactly like email template badges
     async function loadPaymentMethods() {
-      const { data: methods } = await supabase
-        .from('payment_methods')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
+      try {
+        var result = await supabase
+          .from('payment_methods')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
 
-      const container = document.getElementById('methodCards');
-      if (!methods || methods.length === 0) { container.innerHTML = ''; return; }
+        var methods = result.data;
+        if (!methods || methods.length === 0) return;
 
-      document.getElementById('memoReminder').style.display = 'block';
+        document.getElementById('methodsSection').style.display = 'block';
+        document.getElementById('memoReminder').style.display = 'block';
 
-      container.innerHTML = methods.map(m => {
-        const icon = METHOD_ICONS[m.method_type] || { bg: '#888', svg: '' };
-        const instructions = (m.instructions || '').split('\n').filter(Boolean);
-        const handle = m.account_identifier || '';
+        var tbody = document.querySelector('#methodCards tbody');
+        var html = '';
+        for (var i = 0; i < methods.length; i++) {
+          var m = methods[i];
+          var bg = BADGE_COLORS[m.method_type] || '#888';
+          var handle = m.account_identifier ? '<strong class="pay-methods__handle">' + m.account_identifier + '</strong>' : '';
+          var lines = (m.instructions || '').split('\n').filter(function(l) { return l.trim(); });
+          var note = lines.length > 0 ? '<span class="pay-methods__note">(' + lines[0] + ')</span>' : '';
+          var freeLabel = m.method_type === 'paypal' ? 'Free (F&F)' : 'No fee';
 
-        let noteHtml = '';
-        if (instructions.length > 0) {
-          noteHtml = `<div class="method-card__note">${instructions.join('<br>')}</div>`;
+          html += '<tr class="pay-methods__row"><td>'
+            + '<span class="pay-methods__badge" style="background:' + bg + ';">' + m.name + '</span>'
+            + handle + note
+            + '<span class="pay-methods__free">' + freeLabel + '</span>'
+            + '</td></tr>';
         }
-
-        let feeHtml = '';
-        if (m.method_type === 'paypal') {
-          feeHtml = '<span class="method-card__fee method-card__fee--free">Free (F&F)</span>';
-        } else {
-          feeHtml = '<span class="method-card__fee method-card__fee--free">No fee</span>';
-        }
-
-        return `
-          <div class="method-card">
-            <div class="method-card__top">
-              <div class="method-card__icon" style="background:${icon.bg};">
-                <svg viewBox="0 0 24 24">${icon.svg}</svg>
-              </div>
-              <div class="method-card__info">
-                <div class="method-card__name">${m.name}</div>
-                ${handle ? `<div class="method-card__handle">${handle}</div>` : ''}
-              </div>
-              ${feeHtml}
-            </div>
-            ${noteHtml}
-          </div>
-        `;
-      }).join('');
+        tbody.innerHTML = html;
+      } catch (err) {
+        console.error('Failed to load payment methods:', err);
+      }
     }
 
-    // ---- Stripe ----
+    // Stripe ACH
     async function initStripe() {
       try {
-        const { data: config } = await supabase
+        var result = await supabase
           .from('stripe_config')
           .select('publishable_key, sandbox_publishable_key, test_mode, is_active')
           .single();
 
+        var config = result.data;
         if (!config || !config.is_active) {
-          stripeSection.innerHTML = '<p style="color:#888; text-align:center; padding:1rem;">Online bank transfer is not currently available.</p>';
+          document.getElementById('stripeSection').innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Online bank transfer is not currently available.</p>';
           return;
         }
 
-        const pk = config.test_mode ? config.sandbox_publishable_key : config.publishable_key;
+        var pk = config.test_mode ? config.sandbox_publishable_key : config.publishable_key;
         if (!pk) {
-          stripeSection.innerHTML = '<p style="color:#888; text-align:center; padding:1rem;">Online bank transfer is not currently available.</p>';
+          document.getElementById('stripeSection').innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Online bank transfer is not currently available.</p>';
           return;
         }
 
@@ -646,26 +576,23 @@
         }
       } catch (err) {
         console.error('Stripe init error:', err);
-        stripeSection.innerHTML = '<p style="color:#c62828; text-align:center; padding:1rem;">Error loading payment system.</p>';
       }
     }
 
     async function createPaymentIntentAndMount() {
-      const amount = getAmount();
+      var amount = getAmount();
       if (amount < 0.50) { showError('Minimum payment amount is $0.50'); return; }
-
-      const amountCents = Math.round(amount * 100);
 
       try {
         showError('');
         payBtn.disabled = true;
         payBtn.innerHTML = '<span class="spinner"></span> Preparing...';
 
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/process-stripe-payment`, {
+        var res = await fetch(SUPABASE_URL + '/functions/v1/process-stripe-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
           body: JSON.stringify({
-            amount: amountCents,
+            amount: Math.round(amount * 100),
             payment_type: presetPaymentType || 'rent',
             reference_type: presetRefType || 'direct_payment',
             reference_id: presetRefId || crypto.randomUUID(),
@@ -676,19 +603,19 @@
           }),
         });
 
-        const data = await res.json();
+        var data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create payment');
 
         clientSecret = data.clientSecret;
         paymentRecordId = data.paymentRecordId;
 
         elements = stripe.elements({
-          clientSecret,
+          clientSecret: clientSecret,
           appearance: {
             theme: 'stripe',
             variables: {
-              colorPrimary: '#635bff',
-              borderRadius: '10px',
+              colorPrimary: '#e65100',
+              borderRadius: '8px',
               fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             },
           },
@@ -696,13 +623,13 @@
         paymentElement = elements.create('payment', { layout: 'tabs' });
         paymentElement.mount('#payment-element');
 
-        paymentElement.on('ready', () => {
+        paymentElement.on('ready', function() {
           payBtn.disabled = false;
           updatePayBtnText();
           payBtn.onclick = handlePay;
         });
 
-        paymentElement.on('change', (event) => {
+        paymentElement.on('change', function(event) {
           showError(event.error ? event.error.message : '');
         });
 
@@ -716,7 +643,7 @@
 
     async function handlePay(e) {
       if (e) e.preventDefault();
-      const amount = getAmount();
+      var amount = getAmount();
       if (amount < 0.50) { showError('Please enter an amount of at least $0.50'); return; }
 
       if (!clientSecret) {
@@ -730,8 +657,8 @@
       showError('');
 
       try {
-        const { error } = await stripe.confirmPayment({
-          elements,
+        var result = await stripe.confirmPayment({
+          elements: elements,
           confirmParams: {
             return_url: window.location.href + '?success=true',
             receipt_email: presetEmail || undefined,
@@ -739,8 +666,8 @@
           redirect: 'if_required',
         });
 
-        if (error) {
-          showError(error.message);
+        if (result.error) {
+          showError(result.error.message);
           payBtn.disabled = false;
           updatePayBtnText();
         } else {
@@ -754,24 +681,24 @@
     }
 
     function showError(msg) {
-      payError.textContent = msg;
+      payError.textContent = msg || '';
       payError.classList.toggle('visible', !!msg);
     }
 
     function showSuccess() {
-      paymentForm.style.display = 'none';
-      successState.classList.add('visible');
-      const amt = getAmount();
-      successMessage.textContent = `Your payment of $${amt.toFixed(2)} has been received. A confirmation email will be sent shortly.`;
+      document.getElementById('paymentForm').style.display = 'none';
+      document.getElementById('successState').classList.add('visible');
+      var amt = getAmount();
+      document.getElementById('successMessage').textContent = 'Your payment of $' + amt.toFixed(2) + ' has been received. A confirmation email will be sent shortly.';
       document.title = 'Payment Received - Alpaca Playhouse';
     }
 
     // Check if returning from redirect
     if (params.get('success') === 'true' || params.get('redirect_status') === 'succeeded') {
-      document.addEventListener('DOMContentLoaded', () => {
-        paymentForm.style.display = 'none';
-        successState.classList.add('visible');
-        successMessage.textContent = 'Your payment has been received. A confirmation email will be sent shortly.';
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('paymentForm').style.display = 'none';
+        document.getElementById('successState').classList.add('visible');
+        document.getElementById('successMessage').textContent = 'Your payment has been received. A confirmation email will be sent shortly.';
         document.title = 'Payment Received - Alpaca Playhouse';
       });
     } else {
