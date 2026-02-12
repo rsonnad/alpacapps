@@ -976,7 +976,7 @@
       <a href="#square"><span class="num">7</span> Square (Payments)</a>
       <a href="#signwell"><span class="num">8</span> SignWell (E-Signatures)</a>
       <a href="#gemini"><span class="num">9</span> Google Gemini (AI)</a>
-      <a href="#discord"><span class="num">10</span> Discord Bot</a>
+      <a href="#workers"><span class="num">10</span> Background Workers</a>
       <a href="#domain"><span class="num">11</span> Custom Domain</a>
       <a href="#template"><span class="num">12</span> CLAUDE.md Templates</a>
       <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
@@ -989,7 +989,7 @@
     <h2>Architecture &amp; Cost Calculator</h2>
     <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Auth + Edge Functions)
                                              &nearr;          &darr;
-Optional: Discord Bot (DigitalOcean) &mdash;&rsaquo;    Cloudflare R2 (media storage, optional)</div>
+Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media storage, optional)</div>
     <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, authentication, and serverless functions. For file storage, you can use Supabase Storage (1 GB free) or Cloudflare R2 (10 GB free, zero egress fees). GitHub Pages serves static files for free.</p>
 
     <h3>Select what you need</h3>
@@ -1089,13 +1089,13 @@ Optional: Discord Bot (DigitalOcean) &mdash;&rsaquo;    Cloudflare R2 (media sto
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc">
-        <input type="checkbox" data-svc="discord" onchange="recalcCost()">
+        <input type="checkbox" data-svc="workers" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
-          <span class="calc-svc__name">Discord Bot</span>
-          <span class="calc-svc__desc">Chat bot on a $4/mo droplet</span>
+          <span class="calc-svc__name">Background Workers</span>
+          <span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span>
         </span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">~$4/mo</span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
       </label>
       <label class="calc-svc">
         <input type="checkbox" data-svc="domain" onchange="recalcCost()">
@@ -1654,18 +1654,56 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 11. Discord -->
-  <div class="section" id="discord">
-    <h2><img src="https://cdn.simpleicons.org/discord" alt="Discord" class="service-icon">11. Discord Bot (Optional)</h2>
+  <!-- 11. Background Workers -->
+  <div class="section" id="workers">
+    <h2>11. Background Workers (Optional)</h2>
 
-    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
+
+    <h3>What runs here</h3>
+    <ul>
+      <li><strong>Automated bug fixer</strong> &mdash; polls for bug reports, runs Claude Code to fix them, commits, merges</li>
+      <li><strong>Feature builder</strong> &mdash; picks up feature requests, implements them autonomously</li>
+      <li><strong>Device pollers</strong> &mdash; Tesla vehicles (every 5 min), LG washer/dryer (every 30s)</li>
+      <li><strong>AI image generation</strong> &mdash; polls job queue, calls Gemini API, uploads results</li>
+      <li><strong>Camera PTZ proxy</strong> &mdash; relays pan/tilt/zoom commands to cameras via home server</li>
+      <li><strong>Reverse proxy</strong> &mdash; Caddy for camera HLS streams, nginx for Sonos API relay</li>
+    </ul>
+
+    <h3>Typical sizing</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin:1rem 0;">
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="text-align:left; padding:0.4rem;">Tier</th>
+        <th style="text-align:left; padding:0.4rem;">Spec</th>
+        <th style="text-align:left; padding:0.4rem;">Cost</th>
+        <th style="text-align:left; padding:0.4rem;">Good for</th>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:0.4rem;">Basic</td>
+        <td style="padding:0.4rem;">2 vCPU, 2 GB RAM</td>
+        <td style="padding:0.4rem;">~$12/mo</td>
+        <td style="padding:0.4rem;">A few lightweight pollers + image gen</td>
+      </tr>
+      <tr>
+        <td style="padding:0.4rem;">Full</td>
+        <td style="padding:0.4rem;">2 vCPU, 4 GB RAM</td>
+        <td style="padding:0.4rem;">~$24&ndash;32/mo</td>
+        <td style="padding:0.4rem;">All workers including Claude Code automation (bug fixer, feature builder)</td>
+      </tr>
+    </table>
+
+    <h3><span class="step-label step-you">You do</span></h3>
     <ol>
-      <li>Go to <a href="https://discord.com/developers/applications" target="_blank">discord.com/developers/applications</a></li>
-      <li>Create a <strong>New Application</strong></li>
-      <li>Go to <strong>Bot</strong> &rarr; <strong>Add Bot</strong>, copy the bot token</li>
-      <li>Host on a $4/month DigitalOcean droplet (or free tier on Railway / Render)</li>
-      <li>The bot queries Supabase directly using the REST API</li>
+      <li>Spin up an Ubuntu VM on any cloud provider</li>
+      <li>Install Node.js 18+, Tailscale (if you have a home server), and Caddy/nginx as needed</li>
+      <li>Clone your repo and set up each worker as a systemd service</li>
+      <li>Workers query Supabase directly using the REST API or service role key</li>
     </ol>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <p>
+      <strong>&ldquo;Set up the background workers on my server at [IP]. Create systemd services for the bug fixer, device pollers, and image gen worker. Add SSH access details to CLAUDE.local.md.&rdquo;</strong>
+    </p>
   </div>
 
   <!-- 12. Custom Domain -->
@@ -1770,7 +1808,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Supabase project ref, URL, psql connection string</li>
       <li>Live URLs (GitHub Pages)</li>
       <li>External service credentials: Resend, Telnyx, Square, SignWell</li>
-      <li>Server access (DigitalOcean SSH, bot user)</li>
+      <li>Server access (cloud VM SSH, worker configuration)</li>
     </ul>
 
     <div class="callout">
@@ -1952,7 +1990,7 @@ function recalcCost() {
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
-    'discord':     { basic: 0, complicated: 48, hyper: 48 },
+    'workers':     { basic: 0, complicated: 144, hyper: 384 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
     'android':     { basic: 25, complicated: 25, hyper: 25 },
@@ -1970,7 +2008,7 @@ function recalcCost() {
     'signwell':    'SignWell (e-sign)',
     'gemini':      'Google Gemini (AI)',
     'cloudflare-r2': 'Cloudflare R2 (storage)',
-    'discord':     'Discord Bot + server',
+    'workers':     'Background Workers (cloud VM)',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
     'android':     'Android App (Google Play)',
@@ -1986,7 +2024,8 @@ function recalcCost() {
     'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
     'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
-    'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' }
+    'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' },
+    'workers': { complicated: '$12/mo VM for bug fixer, pollers, image gen', hyper: '$32/mo VM for heavy workers + Claude Code automation' }
   };
 
   // Gather selected services. Core always included.
@@ -2055,7 +2094,7 @@ function recalcCost() {
       'Gemini AI: ~15,000+ API calls/month at $50/mo',
       'Claude Code: Max ($100/mo) or Max+ ($200/mo) for ongoing heavy development',
       'Higher SMS volume: ~3,000/month on Telnyx',
-      'Background workers on a $4\u2013$12/mo server (DigitalOcean)',
+      'Background workers on a $12\u2013$32/mo cloud VM (automated bug fixes, device pollers, AI image gen, camera proxy)',
       'Mobile app on both app stores',
       'Outgrow this tier if you need dedicated servers, custom ML models, or enterprise SLAs'
     ]
