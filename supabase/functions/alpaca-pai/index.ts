@@ -898,13 +898,21 @@ const TOOL_DECLARATIONS = [
   {
     name: "lookup_document",
     description:
-      "Look up an instruction manual or document from the property's document library. Use this when someone asks about how to program, operate, maintain, or troubleshoot equipment, appliances, locks, or other property items. Returns the document content if available as text, or a link to the PDF.",
+      "Look up an instruction manual or document from the property's document library. Use this when someone asks about how to program, operate, maintain, or troubleshoot equipment, appliances, locks, or other property items. First call with just a query to find the right document and get a summary. If the summary doesn't have enough detail to answer the user's question, call again with the slug and detail=true to fetch the full text.",
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
-          description: "Search query describing what the user needs help with (e.g., 'door lock programming', 'swim spa maintenance', 'how to change lock code')",
+          description: "Search query describing what the user needs help with (e.g., 'door lock programming', 'swim spa maintenance', 'monitor in master pasture')",
+        },
+        slug: {
+          type: "string",
+          description: "Document slug from a previous lookup_document result. Required when detail=true.",
+        },
+        detail: {
+          type: "boolean",
+          description: "Set to true to fetch the full document text from storage. Only use after a prior lookup returned a summary that didn't fully answer the question.",
         },
       },
       required: ["query"],
@@ -1728,11 +1736,58 @@ async function executeToolCall(
       case "lookup_document": {
         const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
         const searchQuery = (args.query || "").toLowerCase();
+        const requestDetail = args.detail === true;
+        const requestSlug = args.slug;
 
-        // Search document_index by keywords and title/description
+        // === DETAIL MODE: Fetch full text for a specific document ===
+        if (requestDetail && requestSlug) {
+          const { data: doc } = await supabaseAdmin
+            .from("document_index")
+            .select("slug, title, full_text_r2_key, content_text, source_url, storage_bucket, storage_path")
+            .eq("slug", requestSlug)
+            .eq("is_active", true)
+            .single();
+
+          if (!doc) return `No document found with slug "${requestSlug}".`;
+
+          // Try fetching full text from R2
+          if (doc.full_text_r2_key) {
+            try {
+              const r2PublicBase = "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev";
+              const fullTextUrl = `${r2PublicBase}/${doc.full_text_r2_key}`;
+              const response = await fetch(fullTextUrl);
+              if (response.ok) {
+                const fullText = await response.text();
+                // Cap at 8000 chars to stay within reasonable context bounds
+                const truncated = fullText.length > 8000
+                  ? fullText.substring(0, 8000) + "\n\n[... truncated — full document is longer]"
+                  : fullText;
+                const docUrl = doc.source_url || null;
+                return `Document: ${doc.title} (full text)${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${truncated}`;
+              }
+            } catch (err: any) {
+              console.error(`Failed to fetch R2 full text for ${requestSlug}:`, err.message);
+            }
+          }
+
+          // Fallback: return content_text if it exists
+          if (doc.content_text) {
+            const docUrl = doc.source_url || null;
+            return `Document: ${doc.title}${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${doc.content_text}`;
+          }
+
+          // Last resort: link only
+          const docUrl = doc.source_url
+            || (doc.storage_bucket && doc.storage_path
+              ? `${supabaseUrl}/storage/v1/object/public/${doc.storage_bucket}/${doc.storage_path}`
+              : null);
+          return `Document: ${doc.title}\nThe full text is not available as searchable text.${docUrl ? ` You can share this link with the user: ${docUrl}` : ""}`;
+        }
+
+        // === SEARCH MODE: Find matching document, return summary ===
         const { data: docs } = await supabaseAdmin
           .from("document_index")
-          .select("slug, title, description, keywords, storage_bucket, storage_path, content_text, source_url")
+          .select("slug, title, description, keywords, content_text, source_url, applies_to, category")
           .eq("is_active", true);
 
         if (!docs?.length) return "No documents found in the library.";
@@ -1740,11 +1795,13 @@ async function executeToolCall(
         // Score each document by keyword match
         const scored = docs.map((doc: any) => {
           let score = 0;
-          const queryWords = searchQuery.split(/\s+/);
+          const queryWords = searchQuery.split(/\s+/).filter((w: string) => w.length > 1);
           for (const word of queryWords) {
             if (doc.title.toLowerCase().includes(word)) score += 3;
-            if (doc.description.toLowerCase().includes(word)) score += 2;
+            if (doc.description?.toLowerCase().includes(word)) score += 2;
             if ((doc.keywords || []).some((k: string) => k.toLowerCase().includes(word))) score += 2;
+            if ((doc.applies_to || []).some((a: string) => a.toLowerCase().includes(word))) score += 2;
+            if (doc.category?.toLowerCase().includes(word)) score += 1;
           }
           return { ...doc, score };
         });
@@ -1752,24 +1809,18 @@ async function executeToolCall(
         const matches = scored.filter((d: any) => d.score > 0).sort((a: any, b: any) => b.score - a.score);
 
         if (!matches.length) {
-          // No keyword match — list what's available
-          const available = docs.map((d: any) => `- ${d.title}: ${d.description}`).join("\n");
+          const available = docs.map((d: any) => `- ${d.title} (slug: ${d.slug}): ${(d.description || "").substring(0, 100)}`).join("\n");
           return `No matching documents found for "${args.query}". Available documents:\n${available}`;
         }
 
         const best = matches[0];
-        // Prefer external source_url (Google Drive), fall back to Supabase Storage
-        const docUrl = best.source_url
-          || (best.storage_bucket && best.storage_path
-            ? `${supabaseUrl}/storage/v1/object/public/${best.storage_bucket}/${best.storage_path}`
-            : null);
+        const docUrl = best.source_url || null;
 
+        // Return the structured summary + slug for follow-up detail fetch
         if (best.content_text) {
-          // Return full text content for short documents
-          return `Document: ${best.title}${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${best.content_text}`;
+          return `Document: ${best.title} (slug: ${best.slug})${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${best.content_text}\n\n---\nThis is a summary. If you need more detail to answer the user's question, call lookup_document again with slug="${best.slug}" and detail=true.`;
         } else {
-          // No extracted text — return description and link
-          return `Document: ${best.title}\n${best.description}${docUrl ? `\n\nFull document available at: ${docUrl}` : ""}\n\nThis is a large document (the full text isn't stored). You can share the link with the user, or describe what the document covers based on the description above.`;
+          return `Document: ${best.title} (slug: ${best.slug})\n${best.description || "No description available."}${docUrl ? `\n\nFull document: ${docUrl}` : ""}\n\nNo text summary available. You can share the link, or call lookup_document with slug="${best.slug}" and detail=true to attempt fetching the full text.`;
         }
       }
 

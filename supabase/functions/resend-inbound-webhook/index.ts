@@ -875,12 +875,16 @@ async function handlePaiEmail(
 
         // Create document_index entry (inactive pending admin review)
         const fileExt = filename.split(".").pop()?.toLowerCase() || "";
+        const docSlug = sanitizedFilename.replace(/\.[^.]+$/, ""); // strip extension for slug
         await supabase.from("document_index").insert({
+          slug: `email-${datePrefix}-${docSlug}`,
           title: filename,
           description: `Uploaded via email by ${senderName} (${senderEmail}). Subject: ${subject}`,
+          category: "email-upload",
           keywords: [fileExt, "email-upload", senderName.toLowerCase()],
+          storage_bucket: "r2",
+          storage_path: r2Key,
           source_url: publicUrl,
-          file_type: fileExt,
           file_size_bytes: downloaded.data.length,
           storage_backend: "r2",
           is_active: false, // Pending admin review
