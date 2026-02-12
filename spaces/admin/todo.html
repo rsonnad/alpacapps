@@ -35,7 +35,7 @@
 
     .todo-category-header:hover { background: var(--border); }
 
-    .todo-category-header svg {
+    .todo-category-header svg:first-child {
       color: var(--accent);
       flex-shrink: 0;
       width: 20px;
@@ -106,10 +106,7 @@
       margin-top: 0.2rem;
     }
 
-    .todo-item-desc a {
-      color: var(--accent);
-      text-decoration: underline;
-    }
+    .todo-item-desc a { color: var(--accent); text-decoration: underline; }
 
     .todo-badge {
       font-size: 0.65rem;
@@ -128,7 +125,6 @@
     .todo-badge.nice { background: #e0e7ff; color: #3730a3; }
     .todo-badge.blocked { background: #f3e8ff; color: #6b21a8; }
 
-    /* Summary bar */
     .todo-summary {
       display: flex;
       gap: 1.5rem;
@@ -146,22 +142,12 @@
       text-align: center;
     }
 
-    .todo-summary-value {
-      display: block;
-      font-size: 1.75rem;
-      font-weight: 700;
-    }
-
+    .todo-summary-value { display: block; font-size: 1.75rem; font-weight: 700; }
     .todo-summary-value.total { color: var(--text); }
     .todo-summary-value.done { color: var(--success); }
     .todo-summary-value.remaining { color: var(--accent); }
 
-    .todo-summary-label {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 0.15rem;
-    }
+    .todo-summary-label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem; }
 
     .todo-progress-bar {
       height: 6px;
@@ -179,13 +165,8 @@
       transition: width 0.3s ease;
     }
 
-    .todo-actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
+    .todo-actions { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
 
-    /* Category & item action buttons (hover-reveal) */
     .todo-cat-actions, .todo-item-actions {
       display: flex;
       gap: 0.15rem;
@@ -195,49 +176,28 @@
     }
 
     .todo-category-header:hover .todo-cat-actions,
-    .todo-item:hover .todo-item-actions {
-      opacity: 1;
-    }
+    .todo-item:hover .todo-item-actions { opacity: 1; }
 
     .todo-action-btn {
-      width: 26px;
-      height: 26px;
-      padding: 4px;
-      border: none;
-      background: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 26px; height: 26px; padding: 4px;
+      border: none; background: none; color: var(--text-muted);
+      cursor: pointer; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
     }
 
     .todo-action-btn:hover { color: var(--accent); background: var(--bg-card); }
     .todo-action-btn:disabled { opacity: 0.3; cursor: default; }
     .todo-action-btn:disabled:hover { color: var(--text-muted); background: none; }
+    .todo-action-btn svg { width: 14px !important; height: 14px !important; }
 
-    .todo-action-btn svg {
-      width: 14px !important;
-      height: 14px !important;
-    }
-
-    /* Checked-by info */
     .todo-checked-info {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 0.15rem;
-      font-style: italic;
+      font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; font-style: italic;
     }
 
-    /* Modal select styling */
     #todoModalBody select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      background: var(--bg-card);
+      width: 100%; padding: 0.75rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      font-size: 0.9rem; background: var(--bg-card);
     }
 
     @media (max-width: 768px) {
@@ -278,7 +238,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260212.36 3:11p</span>
+    <span data-site-version style="display:none">v260212.35 3:10p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -290,20 +250,15 @@
 
     <!-- Main Content -->
     <main class="manage-content todo-page">
-
-      <!-- Summary -->
       <div class="todo-summary" id="todoSummary"></div>
       <div class="todo-progress-bar"><div class="todo-progress-fill" id="todoProgressFill"></div></div>
 
-      <!-- Actions -->
       <div class="todo-actions">
         <button class="btn-small btn-secondary" id="resetAllBtn">Reset All</button>
         <button class="btn-small btn-primary" id="addCategoryBtn">+ Category</button>
       </div>
 
-      <!-- Todo categories rendered by JS -->
       <div id="todoContainer"></div>
-
     </main>
   </div>
 
@@ -323,9 +278,8 @@
     </div>
   </div>
 
-  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
   <script src="../../shared/instant-chrome.js"></script>
-
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
   <script type="module" src="../../shared/version-info.js"></script>
   <script type="module" src="todo.js"></script>
 </body>
