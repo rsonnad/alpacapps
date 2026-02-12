@@ -1,12 +1,12 @@
 {
-  "version": "v260212.09 12:28p",
-  "release": 86,
-  "sha": "50f7ddab",
-  "fullSha": "50f7ddaba67dbe0c98133d41b4dc02505463a723",
-  "actor": "Rahul Sonnad",
-  "source": "local-script",
-  "model": "cur",
-  "machine": "Rahul’s MacBook Air (2)",
-  "pushedAt": "2026-02-12 18:29:00+00",
-  "commits": [{"sha":"50f7ddab","message":"Add native PAI Discord bot, replace OpenClaw paibot","author":"Rahul Sonnad"}]
+  "version": "v260212.11 12:49p",
+  "release": 89,
+  "sha": "92dc5c50",
+  "fullSha": "92dc5c5036c9e1114f9309ffa0ee3bdc94247977",
+  "actor": "rsonnad",
+  "source": "github-main-push",
+  "model": "ci",
+  "machine": "runnervmjduv7",
+  "pushedAt": "2026-02-12 18:49:53+00",
+  "commits": [{"sha":"92dc5c50","message":"App Dev: add Claudero logo to hero section","author":"Rahul Sonnad"}]
 }
