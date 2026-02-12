@@ -7,6 +7,7 @@
 import { supabase } from './supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
+import { supabaseHealth } from './supabase-health.js';
 import { initPaiWidget } from './pai-widget.js';
 import { setupVersionInfo } from './version-info.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
@@ -347,8 +348,9 @@ function injectSiteNav() {
  * @returns {Promise<Object>} authState
  */
 export async function initResidentPage({ activeTab, requiredRole = 'resident', requiredPermission, onReady }) {
-  // Set up global error handlers
+  // Set up global error handlers + health banner
   errorLogger.setupGlobalHandlers();
+  supabaseHealth.injectBanner();
 
   await initAuth();
   let authState = getAuthState();

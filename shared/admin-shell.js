@@ -3,8 +3,10 @@
  * Provides: auth flow, tab navigation, toast notifications, lightbox
  */
 
+import { supabase } from './supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
+import { supabaseHealth } from './supabase-health.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
 
@@ -229,15 +231,16 @@ function injectSiteNav() {
  * @returns {Promise<Object>} authState
  */
 export async function initAdminPage({ activeTab, requiredRole = 'staff', requiredPermission, section = 'staff', onReady }) {
-  // Set up global error handlers
+  // Set up global error handlers + health banner
   errorLogger.setupGlobalHandlers();
+  supabaseHealth.injectBanner();
 
   await initAuth();
   let authState = getAuthState();
   let pageContentShown = false;
   let onReadyCalled = false;
 
-  function handleAuthState(state) {
+  async function handleAuthState(state) {
     authState = state;
 
     // Set user context for error logging
@@ -346,6 +349,17 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       pageContentShown = true;
       if (onReady && !onReadyCalled) {
         onReadyCalled = true;
+        // Ensure Supabase has a real session before onReady queries RLS-protected tables.
+        // Cached auth resolves initAuth() before the JWT is ready, so getSession() forces
+        // the client to establish the actual session first.
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) {
+          // Session expired — cached auth kept the UI alive but we have no JWT.
+          console.warn('[admin-shell] No active session despite cached auth — redirecting to login');
+          try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
+          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+          return;
+        }
         onReady(state);
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {

@@ -50,5 +50,27 @@ if (window.supabase?.createClient) {
   });
 }
 
+/**
+ * Lightweight connectivity probe (HEAD request to REST endpoint).
+ * Returns true if Supabase is reachable, false otherwise.
+ * Used by supabase-health.js for recovery detection.
+ */
+async function pingSupabase() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: 'HEAD',
+      headers: { 'apikey': SUPABASE_ANON_KEY },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    clearTimeout(timeout);
+    return false;
+  }
+}
+
 // Export for use in other modules
-export { supabase, SUPABASE_URL, SUPABASE_ANON_KEY };
+export { supabase, SUPABASE_URL, SUPABASE_ANON_KEY, pingSupabase };
