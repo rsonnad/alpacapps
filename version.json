@@ -1,12 +1,12 @@
 {
-  "version": "v260211.71 9:35p",
-  "release": 71,
-  "sha": "5dd9b92d",
-  "fullSha": "5dd9b92d3cec9fba964e981d6bc266d763694add",
+  "version": "v260211.72 9:46p",
+  "release": 72,
+  "sha": "ab1b55f0",
+  "fullSha": "ab1b55f02a50dda7635c1c402b901829b492fd9b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 03:35:21+00",
-  "commits": [{"sha":"5dd9b92d","message":"feat: deploy blink-poller to Alpaca Mac with working snapshot upload","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 03:46:34+00",
+  "commits": [{"sha":"ab1b55f0","message":"fix: blink poller requests fresh snapshot every poll cycle","author":"Rahul Sonnad"}]
 }
