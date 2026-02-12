@@ -14,23 +14,25 @@
 
     /* Hero */
     .appdev-hero {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
       padding: 1.5rem 1rem 0.75rem;
     }
     .appdev-hero-logo {
       max-width: 340px;
       width: 100%;
       height: auto;
-      margin-bottom: 0.15rem;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+      flex-shrink: 0;
     }
     .appdev-hero h1 {
-      font-size: 1.15rem;
+      font-size: 1.8rem;
       font-weight: 600;
       margin: 0;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      color: #d4883a;
+      letter-spacing: 0.02em;
     }
 
     /* Prompt box */
@@ -462,8 +464,12 @@
     }
 
     @media (max-width: 768px) {
+      .appdev-hero {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
       .appdev-hero-logo { max-width: 260px; }
-      .appdev-hero h1 { font-size: 0.95rem; }
+      .appdev-hero h1 { font-size: 1.3rem; text-align: center; }
       .appdev-textarea { min-height: 100px; }
       .appdev-request-header { padding: 0.65rem 1rem; }
       .appdev-request-body { padding: 0 1rem 0.75rem; }
