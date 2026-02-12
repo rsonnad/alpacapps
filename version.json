@@ -1,12 +1,12 @@
 {
-  "version": "v260212.27 2:39p",
-  "release": 105,
-  "sha": "d7bed134",
-  "fullSha": "d7bed13463df1420692f0517dd4ed5c08190fee0",
+  "version": "v260212.28 2:40p",
+  "release": 106,
+  "sha": "188950ac",
+  "fullSha": "188950ac4ee41a1c9b90d6891a80437a745afcd6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:39:04+00",
-  "commits": [{"sha":"d7bed134","message":"App Dev: add paste and drag-and-drop image support","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:40:55+00",
+  "commits": [{"sha":"188950ac","message":"Fix todo page: use separate user query instead of FK join, fix progress bar","author":"Rahul Sonnad"}]
 }
