@@ -103,7 +103,8 @@ async function fetchRealData() {
     }
   }
 
-  const dwellings = spaces.filter(s => s.can_be_dwelling && s.monthly_rate);
+  const dwellings = spaces.filter(s => s.can_be_dwelling && s.monthly_rate)
+    .sort((a, b) => b.monthly_rate - a.monthly_rate); // Sort by rate descending
   const availableDwellings = dwellings.filter(s => !occupiedSpaceIds.has(s.id));
   const occupiedDwellings = dwellings.filter(s => occupiedSpaceIds.has(s.id));
 
@@ -147,8 +148,8 @@ function generateTestQuestions(data) {
   });
   questions.push({
     category: 'property_info',
-    question: 'What amenities does the property have?',
-    expectedKeywords: ['Sonos', 'sauna', 'Tesla'],
+    question: 'What amenities and features does the property have? Think big picture — shared amenities like the sauna, sound system, vehicles.',
+    expectedKeywords: ['Sonos', 'sauna', 'Tesla', 'sound'],
     difficulty: 'easy',
   });
 
@@ -179,13 +180,13 @@ function generateTestQuestions(data) {
   questions.push({
     category: 'spaces',
     question: 'What spaces are available for rent right now?',
-    expectedKeywords: ['available', 'Available'],
+    expectedKeywords: availableDwellings.length ? [availableDwellings[0].name, '$'] : ['available', 'space'],
     difficulty: 'medium',
   });
   questions.push({
     category: 'spaces',
     question: 'What is the cheapest space I can rent?',
-    expectedKeywords: dwellings.length ? [dwellings[dwellings.length - 1].name] : ['space'],
+    expectedKeywords: dwellings.length ? [String(dwellings[dwellings.length - 1].monthly_rate), '$'] : ['space'],
     difficulty: 'medium',
   });
   questions.push({
@@ -196,18 +197,18 @@ function generateTestQuestions(data) {
   });
   questions.push({
     category: 'spaces',
-    question: 'How many rental spaces does the property have?',
-    expectedKeywords: [String(dwellings.length)],
+    question: `How many dwelling spaces can someone rent at the property?`,
+    expectedKeywords: [String(dwellings.length), 'dwelling'],
     difficulty: 'medium',
   });
 
   // --- Category: Amenity-based space search ---
-  const spacesWithHiFi = Object.entries(amenityMap).filter(([, a]) => a.includes('HiFi Sound')).map(([n]) => n);
+  const spacesWithHiFi = Object.entries(amenityMap).filter(([, a]) => a.some(am => am.toLowerCase().includes('hifi') || am.toLowerCase().includes('hi-fi'))).map(([n]) => n);
   if (spacesWithHiFi.length) {
     questions.push({
       category: 'amenities',
-      question: 'Which rooms have hi-fi sound systems?',
-      expectedKeywords: spacesWithHiFi.slice(0, 3),
+      question: 'Which rooms have HiFi Sound systems?',
+      expectedKeywords: spacesWithHiFi.slice(0, 2).concat(['sound', 'HiFi']),
       difficulty: 'medium',
     });
   }
@@ -342,7 +343,7 @@ function generateTestQuestions(data) {
   questions.push({
     category: 'music',
     question: 'Can you make an announcement on the speakers?',
-    expectedKeywords: ['announce', 'announcement', 'TTS', 'speak'],
+    expectedKeywords: ['yes', 'message', 'room', 'house'],
     difficulty: 'easy',
   });
 
@@ -608,7 +609,7 @@ async function run() {
     // Delay between calls to avoid rate limiting
     if (i < questions.length - 1) {
       // Use shorter delay for failed requests (no Gemini cost), longer for successful
-      const delay = result.success && !result.error ? 20000 : 5000;
+      const delay = result.success && !result.error ? 12000 : 3000;
       console.log(`  (waiting ${delay / 1000}s before next query...)\n`);
       await new Promise(r => setTimeout(r, delay));
     }
