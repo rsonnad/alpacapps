@@ -1,12 +1,12 @@
 {
-  "version": "v260212.17 1:49p",
-  "release": 95,
-  "sha": "b91f7311",
-  "fullSha": "b91f73113d55d5f67394832efcc7021fd6d22355",
+  "version": "v260212.18 1:53p",
+  "release": 96,
+  "sha": "b9028558",
+  "fullSha": "b9028558f56f2d06da43e917959799e130ce0052",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 19:49:57+00",
-  "commits": [{"sha":"b91f7311","message":"Restrict Stripe to ACH-only (no card/Link) for low fees","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 19:53:12+00",
+  "commits": [{"sha":"b9028558","message":"App Dev: add diagnostic banner when nav fails to load","author":"Rahul Sonnad"}]
 }
