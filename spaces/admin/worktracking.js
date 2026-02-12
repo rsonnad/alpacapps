@@ -671,7 +671,7 @@ function updatePaypalPayoutInfo() {
         const assoc = associates.find(a => a.id === [...assocIds][0]);
         const connectId = assoc?.stripe_connect_account_id;
         if (connectId) {
-          document.getElementById('stripeRecipientInfo').textContent = `Sends via ACH to connected Stripe account (${connectId.slice(0, 12)}...)`;
+          document.getElementById('stripeRecipientInfo').textContent = `Connected (${connectId.slice(0, 12)}...) — instant to Stripe, 1-2 days to bank`;
         } else {
           document.getElementById('stripeRecipientInfo').innerHTML =
             '<span style="color:var(--error,#ef4444);">No Stripe Connect account linked for this associate. They need to complete Stripe onboarding first.</span>';

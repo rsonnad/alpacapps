@@ -307,7 +307,7 @@ Deno.serve(async (req) => {
         payout_id: payout?.id,
         ledger_id: ledgerEntry?.id,
         transfer_id: transfer.id,
-        message: `Sent $${amount.toFixed(2)} to ${personName} via Stripe (1–2 business days)`
+        message: `Sent $${amount.toFixed(2)} to ${personName} via Stripe`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
