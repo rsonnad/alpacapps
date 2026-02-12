@@ -1,12 +1,12 @@
 {
-  "version": "v260212.30 2:55p",
-  "release": 108,
-  "sha": "7bbc4363",
-  "fullSha": "7bbc4363ee93153f1bcf6cf6f12c9b0fbe2f98c2",
+  "version": "v260212.31 2:58p",
+  "release": 109,
+  "sha": "470f0537",
+  "fullSha": "470f0537ef5684a9334129be0d440f9ec5556f41",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:55:38+00",
-  "commits": [{"sha":"7bbc4363","message":"App Dev: fix RLS, add lightbox for images, show attachment count","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:58:41+00",
+  "commits": [{"sha":"470f0537","message":"Update Stripe payout messaging: clarify instant balance + bank timing","author":"Rahul Sonnad"}]
 }
