@@ -1,12 +1,12 @@
 {
-  "version": "v260212.24 2:35p",
-  "release": 102,
-  "sha": "90d16a5f",
-  "fullSha": "90d16a5f9bd68c4412504c70fd0ac02a7a47467b",
+  "version": "v260212.27 2:39p",
+  "release": 105,
+  "sha": "d7bed134",
+  "fullSha": "d7bed13463df1420692f0517dd4ed5c08190fee0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:35:41+00",
-  "commits": [{"sha":"90d16a5f","message":"Add standard site nav + footer to /pay page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:39:04+00",
+  "commits": [{"sha":"d7bed134","message":"App Dev: add paste and drag-and-drop image support","author":"Rahul Sonnad"}]
 }
