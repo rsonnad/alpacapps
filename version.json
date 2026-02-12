@@ -1,12 +1,12 @@
 {
-  "version": "v260212.29 2:47p",
-  "release": 107,
-  "sha": "58e96831",
-  "fullSha": "58e9683114adc8113c7aeff52facbcb3c8608a16",
+  "version": "v260212.30 2:55p",
+  "release": 108,
+  "sha": "7bbc4363",
+  "fullSha": "7bbc4363ee93153f1bcf6cf6f12c9b0fbe2f98c2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:47:41+00",
-  "commits": [{"sha":"58e96831","message":"Rebuild /pay page to match email template design","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:55:38+00",
+  "commits": [{"sha":"7bbc4363","message":"App Dev: fix RLS, add lightbox for images, show attachment count","author":"Rahul Sonnad"}]
 }
