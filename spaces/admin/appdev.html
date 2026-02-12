@@ -401,5 +401,17 @@
   <script src="../../shared/instant-chrome.js"></script>
   <script type="module" src="../../shared/version-info.js"></script>
   <script type="module" src="appdev.js"></script>
+  <script>
+    // Fallback: if module init hasn't rendered nav after 4s, show a diagnostic
+    setTimeout(function() {
+      var tabs = document.querySelector('.manage-tabs');
+      if (tabs && !tabs.children.length) {
+        var el = document.createElement('div');
+        el.style.cssText = 'background:#fee2e2;color:#991b1b;padding:8px 16px;font-size:13px;text-align:center;border-bottom:1px solid #fca5a5';
+        el.textContent = 'Nav failed to load — check browser console (Cmd+Option+J) for errors';
+        document.getElementById('appContent')?.prepend(el);
+      }
+    }, 4000);
+  </script>
 </body>
 </html>

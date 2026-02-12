@@ -15,17 +15,21 @@ let hasActiveBuild = false;
 // INIT
 // =============================================
 document.addEventListener('DOMContentLoaded', async () => {
-  await initAdminPage({
-    activeTab: 'appdev',
-    requiredPermission: 'view_appdev',
-    section: 'staff',
-    onReady: async (state) => {
-      authState = state;
-      setupPromptBox();
-      await loadHistory();
-      startPolling();
-    }
-  });
+  try {
+    await initAdminPage({
+      activeTab: 'appdev',
+      requiredPermission: 'view_appdev',
+      section: 'staff',
+      onReady: async (state) => {
+        authState = state;
+        setupPromptBox();
+        await loadHistory();
+        startPolling();
+      }
+    });
+  } catch (err) {
+    console.error('AppDev init failed:', err);
+  }
 });
 
 // =============================================
