@@ -15,13 +15,21 @@
     /* Hero */
     .appdev-hero {
       text-align: center;
-      padding: 1.5rem 1rem 1rem;
+      padding: 1.5rem 1rem 0.75rem;
+    }
+    .appdev-hero-logo {
+      max-width: 340px;
+      width: 100%;
+      height: auto;
+      margin-bottom: 0.25rem;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
     }
     .appdev-hero h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
+      font-size: 0.85rem;
+      font-weight: 500;
       margin: 0;
-      white-space: nowrap;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
     }
 
     /* Prompt box */
@@ -318,7 +326,8 @@
     }
 
     @media (max-width: 768px) {
-      .appdev-hero h1 { font-size: 1rem; }
+      .appdev-hero-logo { max-width: 260px; }
+      .appdev-hero h1 { font-size: 0.75rem; }
       .appdev-textarea { min-height: 100px; }
       .appdev-request-header { padding: 0.65rem 1rem; }
       .appdev-request-body { padding: 0 1rem 0.75rem; }
@@ -359,7 +368,9 @@
 
     <main class="manage-content appdev-page">
       <div class="appdev-hero">
-        <h1>Claudero: AI Developer Extraordinaire</h1>
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/claudero-logo-transparent.png"
+             alt="Claudero" class="appdev-hero-logo">
+        <h1>AI Developer Extraordinaire</h1>
       </div>
 
       <!-- Prompt box -->
