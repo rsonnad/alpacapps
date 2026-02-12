@@ -184,12 +184,68 @@
       margin-bottom: 1.5rem;
     }
 
+    /* Category & item action buttons (hover-reveal) */
+    .todo-cat-actions, .todo-item-actions {
+      display: flex;
+      gap: 0.15rem;
+      opacity: 0;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+
+    .todo-category-header:hover .todo-cat-actions,
+    .todo-item:hover .todo-item-actions {
+      opacity: 1;
+    }
+
+    .todo-action-btn {
+      width: 26px;
+      height: 26px;
+      padding: 4px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .todo-action-btn:hover { color: var(--accent); background: var(--bg-card); }
+    .todo-action-btn:disabled { opacity: 0.3; cursor: default; }
+    .todo-action-btn:disabled:hover { color: var(--text-muted); background: none; }
+
+    .todo-action-btn svg {
+      width: 14px !important;
+      height: 14px !important;
+    }
+
+    /* Checked-by info */
+    .todo-checked-info {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+      font-style: italic;
+    }
+
+    /* Modal select styling */
+    #todoModalBody select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      background: var(--bg-card);
+    }
+
     @media (max-width: 768px) {
       .todo-summary { gap: 0.75rem; }
       .todo-summary-stat { padding: 0.75rem; min-width: 80px; }
       .todo-summary-value { font-size: 1.25rem; }
       .todo-item { padding: 0.6rem 1rem; }
       .todo-actions { flex-wrap: wrap; }
+      .todo-cat-actions, .todo-item-actions { opacity: 1; }
     }
   </style>
   <link rel="stylesheet" href="../../styles/site.css">
@@ -241,12 +297,29 @@
       <!-- Actions -->
       <div class="todo-actions">
         <button class="btn-small btn-secondary" id="resetAllBtn">Reset All</button>
+        <button class="btn-small btn-primary" id="addCategoryBtn">+ Category</button>
       </div>
 
       <!-- Todo categories rendered by JS -->
       <div id="todoContainer"></div>
 
     </main>
+  </div>
+
+  <!-- Todo CRUD Modal -->
+  <div id="todoModal" class="modal hidden">
+    <div class="modal-content" style="max-width:560px">
+      <div class="modal-header">
+        <h2 id="todoModalTitle">Add Category</h2>
+        <button class="modal-close" id="todoModalClose">&times;</button>
+      </div>
+      <div class="modal-body" id="todoModalBody"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="todoModalDelete" style="display:none;margin-right:auto;color:#991b1b">Delete</button>
+        <button class="btn-secondary" onclick="document.getElementById('todoModal').classList.add('hidden')">Cancel</button>
+        <button class="btn-primary" id="todoModalSave">Save</button>
+      </div>
+    </div>
   </div>
 
   <!-- Instant chrome: skip spinner + pre-render header for returning users -->
