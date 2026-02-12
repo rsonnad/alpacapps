@@ -203,9 +203,125 @@ async function sendReviewEmail(request, buildResult, branchName, riskReasons) {
 }
 
 // ============================================
+// Load prompt from DB
+// ============================================
+let cachedSystemPrompt = null;
+let promptCacheTime = 0;
+const PROMPT_CACHE_TTL_MS = 300000; // 5 minutes
+
+async function loadSystemPrompt() {
+  const now = Date.now();
+  if (cachedSystemPrompt && (now - promptCacheTime) < PROMPT_CACHE_TTL_MS) {
+    return cachedSystemPrompt;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('content')
+      .eq('name', 'feature_builder_system')
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data?.content) {
+      cachedSystemPrompt = data.content;
+      promptCacheTime = now;
+      log('info', 'Loaded system prompt from DB', { length: data.content.length });
+      return cachedSystemPrompt;
+    }
+  } catch (err) {
+    log('warn', 'Failed to load prompt from DB, using hardcoded fallback', { error: err.message });
+  }
+  return null;
+}
+
+// ============================================
+// Send Claudero completion email
+// ============================================
+async function sendClauderoEmail(request, buildResult, deployDecision, branchName, commitSha) {
+  const email = request.requester_email;
+  if (!email) {
+    log('warn', 'No requester email, skipping notification', { id: request.id });
+    return;
+  }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'claudero_feature_complete',
+        to: email,
+        data: {
+          requester_name: request.requester_name,
+          description: request.description,
+          build_summary: buildResult.summary || '',
+          design_outline: buildResult.design_outline || '',
+          testing_instructions: buildResult.testing_instructions || '',
+          files_created: buildResult.files_created || [],
+          files_modified: buildResult.files_modified || [],
+          page_url: buildResult.page_url || '',
+          branch_name: branchName || '',
+          commit_sha: commitSha || '',
+          deploy_decision: deployDecision,
+          risk_assessment: buildResult.risk_assessment || {},
+          notes: buildResult.notes || '',
+          version: 'Assigned by CI shortly',
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      log('error', 'Claudero email send failed', { status: res.status, body });
+    } else {
+      log('info', 'Claudero email sent', { to: email });
+    }
+  } catch (err) {
+    log('error', 'Claudero email error', { error: err.message });
+  }
+}
+
+// ============================================
 // Claude Code execution
 // ============================================
-function buildPrompt(request) {
+async function buildPrompt(request) {
+  // Try loading from DB first
+  const dbPrompt = await loadSystemPrompt();
+  if (dbPrompt) {
+    // Interpolate {{placeholders}} with request data
+    const spec = request.structured_spec || {};
+    const context = spec.context || {};
+    const vars = {
+      requester_name: request.requester_name || 'Unknown',
+      requester_role: request.requester_role || 'staff',
+      description: request.description || '',
+      parent_context: context.parent_request_id ? 'true' : '',
+      parent_request_id: context.parent_request_id || '',
+      parent_version: context.parent_version || '',
+      parent_commit_sha: context.parent_commit_sha || '',
+    };
+
+    let prompt = dbPrompt;
+    // Handle {{#if variable}}...{{/if}} blocks
+    prompt = prompt.replace(/\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, block) => {
+      return vars[key] ? block : '';
+    });
+    // Handle {{variable}} replacements
+    prompt = prompt.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+      return vars[key] !== undefined ? String(vars[key]) : '';
+    });
+
+    log('info', 'Using DB system prompt', { length: prompt.length });
+    return prompt;
+  }
+
+  // Fallback to hardcoded prompt
+  log('info', 'Using hardcoded fallback prompt');
   const spec = request.structured_spec || {};
   const pageName = spec.page_name || 'auto-determine from description';
   const dataSources = (spec.data_sources || []).join(', ') || 'determine from description';
@@ -359,7 +475,7 @@ RISK ASSESSMENT GUIDELINES:
 }
 
 async function runClaudeCode(request) {
-  const prompt = buildPrompt(request);
+  const prompt = await buildPrompt(request);
 
   await mkdir(TEMP_DIR, { recursive: true });
 
@@ -472,6 +588,8 @@ async function runClaudeCode(request) {
           }
         }
         if (inner.summary) result.summary = inner.summary;
+        if (inner.design_outline) result.design_outline = inner.design_outline;
+        if (inner.testing_instructions) result.testing_instructions = inner.testing_instructions;
         if (inner.files_created) result.files_created = inner.files_created;
         if (inner.files_modified) result.files_modified = inner.files_modified;
         if (inner.page_url) result.page_url = inner.page_url;
@@ -585,6 +703,9 @@ async function processFeatureRequest(request) {
         page_url: buildResult.page_url,
       });
 
+      // Send Claudero notification email to requester
+      await sendClauderoEmail(request, buildResult, 'auto_merged', branchName, mainSha);
+
     } else {
       // BRANCH FOR REVIEW: needs human approval
       log('info', 'Branching for review (risky)', { branch: branchName, reasons });
@@ -614,6 +735,9 @@ async function processFeatureRequest(request) {
         branch: branchName,
         reasons,
       });
+
+      // Send Claudero notification email to requester
+      await sendClauderoEmail(request, buildResult, 'branched_for_review', branchName, commitSha);
     }
 
     // Return to main for next run

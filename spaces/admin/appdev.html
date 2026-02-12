@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>App Dev - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <style>
+    .appdev-page { max-width: 900px; }
+
+    /* Hero */
+    .appdev-hero {
+      text-align: center;
+      padding: 1.5rem 1rem 1rem;
+    }
+    .appdev-hero h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+    }
+    .appdev-hero .tagline {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Prompt box */
+    .appdev-prompt-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .appdev-prompt-card label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+    .appdev-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      background: var(--bg);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .appdev-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(212, 136, 58, 0.15);
+    }
+    .appdev-submit-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      gap: 0.75rem;
+    }
+    .appdev-submit-row .char-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .appdev-submit-btn {
+      padding: 0.5rem 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .appdev-submit-btn:hover { opacity: 0.85; }
+    .appdev-submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Active build banner */
+    .appdev-active-build {
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    .appdev-active-build.visible { display: block; }
+    .appdev-active-build h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: #92400e;
+    }
+    .appdev-active-status {
+      font-size: 0.85rem;
+      color: #78350f;
+    }
+    .appdev-active-status .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 0.5rem;
+    }
+    .appdev-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f59e0b;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* History section */
+    .appdev-history-header {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 1.5rem 0 1rem;
+    }
+    .appdev-empty {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Request card */
+    .appdev-request {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .appdev-request-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .appdev-request-header:hover { background: var(--bg); }
+    .appdev-request-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .appdev-request-badge.completed { background: #d1fae5; color: #065f46; }
+    .appdev-request-badge.failed { background: #fee2e2; color: #991b1b; }
+    .appdev-request-badge.review { background: #fef3c7; color: #92400e; }
+    .appdev-request-badge.pending,
+    .appdev-request-badge.processing,
+    .appdev-request-badge.building { background: #e0e7ff; color: #3730a3; }
+    .appdev-request-badge.cancelled { background: #f3f4f6; color: #6b7280; }
+
+    .appdev-request-title {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .appdev-request-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .appdev-request-chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+    }
+    .appdev-request.collapsed .appdev-request-chevron { transform: rotate(-90deg); }
+    .appdev-request.collapsed .appdev-request-body { display: none; }
+
+    /* Request body / timeline */
+    .appdev-request-body {
+      padding: 0 1.25rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .appdev-request-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Timeline */
+    .appdev-timeline {
+      margin: 0.75rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .appdev-timeline-item {
+      position: relative;
+      padding: 0.5rem 0 0.5rem 1.75rem;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .appdev-timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 0.35rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .appdev-timeline-item:last-child::before { bottom: 50%; }
+    .appdev-timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.7rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 2px solid var(--bg-card);
+    }
+    .appdev-timeline-item.active::after { background: #f59e0b; }
+    .appdev-timeline-item.success::after { background: #10b981; }
+    .appdev-timeline-item.error::after { background: #ef4444; }
+
+    .appdev-timeline-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: block;
+    }
+    .appdev-timeline-label {
+      font-weight: 600;
+    }
+    .appdev-timeline-detail {
+      color: var(--text-muted);
+    }
+
+    /* Detail sections inside timeline */
+    .appdev-detail-section {
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+    }
+    .appdev-detail-section h4 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 0 0 0.35rem;
+    }
+    .appdev-detail-section p,
+    .appdev-detail-section pre {
+      margin: 0.25rem 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .appdev-detail-section code {
+      font-size: 0.75rem;
+      background: var(--border);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+    .appdev-detail-section a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .appdev-file-list {
+      margin: 0.25rem 0;
+      padding-left: 1.25rem;
+    }
+    .appdev-file-list li { margin: 0.15rem 0; }
+
+    /* Follow-up badge */
+    .appdev-followup-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      background: #e0e7ff;
+      color: #3730a3;
+      margin-left: 0.4rem;
+    }
+
+    @media (max-width: 768px) {
+      .appdev-hero h1 { font-size: 1.2rem; }
+      .appdev-textarea { min-height: 100px; }
+      .appdev-request-header { padding: 0.65rem 1rem; }
+      .appdev-request-body { padding: 0 1rem 0.75rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="../../styles/site.css">
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access this feature.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+    <span data-site-version style="display:none">v000000.00</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <main class="manage-content appdev-page">
+      <div class="appdev-hero">
+        <h1>Claudero</h1>
+        <p class="tagline">AI developer extraordinaire</p>
+      </div>
+
+      <!-- Prompt box -->
+      <div class="appdev-prompt-card">
+        <label for="featurePrompt">Describe the feature you want built</label>
+        <textarea id="featurePrompt" class="appdev-textarea" placeholder="e.g. Add a page that shows the current weather forecast for Cedar Creek with hourly temps and rain probability..."></textarea>
+        <div class="appdev-submit-row">
+          <span class="char-count" id="charCount">0 chars</span>
+          <button class="appdev-submit-btn" id="submitBtn" disabled>Submit to Claudero</button>
+        </div>
+      </div>
+
+      <!-- Active build banner -->
+      <div class="appdev-active-build" id="activeBuild">
+        <h3><span class="appdev-spinner"></span> Build in Progress</h3>
+        <div class="appdev-active-status" id="activeBuildStatus"></div>
+      </div>
+
+      <!-- History -->
+      <h2 class="appdev-history-header">Build History</h2>
+      <div id="historyContainer">
+        <div class="appdev-empty">No feature requests yet. Describe something above and hit submit.</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../shared/instant-chrome.js"></script>
+  <script type="module" src="../../shared/version-info.js"></script>
+  <script type="module" src="appdev.js"></script>
+</body>
+</html>

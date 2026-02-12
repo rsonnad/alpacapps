@@ -14,6 +14,7 @@ const SPECIAL_PREFIXES: Record<string, string> = {
   "auto": "auto",
   "payments": "payments",
   "pai": "pai",
+  "claudero": "claudero",
 };
 
 /**
@@ -211,9 +212,236 @@ async function handleSpecialLogic(
     await handlePaymentEmail(emailRecord, supabase, resendApiKey);
   } else if (type === "pai") {
     await handlePaiEmail(emailRecord, supabase, resendApiKey);
+  } else if (type === "claudero") {
+    await handleClauderoEmail(emailRecord, supabase, resendApiKey);
   }
 
   // herd@ - not yet implemented
+}
+
+// =============================================
+// CLAUDERO EMAIL HANDLER
+// =============================================
+
+/**
+ * Handle inbound emails to claudero@alpacaplayhouse.com.
+ * These are replies to feature build result emails.
+ *
+ * 1. Scan subject + body for version pattern (vYYMMDD.NN) or feature request context
+ * 2. Look up the original feature_request by commit SHA or version
+ * 3. Create a new feature_request with parent_request_id linking to original
+ * 4. Send acknowledgment reply
+ */
+async function handleClauderoEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+
+  const senderName = (from.match(/^([^<]+)/)?.[1] || "").trim() || from.split("@")[0];
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+  const messageBody = bodyText || bodyHtml || "";
+
+  console.log(`Claudero email from ${senderEmail}: subject="${subject}"`);
+
+  // Try to find the original feature request by scanning for version or commit SHA
+  let parentRequest: any = null;
+
+  // Look for version pattern: vYYMMDD.NN
+  const versionMatch = (subject + " " + messageBody).match(/v(\d{6}\.\d{2})/);
+  if (versionMatch) {
+    const version = `v${versionMatch[1]}`;
+    console.log(`Found version reference: ${version}`);
+
+    // Look up release_events for this version
+    const { data: releaseEvent } = await supabase
+      .from("release_events")
+      .select("sha")
+      .eq("version_string", version)
+      .limit(1)
+      .maybeSingle();
+
+    if (releaseEvent?.sha) {
+      // Find feature request by commit SHA
+      const { data: req } = await supabase
+        .from("feature_requests")
+        .select("*")
+        .eq("commit_sha", releaseEvent.sha)
+        .limit(1)
+        .maybeSingle();
+
+      if (req) parentRequest = req;
+    }
+  }
+
+  // Fallback: look for commit SHA in subject/body (8+ hex chars)
+  if (!parentRequest) {
+    const shaMatch = (subject + " " + messageBody).match(/\b([0-9a-f]{8,40})\b/i);
+    if (shaMatch) {
+      const shaPrefix = shaMatch[1].substring(0, 8);
+      const { data: reqs } = await supabase
+        .from("feature_requests")
+        .select("*")
+        .ilike("commit_sha", `${shaPrefix}%`)
+        .limit(1);
+
+      if (reqs?.length) parentRequest = reqs[0];
+    }
+  }
+
+  // Fallback: look for most recent completed request from this sender
+  if (!parentRequest) {
+    const { data: reqs } = await supabase
+      .from("feature_requests")
+      .select("*")
+      .eq("requester_email", senderEmail)
+      .in("status", ["completed", "review"])
+      .order("completed_at", { ascending: false })
+      .limit(1);
+
+    if (reqs?.length) parentRequest = reqs[0];
+  }
+
+  // Look up the sender's app_user for proper requester info
+  let requesterName = senderName;
+  let requesterRole = "staff";
+  let requesterUserId: string | null = null;
+
+  const { data: appUser } = await supabase
+    .from("app_users")
+    .select("id, display_name, role, email")
+    .eq("email", senderEmail)
+    .limit(1)
+    .maybeSingle();
+
+  if (appUser) {
+    requesterName = appUser.display_name || senderName;
+    requesterRole = appUser.role || "staff";
+    requesterUserId = appUser.id;
+  }
+
+  // Strip quoted reply content — keep only the new message
+  // Common patterns: lines starting with ">" or "On ... wrote:"
+  let cleanBody = messageBody;
+  const onWroteIdx = cleanBody.search(/^On\s.+wrote:\s*$/m);
+  if (onWroteIdx > 0) cleanBody = cleanBody.substring(0, onWroteIdx).trim();
+  // Also strip lines starting with ">"
+  cleanBody = cleanBody.split("\n").filter((l: string) => !l.startsWith(">")).join("\n").trim();
+
+  if (!cleanBody || cleanBody.length < 3) {
+    console.log("Claudero email body too short after stripping quotes, ignoring");
+    return;
+  }
+
+  // Build context for the follow-up request
+  const structuredSpec: any = {};
+  if (parentRequest) {
+    structuredSpec.context = {
+      parent_request_id: parentRequest.id,
+      parent_version: versionMatch ? `v${versionMatch[1]}` : null,
+      parent_commit_sha: parentRequest.commit_sha,
+      parent_description: parentRequest.description?.substring(0, 200),
+      parent_build_summary: parentRequest.build_summary?.substring(0, 300),
+      parent_files_created: parentRequest.files_created,
+    };
+  }
+
+  // Create follow-up feature request
+  const { data: newReq, error } = await supabase
+    .from("feature_requests")
+    .insert({
+      requester_user_id: requesterUserId,
+      requester_name: requesterName,
+      requester_role: requesterRole,
+      requester_email: senderEmail,
+      description: cleanBody,
+      parent_request_id: parentRequest?.id || null,
+      structured_spec: Object.keys(structuredSpec).length ? structuredSpec : null,
+      status: "pending",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to create follow-up feature request:", error.message);
+    return;
+  }
+
+  console.log(`Created follow-up feature request: ${newReq.id}${parentRequest ? ` (parent: ${parentRequest.id})` : ""}`);
+
+  // Send acknowledgment reply
+  const ackText = parentRequest
+    ? `Got it — I'll look at the context from ${versionMatch ? `version ${`v${versionMatch[1]}`}` : `your previous build`} and process your feedback. You can track progress at https://alpacaplayhouse.com/spaces/admin/appdev.html`
+    : `Got it — I'll process your request. You can track progress at https://alpacaplayhouse.com/spaces/admin/appdev.html`;
+
+  await sendClauderoReply(resendApiKey, senderEmail, ackText, subject, messageBody);
+}
+
+/**
+ * Send a reply from claudero@alpacaplayhouse.com via Resend API directly.
+ */
+async function sendClauderoReply(
+  resendApiKey: string,
+  to: string,
+  replyBody: string,
+  originalSubject: string,
+  originalBody: string
+): Promise<{ ok: boolean; status: number }> {
+  const bodySnippet = originalBody.substring(0, 500);
+  const reSubject = originalSubject.startsWith("Re:") ? originalSubject : `Re: ${originalSubject || "Your message to Claudero"}`;
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #1c1618; padding: 20px; border-radius: 12px 12px 0 0;">
+        <h2 style="color: #d4883a; margin: 0;">Claudero</h2>
+        <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">AI developer extraordinaire</p>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
+        <div style="white-space: pre-wrap; line-height: 1.6;">${(replyBody || "").replace(/</g, "&lt;")}</div>
+        ${bodySnippet ? `
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Your original message:</p>
+        <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${bodySnippet.replace(/</g, "&lt;")}</div>
+        ` : ""}
+      </div>
+      <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
+        This is an automated reply from Claudero at Alpaca Playhouse. Reply to continue the conversation.
+      </p>
+    </div>`;
+  const text = `Claudero - AI developer extraordinaire
+
+${replyBody || ""}
+
+${bodySnippet ? `---\nYour original message:\n${bodySnippet}` : ""}
+
+This is an automated reply from Claudero at Alpaca Playhouse.`;
+
+  const res = await fetch(`${RESEND_API_URL}/emails`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "Claudero <claudero@alpacaplayhouse.com>",
+      to: [to],
+      reply_to: "claudero@alpacaplayhouse.com",
+      subject: reSubject,
+      html,
+      text,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error(`Failed to send Claudero reply: ${res.status} ${errText}`);
+  } else {
+    console.log(`Claudero reply sent to ${to}`);
+  }
+  return { ok: res.ok, status: res.status };
 }
 
 // =============================================

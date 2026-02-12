@@ -14,7 +14,7 @@ import { setupVersionInfo } from './version-info.js';
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
   'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_hours', 'view_faq', 'view_voice', 'view_todo',
+  'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
 ];
 const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
@@ -32,6 +32,7 @@ const ALL_ADMIN_TABS = [
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff' },
   { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'staff' },
+  { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
   // Admin section
   { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
   { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },

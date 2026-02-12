@@ -52,6 +52,8 @@ type EmailType =
   | "dl_mismatch"
   // Feature builder
   | "feature_review"
+  // Claudero AI developer
+  | "claudero_feature_complete"
   // PAI email
   | "pai_email_reply"
   | "pai_document_received"
@@ -1416,6 +1418,100 @@ To reject: delete the branch on GitHub.`
       };
     }
 
+    // ===== CLAUDERO AI DEVELOPER =====
+    case "claudero_feature_complete": {
+      const cFilesStr = (data.files_created || []).join(', ');
+      const cFilesModStr = (data.files_modified || []).join(', ');
+      const cRisk = data.risk_assessment || {};
+      const isReview = data.deploy_decision === 'branched_for_review';
+      const compareUrl = data.branch_name ? `https://github.com/rsonnad/alpacapps/compare/${data.branch_name}` : '';
+      const pageUrl = data.page_url ? `https://alpacaplayhouse.com${data.page_url}` : '';
+
+      return {
+        senderType: 'claudero',
+        subject: isReview
+          ? `Feature Ready for Review: ${(data.build_summary || data.description || 'New Feature').substring(0, 55)}`
+          : `Feature Built: ${(data.build_summary || data.description || 'New Feature').substring(0, 55)}`,
+        html: `
+          <h2 style="margin-top:0;">Hey ${data.requester_name || 'there'},</h2>
+          <p>${isReview
+            ? "I've finished building your feature, but it needs a human review before going live."
+            : "Good news — I've built and deployed your feature. It's live now."
+          }</p>
+
+          <h3>What you asked for</h3>
+          <p style="background: #f8f5f0; padding: 15px; border-radius: 8px; border-left: 4px solid #d4883a;">${data.description || ''}</p>
+
+          <h3>What I built</h3>
+          <p>${data.build_summary || 'Feature implemented as requested.'}</p>
+
+          ${data.design_outline ? `<h3>Design</h3><p>${data.design_outline}</p>` : ''}
+
+          ${data.testing_instructions ? `
+            <h3>How to test</h3>
+            <p>${data.testing_instructions}</p>
+          ` : ''}
+
+          ${cFilesStr ? `<p><strong>Files created:</strong> <code>${cFilesStr}</code></p>` : ''}
+          ${cFilesModStr ? `<p><strong>Files modified:</strong> <code>${cFilesModStr}</code></p>` : ''}
+
+          <h3>Build details</h3>
+          <table style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+            ${data.commit_sha ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Commit</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;"><code>${data.commit_sha.substring(0, 8)}</code></td></tr>` : ''}
+            ${data.branch_name ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Branch</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;"><code>${data.branch_name}</code></td></tr>` : ''}
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Deploy</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${isReview ? 'Branched for review' : 'Auto-merged to main'}</td></tr>
+            ${data.version ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Version</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${data.version}</td></tr>` : ''}
+          </table>
+
+          ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
+
+          <div style="margin: 20px 0;">
+            ${pageUrl && !isReview ? `<a href="${pageUrl}" style="background: #d4883a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">View Live Page</a>` : ''}
+            ${compareUrl && isReview ? `<a href="${compareUrl}" style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Review on GitHub</a>` : ''}
+          </div>
+
+          ${isReview ? `
+            <p style="color: #666; font-size: 13px;">
+              <strong>To deploy:</strong> merge the branch to main and push.<br>
+              <strong>To reject:</strong> delete the branch on GitHub.
+            </p>
+          ` : ''}
+
+          <p style="color: #666; font-size: 13px; margin-top: 24px; border-top: 1px solid #eee; padding-top: 12px;">
+            Reply to this email to request changes or provide feedback — I'll pick up right where I left off with the context from this build.
+          </p>
+        `,
+        text: `Hey ${data.requester_name || 'there'},
+
+${isReview
+  ? "I've finished building your feature, but it needs a human review before going live."
+  : "Good news — I've built and deployed your feature. It's live now."
+}
+
+WHAT YOU ASKED FOR:
+${data.description || ''}
+
+WHAT I BUILT:
+${data.build_summary || 'Feature implemented as requested.'}
+${data.design_outline ? `\nDESIGN:\n${data.design_outline}` : ''}
+${data.testing_instructions ? `\nHOW TO TEST:\n${data.testing_instructions}` : ''}
+
+${cFilesStr ? `Files created: ${cFilesStr}` : ''}
+${cFilesModStr ? `Files modified: ${cFilesModStr}` : ''}
+
+BUILD DETAILS:
+${data.commit_sha ? `- Commit: ${data.commit_sha.substring(0, 8)}` : ''}
+${data.branch_name ? `- Branch: ${data.branch_name}` : ''}
+- Deploy: ${isReview ? 'Branched for review' : 'Auto-merged to main'}
+${data.version ? `- Version: ${data.version}` : ''}
+${data.notes ? `\nNotes: ${data.notes}` : ''}
+${pageUrl && !isReview ? `\nLive page: ${pageUrl}` : ''}
+${compareUrl && isReview ? `\nReview: ${compareUrl}` : ''}
+
+Reply to this email to request changes or provide feedback — I'll pick up right where I left off.`
+      };
+    }
+
     // ===== IDENTITY VERIFICATION =====
     case "dl_upload_link":
       return {
@@ -1714,7 +1810,7 @@ async function getRenderedTemplate(
     subject: fallback.subject,
     html: fallback.html,
     text: fallback.text,
-    senderType: "team", // fallback doesn't know sender_type, will be overridden below
+    senderType: (fallback as any).senderType || "team",
   };
 }
 

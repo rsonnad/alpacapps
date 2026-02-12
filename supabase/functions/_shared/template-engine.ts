@@ -69,4 +69,8 @@ export const SENDER_MAP: Record<
     from: "Pai In-the-Sky Alpaca Playhouse <pai@alpacaplayhouse.com>",
     reply_to: "pai@alpacaplayhouse.com",
   },
+  claudero: {
+    from: "Claudero <claudero@alpacaplayhouse.com>",
+    reply_to: "claudero@alpacaplayhouse.com",
+  },
 };
