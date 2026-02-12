@@ -124,7 +124,7 @@ function renderUserInfo(el, appUser, profileHref) {
     </button>
     <div class="user-menu-dropdown hidden">
       <a href="${profileHref}" class="user-menu-item">Profile</a>
-      <a href="/residents/lighting.html" class="user-menu-item">My Home</a>
+      <a href="/residents/lighting.html" class="user-menu-item">Intranet</a>
       <button class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
 

@@ -386,7 +386,7 @@ function renderUserMenuHTML(appUser, profileHref) {
 
   let navLinks = '';
   if (isResident) {
-    navLinks += `<a href="/residents/lighting.html" class="user-menu-item">My Home</a>`;
+    navLinks += `<a href="/residents/lighting.html" class="user-menu-item">Intranet</a>`;
   }
   if (isStaffOrAdmin) {
     navLinks += `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`;
@@ -438,7 +438,7 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
         // Build mobile nav items for authenticated user
         const mobileItems = [];
         if (isResident) {
-          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/lighting.html" class="aap-mobile-nav__link">My Home</a></li>`);
+          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/lighting.html" class="aap-mobile-nav__link">Intranet</a></li>`);
         }
         if (isStaffOrAdmin) {
           mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/spaces/admin/spaces.html" class="aap-mobile-nav__link">Manage</a></li>`);
