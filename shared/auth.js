@@ -297,12 +297,15 @@ async function handleAuthChange(session) {
         currentPermissions = new Set(permData);
         authLog.info('Permissions loaded', { count: currentPermissions.size });
       } else {
-        authLog.warn('Failed to fetch permissions, using empty set', permError?.message);
-        currentPermissions = new Set();
+        authLog.warn('Failed to fetch permissions, keeping existing', permError?.message);
+        // Keep cached permissions if we have them, only clear if truly empty
+        if (currentPermissions.size === 0) {
+          authLog.warn('No cached permissions available either');
+        }
       }
     } catch (permTimeoutError) {
-      authLog.warn('Permission fetch timed out, using empty set');
-      currentPermissions = new Set();
+      authLog.warn('Permission fetch timed out, keeping existing permissions');
+      // Keep cached permissions — don't clear on network failure
     }
 
     // Cache the verified auth state for instant restore on next visit

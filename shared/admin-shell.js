@@ -354,6 +354,16 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       const email = state.user?.email || state.appUser?.email;
       if (emailEl && email) emailEl.textContent = `Signed in as ${email}`;
       document.getElementById('unauthorizedOverlay').classList.remove('hidden');
+
+      // Wire up Sign Out button on the unauthorized overlay
+      const unauthSignOutBtn = document.getElementById('signOutBtn');
+      if (unauthSignOutBtn && !unauthSignOutBtn._listenerAdded) {
+        unauthSignOutBtn._listenerAdded = true;
+        unauthSignOutBtn.addEventListener('click', async () => {
+          await signOut();
+          window.location.href = '/login/';
+        });
+      }
     } else if (!state.isAuthenticated && !pageContentShown) {
       // Only redirect to login if we haven't already shown page content.
       // Prevents disruptive redirects when Supabase session expires while
