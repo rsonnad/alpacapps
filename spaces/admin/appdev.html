@@ -341,6 +341,14 @@
     .appdev-attach-btn input[type="file"] {
       display: none;
     }
+    .appdev-attach-btn.camera-only {
+      display: none;
+    }
+    @media (pointer: coarse) {
+      .appdev-attach-btn.camera-only {
+        display: inline-flex;
+      }
+    }
     .appdev-thumbs {
       display: flex;
       flex-wrap: wrap;
@@ -500,7 +508,7 @@
         <label for="featurePrompt">Describe the feature you want built or modified</label>
         <textarea id="featurePrompt" class="appdev-textarea" placeholder="e.g. Add a page that shows the current weather forecast for Cedar Creek with hourly temps and rain probability..."></textarea>
         <div class="appdev-attach-row">
-          <label class="appdev-attach-btn">
+          <label class="appdev-attach-btn camera-only">
             <input type="file" id="cameraInput" accept="image/*" capture="environment">
             <span>📷</span> Take Photo
           </label>
