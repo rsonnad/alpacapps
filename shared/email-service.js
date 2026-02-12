@@ -335,12 +335,14 @@ export const emailService = {
    * @param {string} email - Email address to invite
    * @param {string} role - Role being assigned ('admin' or 'staff')
    * @param {string} loginUrl - URL for the invitee to sign in
+   * @param {string} [name] - Invitee's first name or display name (optional)
    */
-  async sendStaffInvitation(email, role, loginUrl) {
+  async sendStaffInvitation(email, role, loginUrl, name) {
     return sendEmail(EMAIL_TYPES.STAFF_INVITATION, email, {
       email,
       role,
       login_url: loginUrl,
+      name: name || '',
     });
   },
 

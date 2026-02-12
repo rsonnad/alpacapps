@@ -405,7 +405,21 @@ async function inviteUser(email, role, personInfo = {}) {
  */
 async function sendInvitationEmail(invitationId, email, role) {
   const loginUrl = 'https://alpacaplayhouse.com/login/';
-  const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl);
+
+  // Look up person's name for personalized greeting
+  let name = '';
+  try {
+    const { data: person } = await supabase
+      .from('people')
+      .select('first_name, last_name')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+    if (person) {
+      name = person.first_name || '';
+    }
+  } catch (e) { /* name lookup is best-effort */ }
+
+  const emailResult = await emailService.sendStaffInvitation(email, role, loginUrl, name);
 
   if (emailResult.success) {
     // Update email tracking: set sent timestamp and increment send count

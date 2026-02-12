@@ -1239,6 +1239,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 4. **Mobile app**: After changing `shared/services/` or `mobile/app/` files, rebuild with `cd mobile && npm run sync`, then run in Xcode or Android Studio
 5. **Mobile app login**: Test both email/password and Google Sign In on both platforms
 
+### Email Template Previewing
+
+**IMPORTANT: Do NOT send real emails while iterating on email template design.** Resend has a daily quota. Instead:
+
+1. Write the HTML to `tmp-invite-preview.html` (or similar) and open it in the browser for visual review
+2. Iterate on the design using the local HTML preview only
+3. Only send an actual email once the user confirms the design is finalized
+4. When sending test emails, minimize sends — one test per finalized version, not per iteration
+
 ## Helpful Documentation
 
 - `architecture.md` - Full system documentation
