@@ -1,12 +1,12 @@
 {
-  "version": "v260211.72 9:46p",
-  "release": 72,
-  "sha": "ab1b55f0",
-  "fullSha": "ab1b55f02a50dda7635c1c402b901829b492fd9b",
+  "version": "v260211.73 9:55p",
+  "release": 73,
+  "sha": "5fab8dae",
+  "fullSha": "5fab8dae71fe9865ac012c79f20dba0851971d2c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 03:46:34+00",
-  "commits": [{"sha":"ab1b55f0","message":"fix: blink poller requests fresh snapshot every poll cycle","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 03:55:36+00",
+  "commits": [{"sha":"5fab8dae","message":"Add brand style guide and consistent email branding","author":"Rahul Sonnad"}]
 }
