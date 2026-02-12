@@ -1,12 +1,12 @@
 {
-  "version": "v260212.06 12:14p",
-  "release": 83,
-  "sha": "60919eed",
-  "fullSha": "60919eed930e67b643ae15f66f75a51a4cc85537",
+  "version": "v260212.07 12:21p",
+  "release": 84,
+  "sha": "665e5fac",
+  "fullSha": "665e5facd982f775d971d1ba04ebbb3466f7170f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 18:14:33+00",
-  "commits": [{"sha":"60919eed","message":"Add Claudero App Dev tab with interactive feature builder + email loop","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 18:21:01+00",
+  "commits": [{"sha":"665e5fac","message":"App Dev: single-line title, \"built or modified\" label","author":"Rahul Sonnad"}]
 }
