@@ -176,7 +176,7 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 
 8. **Propane Usage:** Any propane used during the event for heating, display propane or hot tubs will be reimbursed from the damage deposit.
 
-9. **No Alcohol or Meat Inside:** No alcohol or meat may be brought into the house or consumed inside. Meat may be grilled outside and stored outside of the kitchen.
+9. **No Alcohol or Cooking Meat Inside:** No alcohol may be brought into the house or consumed inside. No cooking meat inside the house, and no storing meat in the kitchen refrigerator. Meat can be cooked on the back patio grill area (grill, oven, air fryer) and stored in other refrigerators.
 
 10. **No RVs:** No RVs will be parked onsite at any time. $100 fee if this happens. RVs can be parked on frontage road (5 minute walk away).
 
