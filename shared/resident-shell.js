@@ -101,18 +101,20 @@ function renderResidentTabNav(activeTab, authState) {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
-  // Show context switcher for users with any staff/admin permissions
+  // Show context switcher for users with any staff/admin permissions (or admin/oracle role)
+  const role = authState.appUser?.role;
+  const isAdminRole = role === 'admin' || role === 'oracle';
   const switcher = document.getElementById('contextSwitcher');
   if (switcher) {
-    const hasStaffPerms = authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
-    const hasAdminPerms = authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+    const hasStaffPerms = isAdminRole || authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
+    const hasAdminPerms = isAdminRole || authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
     if (hasStaffPerms || hasAdminPerms) {
       switcher.classList.remove('hidden');
     }
   }
 
-  const hasStaffPerms = authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
-  const hasAdminPerms = authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
+  const hasStaffPerms = isAdminRole || authState.hasAnyPermission?.(...STAFF_PERMISSION_KEYS);
+  const hasAdminPerms = isAdminRole || authState.hasAnyPermission?.(...ADMIN_PERMISSION_KEYS);
   const isStaffContext = hasStaffPerms || hasAdminPerms;
   const availableTabs = isStaffContext ? RESIDENT_STAFF_TABS : RESIDENT_CORE_TABS;
 
@@ -142,6 +144,10 @@ function renderResidentTabNav(activeTab, authState) {
 }
 
 function hasTabAccess(tab, authState) {
+  // Admin/oracle users bypass permission checks — they have access to everything
+  const role = authState.appUser?.role;
+  if (role === 'admin' || role === 'oracle') return true;
+
   if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
     return tab.permissionsAny.some((perm) => authState.hasPermission?.(perm));
   }
@@ -206,13 +212,16 @@ function normalizeRouteToken(token) {
 // =============================================
 // CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
 // =============================================
-function renderContextSwitcher() {
+function renderContextSwitcher(authState) {
   const switcher = document.getElementById('contextSwitcher');
   if (!switcher) return;
 
+  // Admin/oracle users always see the context switcher regardless of granular permissions
+  const role = authState?.appUser?.role;
+  const isAdminRole = role === 'admin' || role === 'oracle';
   const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
   const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
-  if (!hasStaffPerms && !hasAdminPerms) {
+  if (!isAdminRole && !hasStaffPerms && !hasAdminPerms) {
     switcher.classList.add('hidden');
     return;
   }
@@ -404,7 +413,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
         document.body.classList.remove('is-admin');
       }
 
-      renderContextSwitcher();
+      renderContextSwitcher(state);
       // Render tab navigation (pass full auth state for permission checks)
       renderResidentTabNav(activeTab, state);
 
