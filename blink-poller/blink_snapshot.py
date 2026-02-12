@@ -146,33 +146,35 @@ async def setup_blink(pin=None):
 
 
 async def poll_once(blink):
-    """Fetch latest thumbnails and upload to Supabase Storage."""
+    """Request fresh snapshot, wait for capture, then fetch and upload."""
+    # Step 1: Request the camera to take a new photo
+    for name, camera in blink.cameras.items():
+        try:
+            await camera.snap_picture()
+            log('INFO', f'Snap requested for {name}')
+        except Exception as e:
+            log('WARN', f'Snap request failed for {name}: {e}')
+
+    # Step 2: Wait for the camera to capture and upload to Blink cloud
+    await asyncio.sleep(15)
+
+    # Step 3: Refresh to get the updated thumbnail URL
     await blink.refresh(force=True)
 
+    # Step 4: Upload the fresh image
     for i, (name, camera) in enumerate(blink.cameras.items()):
-        # Get cached thumbnail image
         jpeg = camera.image_from_cache
         if not jpeg or len(jpeg) < 100:
             log('WARN', f'No thumbnail for {name}')
             continue
 
-        # Upload as named camera file
         safe_name = name.lower().replace(' ', '-').replace('/', '-')
         upload_to_supabase(jpeg, f'cameras/blink-{safe_name}-latest.jpg')
 
-        # Also upload as primary "latest" for the first camera
         if i == 0:
             upload_to_supabase(jpeg, SNAPSHOT_PATH)
 
-    # Occasionally request a fresh snapshot (~every 5th poll)
-    import random
-    if random.random() < 0.2:
-        for name, camera in blink.cameras.items():
-            try:
-                await camera.snap_picture()
-                log('INFO', f'Requested new snapshot for {name}')
-            except Exception as e:
-                log('WARN', f'Snap request failed for {name}: {e}')
+        log('INFO', f'{name}: {len(jpeg)/1024:.1f}KB')
 
 
 async def run_daemon():
