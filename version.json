@@ -1,12 +1,12 @@
 {
-  "version": "v260211.77 10:34p",
-  "release": 77,
-  "sha": "68bedcf7",
-  "fullSha": "68bedcf72c95eb695828aba55f898b53d30047a7",
+  "version": "v260212.01 12:17a",
+  "release": 78,
+  "sha": "0c3767bd",
+  "fullSha": "0c3767bd5c194d03445b87f0ad2d35991f2186c2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 04:34:53+00",
-  "commits": [{"sha":"68bedcf7","message":"PayPal webhook: email alpacaplayhouse@gmail.com on unknown event types","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 06:17:08+00",
+  "commits": [{"sha":"0c3767bd","message":"Login: tighten vertical spacing throughout","author":"Rahul Sonnad"}]
 }
