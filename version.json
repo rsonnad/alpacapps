@@ -1,12 +1,12 @@
 {
-  "version": "v260212.19 2:10p",
-  "release": 97,
-  "sha": "045b17e7",
-  "fullSha": "045b17e7db67ab281b73118eb3c60b05b55410c3",
+  "version": "v260212.20 2:13p",
+  "release": 98,
+  "sha": "04fa6a57",
+  "fullSha": "04fa6a5729df6567b033325ca8dbb0d80875ea85",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:10:38+00",
-  "commits": [{"sha":"045b17e7","message":"App Dev: add missing Supabase CDN script — fixes nav, auth, and all JS","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:13:41+00",
+  "commits": [{"sha":"04fa6a57","message":"PAI: two-tier document lookup — summary index + on-demand R2 fetch","author":"Rahul Sonnad"}]
 }
