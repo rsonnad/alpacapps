@@ -314,6 +314,7 @@ interface PaiConfig {
   chat_addendum: string;
   email_addendum: string;
   discord_addendum: string;
+  api_addendum: string;
   house_rules: string;
 }
 
@@ -345,6 +346,7 @@ You embody the spirit of the alpaca — a gentle, wise guardian rooted in Andean
   chat_addendum: "",
   email_addendum: "",
   discord_addendum: "",
+  api_addendum: "",
   house_rules: "",
 };
 
@@ -354,7 +356,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
     const [configResult, faqResult] = await Promise.all([
       supabase
         .from("pai_config")
-        .select("identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum")
+        .select("identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum, api_addendum")
         .eq("id", 1)
         .single(),
       supabase
@@ -380,6 +382,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
         chat_addendum: data.chat_addendum || "",
         email_addendum: data.email_addendum || "",
         discord_addendum: data.discord_addendum || "",
+        api_addendum: data.api_addendum || "",
         house_rules: houseRules,
       };
     }
@@ -2599,6 +2602,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   const context = body.context || {};
   const isEmailChannel = context.source === "email";
   const isDiscordChannel = context.source === "discord";
+  const isApiChannel = context.source === "api";
   if (!message?.trim()) {
     return jsonResponse({ error: "Message is required" }, 400);
   }
@@ -2610,8 +2614,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let appUser: any;
   let userLevel: number;
 
-  // Email channel: resend-inbound-webhook calls with service role key (no user JWT)
-  if (isEmailChannel && token === serviceKey) {
+  // Email/Discord/API channel: internal services call with service role key (no user JWT)
+  if ((isEmailChannel || isDiscordChannel || isApiChannel) && token === serviceKey) {
     const senderEmail = (context.sender || "").trim().toLowerCase();
     if (senderEmail) {
       const { data: appUserRow } = await supabase
@@ -2631,12 +2635,12 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     if (!appUser) {
       appUser = {
         id: "",
-        role: "resident",
-        display_name: context.sender || "Email sender",
-        email: context.sender,
+        role: isApiChannel ? "staff" : "resident",
+        display_name: isApiChannel ? "API Caller" : (context.sender || "Email sender"),
+        email: context.sender || null,
         person_id: null,
       };
-      userLevel = ROLE_LEVEL.resident ?? 1;
+      userLevel = isApiChannel ? ROLE_LEVEL.staff : (ROLE_LEVEL.resident ?? 1);
     }
   } else if (isDiscordChannel && token === serviceKey) {
     // Discord channel: pai-discord bot calls with service role key + discord_user_id
@@ -2712,14 +2716,17 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     userLevel = ROLE_LEVEL[targetUser.role] ?? 0;
   }
 
-  const channelLabel = isEmailChannel ? "email" : isDiscordChannel ? "discord" : "chat";
-  console.log(`PAI ${channelLabel} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
+  const channelName = isEmailChannel ? "email" : isDiscordChannel ? "discord" : isApiChannel ? "api" : "chat";
+  console.log(`PAI ${channelName} from ${appUser.display_name} (${appUser.role}): ${message.substring(0, 100)}`);
 
   // 3. Build scope and load PAI config in parallel
   const [scope, paiConfig] = await Promise.all([
     buildUserScope(supabase, appUser, userLevel),
     loadPaiConfig(supabase),
   ]);
+
+  // 3a. Get supabase URL for tool calls
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
   // 3b. Load Govee API key for direct Govee API calls
   let goveeApiKey = "";
@@ -2738,7 +2745,15 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     systemPrompt += "\n\n" + paiConfig.email_addendum.trim();
   } else if (isDiscordChannel && paiConfig.discord_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.discord_addendum.trim();
-  } else if (!isEmailChannel && !isDiscordChannel && paiConfig.chat_addendum?.trim()) {
+  } else if (isApiChannel) {
+    // API channel: apply api_addendum from DB config, then any request-level addendum
+    if (paiConfig.api_addendum?.trim()) {
+      systemPrompt += "\n\n" + paiConfig.api_addendum.trim();
+    }
+    if (context.api_addendum?.trim()) {
+      systemPrompt += "\n\n" + context.api_addendum.trim();
+    }
+  } else if (!isEmailChannel && !isDiscordChannel && !isApiChannel && paiConfig.chat_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.chat_addendum.trim();
   }
 
@@ -2847,7 +2862,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     try {
       await supabase.from('pai_interactions').insert({
         app_user_id: appUser.id,
-        source: channelLabel,
+        source: channelName,
         message_preview: message.substring(0, 100),
       });
     } catch (_) { /* non-critical */ }
