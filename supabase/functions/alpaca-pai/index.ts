@@ -1813,15 +1813,20 @@ async function executeToolCall(
           return `No matching documents found for "${args.query}". Available documents:\n${available}`;
         }
 
-        const best = matches[0];
-        const docUrl = best.source_url || null;
+        // Return top matches (up to 3) when scores are close, so PAI has full context
+        const topScore = matches[0].score;
+        const relevantMatches = matches.filter((d: any) => d.score >= topScore * 0.5).slice(0, 3);
 
-        // Return the structured summary + slug for follow-up detail fetch
-        if (best.content_text) {
-          return `Document: ${best.title} (slug: ${best.slug})${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${best.content_text}\n\n---\nThis is a summary. If you need more detail to answer the user's question, call lookup_document again with slug="${best.slug}" and detail=true.`;
-        } else {
-          return `Document: ${best.title} (slug: ${best.slug})\n${best.description || "No description available."}${docUrl ? `\n\nFull document: ${docUrl}` : ""}\n\nNo text summary available. You can share the link, or call lookup_document with slug="${best.slug}" and detail=true to attempt fetching the full text.`;
-        }
+        const results = relevantMatches.map((match: any) => {
+          const docUrl = match.source_url || null;
+          if (match.content_text) {
+            return `Document: ${match.title} (slug: ${match.slug})${docUrl ? `\nLink: ${docUrl}` : ""}\n\n${match.content_text}`;
+          } else {
+            return `Document: ${match.title} (slug: ${match.slug})\n${match.description || "No description available."}${docUrl ? `\nFull document: ${docUrl}` : ""}`;
+          }
+        });
+
+        return results.join("\n\n========================================\n\n") + "\n\n---\nThese are summaries. If you need more detail from a specific document, call lookup_document again with its slug and detail=true.";
       }
 
       case "build_feature": {
