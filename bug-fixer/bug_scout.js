@@ -19,6 +19,7 @@ const BOT_PASSWORD = process.env.BOT_USER_PASSWORD;
 const REPO_DIR = process.env.REPO_DIR || '/opt/bug-fixer/repo';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '30000');
 const MAX_FIX_TIMEOUT_MS = parseInt(process.env.MAX_FIX_TIMEOUT_MS || '300000'); // 5 minutes
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
 const TEMP_DIR = '/tmp/bug-fixer';
 
 if (!SUPABASE_SERVICE_KEY) {
@@ -35,6 +36,22 @@ function log(level, msg, data = {}) {
   const ts = new Date().toISOString();
   const dataStr = Object.keys(data).length ? ` ${JSON.stringify(data)}` : '';
   console.log(`[${ts}] [${level}] ${msg}${dataStr}`);
+}
+
+// ============================================
+// Discord notification
+// ============================================
+async function notifyDiscord(message) {
+  if (!DISCORD_WEBHOOK_URL) return;
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Bug Scout', content: message.substring(0, 2000) }),
+    });
+  } catch (err) {
+    log('warn', 'Discord notification error', { error: err.message });
+  }
 }
 
 // ============================================
@@ -481,6 +498,8 @@ async function processBugReport(report) {
     description: report.description.substring(0, 100),
   });
 
+  await notifyDiscord(`🐛 **Bug Scout: processing** — "${report.description.substring(0, 150)}" (from ${report.reporter_name})`);
+
   let screenshotPath = null;
 
   try {
@@ -552,6 +571,8 @@ async function processBugReport(report) {
         log('info', 'Verification screenshot email sent', { id: report.id });
       }
 
+      await notifyDiscord(`✅ **Bug Scout: fixed** — "${report.description.substring(0, 100)}"\nBranch: \`${branchName}\` → merged to main`);
+
       log('info', '=== Bug report fixed ===', { id: report.id, branch: branchName, commit: mainSha });
     } else {
       // Claude Code ran but made no changes
@@ -568,6 +589,7 @@ async function processBugReport(report) {
         .eq('id', report.id);
 
       await sendEmail('bug_report_failed', report, { error_message: msg });
+      await notifyDiscord(`⚠️ **Bug Scout: no fix** — "${report.description.substring(0, 100)}" — no code changes needed`);
       log('warn', 'No changes made by Claude Code', { id: report.id });
     }
 
@@ -592,6 +614,7 @@ async function processBugReport(report) {
 
     // Email reporter about failure
     await sendEmail('bug_report_failed', report, { error_message: errorMsg });
+    await notifyDiscord(`❌ **Bug Scout: failed** — "${report.description.substring(0, 100)}"\nError: ${errorMsg.substring(0, 300)}`);
 
     // Clean up any dirty git state and return to main
     try {

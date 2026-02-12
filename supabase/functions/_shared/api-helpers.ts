@@ -68,10 +68,11 @@ export async function resolveAuth(
   const authHeader = req.headers.get("Authorization");
   const apiKeyHeader = req.headers.get("X-API-Key");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const legacyServiceKey = Deno.env.get("LEGACY_SERVICE_ROLE_KEY");
 
   // 1. Service role key → oracle level (internal callers like PAI, workers)
   const token = authHeader?.replace("Bearer ", "") ?? "";
-  if (token === serviceKey) {
+  if (token === serviceKey || (legacyServiceKey && token === legacyServiceKey)) {
     return {
       appUser: { id: "__service__", role: "oracle", display_name: "Service" },
       userLevel: 4,

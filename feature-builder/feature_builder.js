@@ -16,6 +16,7 @@ const REPO_DIR = process.env.REPO_DIR || '/opt/feature-builder/repo';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '30000');
 const MAX_BUILD_TIMEOUT_MS = parseInt(process.env.MAX_BUILD_TIMEOUT_MS || '600000'); // 10 minutes
 const TEAM_EMAIL = 'team@alpacaplayhouse.com';
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
 const TEMP_DIR = '/tmp/feature-builder';
 
 if (!SUPABASE_SERVICE_KEY) {
@@ -32,6 +33,22 @@ function log(level, msg, data = {}) {
   const ts = new Date().toISOString();
   const dataStr = Object.keys(data).length ? ` ${JSON.stringify(data)}` : '';
   console.log(`[${ts}] [${level}] ${msg}${dataStr}`);
+}
+
+// ============================================
+// Discord notification
+// ============================================
+async function notifyDiscord(message) {
+  if (!DISCORD_WEBHOOK_URL) return;
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Feature Builder', content: message.substring(0, 2000) }),
+    });
+  } catch (err) {
+    log('warn', 'Discord notification error', { error: err.message });
+  }
 }
 
 // ============================================
@@ -631,6 +648,8 @@ async function processFeatureRequest(request) {
     description: request.description.substring(0, 100),
   });
 
+  await notifyDiscord(`🔨 **Feature Builder: processing** — "${request.description.substring(0, 150)}" (from ${request.requester_name})`);
+
   try {
     // 1. Mark as processing
     await updateProgress(request.id, {
@@ -705,6 +724,7 @@ async function processFeatureRequest(request) {
 
       // Send Claudero notification email to requester
       await sendClauderoEmail(request, buildResult, 'auto_merged', branchName, mainSha);
+      await notifyDiscord(`✅ **Feature Builder: deployed** — "${request.description.substring(0, 100)}"\nBranch: \`${branchName}\` → merged to main\nFiles: ${(buildResult.files_created || []).join(', ')}`);
 
     } else {
       // BRANCH FOR REVIEW: needs human approval
@@ -738,6 +758,7 @@ async function processFeatureRequest(request) {
 
       // Send Claudero notification email to requester
       await sendClauderoEmail(request, buildResult, 'branched_for_review', branchName, commitSha);
+      await notifyDiscord(`🔍 **Feature Builder: needs review** — "${request.description.substring(0, 100)}"\nBranch: \`${branchName}\`\nReason: ${reasons.join('; ').substring(0, 300)}`);
     }
 
     // Return to main for next run
@@ -757,6 +778,8 @@ async function processFeatureRequest(request) {
       error_message: errorMsg,
       completed_at: new Date().toISOString(),
     });
+
+    await notifyDiscord(`❌ **Feature Builder: failed** — "${request.description.substring(0, 100)}"\nError: ${errorMsg.substring(0, 300)}`);
 
     // Clean up git state
     try {

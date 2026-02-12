@@ -2612,11 +2612,12 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "") ?? "";
-  // SERVICE_ROLE_JWT is the JWT-format service role key (for external callers like Discord bot).
-  // SUPABASE_SERVICE_ROLE_KEY is the platform-injected key (internal format, may differ from JWT).
+  // Supabase gateway strips/transforms Authorization headers, so also accept service key in body
+  const bodyServiceKey = body.serviceKey ?? "";
   const serviceKeyPlatform = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const serviceKeyJwt = Deno.env.get("SERVICE_ROLE_JWT");
-  const isServiceKey = token === serviceKeyPlatform || (serviceKeyJwt && token === serviceKeyJwt);
+  const isServiceKey = token === serviceKeyPlatform || token === serviceKeyJwt ||
+    bodyServiceKey === serviceKeyPlatform || bodyServiceKey === serviceKeyJwt;
 
   let appUser: any;
   let userLevel: number;

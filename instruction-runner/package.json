@@ -1,0 +1,12 @@
+{
+  "name": "instruction-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Watches for instruction files pushed from Android Claude Code and executes them via Claude Code CLI",
+  "main": "worker.js",
+  "scripts": {
+    "start": "node worker.js",
+    "dev": "node --watch worker.js"
+  },
+  "dependencies": {}
+}

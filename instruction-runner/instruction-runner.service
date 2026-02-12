@@ -1,0 +1,19 @@
+[Unit]
+Description=Android Claude Code Instruction Runner
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/instruction-runner
+EnvironmentFile=/opt/instruction-runner/.env
+ExecStart=/usr/bin/node /opt/instruction-runner/worker.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=instruction-runner
+
+[Install]
+WantedBy=multi-user.target

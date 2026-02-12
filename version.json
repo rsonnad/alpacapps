@@ -1,12 +1,12 @@
 {
-  "version": "v260212.13 1:05p",
-  "release": 91,
-  "sha": "75b25f1e",
-  "fullSha": "75b25f1e669eb3c86c1231403b5713c698b04872",
-  "actor": "rsonnad",
-  "source": "github-main-push",
-  "model": "ci",
-  "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 19:05:23+00",
-  "commits": [{"sha":"75b25f1e","message":"App Dev: make subtitle bigger, uppercase, aligned with Claudero wordmark","author":"Rahul Sonnad"}]
+  "version": "v260212.14 1:08p",
+  "release": 92,
+  "sha": "ffeb97ec",
+  "fullSha": "ffeb97ec78c516abac25c9b9d1fa4698bce9eb2b",
+  "actor": "Rahul Sonnad",
+  "source": "local-script",
+  "model": "cur",
+  "machine": "Rahul’s MacBook Air (2)",
+  "pushedAt": "2026-02-12 19:08:13+00",
+  "commits": [{"sha":"ffeb97ec","message":"Convert Setup Todo from localStorage to database-backed CRUD","author":"Rahul Sonnad"}]
 }
