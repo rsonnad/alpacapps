@@ -1,12 +1,12 @@
 {
-  "version": "v260212.21 2:21p",
-  "release": 99,
-  "sha": "dedb70fd",
-  "fullSha": "dedb70fdf6179adce7fc74d7a9d541cb3be65704",
+  "version": "v260212.22 2:28p",
+  "release": 100,
+  "sha": "ccdd6ff6",
+  "fullSha": "ccdd6ff61bfbec4ebb10405d30e3ef6568365047",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:21:22+00",
-  "commits": [{"sha":"dedb70fd","message":"Redesign /pay page: Zelle > Venmo > PayPal F&F > Stripe ACH","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:28:28+00",
+  "commits": [{"sha":"ccdd6ff6","message":"PAI: add Sonos doc + return multiple matching documents","author":"Rahul Sonnad"}]
 }
