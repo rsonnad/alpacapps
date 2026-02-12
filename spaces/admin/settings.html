@@ -167,6 +167,58 @@
             </div>
           </div>
         </div>
+
+        <!-- Stripe Config -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Stripe Configuration <span class="settings-badge" id="stripeModeBadge">Test Mode</span></h3>
+              <p>Stripe Connect ACH for low-fee associate payouts. <a href="https://dashboard.stripe.com" target="_blank" rel="noopener">Stripe Dashboard</a></p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <label class="settings-toggle">
+              <input type="checkbox" id="stripeTestMode">
+              <span class="settings-toggle-label">Test Mode</span>
+              <span class="settings-toggle-hint">Use test credentials for testing</span>
+            </label>
+            <label class="settings-toggle" style="margin-top:0.5rem;">
+              <input type="checkbox" id="stripeIsActive">
+              <span class="settings-toggle-label">Active</span>
+              <span class="settings-toggle-hint">Enable Stripe payouts</span>
+            </label>
+            <label class="settings-toggle" style="margin-top:0.5rem;">
+              <input type="checkbox" id="stripeConnectEnabled">
+              <span class="settings-toggle-label">Connect Enabled</span>
+              <span class="settings-toggle-hint">Allow associates to onboard via Stripe Connect</span>
+            </label>
+            <div style="margin-top:1rem;">
+              <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Test Credentials</h4>
+              <div class="form-row" style="margin-bottom:0.5rem;">
+                <label style="font-size:0.8rem;">Publishable Key</label>
+                <input type="text" id="stripeSandboxPublishableKey" placeholder="pk_test_..." style="font-size:0.85rem;">
+              </div>
+              <div class="form-row" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem;">Secret Key</label>
+                <input type="password" id="stripeSandboxSecretKey" placeholder="sk_test_..." style="font-size:0.85rem;">
+              </div>
+              <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Production Credentials</h4>
+              <div class="form-row" style="margin-bottom:0.5rem;">
+                <label style="font-size:0.8rem;">Publishable Key</label>
+                <input type="text" id="stripePublishableKey" placeholder="pk_live_..." style="font-size:0.85rem;">
+              </div>
+              <div class="form-row" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem;">Secret Key</label>
+                <input type="password" id="stripeSecretKey" placeholder="sk_live_..." style="font-size:0.85rem;">
+              </div>
+              <div style="display:flex;gap:0.5rem;">
+                <button class="btn-small btn-primary" id="saveStripeConfig">Save Stripe Config</button>
+                <button class="btn-small" id="testStripeConnection" style="background:var(--surface-alt,#f0f4ff);border:1px solid var(--border);color:var(--text);">Test Connection</button>
+              </div>
+              <p id="stripeTestResult" style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-muted);"></p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ===== SMS GROUP ===== -->

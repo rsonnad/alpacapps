@@ -605,17 +605,24 @@
             <label>How would you like to be paid?</label>
             <select id="payMethod">
               <option value="">Select...</option>
-              <option value="paypal">PayPal (Preferred)</option>
+              <option value="stripe">Stripe ACH (Preferred)</option>
+              <option value="paypal">PayPal</option>
               <option value="venmo">Venmo</option>
               <option value="zelle">Zelle</option>
               <option value="square">Square / Cash App</option>
               <option value="cash">Cash</option>
               <option value="check">Check</option>
               <option value="bank_ach">Bank / ACH</option>
-              <option value="stripe">Stripe</option>
             </select>
           </div>
-          <div class="pay-form-row">
+          <!-- Stripe Connect section (shown when Stripe selected) -->
+          <div id="stripeConnectSection" style="display:none;">
+            <div style="background:#f0fdf4;border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.75rem;font-size:0.85rem;">
+              <p id="stripeConnectStatus" style="margin:0 0 0.5rem;color:var(--text-muted);">Checking Stripe status...</p>
+              <button class="btn-save-pref" id="btnStripeConnect" style="background:#635bff;width:auto;padding:0.5rem 1.25rem;">Connect with Stripe</button>
+            </div>
+          </div>
+          <div class="pay-form-row" id="payHandleRow">
             <label>Username / Email / Phone for payment</label>
             <input type="text" id="payHandle" placeholder="e.g. @username, email, or phone number">
           </div>

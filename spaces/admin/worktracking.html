@@ -295,14 +295,14 @@
       <div class="form-row">
         <label>Payment Method</label>
         <select id="paidMethod">
-          <option value="paypal">PayPal (Preferred)</option>
+          <option value="stripe">Stripe ACH (Preferred)</option>
+          <option value="paypal">PayPal</option>
           <option value="venmo">Venmo</option>
           <option value="zelle">Zelle</option>
           <option value="square">Square</option>
           <option value="cash">Cash</option>
           <option value="check">Check</option>
           <option value="bank_ach">Bank/ACH</option>
-          <option value="stripe">Stripe</option>
           <option value="other">Other</option>
         </select>
       </div>
@@ -314,6 +314,16 @@
             <strong style="color:var(--primary, #3b82f6);">Send via PayPal</strong>
           </div>
           <p id="paypalRecipientInfo" style="margin:0;color:var(--text-muted);">Sends instantly to associate's PayPal.</p>
+        </div>
+      </div>
+      <!-- Stripe payout info (shown when Stripe selected) -->
+      <div id="stripePayoutInfo" style="display:none;">
+        <div style="background:#f0fdf4;border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.5rem;font-size:0.85rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M7 11l5 5L20 4"/></svg>
+            <strong style="color:#16a34a;">Send via Stripe ACH</strong>
+          </div>
+          <p id="stripeRecipientInfo" style="margin:0;color:var(--text-muted);">Sends to associate's connected Stripe account via ACH transfer.</p>
         </div>
       </div>
       <div class="form-row">

@@ -9,6 +9,7 @@ import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
 import { identityService } from '../shared/identity-service.js';
 import { projectService } from '../shared/project-service.js';
+import { payoutService } from '../shared/payout-service.js';
 
 // =============================================
 // STATE
@@ -55,6 +56,21 @@ async function initApp() {
   await loadSpaces();
   await loadTasksForSelector();
   await refreshAll();
+
+  // Handle Stripe onboarding return
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('stripe_onboarding') === 'complete') {
+    showToast('Stripe Connect onboarding completed!', 'success');
+    // Clean up URL
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+    // Switch to payment tab to show updated status
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelector('[data-tab="payment"]')?.classList.add('active');
+    document.getElementById('tabPayment')?.classList.add('active');
+    await refreshPaymentTab();
+  }
 }
 
 async function refreshAll() {
@@ -643,6 +659,9 @@ async function refreshPaymentTab() {
     document.getElementById('payMethod').value = profile.payment_method || '';
     document.getElementById('payHandle').value = profile.payment_handle || '';
 
+    // Toggle Stripe Connect section vs payHandle based on selected method
+    toggleStripeConnectUI(profile.payment_method);
+
     const summary = await hoursService.getAssociateSummary(profile.id);
     document.getElementById('payTotal').textContent = HoursService.formatCurrency(summary.totalAmount);
     document.getElementById('payPaid').textContent = HoursService.formatCurrency(summary.paidAmount);
@@ -718,6 +737,79 @@ async function savePaymentPref() {
 }
 
 // =============================================
+// STRIPE CONNECT
+// =============================================
+
+/**
+ * Show/hide the Stripe Connect section vs payHandle input based on selected payment method
+ */
+function toggleStripeConnectUI(method) {
+  const stripeSection = document.getElementById('stripeConnectSection');
+  const payHandleRow = document.getElementById('payHandleRow');
+
+  if (method === 'stripe') {
+    if (stripeSection) stripeSection.style.display = 'block';
+    if (payHandleRow) payHandleRow.style.display = 'none';
+    updateStripeConnectStatus();
+  } else {
+    if (stripeSection) stripeSection.style.display = 'none';
+    if (payHandleRow) payHandleRow.style.display = 'block';
+  }
+}
+
+/**
+ * Update the Stripe Connect status display based on profile data
+ */
+function updateStripeConnectStatus() {
+  const statusEl = document.getElementById('stripeConnectStatus');
+  const connectBtn = document.getElementById('btnStripeConnect');
+  if (!statusEl || !connectBtn) return;
+
+  const connectId = profile?.stripe_connect_account_id;
+  if (connectId) {
+    statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">Connected</span> — Your Stripe account is linked and ready to receive payouts.';
+    connectBtn.textContent = 'Manage Stripe Account';
+  } else {
+    statusEl.innerHTML = '<span style="color:#92400e;font-weight:600;">Not connected</span> — Connect your bank account via Stripe to receive ACH payouts with low fees.';
+    connectBtn.textContent = 'Connect with Stripe';
+  }
+}
+
+/**
+ * Handle Stripe Connect button click — create account if needed, then redirect to onboarding
+ */
+async function handleStripeConnect() {
+  const btn = document.getElementById('btnStripeConnect');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Setting up...';
+
+  try {
+    // Step 1: Create Connect account if needed
+    const createResult = await payoutService.createStripeConnectAccount(profile.id);
+    if (!createResult.success) {
+      showToast('Failed to create Stripe account: ' + createResult.error, 'error');
+      return;
+    }
+
+    // Step 2: Get onboarding link
+    const linkResult = await payoutService.getStripeConnectLink(profile.id);
+    if (!linkResult.success) {
+      showToast('Failed to generate onboarding link: ' + linkResult.error, 'error');
+      return;
+    }
+
+    // Step 3: Redirect to Stripe onboarding
+    window.location.href = linkResult.url;
+  } catch (err) {
+    showToast('Stripe Connect setup failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = profile?.stripe_connect_account_id ? 'Manage Stripe Account' : 'Connect with Stripe';
+  }
+}
+
+// =============================================
 // EVENT LISTENERS
 // =============================================
 function setupEventListeners() {
@@ -774,6 +866,14 @@ function setupEventListeners() {
 
   // Save payment preference
   document.getElementById('btnSavePref').addEventListener('click', savePaymentPref);
+
+  // Payment method change — toggle Stripe Connect section vs payHandle
+  document.getElementById('payMethod').addEventListener('change', (e) => {
+    toggleStripeConnectUI(e.target.value);
+  });
+
+  // Stripe Connect button
+  document.getElementById('btnStripeConnect')?.addEventListener('click', handleStripeConnect);
 
   // Manual entry modal
   document.getElementById('btnManualEntry').addEventListener('click', openManualModal);

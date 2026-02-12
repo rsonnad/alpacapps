@@ -5,6 +5,7 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { payoutService } from '../../shared/payout-service.js';
 
 // =============================================
 // STATE
@@ -60,6 +61,7 @@ async function loadSettingsPanel() {
     loadFeeCodes(),
     loadSquareConfig(),
     loadPayPalConfig(),
+    loadStripeConfig(),
     loadTelnyxConfig(),
     loadInboundSms(),
     loadForwardingRules(),
@@ -637,6 +639,116 @@ async function testPayPalConnection() {
 }
 
 // =============================================
+// STRIPE CONFIG
+// =============================================
+
+async function loadStripeConfig() {
+  try {
+    const config = await payoutService.getStripeConfig();
+
+    const testCheckbox = document.getElementById('stripeTestMode');
+    const activeCheckbox = document.getElementById('stripeIsActive');
+    const connectCheckbox = document.getElementById('stripeConnectEnabled');
+    const badge = document.getElementById('stripeModeBadge');
+
+    if (testCheckbox) testCheckbox.checked = config.test_mode;
+    if (activeCheckbox) activeCheckbox.checked = config.is_active;
+    if (connectCheckbox) connectCheckbox.checked = config.connect_enabled;
+    if (badge) {
+      if (!config.is_active) {
+        badge.textContent = 'Inactive';
+        badge.classList.remove('live');
+      } else {
+        badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !config.test_mode);
+      }
+    }
+
+    // Populate credential fields (hide in demo mode)
+    const hideVal = (v) => isDemoUser() ? redactString(v, 'password') : (v || '');
+    document.getElementById('stripeSandboxPublishableKey').value = hideVal(config.sandbox_publishable_key);
+    document.getElementById('stripeSandboxSecretKey').value = hideVal(config.sandbox_secret_key);
+    document.getElementById('stripePublishableKey').value = hideVal(config.publishable_key);
+    document.getElementById('stripeSecretKey').value = hideVal(config.secret_key);
+
+  } catch (error) {
+    console.error('Error loading Stripe config:', error);
+  }
+}
+
+async function saveStripeConfig() {
+  try {
+    const updates = {
+      sandbox_publishable_key: document.getElementById('stripeSandboxPublishableKey').value.trim() || null,
+      sandbox_secret_key: document.getElementById('stripeSandboxSecretKey').value.trim() || null,
+      publishable_key: document.getElementById('stripePublishableKey').value.trim() || null,
+      secret_key: document.getElementById('stripeSecretKey').value.trim() || null,
+      test_mode: document.getElementById('stripeTestMode').checked,
+      is_active: document.getElementById('stripeIsActive').checked,
+      connect_enabled: document.getElementById('stripeConnectEnabled').checked,
+    };
+
+    await payoutService.updateStripeConfig(updates);
+
+    // Update badge
+    const badge = document.getElementById('stripeModeBadge');
+    if (badge) {
+      if (!updates.is_active) {
+        badge.textContent = 'Inactive';
+        badge.classList.remove('live');
+      } else {
+        badge.textContent = updates.test_mode ? 'Test Mode' : 'Live';
+        badge.classList.toggle('live', !updates.test_mode);
+      }
+    }
+
+    showToast('Stripe configuration saved', 'success');
+  } catch (error) {
+    console.error('Error saving Stripe config:', error);
+    showToast('Failed to save Stripe config', 'error');
+  }
+}
+
+async function testStripeConnection() {
+  const resultEl = document.getElementById('stripeTestResult');
+  const btn = document.getElementById('testStripeConnection');
+  resultEl.textContent = 'Testing...';
+  resultEl.style.color = 'var(--text-muted)';
+  btn.disabled = true;
+
+  try {
+    const result = await payoutService.testStripeConnection();
+    if (result.success) {
+      resultEl.textContent = result.message;
+      resultEl.style.color = 'var(--success, #22c55e)';
+    } else {
+      resultEl.textContent = result.error;
+      resultEl.style.color = 'var(--error, #ef4444)';
+    }
+  } catch (error) {
+    resultEl.textContent = 'Connection test failed: ' + error.message;
+    resultEl.style.color = 'var(--error, #ef4444)';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function updateStripeBadge() {
+  const badge = document.getElementById('stripeModeBadge');
+  const isActive = document.getElementById('stripeIsActive')?.checked;
+  const testMode = document.getElementById('stripeTestMode')?.checked;
+  if (badge) {
+    if (!isActive) {
+      badge.textContent = 'Inactive';
+      badge.classList.remove('live');
+    } else {
+      badge.textContent = testMode ? 'Test Mode' : 'Live';
+      badge.classList.toggle('live', !testMode);
+    }
+  }
+}
+
+// =============================================
 // TELNYX SMS
 // =============================================
 
@@ -1152,6 +1264,12 @@ function setupEventListeners() {
       }
     }
   });
+
+  // Stripe config
+  document.getElementById('saveStripeConfig')?.addEventListener('click', saveStripeConfig);
+  document.getElementById('testStripeConnection')?.addEventListener('click', testStripeConnection);
+  document.getElementById('stripeTestMode')?.addEventListener('change', updateStripeBadge);
+  document.getElementById('stripeIsActive')?.addEventListener('change', updateStripeBadge);
 
   // Telnyx test mode toggle
   document.getElementById('telnyxTestMode')?.addEventListener('change', async (e) => {

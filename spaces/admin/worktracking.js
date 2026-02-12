@@ -629,12 +629,18 @@ function openPaidModal() {
 }
 
 /**
- * Show/hide PayPal payout info box based on selected method
+ * Show/hide PayPal and Stripe payout info boxes based on selected method
  */
 function updatePaypalPayoutInfo() {
   const method = document.getElementById('paidMethod').value;
   const paypalInfo = document.getElementById('paypalPayoutInfo');
+  const stripeInfo = document.getElementById('stripePayoutInfo');
   const confirmBtn = document.getElementById('paidConfirm');
+
+  // Hide both by default
+  paypalInfo.style.display = 'none';
+  if (stripeInfo) stripeInfo.style.display = 'none';
+  confirmBtn.textContent = 'Confirm Payment';
 
   if (method === 'paypal') {
     // Find associate's PayPal email
@@ -656,9 +662,27 @@ function updatePaypalPayoutInfo() {
     }
     paypalInfo.style.display = 'block';
     confirmBtn.textContent = 'Send via PayPal';
-  } else {
-    paypalInfo.style.display = 'none';
-    confirmBtn.textContent = 'Confirm Payment';
+  } else if (method === 'stripe') {
+    const selectedEntries = entries.filter(e => selectedIds.has(e.id));
+    const assocIds = new Set(selectedEntries.map(e => e.associate_id));
+
+    if (stripeInfo) {
+      if (assocIds.size === 1) {
+        const assoc = associates.find(a => a.id === [...assocIds][0]);
+        const connectId = assoc?.stripe_connect_account_id;
+        if (connectId) {
+          document.getElementById('stripeRecipientInfo').textContent = `Sends via ACH to connected Stripe account (${connectId.slice(0, 12)}...)`;
+        } else {
+          document.getElementById('stripeRecipientInfo').innerHTML =
+            '<span style="color:var(--error,#ef4444);">No Stripe Connect account linked for this associate. They need to complete Stripe onboarding first.</span>';
+        }
+      } else {
+        document.getElementById('stripeRecipientInfo').textContent =
+          'Multiple associates selected — Stripe payouts will be sent to each associate\'s connected account.';
+      }
+      stripeInfo.style.display = 'block';
+    }
+    confirmBtn.textContent = 'Send via Stripe';
   }
 }
 
@@ -718,7 +742,57 @@ async function confirmMarkPaid() {
     return;
   }
 
-  // Non-PayPal: standard mark-as-paid flow (manual recording)
+  // If Stripe selected, send real payout via Stripe Connect ACH
+  if (method === 'stripe') {
+    btn.textContent = 'Sending via Stripe...';
+    try {
+      // Group entries by associate for multi-associate payouts
+      const selectedEntries = entries.filter(e => selectedIds.has(e.id));
+      const byAssociate = {};
+      for (const entry of selectedEntries) {
+        if (!byAssociate[entry.associate_id]) {
+          byAssociate[entry.associate_id] = { entries: [], totalMins: 0, totalAmt: 0 };
+        }
+        const mins = parseFloat(entry.duration_minutes) || 0;
+        byAssociate[entry.associate_id].entries.push(entry);
+        byAssociate[entry.associate_id].totalMins += mins;
+        byAssociate[entry.associate_id].totalAmt += (mins / 60) * parseFloat(entry.hourly_rate);
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const [assocId, data] of Object.entries(byAssociate)) {
+        const amount = Math.round(data.totalAmt * 100) / 100;
+        const entryIds = data.entries.map(e => e.id);
+
+        const result = await payoutService.sendStripePayout(assocId, amount, entryIds, notes);
+
+        if (result.success) {
+          // Mark entries as paid in hours service (creates ledger entry too)
+          await hoursService.markPaid(entryIds, { paymentMethod: 'stripe', notes: `Stripe payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          successCount++;
+          showToast(result.message || `Sent $${amount.toFixed(2)} via Stripe`, 'success');
+        } else {
+          failCount++;
+          showToast(`Stripe payout failed: ${result.error}`, 'error');
+        }
+      }
+
+      if (successCount > 0) {
+        document.getElementById('paidModal').classList.remove('open');
+        await loadEntries();
+      }
+    } catch (err) {
+      showToast('Stripe payout failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send via Stripe';
+    }
+    return;
+  }
+
+  // Non-PayPal/non-Stripe: standard mark-as-paid flow (manual recording)
   btn.textContent = 'Processing...';
   try {
     const result = await hoursService.markPaid([...selectedIds], { paymentMethod: method, notes });

@@ -603,6 +603,45 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'account.updated': {
+        // Stripe Connect onboarding status update
+        const account = event.data.object as {
+          id: string;
+          charges_enabled?: boolean;
+          payouts_enabled?: boolean;
+          details_submitted?: boolean;
+        };
+        console.log('Connect account updated:', account.id, {
+          charges_enabled: account.charges_enabled,
+          payouts_enabled: account.payouts_enabled,
+          details_submitted: account.details_submitted,
+        });
+
+        // Find the associate with this Connect account
+        const { data: assocProfiles } = await supabase
+          .from('associate_profiles')
+          .select('id, app_user_id')
+          .eq('stripe_connect_account_id', account.id);
+
+        if (assocProfiles?.length) {
+          const updateData: Record<string, unknown> = {
+            updated_at: new Date().toISOString(),
+          };
+
+          // If payouts are now enabled, the onboarding is complete
+          if (account.payouts_enabled) {
+            console.log(`Connect account ${account.id} is now payouts-enabled`);
+            updateData.payment_method = 'stripe';
+          }
+
+          await supabase
+            .from('associate_profiles')
+            .update(updateData)
+            .eq('stripe_connect_account_id', account.id);
+        }
+        break;
+      }
+
       default:
         console.log('Unhandled Stripe event type:', event.type);
     }
