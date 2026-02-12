@@ -116,6 +116,102 @@
         </div>
 
       </div>
+
+      <!-- Network Optimization Log -->
+      <details class="network-opt-log">
+        <summary class="network-opt-log__toggle">Network Optimization Log</summary>
+        <div class="network-opt-log__body">
+          <p class="network-opt-log__intro">UDM Pro settings optimized for Sonos on <strong>Feb 12, 2026</strong> based on Ubiquiti &amp; Sonos best practices. All 12 speakers are wired ethernet on the Default VLAN.</p>
+          <table class="network-opt-log__table">
+            <thead>
+              <tr><th>Change</th><th>Before</th><th>After</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Network Optimization</td>
+                <td><span class="opt-badge opt-badge--bad">ON</span></td>
+                <td><span class="opt-badge opt-badge--good">OFF</span></td>
+                <td>Auto-Optimize silently enables data rate controls that block older Sonos devices from connecting.</td>
+              </tr>
+              <tr>
+                <td>STP Root Bridge</td>
+                <td><span class="opt-badge opt-badge--bad">US-8-60W (4096)</span></td>
+                <td><span class="opt-badge opt-badge--good">UDM Pro (4096)</span></td>
+                <td>Core router should be root bridge. Prevents STP convergence issues with wired Sonos.</td>
+              </tr>
+              <tr>
+                <td>STP Version (US-8-60W)</td>
+                <td><span class="opt-badge opt-badge--bad">STP (legacy 802.1D)</span></td>
+                <td><span class="opt-badge opt-badge--good">RSTP</span></td>
+                <td>Mixed STP/RSTP causes slow convergence. Standardized to RSTP across all switches.</td>
+              </tr>
+              <tr>
+                <td>US-8-60W STP Priority</td>
+                <td>4096</td>
+                <td><span class="opt-badge opt-badge--good">8192</span></td>
+                <td>Second to UDM Pro in hierarchy. Prevents competing for root bridge.</td>
+              </tr>
+              <tr>
+                <td>Multicast Enhancement</td>
+                <td><span class="opt-badge opt-badge--bad">OFF (all SSIDs)</span></td>
+                <td><span class="opt-badge opt-badge--good">ON (all SSIDs)</span></td>
+                <td>Converts multicast to unicast for wireless clients, improving Sonos app discovery over WiFi.</td>
+              </tr>
+              <tr>
+                <td>DHCP Reservations</td>
+                <td><span class="opt-badge opt-badge--bad">None</span></td>
+                <td><span class="opt-badge opt-badge--good">All 12 Sonos</span></td>
+                <td>Fixed IPs at current addresses for stability and easier troubleshooting.</td>
+              </tr>
+              <tr>
+                <td>2.4GHz Channels</td>
+                <td><span class="opt-badge opt-badge--bad">Auto (all 8 APs)</span></td>
+                <td><span class="opt-badge opt-badge--good">Fixed 1/6/11</span></td>
+                <td>Prevents mid-stream channel changes. Ch1: Living Room, Skyloft, Garage. Ch6: Sauna, Outhouse, Laundry. Ch11: Spartan, Doghouse.</td>
+              </tr>
+            </tbody>
+          </table>
+          <details class="network-opt-log__sub">
+            <summary>Already Optimal (no changes needed)</summary>
+            <ul class="network-opt-log__good-list">
+              <li><strong>All Sonos wired</strong> — all 12 speakers on ethernet</li>
+              <li><strong>Single VLAN</strong> — no cross-VLAN multicast issues</li>
+              <li><strong>2.4GHz Width: HT20</strong> — Sonos recommended</li>
+              <li><strong>IGMP Snooping: ON</strong> — constrains multicast flooding</li>
+              <li><strong>mDNS: ON</strong> — with Sonos service enabled</li>
+              <li><strong>DTIM: 1 (2.4GHz) / 3 (5GHz)</strong> — optimal defaults</li>
+              <li><strong>L2 Isolation: OFF</strong> — speakers can communicate</li>
+              <li><strong>Proxy ARP: OFF</strong> — doesn't interfere with discovery</li>
+              <li><strong>Fast Roaming (802.11r): OFF</strong> — avoids IoT disconnects</li>
+              <li><strong>Min RSSI: Disabled</strong> — speakers don't roam</li>
+              <li><strong>Min Data Rate: 1 Mbps</strong> — compatible with all Sonos</li>
+              <li><strong>Radio AI: Disabled</strong> — no surprise channel swaps</li>
+              <li><strong>DHCP Snooping: ON</strong> — protects against rogue DHCP</li>
+            </ul>
+          </details>
+          <details class="network-opt-log__sub">
+            <summary>DHCP Reservations (12 speakers)</summary>
+            <table class="network-opt-log__table network-opt-log__table--compact">
+              <thead><tr><th>MAC</th><th>Fixed IP</th></tr></thead>
+              <tbody>
+                <tr><td>00:0e:58:ab:6e:c6</td><td>192.168.1.156</td></tr>
+                <tr><td>00:0e:58:30:9a:48</td><td>192.168.1.33</td></tr>
+                <tr><td>00:0e:58:13:7a:8c</td><td>192.168.1.178</td></tr>
+                <tr><td>00:0e:58:20:07:ca</td><td>192.168.1.193</td></tr>
+                <tr><td>00:0e:58:10:d6:d6</td><td>192.168.1.47</td></tr>
+                <tr><td>00:0e:58:ae:51:9a</td><td>192.168.1.148</td></tr>
+                <tr><td>b8:e9:37:a2:34:82</td><td>192.168.1.191</td></tr>
+                <tr><td>00:0e:58:a1:2a:1a</td><td>192.168.1.7</td></tr>
+                <tr><td>00:0e:58:21:e8:e0</td><td>192.168.1.200</td></tr>
+                <tr><td>b8:e9:37:92:72:fc</td><td>192.168.1.97</td></tr>
+                <tr><td>00:0e:58:a1:21:46</td><td>192.168.1.29</td></tr>
+                <tr><td>00:0e:58:24:46:d6</td><td>192.168.1.25</td></tr>
+              </tbody>
+            </table>
+          </details>
+          <p class="network-opt-log__sources">Sources: <a href="https://help.ui.com/hc/en-us/articles/18930473041047" target="_blank" rel="noopener">Ubiquiti Best Practices</a> &middot; <a href="https://support.sonos.com/en/article/configure-your-firewall-to-work-with-sonos" target="_blank" rel="noopener">Sonos Firewall</a> &middot; <a href="https://support.sonos.com/en/article/recommended-settings-for-using-sonos-on-wireless-networks" target="_blank" rel="noopener">Sonos WiFi</a> &middot; <a href="https://github.com/IngmarStein/unifi-sonos-doc" target="_blank" rel="noopener">Community Doc</a></p>
+        </div>
+      </details>
     </main>
   </div>
 
