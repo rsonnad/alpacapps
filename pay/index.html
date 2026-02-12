@@ -54,15 +54,16 @@
     /* Header — brand dark */
     .pay-card__header {
       background: var(--dark);
-      padding: 28px 32px;
+      padding: 22px 28px;
       display: flex;
       align-items: center;
       gap: 14px;
     }
     .pay-card__header-icon {
-      width: 44px;
-      height: 44px;
+      height: 40px;
+      width: auto;
       flex-shrink: 0;
+      object-fit: contain;
     }
     .pay-card__header-text h1 {
       color: #faf9f6;
@@ -79,10 +80,10 @@
     }
 
     /* Body */
-    .pay-card__body { padding: 28px 32px; }
+    .pay-card__body { padding: 24px 28px; }
 
     /* Amount & description inputs */
-    .pay-field { margin-bottom: 18px; }
+    .pay-field { margin-bottom: 16px; }
     .pay-field__label {
       display: block;
       font-size: 12px;
@@ -170,12 +171,12 @@
     .pay-methods {
       background: var(--bg-muted);
       border-radius: var(--radius);
-      padding: 18px 20px;
-      margin-bottom: 20px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
       border: 1px solid var(--border);
     }
     .pay-methods__title {
-      margin: 0 0 14px;
+      margin: 0 0 10px;
       font-weight: 600;
       color: var(--text);
       font-size: 14px;
@@ -183,10 +184,9 @@
     .pay-methods__row {
       display: flex;
       align-items: center;
-      padding: 9px 0;
+      padding: 8px 0;
       border-bottom: 1px solid var(--border);
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
     .pay-methods__row:last-child { border-bottom: none; }
     .pay-methods__badge {
@@ -204,7 +204,10 @@
       font-weight: 600;
       color: var(--text);
       font-size: 14px;
+      text-decoration: none;
     }
+    a.pay-methods__handle { color: var(--accent); }
+    a.pay-methods__handle:hover { text-decoration: underline; }
     .pay-methods__note {
       color: var(--text-muted);
       font-size: 12px;
@@ -220,16 +223,16 @@
       flex-shrink: 0;
     }
     .pay-memo {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin: 0 0 20px;
+      margin: 0 0 16px;
     }
 
     /* ── Divider ── */
     .pay-divider {
       display: flex;
       align-items: center;
-      margin: 24px 0;
+      margin: 20px 0;
       color: var(--text-muted);
       font-size: 13px;
       font-weight: 500;
@@ -300,7 +303,7 @@
     /* Card footer */
     .pay-card__footer {
       background: var(--bg-muted);
-      padding: 16px 32px;
+      padding: 14px 28px;
       text-align: center;
       border-top: 1px solid var(--border);
     }
@@ -332,10 +335,10 @@
     /* Responsive */
     @media (max-width: 640px) {
       .pay-wrap { margin: 1rem auto; }
-      .pay-card__body { padding: 20px; }
-      .pay-card__header { padding: 20px 24px; }
+      .pay-card__body { padding: 18px 16px; }
+      .pay-card__header { padding: 18px 16px; }
+      .pay-card__footer { padding: 12px 16px; }
       .pay-summary__amount { font-size: 22px; }
-      .pay-methods__row { gap: 6px; }
     }
   </style>
 </head>
@@ -409,13 +412,15 @@
 
             <div class="pay-methods__row" data-method="venmo">
               <span class="pay-methods__badge" style="background:#3d95ce;">Venmo</span>
-              <span class="pay-methods__handle">@rahuliox</span>
+              <a class="pay-methods__handle" href="https://venmo.com/rahuliox" target="_blank" rel="noopener">@rahuliox</a>
+              <span class="pay-methods__note">Last 4: 7096</span>
               <span class="pay-methods__free">No fee</span>
             </div>
 
             <div class="pay-methods__row" data-method="paypal">
               <span class="pay-methods__badge" style="background:#003087;">PayPal</span>
-              <span class="pay-methods__note">Must select Friends &amp; Family</span>
+              <a class="pay-methods__handle" href="https://paypal.me/rahuliox" target="_blank" rel="noopener">rahulioson@gmail.com</a>
+              <span class="pay-methods__note">Friends &amp; Family only</span>
               <span class="pay-methods__free">Free (F&amp;F)</span>
             </div>
           </div>
@@ -549,6 +554,12 @@
     }
 
     // Progressive enhancement: update hardcoded methods with fresh DB data
+    // Links for payment methods
+    var METHOD_LINKS = {
+      venmo: 'https://venmo.com/rahuliox',
+      paypal: 'https://paypal.me/rahuliox'
+    };
+
     function refreshPaymentMethodsFromDB() {
       if (!sb) return;
       sb.from('payment_methods')
@@ -576,25 +587,38 @@
             existingRows[r].remove();
           }
 
-          // Build fresh rows from DB
+          // Build fresh rows from DB — compact single-line format
           var fragment = document.createDocumentFragment();
           for (var i = 0; i < methods.length; i++) {
             var m = methods[i];
             var bg = BADGE_COLORS[m.method_type] || '#888';
             var freeLabel = m.method_type === 'paypal' ? 'Free (F&F)' : 'No fee';
+            var link = METHOD_LINKS[m.method_type];
 
             var row = document.createElement('div');
             row.className = 'pay-methods__row';
             row.setAttribute('data-method', m.method_type);
 
             var html = '<span class="pay-methods__badge" style="background:' + bg + ';">' + m.name + '</span>';
-            if (m.account_identifier) {
-              html += '<span class="pay-methods__handle">' + m.account_identifier + '</span>';
+
+            // Handle/identifier — make it a link if we have one
+            var displayId = m.account_identifier || '';
+            if (m.method_type === 'paypal' && !displayId) displayId = 'rahulioson@gmail.com';
+            if (displayId) {
+              if (link) {
+                html += '<a class="pay-methods__handle" href="' + link + '" target="_blank" rel="noopener">' + displayId + '</a>';
+              } else {
+                html += '<span class="pay-methods__handle">' + displayId + '</span>';
+              }
             }
-            var lines = (m.instructions || '').split('\n').filter(function(l) { return l.trim(); });
-            if (lines.length > 0) {
-              html += '<span class="pay-methods__note">' + lines[0] + '</span>';
+
+            // Short note — extract only key info, skip verbose instructions
+            if (m.method_type === 'venmo') {
+              html += '<span class="pay-methods__note">Last 4: 7096</span>';
+            } else if (m.method_type === 'paypal') {
+              html += '<span class="pay-methods__note">Friends &amp; Family only</span>';
             }
+
             html += '<span class="pay-methods__free">' + freeLabel + '</span>';
 
             row.innerHTML = html;
