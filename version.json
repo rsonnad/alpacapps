@@ -1,12 +1,12 @@
 {
-  "version": "v260212.16 1:11p",
-  "release": 94,
-  "sha": "044ab0ad",
-  "fullSha": "044ab0ad50a434b2103080fbb0f91de6e28439b4",
+  "version": "v260212.17 1:49p",
+  "release": 95,
+  "sha": "b91f7311",
+  "fullSha": "b91f73113d55d5f67394832efcc7021fd6d22355",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 19:11:06+00",
-  "commits": [{"sha":"044ab0ad","message":"Fix PAI auth: pass service key in body instead of header","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 19:49:57+00",
+  "commits": [{"sha":"b91f7311","message":"Restrict Stripe to ACH-only (no card/Link) for low fees","author":"Rahul Sonnad"}]
 }
