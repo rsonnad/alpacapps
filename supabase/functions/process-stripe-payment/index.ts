@@ -49,7 +49,7 @@ async function createPaymentIntent(
   const body: Record<string, string | number | boolean> = {
     amount: amountCents,
     currency: 'usd',
-    'automatic_payment_methods[enabled]': true,
+    'payment_method_types[0]': 'us_bank_account',
     description: description.slice(0, 500),
     ...Object.fromEntries(
       Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])

@@ -95,10 +95,8 @@ serve(async (req) => {
     params.append("line_items[0][price_data][product_data][name]", description);
     params.append("line_items[0][quantity]", "1");
 
-    // Allow multiple payment method types including ACH for cheaper bank transfers
-    params.append("payment_method_types[0]", "card");
-    params.append("payment_method_types[1]", "us_bank_account");
-    params.append("payment_method_types[2]", "link");
+    // ACH only — low fees (0.8% capped at $5) vs card (2.9% + $0.30)
+    params.append("payment_method_types[0]", "us_bank_account");
 
     // Add metadata for tracking
     if (person_id) params.append("metadata[person_id]", person_id);
