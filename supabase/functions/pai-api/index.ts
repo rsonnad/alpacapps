@@ -111,6 +111,7 @@ serve(async (req) => {
     const paiBody: any = {
       message: message.trim(),
       conversationHistory: body.conversation_history || [],
+      serviceKey: supabaseServiceKey,
       context: {
         source: "api",
         conversation_id: conversation_id || null,

@@ -76,6 +76,7 @@ async function callPai(message, userId, userName, conversationHistory) {
     body: JSON.stringify({
       message,
       conversationHistory,
+      serviceKey: SUPABASE_SERVICE_ROLE_KEY,
       context: {
         source: 'discord',
         discord_user_id: userId,

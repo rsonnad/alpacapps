@@ -949,6 +949,7 @@ async function handlePaiEmail(
         },
         body: JSON.stringify({
           message: `[Email from ${senderName}] ${message.substring(0, 2000)}`,
+          serviceKey: supabaseServiceKey,
           context: { source: "email", sender: senderEmail, subject },
         }),
       });
