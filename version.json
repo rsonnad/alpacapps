@@ -1,12 +1,12 @@
 {
-  "version": "v260212.11 12:49p",
-  "release": 89,
-  "sha": "92dc5c50",
-  "fullSha": "92dc5c5036c9e1114f9309ffa0ee3bdc94247977",
+  "version": "v260212.12 1:02p",
+  "release": 90,
+  "sha": "3584e2d3",
+  "fullSha": "3584e2d305f2681ae77f61ff2886d41aea089f41",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 18:49:53+00",
-  "commits": [{"sha":"92dc5c50","message":"App Dev: add Claudero logo to hero section","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 19:02:43+00",
+  "commits": [{"sha":"3584e2d3","message":"Fix alpaca-pai auth: use SERVICE_ROLE_JWT for external callers","author":"Rahul Sonnad"}]
 }
