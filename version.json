@@ -1,12 +1,12 @@
 {
-  "version": "v260211.75 10:13p",
-  "release": 75,
-  "sha": "9c1670dc",
-  "fullSha": "9c1670dc2e44857876b31f4276d60ec55656663a",
+  "version": "v260211.76 10:32p",
+  "release": 76,
+  "sha": "df8c6fb2",
+  "fullSha": "df8c6fb218ec162cb891490f2a02f84ff345ab83",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 04:13:10+00",
-  "commits": [{"sha":"9c1670dc","message":"Add full PayPal integration: checkout, webhooks, email parsing, preferred payment method","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 04:32:03+00",
+  "commits": [{"sha":"df8c6fb2","message":"Login: move Google sign-in to top, update back link","author":"Rahul Sonnad"}]
 }
