@@ -6,22 +6,27 @@
  * and email template previews.
  */
 
-import { initAdminShell, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../../shared/supabase.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
-let supabase;
+let authState = null;
 let brandConfig = null;
 
 // =============================================
 // INIT
 // =============================================
 
-async function init() {
-  const shell = await initAdminShell({ activeTab: 'brand' });
-  supabase = shell.supabase;
-
-  await loadBrandConfig();
-  renderAll();
-}
+document.addEventListener('DOMContentLoaded', async () => {
+  authState = await initAdminPage({
+    activeTab: 'brand',
+    requiredRole: 'admin',
+    section: 'admin',
+    onReady: async () => {
+      await loadBrandConfig();
+      renderAll();
+    },
+  });
+});
 
 async function loadBrandConfig() {
   try {
@@ -152,18 +157,16 @@ function renderLogoSizes() {
 // COLORS
 // =============================================
 
-function renderColors(containerId, colors, label) {
+function renderColors(containerId, colors, _label) {
   const el = document.getElementById(containerId);
   if (!el || !colors) return;
 
   el.innerHTML = Object.entries(colors).map(([key, value]) => {
-    const isTransparent = String(value).startsWith('rgba');
-    const displayColor = value;
     const textColor = isLightColor(value) ? '#2a1f23' : '#faf9f6';
 
     return `
-      <div class="brand-swatch" title="Click to copy">
-        <div class="brand-swatch-color" style="background:${displayColor};color:${textColor};" data-color="${value}" onclick="navigator.clipboard.writeText('${value}')">
+      <div class="brand-swatch" title="Click to copy" onclick="navigator.clipboard.writeText('${value}')">
+        <div class="brand-swatch-color" style="background:${value};color:${textColor};" data-color="${value}">
           <span class="brand-swatch-hex">${value}</span>
         </div>
         <div class="brand-swatch-label">${key.replace(/_/g, ' ')}</div>
@@ -417,11 +420,3 @@ function renderRawJson() {
   if (!el || !brandConfig) return;
   el.textContent = JSON.stringify(brandConfig, null, 2);
 }
-
-// =============================================
-// BOOTSTRAP
-// =============================================
-
-init().catch(err => {
-  console.error('Brand page init failed:', err);
-});
