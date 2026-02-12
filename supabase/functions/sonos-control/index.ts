@@ -27,7 +27,8 @@ interface SonosRequest {
     | "loudness"
     | "balance"
     | "announce"
-    | "tts_preview";
+    | "tts_preview"
+    | "musicsearch";
   room?: string;
   value?: number | string;
   name?: string;
@@ -35,6 +36,9 @@ interface SonosRequest {
   text?: string;
   voice?: string;
   volume?: number;
+  service?: string;
+  searchType?: string;
+  query?: string;
 }
 
 // =============================================
@@ -368,6 +372,22 @@ serve(async (req) => {
           console.log(`Announce: broadcast complete, ${succeeded} succeeded, ${failed} failed`);
           return jsonResponse({ status: "success", zones: succeeded, failed });
         }
+        break;
+      }
+
+      case "musicsearch": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const service = body.service || "spotify";
+        const searchType = body.searchType || "song";
+        const query = body.query;
+        if (!query) return jsonResponse({ error: "Missing query" }, 400);
+        const allowedServices = ["spotify", "apple", "deezer", "library"];
+        const allowedTypes = ["song", "album", "playlist", "station"];
+        if (!allowedServices.includes(service))
+          return jsonResponse({ error: `Invalid service: ${service}` }, 400);
+        if (!allowedTypes.includes(searchType))
+          return jsonResponse({ error: `Invalid type: ${searchType}` }, 400);
+        path = `/${room}/musicsearch/${encodeURIComponent(service)}/${encodeURIComponent(searchType)}/${encodeURIComponent(query)}`;
         break;
       }
 

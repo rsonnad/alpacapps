@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderScenesSection();
       renderSceneBar();
       setupEventListeners();
+      setupSpotifySearch();
       startPolling();
       // Refresh when PAI takes music actions
       window.addEventListener('pai-actions', (e) => {
@@ -280,6 +281,9 @@ const EQ_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="
 function renderZones() {
   const container = document.getElementById('sonosZones');
   if (!container) return;
+
+  // Keep Spotify zone dropdown in sync
+  populateSpotifyZones();
 
   // Update grouping mode button visibility
   const groupBtn = document.getElementById('groupRoomsBtn');
@@ -1114,6 +1118,67 @@ function setupSearch() {
       section.style.display = q && visibleItems.length === 0 ? 'none' : '';
     });
   });
+}
+
+// =============================================
+// SPOTIFY SEARCH
+// =============================================
+function setupSpotifySearch() {
+  const form = document.getElementById('spotifySearchForm');
+  if (!form) return;
+
+  // Populate zone dropdown from current zone groups
+  populateSpotifyZones();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const query = document.getElementById('spotifyQuery')?.value?.trim();
+    const searchType = document.getElementById('spotifyType')?.value || 'song';
+    const zone = document.getElementById('spotifyZone')?.value;
+    const statusEl = document.getElementById('spotifySearchStatus');
+    const btn = document.getElementById('spotifySearchBtn');
+
+    if (!query) return;
+    if (!zone) {
+      showToast('Select a zone to play on', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    statusEl.classList.remove('hidden');
+    statusEl.className = 'sonos-search__status';
+    statusEl.textContent = `Searching for ${searchType} "${query}"...`;
+
+    try {
+      await sonosApi('musicsearch', { room: zone, service: 'spotify', searchType, query });
+      statusEl.className = 'sonos-search__status sonos-search__status--success';
+      statusEl.textContent = `▶ Playing "${query}" on ${zone}`;
+      setTimeout(() => refreshAllZones(), 2500);
+      // Clear after a few seconds
+      setTimeout(() => { statusEl.classList.add('hidden'); }, 4000);
+    } catch (err) {
+      statusEl.className = 'sonos-search__status sonos-search__status--error';
+      statusEl.textContent = `Failed: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '▶';
+    }
+  });
+}
+
+function populateSpotifyZones() {
+  const select = document.getElementById('spotifyZone');
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '<option value="">Zone...</option>';
+  for (const z of zoneGroups) {
+    const opt = document.createElement('option');
+    opt.value = z.coordinatorName;
+    opt.textContent = z.coordinatorName;
+    if (z.coordinatorName === current) opt.selected = true;
+    select.appendChild(opt);
+  }
 }
 
 // =============================================
