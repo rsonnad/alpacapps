@@ -104,7 +104,9 @@ Deno.serve(async (req) => {
       return await handlePaymentCaptureEvent(supabase, event);
     }
 
-    console.log(`Ignoring unhandled event type: ${event.event_type}`);
+    // Unknown event — email admin so we know about it
+    console.log(`Unhandled PayPal event type: ${event.event_type}`);
+    await notifyUnknownEvent(event);
     return new Response(
       JSON.stringify({ received: true, event_type: event.event_type }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -580,6 +582,55 @@ async function matchPayerToPerson(
   }
 
   return null;
+}
+
+/**
+ * Send email to admin about an unknown/unhandled PayPal webhook event.
+ */
+async function notifyUnknownEvent(event: PayPalWebhookEvent) {
+  try {
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      console.warn('No RESEND_API_KEY — cannot send unknown event notification');
+      return;
+    }
+
+    const resourceJson = JSON.stringify(event.resource || {}, null, 2)
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Alpaca Payments <noreply@alpacaplayhouse.com>',
+        to: ['alpacaplayhouse@gmail.com'],
+        subject: `Unknown PayPal Event: ${event.event_type}`,
+        html: `
+          <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+            <h2 style="color:#003087;">PayPal Webhook — Unhandled Event</h2>
+            <p>A PayPal webhook event was received that the system doesn't have a handler for. This might be a new event type worth adding support for.</p>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Event Type</td><td style="padding:8px;border-bottom:1px solid #eee;"><code>${event.event_type}</code></td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Event ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${event.id}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Resource Type</td><td style="padding:8px;border-bottom:1px solid #eee;">${event.resource_type || 'N/A'}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Time</td><td style="padding:8px;border-bottom:1px solid #eee;">${event.create_time}</td></tr>
+            </table>
+            <details style="margin-top:1rem;">
+              <summary style="cursor:pointer;font-weight:bold;">Resource Payload</summary>
+              <pre style="background:#f5f5f5;padding:1rem;border-radius:8px;overflow-x:auto;font-size:0.85rem;">${resourceJson}</pre>
+            </details>
+          </div>
+        `,
+      }),
+    });
+    console.log(`Sent unknown event notification for: ${event.event_type}`);
+  } catch (err) {
+    console.error('Failed to send unknown event notification:', err);
+  }
 }
 
 function jsonResponse(data: Record<string, unknown>, status = 200) {
