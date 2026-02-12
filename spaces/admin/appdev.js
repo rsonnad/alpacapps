@@ -5,7 +5,7 @@
  */
 
 import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast, openLightbox, setupLightbox } from '../../shared/admin-shell.js';
 import { mediaService } from '../../shared/media-service.js';
 
 let authState = null;
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       section: 'staff',
       onReady: async (state) => {
         authState = state;
+        setupLightbox();
         setupPromptBox();
         await loadHistory();
         startPolling();
@@ -157,26 +158,51 @@ function removeAttachment(id) {
 
 function renderThumbs() {
   const container = document.getElementById('attachThumbs');
+  const countEl = document.getElementById('attachCount');
   if (!pendingAttachments.length) {
     container.innerHTML = '';
+    countEl.textContent = '';
     return;
   }
 
+  const imageCount = pendingAttachments.filter(a => a.type.startsWith('image/')).length;
+  const fileCount = pendingAttachments.length - imageCount;
+  const parts = [];
+  if (imageCount) parts.push(`${imageCount} image${imageCount > 1 ? 's' : ''}`);
+  if (fileCount) parts.push(`${fileCount} file${fileCount > 1 ? 's' : ''}`);
+  countEl.textContent = parts.join(', ') + ' attached';
+
+  // Collect image URLs for lightbox gallery
+  const imageUrls = pendingAttachments
+    .filter(a => a.type.startsWith('image/'))
+    .map(a => a.url || (a.file ? URL.createObjectURL(a.file) : null))
+    .filter(Boolean);
+
   container.innerHTML = pendingAttachments.map(att => {
     const isImage = att.type.startsWith('image/');
-    const preview = isImage && att.file
-      ? `<img src="${URL.createObjectURL(att.file)}" alt="">`
+    const previewUrl = isImage && att.file ? URL.createObjectURL(att.file) : null;
+    const preview = isImage && previewUrl
+      ? `<img src="${previewUrl}" alt="" style="cursor:pointer" onclick="window._openThumbLightbox('${previewUrl}')">`
       : `<div class="appdev-thumb-file">${escapeHtml(att.name)}</div>`;
 
     return `
       <div class="appdev-thumb ${att.uploading ? 'uploading' : ''}" data-id="${att.id}">
         ${preview}
         ${att.uploading ? '<div class="appdev-thumb-progress" style="width:50%"></div>' : ''}
-        <button class="appdev-thumb-remove" onclick="window._removeAttachment('${att.id}')">&times;</button>
+        <button class="appdev-thumb-remove" onclick="event.stopPropagation();window._removeAttachment('${att.id}')">&times;</button>
       </div>
     `;
   }).join('');
 }
+
+function openThumbLightbox(url) {
+  const imageUrls = pendingAttachments
+    .filter(a => a.type.startsWith('image/'))
+    .map(a => a.url || (a.file ? URL.createObjectURL(a.file) : null))
+    .filter(Boolean);
+  openLightbox(url, imageUrls);
+}
+window._openThumbLightbox = openThumbLightbox;
 
 // Expose for inline onclick
 window._removeAttachment = removeAttachment;
@@ -541,16 +567,36 @@ function buildReviewDetails(req) {
 
 function renderAttachments(attachments) {
   if (!attachments?.length) return '';
-  return `<div class="appdev-attachments">
+  const imageUrls = attachments.filter(a => a.type?.startsWith('image/')).map(a => a.url);
+  const imageCount = imageUrls.length;
+  const fileCount = attachments.length - imageCount;
+  const parts = [];
+  if (imageCount) parts.push(`${imageCount} image${imageCount > 1 ? 's' : ''}`);
+  if (fileCount) parts.push(`${fileCount} file${fileCount > 1 ? 's' : ''}`);
+  const countLabel = `<span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.3rem">${parts.join(', ')} attached</span>`;
+
+  return `${countLabel}<div class="appdev-attachments">
     ${attachments.map(att => {
       const isImage = att.type?.startsWith('image/');
       if (isImage) {
-        return `<a href="${att.url}" target="_blank"><img src="${att.url}" alt="${escapeHtml(att.name)}"></a>`;
+        const galleryJson = escapeHtml(JSON.stringify(imageUrls));
+        return `<a href="#" onclick="event.preventDefault();window._openHistoryLightbox('${att.url}')"><img src="${att.url}" alt="${escapeHtml(att.name)}"></a>`;
       }
       return `<a href="${att.url}" target="_blank" class="file-link">${escapeHtml(att.name)}</a>`;
     }).join('')}
   </div>`;
 }
+
+function openHistoryLightbox(url) {
+  // Find the request's attachments that contain this URL
+  const allAttachments = document.querySelectorAll('.appdev-attachments img');
+  const imageUrls = [];
+  allAttachments.forEach(img => {
+    if (img.src && !imageUrls.includes(img.src)) imageUrls.push(img.src);
+  });
+  openLightbox(url, imageUrls.length > 1 ? imageUrls : null);
+}
+window._openHistoryLightbox = openHistoryLightbox;
 
 function getTimelineClass(status) {
   if (['completed'].includes(status)) return 'success';

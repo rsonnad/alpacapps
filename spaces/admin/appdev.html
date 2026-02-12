@@ -398,6 +398,12 @@
       padding: 0;
     }
     .appdev-thumb-remove:hover { background: #ef4444; }
+    .appdev-attach-count {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
     .appdev-thumb.uploading {
       opacity: 0.5;
     }
@@ -518,6 +524,7 @@
           </label>
         </div>
         <div class="appdev-thumbs" id="attachThumbs"></div>
+        <span class="appdev-attach-count" id="attachCount"></span>
         <div class="appdev-submit-row">
           <span class="char-count" id="charCount">0 chars</span>
           <button class="appdev-submit-btn" id="submitBtn" disabled>Submit to Claudero</button>
@@ -536,6 +543,14 @@
         <div class="appdev-empty">No feature requests yet. Describe something above and hit submit.</div>
       </div>
     </main>
+
+    <!-- Lightbox -->
+    <div id="imageLightbox" class="lightbox hidden">
+      <button class="lightbox-close">&times;</button>
+      <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#10094;</button>
+      <img id="lightboxImage" src="" alt="">
+      <button class="lightbox-nav lightbox-next" id="lightboxNext">&#10095;</button>
+    </div>
   </div>
 
   <script src="../../shared/instant-chrome.js"></script>
