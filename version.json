@@ -1,12 +1,12 @@
 {
-  "version": "v260212.18 1:53p",
-  "release": 96,
-  "sha": "b9028558",
-  "fullSha": "b9028558f56f2d06da43e917959799e130ce0052",
+  "version": "v260212.19 2:10p",
+  "release": 97,
+  "sha": "045b17e7",
+  "fullSha": "045b17e7db67ab281b73118eb3c60b05b55410c3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 19:53:12+00",
-  "commits": [{"sha":"b9028558","message":"App Dev: add diagnostic banner when nav fails to load","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:10:38+00",
+  "commits": [{"sha":"045b17e7","message":"App Dev: add missing Supabase CDN script — fixes nav, auth, and all JS","author":"Rahul Sonnad"}]
 }
