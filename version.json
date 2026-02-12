@@ -1,12 +1,12 @@
 {
-  "version": "v260211.73 9:55p",
-  "release": 73,
-  "sha": "5fab8dae",
-  "fullSha": "5fab8dae71fe9865ac012c79f20dba0851971d2c",
+  "version": "v260211.74 10:02p",
+  "release": 74,
+  "sha": "cf8b39cd",
+  "fullSha": "cf8b39cd11ff8b660020935fc15e0182d5b822be",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 03:55:36+00",
-  "commits": [{"sha":"5fab8dae","message":"Add brand style guide and consistent email branding","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 04:02:40+00",
+  "commits": [{"sha":"cf8b39cd","message":"Fix brand page: use initAdminPage instead of nonexistent initAdminShell","author":"Rahul Sonnad"}]
 }
