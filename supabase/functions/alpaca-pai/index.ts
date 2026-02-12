@@ -514,11 +514,12 @@ SPACES:
 - Use the has_amenity filter when users ask about specific amenities (e.g. "which rooms have hi-fi sound?", "rooms with a fireplace").`);
 
   // Codes & passwords
-  parts.push(`\nCODES & PASSWORDS:
-Use the lookup_codes tool when someone asks about access codes, door codes, WiFi passwords, credentials, OR any question about locks, doors, keys, or how to get into a space.
-This includes questions like "is there a lock on X?", "how do I get into the garage?", "which doors have codes?", "is the front door locked?", etc.
-The tool returns lock types and notes along with codes, so use it to answer physical security questions too.
-Do NOT guess codes or lock details — always look them up. Only share results appropriate for the user's role.`);
+  parts.push(`\nCODES, PASSWORDS & CREDENTIALS:
+Use the lookup_codes tool when someone asks about ANY credentials, codes, passwords, logins, API keys, or access information — whether physical or digital.
+This covers: door codes, locks, keys, WiFi passwords, app logins, website credentials, server configurations, service accounts, platform passwords, mobile app setup, admin panels, and any "how do I log in to X?" or "what's the password for X?" question.
+Also use it for physical security questions like "is there a lock on X?", "how do I get into the garage?", "which doors have codes?".
+The tool returns notes and context along with credentials, so use it to answer setup and access questions too.
+Do NOT guess codes, passwords, or credentials — always look them up. Only share results appropriate for the user's role.`);
 
   // Document library
   parts.push(`\nDOCUMENT LIBRARY:
@@ -881,14 +882,14 @@ const TOOL_DECLARATIONS = [
   {
     name: "lookup_codes",
     description:
-      "Look up access codes, door codes, locks, WiFi passwords, or other credentials for the property. Use this when someone asks about codes, passwords, locks, keys, doors, or how to access/enter any space. Also use this for questions about whether a door has a lock, what kind of lock it is, or any physical security question.",
+      "Look up any credentials, codes, passwords, logins, or access information — physical or digital. Covers: door codes, locks, WiFi, app logins, website credentials, server configs, service accounts, platform passwords, mobile app setup, API keys, and admin panels. Use for any 'how do I log in to X?', 'what's the password for X?', 'is there a lock on X?', or 'how do I access X?' question.",
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            "What the user is looking for (e.g., 'laundry door code', 'wifi password', 'front door', 'garage', 'garage door lock', 'how to get into skyloft')",
+            "What the user is looking for (e.g., 'garage door', 'wifi password', 'spotify login', 'UDM Pro', 'server password', 'nest thermostat', 'how to get into skyloft')",
         },
       },
       required: ["query"],
@@ -1698,7 +1699,7 @@ async function executeToolCall(
 
         // 3. If no exact match, try broader search for generic terms
         if (!results.length) {
-          const genericTerms = ["code", "access", "door", "password", "wifi", "key", "lock", "enter", "open", "get in"];
+          const genericTerms = ["code", "access", "door", "password", "wifi", "key", "lock", "enter", "open", "get in", "login", "credential", "config", "account", "server"];
           if (genericTerms.some(t => query.includes(t))) {
             for (const [spaceName, code] of Object.entries(scope.spaceAccessCodes)) {
               results.push(`${spaceName}: ${code}`);
@@ -2611,13 +2612,17 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "") ?? "";
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  // SERVICE_ROLE_JWT is the JWT-format service role key (for external callers like Discord bot).
+  // SUPABASE_SERVICE_ROLE_KEY is the platform-injected key (internal format, may differ from JWT).
+  const serviceKeyPlatform = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceKeyJwt = Deno.env.get("SERVICE_ROLE_JWT");
+  const isServiceKey = token === serviceKeyPlatform || (serviceKeyJwt && token === serviceKeyJwt);
 
   let appUser: any;
   let userLevel: number;
 
   // Email/API channel: internal services call with service role key (no user JWT)
-  if ((isEmailChannel || isApiChannel) && token === serviceKey) {
+  if ((isEmailChannel || isApiChannel) && isServiceKey) {
     const senderEmail = (context.sender || "").trim().toLowerCase();
     if (senderEmail) {
       const { data: appUserRow } = await supabase
@@ -2644,7 +2649,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       };
       userLevel = isApiChannel ? ROLE_LEVEL.staff : (ROLE_LEVEL.resident ?? 1);
     }
-  } else if (isDiscordChannel && token === serviceKey) {
+  } else if (isDiscordChannel && isServiceKey) {
     // Discord channel: pai-discord bot calls with service role key + discord_user_id
     const discordUserId = (context.discord_user_id || "").trim();
     const discordUserName = context.discord_user_name || "Discord user";
