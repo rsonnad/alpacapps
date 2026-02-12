@@ -53,6 +53,43 @@ function setupPromptBox() {
   // File inputs
   document.getElementById('cameraInput').addEventListener('change', (e) => handleFiles(e.target.files));
   document.getElementById('fileInput').addEventListener('change', (e) => handleFiles(e.target.files));
+
+  // Paste images from clipboard
+  textarea.addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files = [];
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+    if (files.length) {
+      e.preventDefault();
+      handleFiles(files);
+    }
+  });
+
+  // Drag and drop onto the prompt card
+  const promptCard = document.querySelector('.appdev-prompt-card');
+  promptCard.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    promptCard.style.borderColor = 'var(--accent)';
+    promptCard.style.borderStyle = 'dashed';
+  });
+  promptCard.addEventListener('dragleave', () => {
+    promptCard.style.borderColor = '';
+    promptCard.style.borderStyle = '';
+  });
+  promptCard.addEventListener('drop', (e) => {
+    e.preventDefault();
+    promptCard.style.borderColor = '';
+    promptCard.style.borderStyle = '';
+    if (e.dataTransfer?.files?.length) {
+      handleFiles(e.dataTransfer.files);
+    }
+  });
 }
 
 // =============================================
