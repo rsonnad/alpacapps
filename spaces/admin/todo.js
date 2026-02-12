@@ -393,13 +393,17 @@ function setupEventListeners() {
 // =============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Set up event listeners immediately (DOM is ready)
+  // Show the page immediately — no auth gate for this page
+  document.getElementById('loadingOverlay')?.classList.add('hidden');
+  document.getElementById('appContent')?.classList.remove('hidden');
+
+  // Set up event listeners
   setupEventListeners();
 
-  // Load data immediately — RLS is open for reads, no auth needed
+  // Load data — RLS is open for reads, no auth needed
   await loadData();
 
-  // Then let admin shell handle nav/auth in background
+  // Let admin shell handle nav/auth in background (non-blocking)
   initAdminPage({
     activeTab: 'todo',
     requiredRole: 'staff',
