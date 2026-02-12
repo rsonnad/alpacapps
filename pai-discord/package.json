@@ -1,0 +1,12 @@
+{
+  "name": "genalpaca-pai-discord",
+  "version": "1.0.0",
+  "description": "PAI Discord bot — bridges Discord messages to alpaca-pai edge function",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.0"
+  }
+}

@@ -125,6 +125,11 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 ### Associate View (`/associates/`)
 - `worktracking.html` / `worktracking.js` - Clock in/out, timesheets, work photos, payment preferences
 
+### PAI Discord Bot (`/pai-discord/`)
+- `bot.js` - Discord → alpaca-pai edge function bridge (discord.js v14)
+- `pai-discord.service` - Systemd service file for DO droplet
+- `install.sh` - Droplet installation script
+
 ### Supabase Edge Functions (`/supabase/functions/`)
 - `signwell-webhook/` - Receives SignWell webhook when documents are signed
 - `send-sms/` - Outbound SMS via Telnyx API
@@ -834,7 +839,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - Bug fixer repo is a clone of this repo, used for verification screenshots
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info
-- **Workers on droplet:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`)
+- **Workers on droplet:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`), PAI Discord Bot (`pai-discord.service`)
 
 ### Home Automation (Sonos, UniFi, Cameras)
 - Full documentation in `HOMEAUTOMATION.md`
@@ -932,6 +937,19 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **DB**: `vapi_config`, `voice_assistants`, `voice_calls`
 - **Admin UI**: `spaces/admin/voice.html` — manage assistants, view call logs, configure settings
 - **Cost**: ~$0.10-$0.30 per call
+
+### PAI Discord Bot
+- **Architecture**: Lightweight Node.js bot that bridges Discord → `alpaca-pai` edge function
+- **Source**: `pai-discord/bot.js` (in repo), deployed to `/opt/pai-discord/` on DO droplet
+- **Library**: discord.js v14
+- **Service**: `pai-discord.service` (systemd, runs as `bugfixer` user)
+- **Auth**: Service role key → `alpaca-pai` with `context.source: "discord"`
+- **User lookup**: Matches `discord_user_id` → `app_users.discord_id` for role-based access
+- **Channels**: Listens to configured `CHANNEL_IDS` + DMs + @mentions
+- **History**: In-memory per-user conversation history (12 messages, 30 min TTL)
+- **Env vars**: `DISCORD_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CHANNEL_IDS`
+- **Discord guild**: Alpacord (ID: `1471023710755487867`), channel `#pai-in-the-sky` (ID: `1471024050343247894`)
+- **Install**: `cd pai-discord && bash install.sh` on droplet, then edit `.env`
 
 ### PayPal (Associate Payouts)
 - **API**: PayPal Payouts API (batch payments)
@@ -1230,6 +1248,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - Colors: warm alpaca palette (cream `#faf9f6`, amber accent `#d4883a`, dark `#1c1618`)
    - Font: DM Sans (300-700 weights)
    - Logos: alpaca head icon + wordmark in dark/light variants (Supabase Storage)
+41. **PAI Discord Bot** - Native Discord bot replacing OpenClaw paibot
+   - Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
+   - Bridges Discord messages → `alpaca-pai` edge function (same as web chat, email, voice)
+   - Runs on DO droplet as `pai-discord.service` (systemd, bugfixer user)
+   - Auth: service role key with `context.source: "discord"`, user lookup via `app_users.discord_id`
+   - Features: per-user conversation history (12 msgs, 30 min TTL), typing indicators, message splitting (2000 char limit)
+   - Listens to: configured channel IDs + DMs + @mentions
+   - Replaces OpenClaw-based `paibot.service` which had no database/tool access
+   - Fixed `alpaca-pai` edge function auth bug: Discord branch was unreachable (caught by email/API condition first)
 
 ## Testing Changes
 

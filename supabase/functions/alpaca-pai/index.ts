@@ -515,8 +515,10 @@ SPACES:
 
   // Codes & passwords
   parts.push(`\nCODES & PASSWORDS:
-Use the lookup_codes tool when someone asks about access codes, door codes, WiFi passwords, or credentials.
-Do NOT guess codes — always look them up. Only share results appropriate for the user's role.`);
+Use the lookup_codes tool when someone asks about access codes, door codes, WiFi passwords, credentials, OR any question about locks, doors, keys, or how to get into a space.
+This includes questions like "is there a lock on X?", "how do I get into the garage?", "which doors have codes?", "is the front door locked?", etc.
+The tool returns lock types and notes along with codes, so use it to answer physical security questions too.
+Do NOT guess codes or lock details — always look them up. Only share results appropriate for the user's role.`);
 
   // Document library
   parts.push(`\nDOCUMENT LIBRARY:
@@ -879,14 +881,14 @@ const TOOL_DECLARATIONS = [
   {
     name: "lookup_codes",
     description:
-      "Look up access codes, door codes, WiFi passwords, or other credentials for the property. Use this when someone asks about codes, passwords, or how to access something.",
+      "Look up access codes, door codes, locks, WiFi passwords, or other credentials for the property. Use this when someone asks about codes, passwords, locks, keys, doors, or how to access/enter any space. Also use this for questions about whether a door has a lock, what kind of lock it is, or any physical security question.",
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            "What the user is looking for (e.g., 'laundry door code', 'wifi password', 'front door', 'garage code')",
+            "What the user is looking for (e.g., 'laundry door code', 'wifi password', 'front door', 'garage', 'garage door lock', 'how to get into skyloft')",
         },
       },
       required: ["query"],
@@ -1696,7 +1698,7 @@ async function executeToolCall(
 
         // 3. If no exact match, try broader search for generic terms
         if (!results.length) {
-          const genericTerms = ["code", "access", "door", "password", "wifi", "key"];
+          const genericTerms = ["code", "access", "door", "password", "wifi", "key", "lock", "enter", "open", "get in"];
           if (genericTerms.some(t => query.includes(t))) {
             for (const [spaceName, code] of Object.entries(scope.spaceAccessCodes)) {
               results.push(`${spaceName}: ${code}`);
@@ -2614,8 +2616,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let appUser: any;
   let userLevel: number;
 
-  // Email/Discord/API channel: internal services call with service role key (no user JWT)
-  if ((isEmailChannel || isDiscordChannel || isApiChannel) && token === serviceKey) {
+  // Email/API channel: internal services call with service role key (no user JWT)
+  if ((isEmailChannel || isApiChannel) && token === serviceKey) {
     const senderEmail = (context.sender || "").trim().toLowerCase();
     if (senderEmail) {
       const { data: appUserRow } = await supabase

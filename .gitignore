@@ -39,3 +39,6 @@ mobile/fastlane/test_output/
 
 # Dev/testing
 dev/testing/node_modules/
+
+# PAI Discord bot
+pai-discord/node_modules/

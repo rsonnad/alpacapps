@@ -1,0 +1,19 @@
+[Unit]
+Description=AlpacApps PAI Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/pai-discord
+EnvironmentFile=/opt/pai-discord/.env
+ExecStart=/usr/bin/node /opt/pai-discord/bot.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pai-discord
+
+[Install]
+WantedBy=multi-user.target
