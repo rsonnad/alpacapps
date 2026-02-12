@@ -1,12 +1,12 @@
 {
-  "version": "v260212.23 2:33p",
-  "release": 101,
-  "sha": "e4d37e51",
-  "fullSha": "e4d37e517731f776f701f4855fda740861025a0c",
+  "version": "v260212.24 2:35p",
+  "release": 102,
+  "sha": "90d16a5f",
+  "fullSha": "90d16a5f9bd68c4412504c70fd0ac02a7a47467b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-12 20:33:16+00",
-  "commits": [{"sha":"e4d37e51","message":"App Dev: add file upload & camera capture for feature requests","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 20:35:41+00",
+  "commits": [{"sha":"90d16a5f","message":"Add standard site nav + footer to /pay page","author":"Rahul Sonnad"}]
 }
