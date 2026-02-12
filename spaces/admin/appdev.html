@@ -18,14 +18,10 @@
       padding: 1.5rem 1rem 1rem;
     }
     .appdev-hero h1 {
-      font-size: 1.6rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      margin: 0 0 0.25rem;
-    }
-    .appdev-hero .tagline {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-style: italic;
+      margin: 0;
+      white-space: nowrap;
     }
 
     /* Prompt box */
@@ -322,7 +318,7 @@
     }
 
     @media (max-width: 768px) {
-      .appdev-hero h1 { font-size: 1.2rem; }
+      .appdev-hero h1 { font-size: 1rem; }
       .appdev-textarea { min-height: 100px; }
       .appdev-request-header { padding: 0.65rem 1rem; }
       .appdev-request-body { padding: 0 1rem 0.75rem; }
@@ -363,13 +359,12 @@
 
     <main class="manage-content appdev-page">
       <div class="appdev-hero">
-        <h1>Claudero</h1>
-        <p class="tagline">AI developer extraordinaire</p>
+        <h1>Claudero: AI Developer Extraordinaire</h1>
       </div>
 
       <!-- Prompt box -->
       <div class="appdev-prompt-card">
-        <label for="featurePrompt">Describe the feature you want built</label>
+        <label for="featurePrompt">Describe the feature you want built or modified</label>
         <textarea id="featurePrompt" class="appdev-textarea" placeholder="e.g. Add a page that shows the current weather forecast for Cedar Creek with hourly temps and rain probability..."></textarea>
         <div class="appdev-submit-row">
           <span class="char-count" id="charCount">0 chars</span>
