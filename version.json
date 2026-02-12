@@ -1,12 +1,12 @@
 {
-  "version": "v260212.01 12:17a",
-  "release": 78,
-  "sha": "0c3767bd",
-  "fullSha": "0c3767bd5c194d03445b87f0ad2d35991f2186c2",
+  "version": "v260212.02 3:06a",
+  "release": 79,
+  "sha": "bec6152a",
+  "fullSha": "bec6152ad777d0690917bb6c2a4f99fc10dfbed8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-12 06:17:08+00",
-  "commits": [{"sha":"0c3767bd","message":"Login: tighten vertical spacing throughout","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-12 09:06:05+00",
+  "commits": [{"sha":"bec6152a","message":"Add PAI API channel, test suite, and fix supabaseUrl scoping bug","author":"Bug Fixer Bot"}]
 }
