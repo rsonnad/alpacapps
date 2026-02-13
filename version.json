@@ -1,12 +1,12 @@
 {
-  "version": "v260212.52 9:44p",
-  "release": 130,
-  "sha": "0c6f2cbb",
-  "fullSha": "0c6f2cbb8d810fd63404a095dcfe603636c486ef",
+  "version": "v260212.53 9:52p",
+  "release": 131,
+  "sha": "d35dd58b",
+  "fullSha": "d35dd58bcc7a0774c5fb50f08b171aa65d994e0c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 03:44:25+00",
-  "commits": [{"sha":"0c6f2cbb","message":"fix: align Try Again buttons horizontally in App Dev build history","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-13 03:52:00+00",
+  "commits": [{"sha":"d35dd58b","message":"Fix: Spotify search button unresponsive when Sonos API is down","author":"Rahul Sonnad"}]
 }
