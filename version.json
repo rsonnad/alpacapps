@@ -1,12 +1,12 @@
 {
-  "version": "v260213.01 12:50a",
-  "release": 140,
-  "sha": "0c3d4369",
-  "fullSha": "0c3d4369ce2949aebba29d757ea95d66167625cd",
+  "version": "v260213.02 12:57a",
+  "release": 141,
+  "sha": "d457b604",
+  "fullSha": "d457b604311e38719fa6278cebcaf4bb96e7fdcc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 06:50:41+00",
-  "commits": [{"sha":"0c3d4369","message":"Improve PAI Sonos/audio answers by enforcing document lookup + web search","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 06:57:57+00",
+  "commits": [{"sha":"d457b604","message":"Fix Spotify playback 400 error: use direct URI instead of musicsearch","author":"Rahul Sonnad"}]
 }
