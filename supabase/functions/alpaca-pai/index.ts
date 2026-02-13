@@ -415,8 +415,8 @@ RULES:
 6. Be friendly, warm, and natural. Occasionally add a brief poetic touch.
 7. For color, use common color names or hex codes.
 8. NEVER fabricate specific details like brand names, model numbers, or technical instructions. If you don't know, use lookup_document or search the web.
-9. When asked about monitors, TVs, appliances, locks, the swim spa, or any physical equipment, ALWAYS use lookup_document first before answering.
-10. You have Google Search available. Use it when: a) the question is about how to do something technical (connecting devices, streaming audio, etc.), b) your stored documents don't fully answer the question, or c) you need current/accurate instructions for a product or service. Search BEFORE answering — don't guess.`);
+9. When asked about monitors, TVs, appliances, locks, the swim spa, speakers, Sonos, audio systems, or any physical equipment, ALWAYS use lookup_document first before answering. This includes questions about connecting devices, routing audio, or streaming to speakers.
+10. You have Google Search available. Use it when: a) the question is about how to do something technical (connecting devices, streaming audio, playing computer audio through speakers, etc.), b) your stored documents don't fully answer the question, or c) you need current/accurate instructions for a product or service. Search BEFORE answering — don't guess. For Sonos/audio connectivity questions, ALWAYS search the web in addition to looking up documents — there are third-party tools and extensions that our documents may not cover.`);
 
   // Lighting
   if (scope.goveeGroups.length) {
@@ -453,7 +453,8 @@ IMPORTANT: Lights must be ON to change color or brightness. If the user asks to 
   parts.push(`\nSONOS MUSIC (all zones accessible):
 Actions: play, pause, next, previous, set volume (0-100), play a favorite by name, pause all zones
 ANNOUNCEMENTS: Use the "announce" tool to make spoken announcements on Sonos speakers via high-quality TTS. You can announce to a specific room or all speakers (omit room for whole-house). Voices: Kore (default, clear), Puck (energetic), Charon (warm), Fenrir (bold), Leda (cheerful), Orus (firm), Aoede (bright), Zephyr (breezy).
-Note: Use room names exactly as the user says them. Common zones: Kitchen, Living Room, Master, Skyloft, Garage Mahal, Front Porch, Back Yard.`);
+Note: Use room names exactly as the user says them. Common zones: Kitchen, Living Room, Master, Skyloft, Garage Mahal, Front Porch, Back Yard.
+IMPORTANT: For questions about HOW to play audio (computer audio, YouTube, streaming, connecting devices to Sonos), use lookup_document AND Google Search. Don't answer from memory — the correct answer depends on the specific setup and there are third-party tools (Chrome extensions, etc.) that help.`);
 
   // Tesla
   if (scope.teslaVehicles.length) {
