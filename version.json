@@ -1,12 +1,12 @@
 {
-  "version": "v260212.38 8:35p",
-  "release": 116,
-  "sha": "83c442ed",
-  "fullSha": "83c442ed381c9fc3ce68629664df7d42b3a59ae4",
+  "version": "v260212.39 8:38p",
+  "release": 117,
+  "sha": "f4f19829",
+  "fullSha": "f4f19829a7cf76ed3e4f225bda5af7c1151fc446",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 02:35:11+00",
-  "commits": [{"sha":"83c442ed","message":"Migrate all 5 polling pages to PollManager for circuit breaker protection","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 02:38:45+00",
+  "commits": [{"sha":"f4f19829","message":"Add prominent Try Again button to App Dev request headers","author":"Rahul Sonnad"}]
 }
