@@ -1,12 +1,12 @@
 {
-  "version": "v260212.37 8:32p",
-  "release": 115,
-  "sha": "a5b2818e",
-  "fullSha": "a5b2818e27e6ca4d969a97fe36701395fd3d18e8",
+  "version": "v260212.38 8:35p",
+  "release": 116,
+  "sha": "83c442ed",
+  "fullSha": "83c442ed381c9fc3ce68629664df7d42b3a59ae4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 02:32:45+00",
-  "commits": [{"sha":"a5b2818e","message":"Add Try Again button to App Dev feature requests","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-13 02:35:11+00",
+  "commits": [{"sha":"83c442ed","message":"Migrate all 5 polling pages to PollManager for circuit breaker protection","author":"Rahul Sonnad"}]
 }
