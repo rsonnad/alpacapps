@@ -1,12 +1,12 @@
 {
-  "version": "v260213.03 1:00a",
-  "release": 142,
-  "sha": "60825983",
-  "fullSha": "60825983c98c8eb43bc8adab37b174c2b7568446",
+  "version": "v260213.04 1:05a",
+  "release": 143,
+  "sha": "792c4d85",
+  "fullSha": "792c4d85281a67c2a69fb3553ea755f7ded9b75d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 07:00:24+00",
-  "commits": [{"sha":"60825983","message":"Fix Spotify drag-and-drop onto Sonos zones","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 07:05:17+00",
+  "commits": [{"sha":"792c4d85","message":"Add grab cursor and drag opacity for Spotify search results","author":"Rahul Sonnad"}]
 }
