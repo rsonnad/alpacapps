@@ -1,12 +1,12 @@
 {
-  "version": "v260212.60 11:16p",
-  "release": 138,
-  "sha": "f62160f6",
-  "fullSha": "f62160f6988ee2beed533ba395fb504d927bd462",
+  "version": "v260212.61 11:19p",
+  "release": 139,
+  "sha": "907286e6",
+  "fullSha": "907286e6b02aa2fd1fd905587337f46a09a59411",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 05:16:10+00",
-  "commits": [{"sha":"f62160f6","message":"Add Google Search grounding to PAI for live web search","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 05:19:16+00",
+  "commits": [{"sha":"907286e6","message":"Add 'check back in a few minutes' detail to Claudero pickup timeline item","author":"Rahul Sonnad"}]
 }
