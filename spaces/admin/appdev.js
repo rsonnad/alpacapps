@@ -308,8 +308,6 @@ async function loadHistory() {
 // ACTIVE BUILD BANNER
 // =============================================
 function updateActiveBuild(requests) {
-  const activeBanner = document.getElementById('activeBuild');
-  const statusEl = document.getElementById('activeBuildStatus');
   const submitBtn = document.getElementById('submitBtn');
 
   const active = requests.find(r => ['pending', 'processing', 'building'].includes(r.status));
@@ -322,25 +320,8 @@ function updateActiveBuild(requests) {
   }
 
   if (active) {
-    activeBanner.classList.add('visible');
     submitBtn.disabled = true;
-
-    // Dynamic banner title based on request intent
-    const titleEl = document.getElementById('activeBuildTitle');
-    titleEl.textContent = getBuildActionLabel(active.description);
-
-    const badgeColor = active.status === 'pending' ? '#e0e7ff' : '#fef3c7';
-    const badgeText = active.status === 'pending' ? '#3730a3' : '#92400e';
-    statusEl.innerHTML = `
-      <span class="status-badge" style="background:${badgeColor};color:${badgeText}">${active.status}</span>
-      ${active.progress_message || 'Waiting for Claudero to pick up the request...'}
-      <div style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted)">
-        ${escapeHtml(active.description.substring(0, 120))}${active.description.length > 120 ? '...' : ''}
-      </div>
-    `;
   } else {
-    activeBanner.classList.remove('visible');
-    // Re-enable submit if there's text
     const textarea = document.getElementById('featurePrompt');
     submitBtn.disabled = (textarea.value.trim().length < 10);
   }
@@ -371,23 +352,45 @@ function renderHistory(requests) {
     // Sort chain newest first
     chain.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    const latestStatus = chain[0].status;
+    const latest = chain[0];
+    const latestStatus = latest.status;
     const isActive = ['pending', 'processing', 'building'].includes(latestStatus);
 
     const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
     const retryLabel = latestStatus === 'failed' ? '↻ Try Again' : '↻ Modify';
+
+    // Version badge for completed+deployed builds
+    const versionBadge = latestStatus === 'completed' && latest.deployed_version
+      ? `<span class="appdev-version-badge">${escapeHtml(latest.deployed_version)}</span>` : '';
+
+    // Active progress bar (replaces the old separate banner)
+    let activeProgress = '';
+    if (isActive) {
+      const actionLabel = getBuildActionLabel(req.description);
+      const progressMsg = latest.progress_message || 'Waiting for Claudero to pick up...';
+      activeProgress = `
+        <div class="appdev-active-progress">
+          <span class="appdev-spinner"></span>
+          <span class="appdev-active-progress-text">
+            <strong>${actionLabel}</strong> &mdash; ${escapeHtml(progressMsg)}
+          </span>
+        </div>`;
+    }
+
     return `
-      <div class="appdev-request ${isActive ? '' : 'collapsed'}">
+      <div class="appdev-request ${isActive ? 'active-build' : 'collapsed'}">
         <div class="appdev-request-header" onclick="this.parentElement.classList.toggle('collapsed')">
           <span class="appdev-request-badge ${latestStatus}">${latestStatus}</span>
           <span class="appdev-request-title">${escapeHtml(req.description.substring(0, 80))}${req.description.length > 80 ? '...' : ''}</span>
           <div class="appdev-request-actions">
+            ${versionBadge}
             ${chain.length > 1 ? `<span class="appdev-followup-badge">${chain.length - 1} follow-up${chain.length > 2 ? 's' : ''}</span>` : ''}
             ${showRetry ? `<button class="appdev-retry-header-btn" onclick="event.stopPropagation();window._tryAgain(${JSON.stringify(req.description).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;')})" title="Load this request into the editor">${retryLabel}</button>` : ''}
             <span class="appdev-request-time">${formatTimeAgo(req.created_at)}</span>
             <svg class="appdev-request-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
+        ${activeProgress}
         <div class="appdev-request-body">
           <div class="appdev-request-desc">${escapeHtml(req.description)}</div>
           ${renderAttachments(req.attachments)}
@@ -401,16 +404,17 @@ function renderHistory(requests) {
 }
 
 function renderTimelineItem(req) {
-  const timelineClass = getTimelineClass(req.status);
   const items = [];
 
-  // Submitted
-  items.push({
-    time: req.created_at,
-    label: req.parent_request_id ? 'Follow-up submitted' : 'Submitted',
-    detail: req.parent_request_id ? escapeHtml(req.description.substring(0, 200)) : null,
-    class: 'success',
-  });
+  // For follow-ups, show which follow-up it was
+  if (req.parent_request_id) {
+    items.push({
+      time: req.created_at,
+      label: 'Follow-up submitted',
+      detail: escapeHtml(req.description.substring(0, 200)),
+      class: 'success',
+    });
+  }
 
   // Processing started
   if (req.processing_started_at) {
@@ -422,12 +426,22 @@ function renderTimelineItem(req) {
     });
   }
 
-  // Status updates for in-flight
+  // Status updates for in-flight — shown inline on card via activeProgress, skip here
   if (['processing', 'building'].includes(req.status) && req.progress_message) {
     items.push({
       time: null,
       label: req.status === 'building' ? 'Building' : 'Processing',
       detail: req.progress_message,
+      class: 'active',
+    });
+  }
+
+  // Pending — just show when it was requested
+  if (req.status === 'pending') {
+    items.push({
+      time: req.created_at,
+      label: 'Queued',
+      detail: 'Waiting for Claudero to pick up',
       class: 'active',
     });
   }
@@ -466,7 +480,7 @@ function renderTimelineItem(req) {
     });
   }
 
-  // Reverse chronological
+  // Reverse chronological (newest first)
   items.reverse();
 
   return items.map(item => `
