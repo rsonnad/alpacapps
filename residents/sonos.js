@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.classList.add('is-staff');
       }
       loadBalanceState();
+      setupEventListeners();
+      setupSpotifySearch();
       await loadZones();
       renderZones();
       await Promise.all([loadPlaylists(), loadFavorites(), loadPlaylistTags(), loadSchedules(), loadScenes()]);
@@ -60,8 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderSchedules();
       renderScenesSection();
       renderSceneBar();
-      setupEventListeners();
-      setupSpotifySearch();
       startPolling();
       // Refresh when PAI takes music actions
       window.addEventListener('pai-actions', (e) => {
