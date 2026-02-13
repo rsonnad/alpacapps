@@ -1,12 +1,12 @@
 {
-  "version": "v260213.05 1:08a",
-  "release": 144,
-  "sha": "e05d0343",
-  "fullSha": "e05d034385affc857ae03abec30535bf399a4cf2",
+  "version": "v260213.06 1:11a",
+  "release": 145,
+  "sha": "da1ee1ce",
+  "fullSha": "da1ee1cedc2c3c5c48b5ba827ab68c4e8a40dda8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 07:08:25+00",
-  "commits": [{"sha":"e05d0343","message":"Fix PAI crash: replace broken google_search combo with web_search tool","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 07:11:33+00",
+  "commits": [{"sha":"da1ee1ce","message":"Broaden PAI rule #9 to cover all electronics and device questions","author":"Rahul Sonnad"}]
 }
