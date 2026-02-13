@@ -472,7 +472,7 @@ function renderTimelineItem(req) {
     items.push({
       time: req.processing_started_at,
       label: 'Claudero picked up',
-      detail: null,
+      detail: ['processing', 'building', 'pending'].includes(req.status) ? 'In process — please check back in a few minutes...' : null,
       class: 'active',
     });
   }
