@@ -1,12 +1,12 @@
 {
-  "version": "v260213.02 12:57a",
-  "release": 141,
-  "sha": "d457b604",
-  "fullSha": "d457b604311e38719fa6278cebcaf4bb96e7fdcc",
+  "version": "v260213.03 1:00a",
+  "release": 142,
+  "sha": "60825983",
+  "fullSha": "60825983c98c8eb43bc8adab37b174c2b7568446",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 06:57:57+00",
-  "commits": [{"sha":"d457b604","message":"Fix Spotify playback 400 error: use direct URI instead of musicsearch","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 07:00:24+00",
+  "commits": [{"sha":"60825983","message":"Fix Spotify drag-and-drop onto Sonos zones","author":"Rahul Sonnad"}]
 }
