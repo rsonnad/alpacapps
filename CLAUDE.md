@@ -88,6 +88,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `climate-data.js` - Nest thermostat state + control via `nest-control` edge function
 - `cars-data.js` - Tesla vehicle data + commands via `tesla-command` edge function
 - `laundry-data.js` - LG washer/dryer state + control via `lg-control` edge function
+- `oven-data.js` - Anova oven state + control via `anova-control` edge function
 
 ### Mobile App (`/mobile/`)
 - `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)
@@ -158,6 +159,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `tesla-command/` - Sends commands to Tesla vehicles via Fleet API (lock, unlock, wake, flash, honk) (resident+ auth)
 - `create-tesla-account/` - Creates tesla_accounts row with server-held Fleet API credentials (resident+ auth); use default JWT
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
+- `anova-control/` - Anova Precision Oven control via WebSocket API (getStatus, startCook, stopCook) (resident+ auth)
 - `verify-identity/` - Driver's license photo → Claude Vision API → auto-verify applicants/associates
 - `paypal-payout/` - Sends PayPal payouts to associates
 - `paypal-webhook/` - Receives PayPal payout status updates
@@ -190,6 +192,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `signwell-webhook` | `supabase functions deploy signwell-webhook --no-verify-jwt` |
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
+| `anova-control` | `supabase functions deploy anova-control --no-verify-jwt` |
 | `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
 | `verify-identity` | `supabase functions deploy verify-identity --no-verify-jwt` |
 | `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
@@ -314,6 +317,16 @@ push_tokens         - FCM push notification tokens per user (shared, not LG-spec
                        device_info, is_active)
 laundry_watchers    - Who is watching which appliance for cycle-end notification
                       (app_user_id [FK→app_users], appliance_id [FK→lg_appliances])
+```
+
+### Anova Precision Oven System
+```
+anova_config        - Anova Developer API configuration (single row, id=1)
+                      (pat, ws_url, is_active, test_mode, last_error, last_synced_at)
+anova_ovens         - Anova oven devices with cached state
+                      (cooker_id [unique], name, oven_type, firmware_version,
+                       hardware_version, space_id [FK→spaces], display_order,
+                       is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
 ```
 
 ### Cloudflare R2 & Document Storage
@@ -696,6 +709,7 @@ Use these exact vendor strings:
 | `google_sdm` | Nest thermostat API (Google Smart Device Management) |
 | `tesla` | Tesla Fleet API |
 | `lg_thinq` | LG ThinQ API |
+| `anova` | Anova Precision Oven Developer API |
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
@@ -727,6 +741,8 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `tesla_vehicle_poll` | Tesla vehicle data polling |
 | `tesla_vehicle_command` | Tesla vehicle commands (lock, unlock, etc.) |
 | `lg_laundry_poll` | LG washer/dryer status polling |
+| `anova_oven_control` | Anova oven commands (start, stop) |
+| `anova_oven_poll` | Anova oven status polling |
 | `govee_lighting_control` | Govee light commands |
 | `sonos_music_control` | Sonos playback commands |
 | `square_payment_processing` | Square payment transactions |
@@ -957,6 +973,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Washer states**: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, DRYING, STEAM_SOFTENING, COOL_DOWN, RINSE_HOLD, REFRESHING, PAUSE, RESERVED, END, SLEEP, ERROR
 - **Dryer states**: POWER_OFF, INITIAL, RUNNING, PAUSE, END, ERROR, DIAGNOSIS, RESERVED
 - **Client**: `residents/laundry.js` polls Supabase every 15s with visibility-based pause
+
+### Anova Precision Oven
+- **API**: Anova Developer API via WebSocket (`wss://devices.anovaculinary.io`)
+- **Auth**: Personal Access Token (PAT) from Anova app → stored in `anova_config` table
+- **Architecture**: Per-request WebSocket in `anova-control` edge function (no polling worker)
+- **WebSocket flow**: Connect with PAT → receive `EVENT_APO_WIFI_LIST` (device discovery) + `EVENT_APO_STATE` (state) → send commands → close
+- **Commands**: `CMD_APO_START` (stages array), `CMD_APO_STOP`, `CMD_APO_SET_TEMPERATURE_UNIT`
+- **State data**: temp (dry/wet bulbs), probe, timer, door, fan speed, steam/humidity, heating elements (top/bottom/rear), water tank
+- **DB**: `anova_config` (PAT, ws_url), `anova_ovens` (cached state in `last_state` JSONB)
+- **Edge function**: `anova-control` — deployed with `--no-verify-jwt`
+- **Client**: `residents/appliances.js` renders oven cards with live data + controls
+- **PAI tools**: `get_oven_status`, `control_oven` (chat + voice)
+- **Device**: IP 192.168.1.181, MAC 10:52:1c:be:49:b8, Espressif ESP32, WiFi Alpacalypse
+- **Cost**: $0 (free API, no rate limits documented)
 
 ### Vapi (AI Voice Calling)
 - **API**: Vapi.ai (voice AI platform)
@@ -1288,6 +1318,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - Listens to: configured channel IDs + DMs + @mentions
    - Replaces OpenClaw-based `paibot.service` which had no database/tool access
    - Fixed `alpaca-pai` edge function auth bug: Discord branch was unreachable (caught by email/API condition first)
+
+42. **Anova Precision Oven Integration** - Cloud API control for Anova Precision Oven
+   - **API**: Anova Developer API via WebSocket (`wss://devices.anovaculinary.io`)
+   - **Auth**: Personal Access Token (PAT) from Anova app (More > Developer > Personal Access Tokens)
+   - **Architecture**: Per-request WebSocket in edge function (no DO droplet worker — on-demand only)
+   - **Edge function**: `anova-control` (getStatus, startCook, stopCook, setTemperatureUnit)
+   - **Data service**: `shared/services/oven-data.js` (display helpers, cook stage builder)
+   - **DB**: `anova_config` (PAT/config), `anova_ovens` (cached state in `last_state` JSONB)
+   - **Permissions**: `view_oven` (all residents), `control_oven` (all residents), `admin_oven_settings` (admin/oracle)
+   - **UI**: Appliances page — live temp, mode, timer, door, fan, steam, heating elements, water tank
+   - **Admin settings**: PAT input, test mode toggle, test connection, discovered ovens list
+   - **PAI tools**: `get_oven_status`, `control_oven` (chat + voice)
+   - **Network**: IP 192.168.1.181, MAC 10:52:1c:be:49:b8, WiFi Alpacalypse, Espressif ESP32
+   - **Auto-discovery**: First getStatus creates anova_ovens row from WebSocket device list
 
 ## Testing Changes
 
