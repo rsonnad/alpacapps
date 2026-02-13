@@ -1,12 +1,12 @@
 {
-  "version": "v260213.21 11:14a",
-  "release": 160,
-  "sha": "8202f58f",
-  "fullSha": "8202f58f5b12a951c92cc923d2a65ca081682de0",
+  "version": "v260213.22 11:27a",
+  "release": 161,
+  "sha": "d57998cc",
+  "fullSha": "d57998cc4d273e775a77a314129a46b548b724d4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 17:14:01+00",
-  "commits": [{"sha":"f29cd0d1","message":"feat: Getting an error.\\n\\nAutomated feature from PAI request #03284dd8-6ef9-42df-af60-4413a5f04c6e.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"8202f58f","message":"Merge feature/20260213-03284dd8 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-13 17:27:51+00",
+  "commits": [{"sha":"d57998cc","message":"feat: Add facebook_url column to app_users table","author":"Feature Builder Bot"}]
 }
