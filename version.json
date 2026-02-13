@@ -1,12 +1,12 @@
 {
-  "version": "v260212.59 10:39p",
-  "release": 137,
-  "sha": "c5586283",
-  "fullSha": "c558628310d57e85a16fdf1581e3502874843e68",
+  "version": "v260212.60 11:16p",
+  "release": 138,
+  "sha": "f62160f6",
+  "fullSha": "f62160f6988ee2beed533ba395fb504d927bd462",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 04:39:50+00",
-  "commits": [{"sha":"c5586283","message":"Fix deployed version not showing in App Dev build history","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 05:16:10+00",
+  "commits": [{"sha":"f62160f6","message":"Add Google Search grounding to PAI for live web search","author":"Rahul Sonnad"}]
 }
