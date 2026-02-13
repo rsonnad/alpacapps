@@ -1,12 +1,12 @@
 {
-  "version": "v260212.47 9:10p",
-  "release": 125,
-  "sha": "6ff7dbed",
-  "fullSha": "6ff7dbed62f783323cc8f9fe8cd4d0429972b9f5",
+  "version": "v260212.48 9:11p",
+  "release": 126,
+  "sha": "d9dcf6af",
+  "fullSha": "d9dcf6af9bc084f88af802adc13a73d83fa8cca2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 03:10:16+00",
-  "commits": [{"sha":"6ff7dbed","message":"Add Spotify search with results selection to Music page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 03:11:23+00",
+  "commits": [{"sha":"d9dcf6af","message":"Revert: always show deployed version with green/amber status","author":"Rahul Sonnad"}]
 }
