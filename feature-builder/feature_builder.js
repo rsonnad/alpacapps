@@ -106,6 +106,47 @@ async function gitMergeBranchToMain(branchName) {
   return { mainSha: stdout.trim() };
 }
 
+/**
+ * Poll release_events for the version assigned by CI after a push to main.
+ * CI typically takes ~60s. We poll every 10s for up to 120s.
+ */
+async function waitForDeployedVersion(pushSha, requestId) {
+  const MAX_WAIT_MS = 120000;
+  const POLL_MS = 10000;
+  const start = Date.now();
+
+  log('info', 'Waiting for CI version assignment...', { pushSha: pushSha.substring(0, 8), requestId });
+
+  while (Date.now() - start < MAX_WAIT_MS) {
+    await new Promise(r => setTimeout(r, POLL_MS));
+
+    try {
+      const { data, error } = await supabase
+        .from('release_events')
+        .select('display_version')
+        .eq('push_sha', pushSha)
+        .maybeSingle();
+
+      if (!error && data?.display_version) {
+        log('info', 'CI version found', { version: data.display_version, elapsed: Date.now() - start });
+
+        // Update the feature request with the deployed version
+        await supabase
+          .from('feature_requests')
+          .update({ deployed_version: data.display_version })
+          .eq('id', requestId);
+
+        return data.display_version;
+      }
+    } catch (err) {
+      log('warn', 'Version poll error', { error: err.message });
+    }
+  }
+
+  log('warn', 'CI version not found within timeout', { pushSha: pushSha.substring(0, 8), elapsed: Date.now() - start });
+  return null;
+}
+
 // ============================================
 // Risk Evaluation
 // ============================================
@@ -730,9 +771,17 @@ async function processFeatureRequest(request) {
         page_url: buildResult.page_url,
       });
 
+      // Wait for CI to assign a version number (non-blocking for the overall flow)
+      const deployedVersion = await waitForDeployedVersion(mainSha, request.id);
+      if (deployedVersion) {
+        await updateProgress(request.id, {
+          progress_message: `Deployed as ${deployedVersion}! Visit: https://alpacaplayhouse.com${buildResult.page_url || '/residents/'}`,
+        });
+      }
+
       // Send Claudero notification email to requester
       await sendClauderoEmail(request, buildResult, 'auto_merged', branchName, mainSha);
-      await notifyDiscord(`✅ **Feature Builder: deployed** — "${request.description.substring(0, 100)}"\nBranch: \`${branchName}\` → merged to main\nFiles: ${(buildResult.files_created || []).join(', ')}`);
+      await notifyDiscord(`✅ **Feature Builder: deployed** — "${request.description.substring(0, 100)}"\nBranch: \`${branchName}\` → merged to main${deployedVersion ? `\nVersion: ${deployedVersion}` : ''}\nFiles: ${(buildResult.files_created || []).join(', ')}`);
 
     } else {
       // BRANCH FOR REVIEW: needs human approval

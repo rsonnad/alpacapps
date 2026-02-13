@@ -492,6 +492,28 @@ window._tryAgain = tryAgain;
 function buildCompletionDetails(req) {
   const parts = [];
 
+  // Version info — show prominently at top for deployed features
+  if (req.deployed_version && req.deploy_decision === 'auto_merged') {
+    const currentVersion = getCurrentPageVersion();
+    const isUpToDate = currentVersion && currentVersion === req.deployed_version;
+    const versionStatusClass = isUpToDate ? 'appdev-version-current' : 'appdev-version-stale';
+    const versionStatusText = isUpToDate
+      ? 'You are on this version'
+      : `You are on ${currentVersion || 'an older version'} — hard refresh to get ${req.deployed_version}`;
+
+    parts.push(`<div class="appdev-detail-section appdev-version-section ${versionStatusClass}">
+      <h4>Deployed Version</h4>
+      <p><strong>${escapeHtml(req.deployed_version)}</strong></p>
+      <p class="appdev-version-status">${versionStatusText}</p>
+      ${!isUpToDate ? `<p class="appdev-refresh-hint">${getHardRefreshInstructions()}</p>` : ''}
+    </div>`);
+  } else if (req.deploy_decision === 'auto_merged' && !req.deployed_version) {
+    parts.push(`<div class="appdev-detail-section">
+      <h4>Deployed Version</h4>
+      <p style="color:var(--text-muted)">Version pending — CI is still assigning a version number.</p>
+    </div>`);
+  }
+
   if (req.build_summary) {
     parts.push(`<div class="appdev-detail-section">
       <h4>Summary</h4>
@@ -675,4 +697,36 @@ function formatDateTime(dateStr) {
     minute: '2-digit',
     hour12: true,
   });
+}
+
+function getCurrentPageVersion() {
+  const el = document.querySelector('[data-site-version]');
+  if (!el) return null;
+  const text = el.textContent.trim();
+  // Extract version pattern: vYYMMDD.NN H:MMa/p
+  const match = text.match(/v\d{6}\.\d+ \d+:\d+[ap]/);
+  return match ? match[0] : text;
+}
+
+function getHardRefreshInstructions() {
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+
+  // Detect iOS (iPhone/iPad)
+  if (/iPhone|iPad|iPod/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+    return '📱 <strong>iOS:</strong> Swipe down from the top of the page to refresh. If that doesn\'t work, go to Settings → Safari → Clear History and Website Data.';
+  }
+
+  // Detect Android
+  if (/Android/i.test(ua)) {
+    return '📱 <strong>Android:</strong> Tap the ⋮ menu → tap the refresh icon, or clear cache in Settings → Apps → Chrome → Storage → Clear Cache.';
+  }
+
+  // Detect Mac
+  if (/Mac/i.test(platform)) {
+    return '💻 <strong>Mac:</strong> Press <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to hard refresh.';
+  }
+
+  // Windows/Linux/other desktop
+  return '💻 <strong>Desktop:</strong> Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to hard refresh.';
 }
