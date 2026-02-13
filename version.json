@@ -1,12 +1,12 @@
 {
-  "version": "v260213.17 6:47a",
-  "release": 156,
-  "sha": "e502e54a",
-  "fullSha": "e502e54ab8c756edf12cca29962755668c672b75",
+  "version": "v260213.18 9:48a",
+  "release": 157,
+  "sha": "f3b971cb",
+  "fullSha": "f3b971cb3361229d312e92c0ab6f0c570c7a1e76",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 12:47:30+00",
-  "commits": [{"sha":"3328166b","message":"feat: add Gaden Gungru monastery donation demo page","author":"Claude"},{"sha":"9c800c7b","message":"chore: add merge instruction for donate page deploy","author":"Claude"},{"sha":"5ef41945","message":"fix: update merge instruction to use 'main' branch (not 'master')","author":"Claude"},{"sha":"e33aae70","message":"chore: add new deploy instruction (fresh name for DO session re-processing)","author":"Claude"},{"sha":"c744fdba","message":"chore: instruction to merge donate page to main and deploy","author":"Claude"},{"sha":"526b1ac4","message":"chore: instruction to unify all DO session activity in appdev tracking","author":"Claude"},{"sha":"e502e54a","message":"chore: urgent instruction to deploy donate page to main","author":"Claude"}]
+  "pushedAt": "2026-02-13 15:48:23+00",
+  "commits": [{"sha":"f3b971cb","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
