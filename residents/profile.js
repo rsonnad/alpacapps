@@ -37,7 +37,7 @@ async function loadProfile() {
   const [profileRes, ownedRes, driverRes] = await Promise.all([
     supabase
       .from('app_users')
-      .select('id, display_name, first_name, last_name, email, contact_email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, dietary_preferences, allergies, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
+      .select('id, display_name, first_name, last_name, email, contact_email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, telegram, facebook_url, links, nationality, location_base, dietary_preferences, allergies, privacy_settings, vehicle_limit, is_current_resident, person_id, slug')
       .eq('id', currentUser.id)
       .single(),
     supabase
@@ -149,6 +149,8 @@ function renderProfile() {
   document.getElementById('fieldPhone2').value = d.phone2 || '';
   document.getElementById('fieldWhatsApp').value = d.whatsapp || '';
   document.getElementById('fieldInstagram').value = d.instagram || '';
+  document.getElementById('fieldTelegram').value = d.telegram || '';
+  document.getElementById('fieldFacebook').value = d.facebook_url || '';
 
   // Dietary preferences
   const dietary = d.dietary_preferences || {};
@@ -343,6 +345,41 @@ function compressAvatar(file) {
 }
 
 // =============================================
+// SOCIAL MEDIA VALIDATION
+// =============================================
+
+function normalizeFacebookUrl(input) {
+  if (!input) return null;
+
+  // If it's already a full URL, validate and return
+  if (input.startsWith('http://') || input.startsWith('https://')) {
+    try {
+      const url = new URL(input);
+      if (url.hostname.includes('facebook.com') || url.hostname.includes('fb.com') || url.hostname.includes('fb.me')) {
+        return input;
+      }
+      // Invalid Facebook URL
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // If it looks like a username (no dots, slashes, etc.), convert to URL
+  const username = input.replace(/^@/, '').trim();
+  if (/^[a-zA-Z0-9._]+$/.test(username)) {
+    return `https://facebook.com/${username}`;
+  }
+
+  // Try to extract from partial URL (e.g., "facebook.com/username")
+  if (input.includes('facebook.com/') || input.includes('fb.com/') || input.includes('fb.me/')) {
+    return `https://${input.replace(/^(https?:\/\/)/, '')}`;
+  }
+
+  return null;
+}
+
+// =============================================
 // SAVE PROFILE
 // =============================================
 
@@ -358,6 +395,9 @@ async function saveProfile() {
     const sameAsLogin = document.getElementById('contactEmailSameAsLogin').checked;
     const contactEmail = sameAsLogin ? null : (document.getElementById('fieldContactEmail').value.trim() || null);
 
+    const telegram = document.getElementById('fieldTelegram').value.trim().replace(/^@/, '') || null;
+    const facebook = document.getElementById('fieldFacebook').value.trim() || null;
+
     const updates = {
       first_name: firstName,
       last_name: lastName,
@@ -372,6 +412,8 @@ async function saveProfile() {
       phone2: document.getElementById('fieldPhone2').value.trim() || null,
       whatsapp: document.getElementById('fieldWhatsApp').value.trim() || null,
       instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, '') || null,
+      telegram: telegram,
+      facebook_url: normalizeFacebookUrl(facebook),
       dietary_preferences: collectDietaryPreferences(),
       allergies: collectAllergies(),
       links: collectLinks(),
@@ -649,6 +691,8 @@ function getFormSnapshot() {
     phone2: document.getElementById('fieldPhone2').value.trim(),
     whatsapp: document.getElementById('fieldWhatsApp').value.trim(),
     instagram: document.getElementById('fieldInstagram').value.trim().replace(/^@/, ''),
+    telegram: document.getElementById('fieldTelegram').value.trim().replace(/^@/, ''),
+    facebook: document.getElementById('fieldFacebook').value.trim(),
     dietary: JSON.stringify(collectDietaryPreferences()),
     allergies: JSON.stringify(collectAllergies()),
     links: collectLinks(),
@@ -723,7 +767,7 @@ function bindEvents() {
 
   // Dirty tracking on all form fields
   const textFields = ['fieldFirstName', 'fieldLastName', 'fieldDisplayName', 'fieldContactEmail', 'fieldBio', 'fieldNationality',
-    'fieldLocationBase', 'fieldPhone', 'fieldPhone2', 'fieldWhatsApp', 'fieldInstagram'];
+    'fieldLocationBase', 'fieldPhone', 'fieldPhone2', 'fieldWhatsApp', 'fieldInstagram', 'fieldTelegram', 'fieldFacebook'];
   textFields.forEach(id => {
     document.getElementById(id).addEventListener('input', updateSaveButton);
   });
@@ -1470,6 +1514,8 @@ const PRIVACY_FIELDS = [
   { key: 'phone2', label: 'Phone 2' },
   { key: 'whatsapp', label: 'WhatsApp' },
   { key: 'instagram', label: 'Instagram' },
+  { key: 'telegram', label: 'Telegram' },
+  { key: 'facebook', label: 'Facebook' },
   { key: 'links', label: 'Links' },
 ];
 
