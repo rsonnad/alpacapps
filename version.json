@@ -1,12 +1,12 @@
 {
-  "version": "v260212.55 9:59p",
-  "release": 133,
-  "sha": "c6c2b692",
-  "fullSha": "c6c2b692dfcc212242004ca6b0442cf60b2e6533",
+  "version": "v260212.56 10:02p",
+  "release": 134,
+  "sha": "3c9d0c42",
+  "fullSha": "3c9d0c4243eae4187aeacde52fc2814e6ce5c772",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 03:59:39+00",
-  "commits": [{"sha":"c6c2b692","message":"Fix: remove duplicate escapeHtml in sonos.js that crashed the module","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 04:02:51+00",
+  "commits": [{"sha":"3c9d0c42","message":"Upgrade PAI from Gemini 2.5 Flash to 2.5 Pro with cost tracking + spend alerts","author":"Rahul Sonnad"}]
 }
