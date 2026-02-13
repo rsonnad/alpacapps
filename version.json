@@ -1,12 +1,12 @@
 {
-  "version": "v260212.53 9:52p",
-  "release": 131,
-  "sha": "d35dd58b",
-  "fullSha": "d35dd58bcc7a0774c5fb50f08b171aa65d994e0c",
+  "version": "v260212.54 9:53p",
+  "release": 132,
+  "sha": "e712d202",
+  "fullSha": "e712d202eb91a7b0adec272bb017a4bde2dd05bd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 03:52:00+00",
-  "commits": [{"sha":"d35dd58b","message":"Fix: Spotify search button unresponsive when Sonos API is down","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 03:53:00+00",
+  "commits": [{"sha":"e712d202","message":"fix: feature builder now allows modifying existing files","author":"Rahul Sonnad"}]
 }
