@@ -1131,7 +1131,7 @@ const PERM_GROUPS = [
     keys: ['view_cameras', 'use_camera_ptz', 'use_camera_talkback'], adminKey: null },
   { id: 'climate',  icon: '🌡️', label: 'Climate',  bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
     keys: ['view_climate', 'control_climate'], adminKey: 'admin_climate_settings' },
-  { id: 'laundry',  icon: '🧺', label: 'Laundry',  bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
+  { id: 'laundry',  icon: '🧺', label: 'Appliances',  bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
     keys: ['view_laundry'], adminKey: 'admin_laundry_settings' },
   { id: 'cars',     icon: '🚗', label: 'Vehicles', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
     keys: ['view_cars', 'control_cars'], adminKey: 'admin_cars_settings' },

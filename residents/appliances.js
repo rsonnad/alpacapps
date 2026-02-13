@@ -1,6 +1,7 @@
 /**
- * Laundry Page - LG washer/dryer monitoring with live status from lg_appliances table.
- * Poller on DO droplet writes appliance state; this page reads it every 15s.
+ * Appliances Page - LG washer/dryer monitoring + cooking appliance placeholders.
+ * Laundry: live status from lg_appliances table (poller on DO droplet writes state; this page reads every 15s).
+ * Cooking: placeholder cards for future API integrations (Anova Precision Oven).
  */
 
 import { supabase } from '../shared/supabase.js';
@@ -49,6 +50,53 @@ const DRYER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 </svg>`;
 
 const BELL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+
+const OVEN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="3" width="20" height="18" rx="2"/>
+  <rect x="5" y="10" width="14" height="8" rx="1"/>
+  <line x1="5" y1="7.5" x2="19" y2="7.5"/>
+  <circle cx="7" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+  <circle cx="10" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+  <circle cx="13" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+</svg>`;
+
+// =============================================
+// PLACEHOLDER APPLIANCES (no API integration yet)
+// =============================================
+const PLACEHOLDER_APPLIANCES = [
+  {
+    id: 'anova-oven',
+    name: 'Anova Precision Oven',
+    category: 'cooking',
+    icon: OVEN_ICON,
+    status: 'Not connected',
+    statusColor: 'var(--text-muted)',
+  },
+];
+
+// =============================================
+// SECTION COLLAPSE PERSISTENCE
+// =============================================
+const SECTION_COLLAPSE_KEY = 'appliances_collapsed_sections';
+
+function getSectionOpenState(sectionId) {
+  try {
+    const collapsed = JSON.parse(localStorage.getItem(SECTION_COLLAPSE_KEY) || '[]');
+    return !collapsed.includes(sectionId);
+  } catch { return true; }
+}
+
+function saveSectionState(sectionId, isOpen) {
+  try {
+    let collapsed = JSON.parse(localStorage.getItem(SECTION_COLLAPSE_KEY) || '[]');
+    if (isOpen) {
+      collapsed = collapsed.filter(id => id !== sectionId);
+    } else if (!collapsed.includes(sectionId)) {
+      collapsed.push(sectionId);
+    }
+    localStorage.setItem(SECTION_COLLAPSE_KEY, JSON.stringify(collapsed));
+  } catch {}
+}
 
 // =============================================
 // HELPERS
@@ -153,88 +201,143 @@ async function loadWatcherStatus() {
 // =============================================
 // RENDERING
 // =============================================
-function renderAppliances() {
-  const grid = document.getElementById('laundryGrid');
-  const empty = document.getElementById('laundryEmpty');
-  if (!grid) return;
+function renderLaundryCard(a) {
+  const state = getStateDisplay(a);
+  const s = a.last_state || {};
+  const progress = getProgressPercent(s);
+  const timeStr = formatTimeRemaining(s.remainHour, s.remainMinute);
+  const watching = watchedAppliances.has(a.id);
+  const icon = a.device_type === 'dryer' ? DRYER_ICON : WASHER_ICON;
+  const stateClass = state.isRunning ? 'running' : state.isDone ? 'done' : '';
 
-  if (!appliances.length) {
-    if (loadFailed) {
-      grid.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted);">
-        <p>Unable to load appliance data. Check your connection and try again.</p>
-      </div>`;
-      if (empty) empty.classList.add('hidden');
-    } else {
-      grid.innerHTML = '';
-      if (empty) empty.classList.remove('hidden');
-    }
-    return;
-  }
-  if (empty) empty.classList.add('hidden');
-
-  grid.innerHTML = appliances.map((a, i) => {
-    const state = getStateDisplay(a);
-    const s = a.last_state || {};
-    const progress = getProgressPercent(s);
-    const timeStr = formatTimeRemaining(s.remainHour, s.remainMinute);
-    const watching = watchedAppliances.has(a.id);
-    const icon = a.device_type === 'dryer' ? DRYER_ICON : WASHER_ICON;
-    const stateClass = state.isRunning ? 'running' : state.isDone ? 'done' : '';
-
-    return `
-      <div class="laundry-card ${stateClass}" data-appliance-id="${a.id}">
-        <div class="laundry-card__header">
-          <div class="laundry-card__icon">${icon}</div>
-          <div class="laundry-card__name">${a.name}</div>
-          <span class="laundry-card__status-dot" style="background:${state.color}"></span>
-        </div>
-
-        <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
-
-        ${state.isRunning ? `
-          <div class="laundry-card__progress">
-            <div class="laundry-card__progress-bar" style="width:${progress}%"></div>
-          </div>
-        ` : ''}
-
-        ${state.isRunning && timeStr ? `
-          <div class="laundry-card__time" data-remain-h="${s.remainHour || 0}" data-remain-m="${s.remainMinute || 0}">
-            ${timeStr} remaining
-          </div>
-        ` : ''}
-
-        ${state.isDone ? `
-          <div class="laundry-card__time laundry-card__time--done">
-            Cycle complete
-          </div>
-        ` : ''}
-
-        <div class="laundry-card__data-grid">
-          <div class="laundry-data-row">
-            <span class="laundry-data-label">Remote Control</span>
-            <span class="laundry-data-value">${s.remoteControlEnabled ? 'Enabled' : 'Disabled'}</span>
-          </div>
-          ${a.model ? `
-          <div class="laundry-data-row">
-            <span class="laundry-data-label">Model</span>
-            <span class="laundry-data-value">${a.model}</span>
-          </div>
-          ` : ''}
-        </div>
-
-        <div class="laundry-card__controls">
-          <button class="laundry-watch-btn ${watching ? 'active' : ''}"
-                  onclick="window._toggleWatch(${a.id})"
-                  title="${watching ? 'Stop watching' : 'Get notified when this cycle ends'}">
-            ${BELL_ICON}
-            <span>${watching ? 'Watching' : 'Notify When Done'}</span>
-          </button>
-        </div>
-
-        <div class="laundry-card__sync-time">${formatSyncTime(a.last_synced_at)}</div>
+  return `
+    <div class="laundry-card ${stateClass}" data-appliance-id="${a.id}">
+      <div class="laundry-card__header">
+        <div class="laundry-card__icon">${icon}</div>
+        <div class="laundry-card__name">${a.name}</div>
+        <span class="laundry-card__status-dot" style="background:${state.color}"></span>
       </div>
-    `;
-  }).join('');
+
+      <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
+
+      ${state.isRunning ? `
+        <div class="laundry-card__progress">
+          <div class="laundry-card__progress-bar" style="width:${progress}%"></div>
+        </div>
+      ` : ''}
+
+      ${state.isRunning && timeStr ? `
+        <div class="laundry-card__time" data-remain-h="${s.remainHour || 0}" data-remain-m="${s.remainMinute || 0}">
+          ${timeStr} remaining
+        </div>
+      ` : ''}
+
+      ${state.isDone ? `
+        <div class="laundry-card__time laundry-card__time--done">
+          Cycle complete
+        </div>
+      ` : ''}
+
+      <div class="laundry-card__data-grid">
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Remote Control</span>
+          <span class="laundry-data-value">${s.remoteControlEnabled ? 'Enabled' : 'Disabled'}</span>
+        </div>
+        ${a.model ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Model</span>
+          <span class="laundry-data-value">${a.model}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="laundry-card__controls">
+        <button class="laundry-watch-btn ${watching ? 'active' : ''}"
+                onclick="window._toggleWatch(${a.id})"
+                title="${watching ? 'Stop watching' : 'Get notified when this cycle ends'}">
+          ${BELL_ICON}
+          <span>${watching ? 'Watching' : 'Notify When Done'}</span>
+        </button>
+      </div>
+
+      <div class="laundry-card__sync-time">${formatSyncTime(a.last_synced_at)}</div>
+    </div>
+  `;
+}
+
+function renderPlaceholderCard(item) {
+  return `
+    <div class="laundry-card placeholder-card" data-appliance-id="${item.id}">
+      <div class="laundry-card__header">
+        <div class="laundry-card__icon">${item.icon}</div>
+        <div class="laundry-card__name">${item.name}</div>
+        <span class="laundry-card__status-dot" style="background:${item.statusColor}"></span>
+      </div>
+      <div class="laundry-card__state" style="color:${item.statusColor}">${item.status}</div>
+      <div class="laundry-card__data-grid">
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Integration</span>
+          <span class="laundry-data-value">Coming soon</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSections() {
+  const container = document.getElementById('applianceSections');
+  if (!container) return;
+
+  // Laundry section content
+  const laundryOpen = getSectionOpenState('laundry');
+  let laundryCardsHtml;
+  if (appliances.length > 0) {
+    laundryCardsHtml = `<div class="laundry-grid">${appliances.map(renderLaundryCard).join('')}</div>`;
+  } else if (loadFailed) {
+    laundryCardsHtml = `<div style="text-align:center;padding:2rem;color:var(--text-muted);">
+      <p>Unable to load appliance data. Check your connection and try again.</p>
+    </div>`;
+  } else {
+    laundryCardsHtml = `<p style="text-align:center;color:var(--text-muted);padding:2rem;">
+      No laundry appliances configured yet. An admin needs to set up the LG ThinQ connection in Settings below.
+    </p>`;
+  }
+
+  // Cooking section content
+  const cookingOpen = getSectionOpenState('cooking');
+  const cookingItems = PLACEHOLDER_APPLIANCES.filter(a => a.category === 'cooking');
+  const cookingCardsHtml = `<div class="laundry-grid">${cookingItems.map(renderPlaceholderCard).join('')}</div>`;
+
+  container.innerHTML = `
+    <details class="appliance-section" ${laundryOpen ? 'open' : ''} data-section="laundry">
+      <summary class="appliance-section__header">
+        <span class="appliance-section__chevron"></span>
+        <h3>Laundry</h3>
+        <span class="appliance-section__count">${appliances.length} appliance${appliances.length !== 1 ? 's' : ''}</span>
+      </summary>
+      <div class="appliance-section__body">
+        ${laundryCardsHtml}
+      </div>
+    </details>
+
+    <details class="appliance-section" ${cookingOpen ? 'open' : ''} data-section="cooking">
+      <summary class="appliance-section__header">
+        <span class="appliance-section__chevron"></span>
+        <h3>Cooking</h3>
+        <span class="appliance-section__count">${cookingItems.length} appliance${cookingItems.length !== 1 ? 's' : ''}</span>
+      </summary>
+      <div class="appliance-section__body">
+        ${cookingCardsHtml}
+      </div>
+    </details>
+  `;
+
+  // Collapse state persistence
+  container.querySelectorAll('.appliance-section').forEach(details => {
+    details.addEventListener('toggle', () => {
+      saveSectionState(details.dataset.section, details.open);
+    });
+  });
 }
 
 // =============================================
@@ -259,7 +362,7 @@ window._toggleWatch = async function(applianceId) {
       watchedAppliances.delete(applianceId);
       showToast('Notification cancelled', 'info');
     }
-    renderAppliances();
+    renderSections();
   } catch (err) {
     showToast(`Failed: ${err.message}`, 'error');
   }
@@ -325,7 +428,7 @@ function stopCountdown() {
 async function refreshFromDB() {
   await loadAppliances();
   await loadWatcherStatus();
-  renderAppliances();
+  renderSections();
 }
 
 // =============================================

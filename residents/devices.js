@@ -16,7 +16,7 @@ const CATEGORIES = [
   { id: 'music',    label: 'Music',          href: 'sonos.html',    linkLabel: 'Sonos Controls' },
   { id: 'climate',  label: 'Climate',        href: 'climate.html',  linkLabel: 'Climate Controls' },
   { id: 'cars',     label: 'Vehicles',       href: 'cars.html',     linkLabel: 'Vehicle Controls' },
-  { id: 'laundry',  label: 'Laundry',        href: 'laundry.html',  linkLabel: 'Laundry Status' },
+  { id: 'laundry',  label: 'Appliances',      href: 'appliances.html',  linkLabel: 'Appliance Status' },
 ];
 
 /* ── Helpers ── */

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <title>Appliances - AlpacAPPs Residents</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="../spaces/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="residents.css?v=5">
+  <script type="module" src="../shared/version-info.js"></script>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access resident features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260213.08 1:22a</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a class="context-switcher-btn active">Resident</a>
+      <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content appliances-page">
+
+      <!-- Appliance Sections (rendered by appliances.js) -->
+      <div id="applianceSections">
+        <!-- Sections rendered dynamically: Laundry, Cooking -->
+      </div>
+
+      <!-- Admin Settings (admin only) -->
+      <section class="section admin-only" id="lgSettingsSection" style="display:none;">
+        <div class="section-header">
+          <h2>LG ThinQ Settings</h2>
+        </div>
+        <div class="section-body">
+          <div id="lgSettingsContent"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../shared/instant-chrome.js"></script>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="appliances.js"></script>
+</body>
+</html>

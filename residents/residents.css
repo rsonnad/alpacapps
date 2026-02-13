@@ -3881,6 +3881,65 @@ span.sonos-library-item__star.starred {
   padding-top: 0.35rem;
 }
 
+/* ===== APPLIANCE SECTION HEADERS ===== */
+.appliance-section {
+  margin-bottom: 0.75rem;
+}
+
+.appliance-section__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.appliance-section__header::-webkit-details-marker {
+  display: none;
+}
+
+.appliance-section__header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.appliance-section__count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.appliance-section__chevron {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.appliance-section[open] .appliance-section__chevron {
+  transform: rotate(90deg);
+}
+
+.appliance-section__body {
+  padding: 0 0 0.5rem;
+}
+
+/* ===== PLACEHOLDER CARD ===== */
+.placeholder-card {
+  opacity: 0.6;
+  border-style: dashed !important;
+}
+
+.placeholder-card:hover {
+  opacity: 0.8;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   /* Header: tighten up for mobile */

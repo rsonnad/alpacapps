@@ -32,7 +32,8 @@ const DEVICE_PAGE_PATHS = new Set([
   'sonos.html', 'sonos',
   'cameras.html', 'cameras',
   'climate.html', 'climate',
-  'laundry.html', 'laundry',
+  'appliances.html', 'appliances',
+  'laundry.html', 'laundry', // redirect stub compat
   'cars.html', 'cars',
   'sensors.html', 'sensors',
 ]);
@@ -43,7 +44,7 @@ const DEVICE_SUBTABS = [
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
   { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
-  { id: 'laundry', label: 'Laundry', href: 'laundry.html', permission: 'view_laundry' },
+  { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry' },
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
   { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras' },
 ];
@@ -168,8 +169,10 @@ function renderDeviceSubTabNav(activeTab, authState) {
     cameras: 'cameras',
     'climate.html': 'climate',
     climate: 'climate',
-    'laundry.html': 'laundry',
-    laundry: 'laundry',
+    'appliances.html': 'appliances',
+    appliances: 'appliances',
+    'laundry.html': 'appliances',
+    laundry: 'appliances',
     'cars.html': 'cars',
     cars: 'cars',
     'sensors.html': 'sensors',
