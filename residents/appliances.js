@@ -27,6 +27,7 @@ let currentUserRole = null;
 let currentAppUserId = null;
 let deviceScope = null;
 let loadFailed = false; // distinguish query error from legitimately empty
+let showAdminSettings = false;
 
 // =============================================
 // SVG ICONS
@@ -317,6 +318,12 @@ function renderSections() {
       </summary>
       <div class="appliance-section__body">
         ${laundryCardsHtml}
+        ${showAdminSettings ? `
+        <section class="section" style="margin-top:1.5rem;">
+          <div class="section-header"><h2>LG ThinQ Settings</h2></div>
+          <div class="section-body"><div id="lgSettingsContent"></div></div>
+        </section>
+        ` : ''}
       </div>
     </details>
 
@@ -505,14 +512,14 @@ document.addEventListener('DOMContentLoaded', () => {
       currentAppUserId = authState.appUser?.id;
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
 
-      // Show admin settings
-      if (hasPermission('admin_laundry_settings')) {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-        await renderAdminSettings();
-      }
+      // Enable admin settings inside Laundry section
+      showAdminSettings = hasPermission('admin_laundry_settings');
 
       // Initial load + polling with circuit breaker
       await refreshFromDB();
+
+      // Render admin settings after sections are in DOM
+      if (showAdminSettings) await renderAdminSettings();
       poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);
       poll.start();
       startCountdown();
