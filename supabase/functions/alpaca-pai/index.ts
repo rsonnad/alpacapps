@@ -1105,6 +1105,22 @@ const TOOL_DECLARATIONS = [
       required: ["amount", "description"],
     },
   },
+  {
+    name: "web_search",
+    description:
+      "Search the web for current, accurate information. Use this when: (a) someone asks how to do something technical (connect devices, stream audio, etc.), (b) stored documents don't fully answer the question, (c) you need current product instructions or troubleshooting steps. ALWAYS search before guessing technical details.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "The search query. Be specific — include product names, model numbers, and the exact question.",
+        },
+      },
+      required: ["query"],
+    },
+  },
 ];
 
 // =============================================
@@ -2217,6 +2233,51 @@ async function executeToolCall(
         return `OK: Payment link created for $${args.amount} — "${args.description}"\nURL: ${result.url}\nShare this link with the payer.`;
       }
 
+      case "web_search": {
+        const query = args.query;
+        if (!query) return "Error: search query is required.";
+
+        const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+        if (!GEMINI_API_KEY) return "Error: search not configured.";
+
+        const searchUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const searchResp = await fetch(searchUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: query }] }],
+            tools: [{ google_search: {} }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
+          }),
+        });
+
+        if (!searchResp.ok) {
+          const err = await searchResp.json().catch(() => ({}));
+          console.error("Web search error:", JSON.stringify(err));
+          return `Search failed: ${err?.error?.message || searchResp.status}`;
+        }
+
+        const searchResult = await searchResp.json();
+        const searchText = searchResult.candidates?.[0]?.content?.parts
+          ?.filter((p: any) => p.text)
+          ?.map((p: any) => p.text)
+          ?.join("") || "No results found.";
+
+        const supabaseAdmin2 = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        supabaseAdmin2.from("api_usage_log").insert({
+          vendor: "gemini",
+          category: "pai_web_search",
+          endpoint: "generateContent+google_search",
+          input_tokens: searchResult.usageMetadata?.promptTokenCount || 0,
+          output_tokens: searchResult.usageMetadata?.candidatesTokenCount || 0,
+          estimated_cost_usd: 0.035,
+          metadata: { model: "gemini-2.5-flash", query },
+          app_user_id: scope.appUserId || null,
+        }).then(() => {});
+
+        return `Web search results for "${query}":\n${searchText}`;
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -2249,10 +2310,7 @@ async function callGemini(
     body.systemInstruction = { parts: [{ text: systemInstruction }] };
   }
   if (tools) {
-    body.tools = [
-      { functionDeclarations: tools },
-      { google_search: {} },
-    ];
+    body.tools = [{ functionDeclarations: tools }];
   }
 
   let response: Response | null = null;
