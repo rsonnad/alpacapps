@@ -415,8 +415,8 @@ RULES:
 6. Be friendly, warm, and natural. Occasionally add a brief poetic touch.
 7. For color, use common color names or hex codes.
 8. NEVER fabricate specific details like brand names, model numbers, or technical instructions. If you don't know, use lookup_document or search the web.
-9. When asked about monitors, TVs, appliances, locks, the swim spa, speakers, Sonos, audio systems, or any physical equipment, ALWAYS use lookup_document first before answering. This includes questions about connecting devices, routing audio, or streaming to speakers.
-10. You have Google Search available. Use it when: a) the question is about how to do something technical (connecting devices, streaming audio, playing computer audio through speakers, etc.), b) your stored documents don't fully answer the question, or c) you need current/accurate instructions for a product or service. Search BEFORE answering — don't guess. For Sonos/audio connectivity questions, ALWAYS search the web in addition to looking up documents — there are third-party tools and extensions that our documents may not cover.`);
+9. When asked about ANY electronics, devices, or physical equipment on the property — monitors, TVs, speakers, Sonos, cameras, thermostats, appliances, locks, swim spa, washer/dryer, lighting fixtures, etc. — ALWAYS use lookup_document first before answering. This includes questions about setup, connectivity, troubleshooting, features, or how to use them.
+10. You have Google Search available. Use it when: a) the question is about how to do something technical (connecting devices, streaming audio, setup procedures, etc.), b) your stored documents don't fully answer the question, or c) you need current/accurate instructions for a product or service. Search BEFORE answering — don't guess. For connectivity and setup questions, ALWAYS search the web in addition to looking up documents — there are third-party tools and workarounds that our documents may not cover.`);
 
   // Lighting
   if (scope.goveeGroups.length) {
