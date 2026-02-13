@@ -136,6 +136,30 @@ $PSQL "$DB_URL" -t -A --no-psqlrc -c "
   UPDATE site_config SET version = '$(sql_esc "$VER")', updated_at = now() WHERE id = 1;
 " >/dev/null 2>&1 || true
 
+# ── 1b) backfill deployed_version for feature requests whose commit is in this push ──
+# When a review branch is merged to main, the feature's commit_sha appears in the push range.
+# Match those and set deployed_version so the App Dev page shows the version.
+if [ -n "$COMMITS_FOR_DB" ] && [ "$COMMITS_FOR_DB" != "[]" ]; then
+  SHAS=$(echo "$COMMITS_FOR_DB" | python3 -c "
+import sys, json
+commits = json.loads(sys.stdin.read())
+for c in commits:
+    print(c['sha'])
+" 2>/dev/null || true)
+  if [ -n "$SHAS" ]; then
+    while IFS= read -r sha; do
+      [ -z "$sha" ] && continue
+      $PSQL "$DB_URL" -t -A --no-psqlrc -c "
+        UPDATE feature_requests
+        SET deployed_version = '$(sql_esc "$VER")',
+            status = CASE WHEN status = 'review' THEN 'completed' ELSE status END
+        WHERE commit_sha = '$(sql_esc "$sha")'
+          AND deployed_version IS NULL;
+      " >/dev/null 2>&1 || true
+    done <<< "$SHAS"
+  fi
+fi
+
 # ── 2) rewrite version string in all HTML files ─────────────────────
 # Strategy: target spans by attribute/class name (robust even if content is empty).
 IS_GNU=false; sed --version 2>/dev/null | grep -q 'GNU' && IS_GNU=true

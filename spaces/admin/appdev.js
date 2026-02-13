@@ -297,10 +297,61 @@ async function loadHistory() {
 
     if (error) throw error;
 
+    // Backfill deployed_version for requests that were merged but version wasn't captured
+    await backfillDeployedVersions(data || []);
+
     renderHistory(data || []);
     updateActiveBuild(data || []);
   } catch (err) {
     console.error('Failed to load history:', err);
+  }
+}
+
+/**
+ * For requests with commit_sha but no deployed_version, check release_events
+ * to see if the commit was included in a push to main (i.e., the branch was merged).
+ * If found, backfill the deployed_version in the DB and update the local data.
+ */
+async function backfillDeployedVersions(requests) {
+  const needsBackfill = requests.filter(r =>
+    r.commit_sha && !r.deployed_version &&
+    ['review', 'completed'].includes(r.status)
+  );
+  if (!needsBackfill.length) return;
+
+  try {
+    // Get recent release events that might contain these commits
+    const { data: events } = await supabase
+      .from('release_events')
+      .select('display_version, metadata')
+      .order('seq', { ascending: false })
+      .limit(50);
+
+    if (!events?.length) return;
+
+    for (const req of needsBackfill) {
+      // Check if the commit_sha appears in any release event's commit_summaries
+      for (const evt of events) {
+        const summaries = evt.metadata?.commit_summaries || [];
+        const found = summaries.some(c => c.sha === req.commit_sha);
+        if (found) {
+          // Backfill in DB
+          await supabase
+            .from('feature_requests')
+            .update({
+              deployed_version: evt.display_version,
+              status: req.status === 'review' ? 'completed' : req.status,
+            })
+            .eq('id', req.id);
+          // Update local data
+          req.deployed_version = evt.display_version;
+          if (req.status === 'review') req.status = 'completed';
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Version backfill failed:', err);
   }
 }
 
@@ -359,8 +410,8 @@ function renderHistory(requests) {
     const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
     const retryLabel = latestStatus === 'failed' ? '↻ Try Again' : '↻ Modify';
 
-    // Version badge for completed+deployed builds
-    const versionBadge = latestStatus === 'completed' && latest.deployed_version
+    // Version badge for deployed builds (completed or review that was merged)
+    const versionBadge = latest.deployed_version
       ? `<span class="appdev-version-badge">${escapeHtml(latest.deployed_version)}</span>` : '';
 
     // Active progress bar (replaces the old separate banner)
@@ -509,7 +560,7 @@ function buildCompletionDetails(req) {
   const parts = [];
 
   // Version info — show prominently at top for deployed features
-  if (req.deployed_version && req.deploy_decision === 'auto_merged') {
+  if (req.deployed_version) {
     const currentVersion = getCurrentPageVersion();
     const isUpToDate = currentVersion && currentVersion === req.deployed_version;
     const versionStatusClass = isUpToDate ? 'appdev-version-current' : 'appdev-version-stale';
@@ -523,7 +574,7 @@ function buildCompletionDetails(req) {
       <p class="appdev-version-status">${versionStatusText}</p>
       ${!isUpToDate ? `<p class="appdev-refresh-hint">${getHardRefreshInstructions()}</p>` : ''}
     </div>`);
-  } else if (req.deploy_decision === 'auto_merged' && !req.deployed_version) {
+  } else if (req.deploy_decision === 'auto_merged') {
     parts.push(`<div class="appdev-detail-section">
       <h4>Deployed Version</h4>
       <p style="color:var(--text-muted)">Version pending — CI is still assigning a version number.</p>
@@ -616,6 +667,13 @@ function buildReviewDetails(req) {
     parts.push(`<div class="appdev-detail-section">
       <h4>Branch</h4>
       <p><code>${escapeHtml(req.branch_name)}</code> &mdash; <a href="${compareUrl}" target="_blank">Review on GitHub</a></p>
+    </div>`);
+  }
+
+  // Show "Not yet deployed" hint for unmerged review builds
+  if (!req.deployed_version) {
+    parts.push(`<div class="appdev-detail-section">
+      <p style="color:var(--text-muted)">Not yet deployed — merge the branch to main to deploy.</p>
     </div>`);
   }
 
