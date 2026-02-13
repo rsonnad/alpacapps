@@ -1,12 +1,12 @@
 {
-  "version": "v260212.57 10:09p",
-  "release": 135,
-  "sha": "9b445523",
-  "fullSha": "9b445523879721053b938152f2cd5b50c2b1f339",
+  "version": "v260212.58 10:24p",
+  "release": 136,
+  "sha": "072ba81d",
+  "fullSha": "072ba81d9def6b003145eadfcfd7882200f7139f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 04:09:16+00",
-  "commits": [{"sha":"9b445523","message":"Unify active build banner with history card on app dev page","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 04:24:24+00",
+  "commits": [{"sha":"072ba81d","message":"Fix PAI hallucinating equipment details (e.g. fake BenQ monitor)","author":"Rahul Sonnad"}]
 }
