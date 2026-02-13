@@ -153,18 +153,44 @@ async function waitForDeployedVersion(pushSha, requestId) {
 
 /**
  * Evaluate risk of changes. Returns { safe: boolean, reasons: string[] }
- * Phase 1: Hard rules based on git diff
- * Phase 2: Claude Code's self-assessment
+ *
+ * Three tiers:
+ *   1. BLOCKED — forbidden files (auth modules, edge functions, CI). Fail the build entirely.
+ *   2. NEEDS REVIEW — modified existing files, deleted files, or Claude flagged risk. Branch for review.
+ *   3. AUTO-MERGE — only new files in safe directories, Claude says auto_merge.
  */
 function evaluateRisk(diffFiles, claudeRiskAssessment) {
   const reasons = [];
   let safe = true;
+  let blocked = false;
 
-  // Phase 1: Hard rules
   const modified = diffFiles.filter(f => f.status === 'M');
   const deleted = diffFiles.filter(f => f.status === 'D');
   const allFiles = diffFiles.map(f => f.file);
 
+  // Tier 1: BLOCKED — files that must NEVER be touched
+  const forbiddenPatterns = [
+    'shared/auth.js',
+    'shared/supabase.js',
+    'shared/resident-shell.js',
+    'shared/admin-shell.js',
+    'shared/pai-widget.js',
+    'supabase/functions/',
+    '.github/',
+    'scripts/bump-version',
+    'version.json',
+    'CLAUDE.md',
+    'CLAUDE.local.md',
+  ];
+  const forbiddenFiles = allFiles.filter(f =>
+    forbiddenPatterns.some(p => f === p || f.startsWith(p))
+  );
+  if (forbiddenFiles.length > 0) {
+    blocked = true;
+    reasons.push(`BLOCKED — touched forbidden files: ${forbiddenFiles.join(', ')}`);
+  }
+
+  // Tier 2: NEEDS REVIEW — modifications to existing files
   if (modified.length > 0) {
     safe = false;
     reasons.push(`Modified existing files: ${modified.map(f => f.file).join(', ')}`);
@@ -175,27 +201,8 @@ function evaluateRisk(diffFiles, claudeRiskAssessment) {
     reasons.push(`Deleted files: ${deleted.map(f => f.file).join(', ')}`);
   }
 
-  // Check for files outside residents/
-  const outsideResidents = allFiles.filter(f =>
-    !f.startsWith('residents/') ||
-    f.startsWith('residents/residents.css') // don't modify shared resident CSS
-  );
-  // Exclude the CSS check for new files only
-  const dangerousOutside = allFiles.filter(f =>
-    f.startsWith('shared/') ||
-    f.startsWith('supabase/') ||
-    f.startsWith('spaces/') ||
-    f.startsWith('scripts/') ||
-    f.startsWith('.github/')
-  );
-
-  if (dangerousOutside.length > 0) {
-    safe = false;
-    reasons.push(`Touched protected directories: ${dangerousOutside.join(', ')}`);
-  }
-
-  // Phase 2: Claude's self-assessment (only if still safe after hard rules)
-  if (safe && claudeRiskAssessment) {
+  // Phase 2: Claude's self-assessment
+  if (claudeRiskAssessment) {
     if (claudeRiskAssessment.decision === 'needs_review') {
       safe = false;
       reasons.push(`Claude assessment: ${claudeRiskAssessment.reason || 'needs review'}`);
@@ -214,8 +221,7 @@ function evaluateRisk(diffFiles, claudeRiskAssessment) {
     }
   }
 
-  // If no assessment and still safe, that's fine — new standalone pages are safe by default
-  return { safe, reasons };
+  return { safe, blocked, reasons };
 }
 
 // ============================================
@@ -388,156 +394,68 @@ async function buildPrompt(request) {
 
   // Fallback to hardcoded prompt
   log('info', 'Using hardcoded fallback prompt');
-  const spec = request.structured_spec || {};
-  const pageName = spec.page_name || 'auto-determine from description';
-  const dataSources = (spec.data_sources || []).join(', ') || 'determine from description';
 
-  return `You are building a feature for Alpaca Playhouse, a property management web app.
-The site is deployed to GitHub Pages (static HTML/JS, no build step). Backend is Supabase.
+  return `You are Claudero, an AI developer for Alpaca Playhouse — a property management web app hosted on GitHub Pages (static HTML/JS, no build step) with a Supabase backend.
 
 FEATURE REQUEST from ${request.requester_name} (${request.requester_role}):
 ${request.description}
 ${(request.attachments || []).length ? '\nATTACHED FILES (' + request.attachments.length + '):\n' + request.attachments.map((a, i) => `${i + 1}. ${a.name} (${a.type}): ${a.url}`).join('\n') : ''}
-Suggested page name: ${pageName}
-Data sources: ${dataSources}
 
-=== ABSOLUTE SECURITY RULES (NEVER VIOLATE) ===
+=== SECURITY RULES (NEVER VIOLATE) ===
 
-1. Every page MUST use the existing auth system. Import and call:
-   import { supabase } from '../shared/supabase.js';
-   import { initResidentPage, showToast } from '../shared/resident-shell.js';
-
-   initResidentPage({
-     activeTab: null,
-     requiredRole: 'resident',
-     onReady: async (authState) => {
-       // All page logic goes here — only runs after auth succeeds
-     }
-   });
-
+1. Pages MUST use the existing auth system (initResidentPage or initAdminPage)
 2. NEVER bypass, weaken, or circumvent authentication or authorization
 3. NEVER hardcode API keys, tokens, passwords, or secrets
 4. NEVER expose admin-only data to non-admin users
 5. NEVER make direct API calls to external services — use Supabase data only
-6. Use the Supabase client from shared/supabase.js (it handles auth automatically via RLS)
 
 === FILE RULES ===
 
-7. STRONGLY PREFER creating new files in the residents/ directory
-8. If you must modify existing files, be minimal and careful — modifications trigger team review
-9. NEVER modify shared modules (auth.js, supabase.js, resident-shell.js, pai-widget.js)
-10. NEVER modify edge functions or anything in supabase/functions/
-11. NEVER modify anything in shared/, scripts/, spaces/, or .github/
-12. You MUST create at minimum: one .html file and one .js file
+6. For NEW features: prefer creating new files in residents/ or spaces/admin/
+7. For MODIFICATIONS to existing pages: edit the relevant existing files directly — this is expected and encouraged when the request asks to fix or improve something that already exists
+8. NEVER modify core auth modules: auth.js, supabase.js, resident-shell.js, admin-shell.js, pai-widget.js
+9. NEVER modify edge functions (supabase/functions/)
+10. NEVER modify CI/deploy files (.github/, scripts/bump-version*, version.json)
+11. Keep changes minimal and focused — only change what the request asks for
 
 === CONVENTIONS ===
 
-13. Vanilla HTML/CSS/JavaScript only (NO React, NO frameworks, NO build tools)
-14. ES modules (import/export)
-15. HTML structure — follow this exact template:
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>PAGE TITLE - AlpacAPPs Residents</title>
-      <link rel="icon" type="image/png" href="../favicon.png">
-      <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-      <link rel="stylesheet" href="../spaces/styles.css?v=5">
-      <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
-      <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
-      <link rel="stylesheet" href="residents.css?v=5">
-    </head>
-    <body>
-      <div id="toastContainer" class="toast-container"></div>
-      <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div><p>Loading...</p>
-      </div>
-      <div id="unauthorizedOverlay" class="loading-overlay hidden">
-        <div class="unauthorized-card">
-          <h2>Access Denied</h2>
-          <p>Your account is not authorized to access resident features.</p>
-          <div class="unauthorized-actions">
-            <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
-            <button id="signOutBtn" class="btn-secondary">Sign Out</button>
-          </div>
-        </div>
-      </div>
-      <div id="appContent" class="hidden">
-        <header>
-          <div class="header-left">
-            <a href="https://alpacaplayhouse.com" class="header-logo">
-              <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="AlpacAPPs" class="header-logo__icon">
-              <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="AlpacAPPs" class="header-logo__wordmark">
-            </a>
-            <span title="Site version" style="font-size:0.75rem;color:var(--text-muted);font-weight:500;cursor:pointer;align-self:center;margin-left:-0.25rem">v000000.00</span>
-            <span id="roleBadge" class="role-badge">Staff</span>
-          </div>
-          <div class="header-controls">
-            <span id="userInfo" class="user-info"></span>
-            <button id="headerSignOutBtn" class="btn-secondary">Sign Out</button>
-          </div>
-        </header>
-        <div class="context-switcher hidden" id="contextSwitcher">
-          <a class="context-switcher-btn active">Resident</a>
-          <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
-        </div>
-        <div class="manage-tabs" id="tabNav"></div>
-        <main class="manage-content">
-          <!-- YOUR CONTENT HERE -->
-        </main>
-      </div>
-      <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
-      <script type="module" src="YOUR_JS_FILE.js"></script>
-    </body>
-    </html>
-
-16. Use version placeholder: v000000.00 (the bump script will replace it)
-17. CSS: use existing variables from the stylesheets:
-    --bg-card, --border, --radius, --shadow, --text-muted, --available, --occupied
-18. Use showToast(message, type) for notifications, not alert()
-19. For polling data: use setInterval at 30s, pause when document.hidden:
-    let pollInterval;
-    function startPolling() { pollInterval = setInterval(loadData, 30000); }
-    function stopPolling() { clearInterval(pollInterval); }
-    document.addEventListener('visibilitychange', () => {
-      document.hidden ? stopPolling() : (loadData(), startPolling());
-    });
-    startPolling();
+12. Vanilla HTML/CSS/JavaScript only — NO frameworks, NO build tools
+13. ES modules (import/export)
+14. CSS: use existing variables (--bg-card, --border, --radius, --shadow, --text-muted)
+15. Use showToast(message, type) for notifications, never alert()
 
 === DO NOT ===
 
-20. Do NOT modify the tab navigation array (that's in resident-shell.js, a shared module)
-21. Do NOT run any git commands or update the version number
-22. Do NOT read CLAUDE.md or CLAUDE.local.md
-23. Do NOT install packages or run npm commands
-24. Do NOT create edge functions
+16. Do NOT run git commands or update version numbers
+17. Do NOT read CLAUDE.md or CLAUDE.local.md
+18. Do NOT install packages or run npm commands
+19. Do NOT create edge functions
 
-=== OUTPUT (required JSON format) ===
+=== OUTPUT FORMAT (REQUIRED JSON) ===
 
-You MUST output a JSON object as your final response with these keys:
+You MUST output a JSON object as your FINAL response with these keys:
+
 {
-  "summary": "What you built (1-2 sentences)",
-  "files_created": ["residents/my-page.html", "residents/my-page.js"],
-  "files_modified": [],
-  "page_url": "/residents/my-page.html",
+  "summary": "What you built or changed (1-2 sentences)",
+  "design_outline": "Brief description of the approach (2-4 sentences)",
+  "testing_instructions": "Step-by-step instructions for testing",
+  "files_created": [],
+  "files_modified": ["spaces/admin/appdev.js"],
+  "page_url": "/spaces/admin/appdev.html",
   "risk_assessment": {
-    "decision": "auto_merge",
-    "reason": "New standalone page, reads only from existing Supabase tables, no changes to existing UI",
-    "touches_existing_functionality": false,
-    "could_confuse_users": false,
-    "removes_or_changes_features": false
+    "decision": "auto_merge or needs_review",
+    "reason": "Explanation of risk level",
+    "touches_existing_functionality": true/false,
+    "could_confuse_users": true/false,
+    "removes_or_changes_features": true/false
   },
-  "notes": "Any caveats or things the admin should know"
+  "notes": "Any caveats"
 }
 
-RISK ASSESSMENT GUIDELINES:
-- "auto_merge": ONLY if you created new files exclusively, didn't touch any existing pages,
-  the feature is purely additive, and there's zero risk of confusing users or breaking anything.
-  A new standalone page that reads from existing data is a good example of auto_merge.
-- "needs_review": If you modified ANY existing file, if the feature overlaps with existing UI,
-  if it could be confusing to users, if you're unsure about anything, or if the change
-  removes/alters existing behavior. WHEN IN DOUBT, CHOOSE needs_review.`;
+RISK ASSESSMENT:
+- "auto_merge": For new standalone files, OR trivial CSS/layout fixes that cannot break functionality.
+- "needs_review": If you changed business logic, could confuse users, or are unsure. WHEN IN DOUBT, CHOOSE needs_review.`;
 }
 
 async function runClaudeCode(request) {
@@ -738,8 +656,23 @@ async function processFeatureRequest(request) {
     const diffFiles = await gitDiffNameStatus();
     log('info', 'Git diff analysis', { files: diffFiles });
 
-    const { safe, reasons } = evaluateRisk(diffFiles, buildResult.risk_assessment);
-    log('info', 'Risk evaluation', { safe, reasons });
+    const { safe, blocked, reasons } = evaluateRisk(diffFiles, buildResult.risk_assessment);
+    log('info', 'Risk evaluation', { safe, blocked, reasons });
+
+    // Hard block: forbidden files were touched — fail the build
+    if (blocked) {
+      // Clean up the working tree
+      await execAsync('git checkout -- . && git clean -fd', { cwd: REPO_DIR });
+      await updateProgress(request.id, {
+        status: 'failed',
+        build_summary: buildResult.summary,
+        error_message: `Build blocked: ${reasons.join('; ')}`,
+        completed_at: new Date().toISOString(),
+      });
+      log('warn', 'Build blocked — forbidden files touched', { id: request.id, reasons });
+      await notifyDiscord(`🚫 **Feature Builder: blocked** — "${request.description.substring(0, 100)}"\nReason: ${reasons.join('; ').substring(0, 300)}`);
+      return;
+    }
 
     // 7. Create branch and commit
     const { commitSha, branchName } = await gitCreateBranchAndCommit(request.description, request.id);
