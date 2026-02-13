@@ -1,12 +1,12 @@
 {
-  "version": "v260213.06 1:11a",
-  "release": 145,
-  "sha": "da1ee1ce",
-  "fullSha": "da1ee1cedc2c3c5c48b5ba827ab68c4e8a40dda8",
+  "version": "v260213.07 1:16a",
+  "release": 146,
+  "sha": "0d83e13e",
+  "fullSha": "0d83e13eb269a949dd1705ec080414cb35785b9e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 07:11:33+00",
-  "commits": [{"sha":"da1ee1ce","message":"Broaden PAI rule #9 to cover all electronics and device questions","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 07:16:13+00",
+  "commits": [{"sha":"0d83e13e","message":"Allow concurrent appdev requests: remove UI blocking, show all users' history","author":"Rahul Sonnad"}]
 }
