@@ -325,6 +325,10 @@ function updateActiveBuild(requests) {
     activeBanner.classList.add('visible');
     submitBtn.disabled = true;
 
+    // Dynamic banner title based on request intent
+    const titleEl = document.getElementById('activeBuildTitle');
+    titleEl.textContent = getBuildActionLabel(active.description);
+
     const badgeColor = active.status === 'pending' ? '#e0e7ff' : '#fef3c7';
     const badgeText = active.status === 'pending' ? '#3730a3' : '#92400e';
     statusEl.innerHTML = `
@@ -370,16 +374,15 @@ function renderHistory(requests) {
     const latestStatus = chain[0].status;
     const isActive = ['pending', 'processing', 'building'].includes(latestStatus);
 
-    const showRetry = latestStatus === 'failed';
-    const showModify = ['completed', 'review'].includes(latestStatus);
+    const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
+    const retryLabel = latestStatus === 'failed' ? '↻ Try Again' : '↻ Modify';
     return `
       <div class="appdev-request ${isActive ? '' : 'collapsed'}">
         <div class="appdev-request-header" onclick="this.parentElement.classList.toggle('collapsed')">
           <span class="appdev-request-badge ${latestStatus}">${latestStatus}</span>
           <span class="appdev-request-title">${escapeHtml(req.description.substring(0, 80))}${req.description.length > 80 ? '...' : ''}</span>
           ${chain.length > 1 ? `<span class="appdev-followup-badge">${chain.length - 1} follow-up${chain.length > 2 ? 's' : ''}</span>` : ''}
-          ${showRetry ? `<button class="appdev-retry-header-btn" onclick="event.stopPropagation();window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})" title="Load this request into the editor">↻ Try Again</button>` : ''}
-          ${showModify ? `<button class="appdev-retry-header-btn" onclick="event.stopPropagation();window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})" title="Load this request into the editor">✏ Modify</button>` : ''}
+          ${showRetry ? `<button class="appdev-retry-header-btn" onclick="event.stopPropagation();window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})" title="Load this request into the editor">${retryLabel}</button>` : ''}
           <span class="appdev-request-time">${formatTimeAgo(req.created_at)}</span>
           <svg class="appdev-request-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -435,9 +438,7 @@ function renderTimelineItem(req) {
       label: req.deploy_decision === 'auto_merged' ? 'Deployed' : 'Completed',
       detail: null,
       class: 'success',
-      html: details + `<div class="appdev-detail-section">
-        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Use as Template</button>
-      </div>`,
+      html: details,
     });
   }
 
@@ -448,9 +449,6 @@ function renderTimelineItem(req) {
       label: 'Failed',
       detail: req.error_message || 'Unknown error',
       class: 'error',
-      html: `<div class="appdev-detail-section">
-        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Try Again</button>
-      </div>`,
     });
   }
 
@@ -462,9 +460,7 @@ function renderTimelineItem(req) {
       label: 'Sent for review',
       detail: null,
       class: 'active',
-      html: details + `<div class="appdev-detail-section">
-        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Use as Template</button>
-      </div>`,
+      html: details,
     });
   }
 
@@ -631,6 +627,20 @@ function getTimelineClass(status) {
 // =============================================
 // HELPERS
 // =============================================
+function getBuildActionLabel(description) {
+  const d = (description || '').toLowerCase();
+  if (/\b(fix|bug|broken|issue|error|crash|wrong|doesn.t work|not working|isn.t working)\b/.test(d)) {
+    return 'Fixing Your Bug';
+  }
+  if (/\b(change|update|modify|edit|tweak|adjust|move|rename|replace|swap)\b/.test(d)) {
+    return 'Modifying Your Feature';
+  }
+  if (/\b(remove|delete|hide|disable|drop)\b/.test(d)) {
+    return 'Modifying Your Feature';
+  }
+  return 'Building Your Feature';
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return str
