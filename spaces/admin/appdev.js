@@ -12,6 +12,10 @@ let authState = null;
 let pollTimer = null;
 let hasActiveBuild = false;
 let pendingAttachments = []; // { id, file, url, name, size, type, uploading }
+let allRequests = []; // cached for filter toggle
+// Track user-toggled expand/collapse state per request ID (survives re-renders)
+// Values: true = expanded, false = collapsed, undefined = use default
+const userExpandState = new Map();
 
 // =============================================
 // INIT
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         authState = state;
         setupLightbox();
         setupPromptBox();
+        setupFilterCheckbox();
         await loadHistory();
         startPolling();
       }
@@ -90,6 +95,17 @@ function setupPromptBox() {
     if (e.dataTransfer?.files?.length) {
       handleFiles(e.dataTransfer.files);
     }
+  });
+}
+
+// =============================================
+// FILTER CHECKBOX
+// =============================================
+function setupFilterCheckbox() {
+  const checkbox = document.getElementById('filterMine');
+  if (!checkbox) return;
+  checkbox.addEventListener('change', () => {
+    renderHistory(allRequests);
   });
 }
 
@@ -296,8 +312,9 @@ async function loadHistory() {
     // Backfill deployed_version for requests that were merged but version wasn't captured
     await backfillDeployedVersions(data || []);
 
-    renderHistory(data || []);
-    updateActiveBuild(data || []);
+    allRequests = data || [];
+    renderHistory(allRequests);
+    updateActiveBuild(allRequests);
   } catch (err) {
     console.error('Failed to load history:', err);
   }
@@ -370,14 +387,24 @@ function updateActiveBuild(requests) {
 // =============================================
 function renderHistory(requests) {
   const container = document.getElementById('historyContainer');
+  const filterMine = document.getElementById('filterMine')?.checked;
+  const currentUserId = authState.appUser?.id;
 
-  if (!requests.length) {
-    container.innerHTML = '<div class="appdev-empty">No feature requests yet. Describe something above and hit submit.</div>';
+  // Apply "Only Mine" filter
+  let filtered = requests;
+  if (filterMine && currentUserId) {
+    filtered = requests.filter(r => r.requester_user_id === currentUserId);
+  }
+
+  if (!filtered.length) {
+    container.innerHTML = filterMine
+      ? '<div class="appdev-empty">No requests from you yet. Uncheck "Only Mine" to see all requests.</div>'
+      : '<div class="appdev-empty">No feature requests yet. Describe something above and hit submit.</div>';
     return;
   }
 
   // Group by parent chain: root requests and their follow-ups
-  const rootRequests = requests.filter(r => !r.parent_request_id);
+  const rootRequests = filtered.filter(r => !r.parent_request_id);
   const followUps = requests.filter(r => r.parent_request_id);
   const followUpMap = {};
   for (const fu of followUps) {
@@ -394,8 +421,15 @@ function renderHistory(requests) {
     const latestStatus = latest.status;
     const isActive = ['pending', 'processing', 'building', 'approved'].includes(latestStatus);
 
+    // Determine collapsed state: user override > default (active=expanded, else collapsed)
+    const userState = userExpandState.get(req.id);
+    const isCollapsed = userState !== undefined ? !userState : !isActive;
+
     const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
     const retryLabel = latestStatus === 'failed' ? '↻ Try Again' : '↻ Modify';
+
+    // Status badge — make "review" clearly say "Needs Approval"
+    const badgeLabel = latestStatus === 'review' ? 'needs approval' : latestStatus;
 
     // Version badge for deployed builds (completed or review that was merged)
     const versionBadge = latest.deployed_version
@@ -415,10 +449,17 @@ function renderHistory(requests) {
         </div>`;
     }
 
+    // Approval tooltip for review status
+    const approvalTooltip = latestStatus === 'review'
+      ? ` title="Awaiting approval — admin or oracle role users can approve and deploy this build"`
+      : '';
+
+    const isOwn = currentUserId && req.requester_user_id === currentUserId;
+
     return `
-      <div class="appdev-request ${isActive ? 'active-build' : 'collapsed'}">
-        <div class="appdev-request-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span class="appdev-request-badge ${latestStatus}">${latestStatus}</span>
+      <div class="appdev-request ${isActive ? 'active-build' : ''} ${isCollapsed ? 'collapsed' : ''} ${isOwn ? 'own-request' : ''}" data-request-id="${req.id}">
+        <div class="appdev-request-header" data-toggle-id="${req.id}">
+          <span class="appdev-request-badge ${latestStatus}"${approvalTooltip}>${badgeLabel}</span>
           <span class="appdev-request-title">${escapeHtml(req.description.substring(0, 80))}${req.description.length > 80 ? '...' : ''}</span>
           <span class="appdev-requester-name">${escapeHtml(req.requester_name || 'Unknown')}</span>
           <div class="appdev-request-actions">
@@ -440,6 +481,18 @@ function renderHistory(requests) {
       </div>
     `;
   }).join('');
+
+  // Bind toggle handlers via event delegation (replaces inline onclick)
+  container.querySelectorAll('[data-toggle-id]').forEach(header => {
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const reqId = header.dataset.toggleId;
+      const card = header.parentElement;
+      const willCollapse = !card.classList.contains('collapsed');
+      card.classList.toggle('collapsed');
+      userExpandState.set(reqId, !willCollapse);
+    });
+  });
 }
 
 function renderTimelineItem(req) {
@@ -699,8 +752,9 @@ function buildReviewDetails(req) {
         <button class="appdev-approve-btn" onclick="event.stopPropagation(); window._approveAndMerge('${req.id}')">✅ Approve &amp; Merge</button>
       </div>`);
     } else {
-      parts.push(`<div class="appdev-detail-section">
-        <p style="color:var(--text-muted)">Not yet deployed — waiting for admin approval.</p>
+      parts.push(`<div class="appdev-detail-section appdev-approval-needed">
+        <p>Not yet deployed — awaiting approval before it can be merged.</p>
+        <p class="appdev-approver-hint">Users with the <strong>admin</strong> or <strong>oracle</strong> role can approve.</p>
       </div>`);
     }
   } else if (!req.deployed_version && req.status === 'approved') {

@@ -138,10 +138,31 @@
     .appdev-active-build { display: none !important; }
 
     /* History section */
+    .appdev-history-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1.5rem 0 1rem;
+    }
     .appdev-history-header {
       font-size: 1.1rem;
       font-weight: 700;
-      margin: 1.5rem 0 1rem;
+      margin: 0;
+    }
+    .appdev-filter-mine {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .appdev-filter-mine input { cursor: pointer; }
+
+    /* Highlight own requests with a subtle left border */
+    .appdev-request.own-request {
+      border-left: 3px solid var(--accent);
     }
     .appdev-empty {
       text-align: center;
@@ -182,10 +203,26 @@
     .appdev-request-badge.completed { background: #d1fae5; color: #065f46; }
     .appdev-request-badge.failed { background: #fee2e2; color: #991b1b; }
     .appdev-request-badge.review { background: #fef3c7; color: #92400e; }
+    .appdev-request-badge.approved { background: #d1fae5; color: #065f46; }
     .appdev-request-badge.pending,
     .appdev-request-badge.processing,
     .appdev-request-badge.building { background: #e0e7ff; color: #3730a3; }
     .appdev-request-badge.cancelled { background: #f3f4f6; color: #6b7280; }
+
+    /* Approve & Merge button */
+    .appdev-approve-btn {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+    }
+    .appdev-approve-btn:hover { background: #047857; }
 
     .appdev-request-title {
       flex: 1;
@@ -651,7 +688,12 @@
       </div>
 
       <!-- History -->
-      <h2 class="appdev-history-header">Request History</h2>
+      <div class="appdev-history-header-row">
+        <h2 class="appdev-history-header">Request History</h2>
+        <label class="appdev-filter-mine">
+          <input type="checkbox" id="filterMine"> Only Mine
+        </label>
+      </div>
       <div id="historyContainer">
         <div class="appdev-empty">No feature requests yet. Describe something above and hit submit.</div>
       </div>
