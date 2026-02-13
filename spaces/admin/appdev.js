@@ -46,7 +46,7 @@ function setupPromptBox() {
   textarea.addEventListener('input', () => {
     const len = textarea.value.trim().length;
     charCount.textContent = `${len} chars`;
-    submitBtn.disabled = len < 10 || hasActiveBuild;
+    submitBtn.disabled = len < 10;
   });
 
   submitBtn.addEventListener('click', () => submitFeatureRequest());
@@ -285,13 +285,9 @@ async function pollTick() {
 // =============================================
 async function loadHistory() {
   try {
-    const userId = authState.appUser?.id;
-    if (!userId) return;
-
     const { data, error } = await supabase
       .from('feature_requests')
       .select('*')
-      .eq('requester_user_id', userId)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -359,8 +355,6 @@ async function backfillDeployedVersions(requests) {
 // ACTIVE BUILD BANNER
 // =============================================
 function updateActiveBuild(requests) {
-  const submitBtn = document.getElementById('submitBtn');
-
   const active = requests.find(r => ['pending', 'processing', 'building'].includes(r.status));
   const wasActive = hasActiveBuild;
   hasActiveBuild = !!active;
@@ -368,13 +362,6 @@ function updateActiveBuild(requests) {
   // Adjust polling speed if active state changed
   if (hasActiveBuild !== wasActive) {
     startPolling();
-  }
-
-  if (active) {
-    submitBtn.disabled = true;
-  } else {
-    const textarea = document.getElementById('featurePrompt');
-    submitBtn.disabled = (textarea.value.trim().length < 10);
   }
 }
 
@@ -405,7 +392,7 @@ function renderHistory(requests) {
 
     const latest = chain[0];
     const latestStatus = latest.status;
-    const isActive = ['pending', 'processing', 'building'].includes(latestStatus);
+    const isActive = ['pending', 'processing', 'building', 'approved'].includes(latestStatus);
 
     const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
     const retryLabel = latestStatus === 'failed' ? '↻ Try Again' : '↻ Modify';
@@ -433,6 +420,7 @@ function renderHistory(requests) {
         <div class="appdev-request-header" onclick="this.parentElement.classList.toggle('collapsed')">
           <span class="appdev-request-badge ${latestStatus}">${latestStatus}</span>
           <span class="appdev-request-title">${escapeHtml(req.description.substring(0, 80))}${req.description.length > 80 ? '...' : ''}</span>
+          <span class="appdev-requester-name">${escapeHtml(req.requester_name || 'Unknown')}</span>
           <div class="appdev-request-actions">
             ${versionBadge}
             ${chain.length > 1 ? `<span class="appdev-followup-badge">${chain.length - 1} follow-up${chain.length > 2 ? 's' : ''}</span>` : ''}
@@ -520,14 +508,25 @@ function renderTimelineItem(req) {
   }
 
   // Review
-  if (req.status === 'review') {
+  if (req.status === 'review' || req.review_notified_at) {
     const details = buildReviewDetails(req);
     items.push({
       time: req.review_notified_at || req.completed_at,
       label: 'Sent for review',
       detail: null,
-      class: 'active',
+      class: req.status === 'review' ? 'active' : 'success',
       html: details,
+    });
+  }
+
+  // Approved (waiting for worker to merge)
+  if (req.approved_at) {
+    const isMerging = req.status === 'approved';
+    items.push({
+      time: req.approved_at,
+      label: 'Approved for merge',
+      detail: isMerging ? 'Waiting for worker to merge...' : null,
+      class: isMerging ? 'active' : 'success',
     });
   }
 
@@ -555,6 +554,28 @@ function tryAgain(description) {
   showToast('Request text loaded. Edit and resubmit when ready.', 'info');
 }
 window._tryAgain = tryAgain;
+
+async function approveAndMerge(requestId) {
+  if (!confirm('Approve & merge this branch to main? This will deploy it live.')) return;
+  try {
+    const { error } = await supabase
+      .from('feature_requests')
+      .update({
+        status: 'approved',
+        approved_by: authState.appUser.id,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', requestId);
+
+    if (error) throw error;
+    showToast('Approved! Worker will merge shortly...', 'success');
+    await loadHistory();
+  } catch (err) {
+    console.error('Approve failed:', err);
+    showToast('Approve failed: ' + err.message, 'error');
+  }
+}
+window._approveAndMerge = approveAndMerge;
 
 function buildCompletionDetails(req) {
   const parts = [];
@@ -670,10 +691,21 @@ function buildReviewDetails(req) {
     </div>`);
   }
 
-  // Show "Not yet deployed" hint for unmerged review builds
-  if (!req.deployed_version) {
+  // Show approve button or "not yet deployed" hint for unmerged review builds
+  if (!req.deployed_version && req.status === 'review') {
+    const canApprove = authState?.hasPermission('approve_appdev');
+    if (canApprove) {
+      parts.push(`<div class="appdev-detail-section">
+        <button class="appdev-approve-btn" onclick="event.stopPropagation(); window._approveAndMerge('${req.id}')">✅ Approve &amp; Merge</button>
+      </div>`);
+    } else {
+      parts.push(`<div class="appdev-detail-section">
+        <p style="color:var(--text-muted)">Not yet deployed — waiting for admin approval.</p>
+      </div>`);
+    }
+  } else if (!req.deployed_version && req.status === 'approved') {
     parts.push(`<div class="appdev-detail-section">
-      <p style="color:var(--text-muted)">Not yet deployed — merge the branch to main to deploy.</p>
+      <p style="color:var(--text-muted)">Approved — worker is merging...</p>
     </div>`);
   }
 

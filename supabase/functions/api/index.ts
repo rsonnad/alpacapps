@@ -1602,25 +1602,30 @@ async function handleFeatureRequests(supabase: any, req: ApiRequest, auth: any, 
     case "create": {
       if (!req.data?.description) return error("Validation: description is required", 400);
 
-      // Rate limiting: max 3 active builds, max 10 per day
-      const { count: activeCount } = await supabase
+      // Rate limiting per user: max 3 active builds per user, max 10 per day per user
+      const userId = auth.appUser?.id;
+      let activeQuery = supabase
         .from("feature_requests")
         .select("id", { count: "exact", head: true })
         .in("status", ["pending", "building"]);
+      if (userId) activeQuery = activeQuery.eq("requester_user_id", userId);
+      const { count: activeCount } = await activeQuery;
 
       if ((activeCount || 0) >= 3) {
-        return error("Too many active feature requests. Wait for current builds to complete.", 429);
+        return error("You have too many active feature requests. Wait for current builds to complete.", 429);
       }
 
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
-      const { count: dailyCount } = await supabase
+      let dailyQuery = supabase
         .from("feature_requests")
         .select("id", { count: "exact", head: true })
         .gte("created_at", todayStart.toISOString());
+      if (userId) dailyQuery = dailyQuery.eq("requester_user_id", userId);
+      const { count: dailyCount } = await dailyQuery;
 
       if ((dailyCount || 0) >= 10) {
-        return error("Daily feature request limit reached (10/day).", 429);
+        return error("You've reached your daily feature request limit (10/day).", 429);
       }
 
       const payload = {
