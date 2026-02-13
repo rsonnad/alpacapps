@@ -1133,6 +1133,8 @@ const PERM_GROUPS = [
     keys: ['view_climate', 'control_climate'], adminKey: 'admin_climate_settings' },
   { id: 'laundry',  icon: '🧺', label: 'Appliances',  bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
     keys: ['view_laundry'], adminKey: 'admin_laundry_settings' },
+  { id: 'oven',     icon: '♨️', label: 'Oven',      bg: '#fef9ec', headerBg: '#fde8b2', headerColor: '#92400e',
+    keys: ['view_oven', 'control_oven'], adminKey: 'admin_oven_settings' },
   { id: 'cars',     icon: '🚗', label: 'Vehicles', bg: '#f0f4f8', headerBg: '#dbe4ee', headerColor: '#374151',
     keys: ['view_cars', 'control_cars'], adminKey: 'admin_cars_settings' },
   { id: 'profile',  icon: '👤', label: 'Profile',  bg: '#f5f5f5', headerBg: '#e8e8e8', headerColor: '#555',

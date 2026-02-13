@@ -53,6 +53,14 @@ interface UserScope {
     lastState: any;
     lastSyncedAt: string | null;
   }>;
+  anovaOvens: Array<{
+    id: number;
+    name: string;
+    cookerId: string;
+    ovenType: string;
+    lastState: any;
+    lastSyncedAt: string | null;
+  }>;
   spaceAccessCodes: Record<string, string>;
 }
 
@@ -191,7 +199,7 @@ async function buildUserScope(
   }
 
   // 3. Load Govee, Nest, vehicles, camera_streams, and laundry in parallel
-  const [goveeResult, nestResult, vehiclesResult, cameraResult, laundryResult] = await Promise.all([
+  const [goveeResult, nestResult, vehiclesResult, cameraResult, laundryResult, anovaResult] = await Promise.all([
     supabase
       .from("govee_devices")
       .select("device_id, name, area, space_id, sku")
@@ -217,6 +225,11 @@ async function buildUserScope(
       .select("id, name, device_type, last_state, last_synced_at")
       .eq("is_active", true)
       .order("display_order"),
+    supabase
+      .from("anova_ovens")
+      .select("id, name, cooker_id, oven_type, last_state, last_synced_at")
+      .eq("is_active", true)
+      .order("display_order"),
   ]);
 
   const goveeGroups = goveeResult?.data || [];
@@ -224,6 +237,7 @@ async function buildUserScope(
   const teslaVehicles = vehiclesResult?.data || [];
   const cameraStreams = cameraResult?.data || [];
   const laundryAppliances = laundryResult?.data || [];
+  const anovaOvensData = anovaResult?.data || [];
 
   const accessibleGovee = goveeGroups.filter(
     (g: any) => {
@@ -303,6 +317,14 @@ async function buildUserScope(
       deviceType: a.device_type,
       lastState: a.last_state,
       lastSyncedAt: a.last_synced_at,
+    })),
+    anovaOvens: anovaOvensData.map((o: any) => ({
+      id: o.id,
+      name: o.name,
+      cookerId: o.cooker_id,
+      ovenType: o.oven_type,
+      lastState: o.last_state,
+      lastSyncedAt: o.last_synced_at,
     })),
     spaceAccessCodes,
   };
@@ -495,6 +517,28 @@ You can take camera snapshots using the take_snapshot tool — useful when someo
     parts.push(`Use get_laundry_status to check current washer/dryer status (cycle progress, time remaining, etc.).
 Use control_laundry with action "watch" to subscribe a user to cycle-end push notifications, or "unwatch" to unsubscribe.
 Common states — Washer: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, END. Dryer: POWER_OFF, INITIAL, RUNNING, PAUSE, END.`);
+  }
+
+  // Anova Oven
+  if (scope.anovaOvens.length) {
+    parts.push(`\nANOVA PRECISION OVEN:`);
+    for (const o of scope.anovaOvens) {
+      let stateStr = "";
+      if (o.lastState) {
+        const s = o.lastState;
+        const mode = s.state?.mode || "idle";
+        const online = s.systemInfo?.online ? "online" : "offline";
+        const bulbMode = s.nodes?.temperatureBulbs?.mode || "dry";
+        const temp = s.nodes?.temperatureBulbs?.[bulbMode]?.current?.fahrenheit;
+        stateStr = ` [${mode}, ${online}${temp ? `, ${Math.round(temp)}°F` : ""}]`;
+      }
+      parts.push(`- "${o.name}" (id: ${o.id})${stateStr}`);
+    }
+    parts.push(`Use get_oven_status for current oven state (temperature, timer, humidity, door status).
+Use control_oven to start/stop cooking or change settings.
+Temperature modes: "dry" (convection 75-482°F) or "wet" (steam/sous vide 75-212°F).
+Heating elements: top, bottom, rear. Fan speed: 0-100%. Steam: 0-100%.
+Timer starts "when-preheated" by default.`);
   }
 
   // Weather
@@ -997,6 +1041,39 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["appliance_id", "appliance_name", "action"],
+    },
+  },
+  {
+    name: "get_oven_status",
+    description:
+      "Get the current status of the Anova Precision Oven. Returns temperature, cook state, timer, door status, humidity, fan speed, and heating elements.",
+    parameters: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "control_oven",
+    description:
+      "Control the Anova Precision Oven: start cooking, stop cooking, or set temperature unit. For starting a cook, specify temperature in Fahrenheit, mode (dry/wet), timer in minutes, fan speed, and steam percentage.",
+    parameters: {
+      type: "object",
+      properties: {
+        oven_id: { type: "number", description: "The oven ID from the oven list" },
+        oven_name: { type: "string", description: "Oven name for confirmation" },
+        action: {
+          type: "string",
+          enum: ["startCook", "stopCook"],
+          description: "Oven action to perform",
+        },
+        temperature_f: { type: "number", description: "Target temperature in Fahrenheit (dry: 75-482, wet: 75-212)" },
+        temperature_mode: { type: "string", enum: ["dry", "wet"], description: "Temperature mode: dry (convection) or wet (steam)" },
+        timer_minutes: { type: "number", description: "Cook timer in minutes" },
+        fan_speed: { type: "number", description: "Fan speed 0-100%" },
+        steam_percentage: { type: "number", description: "Steam percentage 0-100%" },
+      },
+      required: ["oven_id", "oven_name", "action"],
     },
   },
   {
@@ -2022,6 +2099,88 @@ async function executeToolCall(
         return `OK: Stopped watching ${args.appliance_name} for cycle completion.`;
       }
 
+      case "get_oven_status": {
+        if (!scope.anovaOvens.length) return "No Anova ovens are currently configured.";
+        return scope.anovaOvens.map((o) => {
+          const s = o.lastState;
+          if (!s) return `${o.name}: no data available`;
+          const online = s.systemInfo?.online ? "online" : "offline";
+          const mode = s.state?.mode || "unknown";
+          const bulbMode = s.nodes?.temperatureBulbs?.mode || "dry";
+          const current = s.nodes?.temperatureBulbs?.[bulbMode]?.current;
+          const setpoint = s.nodes?.temperatureBulbs?.[bulbMode]?.setpoint;
+          const timer = s.nodes?.timer;
+          const door = s.nodes?.door?.closed ? "closed" : "open";
+          const fan = s.nodes?.fan?.speed;
+          const humidity = s.nodes?.steamGenerators?.relativeHumidity?.current;
+          const parts: string[] = [`${o.name}: ${mode} (${online})`];
+          if (current?.fahrenheit) parts.push(`temp: ${Math.round(current.fahrenheit)}°F`);
+          if (setpoint?.fahrenheit) parts.push(`target: ${Math.round(setpoint.fahrenheit)}°F`);
+          parts.push(`mode: ${bulbMode}`);
+          parts.push(`door: ${door}`);
+          if (fan != null) parts.push(`fan: ${fan}%`);
+          if (humidity != null) parts.push(`humidity: ${humidity}%`);
+          if (timer?.mode === "running") {
+            const remaining = Math.max(0, (timer.initial || 0) - (timer.current || 0));
+            parts.push(`timer: ${Math.floor(remaining / 60)}m remaining`);
+          }
+          if (o.lastSyncedAt) {
+            const ago = Math.round((Date.now() - new Date(o.lastSyncedAt).getTime()) / 60000);
+            parts.push(`(updated ${ago} min ago)`);
+          }
+          return parts.join(" | ");
+        }).join("\n");
+      }
+
+      case "control_oven": {
+        const oven = scope.anovaOvens.find((o) => o.id === args.oven_id);
+        if (!oven) return `Oven "${args.oven_name}" not found.`;
+
+        const payload: any = { action: args.action, ovenId: args.oven_id };
+
+        if (args.action === "startCook") {
+          const tempC = args.temperature_f ? Math.round(((args.temperature_f - 32) * 5) / 9 * 2) / 2 : 177; // default 350F
+          const stage: any = {
+            id: crypto.randomUUID(),
+            type: "cook",
+            userActionRequired: false,
+            temperatureBulbs: {
+              mode: args.temperature_mode || "dry",
+              dry: { setpoint: { celsius: tempC } },
+            },
+            heatingElements: { top: { on: true }, bottom: { on: false }, rear: { on: true } },
+            fan: { speed: args.fan_speed ?? 100 },
+            vent: { open: false },
+          };
+          if (args.temperature_mode === "wet") {
+            stage.temperatureBulbs.wet = { setpoint: { celsius: Math.min(tempC, 100) } };
+          }
+          if (args.timer_minutes) {
+            stage.timer = { initial: args.timer_minutes * 60, startType: "when-preheated" };
+          }
+          if (args.steam_percentage != null) {
+            stage.steamGenerators = { mode: "steam-percentage", steamPercentage: { setpoint: args.steam_percentage } };
+          }
+          payload.stages = [stage];
+        }
+
+        console.log("PAI → anova-control payload:", JSON.stringify(payload));
+        const resp = await fetch(
+          `${supabaseUrl}/functions/v1/anova-control`,
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(payload) }
+        );
+        const result = await resp.json();
+        console.log("PAI ← anova-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          return `Error: ${result.error || `HTTP ${resp.status}`}`;
+        }
+        if (args.action === "startCook") {
+          return `OK: Started cooking on ${args.oven_name} at ${args.temperature_f || 350}°F${args.timer_minutes ? ` for ${args.timer_minutes} min` : ""}`;
+        }
+        if (args.action === "stopCook") return `OK: Stopped cooking on ${args.oven_name}`;
+        return `OK: ${args.oven_name} command sent`;
+      }
+
       case "get_weather": {
         // Fetch weather config from DB
         const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -2460,6 +2619,10 @@ function buildVapiToolsList(scope: UserScope): any[] {
     tools.push(vapiToolWrapper(findTool("get_laundry_status")));
     tools.push(vapiToolWrapper(findTool("control_laundry")));
   }
+  if (scope.anovaOvens.length) {
+    tools.push(vapiToolWrapper(findTool("get_oven_status")));
+    tools.push(vapiToolWrapper(findTool("control_oven")));
+  }
   // Weather available to all
   tools.push(vapiToolWrapper(findTool("get_weather")));
   // Camera snapshots
@@ -2538,6 +2701,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       teslaVehicles: [],
       cameras: [],
       laundryAppliances: [],
+      anovaOvens: [],
       spaceAccessCodes: {},
     };
     systemPrompt = buildSystemPrompt(minimalScope, paiConfig);
@@ -2630,6 +2794,7 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
     teslaVehicles: [],
     cameras: [],
     laundryAppliances: [],
+    anovaOvens: [],
     spaceAccessCodes: {},
   };
   let systemPrompt = buildSystemPrompt(scope || minimalScope, paiConfig);

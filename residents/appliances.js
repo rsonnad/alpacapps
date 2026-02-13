@@ -1,7 +1,7 @@
 /**
- * Appliances Page - LG washer/dryer monitoring + cooking appliance placeholders.
+ * Appliances Page - LG washer/dryer monitoring + Anova Precision Oven control.
  * Laundry: live status from lg_appliances table (poller on DO droplet writes state; this page reads every 15s).
- * Cooking: placeholder cards for future API integrations (Anova Precision Oven).
+ * Cooking: live Anova Precision Oven status + controls via anova-control edge function.
  */
 
 import { supabase } from '../shared/supabase.js';
@@ -10,24 +10,33 @@ import { hasPermission } from '../shared/auth.js';
 import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
 import { PollManager } from '../shared/services/poll-manager.js';
 import { supabaseHealth } from '../shared/supabase-health.js';
+import {
+  loadOvens, refreshOvenState, startCook, stopCook,
+  getOvenStateDisplay, getCurrentTemp, getTargetTemp, getProbeTemp,
+  getTimerDisplay, getDoorStatus, getFanSpeed, getSteamInfo,
+  getHeatingElements, isWaterTankEmpty, formatSyncTime as formatOvenSyncTime,
+  buildSimpleCookStages,
+} from '../shared/services/oven-data.js';
 
 // =============================================
 // CONFIGURATION
 // =============================================
-const POLL_INTERVAL_MS = 15000; // 15s (laundry status changes fast)
+const POLL_INTERVAL_MS = 15000;
 
 // =============================================
 // STATE
 // =============================================
 let appliances = [];
+let anovaOvens = [];
 let watchedAppliances = new Set();
 let poll = null;
 let countdownTimer = null;
 let currentUserRole = null;
 let currentAppUserId = null;
 let deviceScope = null;
-let loadFailed = false; // distinguish query error from legitimately empty
-let showAdminSettings = false;
+let loadFailed = false;
+let canControlOven = false;
+let refreshingOven = new Set();
 
 // =============================================
 // SVG ICONS
@@ -61,19 +70,7 @@ const OVEN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
   <circle cx="13" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
 </svg>`;
 
-// =============================================
-// PLACEHOLDER APPLIANCES (no API integration yet)
-// =============================================
-const PLACEHOLDER_APPLIANCES = [
-  {
-    id: 'anova-oven',
-    name: 'Anova Precision Oven',
-    category: 'cooking',
-    icon: OVEN_ICON,
-    status: 'Not connected',
-    statusColor: 'var(--text-muted)',
-  },
-];
+const REFRESH_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`;
 
 // =============================================
 // SECTION COLLAPSE PERSISTENCE
@@ -100,7 +97,7 @@ function saveSectionState(sectionId, isOpen) {
 }
 
 // =============================================
-// HELPERS
+// LAUNDRY HELPERS
 // =============================================
 const RUNNING_STATES = new Set([
   'RUNNING', 'RINSING', 'SPINNING', 'DRYING',
@@ -172,7 +169,7 @@ async function loadAppliances() {
     console.warn('Failed to load appliances:', error.message);
     loadFailed = true;
     supabaseHealth.recordFailure();
-    throw error; // let PollManager circuit breaker track failures
+    throw error;
   }
   loadFailed = false;
   supabaseHealth.recordSuccess();
@@ -183,6 +180,14 @@ async function loadAppliances() {
       || deviceScope.canAccessSpaceName(appliance.location)
       || deviceScope.canAccessSpaceName(appliance.name);
   });
+}
+
+async function loadAnovaOvens() {
+  try {
+    anovaOvens = await loadOvens();
+  } catch (err) {
+    console.warn('Failed to load anova ovens:', err.message);
+  }
 }
 
 async function loadWatcherStatus() {
@@ -200,7 +205,7 @@ async function loadWatcherStatus() {
 }
 
 // =============================================
-// RENDERING
+// RENDERING — LAUNDRY
 // =============================================
 function renderLaundryCard(a) {
   const state = getStateDisplay(a);
@@ -266,30 +271,121 @@ function renderLaundryCard(a) {
   `;
 }
 
-function renderPlaceholderCard(item) {
+// =============================================
+// RENDERING — OVEN
+// =============================================
+function renderOvenCard(oven) {
+  const state = getOvenStateDisplay(oven);
+  const currentTemp = getCurrentTemp(oven);
+  const targetTemp = getTargetTemp(oven);
+  const probeTemp = getProbeTemp(oven);
+  const timer = getTimerDisplay(oven);
+  const door = getDoorStatus(oven);
+  const fan = getFanSpeed(oven);
+  const steam = getSteamInfo(oven);
+  const elements = getHeatingElements(oven);
+  const waterEmpty = isWaterTankEmpty(oven);
+  const isRefreshing = refreshingOven.has(oven.id);
+  const stateClass = state.isCooking ? 'running' : '';
+  const bulbMode = oven.last_state?.nodes?.temperatureBulbs?.mode || 'dry';
+
   return `
-    <div class="laundry-card placeholder-card" data-appliance-id="${item.id}">
+    <div class="laundry-card ${stateClass}" data-oven-id="${oven.id}">
       <div class="laundry-card__header">
-        <div class="laundry-card__icon">${item.icon}</div>
-        <div class="laundry-card__name">${item.name}</div>
-        <span class="laundry-card__status-dot" style="background:${item.statusColor}"></span>
+        <div class="laundry-card__icon">${OVEN_ICON}</div>
+        <div class="laundry-card__name">${oven.name}</div>
+        <span class="laundry-card__status-dot" style="background:${state.color}"></span>
       </div>
-      <div class="laundry-card__state" style="color:${item.statusColor}">${item.status}</div>
-      <div class="laundry-card__data-grid">
-        <div class="laundry-data-row">
-          <span class="laundry-data-label">Integration</span>
-          <span class="laundry-data-value">Coming soon</span>
+
+      <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
+
+      ${timer ? `
+        <div class="laundry-card__progress">
+          <div class="laundry-card__progress-bar" style="width:${timer.progress}%"></div>
         </div>
+        <div class="laundry-card__time">${timer.display} remaining</div>
+      ` : ''}
+
+      ${waterEmpty ? `
+        <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--radius);padding:0.5rem;font-size:0.8rem;margin:0.5rem 0;color:#92400e;">
+          Water tank empty — refill for steam cooking
+        </div>
+      ` : ''}
+
+      <div class="laundry-card__data-grid">
+        ${currentTemp != null ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Temperature</span>
+          <span class="laundry-data-value">${Math.round(currentTemp)}°F${targetTemp != null ? ` / ${Math.round(targetTemp)}°F` : ''}</span>
+        </div>
+        ` : ''}
+        ${probeTemp != null ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Probe</span>
+          <span class="laundry-data-value">${Math.round(probeTemp)}°F</span>
+        </div>
+        ` : ''}
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Mode</span>
+          <span class="laundry-data-value" style="text-transform:capitalize;">${bulbMode}</span>
+        </div>
+        ${door ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Door</span>
+          <span class="laundry-data-value">${door}</span>
+        </div>
+        ` : ''}
+        ${fan != null ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Fan</span>
+          <span class="laundry-data-value">${fan}%</span>
+        </div>
+        ` : ''}
+        ${steam && steam.humidity != null ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Humidity</span>
+          <span class="laundry-data-value">${steam.humidity}%${steam.humidityTarget != null ? ` / ${steam.humidityTarget}%` : ''}</span>
+        </div>
+        ` : ''}
+        ${elements ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Elements</span>
+          <span class="laundry-data-value">${[elements.top && 'Top', elements.bottom && 'Bottom', elements.rear && 'Rear'].filter(Boolean).join(', ') || 'Off'}</span>
+        </div>
+        ` : ''}
       </div>
+
+      <div class="laundry-card__controls" style="gap:0.5rem;">
+        <button class="laundry-watch-btn" onclick="window._refreshOven(${oven.id})" title="Fetch live state from oven"
+                ${isRefreshing ? 'disabled' : ''} style="flex:1;">
+          ${REFRESH_ICON}
+          <span>${isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+        </button>
+        ${canControlOven && !state.isCooking ? `
+          <button class="laundry-watch-btn" onclick="window._showStartCook(${oven.id})" title="Start cooking" style="flex:1;background:var(--available);color:white;border-color:var(--available);">
+            <span>Start Cook</span>
+          </button>
+        ` : ''}
+        ${canControlOven && state.isCooking ? `
+          <button class="laundry-watch-btn" onclick="window._stopCook(${oven.id})" title="Stop cooking" style="flex:1;background:var(--occupied);color:white;border-color:var(--occupied);">
+            <span>Stop</span>
+          </button>
+        ` : ''}
+      </div>
+
+      <div class="laundry-card__sync-time">${formatOvenSyncTime(oven.last_synced_at)}</div>
     </div>
   `;
 }
 
+// =============================================
+// RENDERING — SECTIONS
+// =============================================
 function renderSections() {
   const container = document.getElementById('applianceSections');
   if (!container) return;
 
-  // Laundry section content
+  // Laundry section
   const laundryOpen = getSectionOpenState('laundry');
   let laundryCardsHtml;
   if (appliances.length > 0) {
@@ -304,10 +400,16 @@ function renderSections() {
     </p>`;
   }
 
-  // Cooking section content
+  // Cooking section
   const cookingOpen = getSectionOpenState('cooking');
-  const cookingItems = PLACEHOLDER_APPLIANCES.filter(a => a.category === 'cooking');
-  const cookingCardsHtml = `<div class="laundry-grid">${cookingItems.map(renderPlaceholderCard).join('')}</div>`;
+  let cookingCardsHtml;
+  if (anovaOvens.length > 0) {
+    cookingCardsHtml = `<div class="laundry-grid">${anovaOvens.map(renderOvenCard).join('')}</div>`;
+  } else {
+    cookingCardsHtml = `<p style="text-align:center;color:var(--text-muted);padding:2rem;">
+      No ovens discovered yet. Admin: add your Anova PAT in Settings below, then click Refresh.
+    </p>`;
+  }
 
   container.innerHTML = `
     <details class="appliance-section" ${laundryOpen ? 'open' : ''} data-section="laundry">
@@ -318,12 +420,6 @@ function renderSections() {
       </summary>
       <div class="appliance-section__body">
         ${laundryCardsHtml}
-        ${showAdminSettings ? `
-        <section class="section" style="margin-top:1.5rem;">
-          <div class="section-header"><h2>LG ThinQ Settings</h2></div>
-          <div class="section-body"><div id="lgSettingsContent"></div></div>
-        </section>
-        ` : ''}
       </div>
     </details>
 
@@ -331,7 +427,7 @@ function renderSections() {
       <summary class="appliance-section__header">
         <span class="appliance-section__chevron"></span>
         <h3>Cooking</h3>
-        <span class="appliance-section__count">${cookingItems.length} appliance${cookingItems.length !== 1 ? 's' : ''}</span>
+        <span class="appliance-section__count">${anovaOvens.length} oven${anovaOvens.length !== 1 ? 's' : ''}</span>
       </summary>
       <div class="appliance-section__body">
         ${cookingCardsHtml}
@@ -348,7 +444,113 @@ function renderSections() {
 }
 
 // =============================================
-// WATCH / UNWATCH
+// OVEN CONTROLS
+// =============================================
+window._refreshOven = async function(ovenId) {
+  if (refreshingOven.has(ovenId)) return;
+  refreshingOven.add(ovenId);
+  renderSections();
+
+  try {
+    const result = await refreshOvenState(ovenId);
+    if (result.error) throw new Error(result.error);
+    showToast('Oven state updated', 'success');
+    await loadAnovaOvens();
+  } catch (err) {
+    showToast(`Refresh failed: ${err.message}`, 'error');
+  } finally {
+    refreshingOven.delete(ovenId);
+    renderSections();
+  }
+};
+
+window._showStartCook = function(ovenId) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:400px;">
+      <div class="modal-header">
+        <h2>Start Cook</h2>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;padding:1rem;">
+        <div>
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Temperature (°F)</label>
+          <input type="number" id="cookTempInput" value="350" min="75" max="482" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <div>
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Mode</label>
+          <select id="cookModeInput" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+            <option value="dry">Dry (Convection)</option>
+            <option value="wet">Wet (Steam)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Timer (minutes, optional)</label>
+          <input type="number" id="cookTimerInput" placeholder="e.g. 30" min="1" max="1440" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <div>
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Fan Speed (%)</label>
+          <input type="number" id="cookFanInput" value="100" min="0" max="100" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <div>
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Steam (%)</label>
+          <input type="number" id="cookSteamInput" placeholder="0-100, leave empty for none" min="0" max="100" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <button class="btn-primary" id="cookStartBtn" style="padding:0.75rem;">Start Cooking</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  document.getElementById('cookStartBtn').addEventListener('click', async () => {
+    const tempF = parseInt(document.getElementById('cookTempInput').value) || 350;
+    const mode = document.getElementById('cookModeInput').value;
+    const timerMin = parseInt(document.getElementById('cookTimerInput').value) || null;
+    const fanSpeed = parseInt(document.getElementById('cookFanInput').value) ?? 100;
+    const steamPct = document.getElementById('cookSteamInput').value ? parseInt(document.getElementById('cookSteamInput').value) : null;
+
+    const btn = document.getElementById('cookStartBtn');
+    btn.disabled = true;
+    btn.textContent = 'Starting...';
+
+    try {
+      const stages = buildSimpleCookStages({
+        temperatureF: tempF,
+        mode,
+        timerMinutes: timerMin,
+        fanSpeed,
+        steamPercent: steamPct,
+      });
+      const result = await startCook(ovenId, stages);
+      if (result.error) throw new Error(result.error);
+      showToast(`Oven starting: ${tempF}°F ${mode}${timerMin ? `, ${timerMin}m` : ''}`, 'success');
+      modal.remove();
+      // Refresh state after a short delay
+      setTimeout(() => window._refreshOven(ovenId), 3000);
+    } catch (err) {
+      showToast(`Start failed: ${err.message}`, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Start Cooking';
+    }
+  });
+};
+
+window._stopCook = async function(ovenId) {
+  if (!confirm('Stop the oven?')) return;
+  try {
+    const result = await stopCook(ovenId);
+    if (result.error) throw new Error(result.error);
+    showToast('Oven stopped', 'success');
+    setTimeout(() => window._refreshOven(ovenId), 2000);
+  } catch (err) {
+    showToast(`Stop failed: ${err.message}`, 'error');
+  }
+};
+
+// =============================================
+// WATCH / UNWATCH (laundry)
 // =============================================
 window._toggleWatch = async function(applianceId) {
   const isWatching = watchedAppliances.has(applianceId);
@@ -383,7 +585,6 @@ async function handleWatchParam() {
   const watchType = params.get('watch');
   if (!watchType || !currentAppUserId) return;
 
-  // Clean URL
   window.history.replaceState({}, '', window.location.pathname);
 
   const target = appliances.find(a => a.device_type === watchType);
@@ -419,7 +620,7 @@ function startCountdown() {
       const display = newH > 0 ? `${newH}h ${newM}m` : `${newM}m`;
       el.textContent = `${display} remaining`;
     });
-  }, 60000); // Update every minute
+  }, 60000);
 }
 
 function stopCountdown() {
@@ -430,18 +631,18 @@ function stopCountdown() {
 }
 
 // =============================================
-// POLLING (via PollManager with circuit breaker)
+// POLLING
 // =============================================
 async function refreshFromDB() {
-  await loadAppliances();
+  await Promise.all([loadAppliances(), loadAnovaOvens()]);
   await loadWatcherStatus();
   renderSections();
 }
 
 // =============================================
-// ADMIN SETTINGS
+// ADMIN SETTINGS — LG
 // =============================================
-async function renderAdminSettings() {
+async function renderLgSettings() {
   const container = document.getElementById('lgSettingsContent');
   if (!container) return;
 
@@ -485,19 +686,111 @@ async function renderAdminSettings() {
 
     const { error } = await supabase
       .from('lg_config')
-      .update({
-        pat: pat || null,
-        test_mode: testMode,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ pat: pat || null, test_mode: testMode, updated_at: new Date().toISOString() })
       .eq('id', 1);
 
-    if (error) {
-      showToast(`Save failed: ${error.message}`, 'error');
-    } else {
-      showToast('LG ThinQ settings saved', 'success');
+    if (error) showToast(`Save failed: ${error.message}`, 'error');
+    else showToast('LG ThinQ settings saved', 'success');
+  });
+}
+
+// =============================================
+// ADMIN SETTINGS — ANOVA
+// =============================================
+async function renderAnovaSettings() {
+  const container = document.getElementById('anovaSettingsContent');
+  if (!container) return;
+
+  const { data: config } = await supabase
+    .from('anova_config')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  const c = config || {};
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:600px;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Anova PAT</label>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">
+          Generate in the Anova Oven app: More > Developer > Personal Access Tokens
+        </p>
+        <input type="password" id="anovaPatInput" value="${c.pat || ''}"
+               placeholder="anova-xxxx..."
+               style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;">
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <label style="font-weight:600;">Test Mode</label>
+        <input type="checkbox" id="anovaTestMode" ${c.test_mode ? 'checked' : ''}>
+        <span style="font-size:0.8rem;color:var(--text-muted);">When enabled, no API calls are made</span>
+      </div>
+      ${c.last_error ? `
+        <div style="background:var(--occupied-bg);border:1px solid var(--occupied);border-radius:var(--radius);padding:0.75rem;font-size:0.85rem;">
+          <strong>Last Error:</strong> ${c.last_error}
+        </div>
+      ` : ''}
+      ${c.last_synced_at ? `
+        <div style="font-size:0.8rem;color:var(--text-muted);">Last synced: ${formatOvenSyncTime(c.last_synced_at)}</div>
+      ` : ''}
+      <div style="display:flex;gap:0.75rem;">
+        <button id="anovaSaveBtn" class="btn-primary" style="padding:0.5rem 1.5rem;">Save Settings</button>
+        <button id="anovaTestBtn" class="btn-secondary" style="padding:0.5rem 1.5rem;">Test Connection</button>
+      </div>
+      <div id="anovaDeviceList"></div>
+    </div>
+  `;
+
+  document.getElementById('anovaSaveBtn')?.addEventListener('click', async () => {
+    const pat = document.getElementById('anovaPatInput')?.value?.trim();
+    const testMode = document.getElementById('anovaTestMode')?.checked;
+
+    const { error } = await supabase
+      .from('anova_config')
+      .update({ pat: pat || null, test_mode: testMode, updated_at: new Date().toISOString() })
+      .eq('id', 1);
+
+    if (error) showToast(`Save failed: ${error.message}`, 'error');
+    else showToast('Anova settings saved', 'success');
+  });
+
+  document.getElementById('anovaTestBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('anovaTestBtn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    try {
+      const result = await refreshOvenState();
+      if (result.error) throw new Error(result.error);
+      showToast(`Connected! Found oven (${result.ovenType})`, 'success');
+      await loadAnovaOvens();
+      renderSections();
+      renderAnovaSettings(); // refresh device list
+    } catch (err) {
+      showToast(`Connection failed: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Connection';
     }
   });
+
+  // Show discovered ovens
+  if (anovaOvens.length > 0) {
+    const deviceList = document.getElementById('anovaDeviceList');
+    if (deviceList) {
+      deviceList.innerHTML = `
+        <div style="margin-top:0.5rem;">
+          <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Discovered Ovens</label>
+          ${anovaOvens.map(o => `
+            <div style="padding:0.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.5rem;">
+              <div style="font-weight:600;">${o.name}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">
+                ID: ${o.cooker_id} | Type: ${o.oven_type || '?'}${o.firmware_version ? ` | FW: ${o.firmware_version}` : ''} | IP: ${o.lan_ip || '?'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
 }
 
 // =============================================
@@ -511,20 +804,24 @@ document.addEventListener('DOMContentLoaded', () => {
       currentUserRole = authState.appUser?.role;
       currentAppUserId = authState.appUser?.id;
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
+      canControlOven = hasPermission('control_oven');
 
-      // Enable admin settings inside Laundry section
-      showAdminSettings = hasPermission('admin_laundry_settings');
-
-      // Initial load + polling with circuit breaker
+      // Initial load + polling
       await refreshFromDB();
 
-      // Render admin settings after sections are in DOM
-      if (showAdminSettings) await renderAdminSettings();
+      // Show admin settings sections
+      const showLgAdmin = hasPermission('admin_laundry_settings');
+      const showOvenAdmin = hasPermission('admin_oven_settings');
+      if (showLgAdmin || showOvenAdmin) {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+        if (showLgAdmin) await renderLgSettings();
+        if (showOvenAdmin) await renderAnovaSettings();
+      }
+
       poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);
       poll.start();
       startCountdown();
 
-      // Handle ?watch= URL parameter (from QR code scan fallback)
       await handleWatchParam();
     },
   });

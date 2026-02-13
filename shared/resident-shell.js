@@ -24,7 +24,7 @@ const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'admin_pai_settings',
 ];
 
-const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars'];
+const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars', 'view_oven'];
 
 const DEVICE_PAGE_PATHS = new Set([
   'devices.html', 'devices',
