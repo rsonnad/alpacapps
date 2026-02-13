@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate — Gaden Shartse Gungru Khangtsen Monastery</title>
+  <meta property="og:title" content="Support Gaden Shartse Gungru Khangtsen Monastery">
+  <meta property="og:description" content="Help preserve Tibetan Buddhist wisdom. Support monks' education, healthcare, and sacred arts through secure donations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/donate.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       CSS Variables — Tibetan Buddhist Palette
+       ======================================== */
+    :root {
+      --maroon:        #7B1A2C;
+      --maroon-deep:   #5A0F1E;
+      --maroon-light:  #9E2B3F;
+      --gold:          #D4A843;
+      --gold-bright:   #E8C56A;
+      --gold-dim:      #B8923A;
+      --gold-pale:     #F5E6C0;
+      --saffron:       #F0A030;
+      --cream:         #FBF8F1;
+      --cream-warm:    #F5EFE2;
+      --cream-dark:    #EDE4D3;
+      --dark:          #1C1410;
+      --dark-soft:     #2E2420;
+      --text:          #2A1F1A;
+      --text-soft:     #5C4A3E;
+      --text-dim:      #8A7668;
+      --text-muted:    #B0A090;
+      --surface:       #FFFFFF;
+      --surface-warm:  #FFFDF9;
+      --border:        #E8DFD0;
+      --border-light:  #F0EAE0;
+      --success:       #2E7D32;
+      --info:          #1565C0;
+      --radius:        12px;
+      --radius-lg:     20px;
+      --radius-xl:     28px;
+      --shadow-sm:     0 1px 3px rgba(28,20,16,0.06), 0 1px 2px rgba(28,20,16,0.04);
+      --shadow-md:     0 4px 12px rgba(28,20,16,0.08), 0 2px 4px rgba(28,20,16,0.04);
+      --shadow-lg:     0 12px 40px rgba(28,20,16,0.12), 0 4px 12px rgba(28,20,16,0.06);
+      --shadow-xl:     0 20px 60px rgba(28,20,16,0.15), 0 8px 20px rgba(28,20,16,0.08);
+      --transition:    0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+       Reset & Base
+       ======================================== */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--dark);
+    }
+
+    a {
+      color: var(--maroon);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    a:hover { color: var(--gold-dim); }
+
+    img { max-width: 100%; display: block; }
+
+    /* ========================================
+       Decorative Patterns (CSS-only)
+       ======================================== */
+
+    /* Endless Knot SVG as data URI for reuse */
+    .pattern-bg {
+      position: relative;
+    }
+    .pattern-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath d='M40 10 C25 10 10 25 10 40 C10 55 25 70 40 70 C55 70 70 55 70 40 C70 25 55 10 40 10 M40 20 C50 20 60 30 60 40 C60 50 50 60 40 60 C30 60 20 50 20 40 C20 30 30 20 40 20 M30 35 L40 25 L50 35 L40 45 Z M35 40 L25 50 L35 60 M45 40 L55 50 L45 60' fill='none' stroke='%237B1A2C' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-size: 80px 80px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Dharma Wheel decorative element */
+    .dharma-wheel {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      position: relative;
+    }
+    .dharma-wheel::before {
+      content: '☸';
+      font-size: 28px;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    /* Section divider — lotus-inspired */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px 0;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      height: 1px;
+      width: 80px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .section-divider .divider-symbol {
+      color: var(--gold);
+      font-size: 18px;
+      letter-spacing: 8px;
+    }
+
+    /* ========================================
+       Layout
+       ======================================== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .container-narrow {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      position: relative;
+    }
+
+    /* ========================================
+       Navigation Bar
+       ======================================== */
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(251,248,241,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-light);
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .site-nav.scrolled {
+      background: rgba(251,248,241,0.95);
+      box-shadow: var(--shadow-sm);
+    }
+    .site-nav__inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .site-nav__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--maroon);
+    }
+    .site-nav__brand .wheel {
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .site-nav__links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+    .site-nav__links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-soft);
+      transition: color var(--transition);
+    }
+    .site-nav__links a:hover {
+      color: var(--maroon);
+    }
+    .site-nav__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      background: var(--maroon);
+      color: #fff !important;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .site-nav__cta:hover {
+      background: var(--maroon-deep);
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+    @media (max-width: 640px) {
+      .site-nav__links { display: none; }
+    }
+
+    /* ========================================
+       Hero Section
+       ======================================== */
+    .hero {
+      position: relative;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% 0%, rgba(123,26,44,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 80% 100%, rgba(212,168,67,0.06) 0%, transparent 50%),
+        var(--cream);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='45' fill='none' stroke='%237B1A2C' stroke-width='0.5'/%3E%3Ccircle cx='60' cy='60' r='35' fill='none' stroke='%237B1A2C' stroke-width='0.5'/%3E%3Cline x1='60' y1='15' x2='60' y2='105' stroke='%237B1A2C' stroke-width='0.4'/%3E%3Cline x1='15' y1='60' x2='105' y2='60' stroke='%237B1A2C' stroke-width='0.4'/%3E%3Cline x1='28' y1='28' x2='92' y2='92' stroke='%237B1A2C' stroke-width='0.4'/%3E%3Cline x1='92' y1='28' x2='28' y2='92' stroke='%237B1A2C' stroke-width='0.4'/%3E%3C/svg%3E");
+      background-size: 120px;
+      pointer-events: none;
+    }
+
+    /* Animated gradient orbs */
+    .hero__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+      animation: orbFloat 20s ease-in-out infinite;
+    }
+    .hero__orb--1 {
+      width: 400px; height: 400px;
+      background: var(--maroon);
+      top: -100px; right: -100px;
+      animation-delay: 0s;
+    }
+    .hero__orb--2 {
+      width: 300px; height: 300px;
+      background: var(--gold);
+      bottom: -80px; left: -60px;
+      animation-delay: -7s;
+    }
+    .hero__orb--3 {
+      width: 200px; height: 200px;
+      background: var(--saffron);
+      top: 40%; left: 60%;
+      animation-delay: -14s;
+      opacity: 0.08;
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 15px) scale(0.95); }
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+    }
+    .hero__location {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: rgba(123,26,44,0.06);
+      border: 1px solid rgba(123,26,44,0.12);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--maroon);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero__location .pin { font-size: 14px; }
+
+    .hero__title {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 400;
+      color: var(--maroon-deep);
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+    .hero__title em {
+      font-style: italic;
+      color: var(--maroon);
+    }
+
+    .hero__tagline {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--text-soft);
+      font-weight: 300;
+      line-height: 1.6;
+      margin-bottom: 36px;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero__actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      line-height: 1;
+    }
+    .btn-primary {
+      background: var(--maroon);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(123,26,44,0.25);
+    }
+    .btn-primary:hover {
+      background: var(--maroon-deep);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(123,26,44,0.3);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--maroon);
+      border: 1.5px solid var(--maroon);
+    }
+    .btn-secondary:hover {
+      background: rgba(123,26,44,0.04);
+      transform: translateY(-1px);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+      color: var(--dark);
+      box-shadow: 0 4px 16px rgba(212,168,67,0.3);
+    }
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212,168,67,0.4);
+    }
+
+    /* ========================================
+       About / Mission
+       ======================================== */
+    .about {
+      padding: 0 24px 80px;
+    }
+    .about__card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--surface-warm);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .about__card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--maroon), var(--gold), var(--maroon));
+    }
+    .about__icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .about__title {
+      font-size: 1.8rem;
+      color: var(--maroon-deep);
+      margin-bottom: 20px;
+    }
+    .about__text {
+      font-size: 1.05rem;
+      color: var(--text-soft);
+      line-height: 1.8;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .about__text strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .about__badges {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .about__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(123,26,44,0.04);
+      border: 1px solid rgba(123,26,44,0.1);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--maroon);
+    }
+
+    /* ========================================
+       Section Headers
+       ======================================== */
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-header__label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-header__title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      color: var(--maroon-deep);
+      margin-bottom: 12px;
+    }
+    .section-header__subtitle {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ========================================
+       Donation Amount Selector
+       ======================================== */
+    .donate-section {
+      padding: 80px 24px;
+      background:
+        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(212,168,67,0.04) 0%, transparent 60%),
+        var(--cream);
+    }
+
+    .donate-card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Frequency toggle */
+    .freq-toggle {
+      display: flex;
+      background: var(--cream-warm);
+      border-radius: 100px;
+      padding: 4px;
+      margin-bottom: 32px;
+      border: 1px solid var(--border-light);
+    }
+    .freq-toggle__btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .freq-toggle__btn.active {
+      background: var(--maroon);
+      color: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+    .freq-toggle__btn:hover:not(.active) {
+      color: var(--maroon);
+    }
+
+    /* Amount grid (uses radio inputs for state) */
+    .amount-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .amount-grid input[type="radio"] {
+      display: none;
+    }
+    .amount-grid label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 8px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--surface-warm);
+      text-align: center;
+    }
+    .amount-grid label:hover {
+      border-color: var(--gold);
+      background: rgba(212,168,67,0.04);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    .amount-grid input[type="radio"]:checked + label {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(212,168,67,0.08), rgba(212,168,67,0.15));
+      box-shadow: 0 0 0 3px rgba(212,168,67,0.15), var(--shadow-sm);
+      transform: translateY(-2px);
+    }
+    .amount-grid .amount-inr {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 2px;
+    }
+    .amount-grid .amount-usd {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .custom-amount {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .custom-amount input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--surface-warm);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .custom-amount input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+    }
+    .custom-amount input::placeholder { color: var(--text-muted); }
+    .custom-amount select {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface-warm);
+      cursor: pointer;
+      outline: none;
+    }
+    .custom-amount select:focus {
+      border-color: var(--gold);
+    }
+
+    .donate-btn-wrap {
+      text-align: center;
+    }
+    .donate-btn-wrap .btn {
+      width: 100%;
+      padding: 16px 32px;
+      font-size: 16px;
+    }
+    .donate-note {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+    .donate-note .lock { font-size: 14px; }
+
+    @media (max-width: 480px) {
+      .amount-grid { grid-template-columns: repeat(2, 1fr); }
+      .donate-card { padding: 28px 20px; }
+    }
+
+    /* ========================================
+       Sponsorship Programs
+       ======================================== */
+    .sponsorship-section {
+      padding: 0 24px 80px;
+    }
+
+    .sponsor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .sponsor-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .sponsor-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--gold), var(--maroon));
+      border-radius: 4px 0 0 4px;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .sponsor-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--gold);
+    }
+    .sponsor-card:hover::before {
+      opacity: 1;
+    }
+
+    .sponsor-card__icon {
+      font-size: 36px;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .sponsor-card__title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .sponsor-card__price {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .sponsor-card__price .inr {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--maroon);
+    }
+    .sponsor-card__price .usd {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .sponsor-card__price .period {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .sponsor-card__desc {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .sponsor-card__action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--maroon);
+      transition: gap var(--transition);
+    }
+    .sponsor-card:hover .sponsor-card__action {
+      gap: 10px;
+    }
+    .sponsor-card__action .arrow { transition: transform var(--transition); }
+    .sponsor-card:hover .sponsor-card__action .arrow {
+      transform: translateX(2px);
+    }
+
+    /* Butter lamp card — special gold treatment */
+    .sponsor-card--lamp {
+      background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(240,160,48,0.04));
+      border-color: var(--gold-pale);
+    }
+    .sponsor-card--lamp:hover {
+      border-color: var(--gold);
+    }
+
+    /* ========================================
+       Payment Methods
+       ======================================== */
+    .payment-section {
+      padding: 80px 24px;
+      background: var(--surface-warm);
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .payment-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .payment-cat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all var(--transition);
+    }
+    .payment-cat:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .payment-cat__label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .payment-cat__title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+    .payment-method {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+    .payment-method:last-child { border-bottom: none; }
+    .payment-method .pm-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .payment-method .pm-name { font-weight: 500; }
+    .payment-method .pm-detail {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Bank details card */
+    .bank-details {
+      background: var(--cream-warm);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .bank-details__row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+    .bank-details__row .label {
+      color: var(--text-dim);
+    }
+    .bank-details__row .value {
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'DM Sans', monospace;
+    }
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all var(--transition);
+      margin-left: 8px;
+    }
+    .copy-btn:hover {
+      border-color: var(--gold);
+      color: var(--maroon);
+      background: rgba(212,168,67,0.06);
+    }
+    .copy-btn.copied {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    /* QR code placeholder */
+    .qr-placeholder {
+      width: 120px;
+      height: 120px;
+      margin: 16px auto 8px;
+      background: var(--cream-warm);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .qr-placeholder .qr-icon { font-size: 28px; opacity: 0.3; }
+    .qr-placeholder .qr-text {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ========================================
+       Donor Information Form
+       ======================================== */
+    .form-section {
+      padding: 80px 24px;
+    }
+
+    .donor-form {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-grid .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+    .form-group label .optional {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface-warm);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--maroon);
+      flex-shrink: 0;
+    }
+    .checkbox-group label {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .checkbox-group label strong {
+      color: var(--text);
+    }
+
+    .form-divider {
+      height: 1px;
+      background: var(--border-light);
+      margin: 20px 0;
+      grid-column: 1 / -1;
+    }
+
+    .form-submit {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+    }
+    .form-submit .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 520px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .donor-form { padding: 28px 20px; }
+    }
+
+    /* ========================================
+       How It Works — Technical Section
+       ======================================== */
+    .tech-section {
+      padding: 80px 24px;
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(123,26,44,0.03) 0%, transparent 60%),
+        var(--cream);
+    }
+
+    .arch-flow {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-sm);
+    }
+    .arch-flow__title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--maroon-deep);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* Visual flow diagram */
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      padding: 12px 0;
+    }
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+      padding: 12px;
+      min-width: 90px;
+    }
+    .flow-step__icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--cream-warm), var(--cream-dark));
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 22px;
+      transition: all var(--transition);
+    }
+    .flow-step:hover .flow-step__icon {
+      border-color: var(--gold);
+      background: rgba(212,168,67,0.1);
+      transform: scale(1.08);
+    }
+    .flow-step__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      max-width: 90px;
+      line-height: 1.3;
+    }
+    .flow-arrow {
+      font-size: 18px;
+      color: var(--gold);
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+    @media (max-width: 640px) {
+      .flow-diagram { gap: 4px; }
+      .flow-step { min-width: 60px; padding: 8px 4px; }
+      .flow-step__icon { width: 38px; height: 38px; font-size: 18px; }
+      .flow-step__label { font-size: 10px; max-width: 65px; }
+      .flow-arrow { font-size: 14px; padding: 0 2px; }
+    }
+
+    /* Tech component cards */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 900px;
+      margin: 0 auto 48px;
+    }
+    .tech-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition);
+    }
+    .tech-card:hover {
+      box-shadow: var(--shadow-sm);
+      border-color: var(--gold);
+    }
+    .tech-card__icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(123,26,44,0.06), rgba(212,168,67,0.08));
+      border-radius: 10px;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .tech-card__body {
+      flex: 1;
+      min-width: 0;
+    }
+    .tech-card__title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .tech-card__desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Data flow steps */
+    .data-flow {
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+    .data-flow__title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--maroon-deep);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .flow-steps {
+      position: relative;
+      padding-left: 36px;
+    }
+    .flow-steps::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--gold), var(--maroon), var(--gold));
+      border-radius: 2px;
+    }
+    .flow-step-item {
+      position: relative;
+      padding: 12px 0 12px 24px;
+    }
+    .flow-step-item::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 18px;
+      width: 12px;
+      height: 12px;
+      background: var(--surface);
+      border: 3px solid var(--gold);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .flow-step-item:first-child::before { border-color: var(--maroon); background: var(--maroon); }
+    .flow-step-item:last-child::before { border-color: var(--success); background: var(--success); }
+    .flow-step-item__num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      background: rgba(123,26,44,0.06);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--maroon);
+      margin-right: 8px;
+    }
+    .flow-step-item__text {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+    .flow-step-item__text strong {
+      color: var(--text);
+    }
+
+    /* Comparison table */
+    .comparison-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-size: 14px;
+    }
+    .comparison-table thead th {
+      padding: 16px 20px;
+      text-align: left;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+    }
+    .comparison-table thead th:first-child {
+      color: var(--text-dim);
+    }
+    .comparison-table thead th:nth-child(2) {
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.01);
+    }
+    .comparison-table thead th:nth-child(3) {
+      color: var(--maroon);
+      background: rgba(123,26,44,0.03);
+    }
+    .comparison-table tbody td {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-soft);
+    }
+    .comparison-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .comparison-table tbody td:nth-child(2) {
+      background: rgba(0,0,0,0.01);
+      color: var(--text-dim);
+    }
+    .comparison-table tbody td:nth-child(3) {
+      background: rgba(123,26,44,0.02);
+      font-weight: 500;
+      color: var(--text);
+    }
+    .comparison-table .yes {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .comparison-table .no {
+      color: var(--text-muted);
+    }
+    .comparison-table .highlight {
+      color: var(--maroon);
+      font-weight: 700;
+    }
+
+    .cost-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 28px;
+      margin: 36px auto 0;
+      background: linear-gradient(135deg, rgba(123,26,44,0.04), rgba(212,168,67,0.06));
+      border: 1px solid var(--gold-pale);
+      border-radius: var(--radius-lg);
+      text-align: center;
+    }
+    .cost-badge__amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--maroon);
+    }
+    .cost-badge__detail {
+      text-align: left;
+    }
+    .cost-badge__label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .cost-badge__sub {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* ========================================
+       Footer
+       ======================================== */
+    .site-footer {
+      padding: 60px 24px 40px;
+      background: var(--dark);
+      color: rgba(255,255,255,0.65);
+      position: relative;
+    }
+    .site-footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--maroon), var(--gold), var(--saffron), var(--gold), var(--maroon));
+    }
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .footer-wheel {
+      font-size: 36px;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: block;
+      opacity: 0.5;
+    }
+    .footer-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 8px;
+    }
+    .footer-address {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      transition: color var(--transition);
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-badges {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .footer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.03em;
+    }
+    .footer-badge .fb-icon { font-size: 14px; }
+
+    .footer-version {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      margin-top: 16px;
+    }
+
+    /* ========================================
+       Utility Classes
+       ======================================== */
+    .text-center { text-align: center; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .mt-32 { margin-top: 32px; }
+    .mb-0 { margin-bottom: 0; }
+
+    /* Smooth reveal animation */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Focus styles for accessibility */
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    /* Selection */
+    ::selection {
+      background: rgba(123,26,44,0.15);
+      color: var(--dark);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* Demo notice banner */
+    .demo-banner {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: rgba(28,20,16,0.9);
+      backdrop-filter: blur(12px);
+      color: rgba(255,255,255,0.8);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: slideUp 0.5s ease-out 1s both;
+    }
+    .demo-banner .demo-dot {
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @media (max-width: 480px) {
+      .demo-banner { bottom: 16px; right: 16px; left: 16px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================
+       Navigation
+       ======================================== -->
+  <nav class="site-nav" id="siteNav">
+    <div class="site-nav__inner">
+      <div class="site-nav__brand">
+        <span class="wheel">&#9784;</span>
+        Gungru Khangtsen
+      </div>
+      <ul class="site-nav__links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#donate">Donate</a></li>
+        <li><a href="#sponsor">Sponsor</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#donate" class="site-nav__cta">Give Now</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ========================================
+       Hero Section
+       ======================================== -->
+  <section class="hero">
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+
+    <div class="hero__content">
+      <div class="hero__location">
+        <span class="pin">&#9673;</span>
+        Mundgod, Karnataka, India
+      </div>
+      <h1 class="hero__title">
+        Gaden Shartse<br>
+        <em>Gungru Khangtsen</em><br>
+        Monastery
+      </h1>
+      <p class="hero__tagline">
+        Supporting the preservation of Tibetan Buddhist wisdom through
+        education, sacred arts, and compassionate action.
+      </p>
+      <div class="hero__actions">
+        <a href="#donate" class="btn btn-primary">Make a Donation</a>
+        <a href="#sponsor" class="btn btn-secondary">Sponsor a Monk</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       About / Mission
+       ======================================== -->
+  <div class="section-divider">
+    <span class="divider-symbol">&#10043; &#10043; &#10043;</span>
+  </div>
+
+  <section class="about" id="about">
+    <div class="about__card reveal">
+      <span class="about__icon">&#127748;</span>
+      <h2 class="about__title">Preserving a Living Tradition</h2>
+      <p class="about__text">
+        Gungru Khangtsen is one of eleven monastic houses within <strong>Gaden Shartse Monastery</strong> in
+        Mundgod, India &mdash; home to the exiled Tibetan monastic community since 1966.
+        Our monks dedicate their lives to the study of Buddhist philosophy, debate, and meditation,
+        preserving a tradition stretching back over six centuries. Through annual
+        <strong>USA tours</strong> featuring sacred sand mandala creation, teachings, and traditional
+        ceremonies, we share this wisdom with the world while raising essential funds for the monastery.
+      </p>
+      <div class="about__badges">
+        <span class="about__badge">&#127982; Est. 1409 (Gaden)</span>
+        <span class="about__badge">&#128214; 60+ resident monks</span>
+        <span class="about__badge">&#127758; Annual USA Tours</span>
+        <span class="about__badge">&#9784; Sand Mandala Art</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Donation Amount Selector
+       ======================================== -->
+  <section class="donate-section" id="donate">
+    <div class="section-header reveal">
+      <div class="section-header__label">&#9784; Generosity</div>
+      <h2 class="section-header__title">Make a Donation</h2>
+      <p class="section-header__subtitle">
+        Every offering, no matter the size, directly supports the monks' education, healthcare, and daily sustenance.
+      </p>
+    </div>
+
+    <div class="donate-card reveal">
+      <!-- Frequency Toggle -->
+      <div class="freq-toggle" role="tablist">
+        <button class="freq-toggle__btn active" role="tab" aria-selected="true" data-freq="once" onclick="toggleFreq(this)">One-Time</button>
+        <button class="freq-toggle__btn" role="tab" aria-selected="false" data-freq="monthly" onclick="toggleFreq(this)">Monthly</button>
+      </div>
+
+      <!-- Amount Grid -->
+      <div class="amount-grid">
+        <input type="radio" id="amt500" name="donationAmount" value="500">
+        <label for="amt500">
+          <span class="amount-inr">&#8377;500</span>
+          <span class="amount-usd">~$6 USD</span>
+        </label>
+
+        <input type="radio" id="amt1000" name="donationAmount" value="1000" checked>
+        <label for="amt1000">
+          <span class="amount-inr">&#8377;1,000</span>
+          <span class="amount-usd">~$12 USD</span>
+        </label>
+
+        <input type="radio" id="amt5000" name="donationAmount" value="5000">
+        <label for="amt5000">
+          <span class="amount-inr">&#8377;5,000</span>
+          <span class="amount-usd">~$60 USD</span>
+        </label>
+
+        <input type="radio" id="amt10000" name="donationAmount" value="10000">
+        <label for="amt10000">
+          <span class="amount-inr">&#8377;10,000</span>
+          <span class="amount-usd">~$120 USD</span>
+        </label>
+
+        <input type="radio" id="amt25000" name="donationAmount" value="25000">
+        <label for="amt25000">
+          <span class="amount-inr">&#8377;25,000</span>
+          <span class="amount-usd">~$300 USD</span>
+        </label>
+
+        <input type="radio" id="amt50000" name="donationAmount" value="50000">
+        <label for="amt50000">
+          <span class="amount-inr">&#8377;50,000</span>
+          <span class="amount-usd">~$600 USD</span>
+        </label>
+      </div>
+
+      <!-- Custom Amount -->
+      <div class="custom-amount">
+        <input type="number" placeholder="Custom amount" min="1" id="customAmount" onfocus="clearPresets()">
+        <select id="currencySelect">
+          <option value="INR">&#8377; INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">&#8364; EUR</option>
+          <option value="GBP">&#163; GBP</option>
+        </select>
+      </div>
+
+      <!-- Monthly note (hidden by default) -->
+      <p class="donate-note" id="monthlyNote" style="display:none; margin-bottom: 16px; color: var(--maroon);">
+        &#8635; You will be charged monthly. Cancel anytime.
+      </p>
+
+      <!-- Donate Button -->
+      <div class="donate-btn-wrap">
+        <button class="btn btn-gold" onclick="handleDonate()">
+          &#9825; &nbsp;Donate Now
+        </button>
+        <p class="donate-note"><span class="lock">&#128274;</span> Secure payment &middot; Tax-deductible &middot; 80G receipt provided</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Sponsorship Programs
+       ======================================== -->
+  <div class="section-divider">
+    <span class="divider-symbol">&#10043; &#10043; &#10043;</span>
+  </div>
+
+  <section class="sponsorship-section" id="sponsor">
+    <div class="section-header reveal">
+      <div class="section-header__label">&#128330; Programs</div>
+      <h2 class="section-header__title">Sponsorship Programs</h2>
+      <p class="section-header__subtitle">
+        Choose a meaningful way to make a lasting impact on the monastic community.
+      </p>
+    </div>
+
+    <div class="sponsor-grid">
+      <div class="sponsor-card reveal" onclick="selectSponsor(3000)">
+        <span class="sponsor-card__icon">&#127834;</span>
+        <div class="sponsor-card__title">Monk's Daily Meals</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;3,000</span>
+          <span class="period">/month</span>
+          <span class="usd">($36 USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Feed one monk for an entire month. Your support provides three nutritious
+          meals daily, essential for the energy monks need for their rigorous study schedule.
+        </p>
+        <span class="sponsor-card__action">Sponsor meals <span class="arrow">&rarr;</span></span>
+      </div>
+
+      <div class="sponsor-card reveal" onclick="selectSponsor(5000)">
+        <span class="sponsor-card__icon">&#128218;</span>
+        <div class="sponsor-card__title">Education Fund</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;5,000</span>
+          <span class="period">/month</span>
+          <span class="usd">($60 USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Support a monk's philosophical studies. Covers textbooks, debate materials,
+          and access to the monastery's library of ancient texts and commentaries.
+        </p>
+        <span class="sponsor-card__action">Support education <span class="arrow">&rarr;</span></span>
+      </div>
+
+      <div class="sponsor-card reveal" onclick="selectSponsor(2000)">
+        <span class="sponsor-card__icon">&#127973;</span>
+        <div class="sponsor-card__title">Medical Care</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;2,000</span>
+          <span class="period">/month</span>
+          <span class="usd">($24 USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Healthcare for elderly monks who have dedicated decades to preservation of the
+          Dharma. Covers medicine, check-ups, and specialist visits.
+        </p>
+        <span class="sponsor-card__action">Fund healthcare <span class="arrow">&rarr;</span></span>
+      </div>
+
+      <div class="sponsor-card reveal" onclick="selectSponsor(10000)">
+        <span class="sponsor-card__icon">&#127959;</span>
+        <div class="sponsor-card__title">Building Fund</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;10,000</span>
+          <span class="period">+</span>
+          <span class="usd">($120+ USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Help restore and maintain the khangtsen's prayer hall, dormitories, and kitchen.
+          Our buildings serve as the physical foundation of monastic life.
+        </p>
+        <span class="sponsor-card__action">Contribute to building <span class="arrow">&rarr;</span></span>
+      </div>
+
+      <div class="sponsor-card reveal" onclick="selectSponsor(25000)">
+        <span class="sponsor-card__icon">&#127912;</span>
+        <div class="sponsor-card__title">Sacred Arts Tour</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;25,000</span>
+          <span class="period">+</span>
+          <span class="usd">($300+ USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Sponsor a sand mandala tour stop in the United States. Your generosity
+          funds travel, materials, and venue costs for monks sharing sacred art.
+        </p>
+        <span class="sponsor-card__action">Sponsor a tour <span class="arrow">&rarr;</span></span>
+      </div>
+
+      <div class="sponsor-card sponsor-card--lamp reveal" onclick="selectSponsor(108)">
+        <span class="sponsor-card__icon">&#128367;</span>
+        <div class="sponsor-card__title">Butter Lamp Offering</div>
+        <div class="sponsor-card__price">
+          <span class="inr">&#8377;108</span>
+          <span class="usd">($1.30 USD)</span>
+        </div>
+        <p class="sponsor-card__desc">
+          Light a butter lamp in your name or in memory of a loved one. The flame
+          symbolizes the dispelling of darkness and the illumination of wisdom.
+        </p>
+        <span class="sponsor-card__action">Light a lamp <span class="arrow">&rarr;</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Payment Methods
+       ======================================== -->
+  <section class="payment-section" id="payment">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-header__label">&#128179; Payment</div>
+        <h2 class="section-header__title">Payment Methods</h2>
+        <p class="section-header__subtitle">
+          We accept donations from around the world through multiple secure channels.
+        </p>
+      </div>
+
+      <div class="payment-categories">
+        <!-- Digital India -->
+        <div class="payment-cat reveal">
+          <div class="payment-cat__label">India &mdash; Digital</div>
+          <div class="payment-cat__title">UPI &amp; Wallets</div>
+          <div class="payment-method">
+            <span class="pm-icon">&#128241;</span>
+            <span class="pm-name">Google Pay</span>
+            <span class="pm-detail">UPI</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#128242;</span>
+            <span class="pm-name">PhonePe</span>
+            <span class="pm-detail">UPI</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#128179;</span>
+            <span class="pm-name">Paytm</span>
+            <span class="pm-detail">Wallet</span>
+          </div>
+          <div class="qr-placeholder">
+            <span class="qr-icon">&#9641;</span>
+            <span class="qr-text">UPI QR Code</span>
+          </div>
+          <div style="text-align:center; font-size: 13px; color: var(--text-dim); margin-top: 4px;">
+            UPI ID: <strong style="color: var(--text);">gungru@upi</strong>
+          </div>
+        </div>
+
+        <!-- International -->
+        <div class="payment-cat reveal">
+          <div class="payment-cat__label">International</div>
+          <div class="payment-cat__title">Cards &amp; Online</div>
+          <div class="payment-method">
+            <span class="pm-icon">&#128179;</span>
+            <span class="pm-name">Credit / Debit Card</span>
+            <span class="pm-detail">Visa, MC, Amex</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#127760;</span>
+            <span class="pm-name">Razorpay Checkout</span>
+            <span class="pm-detail">All methods</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#128176;</span>
+            <span class="pm-name">PayPal</span>
+            <span class="pm-detail">paypal.me/gungru</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#127974;</span>
+            <span class="pm-name">Wire Transfer / SWIFT</span>
+            <span class="pm-detail">See details below</span>
+          </div>
+        </div>
+
+        <!-- Crypto -->
+        <div class="payment-cat reveal">
+          <div class="payment-cat__label">Cryptocurrency</div>
+          <div class="payment-cat__title">Digital Assets</div>
+          <div class="payment-method">
+            <span class="pm-icon">&#8383;</span>
+            <span class="pm-name">Bitcoin (BTC)</span>
+          </div>
+          <div class="payment-method">
+            <span class="pm-icon">&#9830;</span>
+            <span class="pm-name">Ethereum (ETH)</span>
+          </div>
+          <div style="padding: 12px 0;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">BTC Address:</div>
+            <div style="font-family: monospace; font-size: 11px; color: var(--text-dim); word-break: break-all; background: var(--cream-warm); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-light);">
+              bc1qxy2kgdygjrsqtzq2n0yrf...
+              <button class="copy-btn" onclick="copyToClipboard(this, 'bc1qxy2kgdygjrsqtzq2n0yrf...')">Copy</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">ETH Address:</div>
+            <div style="font-family: monospace; font-size: 11px; color: var(--text-dim); word-break: break-all; background: var(--cream-warm); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-light);">
+              0x742d35Cc6634C0532925a3b...
+              <button class="copy-btn" onclick="copyToClipboard(this, '0x742d35Cc6634C0532925a3b...')">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Transfer -->
+        <div class="payment-cat reveal">
+          <div class="payment-cat__label">Offline</div>
+          <div class="payment-cat__title">Bank &amp; Check</div>
+          <div class="bank-details">
+            <div class="bank-details__row">
+              <span class="label">Bank</span>
+              <span class="value">State Bank of India
+                <button class="copy-btn" onclick="copyToClipboard(this, 'State Bank of India')">Copy</button>
+              </span>
+            </div>
+            <div class="bank-details__row">
+              <span class="label">Account</span>
+              <span class="value">XXXX XXXX 1234
+                <button class="copy-btn" onclick="copyToClipboard(this, 'XXXX XXXX 1234')">Copy</button>
+              </span>
+            </div>
+            <div class="bank-details__row">
+              <span class="label">IFSC</span>
+              <span class="value">SBIN0001234
+                <button class="copy-btn" onclick="copyToClipboard(this, 'SBIN0001234')">Copy</button>
+              </span>
+            </div>
+            <div class="bank-details__row">
+              <span class="label">SWIFT</span>
+              <span class="value">SBININBB
+                <button class="copy-btn" onclick="copyToClipboard(this, 'SBININBB')">Copy</button>
+              </span>
+            </div>
+          </div>
+          <div style="padding: 12px 0; font-size: 13px; color: var(--text-dim); line-height: 1.6;">
+            <strong style="color: var(--text-soft);">Check / Money Order:</strong><br>
+            Gaden Shartse Gungru Khangtsen<br>
+            P.O. Tibetan Colony, Mundgod<br>
+            N. Kanara, Karnataka 581411, India
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Donor Information Form
+       ======================================== -->
+  <section class="form-section" id="donor-info">
+    <div class="section-header reveal">
+      <div class="section-header__label">&#128221; Your Information</div>
+      <h2 class="section-header__title">Donor Details</h2>
+      <p class="section-header__subtitle">
+        Help us send your receipt and keep you updated on the impact of your generosity.
+      </p>
+    </div>
+
+    <form class="donor-form reveal" onsubmit="handleFormSubmit(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="donorName">Full Name</label>
+          <input type="text" id="donorName" placeholder="Tenzin Gyatso">
+        </div>
+        <div class="form-group">
+          <label for="donorEmail">Email Address</label>
+          <input type="email" id="donorEmail" placeholder="tenzin@example.com">
+        </div>
+        <div class="form-group">
+          <label for="donorPhone">Phone <span class="optional">(optional)</span></label>
+          <input type="tel" id="donorPhone" placeholder="+91 98765 43210">
+        </div>
+        <div class="form-group">
+          <label for="donorCountry">Country</label>
+          <select id="donorCountry">
+            <option value="">Select country</option>
+            <option value="IN">India</option>
+            <option value="US">United States</option>
+            <option value="CA">Canada</option>
+            <option value="GB">United Kingdom</option>
+            <option value="AU">Australia</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="JP">Japan</option>
+            <option value="TW">Taiwan</option>
+            <option value="SG">Singapore</option>
+            <option value="NP">Nepal</option>
+            <option value="BT">Bhutan</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-group full-width">
+          <label for="donorDedication">Dedication <span class="optional">(optional)</span></label>
+          <select id="donorDedication">
+            <option value="">No dedication</option>
+            <option value="honor">In honor of...</option>
+            <option value="memory">In memory of...</option>
+            <option value="merit">Dedicated to the merit of...</option>
+          </select>
+        </div>
+        <div class="form-group full-width" id="dedicationNameWrap" style="display:none;">
+          <label for="dedicationName">Dedication name</label>
+          <input type="text" id="dedicationName" placeholder="Name of the person">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="donorMessage">Message to the Monks <span class="optional">(optional)</span></label>
+          <textarea id="donorMessage" rows="3" placeholder="Your message of support, a prayer request, or any wishes you'd like to share..."></textarea>
+        </div>
+
+        <div class="full-width">
+          <div class="checkbox-group">
+            <input type="checkbox" id="chkAnonymous">
+            <label for="chkAnonymous">Make this donation <strong>anonymous</strong></label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="chkReceipt" checked>
+            <label for="chkReceipt">Send me a <strong>tax receipt</strong> (80G certificate for Indian donors)</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="chkUpdates" checked>
+            <label for="chkUpdates">Receive occasional updates about the monastery</label>
+          </div>
+        </div>
+
+        <div class="form-submit">
+          <button type="submit" class="btn btn-primary">
+            Complete Donation
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- ========================================
+       How It Works — Technical Section
+       ======================================== -->
+  <div class="section-divider">
+    <span class="divider-symbol">&#10043; &#10043; &#10043;</span>
+  </div>
+
+  <section class="tech-section" id="how-it-works">
+    <div class="section-header reveal">
+      <div class="section-header__label">&#128736; Architecture</div>
+      <h2 class="section-header__title">How It Works</h2>
+      <p class="section-header__subtitle">
+        A modern, serverless donation platform built on the AlpacApps infrastructure
+        &mdash; powerful technology at near-zero cost.
+      </p>
+    </div>
+
+    <!-- Architecture Flow Diagram -->
+    <div class="arch-flow reveal">
+      <div class="arch-flow__title">System Architecture</div>
+      <div class="flow-diagram">
+        <div class="flow-step">
+          <div class="flow-step__icon">&#128100;</div>
+          <div class="flow-step__label">Donor</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-step__icon">&#127760;</div>
+          <div class="flow-step__label">Static Page (GitHub&nbsp;Pages)</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-step__icon">&#128179;</div>
+          <div class="flow-step__label">Razorpay / UPI&nbsp;SDK</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-step__icon">&#9889;</div>
+          <div class="flow-step__label">Supabase Edge&nbsp;Function</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-step__icon">&#127974;</div>
+          <div class="flow-step__label">Payment Gateway</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="flow-step__icon">&#128293;</div>
+          <div class="flow-step__label">Monastery Bank&nbsp;Account</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Technical Components -->
+    <div class="tech-grid">
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#127760;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Frontend</div>
+          <div class="tech-card__desc">Static HTML/CSS/JS on GitHub Pages. Zero hosting cost, global CDN, 99.99% uptime.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128179;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Payment Processing</div>
+          <div class="tech-card__desc">Razorpay for Indian + international payments. Client-side tokenization, server-side processing via Supabase Edge Functions.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128241;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">UPI Integration</div>
+          <div class="tech-card__desc">Native QR code generation for instant Indian mobile payments. Google Pay, PhonePe, Paytm supported.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128451;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Database</div>
+          <div class="tech-card__desc">Supabase (PostgreSQL) for donor records, transaction ledger, receipt tracking, and analytics.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128231;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Email Receipts</div>
+          <div class="tech-card__desc">Automated branded thank-you emails via Resend API with 80G tax receipt for Indian donors.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128172;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">SMS Confirmation</div>
+          <div class="tech-card__desc">Instant donation confirmation to donor's phone via Telnyx. Works in 200+ countries.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128257;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Recurring Billing</div>
+          <div class="tech-card__desc">Razorpay Subscriptions API for monthly sponsorships with automatic retry and notifications.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128178;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Multi-Currency</div>
+          <div class="tech-card__desc">Accept INR, USD, EUR, GBP. Auto-converted to INR at settlement. Real-time exchange rates.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128279;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Webhook-Driven</div>
+          <div class="tech-card__desc">Payment confirmations via Razorpay webhooks trigger ledger updates, receipts, and notifications automatically.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#129302;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">AI Assistant</div>
+          <div class="tech-card__desc">PAI-powered chatbot for donation questions, available in English, Hindi, and Tibetan.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#128200;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Cost Tracking</div>
+          <div class="tech-card__desc">All API calls logged to api_usage_log for full financial transparency and cost optimization.</div>
+        </div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-card__icon">&#9729;</div>
+        <div class="tech-card__body">
+          <div class="tech-card__title">Zero Server Cost</div>
+          <div class="tech-card__desc">Fully serverless architecture. Supabase Edge Functions handle all backend logic on demand.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Flow Steps -->
+    <div class="data-flow reveal">
+      <div class="data-flow__title">Donation Data Flow</div>
+      <div class="flow-steps">
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">1</span>
+          <span class="flow-step-item__text"><strong>Donor selects amount</strong> and preferred payment method on this page</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">2</span>
+          <span class="flow-step-item__text">Client calls <strong>Supabase Edge Function</strong> to create a Razorpay Order</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">3</span>
+          <span class="flow-step-item__text"><strong>Razorpay Checkout</strong> opens securely (card, UPI, netbanking, wallet)</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">4</span>
+          <span class="flow-step-item__text">Payment processed by gateway &mdash; <strong>webhook fires</strong> to Supabase</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">5</span>
+          <span class="flow-step-item__text">Edge function <strong>verifies signature</strong> &rarr; writes to <code>donations</code> + <code>ledger</code> tables</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">6</span>
+          <span class="flow-step-item__text"><strong>Receipt email</strong> sent automatically (with 80G number for Indian donors)</span>
+        </div>
+        <div class="flow-step-item">
+          <span class="flow-step-item__num">7</span>
+          <span class="flow-step-item__text"><strong>Donor dashboard updated</strong> in real-time &mdash; view all past donations and impact</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="container reveal">
+      <div class="data-flow__title" style="margin-bottom: 24px;">Compared to Current Website</div>
+      <div class="comparison-wrap">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Current (Wix)</th>
+              <th>AlpacApps Platform</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hosting</td>
+              <td>$16/mo (Wix Premium)</td>
+              <td class="highlight">$0 (GitHub Pages)</td>
+            </tr>
+            <tr>
+              <td>Payment fees</td>
+              <td>PayPal 3.49% + $0.49</td>
+              <td class="highlight">Razorpay 2% (domestic)</td>
+            </tr>
+            <tr>
+              <td>UPI support</td>
+              <td class="no">No</td>
+              <td class="yes">Yes (native QR)</td>
+            </tr>
+            <tr>
+              <td>Custom receipts</td>
+              <td class="no">No</td>
+              <td class="yes">Automated 80G receipts</td>
+            </tr>
+            <tr>
+              <td>SMS confirmations</td>
+              <td class="no">No</td>
+              <td class="yes">Yes (Telnyx)</td>
+            </tr>
+            <tr>
+              <td>Donor CRM</td>
+              <td class="no">No</td>
+              <td class="yes">Built-in (Supabase)</td>
+            </tr>
+            <tr>
+              <td>AI chatbot</td>
+              <td class="no">No</td>
+              <td class="yes">PAI assistant</td>
+            </tr>
+            <tr>
+              <td>Multi-language</td>
+              <td class="no">No</td>
+              <td class="yes">English, Hindi, Tibetan</td>
+            </tr>
+            <tr>
+              <td>Recurring donations</td>
+              <td>Limited</td>
+              <td class="yes">Full subscription mgmt</td>
+            </tr>
+            <tr>
+              <td>Analytics</td>
+              <td>Basic Wix stats</td>
+              <td class="yes">Full cost + donor analytics</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-center mt-32">
+        <div class="cost-badge">
+          <div class="cost-badge__amount">~$25/mo</div>
+          <div class="cost-badge__detail">
+            <div class="cost-badge__label">Total Platform Cost</div>
+            <div class="cost-badge__sub">Supabase free tier + Razorpay per-transaction only</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Footer
+       ======================================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-wheel">&#9784;</span>
+      <div class="footer-name">Gaden Shartse Gungru Khangtsen Monastery</div>
+      <div class="footer-address">
+        P.O. Tibetan Colony, Mundgod<br>
+        N. Kanara, Karnataka 581411, India<br>
+        info@gadengungru.com
+      </div>
+      <div class="footer-links">
+        <a href="#about">About</a>
+        <a href="#donate">Donate</a>
+        <a href="#sponsor">Programs</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-badges">
+        <span class="footer-badge">
+          <span class="fb-icon">&#128421;</span>
+          Built with AlpacApps Infrastructure
+        </span>
+        <span class="footer-badge">
+          <span class="fb-icon">&#10024;</span>
+          Powered by Claude
+        </span>
+      </div>
+      <div class="footer-version">
+        <span data-site-version>v000000.00</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Demo Notice -->
+  <div class="demo-banner">
+    <span class="demo-dot"></span>
+    Demo &mdash; No real payments are processed
+  </div>
+
+  <!-- ========================================
+       JavaScript (Inline, Demo Interactions)
+       ======================================== -->
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('siteNav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Frequency toggle
+    function toggleFreq(btn) {
+      document.querySelectorAll('.freq-toggle__btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const monthlyNote = document.getElementById('monthlyNote');
+      if (btn.dataset.freq === 'monthly') {
+        monthlyNote.style.display = 'block';
+      } else {
+        monthlyNote.style.display = 'none';
+      }
+    }
+
+    // Clear preset selection when custom amount is focused
+    function clearPresets() {
+      document.querySelectorAll('.amount-grid input[type="radio"]').forEach(r => {
+        r.checked = false;
+      });
+    }
+
+    // Handle donation button (demo)
+    function handleDonate() {
+      const selected = document.querySelector('.amount-grid input[type="radio"]:checked');
+      const custom = document.getElementById('customAmount').value;
+      const currency = document.getElementById('currencySelect').value;
+      const isMonthly = document.querySelector('.freq-toggle__btn.active').dataset.freq === 'monthly';
+
+      let amount = '';
+      if (selected) {
+        amount = '\u20B9' + parseInt(selected.value).toLocaleString('en-IN');
+      } else if (custom) {
+        const symbols = { INR: '\u20B9', USD: '$', EUR: '\u20AC', GBP: '\u00A3' };
+        amount = (symbols[currency] || '') + parseInt(custom).toLocaleString('en-IN');
+      } else {
+        showToast('Please select or enter a donation amount.', 'info');
+        return;
+      }
+
+      const freq = isMonthly ? ' monthly' : '';
+      showToast('Thank you! In production, Razorpay Checkout would open for ' + amount + freq + '.', 'success');
+    }
+
+    // Sponsor card click
+    function selectSponsor(amount) {
+      // Scroll to donation section and pre-select
+      document.getElementById('donate').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        // Set monthly
+        const monthlyBtn = document.querySelector('.freq-toggle__btn[data-freq="monthly"]');
+        if (amount >= 2000) toggleFreq(monthlyBtn);
+
+        // Check if amount matches a preset
+        const radio = document.querySelector('.amount-grid input[value="' + amount + '"]');
+        if (radio) {
+          radio.checked = true;
+          document.getElementById('customAmount').value = '';
+        } else {
+          clearPresets();
+          document.getElementById('customAmount').value = amount;
+          document.getElementById('currencySelect').value = 'INR';
+        }
+      }, 500);
+    }
+
+    // Form submit (demo)
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('donorName').value || 'Friend';
+      showToast('Thank you, ' + name + '! In production, your donation would be processed now.', 'success');
+    }
+
+    // Copy to clipboard
+    function copyToClipboard(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // Dedication field toggle
+    document.getElementById('donorDedication').addEventListener('change', function() {
+      const wrap = document.getElementById('dedicationNameWrap');
+      wrap.style.display = this.value ? 'flex' : 'none';
+    });
+
+    // Toast notification
+    function showToast(message, type) {
+      const existing = document.querySelector('.toast-notification');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);z-index:10000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:500;font-family:DM Sans,sans-serif;max-width:90vw;text-align:center;opacity:0;transition:all 0.3s ease;box-shadow:0 8px 32px rgba(0,0,0,0.12);';
+
+      if (type === 'success') {
+        toast.style.background = '#f0fdf4';
+        toast.style.color = '#166534';
+        toast.style.border = '1px solid #bbf7d0';
+      } else {
+        toast.style.background = '#fffbeb';
+        toast.style.color = '#92400e';
+        toast.style.border = '1px solid #fde68a';
+      }
+
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+      });
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Scroll reveal animation
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
