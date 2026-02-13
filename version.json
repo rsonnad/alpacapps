@@ -1,12 +1,12 @@
 {
-  "version": "v260213.04 1:05a",
-  "release": 143,
-  "sha": "792c4d85",
-  "fullSha": "792c4d85281a67c2a69fb3553ea755f7ded9b75d",
+  "version": "v260213.05 1:08a",
+  "release": 144,
+  "sha": "e05d0343",
+  "fullSha": "e05d034385affc857ae03abec30535bf399a4cf2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 07:05:17+00",
-  "commits": [{"sha":"792c4d85","message":"Add grab cursor and drag opacity for Spotify search results","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 07:08:25+00",
+  "commits": [{"sha":"e05d0343","message":"Fix PAI crash: replace broken google_search combo with web_search tool","author":"Rahul Sonnad"}]
 }
