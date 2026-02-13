@@ -70,7 +70,12 @@ const ROLE_LEVEL: Record<string, number> = {
 };
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+
+// Gemini 2.5 Pro pricing (per 1M tokens, ≤200k context)
+const GEMINI_INPUT_COST_PER_M = 1.25;
+const GEMINI_OUTPUT_COST_PER_M = 10.0;
+const MONTHLY_SPEND_ALERT_THRESHOLD = 10.0; // USD
 
 const GOVEE_BASE_URL = "https://openapi.api.govee.com/router/api/v1";
 
@@ -2232,8 +2237,8 @@ async function callGemini(
     contents,
     generationConfig: {
       temperature: 0.4,
-      maxOutputTokens: 1024,
-      thinkingConfig: { thinkingBudget: 0 }, // disable thinking for faster, simpler responses
+      maxOutputTokens: 2048,
+      thinkingConfig: { thinkingBudget: 1024 },
     },
   };
   if (systemInstruction) {
@@ -2839,12 +2844,23 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     throw new Error("GEMINI_API_KEY not configured");
   }
 
+  // Track cumulative token usage across all Gemini calls in this request
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let geminiCallCount = 0;
+
   let geminiResult = await callGemini(
     GEMINI_API_KEY,
     contents,
     TOOL_DECLARATIONS,
     systemPrompt
   );
+  geminiCallCount++;
+  const usage0 = geminiResult.usageMetadata;
+  if (usage0) {
+    totalInputTokens += usage0.promptTokenCount || 0;
+    totalOutputTokens += (usage0.candidatesTokenCount || 0) + (usage0.thoughtsTokenCount || 0);
+  }
 
   // 7. Process function calls (max 3 rounds)
   const actionsTaken: Array<{
@@ -2906,6 +2922,12 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     });
 
     geminiResult = await callGemini(GEMINI_API_KEY, contents, TOOL_DECLARATIONS, systemPrompt);
+    geminiCallCount++;
+    const usageN = geminiResult.usageMetadata;
+    if (usageN) {
+      totalInputTokens += usageN.promptTokenCount || 0;
+      totalOutputTokens += (usageN.candidatesTokenCount || 0) + (usageN.thoughtsTokenCount || 0);
+    }
   }
 
   // 8. Extract final text
@@ -2932,10 +2954,136 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     } catch (_) { /* non-critical */ }
   }
 
+  // 9. Log Gemini usage to api_usage_log + check spend alert
+  const estimatedCost =
+    (totalInputTokens / 1_000_000) * GEMINI_INPUT_COST_PER_M +
+    (totalOutputTokens / 1_000_000) * GEMINI_OUTPUT_COST_PER_M;
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  // Fire-and-forget: log usage
+  supabaseAdmin.from("api_usage_log").insert({
+    vendor: "gemini",
+    category: "pai_chat",
+    endpoint: "generateContent",
+    input_tokens: totalInputTokens,
+    output_tokens: totalOutputTokens,
+    estimated_cost_usd: estimatedCost,
+    metadata: {
+      model: "gemini-2.5-pro",
+      source: channelName,
+      gemini_calls: geminiCallCount,
+      tool_calls: actionsTaken.length,
+    },
+    app_user_id: scope.appUserId || null,
+  }).then(() => {});
+
+  // Check monthly spend threshold (fire-and-forget)
+  checkMonthlySpendAlert(supabaseAdmin, estimatedCost).catch((e) =>
+    console.error("Spend alert check failed:", e.message)
+  );
+
   return jsonResponse({
     reply,
     actions_taken: actionsTaken.length ? actionsTaken : undefined,
   });
+}
+
+// =============================================
+// Monthly Spend Alert
+// =============================================
+
+async function checkMonthlySpendAlert(
+  supabase: any,
+  justLoggedCost: number
+) {
+  // Quick skip: if this single call is tiny and we're unlikely near threshold, skip the DB query
+  // We check every time cost > $0.01 or randomly ~10% of calls to catch gradual accumulation
+  if (justLoggedCost < 0.01 && Math.random() > 0.1) return;
+
+  // Sum all Gemini costs this month
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .rpc("sum_api_costs", {
+      p_vendor: "gemini",
+      p_since: monthStart.toISOString(),
+    });
+
+  // If the RPC doesn't exist yet, fall back to a direct query
+  let totalSpend: number;
+  if (error) {
+    const { data: rows } = await supabase
+      .from("api_usage_log")
+      .select("estimated_cost_usd")
+      .eq("vendor", "gemini")
+      .gte("created_at", monthStart.toISOString());
+    totalSpend = (rows || []).reduce(
+      (sum: number, r: any) => sum + (r.estimated_cost_usd || 0),
+      0
+    );
+  } else {
+    totalSpend = data || 0;
+  }
+
+  if (totalSpend < MONTHLY_SPEND_ALERT_THRESHOLD) return;
+
+  // Check if we already sent an alert this month (avoid spamming)
+  const { data: existing } = await supabase
+    .from("api_usage_log")
+    .select("id")
+    .eq("vendor", "system")
+    .eq("category", "spend_alert_sent")
+    .gte("created_at", monthStart.toISOString())
+    .limit(1);
+
+  if (existing && existing.length > 0) return; // already alerted
+
+  // Mark alert as sent (do this first to prevent race conditions)
+  await supabase.from("api_usage_log").insert({
+    vendor: "system",
+    category: "spend_alert_sent",
+    endpoint: "checkMonthlySpendAlert",
+    estimated_cost_usd: 0,
+    metadata: { threshold: MONTHLY_SPEND_ALERT_THRESHOLD, total_spend: totalSpend },
+  });
+
+  // Send alert email
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const month = monthStart.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        type: "custom",
+        to: "alpacaautomatic@gmail.com",
+        subject: `⚠️ PAI API spend alert: $${totalSpend.toFixed(2)} this month`,
+        data: {
+          html: `
+            <h2>Monthly API Spend Alert</h2>
+            <p>Gemini API spending for <strong>${month}</strong> has reached <strong>$${totalSpend.toFixed(2)}</strong>, exceeding the $${MONTHLY_SPEND_ALERT_THRESHOLD.toFixed(2)} threshold.</p>
+            <p>This is driven by PAI chat using <strong>Gemini 2.5 Pro</strong>.</p>
+            <p>Review usage at the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">Accounting Dashboard</a>.</p>
+            <p style="color: #888; font-size: 12px;">This alert is sent once per month when the threshold is crossed.</p>
+          `,
+        },
+      }),
+    });
+    console.log(`Spend alert sent: $${totalSpend.toFixed(2)} / $${MONTHLY_SPEND_ALERT_THRESHOLD}`);
+  } catch (e) {
+    console.error("Failed to send spend alert email:", e.message);
+  }
 }
 
 // =============================================

@@ -5,6 +5,19 @@ This file provides context for Claude (AI assistant) when working on this codeba
 > **See `CLAUDE.local.md` for credentials, connection strings, and environment-specific configuration.**
 > That file is gitignored and contains operator directives, database access details, API keys, and deployment-specific settings.
 
+## MANDATORY: End Every Response With Version + URLs
+
+**After ANY code change or deploy, the LAST lines of your response MUST be:**
+
+```
+vYYMMDD.NN H:MMa [model]
+https://alpacaplayhouse.com/path/to/affected-page.html
+```
+
+- Read the version from `version.json` (after pulling the CI bump commit)
+- List clickable URLs to every page affected by the change
+- These lines go at the **very end** — nothing after them
+
 ## Excluded: `/mistiq/`
 
 The `/mistiq/` directory is a **separate, unrelated project** (Mistiq Staffing). It shares this repo for hosting convenience only. Do NOT:
@@ -311,6 +324,14 @@ document_index  - Documents stored in R2 for PAI lookup
                   (title, description, keywords [text[]], source_url,
                    file_type, file_size_bytes, storage_backend [supabase/r2],
                    is_active, uploaded_by, created_at, updated_at)
+```
+
+### Spotify Integration
+```
+spotify_config  - Spotify API configuration (singleton row, id=1)
+                  (client_id, client_secret, refresh_token, access_token,
+                   token_expires_at, is_active, test_mode,
+                   created_at, updated_at)
 ```
 
 ### AI Image Generation
@@ -761,6 +782,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 
 | Vendor | Pricing |
 |--------|---------|
+| Gemini 2.5 Pro | Input: $1.25/1M tokens, Output: $10.00/1M tokens (PAI chat) |
 | Gemini 2.5 Flash | Input: $0.15/1M tokens, Output: $3.50/1M tokens (under 200k context) |
 | Gemini 2.0 Flash | Input: $0.10/1M tokens, Output: $0.40/1M tokens |
 | Claude (Anthropic) | Varies by model — check current pricing |
@@ -840,6 +862,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info
 - **Workers on droplet:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`), PAI Discord Bot (`pai-discord.service`)
+
+### Spotify (Music Integration)
+- **API**: Spotify Web API + Authorization Code Flow with PKCE
+- **App**: AlpacApps (Development mode)
+- **Dashboard**: https://developer.spotify.com/dashboard
+- **Config**: `spotify_config` table (client_id, client_secret, tokens)
+- **Redirect URIs**: `http://127.0.0.1:8080` (local dev), `https://alpacaplayhouse.com/auth/spotify/callback` (production)
+- **Scopes**: TBD (will need `user-read-playback-state`, `user-modify-playback-state`, etc.)
+- **DB**: `spotify_config` (single row, id=1)
 
 ### Home Automation (Sonos, UniFi, Cameras)
 - Full documentation in `HOMEAUTOMATION.md`
