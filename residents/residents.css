@@ -1886,9 +1886,12 @@ body.is-staff .staff-only { display: inline-flex; }
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.5rem;
-  cursor: pointer;
+  cursor: grab;
   border-bottom: 1px solid var(--border);
   transition: background 0.12s;
+}
+.sonos-search-result.dragging {
+  opacity: 0.4;
 }
 
 .sonos-search-result:last-child {
