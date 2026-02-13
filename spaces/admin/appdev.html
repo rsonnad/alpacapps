@@ -192,11 +192,18 @@
 
     .appdev-request-title {
       flex: 1;
+      min-width: 0;
       font-size: 0.9rem;
       font-weight: 500;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .appdev-request-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
     }
     .appdev-request-time {
       font-size: 0.75rem;
@@ -212,6 +219,7 @@
     }
     .appdev-request.collapsed .appdev-request-chevron { transform: rotate(-90deg); }
     .appdev-request.collapsed .appdev-request-body { display: none; }
+    .appdev-request.collapsed .appdev-followup-badge { display: none; }
 
     /* Request body / timeline */
     .appdev-request-body {
