@@ -1133,48 +1133,142 @@ function setupSearch() {
 // =============================================
 // SPOTIFY SEARCH
 // =============================================
+let spotifyResults = [];
+let spotifySelected = new Set();
+
 function setupSpotifySearch() {
   const form = document.getElementById('spotifySearchForm');
   if (!form) return;
 
-  // Populate zone dropdown from current zone groups
   populateSpotifyZones();
 
+  // Search form submit
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const query = document.getElementById('spotifyQuery')?.value?.trim();
     const searchType = document.getElementById('spotifyType')?.value || 'song';
-    const zone = document.getElementById('spotifyZone')?.value;
     const statusEl = document.getElementById('spotifySearchStatus');
     const btn = document.getElementById('spotifySearchBtn');
+    const resultsEl = document.getElementById('spotifyResults');
+    const playBar = document.getElementById('spotifyPlayBar');
 
     if (!query) return;
-    if (!zone) {
-      showToast('Select a zone to play on', 'error');
-      return;
-    }
 
     btn.disabled = true;
-    btn.textContent = '...';
     statusEl.classList.remove('hidden');
     statusEl.className = 'sonos-search__status';
-    statusEl.textContent = `Searching for ${searchType} "${query}"...`;
+    statusEl.textContent = `Searching for ${searchType}s...`;
+    resultsEl.classList.add('hidden');
+    playBar.classList.add('hidden');
+    spotifyResults = [];
+    spotifySelected.clear();
 
     try {
-      await sonosApi('musicsearch', { room: zone, service: 'spotify', searchType, query });
-      statusEl.className = 'sonos-search__status sonos-search__status--success';
-      statusEl.textContent = `▶ Playing "${query}" on ${zone}`;
-      setTimeout(() => refreshAllZones(), 2500);
-      // Clear after a few seconds
-      setTimeout(() => { statusEl.classList.add('hidden'); }, 4000);
+      const data = await sonosApi('spotify-search', { query, searchType, limit: 10 });
+      spotifyResults = data.results || [];
+      if (spotifyResults.length === 0) {
+        statusEl.className = 'sonos-search__status sonos-search__status--error';
+        statusEl.textContent = 'No results found.';
+      } else {
+        statusEl.classList.add('hidden');
+        renderSpotifyResults();
+        resultsEl.classList.remove('hidden');
+        playBar.classList.remove('hidden');
+        updatePlayBtn();
+      }
     } catch (err) {
       statusEl.className = 'sonos-search__status sonos-search__status--error';
-      statusEl.textContent = `Failed: ${err.message}`;
+      statusEl.textContent = `Search failed: ${err.message}`;
     } finally {
       btn.disabled = false;
-      btn.textContent = '▶';
     }
   });
+
+  // Play button click
+  document.getElementById('spotifyPlayBtn')?.addEventListener('click', async () => {
+    const zone = document.getElementById('spotifyZone')?.value;
+    if (!zone) { showToast('Select a zone to play on', 'error'); return; }
+
+    const selected = spotifyResults.filter((_, i) => spotifySelected.has(i));
+    if (selected.length === 0) { showToast('Select at least one result', 'error'); return; }
+
+    const playBtn = document.getElementById('spotifyPlayBtn');
+    const statusEl = document.getElementById('spotifySearchStatus');
+    playBtn.disabled = true;
+    playBtn.textContent = '...';
+
+    try {
+      // Play the first selected, then queue the rest
+      for (let i = 0; i < selected.length; i++) {
+        const item = selected[i];
+        const searchType = document.getElementById('spotifyType')?.value || 'song';
+        await sonosApi('musicsearch', {
+          room: zone,
+          service: 'spotify',
+          searchType,
+          query: searchType === 'song' ? `${item.title} ${item.artist}` : item.title
+        });
+        if (i === 0) {
+          statusEl.classList.remove('hidden');
+          statusEl.className = 'sonos-search__status sonos-search__status--success';
+          statusEl.textContent = `▶ Playing "${item.title}" on ${zone}`;
+        }
+      }
+      setTimeout(() => refreshAllZones(), 2500);
+      setTimeout(() => { statusEl.classList.add('hidden'); }, 4000);
+    } catch (err) {
+      statusEl.classList.remove('hidden');
+      statusEl.className = 'sonos-search__status sonos-search__status--error';
+      statusEl.textContent = `Playback failed: ${err.message}`;
+    } finally {
+      playBtn.disabled = false;
+      playBtn.textContent = '▶';
+    }
+  });
+
+  // Results click delegation
+  document.getElementById('spotifyResults')?.addEventListener('click', (e) => {
+    const item = e.target.closest('.sonos-search-result');
+    if (!item) return;
+    const idx = parseInt(item.dataset.idx, 10);
+    if (isNaN(idx)) return;
+    if (spotifySelected.has(idx)) {
+      spotifySelected.delete(idx);
+      item.classList.remove('sonos-search-result--selected');
+    } else {
+      spotifySelected.add(idx);
+      item.classList.add('sonos-search-result--selected');
+    }
+    updatePlayBtn();
+  });
+}
+
+function renderSpotifyResults() {
+  const container = document.getElementById('spotifyResults');
+  if (!container) return;
+  container.innerHTML = spotifyResults.map((r, i) => `
+    <div class="sonos-search-result ${spotifySelected.has(i) ? 'sonos-search-result--selected' : ''}" data-idx="${i}">
+      ${r.albumArt ? `<img class="sonos-search-result__art" src="${r.albumArt}" alt="" loading="lazy">` : '<div class="sonos-search-result__art sonos-search-result__art--empty"></div>'}
+      <div class="sonos-search-result__info">
+        <div class="sonos-search-result__title">${escapeHtml(r.title)}</div>
+        <div class="sonos-search-result__meta">${escapeHtml(r.artist)}${r.duration ? ` · ${r.duration}` : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updatePlayBtn() {
+  const btn = document.getElementById('spotifyPlayBtn');
+  if (!btn) return;
+  const count = spotifySelected.size;
+  btn.disabled = count === 0;
+  btn.textContent = count > 1 ? `▶ ${count}` : '▶';
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
 }
 
 function populateSpotifyZones() {

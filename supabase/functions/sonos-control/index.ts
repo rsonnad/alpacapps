@@ -28,7 +28,8 @@ interface SonosRequest {
     | "balance"
     | "announce"
     | "tts_preview"
-    | "musicsearch";
+    | "musicsearch"
+    | "spotify-search";
   room?: string;
   value?: number | string;
   name?: string;
@@ -39,6 +40,7 @@ interface SonosRequest {
   service?: string;
   searchType?: string;
   query?: string;
+  limit?: number;
 }
 
 // =============================================
@@ -89,6 +91,62 @@ function base64ToBytes(base64: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
+}
+
+// =============================================
+// Spotify API Helpers
+// =============================================
+
+let spotifyToken: string | null = null;
+let spotifyTokenExpiresAt = 0;
+let spotifyClientId: string | null = null;
+let spotifyClientSecret: string | null = null;
+
+async function getSpotifyToken(supabase: any): Promise<string> {
+  if (spotifyToken && Date.now() < spotifyTokenExpiresAt - 60_000) {
+    return spotifyToken;
+  }
+  // Load credentials from spotify_config table if not cached
+  if (!spotifyClientId || !spotifyClientSecret) {
+    const { data: config, error } = await supabase
+      .from("spotify_config")
+      .select("client_id, client_secret, is_active")
+      .eq("id", 1)
+      .single();
+    if (error || !config) {
+      throw new Error("Spotify config not found in database");
+    }
+    if (!config.is_active) {
+      throw new Error("Spotify integration is disabled");
+    }
+    spotifyClientId = config.client_id;
+    spotifyClientSecret = config.client_secret;
+  }
+  if (!spotifyClientId || !spotifyClientSecret) {
+    throw new Error("Spotify API credentials not configured");
+  }
+  const resp = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${spotifyClientId}:${spotifyClientSecret}`)}`,
+    },
+    body: "grant_type=client_credentials",
+  });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Spotify token error ${resp.status}: ${errText}`);
+  }
+  const data = await resp.json();
+  spotifyToken = data.access_token;
+  spotifyTokenExpiresAt = Date.now() + data.expires_in * 1000;
+  return spotifyToken!;
+}
+
+function formatDuration(ms: number): string {
+  const mins = Math.floor(ms / 60000);
+  const secs = Math.floor((ms % 60000) / 1000);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 const corsHeaders = {
@@ -373,6 +431,89 @@ serve(async (req) => {
           return jsonResponse({ status: "success", zones: succeeded, failed });
         }
         break;
+      }
+
+      case "spotify-search": {
+        const query = body.query;
+        if (!query) return jsonResponse({ error: "Missing query" }, 400);
+        const searchType = body.searchType || "track";
+        const limit = Math.min(body.limit || 10, 20);
+        // Map UI types to Spotify API types
+        const typeMap: Record<string, string> = {
+          song: "track",
+          track: "track",
+          album: "album",
+          playlist: "playlist",
+          artist: "artist",
+        };
+        const spotifyType = typeMap[searchType] || "track";
+        try {
+          const token = await getSpotifyToken(supabase);
+          const params = new URLSearchParams({
+            q: query,
+            type: spotifyType,
+            limit: String(limit),
+            market: "US",
+          });
+          const searchResp = await fetch(
+            `https://api.spotify.com/v1/search?${params}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!searchResp.ok) {
+            const errText = await searchResp.text();
+            console.error("Spotify search error:", searchResp.status, errText);
+            return jsonResponse({ error: `Spotify search failed: ${searchResp.status}` }, searchResp.status);
+          }
+          const searchData = await searchResp.json();
+          // Normalize results based on type
+          let results: any[] = [];
+          if (spotifyType === "track" && searchData.tracks) {
+            results = searchData.tracks.items.map((t: any) => ({
+              title: t.name,
+              artist: t.artists?.map((a: any) => a.name).join(", ") || "",
+              album: t.album?.name || "",
+              albumArt: t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || "",
+              duration: formatDuration(t.duration_ms),
+              durationMs: t.duration_ms,
+              uri: t.uri,
+              id: t.id,
+            }));
+          } else if (spotifyType === "album" && searchData.albums) {
+            results = searchData.albums.items.map((a: any) => ({
+              title: a.name,
+              artist: a.artists?.map((ar: any) => ar.name).join(", ") || "",
+              album: a.name,
+              albumArt: a.images?.[2]?.url || a.images?.[0]?.url || "",
+              duration: `${a.total_tracks} tracks`,
+              uri: a.uri,
+              id: a.id,
+            }));
+          } else if (spotifyType === "playlist" && searchData.playlists) {
+            results = searchData.playlists.items.map((p: any) => ({
+              title: p.name,
+              artist: p.owner?.display_name || "",
+              album: "",
+              albumArt: p.images?.[2]?.url || p.images?.[0]?.url || "",
+              duration: `${p.tracks?.total || 0} tracks`,
+              uri: p.uri,
+              id: p.id,
+            }));
+          } else if (spotifyType === "artist" && searchData.artists) {
+            results = searchData.artists.items.map((ar: any) => ({
+              title: ar.name,
+              artist: ar.name,
+              album: "",
+              albumArt: ar.images?.[2]?.url || ar.images?.[0]?.url || "",
+              duration: `${(ar.followers?.total || 0).toLocaleString()} followers`,
+              uri: ar.uri,
+              id: ar.id,
+            }));
+          }
+          return jsonResponse({ results, total: results.length });
+        } catch (err) {
+          console.error("Spotify search error:", err.message);
+          return jsonResponse({ error: err.message }, 500);
+        }
       }
 
       case "musicsearch": {

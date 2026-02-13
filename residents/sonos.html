@@ -64,21 +64,28 @@
               <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Search Spotify</h3>
             </div>
             <form id="spotifySearchForm" class="sonos-search__form" autocomplete="off">
-              <input type="search" id="spotifyQuery" class="sonos-search__input" placeholder="Song, album, or playlist..." required>
               <div class="sonos-search__row">
-                <select id="spotifyType" class="sonos-search__select">
+                <input type="search" id="spotifyQuery" class="sonos-search__input" placeholder="Song, album, or playlist..." required style="flex:1;">
+                <select id="spotifyType" class="sonos-search__select" style="flex:0 0 auto; width:auto;">
                   <option value="song">Song</option>
                   <option value="album">Album</option>
                   <option value="playlist">Playlist</option>
-                  <option value="station">Station</option>
                 </select>
-                <select id="spotifyZone" class="sonos-search__select sonos-search__zone-select">
-                  <option value="">Zone...</option>
-                </select>
-                <button type="submit" class="sonos-search__btn" id="spotifySearchBtn" title="Search &amp; Play">▶</button>
+                <button type="submit" class="sonos-search__btn sonos-search__btn--search" id="spotifySearchBtn" title="Search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                </button>
               </div>
             </form>
             <div id="spotifySearchStatus" class="sonos-search__status hidden"></div>
+            <!-- Search results list -->
+            <div id="spotifyResults" class="sonos-search__results hidden"></div>
+            <!-- Play bar (shown when results exist) -->
+            <div id="spotifyPlayBar" class="sonos-search__play-bar hidden">
+              <select id="spotifyZone" class="sonos-search__select sonos-search__zone-select">
+                <option value="">Zone...</option>
+              </select>
+              <button type="button" class="sonos-search__btn sonos-search__btn--play" id="spotifyPlayBtn" title="Play selected" disabled>▶</button>
+            </div>
           </aside>
 
           <aside class="sonos-library">
