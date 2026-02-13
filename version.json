@@ -1,12 +1,12 @@
 {
-  "version": "v260212.61 11:19p",
-  "release": 139,
-  "sha": "907286e6",
-  "fullSha": "907286e6b02aa2fd1fd905587337f46a09a59411",
+  "version": "v260213.01 12:50a",
+  "release": 140,
+  "sha": "0c3d4369",
+  "fullSha": "0c3d4369ce2949aebba29d757ea95d66167625cd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 05:19:16+00",
-  "commits": [{"sha":"907286e6","message":"Add 'check back in a few minutes' detail to Claudero pickup timeline item","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 06:50:41+00",
+  "commits": [{"sha":"0c3d4369","message":"Improve PAI Sonos/audio answers by enforcing document lookup + web search","author":"Rahul Sonnad"}]
 }
