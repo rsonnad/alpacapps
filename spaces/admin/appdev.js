@@ -431,7 +431,9 @@ function renderTimelineItem(req) {
       label: req.deploy_decision === 'auto_merged' ? 'Deployed' : 'Completed',
       detail: null,
       class: 'success',
-      html: details,
+      html: details + `<div class="appdev-detail-section">
+        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Use as Template</button>
+      </div>`,
     });
   }
 
@@ -442,6 +444,9 @@ function renderTimelineItem(req) {
       label: 'Failed',
       detail: req.error_message || 'Unknown error',
       class: 'error',
+      html: `<div class="appdev-detail-section">
+        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Try Again</button>
+      </div>`,
     });
   }
 
@@ -453,7 +458,9 @@ function renderTimelineItem(req) {
       label: 'Sent for review',
       detail: null,
       class: 'active',
-      html: details,
+      html: details + `<div class="appdev-detail-section">
+        <button class="appdev-try-again-btn" onclick="window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})">↻ Use as Template</button>
+      </div>`,
     });
   }
 
@@ -469,6 +476,18 @@ function renderTimelineItem(req) {
     </li>
   `).join('');
 }
+
+function tryAgain(description) {
+  const textarea = document.getElementById('featurePrompt');
+  textarea.value = description;
+  textarea.focus();
+  // Trigger input event to update char count and enable submit button
+  textarea.dispatchEvent(new Event('input'));
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('Request text loaded. Edit and resubmit when ready.', 'info');
+}
+window._tryAgain = tryAgain;
 
 function buildCompletionDetails(req) {
   const parts = [];
