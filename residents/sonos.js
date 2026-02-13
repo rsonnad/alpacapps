@@ -1265,11 +1265,6 @@ function updatePlayBtn() {
   btn.textContent = count > 1 ? `▶ ${count}` : '▶';
 }
 
-function escapeHtml(str) {
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
 
 function populateSpotifyZones() {
   const select = document.getElementById('spotifyZone');
