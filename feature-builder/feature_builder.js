@@ -217,10 +217,20 @@ function evaluateRisk(diffFiles, claudeRiskAssessment) {
     reasons.push(`BLOCKED — touched forbidden files: ${forbiddenFiles.join(', ')}`);
   }
 
-  // Tier 2: NEEDS REVIEW — modifications to existing files
-  if (modified.length > 0) {
+  // Tier 2: NEEDS REVIEW — only for sensitive file modifications or deletions
+  // Non-sensitive file edits (HTML pages, CSS, page-specific JS) are safe to auto-merge.
+  const sensitivePatterns = [
+    'shared/',           // Shared modules used by many pages
+    'mobile/',           // Mobile app code
+    'package.json',
+    'package-lock.json',
+  ];
+  const sensitiveModified = modified.filter(f =>
+    sensitivePatterns.some(p => f.file === p || f.file.startsWith(p))
+  );
+  if (sensitiveModified.length > 0) {
     safe = false;
-    reasons.push(`Modified existing files: ${modified.map(f => f.file).join(', ')}`);
+    reasons.push(`Modified sensitive files: ${sensitiveModified.map(f => f.file).join(', ')}`);
   }
 
   if (deleted.length > 0) {
@@ -228,19 +238,11 @@ function evaluateRisk(diffFiles, claudeRiskAssessment) {
     reasons.push(`Deleted files: ${deleted.map(f => f.file).join(', ')}`);
   }
 
-  // Phase 2: Claude's self-assessment
+  // Claude's self-assessment — trust it for needs_review decisions
   if (claudeRiskAssessment) {
     if (claudeRiskAssessment.decision === 'needs_review') {
       safe = false;
       reasons.push(`Claude assessment: ${claudeRiskAssessment.reason || 'needs review'}`);
-    }
-    if (claudeRiskAssessment.touches_existing_functionality) {
-      safe = false;
-      reasons.push('Claude flagged: touches existing functionality');
-    }
-    if (claudeRiskAssessment.could_confuse_users) {
-      safe = false;
-      reasons.push('Claude flagged: could confuse users');
     }
     if (claudeRiskAssessment.removes_or_changes_features) {
       safe = false;
