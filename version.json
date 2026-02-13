@@ -1,12 +1,12 @@
 {
-  "version": "v260213.13 1:41a",
-  "release": 152,
-  "sha": "84a679b3",
-  "fullSha": "84a679b3a905f2c1fbe9d8f0ef2394ef1e6e927e",
+  "version": "v260213.14 3:39a",
+  "release": 153,
+  "sha": "4ddeec2f",
+  "fullSha": "4ddeec2fcc1fc742c98180055b3de08986f2cff9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 07:41:36+00",
-  "commits": [{"sha":"2c4cb011","message":"feat: Fix the font on the AI Developer Extradniare. Make it smaller and bolder\\n\\nAutomated feature from PAI request #b76a027a-3439-46c0-86db-656f9287b72e.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"84a679b3","message":"Merge feature/20260213-b76a027a into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-13 09:39:01+00",
+  "commits": [{"sha":"4ddeec2f","message":"Add Anova Precision Oven integration with cloud API control","author":"Rahul Sonnad"}]
 }
