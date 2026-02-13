@@ -106,7 +106,9 @@ async function sonosApi(action, params = {}) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(err.error || `API error ${response.status}`);
+    const msg = typeof err.error === 'string' ? err.error
+      : err.message || err.response || JSON.stringify(err.error || err);
+    throw new Error(msg);
   }
 
   return response.json();
@@ -867,9 +869,13 @@ async function ungroupZone(coordinatorName) {
 // =============================================
 function setupDragAndDrop() {
   document.addEventListener('dragstart', (e) => {
-    const item = e.target.closest('.sonos-library-item');
+    const item = e.target.closest('.sonos-library-item') || e.target.closest('.sonos-search-result[draggable]');
     if (!item) return;
-    dragItem = { type: item.dataset.type, name: item.dataset.name };
+    if (item.dataset.type === 'spotify') {
+      dragItem = { type: 'spotify', name: item.dataset.name, spotifyQuery: item.dataset.spotifyQuery, spotifySearchType: item.dataset.spotifySearchType };
+    } else {
+      dragItem = { type: item.dataset.type, name: item.dataset.name };
+    }
     item.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('text/plain', item.dataset.name);
@@ -877,7 +883,7 @@ function setupDragAndDrop() {
   });
 
   document.addEventListener('dragend', (e) => {
-    const item = e.target.closest('.sonos-library-item');
+    const item = e.target.closest('.sonos-library-item') || e.target.closest('.sonos-search-result[draggable]');
     if (item) item.classList.remove('dragging');
     dragItem = null;
     document.querySelectorAll('.sonos-drop-hint').forEach(h => h.classList.add('hidden'));
@@ -910,13 +916,22 @@ function setupDragAndDrop() {
     document.querySelectorAll('.sonos-drop-hint').forEach(h => h.classList.add('hidden'));
 
     const room = card.dataset.room;
-    const { type, name } = dragItem;
+    const currentDragItem = dragItem;
     dragItem = null;
 
     card.classList.add('loading');
     try {
-      await sonosApi(type, { room, name });
-      showToast(`Playing "${name}" on ${room}`, 'success', 2500);
+      if (currentDragItem.type === 'spotify') {
+        await sonosApi('musicsearch', {
+          room,
+          service: 'spotify',
+          searchType: currentDragItem.spotifySearchType || 'song',
+          query: currentDragItem.spotifyQuery || currentDragItem.name
+        });
+      } else {
+        await sonosApi(currentDragItem.type, { room, name: currentDragItem.name });
+      }
+      showToast(`Playing "${currentDragItem.name}" on ${room}`, 'success', 2500);
       setTimeout(() => refreshAllZones(), 2000);
     } catch (err) {
       showToast(`Failed: ${err.message}`, 'error');
@@ -1198,16 +1213,26 @@ function setupSpotifySearch() {
     playBtn.textContent = '...';
 
     try {
-      // Play the first selected, then queue the rest
+      // Play the first selected via URI, then queue the rest
       for (let i = 0; i < selected.length; i++) {
         const item = selected[i];
-        const searchType = document.getElementById('spotifyType')?.value || 'song';
-        await sonosApi('musicsearch', {
-          room: zone,
-          service: 'spotify',
-          searchType,
-          query: searchType === 'song' ? `${item.title} ${item.artist}` : item.title
-        });
+        if (item.uri) {
+          // Play directly by Spotify URI (more reliable than musicsearch)
+          await sonosApi('spotify-play', {
+            room: zone,
+            uri: item.uri,
+            enqueue: i > 0
+          });
+        } else {
+          // Fallback to musicsearch for items without URI
+          const searchType = document.getElementById('spotifyType')?.value || 'song';
+          await sonosApi('musicsearch', {
+            room: zone,
+            service: 'spotify',
+            searchType,
+            query: searchType === 'song' ? `${item.title} ${item.artist}` : item.title
+          });
+        }
         if (i === 0) {
           statusEl.classList.remove('hidden');
           statusEl.className = 'sonos-search__status sonos-search__status--success';
@@ -1246,15 +1271,20 @@ function setupSpotifySearch() {
 function renderSpotifyResults() {
   const container = document.getElementById('spotifyResults');
   if (!container) return;
-  container.innerHTML = spotifyResults.map((r, i) => `
-    <div class="sonos-search-result ${spotifySelected.has(i) ? 'sonos-search-result--selected' : ''}" data-idx="${i}">
+  const searchType = document.getElementById('spotifyType')?.value || 'song';
+  container.innerHTML = spotifyResults.map((r, i) => {
+    const dragQuery = searchType === 'song' ? `${r.title} ${r.artist}` : r.title;
+    return `
+    <div class="sonos-search-result ${spotifySelected.has(i) ? 'sonos-search-result--selected' : ''}" data-idx="${i}"
+         draggable="true" data-type="spotify" data-name="${escapeHtml(r.title)}"
+         data-spotify-query="${escapeHtml(dragQuery)}" data-spotify-search-type="${searchType}">
       ${r.albumArt ? `<img class="sonos-search-result__art" src="${r.albumArt}" alt="" loading="lazy">` : '<div class="sonos-search-result__art sonos-search-result__art--empty"></div>'}
       <div class="sonos-search-result__info">
         <div class="sonos-search-result__title">${escapeHtml(r.title)}</div>
         <div class="sonos-search-result__meta">${escapeHtml(r.artist)}${r.duration ? ` · ${r.duration}` : ''}</div>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
 }
 
 function updatePlayBtn() {

@@ -29,7 +29,8 @@ interface SonosRequest {
     | "announce"
     | "tts_preview"
     | "musicsearch"
-    | "spotify-search";
+    | "spotify-search"
+    | "spotify-play";
   room?: string;
   value?: number | string;
   name?: string;
@@ -41,6 +42,8 @@ interface SonosRequest {
   searchType?: string;
   query?: string;
   limit?: number;
+  uri?: string;
+  enqueue?: boolean;
 }
 
 // =============================================
@@ -532,6 +535,19 @@ serve(async (req) => {
         break;
       }
 
+      case "spotify-play": {
+        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        const spotifyUri = body.uri;
+        if (!spotifyUri) return jsonResponse({ error: "Missing uri" }, 400);
+        // Validate it's a spotify URI
+        if (!spotifyUri.startsWith("spotify:"))
+          return jsonResponse({ error: "Invalid Spotify URI" }, 400);
+        // "now" replaces queue, "queue" appends
+        const mode = body.enqueue ? "queue" : "now";
+        path = `/${room}/spotify/${mode}/${encodeURIComponent(spotifyUri)}`;
+        break;
+      }
+
       case "tts_preview": {
         // Generate TTS audio and return the URL — no Sonos playback
         if (!body.text) return jsonResponse({ error: "Missing text" }, 400);
@@ -620,7 +636,13 @@ serve(async (req) => {
     // Try to parse as JSON, fall back to wrapping as text
     try {
       const json = JSON.parse(result);
-      return jsonResponse(json, sonosResponse.ok ? 200 : sonosResponse.status);
+      if (!sonosResponse.ok) {
+        // Normalize error to a string so clients don't get [object Object]
+        const errMsg = typeof json.error === "string" ? json.error
+          : json.message || json.response || result.substring(0, 200);
+        return jsonResponse({ error: errMsg }, sonosResponse.status);
+      }
+      return jsonResponse(json, 200);
     } catch {
       return jsonResponse(
         { status: sonosResponse.ok ? "ok" : "error", response: result },
