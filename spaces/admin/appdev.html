@@ -463,7 +463,7 @@
       margin-left: 0.4rem;
     }
 
-    /* Try Again button */
+    /* Try Again button (inside timeline) */
     .appdev-try-again-btn {
       display: inline-flex;
       align-items: center;
@@ -480,6 +480,25 @@
       margin-top: 0.25rem;
     }
     .appdev-try-again-btn:hover { opacity: 0.85; }
+
+    /* Try Again button (in header row) */
+    .appdev-retry-header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.65rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .appdev-retry-header-btn:hover { opacity: 0.85; }
 
     @media (max-width: 768px) {
       .appdev-hero {

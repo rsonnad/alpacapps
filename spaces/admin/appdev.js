@@ -370,12 +370,14 @@ function renderHistory(requests) {
     const latestStatus = chain[0].status;
     const isActive = ['pending', 'processing', 'building'].includes(latestStatus);
 
+    const showRetry = ['failed', 'completed', 'review'].includes(latestStatus);
     return `
       <div class="appdev-request ${isActive ? '' : 'collapsed'}">
         <div class="appdev-request-header" onclick="this.parentElement.classList.toggle('collapsed')">
           <span class="appdev-request-badge ${latestStatus}">${latestStatus}</span>
           <span class="appdev-request-title">${escapeHtml(req.description.substring(0, 80))}${req.description.length > 80 ? '...' : ''}</span>
           ${chain.length > 1 ? `<span class="appdev-followup-badge">${chain.length - 1} follow-up${chain.length > 2 ? 's' : ''}</span>` : ''}
+          ${showRetry ? `<button class="appdev-retry-header-btn" onclick="event.stopPropagation();window._tryAgain(${JSON.stringify(req.description).replace(/'/g, '&#39;')})" title="Load this request into the editor">↻ Try Again</button>` : ''}
           <span class="appdev-request-time">${formatTimeAgo(req.created_at)}</span>
           <svg class="appdev-request-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
