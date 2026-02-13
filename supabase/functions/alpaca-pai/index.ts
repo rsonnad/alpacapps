@@ -414,8 +414,9 @@ RULES:
 5. Keep responses concise (1-3 sentences for actions).
 6. Be friendly, warm, and natural. Occasionally add a brief poetic touch.
 7. For color, use common color names or hex codes.
-8. NEVER fabricate specific details like brand names, model numbers, or technical instructions. If you don't know, use lookup_document or say you're not sure.
-9. When asked about monitors, TVs, appliances, locks, the swim spa, or any physical equipment, ALWAYS use lookup_document first before answering.`);
+8. NEVER fabricate specific details like brand names, model numbers, or technical instructions. If you don't know, use lookup_document or search the web.
+9. When asked about monitors, TVs, appliances, locks, the swim spa, or any physical equipment, ALWAYS use lookup_document first before answering.
+10. You have Google Search available. Use it when: a) the question is about how to do something technical (connecting devices, streaming audio, etc.), b) your stored documents don't fully answer the question, or c) you need current/accurate instructions for a product or service. Search BEFORE answering — don't guess.`);
 
   // Lighting
   if (scope.goveeGroups.length) {
@@ -2247,7 +2248,10 @@ async function callGemini(
     body.systemInstruction = { parts: [{ text: systemInstruction }] };
   }
   if (tools) {
-    body.tools = [{ functionDeclarations: tools }];
+    body.tools = [
+      { functionDeclarations: tools },
+      { google_search: {} },
+    ];
   }
 
   let response: Response | null = null;
@@ -2273,7 +2277,9 @@ async function callGemini(
 
   const result = await response.json();
   const candidate = result.candidates?.[0];
+  const grounding = candidate?.groundingMetadata;
   console.log("Gemini response finishReason:", candidate?.finishReason,
+    "grounded:", !!grounding,
     "parts:", JSON.stringify((candidate?.content?.parts || []).map((p: any) => ({
       keys: Object.keys(p),
       thought: p.thought,
@@ -2850,6 +2856,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
   let geminiCallCount = 0;
+  let usedGoogleSearch = false;
 
   let geminiResult = await callGemini(
     GEMINI_API_KEY,
@@ -2863,6 +2870,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     totalInputTokens += usage0.promptTokenCount || 0;
     totalOutputTokens += (usage0.candidatesTokenCount || 0) + (usage0.thoughtsTokenCount || 0);
   }
+  if (geminiResult.candidates?.[0]?.groundingMetadata) usedGoogleSearch = true;
 
   // 7. Process function calls (max 3 rounds)
   const actionsTaken: Array<{
@@ -2930,6 +2938,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       totalInputTokens += usageN.promptTokenCount || 0;
       totalOutputTokens += (usageN.candidatesTokenCount || 0) + (usageN.thoughtsTokenCount || 0);
     }
+    if (geminiResult.candidates?.[0]?.groundingMetadata) usedGoogleSearch = true;
   }
 
   // 8. Extract final text
@@ -2957,9 +2966,12 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   }
 
   // 9. Log Gemini usage to api_usage_log + check spend alert
+  // $35/1000 grounded prompts = $0.035 per grounded prompt (but 1500/day free)
+  const groundingCost = usedGoogleSearch ? 0.035 : 0;
   const estimatedCost =
     (totalInputTokens / 1_000_000) * GEMINI_INPUT_COST_PER_M +
-    (totalOutputTokens / 1_000_000) * GEMINI_OUTPUT_COST_PER_M;
+    (totalOutputTokens / 1_000_000) * GEMINI_OUTPUT_COST_PER_M +
+    groundingCost;
 
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -2979,6 +2991,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       source: channelName,
       gemini_calls: geminiCallCount,
       tool_calls: actionsTaken.length,
+      google_search: usedGoogleSearch,
     },
     app_user_id: scope.appUserId || null,
   }).then(() => {});
