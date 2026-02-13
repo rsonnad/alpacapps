@@ -374,6 +374,16 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
     let meetsRequirement;
     if (requiredPermission) {
       meetsRequirement = state.hasPermission?.(requiredPermission);
+      // If permissions haven't loaded yet (empty set from cache/timeout) but the user's
+      // role would normally grant access, don't deny — keep loading and wait for fresh perms.
+      if (!meetsRequirement && state.permissions?.size === 0) {
+        const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
+        const userLevel = ROLE_LEVEL[userRole] || 0;
+        const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+        if (userLevel >= requiredLevel) {
+          return;
+        }
+      }
     } else {
       const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
@@ -384,6 +394,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
     if (state.appUser && meetsRequirement) {
       injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('unauthorizedOverlay')?.classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
 
       // Render user info into site nav auth container (replaces Sign In link)

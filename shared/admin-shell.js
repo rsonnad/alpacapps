@@ -257,6 +257,17 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     let meetsRequirement;
     if (requiredPermission) {
       meetsRequirement = state.hasPermission?.(requiredPermission);
+      // If permissions haven't loaded yet (empty set from cache/timeout) but the user's
+      // role would normally grant access, don't deny — keep loading and wait for fresh perms.
+      if (!meetsRequirement && state.permissions?.size === 0) {
+        const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
+        const userLevel = ROLE_LEVEL[userRole] || 0;
+        const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
+        if (userLevel >= requiredLevel) {
+          // Permissions not loaded yet — stay on loading screen, don't show denied
+          return;
+        }
+      }
     } else if (userRole === 'demo') {
       const tabDef = ALL_ADMIN_TABS.find(t => t.id === activeTab);
       const tabPermission = tabDef?.permission;
@@ -271,6 +282,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
     if (state.appUser && meetsRequirement) {
       injectSiteNav();
       document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('unauthorizedOverlay')?.classList.add('hidden');
       document.getElementById('appContent').classList.remove('hidden');
 
       // Render user info into site nav auth container (replaces Sign In link)
