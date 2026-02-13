@@ -1,12 +1,12 @@
 {
-  "version": "v260213.20 11:11a",
-  "release": 159,
-  "sha": "75abf476",
-  "fullSha": "75abf47628048a6aa10bafb1799704bc48736c70",
+  "version": "v260213.21 11:14a",
+  "release": 160,
+  "sha": "8202f58f",
+  "fullSha": "8202f58f5b12a951c92cc923d2a65ca081682de0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 17:11:14+00",
-  "commits": [{"sha":"75abf476","message":"feat: Add Telegram and Facebook fields to user profile","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-13 17:14:01+00",
+  "commits": [{"sha":"f29cd0d1","message":"feat: Getting an error.\\n\\nAutomated feature from PAI request #03284dd8-6ef9-42df-af60-4413a5f04c6e.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"8202f58f","message":"Merge feature/20260213-03284dd8 into main","author":"Feature Builder Bot"}]
 }
