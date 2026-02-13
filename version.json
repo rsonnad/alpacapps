@@ -1,12 +1,12 @@
 {
-  "version": "v260213.15 3:45a",
-  "release": 154,
-  "sha": "f501e1ee",
-  "fullSha": "f501e1eed604a1c3a001fcf5f2b649371c8cc62a",
+  "version": "v260213.16 6:21a",
+  "release": 155,
+  "sha": "a612278f",
+  "fullSha": "a612278ff4d718e6cd5c3c4d15366a18ad9af0e3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 09:45:53+00",
-  "commits": [{"sha":"f501e1ee","message":"docs: add Anova Precision Oven to CLAUDE.md","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 12:21:16+00",
+  "commits": [{"sha":"a612278f","message":"autodev report: merge-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
