@@ -607,6 +607,24 @@
     }
     .appdev-retry-header-btn:hover { opacity: 0.85; }
 
+    /* Review badge tooltip cursor */
+    .appdev-request-badge.review[title] { cursor: help; }
+
+    /* Approval needed section in review details */
+    .appdev-approval-needed {
+      border-left: 3px solid #f59e0b;
+      background: #fffbeb;
+    }
+    .appdev-approval-needed p {
+      color: #92400e;
+      margin: 0.25rem 0;
+    }
+    .appdev-approver-hint {
+      font-size: 0.75rem;
+      color: #78350f;
+      opacity: 0.8;
+    }
+
     @media (max-width: 768px) {
       .appdev-hero {
         flex-direction: column;

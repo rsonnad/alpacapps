@@ -565,7 +565,7 @@ function renderTimelineItem(req) {
     const details = buildReviewDetails(req);
     items.push({
       time: req.review_notified_at || req.completed_at,
-      label: 'Sent for review',
+      label: req.status === 'review' ? 'Awaiting approval' : 'Sent for review',
       detail: null,
       class: req.status === 'review' ? 'active' : 'success',
       html: details,

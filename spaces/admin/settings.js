@@ -65,6 +65,7 @@ async function loadSettingsPanel() {
     loadTelnyxConfig(),
     loadInboundSms(),
     loadForwardingRules(),
+    loadAppdevConfig(),
     loadDisplays(),
     loadTodayFact()
   ]);
@@ -1374,6 +1375,56 @@ function setupEventListeners() {
   document.getElementById('saveDisplayBtn')?.addEventListener('click', handleSaveDisplay);
   document.getElementById('deleteDisplayBtn')?.addEventListener('click', handleDeleteDisplay);
   document.getElementById('regenerateFactBtn')?.addEventListener('click', handleRegenerateFact);
+}
+
+// =============================================
+// APP DEV CONFIG
+// =============================================
+
+async function loadAppdevConfig() {
+  const emailInput = document.getElementById('appdevReviewEmail');
+  const saveBtn = document.getElementById('saveAppdevConfigBtn');
+  if (!emailInput || !saveBtn) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('appdev_config')
+      .select('*')
+      .single();
+
+    if (!error && data) {
+      emailInput.value = data.review_notify_email || '';
+    }
+  } catch (err) {
+    console.error('Failed to load appdev config:', err);
+  }
+
+  saveBtn.addEventListener('click', saveAppdevConfig);
+}
+
+async function saveAppdevConfig() {
+  const emailInput = document.getElementById('appdevReviewEmail');
+  const email = emailInput?.value.trim();
+  if (!email) {
+    showToast('Email address is required', 'warning');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('appdev_config')
+      .update({
+        review_notify_email: email,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', 1);
+
+    if (error) throw error;
+    showToast('App Dev config saved', 'success');
+  } catch (err) {
+    console.error('Failed to save appdev config:', err);
+    showToast('Save failed: ' + err.message, 'error');
+  }
 }
 
 // =============================================

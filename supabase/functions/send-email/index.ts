@@ -1383,11 +1383,12 @@ If the fix doesn't look right, submit another bug report and we'll take another 
           ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
 
           <div style="margin: 20px 0;">
-            ${compareUrl ? `<a href="${compareUrl}" style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; margin-right: 10px;">Review Changes on GitHub</a>` : ''}
+            <a href="https://alpacaplayhouse.com/spaces/admin/appdev.html" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">Review in App Dev Console</a>
+            ${compareUrl ? `<a href="${compareUrl}" style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">View Diff on GitHub</a>` : ''}
           </div>
 
           <p style="color: #666; font-size: 13px; margin-top: 20px;">
-            <strong>To deploy:</strong> merge the branch to main, run bump-version.sh, push.<br>
+            <strong>To deploy:</strong> click "Approve &amp; Merge" in the App Dev console, or merge the branch manually on GitHub.<br>
             <strong>To reject:</strong> delete the branch on GitHub.
           </p>
         `,
@@ -1411,9 +1412,10 @@ RISK ASSESSMENT:
 
 ${data.notes ? `Notes: ${data.notes}` : ''}
 
-${compareUrl ? `Review: ${compareUrl}` : ''}
+Review in App Dev Console: https://alpacaplayhouse.com/spaces/admin/appdev.html
+${compareUrl ? `View diff: ${compareUrl}` : ''}
 
-To deploy: merge the branch to main, run bump-version.sh, push.
+To deploy: click "Approve & Merge" in the App Dev console, or merge the branch manually on GitHub.
 To reject: delete the branch on GitHub.`
       };
     }
@@ -1424,6 +1426,7 @@ To reject: delete the branch on GitHub.`
       const cFilesModStr = (data.files_modified || []).join(', ');
       const cRisk = data.risk_assessment || {};
       const isReview = data.deploy_decision === 'branched_for_review';
+      const isAdminApproved = data.deploy_decision === 'admin_approved';
       const compareUrl = data.branch_name ? `https://github.com/rsonnad/alpacapps/compare/${data.branch_name}` : '';
       const pageUrl = data.page_url ? `https://alpacaplayhouse.com${data.page_url}` : '';
 
@@ -1459,7 +1462,7 @@ To reject: delete the branch on GitHub.`
           <table style="border-collapse: collapse; width: 100%; margin: 10px 0;">
             ${data.commit_sha ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Commit</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;"><code>${data.commit_sha.substring(0, 8)}</code></td></tr>` : ''}
             ${data.branch_name ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Branch</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;"><code>${data.branch_name}</code></td></tr>` : ''}
-            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Deploy</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${isReview ? 'Branched for review' : 'Auto-merged to main'}</td></tr>
+            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Deploy</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${isReview ? 'Branched for review' : isAdminApproved ? 'Admin approved & merged' : 'Auto-merged to main'}</td></tr>
             ${data.version ? `<tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Version</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${data.version}</td></tr>` : ''}
           </table>
 

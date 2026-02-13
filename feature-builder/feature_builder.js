@@ -15,7 +15,10 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const REPO_DIR = process.env.REPO_DIR || '/opt/feature-builder/repo';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '30000');
 const MAX_BUILD_TIMEOUT_MS = parseInt(process.env.MAX_BUILD_TIMEOUT_MS || '600000'); // 10 minutes
-const TEAM_EMAIL = 'team@alpacaplayhouse.com';
+const DEFAULT_REVIEW_EMAIL = 'alpacaautomatic@gmail.com';
+let cachedReviewEmail = null;
+let reviewEmailCacheTime = 0;
+const REVIEW_EMAIL_CACHE_TTL_MS = 300000; // 5 minutes
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
 const TEMP_DIR = '/tmp/feature-builder';
 
@@ -49,6 +52,30 @@ async function notifyDiscord(message) {
   } catch (err) {
     log('warn', 'Discord notification error', { error: err.message });
   }
+}
+
+// ============================================
+// Dynamic review email from appdev_config
+// ============================================
+async function getReviewEmail() {
+  const now = Date.now();
+  if (cachedReviewEmail && (now - reviewEmailCacheTime) < REVIEW_EMAIL_CACHE_TTL_MS) {
+    return cachedReviewEmail;
+  }
+  try {
+    const { data } = await supabase
+      .from('appdev_config')
+      .select('review_notify_email')
+      .single();
+    if (data?.review_notify_email) {
+      cachedReviewEmail = data.review_notify_email;
+      reviewEmailCacheTime = now;
+      return cachedReviewEmail;
+    }
+  } catch (err) {
+    log('warn', 'Failed to load review email config, using default', { error: err.message });
+  }
+  return DEFAULT_REVIEW_EMAIL;
 }
 
 // ============================================
@@ -229,6 +256,7 @@ function evaluateRisk(diffFiles, claudeRiskAssessment) {
 // ============================================
 async function sendReviewEmail(request, buildResult, branchName, riskReasons) {
   try {
+    const reviewEmail = await getReviewEmail();
     const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: {
@@ -237,7 +265,7 @@ async function sendReviewEmail(request, buildResult, branchName, riskReasons) {
       },
       body: JSON.stringify({
         type: 'feature_review',
-        to: TEAM_EMAIL,
+        to: reviewEmail,
         data: {
           requester_name: request.requester_name,
           requester_role: request.requester_role,
@@ -259,7 +287,7 @@ async function sendReviewEmail(request, buildResult, branchName, riskReasons) {
       const body = await res.text();
       log('error', 'Review email send failed', { status: res.status, body });
     } else {
-      log('info', 'Review email sent', { to: TEAM_EMAIL });
+      log('info', 'Review email sent', { to: reviewEmail });
     }
   } catch (err) {
     log('error', 'Review email error', { error: err.message });
@@ -779,6 +807,87 @@ async function processFeatureRequest(request) {
 }
 
 // ============================================
+// Handle admin-approved merges
+// ============================================
+async function handleApprovedMerge(request) {
+  log('info', '=== Admin-approved merge starting ===', {
+    id: request.id,
+    branch: request.branch_name,
+  });
+
+  try {
+    // Mark as processing
+    await supabase
+      .from('feature_requests')
+      .update({
+        status: 'processing',
+        progress_message: 'Merging approved branch to main...',
+      })
+      .eq('id', request.id);
+
+    if (!request.branch_name) {
+      throw new Error('No branch_name set on approved request');
+    }
+
+    // Merge the branch
+    await gitPull();
+    const { mainSha } = await gitMergeBranchToMain(request.branch_name);
+
+    // Wait for CI to assign version
+    const deployedVersion = await waitForDeployedVersion(mainSha, request.id);
+
+    // Update to completed
+    await supabase
+      .from('feature_requests')
+      .update({
+        status: 'completed',
+        deploy_decision: 'admin_approved',
+        deployed_version: deployedVersion || null,
+        progress_message: deployedVersion
+          ? `Approved & deployed as ${deployedVersion}`
+          : 'Approved & merged — waiting for version assignment',
+      })
+      .eq('id', request.id);
+
+    log('info', '=== Admin-approved merge complete ===', {
+      id: request.id,
+      branch: request.branch_name,
+      version: deployedVersion,
+    });
+
+    // Send notification email to requester
+    await sendClauderoEmail(request, {
+      summary: request.build_summary || 'Admin approved merge',
+      files_created: request.files_created || [],
+    }, 'admin_approved', request.branch_name, mainSha);
+
+    await notifyDiscord(`✅ **Feature Builder: admin-approved merge** — "${request.description?.substring(0, 100)}"\nBranch: \`${request.branch_name}\` → merged to main${deployedVersion ? `\nVersion: ${deployedVersion}` : ''}`);
+
+  } catch (err) {
+    log('error', 'Admin-approved merge failed', {
+      id: request.id,
+      error: err.message,
+    });
+
+    // Revert to review status so admin can retry
+    await supabase
+      .from('feature_requests')
+      .update({
+        status: 'review',
+        progress_message: `Merge failed: ${err.message.substring(0, 500)}`,
+      })
+      .eq('id', request.id);
+
+    await notifyDiscord(`❌ **Feature Builder: merge failed** — "${request.description?.substring(0, 100)}"\nError: ${err.message.substring(0, 300)}`);
+
+    // Clean up git state
+    try {
+      await execAsync('git checkout main 2>/dev/null; git checkout -- . && git clean -fd', { cwd: REPO_DIR });
+    } catch { /* ignore */ }
+  }
+}
+
+// ============================================
 // Main poll loop
 // ============================================
 let isProcessing = false;
@@ -787,6 +896,7 @@ async function pollForRequests() {
   if (isProcessing) return;
 
   try {
+    // Check for pending build requests
     const { data: requests, error } = await supabase
       .from('feature_requests')
       .select('*')
@@ -803,6 +913,29 @@ async function pollForRequests() {
       isProcessing = true;
       try {
         await processFeatureRequest(requests[0]);
+      } finally {
+        isProcessing = false;
+      }
+      return; // Process one at a time
+    }
+
+    // Check for admin-approved merge requests
+    const { data: approved, error: approvedErr } = await supabase
+      .from('feature_requests')
+      .select('*')
+      .eq('status', 'approved')
+      .order('approved_at', { ascending: true })
+      .limit(1);
+
+    if (approvedErr) {
+      log('error', 'Approved poll query failed', { error: approvedErr.message });
+      return;
+    }
+
+    if (approved && approved.length > 0) {
+      isProcessing = true;
+      try {
+        await handleApprovedMerge(approved[0]);
       } finally {
         isProcessing = false;
       }
