@@ -8,6 +8,8 @@ import { supabase, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
 import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
+import { PollManager } from '../shared/services/poll-manager.js';
+import { supabaseHealth } from '../shared/supabase-health.js';
 
 // =============================================
 // CONFIGURATION
@@ -70,7 +72,7 @@ let goveeGroups = []; // Flat list for backward compat (allOff, refresh)
 let lightingSections = []; // { name, sectionId, groups[] } — grouped by area
 let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
 let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
-let pollTimer = null;
+let poll = null;
 let lastPollTime = null;
 let childrenStateLoaded = {}; // { groupId: true } — tracks which groups have had child states fetched
 let sceneCache = {}; // { sku: [{name, value}] } — client-side scene cache
@@ -797,8 +799,15 @@ async function refreshAllStates() {
 
   const failed = results.filter(r => r.status === 'rejected').length;
   if (failed > 0 && failed < goveeGroups.length) {
-    // Some failed — don't spam toasts, just note it
     console.warn(`${failed} group state queries failed`);
+  }
+
+  // Track health: if ALL groups failed, record failure and throw for circuit breaker
+  if (failed === goveeGroups.length && goveeGroups.length > 0) {
+    supabaseHealth.recordFailure();
+    throw new Error(`All ${failed} lighting group queries failed`);
+  } else if (goveeGroups.length > 0) {
+    supabaseHealth.recordSuccess();
   }
 }
 
@@ -838,27 +847,9 @@ async function refreshGroupState(groupId) {
 }
 
 function startPolling() {
-  stopPolling();
-  pollTimer = setInterval(() => refreshAllStates(), POLL_INTERVAL_MS);
-
-  // Pause when tab is hidden
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-}
-
-function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopPolling();
-  } else {
-    refreshAllStates();
-    startPolling();
-  }
+  if (poll) poll.stop();
+  poll = new PollManager(refreshAllStates, POLL_INTERVAL_MS);
+  poll.start();
 }
 
 function updatePollStatus() {

@@ -6,6 +6,8 @@
 import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
+import { PollManager } from '../shared/services/poll-manager.js';
+import { supabaseHealth } from '../shared/supabase-health.js';
 
 // =============================================
 // CONFIGURATION
@@ -17,7 +19,7 @@ const POLL_INTERVAL_MS = 30000; // 30s (reads from Supabase, not Tesla API)
 // =============================================
 let vehicles = [];
 let accounts = [];
-let pollTimer = null;
+let poll = null;
 let currentUserRole = null;
 let currentUserId = null;    // app_users.id
 let currentPersonId = null;  // people.id (for ownership matching)
@@ -165,8 +167,10 @@ async function loadVehicles() {
 
   if (error) {
     console.warn('Failed to load vehicles:', error.message);
-    return;
+    supabaseHealth.recordFailure();
+    throw error;
   }
+  supabaseHealth.recordSuccess();
   vehicles = filterVehiclesForUser(data || []);
 }
 
@@ -798,25 +802,9 @@ window._connectTesla = async function(accountId) {
 // =============================================
 
 function startPolling() {
-  stopPolling();
-  refreshFromDB();
-  pollTimer = setInterval(refreshFromDB, POLL_INTERVAL_MS);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-}
-
-function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopPolling();
-  } else {
-    startPolling();
-  }
+  if (poll) poll.stop();
+  poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);
+  poll.start();
 }
 
 async function refreshFromDB() {

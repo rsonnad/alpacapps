@@ -7,6 +7,8 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
 import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
+import { PollManager } from '../shared/services/poll-manager.js';
+import { supabaseHealth } from '../shared/supabase-health.js';
 
 // =============================================
 // CONFIGURATION
@@ -18,7 +20,7 @@ const POLL_INTERVAL_MS = 30000;
 // STATE
 // =============================================
 let thermostats = [];
-let pollTimer = null;
+let poll = null;
 let lastPollTime = null;
 let currentUserRole = null;
 let deviceScope = null;
@@ -153,8 +155,11 @@ async function refreshAllStates() {
         }
       }
     }
+    supabaseHealth.recordSuccess();
   } catch (err) {
     console.warn('State refresh failed:', err.message);
+    supabaseHealth.recordFailure();
+    throw err; // let PollManager circuit breaker track failures
   }
 
   lastPollTime = new Date();
@@ -373,26 +378,9 @@ async function toggleEco(sdmDeviceId) {
 // POLLING
 // =============================================
 function startPolling() {
-  stopPolling();
-  refreshAllStates();
-  pollTimer = setInterval(() => refreshAllStates(), POLL_INTERVAL_MS);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-}
-
-function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopPolling();
-  } else {
-    refreshAllStates();
-    pollTimer = setInterval(() => refreshAllStates(), POLL_INTERVAL_MS);
-  }
+  if (poll) poll.stop();
+  poll = new PollManager(refreshAllStates, POLL_INTERVAL_MS);
+  poll.start();
 }
 
 // =============================================

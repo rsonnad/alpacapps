@@ -7,6 +7,8 @@ import { supabase } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
 import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
+import { PollManager } from '../shared/services/poll-manager.js';
+import { supabaseHealth } from '../shared/supabase-health.js';
 
 // =============================================
 // CONFIGURATION
@@ -18,11 +20,12 @@ const POLL_INTERVAL_MS = 15000; // 15s (laundry status changes fast)
 // =============================================
 let appliances = [];
 let watchedAppliances = new Set();
-let pollTimer = null;
+let poll = null;
 let countdownTimer = null;
 let currentUserRole = null;
 let currentAppUserId = null;
 let deviceScope = null;
+let loadFailed = false; // distinguish query error from legitimately empty
 
 // =============================================
 // SVG ICONS
@@ -118,8 +121,12 @@ async function loadAppliances() {
 
   if (error) {
     console.warn('Failed to load appliances:', error.message);
-    return;
+    loadFailed = true;
+    supabaseHealth.recordFailure();
+    throw error; // let PollManager circuit breaker track failures
   }
+  loadFailed = false;
+  supabaseHealth.recordSuccess();
   appliances = (data || []).filter((appliance) => {
     if (!deviceScope || deviceScope.fullAccess) return true;
     return deviceScope.canAccessSpaceId(appliance.space_id)
@@ -152,8 +159,15 @@ function renderAppliances() {
   if (!grid) return;
 
   if (!appliances.length) {
-    grid.innerHTML = '';
-    if (empty) empty.classList.remove('hidden');
+    if (loadFailed) {
+      grid.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted);">
+        <p>Unable to load appliance data. Check your connection and try again.</p>
+      </div>`;
+      if (empty) empty.classList.add('hidden');
+    } else {
+      grid.innerHTML = '';
+      if (empty) empty.classList.remove('hidden');
+    }
     return;
   }
   if (empty) empty.classList.add('hidden');
@@ -306,32 +320,8 @@ function stopCountdown() {
 }
 
 // =============================================
-// POLLING
+// POLLING (via PollManager with circuit breaker)
 // =============================================
-function startPolling() {
-  stopPolling();
-  refreshFromDB();
-  pollTimer = setInterval(refreshFromDB, POLL_INTERVAL_MS);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-}
-
-function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopPolling();
-    stopCountdown();
-  } else {
-    startPolling();
-    startCountdown();
-  }
-}
-
 async function refreshFromDB() {
   await loadAppliances();
   await loadWatcherStatus();
@@ -418,11 +408,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await renderAdminSettings();
       }
 
-      // Initial load
-      await loadAppliances();
-      await loadWatcherStatus();
-      renderAppliances();
-      startPolling();
+      // Initial load + polling with circuit breaker
+      await refreshFromDB();
+      poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);
+      poll.start();
       startCountdown();
 
       // Handle ?watch= URL parameter (from QR code scan fallback)

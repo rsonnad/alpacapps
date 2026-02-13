@@ -9,6 +9,8 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
 import { getResidentDeviceScope } from '../shared/services/resident-device-scope.js';
+import { PollManager } from '../shared/services/poll-manager.js';
+import { supabaseHealth } from '../shared/supabase-health.js';
 
 // =============================================
 // CONFIGURATION
@@ -24,7 +26,7 @@ let playlists = [];        // Array of playlist name strings
 let favorites = [];        // Array of favorite name strings
 let playlistTags = [];     // Array of { playlist_name, tag } from DB
 let schedules = [];        // Array of schedule objects from DB
-let pollTimer = null;
+let poll = null;
 let elapsedTimer = null;
 let volumeTimers = {};
 let balanceState = {};    // { roomName: value } — persisted locally since Sonos doesn't expose balance
@@ -1031,8 +1033,11 @@ async function refreshAllZones() {
     await loadZones();
     renderZones();
     updatePollStatus();
+    supabaseHealth.recordSuccess();
   } catch (err) {
     console.warn('Zone refresh failed:', err);
+    supabaseHealth.recordFailure();
+    throw err; // let PollManager circuit breaker track failures
   }
 }
 
@@ -1043,13 +1048,14 @@ function updatePollStatus() {
 }
 
 function startPolling() {
-  stopPolling();
-  pollTimer = setInterval(() => refreshAllZones(), POLL_INTERVAL_MS);
+  if (poll) poll.stop();
+  poll = new PollManager(refreshAllZones, POLL_INTERVAL_MS);
+  poll.start();
   startElapsedTimer();
 }
 
 function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (poll) { poll.stop(); poll = null; }
   stopElapsedTimer();
 }
 
@@ -1094,8 +1100,12 @@ function tickElapsedTime() {
 }
 
 function handleVisibilityChange() {
-  if (document.hidden) stopPolling();
-  else { refreshAllZones(); startPolling(); }
+  if (document.hidden) {
+    stopElapsedTimer();
+  } else {
+    startElapsedTimer();
+    if (poll) poll.refresh(); // immediate re-poll + reset interval
+  }
 }
 
 // =============================================
