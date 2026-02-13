@@ -1,12 +1,12 @@
 {
-  "version": "v260212.54 9:53p",
-  "release": 132,
-  "sha": "e712d202",
-  "fullSha": "e712d202eb91a7b0adec272bb017a4bde2dd05bd",
+  "version": "v260212.55 9:59p",
+  "release": 133,
+  "sha": "c6c2b692",
+  "fullSha": "c6c2b692dfcc212242004ca6b0442cf60b2e6533",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 03:53:00+00",
-  "commits": [{"sha":"e712d202","message":"fix: feature builder now allows modifying existing files","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-13 03:59:39+00",
+  "commits": [{"sha":"c6c2b692","message":"Fix: remove duplicate escapeHtml in sonos.js that crashed the module","author":"Rahul Sonnad"}]
 }
