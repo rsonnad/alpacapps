@@ -492,26 +492,18 @@ window._tryAgain = tryAgain;
 function buildCompletionDetails(req) {
   const parts = [];
 
-  // Version info — show prominently at top for deployed features
+  // Version info — only show if user needs to refresh to get the new version
   if (req.deployed_version && req.deploy_decision === 'auto_merged') {
     const currentVersion = getCurrentPageVersion();
     const isUpToDate = currentVersion && currentVersion === req.deployed_version;
-    const versionStatusClass = isUpToDate ? 'appdev-version-current' : 'appdev-version-stale';
-    const versionStatusText = isUpToDate
-      ? 'You are on this version'
-      : `You are on ${currentVersion || 'an older version'} — hard refresh to get ${req.deployed_version}`;
 
-    parts.push(`<div class="appdev-detail-section appdev-version-section ${versionStatusClass}">
-      <h4>Deployed Version</h4>
-      <p><strong>${escapeHtml(req.deployed_version)}</strong></p>
-      <p class="appdev-version-status">${versionStatusText}</p>
-      ${!isUpToDate ? `<p class="appdev-refresh-hint">${getHardRefreshInstructions()}</p>` : ''}
-    </div>`);
-  } else if (req.deploy_decision === 'auto_merged' && !req.deployed_version) {
-    parts.push(`<div class="appdev-detail-section">
-      <h4>Deployed Version</h4>
-      <p style="color:var(--text-muted)">Version pending — CI is still assigning a version number.</p>
-    </div>`);
+    if (!isUpToDate) {
+      parts.push(`<div class="appdev-detail-section appdev-version-section appdev-version-stale">
+        <h4>Update Available</h4>
+        <p>Deployed as <strong>${escapeHtml(req.deployed_version)}</strong> — you're on ${escapeHtml(currentVersion || 'an older version')}</p>
+        <p class="appdev-refresh-hint">${getHardRefreshInstructions()}</p>
+      </div>`);
+    }
   }
 
   if (req.build_summary) {
