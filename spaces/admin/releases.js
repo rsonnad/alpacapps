@@ -1,7 +1,6 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY, supabase } from '../../shared/supabase.js';
+import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
-const RELEASE_INFO_URL = `${SUPABASE_URL}/functions/v1/release-info`;
 const HISTORY_LIMIT = 50;
 
 let latestRelease = null;
@@ -36,23 +35,20 @@ async function loadReleaseHistory(isManualRefresh = false) {
   tableContainer.innerHTML = '<div class="release-empty">Loading release events...</div>';
 
   try {
-    const token = await getAccessToken();
-    const response = await fetch(`${RELEASE_INFO_URL}?limit=${HISTORY_LIMIT}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: SUPABASE_ANON_KEY,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    // Fetch latest release using RPC
+    const { data: latestRaw, error: latestError } = await supabase.rpc('get_latest_release_event');
+    if (latestError) throw latestError;
 
-    if (!response.ok) {
-      throw new Error(`release-info returned ${response.status}`);
-    }
+    // Fetch release history
+    const { data: historyRows, error: historyError } = await supabase
+      .from('release_events')
+      .select('seq, display_version, push_sha, branch, pushed_at, actor_login, actor_id, source, compare_from_sha, compare_to_sha, model_code, machine_name, metadata')
+      .order('seq', { ascending: false })
+      .limit(HISTORY_LIMIT);
+    if (historyError) throw historyError;
 
-    const payload = await response.json();
-    latestRelease = payload.latest || null;
-    releaseHistory = payload.history || [];
+    latestRelease = latestRaw || null;
+    releaseHistory = historyRows || [];
 
     renderSummary();
     renderTable();
@@ -64,15 +60,6 @@ async function loadReleaseHistory(isManualRefresh = false) {
     console.error('Failed to load release history:', error);
     tableContainer.innerHTML = '<div class="release-empty">Unable to load release history right now.</div>';
     showToast('Failed to load release history', 'error');
-  }
-}
-
-async function getAccessToken() {
-  try {
-    const { data } = await supabase.auth.getSession();
-    return data?.session?.access_token || '';
-  } catch {
-    return '';
   }
 }
 
