@@ -242,6 +242,41 @@ async function withHealthCheck(queryFn, timeoutMs = QUERY_TIMEOUT_MS) {
 // EXPORTS
 // =============================================
 
+/**
+ * Test helper — force a specific banner state from the browser console.
+ * Usage:  supabaseHealth.simulate('degraded')   // amber banner
+ *         supabaseHealth.simulate('down')        // red banner
+ *         supabaseHealth.simulate('offline')     // dark banner
+ *         supabaseHealth.simulate('healthy')     // hide banner
+ */
+function simulateStatus(newStatus) {
+  if (newStatus === 'offline') {
+    isOnline = false;
+    updateBanner();
+    console.log('[supabase-health] Simulating offline — call simulate("healthy") to reset');
+    return;
+  }
+  isOnline = true;
+  if (newStatus === 'healthy') {
+    consecutiveFailures = 0;
+    status = 'healthy';
+    dismissed = false;
+    stopProbe();
+    updateBanner();
+    listeners.forEach(cb => { try { cb('healthy', status); } catch (e) {} });
+    console.log('[supabase-health] Reset to healthy');
+    return;
+  }
+  // Force status without going through failure counting
+  const prev = status;
+  status = newStatus;
+  dismissed = false;
+  consecutiveFailures = newStatus === 'down' ? DOWN_THRESHOLD : DEGRADED_THRESHOLD;
+  updateBanner();
+  listeners.forEach(cb => { try { cb(newStatus, prev); } catch (e) {} });
+  console.log(`[supabase-health] Simulating ${newStatus} — call simulate("healthy") to reset`);
+}
+
 export const supabaseHealth = {
   recordSuccess,
   recordFailure,
@@ -250,8 +285,14 @@ export const supabaseHealth = {
   onStatusChange,
   injectBanner,
   withHealthCheck,
+  simulate: simulateStatus,
 
   // Constants for PollManager integration
   DEGRADED_THRESHOLD,
   DOWN_THRESHOLD,
 };
+
+// Expose on window for console testing
+if (typeof window !== 'undefined') {
+  window.supabaseHealth = supabaseHealth;
+}
