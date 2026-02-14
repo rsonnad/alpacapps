@@ -925,24 +925,9 @@ async function renderGlowforgeSettings() {
   const c = config || {};
   container.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:600px;">
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Glowforge Account Email</label>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">
-          Credentials are stored as Supabase secrets (GLOWFORGE_EMAIL, GLOWFORGE_PASSWORD). This field is for reference only.
-        </p>
-        <input type="text" id="gfEmailDisplay" value="${c.email || ''}" readonly
-               style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;background:var(--bg-card);color:var(--text-muted);">
-      </div>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <label style="font-weight:600;">Active</label>
-        <input type="checkbox" id="gfActive" ${c.is_active ? 'checked' : ''}>
-        <span style="font-size:0.8rem;color:var(--text-muted);">Enable Glowforge integration</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <label style="font-weight:600;">Test Mode</label>
-        <input type="checkbox" id="gfTestMode" ${c.test_mode ? 'checked' : ''}>
-        <span style="font-size:0.8rem;color:var(--text-muted);">When enabled, no API calls are made</span>
-      </div>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">
+        Credentials stored as Supabase secrets (GLOWFORGE_EMAIL, GLOWFORGE_PASSWORD).
+      </p>
       ${c.last_error ? `
         <div style="background:var(--occupied-bg);border:1px solid var(--occupied);border-radius:var(--radius);padding:0.75rem;font-size:0.85rem;">
           <strong>Last Error:</strong> ${c.last_error}
@@ -951,26 +936,12 @@ async function renderGlowforgeSettings() {
       ${c.last_synced_at ? `
         <div style="font-size:0.8rem;color:var(--text-muted);">Last synced: ${formatGlowforgeSyncTime(c.last_synced_at)}</div>
       ` : ''}
-      <div style="display:flex;gap:0.75rem;">
-        <button id="gfSaveBtn" class="btn-primary" style="padding:0.5rem 1.5rem;">Save Settings</button>
+      <div>
         <button id="gfTestBtn" class="btn-secondary" style="padding:0.5rem 1.5rem;">Test Connection</button>
       </div>
       <div id="gfDeviceList"></div>
     </div>
   `;
-
-  document.getElementById('gfSaveBtn')?.addEventListener('click', async () => {
-    const isActive = document.getElementById('gfActive')?.checked;
-    const testMode = document.getElementById('gfTestMode')?.checked;
-
-    const { error } = await supabase
-      .from('glowforge_config')
-      .update({ is_active: isActive, test_mode: testMode, updated_at: new Date().toISOString() })
-      .eq('id', 1);
-
-    if (error) showToast(`Save failed: ${error.message}`, 'error');
-    else showToast('Glowforge settings saved', 'success');
-  });
 
   document.getElementById('gfTestBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('gfTestBtn');
