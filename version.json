@@ -1,12 +1,12 @@
 {
-  "version": "v260214.01 12:14p",
-  "release": 162,
-  "sha": "83de42c1",
-  "fullSha": "83de42c1df54004898806b977f3fd6728ba6960d",
+  "version": "v260214.02 12:19p",
+  "release": 163,
+  "sha": "391edc5e",
+  "fullSha": "391edc5eb12b0eeffb3878552055745f72cdade9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-14 18:14:12+00",
-  "commits": [{"sha":"9985752b","message":"Add Glowforge laser cutter integration to Appliances page","author":"Rahul Sonnad"},{"sha":"83de42c1","message":"Merge branch 'claude/inspiring-cartwright'","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-14 18:19:07+00",
+  "commits": [{"sha":"391edc5e","message":"Simplify Glowforge settings: remove unused toggles and email field","author":"Rahul Sonnad"}]
 }
