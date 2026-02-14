@@ -1,12 +1,12 @@
 {
-  "version": "v260214.04 1:09p",
-  "release": 165,
-  "sha": "feec361c",
-  "fullSha": "feec361c196eee3225b00c3b8163ac1ffa19d40c",
+  "version": "v260214.05 1:22p",
+  "release": 166,
+  "sha": "47b0384f",
+  "fullSha": "47b0384fdaa25d3b449a59517940e32cd78a04a3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-14 19:09:43+00",
-  "commits": [{"sha":"e96bfc19","message":"feat: on this page, change the heading \"AI developer\" to Blue to match the log\\n\\nAutomated feature from PAI request #69794cf1-3941-4e38-bf24-c95f51b56429.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"feec361c","message":"Merge feature/20260214-69794cf1 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-14 19:22:25+00",
+  "commits": [{"sha":"47b0384f","message":"Fix auth bugs and large icon flash on page load","author":"Rahul Sonnad"}]
 }
