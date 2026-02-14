@@ -1,7 +1,8 @@
 /**
- * Appliances Page - LG washer/dryer monitoring + Anova Precision Oven control.
+ * Appliances Page - LG washer/dryer monitoring + Anova Precision Oven control + Glowforge status.
  * Laundry: live status from lg_appliances table (poller on DO droplet writes state; this page reads every 15s).
  * Cooking: live Anova Precision Oven status + controls via anova-control edge function.
+ * Maker Tools: Glowforge laser cutter status via glowforge-control edge function.
  */
 
 import { supabase } from '../shared/supabase.js';
@@ -17,6 +18,11 @@ import {
   getHeatingElements, isWaterTankEmpty, formatSyncTime as formatOvenSyncTime,
   buildSimpleCookStages,
 } from '../shared/services/oven-data.js';
+import {
+  loadGlowforgeMachines, refreshGlowforgeStatus,
+  getMachineStateDisplay, getLastActivity, getMachineModel,
+  formatSyncTime as formatGlowforgeSyncTime,
+} from '../shared/services/glowforge-data.js';
 
 // =============================================
 // CONFIGURATION
@@ -28,6 +34,7 @@ const POLL_INTERVAL_MS = 15000;
 // =============================================
 let appliances = [];
 let anovaOvens = [];
+let glowforgeMachines = [];
 let watchedAppliances = new Set();
 let poll = null;
 let countdownTimer = null;
@@ -37,6 +44,7 @@ let deviceScope = null;
 let loadFailed = false;
 let canControlOven = false;
 let refreshingOven = new Set();
+let refreshingGlowforge = false;
 
 // =============================================
 // SVG ICONS
@@ -71,6 +79,16 @@ const OVEN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 </svg>`;
 
 const REFRESH_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`;
+
+const GLOWFORGE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="4" width="20" height="16" rx="2"/>
+  <line x1="2" y1="8" x2="22" y2="8"/>
+  <circle cx="5" cy="6" r="0.75" fill="currentColor" stroke="none"/>
+  <circle cx="8" cy="6" r="0.75" fill="currentColor" stroke="none"/>
+  <path d="M8 14 L16 14" stroke-dasharray="2 1.5" stroke-width="1.2"/>
+  <path d="M12 11 L12 17" stroke-dasharray="2 1.5" stroke-width="1.2"/>
+  <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none" opacity="0.6"/>
+</svg>`;
 
 // =============================================
 // SECTION COLLAPSE PERSISTENCE
@@ -187,6 +205,14 @@ async function loadAnovaOvens() {
     anovaOvens = await loadOvens();
   } catch (err) {
     console.warn('Failed to load anova ovens:', err.message);
+  }
+}
+
+async function loadGlowforge() {
+  try {
+    glowforgeMachines = await loadGlowforgeMachines();
+  } catch (err) {
+    console.warn('Failed to load glowforge machines:', err.message);
   }
 }
 
@@ -379,6 +405,53 @@ function renderOvenCard(oven) {
 }
 
 // =============================================
+// RENDERING — GLOWFORGE
+// =============================================
+function renderGlowforgeCard(machine) {
+  const state = getMachineStateDisplay(machine);
+  const lastActivity = getLastActivity(machine);
+  const model = getMachineModel(machine);
+  const stateClass = state.isOnline ? 'running' : '';
+
+  return `
+    <div class="laundry-card ${stateClass}" data-glowforge-id="${machine.id}">
+      <div class="laundry-card__header">
+        <div class="laundry-card__icon">${GLOWFORGE_ICON}</div>
+        <div class="laundry-card__name">${machine.name}</div>
+        <span class="laundry-card__status-dot" style="background:${state.color}"></span>
+      </div>
+
+      <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
+
+      <div class="laundry-card__data-grid">
+        ${model ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Model</span>
+          <span class="laundry-data-value" style="text-transform:capitalize;">${model}</span>
+        </div>
+        ` : ''}
+        ${lastActivity ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Last Activity</span>
+          <span class="laundry-data-value">${lastActivity}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="laundry-card__controls">
+        <button class="laundry-watch-btn" onclick="window._refreshGlowforge()" title="Fetch live status from Glowforge cloud"
+                ${refreshingGlowforge ? 'disabled' : ''} style="flex:1;">
+          ${REFRESH_ICON}
+          <span>${refreshingGlowforge ? 'Refreshing...' : 'Refresh'}</span>
+        </button>
+      </div>
+
+      <div class="laundry-card__sync-time">${formatGlowforgeSyncTime(machine.last_synced_at)}</div>
+    </div>
+  `;
+}
+
+// =============================================
 // RENDERING — SECTIONS
 // =============================================
 function renderSections() {
@@ -411,6 +484,17 @@ function renderSections() {
     </p>`;
   }
 
+  // Maker Tools section (Glowforge)
+  const makerOpen = getSectionOpenState('maker');
+  let makerCardsHtml;
+  if (glowforgeMachines.length > 0) {
+    makerCardsHtml = `<div class="laundry-grid">${glowforgeMachines.map(renderGlowforgeCard).join('')}</div>`;
+  } else {
+    makerCardsHtml = `<p style="text-align:center;color:var(--text-muted);padding:2rem;">
+      No maker tools discovered yet. Admin: configure Glowforge credentials in Settings below, then click Refresh.
+    </p>`;
+  }
+
   container.innerHTML = `
     <details class="appliance-section" ${laundryOpen ? 'open' : ''} data-section="laundry">
       <summary class="appliance-section__header">
@@ -431,6 +515,17 @@ function renderSections() {
       </summary>
       <div class="appliance-section__body">
         ${cookingCardsHtml}
+      </div>
+    </details>
+
+    <details class="appliance-section" ${makerOpen ? 'open' : ''} data-section="maker">
+      <summary class="appliance-section__header">
+        <span class="appliance-section__chevron"></span>
+        <h3>Maker Tools</h3>
+        <span class="appliance-section__count">${glowforgeMachines.length} device${glowforgeMachines.length !== 1 ? 's' : ''}</span>
+      </summary>
+      <div class="appliance-section__body">
+        ${makerCardsHtml}
       </div>
     </details>
   `;
@@ -537,6 +632,27 @@ window._showStartCook = function(ovenId) {
   });
 };
 
+// =============================================
+// GLOWFORGE CONTROLS
+// =============================================
+window._refreshGlowforge = async function() {
+  if (refreshingGlowforge) return;
+  refreshingGlowforge = true;
+  renderSections();
+
+  try {
+    const result = await refreshGlowforgeStatus();
+    if (result.error) throw new Error(result.error);
+    showToast(`Glowforge: found ${result.count || 0} machine(s)`, 'success');
+    await loadGlowforge();
+  } catch (err) {
+    showToast(`Glowforge refresh failed: ${err.message}`, 'error');
+  } finally {
+    refreshingGlowforge = false;
+    renderSections();
+  }
+};
+
 window._stopCook = async function(ovenId) {
   if (!confirm('Stop the oven?')) return;
   try {
@@ -634,7 +750,7 @@ function stopCountdown() {
 // POLLING
 // =============================================
 async function refreshFromDB() {
-  await Promise.all([loadAppliances(), loadAnovaOvens()]);
+  await Promise.all([loadAppliances(), loadAnovaOvens(), loadGlowforge()]);
   await loadWatcherStatus();
   renderSections();
 }
@@ -794,6 +910,109 @@ async function renderAnovaSettings() {
 }
 
 // =============================================
+// ADMIN SETTINGS — GLOWFORGE
+// =============================================
+async function renderGlowforgeSettings() {
+  const container = document.getElementById('glowforgeSettingsContent');
+  if (!container) return;
+
+  const { data: config } = await supabase
+    .from('glowforge_config')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  const c = config || {};
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:600px;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Glowforge Account Email</label>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">
+          Credentials are stored as Supabase secrets (GLOWFORGE_EMAIL, GLOWFORGE_PASSWORD). This field is for reference only.
+        </p>
+        <input type="text" id="gfEmailDisplay" value="${c.email || ''}" readonly
+               style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;background:var(--bg-card);color:var(--text-muted);">
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <label style="font-weight:600;">Active</label>
+        <input type="checkbox" id="gfActive" ${c.is_active ? 'checked' : ''}>
+        <span style="font-size:0.8rem;color:var(--text-muted);">Enable Glowforge integration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <label style="font-weight:600;">Test Mode</label>
+        <input type="checkbox" id="gfTestMode" ${c.test_mode ? 'checked' : ''}>
+        <span style="font-size:0.8rem;color:var(--text-muted);">When enabled, no API calls are made</span>
+      </div>
+      ${c.last_error ? `
+        <div style="background:var(--occupied-bg);border:1px solid var(--occupied);border-radius:var(--radius);padding:0.75rem;font-size:0.85rem;">
+          <strong>Last Error:</strong> ${c.last_error}
+        </div>
+      ` : ''}
+      ${c.last_synced_at ? `
+        <div style="font-size:0.8rem;color:var(--text-muted);">Last synced: ${formatGlowforgeSyncTime(c.last_synced_at)}</div>
+      ` : ''}
+      <div style="display:flex;gap:0.75rem;">
+        <button id="gfSaveBtn" class="btn-primary" style="padding:0.5rem 1.5rem;">Save Settings</button>
+        <button id="gfTestBtn" class="btn-secondary" style="padding:0.5rem 1.5rem;">Test Connection</button>
+      </div>
+      <div id="gfDeviceList"></div>
+    </div>
+  `;
+
+  document.getElementById('gfSaveBtn')?.addEventListener('click', async () => {
+    const isActive = document.getElementById('gfActive')?.checked;
+    const testMode = document.getElementById('gfTestMode')?.checked;
+
+    const { error } = await supabase
+      .from('glowforge_config')
+      .update({ is_active: isActive, test_mode: testMode, updated_at: new Date().toISOString() })
+      .eq('id', 1);
+
+    if (error) showToast(`Save failed: ${error.message}`, 'error');
+    else showToast('Glowforge settings saved', 'success');
+  });
+
+  document.getElementById('gfTestBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('gfTestBtn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    try {
+      const result = await refreshGlowforgeStatus();
+      if (result.error) throw new Error(result.error);
+      showToast(`Connected! Found ${result.count || 0} machine(s)`, 'success');
+      await loadGlowforge();
+      renderSections();
+      renderGlowforgeSettings(); // refresh device list
+    } catch (err) {
+      showToast(`Connection failed: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Connection';
+    }
+  });
+
+  // Show discovered machines
+  if (glowforgeMachines.length > 0) {
+    const deviceList = document.getElementById('gfDeviceList');
+    if (deviceList) {
+      deviceList.innerHTML = `
+        <div style="margin-top:0.5rem;">
+          <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Discovered Machines</label>
+          ${glowforgeMachines.map(m => `
+            <div style="padding:0.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.5rem;">
+              <div style="font-weight:600;">${m.name}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">
+                ID: ${m.machine_id || '?'} | Type: ${m.machine_type || '?'}${m.lan_ip ? ` | IP: ${m.lan_ip}` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+}
+
+// =============================================
 // INIT
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -812,10 +1031,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show admin settings sections
       const showLgAdmin = hasPermission('admin_laundry_settings');
       const showOvenAdmin = hasPermission('admin_oven_settings');
-      if (showLgAdmin || showOvenAdmin) {
+      const showGfAdmin = hasPermission('admin_glowforge_settings');
+      if (showLgAdmin || showOvenAdmin || showGfAdmin) {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         if (showLgAdmin) await renderLgSettings();
         if (showOvenAdmin) await renderAnovaSettings();
+        if (showGfAdmin) await renderGlowforgeSettings();
       }
 
       poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);

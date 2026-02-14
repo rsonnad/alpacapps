@@ -89,6 +89,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `cars-data.js` - Tesla vehicle data + commands via `tesla-command` edge function
 - `laundry-data.js` - LG washer/dryer state + control via `lg-control` edge function
 - `oven-data.js` - Anova oven state + control via `anova-control` edge function
+- `glowforge-data.js` - Glowforge laser cutter status via `glowforge-control` edge function
 
 ### Mobile App (`/mobile/`)
 - `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)
@@ -160,6 +161,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `create-tesla-account/` - Creates tesla_accounts row with server-held Fleet API credentials (resident+ auth); use default JWT
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
 - `anova-control/` - Anova Precision Oven control via WebSocket API (getStatus, startCook, stopCook) (resident+ auth)
+- `glowforge-control/` - Glowforge laser cutter status via cookie-based web API (getStatus) (resident+ auth)
 - `verify-identity/` - Driver's license photo → Claude Vision API → auto-verify applicants/associates
 - `paypal-payout/` - Sends PayPal payouts to associates
 - `paypal-webhook/` - Receives PayPal payout status updates
@@ -193,6 +195,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `tesla-command` | `supabase functions deploy tesla-command --no-verify-jwt` |
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
 | `anova-control` | `supabase functions deploy anova-control --no-verify-jwt` |
+| `glowforge-control` | `supabase functions deploy glowforge-control --no-verify-jwt` |
 | `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
 | `verify-identity` | `supabase functions deploy verify-identity --no-verify-jwt` |
 | `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
@@ -326,6 +329,17 @@ anova_config        - Anova Developer API configuration (single row, id=1)
 anova_ovens         - Anova oven devices with cached state
                       (cooker_id [unique], name, oven_type, firmware_version,
                        hardware_version, space_id [FK→spaces], display_order,
+                       is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
+```
+
+### Glowforge Laser Cutter System
+```
+glowforge_config    - Glowforge Cloud API configuration (single row, id=1)
+                      (email, session_cookies, session_expires_at,
+                       is_active, test_mode, last_error, last_synced_at)
+glowforge_machines  - Glowforge machines with cached state
+                      (machine_id [unique], name, machine_type,
+                       space_id [FK→spaces], display_order,
                        is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
 ```
 
@@ -710,6 +724,7 @@ Use these exact vendor strings:
 | `tesla` | Tesla Fleet API |
 | `lg_thinq` | LG ThinQ API |
 | `anova` | Anova Precision Oven Developer API |
+| `glowforge` | Glowforge Cloud API (undocumented) |
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
@@ -743,6 +758,7 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `lg_laundry_poll` | LG washer/dryer status polling |
 | `anova_oven_control` | Anova oven commands (start, stop) |
 | `anova_oven_poll` | Anova oven status polling |
+| `glowforge_status_poll` | Glowforge machine status polling |
 | `govee_lighting_control` | Govee light commands |
 | `sonos_music_control` | Sonos playback commands |
 | `square_payment_processing` | Square payment transactions |
@@ -808,6 +824,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 | SignWell | Included in plan (25 docs/month free) |
 | Square | 2.6% + $0.10 per transaction |
 | PayPal Payouts | $0.25/payout (US) |
+| Glowforge | $0 (undocumented API, free) |
 
 ## Supabase Details
 
@@ -987,6 +1004,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **PAI tools**: `get_oven_status`, `control_oven` (chat + voice)
 - **Device**: IP 192.168.1.181, MAC 10:52:1c:be:49:b8, Espressif ESP32, WiFi Alpacalypse
 - **Cost**: $0 (free API, no rate limits documented)
+
+### Glowforge (Laser Cutter)
+- **API**: Undocumented Glowforge Cloud API (community reverse-engineered)
+- **Auth**: Cookie-based session auth (email/password login → session cookies)
+- **Architecture**: Per-request in `glowforge-control` edge function (no polling worker)
+- **Auth flow**: GET app.glowforge.com (CSRF token) → POST accounts.glowforge.com/users/sign_in → collect cookies → GET api.glowforge.com/gfcore/users/machines
+- **Credentials**: Stored as Supabase secrets (`GLOWFORGE_EMAIL`, `GLOWFORGE_PASSWORD`)
+- **Session caching**: Cookies cached in `glowforge_config.session_cookies` with 7-day expiry, auto-re-authenticates on failure
+- **Read-only**: No documented control endpoints — status only (machine name, online/offline state, last activity)
+- **DB**: `glowforge_config` (session/config), `glowforge_machines` (cached state in `last_state` JSONB)
+- **Edge function**: `glowforge-control` — deployed with `--no-verify-jwt`
+- **Client**: `residents/appliances.js` renders Glowforge card in "Maker Tools" section
+- **Permissions**: `view_glowforge` (all residents), `admin_glowforge_settings` (admin/oracle)
+- **Cost**: $0 (undocumented API, no rate limits documented)
 
 ### Vapi (AI Voice Calling)
 - **API**: Vapi.ai (voice AI platform)
@@ -1332,6 +1363,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **PAI tools**: `get_oven_status`, `control_oven` (chat + voice)
    - **Network**: IP 192.168.1.181, MAC 10:52:1c:be:49:b8, WiFi Alpacalypse, Espressif ESP32
    - **Auto-discovery**: First getStatus creates anova_ovens row from WebSocket device list
+
+43. **Glowforge Laser Cutter Integration** - Read-only status monitoring for Glowforge
+   - **API**: Undocumented Glowforge Cloud API (community reverse-engineered)
+   - **Auth**: Cookie-based session auth (email/password → CSRF token → login → session cookies)
+   - **Architecture**: Per-request in edge function (no DO droplet worker — on-demand only)
+   - **Edge function**: `glowforge-control` (getStatus only — no control endpoints documented)
+   - **Data service**: `shared/services/glowforge-data.js` (display helpers)
+   - **DB**: `glowforge_config` (session cookies/config), `glowforge_machines` (cached state in `last_state` JSONB)
+   - **Credentials**: Stored as Supabase secrets (`GLOWFORGE_EMAIL`, `GLOWFORGE_PASSWORD`), not in DB
+   - **Permissions**: `view_glowforge` (all residents), `admin_glowforge_settings` (admin/oracle)
+   - **UI**: Appliances page "Maker Tools" section — machine name, online/offline status, last activity, refresh button
+   - **Admin settings**: Active toggle, test mode toggle, test connection, discovered machines list
+   - **Auto-discovery**: First getStatus creates glowforge_machines rows from API response
+   - **Cost**: $0 (undocumented API, no rate limits known)
 
 ## Testing Changes
 
