@@ -211,7 +211,9 @@ emailPasswordForm.addEventListener('submit', async (e) => {
     console.error('[LOGIN]', 'Email/password sign in error:', error);
     const msg = error.message || '';
     if (msg.toLowerCase().includes('invalid login credentials')) {
-      showState('noAccount', email);
+      // Supabase returns the same error for wrong password AND non-existent account.
+      // Show a neutral message that covers both cases instead of "No account found".
+      showState('error', 'Incorrect email or password. Please try again, or sign up for a new account.');
     } else {
       showState('error', msg);
     }

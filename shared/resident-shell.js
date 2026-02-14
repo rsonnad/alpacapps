@@ -380,7 +380,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
       // If permissions haven't loaded yet (empty set from cache/timeout) but the user's
       // role would normally grant access, don't deny — keep loading and wait for fresh perms.
       if (!meetsRequirement && state.permissions?.size === 0) {
-        const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
+        const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
         const userLevel = ROLE_LEVEL[userRole] || 0;
         const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
         if (userLevel >= requiredLevel) {
@@ -388,7 +388,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
         }
       }
     } else {
-      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demon: 2, resident: 1, associate: 1 };
+      const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1 };
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
@@ -440,8 +440,8 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
           window.location.href = '/login/';
         };
         document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
-        const userInfo = document.getElementById('userInfo');
-        userInfo?.addEventListener('click', (e) => {
+        const userInfoEl = document.getElementById('userInfo') || document.getElementById('aapHeaderAuth');
+        userInfoEl?.addEventListener('click', (e) => {
           if (e.target.closest('#headerSignOutBtn') || e.target.closest('.user-menu-signout')) {
             e.preventDefault();
             e.stopPropagation();

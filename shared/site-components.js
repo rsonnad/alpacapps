@@ -80,8 +80,8 @@ function renderHeader(options = {}) {
     <header class="aap-header ${headerClass} ${colorClass}" id="aap-header">
       <div class="aap-header__inner">
         <a href="${BASE_PATH}/" class="aap-header__logo">
-          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
-          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
+          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" height="30" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
+          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" height="22" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
           ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
         </a>
         <nav class="aap-nav" id="aap-nav">

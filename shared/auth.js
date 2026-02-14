@@ -62,6 +62,7 @@ let currentRole = 'public';
 let currentPermissions = new Set();
 let authStateListeners = [];
 let authHandlingInProgress = false; // Prevent concurrent auth handling
+let pendingAuthSession = null; // Queue the latest session if one arrives while handling
 let resolvedFromCache = false; // Track whether we initially resolved from cache
 
 /**
@@ -143,7 +144,7 @@ export async function initAuth() {
 
     // If we have cached auth, use it to pre-populate state immediately
     // This lets the UI show content instantly while Supabase verifies in background
-    if (cached?.appUser && ['oracle', 'admin', 'staff', 'resident', 'associate', 'demon', 'public', 'prospect'].includes(cached.role)) {
+    if (cached?.appUser && ['oracle', 'admin', 'staff', 'resident', 'associate', 'demo', 'public', 'prospect'].includes(cached.role)) {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
@@ -240,8 +241,10 @@ async function handleAuthChange(session) {
   }
 
   // Prevent concurrent auth handling (can happen with INITIAL_SESSION + SIGNED_IN events)
+  // Instead of dropping the event, queue it so the latest session is always processed.
   if (authHandlingInProgress) {
-    authLog.info('handleAuthChange() skipped - already in progress');
+    authLog.info('handleAuthChange() queued - already in progress');
+    pendingAuthSession = session;
     return;
   }
   authHandlingInProgress = true;
@@ -448,6 +451,13 @@ async function handleAuthChange(session) {
   notifyListeners();
   } finally {
     authHandlingInProgress = false;
+    // If another auth event arrived while we were processing, handle it now
+    if (pendingAuthSession) {
+      const queued = pendingAuthSession;
+      pendingAuthSession = null;
+      authLog.info('Processing queued auth session');
+      handleAuthChange(queued);
+    }
   }
 }
 
@@ -544,7 +554,6 @@ export async function updatePassword(newPassword) {
  */
 export async function signOut() {
   authLog.info('signOut() called');
-  clearCachedAuthState();
 
   const { error } = await supabase.auth.signOut();
 
@@ -553,6 +562,8 @@ export async function signOut() {
     throw error;
   }
 
+  // Clear cache AFTER successful sign out to avoid inconsistent state on error
+  clearCachedAuthState();
   currentUser = null;
   currentAppUser = null;
   currentRole = 'public';
@@ -576,7 +587,7 @@ export function getAuthState() {
     isResident: ['resident', 'associate', 'staff', 'admin', 'oracle'].includes(currentRole),
     isPublic: currentRole === 'public',
     // Treat 'pending' as authorized to allow redirect while we verify in background
-    isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'demon', 'public', 'prospect', 'pending'].includes(currentRole),
+    isAuthorized: ['oracle', 'admin', 'staff', 'resident', 'associate', 'demo', 'public', 'prospect', 'pending'].includes(currentRole),
     isUnauthorized: currentRole === 'unauthorized',
     isPending: currentRole === 'pending',
     isCurrentResident: currentAppUser?.is_current_resident === true,
