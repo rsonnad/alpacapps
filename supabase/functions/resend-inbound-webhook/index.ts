@@ -721,38 +721,41 @@ async function sendPaiDocumentNotification(
 async function downloadResendAttachment(
   resendApiKey: string,
   emailId: string,
-  attachmentIndex: number
+  attachmentId: string,
+  fallbackFilename: string
 ): Promise<{ data: Uint8Array; filename: string; contentType: string } | null> {
   try {
-    // Fetch the full email to get attachment download URLs
-    const res = await fetch(`${RESEND_API_URL}/emails/receiving/${emailId}`, {
-      headers: { Authorization: `Bearer ${resendApiKey}` },
-    });
+    // Use Resend's attachment endpoint to get the download URL
+    const attRes = await fetch(
+      `${RESEND_API_URL}/emails/receiving/${emailId}/attachments/${attachmentId}`,
+      { headers: { Authorization: `Bearer ${resendApiKey}` } }
+    );
 
-    if (!res.ok) {
-      console.error(`Failed to fetch email for attachments: ${res.status}`);
+    if (!attRes.ok) {
+      console.error(`Failed to fetch attachment metadata: ${attRes.status} ${await attRes.text()}`);
       return null;
     }
 
-    const emailData = await res.json();
-    const attachments = emailData.attachments || [];
-    if (attachmentIndex >= attachments.length) {
-      console.error(`Attachment index ${attachmentIndex} out of range (${attachments.length} attachments)`);
+    const attData = await attRes.json();
+    const downloadUrl = attData.download_url;
+    const filename = attData.filename || fallbackFilename;
+    const contentType = attData.content_type || "application/octet-stream";
+
+    if (!downloadUrl) {
+      console.error(`No download_url for attachment ${attachmentId}`);
       return null;
     }
 
-    const att = attachments[attachmentIndex];
-    const filename = att.filename || `attachment-${attachmentIndex}`;
-    const contentType = att.content_type || "application/octet-stream";
-
-    // Attachment content is base64-encoded in the Resend response
-    if (att.content) {
-      const data = base64Decode(att.content);
-      return { data: new Uint8Array(data), filename, contentType };
+    // Download the actual file content from the signed URL
+    const fileRes = await fetch(downloadUrl);
+    if (!fileRes.ok) {
+      console.error(`Failed to download attachment file: ${fileRes.status}`);
+      return null;
     }
 
-    console.error(`No content found for attachment ${attachmentIndex}`);
-    return null;
+    const data = new Uint8Array(await fileRes.arrayBuffer());
+    console.log(`Downloaded attachment: ${filename} (${data.length} bytes)`);
+    return { data, filename, contentType };
   } catch (err) {
     console.error(`Error downloading attachment: ${err.message}`);
     return null;
@@ -860,8 +863,13 @@ async function handlePaiEmail(
       }
 
       try {
-        // Download from Resend
-        const downloaded = await downloadResendAttachment(resendApiKey, emailId, i);
+        // Download from Resend using the attachment ID from the webhook payload
+        const attachmentId = att.id;
+        if (!attachmentId) {
+          console.error(`No attachment ID for attachment ${i}, skipping`);
+          continue;
+        }
+        const downloaded = await downloadResendAttachment(resendApiKey, emailId, attachmentId, filename);
         if (!downloaded) continue;
 
         // Generate R2 key
