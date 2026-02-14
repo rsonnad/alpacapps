@@ -1,12 +1,12 @@
 {
-  "version": "v260213.22 11:27a",
-  "release": 161,
-  "sha": "d57998cc",
-  "fullSha": "d57998cc4d273e775a77a314129a46b548b724d4",
+  "version": "v260214.01 12:14p",
+  "release": 162,
+  "sha": "83de42c1",
+  "fullSha": "83de42c1df54004898806b977f3fd6728ba6960d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-13 17:27:51+00",
-  "commits": [{"sha":"d57998cc","message":"feat: Add facebook_url column to app_users table","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-14 18:14:12+00",
+  "commits": [{"sha":"9985752b","message":"Add Glowforge laser cutter integration to Appliances page","author":"Rahul Sonnad"},{"sha":"83de42c1","message":"Merge branch 'claude/inspiring-cartwright'","author":"Rahul Sonnad"}]
 }
