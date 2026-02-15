@@ -103,6 +103,13 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `app/tabs/climate-tab.js` - Nest thermostats: temp +/-, mode, eco toggle
 - `app/tabs/cars-tab.js` - Tesla vehicles: battery, lock/unlock, flash lights
 
+### Payment Page (`/pay/`)
+- `index.html` - Self-service payment page for tenants (Stripe PaymentElement + manual methods)
+- URL params: `?amount=`, `?description=`, `?person_id=`, `?person_name=`, `?email=`, `?payment_type=`, `?reference_type=`, `?reference_id=`
+- Shows Zelle/Venmo/PayPal (free, manual) + Stripe ACH/card (online, 0.8% fee capped at $5)
+- Stripe PaymentElement mounts with PaymentIntent clientSecret from `process-stripe-payment`
+- On success, Stripe webhook creates ledger entry + sends confirmation email with statement
+
 ### Consumer View (`/spaces/`)
 - `app.js` - Public listing with real availability from assignments
 - Shows only `is_listed=true AND is_secret=false` spaces
@@ -173,6 +180,10 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `process-square-payment/` - Server-side Square payment processing
 - `refund-square-payment/` - Square payment refunds
 - `square-webhook/` - Receives Square webhook for payment/refund status changes (ACH PENDING→COMPLETED/FAILED)
+- `process-stripe-payment/` - Creates Stripe PaymentIntent for ACH/card payments (returns clientSecret)
+- `stripe-webhook/` - Receives Stripe webhook for payment/transfer status changes, sends confirmation emails
+- `stripe-connect-onboard/` - Stripe Connect Express account creation + onboarding for associate payouts
+- `stripe-payout/` - Outbound ACH payments to associates via Stripe Connect Transfers
 - `record-payment/` - AI-assisted payment matching (Gemini)
 - `resolve-payment/` - Manual payment resolution for pending matches
 - `confirm-deposit-payment/` - Deposit payment confirmation workflow
@@ -205,6 +216,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `reprocess-pai-email` | `supabase functions deploy reprocess-pai-email --no-verify-jwt` |
 | `api` | `supabase functions deploy api --no-verify-jwt` |
 | `square-webhook` | `supabase functions deploy square-webhook --no-verify-jwt` |
+| `stripe-webhook` | `supabase functions deploy stripe-webhook --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -459,6 +471,22 @@ voice_calls          - Call log
                        status, created_at)
 ```
 
+### Stripe Payment System
+```
+stripe_config       - Stripe API credentials + webhook secrets (single row, id=1)
+                      (publishable_key, secret_key, sandbox_publishable_key, sandbox_secret_key,
+                       webhook_secret, sandbox_webhook_secret, connect_enabled, is_active, test_mode)
+stripe_payments     - Inbound payment records linked to PaymentIntents
+                      (payment_type, reference_type, reference_id, amount, original_amount,
+                       fee_code_used, status [pending/completed/failed/refunded],
+                       stripe_payment_intent_id, stripe_charge_id, receipt_url,
+                       error_message, person_id, person_name, ledger_id [FK→ledger],
+                       is_test, created_at, updated_at)
+payment_methods     - Display methods on pay page (Zelle, Venmo, PayPal, ACH)
+                      (name, method_type, account_identifier, account_name,
+                       qr_code_media_id [FK→media], display_order, is_active, instructions)
+```
+
 ### Airbnb iCal Sync
 ```
 (Uses existing spaces + assignments tables)
@@ -675,7 +703,7 @@ After every `git push`, you MUST include a status message so the user knows what
 Common page URLs for testing links (use only on main deploys):
 - Resident pages: [residents](https://alpacaplayhouse.com/residents/laundry.html) (cameras, climate, lighting, sonos, laundry, cars)
 - Admin pages: [admin](https://alpacaplayhouse.com/spaces/admin/manage.html) (spaces, rentals, settings, templates, users, sms-messages)
-- Public: [spaces](https://alpacaplayhouse.com/spaces/), [home](https://alpacaplayhouse.com/)
+- Public: [spaces](https://alpacaplayhouse.com/spaces/), [home](https://alpacaplayhouse.com/), [pay](https://alpacaplayhouse.com/pay/)
 
 ## Important Conventions
 
@@ -721,6 +749,7 @@ Use these exact vendor strings:
 | `resend` | Email sending |
 | `signwell` | E-signature documents |
 | `square` | Payment processing |
+| `stripe` | Payment processing (ACH, card, Connect payouts) |
 | `paypal` | Associate payouts |
 | `openweathermap` | Weather API |
 | `google_sdm` | Nest thermostat API (Google Smart Device Management) |
@@ -765,6 +794,9 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `govee_lighting_control` | Govee light commands |
 | `sonos_music_control` | Sonos playback commands |
 | `square_payment_processing` | Square payment transactions |
+| `stripe_payment_processing` | Stripe inbound payment transactions (ACH, card) |
+| `stripe_associate_payout` | Stripe Connect outbound transfers to associates |
+| `square_webhook` | Square webhook event receipt |
 | `paypal_associate_payout` | PayPal associate payouts |
 | `airbnb_ical_sync` | Airbnb calendar sync |
 | `r2_document_upload` | Document upload to Cloudflare R2 |
@@ -826,6 +858,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 | Resend Email | Free tier: 100/day, then $0.00028/email |
 | SignWell | Included in plan (25 docs/month free) |
 | Square | 2.6% + $0.10 per transaction |
+| Stripe | ACH: 0.8% capped at $5; Cards: 2.9% + $0.30; Connect transfers: $0.25/payout |
 | PayPal Payouts | $0.25/payout (US) |
 | Glowforge | $0 (undocumented API, free) |
 
@@ -1045,6 +1078,19 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Env vars**: `DISCORD_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CHANNEL_IDS`
 - **Discord guild**: Alpacord (ID: `1471023710755487867`), channel `#pai-in-the-sky` (ID: `1471024050343247894`)
 - **Install**: `cd pai-discord && bash install.sh` on droplet, then edit `.env`
+
+### Stripe (Inbound Payments + Associate Payouts)
+- **API**: Stripe PaymentIntents (inbound ACH/card) + Stripe Connect Transfers (outbound payouts)
+- **Auth**: Secret key for server-side, publishable key for client-side Stripe.js
+- **Edge functions**: `process-stripe-payment` (create PaymentIntent), `stripe-webhook` (HMAC-SHA256 verified), `stripe-connect-onboard` (Express accounts), `stripe-payout` (transfers)
+- **Config**: `stripe_config` table (publishable/secret keys for sandbox + production, webhook secrets, is_active, test_mode, connect_enabled)
+- **DB**: `stripe_payments` (PaymentIntent tracking), `payment_methods` (display methods on pay page)
+- **Payment page**: `/pay/index.html` — self-service payment with URL params for pre-filling
+- **Client service**: `shared/stripe-service.js` (config loader, PaymentIntent creation, Stripe.js v3 loader)
+- **Confirmation email**: Rich receipt with payment history, outstanding balance, "Pay Now" link
+- **Webhook events**: `payment_intent.succeeded/failed`, `transfer.paid/failed/reversed`, `account.updated`
+- **Connect**: Associates onboard Express accounts for direct ACH payouts, gated on identity verification
+- **Pricing**: 0.8% capped at $5 per ACH transaction (displayed on pay page)
 
 ### PayPal (Associate Payouts)
 - **API**: PayPal Payouts API (batch payments)
@@ -1393,6 +1439,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **Deployment**: `supabase functions deploy square-webhook --no-verify-jwt`
    - **Setup**: Register webhook at Square Developer Console → Webhooks → Add subscription → copy Signature Key → store in `square_config.webhook_signature_key`
    - **Webhook URL**: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/square-webhook`
+
+45. **Stripe Payment Integration** - Full inbound/outbound payment system via Stripe
+   - **Inbound payments**: Tenant pay page at `/pay/` with Stripe PaymentElement (ACH bank transfer + card)
+   - **Edge functions**: `process-stripe-payment` (create PaymentIntent), `stripe-webhook` (HMAC-verified status updates), `stripe-connect-onboard` (associate Express accounts), `stripe-payout` (outbound transfers)
+   - **Payment flow**: PaymentIntent → Payment Element → confirm → webhook → ledger + confirmation email
+   - **Confirmation email**: Rich receipt with payment history, outstanding balance calculation, "Pay Now" link for remaining balance
+   - **DB**: `stripe_config` (keys, webhook secret, test_mode), `stripe_payments` (intent tracking, ledger linkage), `payment_methods` (Zelle/Venmo/PayPal/ACH display)
+   - **Stripe Connect**: Associates onboard Express accounts for direct ACH payouts (gated on identity verification)
+   - **Ledger sync**: Webhook creates ledger entries on `payment_intent.succeeded`, links `stripe_payments.ledger_id`
+   - **Client service**: `shared/stripe-service.js` (config loader, PaymentIntent creation, Stripe.js loader)
+   - **Admin settings**: Stripe section in Settings page (keys, test mode toggle, test connection button)
+   - **Deployment**: `stripe-webhook` with `--no-verify-jwt`; others with default JWT
+   - **Webhook URL**: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/stripe-webhook`
+   - **Events**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `transfer.paid/failed/reversed`, `account.updated`
 
 ## Testing Changes
 
