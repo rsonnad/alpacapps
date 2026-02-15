@@ -200,65 +200,65 @@ function buildContractReminderEmail(
   let introText: string;
 
   if (level === 1) {
-    headerBg = 'linear-gradient(135deg, #2d3024 0%, #3a3f30 100%)';
+    headerBg = '#1c1618';
     headerSubtext = 'Lease Signing Reminder';
     subject = `Reminder: Please sign your lease agreement - Alpaca Playhouse`;
     introText = `Just a friendly reminder that your lease agreement for <strong>${spaceName}</strong> is ready for your signature. It was sent on ${formatDate(item.dueDate)}.`;
   } else if (level === 2) {
-    headerBg = 'linear-gradient(135deg, #5d4037 0%, #4e342e 100%)';
+    headerBg = '#1c1618';
     headerSubtext = 'Lease Signing Follow-Up';
     subject = `Follow-Up: Lease agreement awaiting signature - Alpaca Playhouse`;
     introText = `This is a follow-up &mdash; your lease agreement for <strong>${spaceName}</strong> is still awaiting your signature. It was sent ${daysSince} days ago.`;
   } else if (level === 3) {
-    headerBg = 'linear-gradient(135deg, #e65100 0%, #bf360c 100%)';
+    headerBg = '#1c1618';
     headerSubtext = 'Lease Signing - Action Needed';
     subject = `Action Needed: Lease for ${spaceName} awaiting signature - Alpaca Playhouse`;
     introText = `We haven't received your signature on the lease for <strong>${spaceName}</strong> yet. It's been ${daysSince} days since we sent it. Please sign soon to secure your space.`;
   } else {
-    headerBg = 'linear-gradient(135deg, #b71c1c 0%, #c62828 100%)';
+    headerBg = '#1c1618';
     headerSubtext = 'Urgent: Lease Awaiting Signature';
     subject = `URGENT: Lease for ${spaceName} unsigned after ${daysSince} days - Alpaca Playhouse`;
     introText = `Your lease for <strong>${spaceName}</strong> has been awaiting your signature for <strong>${daysSince} days</strong>. Please sign immediately or contact us if you have questions.`;
   }
 
-  const statusColor = daysSince >= 7 ? '#c62828' : daysSince >= 5 ? '#e65100' : daysSince >= 3 ? '#f57c00' : '#333';
+  const statusColor = daysSince >= 7 ? '#c62828' : daysSince >= 5 ? '#e65100' : daysSince >= 3 ? '#d4883a' : '#2a1f23';
 
   const html = `
-    <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#faf9f6;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
       <div style="background:${headerBg};padding:28px 32px;text-align:center;">
-        <h1 style="color:white;margin:0;font-size:22px;font-weight:600;">Alpaca Playhouse</h1>
-        <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:14px;">${headerSubtext}</p>
+        <h1 style="color:#faf9f6;margin:0;font-size:22px;font-weight:600;">Alpaca Playhouse</h1>
+        <p style="color:rgba(250,249,246,0.65);margin:6px 0 0;font-size:14px;">${headerSubtext}</p>
       </div>
       <div style="padding:28px 32px;">
-        <p style="color:#333;font-size:15px;margin-bottom:4px;">Hi ${item.personFirstName},</p>
-        <p style="color:#555;font-size:14px;line-height:1.5;margin-bottom:20px;">${introText}</p>
+        <p style="color:#2a1f23;font-size:15px;margin-bottom:4px;">Hi ${item.personFirstName},</p>
+        <p style="color:#7d6f74;font-size:14px;line-height:1.5;margin-bottom:20px;">${introText}</p>
 
-        <div style="background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:24px;">
+        <div style="background:#f2f0e8;border-radius:8px;padding:20px;margin-bottom:24px;">
           <table style="width:100%;border-collapse:collapse;">
             <tr>
-              <td style="padding:6px 0;color:#888;font-size:13px;">Space</td>
-              <td style="padding:6px 0;color:#333;font-weight:600;text-align:right;">${spaceName}</td>
+              <td style="padding:6px 0;color:#7d6f74;font-size:13px;">Space</td>
+              <td style="padding:6px 0;color:#2a1f23;font-weight:600;text-align:right;">${spaceName}</td>
             </tr>
             <tr>
-              <td style="padding:6px 0;color:#888;font-size:13px;">Sent On</td>
-              <td style="padding:6px 0;color:#333;text-align:right;">${formatDate(item.dueDate)}</td>
+              <td style="padding:6px 0;color:#7d6f74;font-size:13px;">Sent On</td>
+              <td style="padding:6px 0;color:#2a1f23;text-align:right;">${formatDate(item.dueDate)}</td>
             </tr>
             <tr>
-              <td style="padding:6px 0;color:#888;font-size:13px;">Days Waiting</td>
+              <td style="padding:6px 0;color:#7d6f74;font-size:13px;">Days Waiting</td>
               <td style="padding:6px 0;color:${statusColor};font-weight:600;text-align:right;">${daysSince} days</td>
             </tr>
           </table>
         </div>
 
         <div style="text-align:center;margin-bottom:24px;">
-          <p style="color:#555;font-size:14px;margin-bottom:12px;">Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".</p>
+          <p style="color:#7d6f74;font-size:14px;margin-bottom:12px;">Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".</p>
         </div>
 
-        <p style="color:#888;font-size:13px;margin-top:20px;line-height:1.5;">If you've already signed, please disregard this notice &mdash; it may take a moment to process. If you have questions about the lease terms, reply to this email.</p>
-        <p style="color:#555;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+        <p style="color:#7d6f74;font-size:13px;margin-top:20px;line-height:1.5;">If you've already signed, please disregard this notice &mdash; it may take a moment to process. If you have questions about the lease terms, reply to this email.</p>
+        <p style="color:#2a1f23;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
       </div>
-      <div style="background:#f5f5f5;padding:16px 32px;text-align:center;border-top:1px solid #eee;">
-        <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
+      <div style="background:#f2f0e8;padding:16px 32px;text-align:center;border-top:1px solid #e6e2d9;">
+        <p style="margin:0;color:#7d6f74;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
       </div>
     </div>
   `;
@@ -620,7 +620,7 @@ Deno.serve(async (req) => {
       const idInfo = personIdVerification.get(personId) || { needsId: false, uploadUrl: null };
 
       const periodRows = items.map(item => {
-        const statusColor = item.daysOverdue >= 7 ? '#c62828' : item.daysOverdue >= 1 ? '#e65100' : '#888';
+        const statusColor = item.daysOverdue >= 7 ? '#c62828' : item.daysOverdue >= 1 ? '#d4883a' : '#7d6f74';
         const statusText = item.daysOverdue > 0 ? `${item.daysOverdue} days overdue` : 'Due today';
         return `<tr>
           <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:14px;">${item.periodLabel}</td>
@@ -635,22 +635,22 @@ Deno.serve(async (req) => {
       let introText: string;
 
       if (level === 1) {
-        headerBg = 'linear-gradient(135deg, #2d3024 0%, #3a3f30 100%)';
+        headerBg = '#1c1618';
         headerSubtext = 'Rent Payment Reminder';
         subject = `Rent Payment Due - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
         introText = `This is a friendly reminder that you have <strong>${periodsCount} ${periodsCount === 1 ? 'week' : 'weeks'} of rent</strong> outstanding for the <strong>${spaceName}</strong>.`;
       } else if (level === 2) {
-        headerBg = 'linear-gradient(135deg, #5d4037 0%, #4e342e 100%)';
+        headerBg = '#1c1618';
         headerSubtext = 'Rent Payment Follow-Up';
         subject = `Rent Payment Follow-Up - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
         introText = `This is a follow-up regarding <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of rent</strong> outstanding for the <strong>${spaceName}</strong>. Please submit payment at your earliest convenience.`;
       } else if (level === 3) {
-        headerBg = 'linear-gradient(135deg, #e65100 0%, #bf360c 100%)';
+        headerBg = '#1c1618';
         headerSubtext = 'Rent Payment - Action Needed';
         subject = `Action Needed: Rent Payment - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
         introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of rent</strong> outstanding for the <strong>${spaceName}</strong>. Please submit payment as soon as possible.`;
       } else {
-        headerBg = 'linear-gradient(135deg, #b71c1c 0%, #c62828 100%)';
+        headerBg = '#1c1618';
         headerSubtext = 'Urgent: Rent Payment Overdue';
         subject = `URGENT: Rent Payment Overdue - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
         introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of overdue rent</strong> totaling <strong>${formatCurrency(totalDue)}</strong> for the <strong>${spaceName}</strong>. Please submit payment immediately to avoid additional fees.`;
@@ -671,58 +671,58 @@ Deno.serve(async (req) => {
       const methodCardsHtml = buildPaymentMethodCardsHtml(paymentMethods || [], memoText);
 
       const emailHtml = `
-        <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="max-width:600px;margin:0 auto;background:#faf9f6;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
           <div style="background:${headerBg};padding:28px 32px;text-align:center;">
-            <h1 style="color:white;margin:0;font-size:22px;font-weight:600;">Alpaca Playhouse</h1>
-            <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:14px;">${headerSubtext}</p>
+            <h1 style="color:#faf9f6;margin:0;font-size:22px;font-weight:600;">Alpaca Playhouse</h1>
+            <p style="color:rgba(250,249,246,0.65);margin:6px 0 0;font-size:14px;">${headerSubtext}</p>
           </div>
           <div style="padding:28px 32px;">
-            <p style="color:#333;font-size:15px;margin-bottom:4px;">Hi ${first.personFirstName},</p>
-            <p style="color:#555;font-size:14px;line-height:1.5;margin-bottom:20px;">${introText}</p>
+            <p style="color:#2a1f23;font-size:15px;margin-bottom:4px;">Hi ${first.personFirstName},</p>
+            <p style="color:#7d6f74;font-size:14px;line-height:1.5;margin-bottom:20px;">${introText}</p>
 
             <table style="border-collapse:collapse;width:100%;margin-bottom:4px;">
               <thead>
-                <tr style="background:#f8f9fa;">
-                  <th style="padding:10px 16px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Period</th>
-                  <th style="padding:10px 16px;text-align:center;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Amount</th>
-                  <th style="padding:10px 16px;text-align:right;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Status</th>
+                <tr style="background:#f2f0e8;">
+                  <th style="padding:10px 16px;text-align:left;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Period</th>
+                  <th style="padding:10px 16px;text-align:center;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Amount</th>
+                  <th style="padding:10px 16px;text-align:right;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Status</th>
                 </tr>
               </thead>
               <tbody>
                 ${periodRows}
               </tbody>
             </table>
-            <div style="background:#f8f9fa;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:0 0 8px 8px;margin-bottom:24px;">
-              <span style="font-weight:600;color:#333;font-size:14px;">Total Due</span>
-              <span style="font-weight:800;color:#333;font-size:20px;">${formatCurrency(totalDue)}</span>
-            </div>
-
-            <div style="text-align:center;margin-bottom:8px;">
-              <p style="color:#555;font-size:14px;font-weight:600;margin-bottom:12px;">Fastest way to pay:</p>
-              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#2d3024 0%,#3a3f30 100%);color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(45,48,36,0.25);">Pay ${formatCurrency(totalDue)} Now</a>
-              <p style="color:#999;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH)</p>
+            <div style="background:#f2f0e8;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:0 0 8px 8px;margin-bottom:24px;">
+              <span style="font-weight:600;color:#2a1f23;font-size:14px;">Total Due</span>
+              <span style="font-weight:800;color:#2a1f23;font-size:20px;">${formatCurrency(totalDue)}</span>
             </div>
 
             ${(paymentMethods || []).length > 0 ? `
-            <div style="text-align:center;color:#aaa;font-size:13px;margin:20px 0;border-top:1px solid #eee;padding-top:20px;">or pay with</div>
+            <p style="color:#2a1f23;font-size:14px;font-weight:600;margin-bottom:12px;text-align:center;">Pay with no fees:</p>
             ${methodCardsHtml}
             ` : ''}
 
+            <div style="text-align:center;color:#7d6f74;font-size:13px;margin:20px 0;border-top:1px solid #e6e2d9;padding-top:20px;">or pay online</div>
+            <div style="text-align:center;margin-bottom:8px;">
+              <a href="${payUrl}" style="display:inline-block;background:#d4883a;color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(212,136,58,0.30);">Pay ${formatCurrency(totalDue)} Online</a>
+              <p style="color:#7d6f74;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH) &mdash; processing fee applies</p>
+            </div>
+
             ${idInfo.needsId ? `
-            <div style="margin:20px 0;padding:16px;background:#fff8e1;border-left:4px solid #f9a825;border-radius:4px;">
-              <p style="margin:0 0 8px;font-weight:bold;color:#333;">ID Verification Required</p>
-              <p style="margin:0;color:#555;font-size:14px;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+            <div style="margin:20px 0;padding:16px;background:#f2f0e8;border-left:4px solid #d4883a;border-radius:4px;">
+              <p style="margin:0 0 8px;font-weight:bold;color:#2a1f23;">ID Verification Required</p>
+              <p style="margin:0;color:#7d6f74;font-size:14px;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
               ${idInfo.uploadUrl
-                ? `<p style="margin:12px 0 0;"><a href="${idInfo.uploadUrl}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
-                : `<p style="margin:8px 0 0;color:#555;font-size:14px;">Please reply to this email with a photo of your ID.</p>`}
+                ? `<p style="margin:12px 0 0;"><a href="${idInfo.uploadUrl}" style="display:inline-block;padding:10px 20px;background:#d4883a;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
+                : `<p style="margin:8px 0 0;color:#7d6f74;font-size:14px;">Please reply to this email with a photo of your ID.</p>`}
             </div>
             ` : ''}
 
-            <p style="color:#888;font-size:13px;margin-top:20px;line-height:1.5;">If you've already sent payment, please disregard this notice &mdash; it may take a day to process.</p>
-            <p style="color:#555;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+            <p style="color:#7d6f74;font-size:13px;margin-top:20px;line-height:1.5;">If you've already sent payment, please disregard this notice &mdash; it may take a day to process.</p>
+            <p style="color:#2a1f23;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
           </div>
-          <div style="background:#f5f5f5;padding:16px 32px;text-align:center;border-top:1px solid #eee;">
-            <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
+          <div style="background:#f2f0e8;padding:16px 32px;text-align:center;border-top:1px solid #e6e2d9;">
+            <p style="margin:0;color:#7d6f74;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
           </div>
         </div>
       `;
@@ -744,12 +744,12 @@ ${items.map(i => `  ${i.periodLabel}: ${formatCurrency(i.amountDue)} (${i.daysOv
 
 Total Due: ${formatCurrency(totalDue)}
 
-Pay now: ${payUrl}
-
-Or pay with:
+Pay with no fees:
 ${payMethodsText}
 
 Please include "${memoText}" in the payment memo.
+
+Or pay online (processing fee applies): ${payUrl}
 ${idInfo.needsId ? `
 ID VERIFICATION REQUIRED
 We also need a copy of your government-issued photo ID to complete your rental setup.
