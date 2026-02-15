@@ -1,12 +1,12 @@
 {
-  "version": "v260215.15 3:43a",
-  "release": 182,
-  "sha": "36e455ef",
-  "fullSha": "36e455ef109fb6ec389f76716fbe891730e1525a",
+  "version": "v260215.16 3:48a",
+  "release": 183,
+  "sha": "4f636ce1",
+  "fullSha": "4f636ce187e93ddce6efae70ab68ba7e5a9cdbb9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 09:43:26+00",
-  "commits": [{"sha":"2555d489","message":"Add automated contract signing reminders + update escalation schedule","author":"Rahul Sonnad"},{"sha":"3697a3d3","message":"Fix Resend attachment download endpoint + add scripts/.gitignore","author":"Rahul Sonnad"},{"sha":"36e455ef","message":"Fix reprocess-pai-email: strip hardcoded credentials, fix endpoint, fix keywords","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 09:48:06+00",
+  "commits": [{"sha":"4f636ce1","message":"Add Oracle Cloud auto-provisioning scripts for DO droplet","author":"Rahul Sonnad"}]
 }
