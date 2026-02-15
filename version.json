@@ -1,12 +1,12 @@
 {
-  "version": "v260215.32 12:39p",
-  "release": 199,
-  "sha": "2355c675",
-  "fullSha": "2355c675ef8b2735c7c47b1103455a168cdf0174",
+  "version": "v260215.33 12:46p",
+  "release": 200,
+  "sha": "c45630eb",
+  "fullSha": "c45630ebedb0cc3022086492bd342fa8ad39f007",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 18:39:18+00",
-  "commits": [{"sha":"2355c675","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-15 18:46:45+00",
+  "commits": [{"sha":"97c668f0","message":"Restyle payment overdue emails: free methods first, brand colors","author":"Rahul Sonnad"},{"sha":"c45630eb","message":"Merge branch 'claude/serene-proskuriakova'","author":"Rahul Sonnad"}]
 }
