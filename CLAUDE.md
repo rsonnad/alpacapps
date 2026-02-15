@@ -760,6 +760,7 @@ Use these exact vendor strings:
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
+| `brave` | Brave Search API (web search for PAI) |
 
 ### Categories (Granular)
 
@@ -801,6 +802,7 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `airbnb_ical_sync` | Airbnb calendar sync |
 | `r2_document_upload` | Document upload to Cloudflare R2 |
 | `pai_email_classification` | PAI email classification via Gemini |
+| `pai_web_search` | PAI web search queries via Brave Search API |
 
 **When adding a new feature that uses an API, add a new category to this list.** Categories should be specific enough to answer "how much does X feature cost us per month?"
 
@@ -861,6 +863,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 | Stripe | ACH: 0.8% capped at $5; Cards: 2.9% + $0.30; Connect transfers: $0.25/payout |
 | PayPal Payouts | $0.25/payout (US) |
 | Glowforge | $0 (undocumented API, free) |
+| Brave Search | Free: 2,000 queries/mo; Base: $5/mo for 20,000; $0.003/query overage |
 
 ## Supabase Details
 
@@ -967,6 +970,18 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Location**: 160 Still Forest Dr, Cedar Creek, TX (30.13, -97.46)
 - **Display**: Rain windows summary + expandable hourly 48-hour forecast
 - **Client-side only**: No edge function needed, API key safe for read-only weather
+
+### Brave Search (Web Search API)
+- **API**: Brave Search API v1 (`https://api.search.brave.com/res/v1/web/search`)
+- **Auth**: `X-Subscription-Token` header with API key
+- **Supabase Secret**: `BRAVE_API_KEY`
+- **Purpose**: Real-time web search for PAI — answers questions about current events, local info, businesses, prices, and anything not in the property knowledge base
+- **Used by**: `alpaca-pai` edge function (PAI chat + voice) as a dedicated `search_web` tool
+- **Why not Google**: Gemini's built-in `google_search` tool is limited and opaque — Brave gives full control over search queries, result count, and response parsing
+- **Rate limit**: 1 query/second, 2,000 queries/month (free tier) or 20,000/month (paid)
+- **Pricing**: Free tier: 2,000 queries/month; Base: $5/mo for 20,000 queries; $0.003/query overage
+- **Response**: JSON with `web.results[]` containing `title`, `url`, `description`, `age` (freshness)
+- **Cost tracking**: Logged to `api_usage_log` with vendor `brave`, category `pai_web_search`
 
 ### AI Image Generation (Gemini)
 - **Worker:** `/opt/image-gen/worker.js` on DO droplet (systemd: `image-gen.service`)
@@ -1453,6 +1468,16 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **Deployment**: `stripe-webhook` with `--no-verify-jwt`; others with default JWT
    - **Webhook URL**: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/stripe-webhook`
    - **Events**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `transfer.paid/failed/reversed`, `account.updated`
+
+46. **Brave Search API for PAI** - Real-time web search capability for PAI assistant
+   - **API**: Brave Search API v1 (`https://api.search.brave.com/res/v1/web/search`)
+   - **Auth**: `X-Subscription-Token` header, API key stored as Supabase secret `BRAVE_API_KEY`
+   - **Purpose**: Gives PAI the ability to search the web for current events, local businesses, prices, news, and anything not in the property knowledge base
+   - **Why Brave over Google**: Gemini's built-in `google_search` is limited/opaque — Brave provides full control over queries, result parsing, and cost tracking
+   - **Integration point**: `alpaca-pai` edge function will use as a dedicated `search_web` tool
+   - **Cost tracking**: `api_usage_log` with vendor `brave`, category `pai_web_search`
+   - **Pricing**: Free tier 2,000 queries/month, Base $5/mo for 20,000 queries
+   - **Rate limit**: 1 QPS
 
 ## Testing Changes
 

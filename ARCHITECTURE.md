@@ -85,6 +85,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Airbnb Calendar Sync | Airbnb iCal | `airbnb-sync` Edge Function |
 | Mobile App (iOS) | App Store (pending) | Capacitor 8, app ID: `com.alpacaplayhouse.app` |
 | Mobile App (Android) | Play Store (pending) | Capacitor 8, same codebase as iOS |
+| Brave Web Search | Brave Search API | API key as Supabase secret `BRAVE_API_KEY` |
 | OTA Updates | Capgo | `@capgo/capacitor-updater` for live web asset pushes |
 
 ## Repository Structure
@@ -919,6 +920,16 @@ When generating lease agreements, the system calculates credits toward first mon
 - Considers name variations, typos, and payment amounts
 - API key stored as Supabase secret: `GEMINI_API_KEY`
 - Model: `gemini-1.5-flash` (low temperature for consistency)
+
+### Brave Search (Web Search for PAI)
+- **API**: Brave Search API v1 (`https://api.search.brave.com/res/v1/web/search`)
+- **Auth**: `X-Subscription-Token` header with API key (Supabase secret: `BRAVE_API_KEY`)
+- **Used by**: `alpaca-pai` edge function as a `search_web` tool
+- **Purpose**: Gives PAI real-time web search for current events, local businesses, prices, and anything outside the property knowledge base
+- **Advantages over Gemini's built-in `google_search`**: Full control over query, result count, and response parsing; privacy-focused; cost-transparent
+- **Rate limit**: 1 QPS, 2,000 queries/month (free tier)
+- **Cost**: Free tier: 2,000/mo; Base: $5/mo for 20,000 queries
+- **Cost tracking**: `api_usage_log` with vendor `brave`, category `pai_web_search`
 
 ### Media Library
 - Centralized media management at `/spaces/admin/manage.html`
