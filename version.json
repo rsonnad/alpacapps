@@ -1,12 +1,12 @@
 {
-  "version": "v260215.26 6:27a",
-  "release": 193,
-  "sha": "db8ece0b",
-  "fullSha": "db8ece0b51177f13dc87362bdc42c4526c396264",
+  "version": "v260215.27 7:32a",
+  "release": 194,
+  "sha": "9e33e4a1",
+  "fullSha": "9e33e4a1bb90d69a0e474ecdd23c055c905a35e9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 12:27:24+00",
-  "commits": [{"sha":"db8ece0b","message":"Add Square webhook for ACH payment status tracking","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 13:32:42+00",
+  "commits": [{"sha":"9e33e4a1","message":"Document Stripe payment integration and pay page in CLAUDE.md","author":"Rahul Sonnad"}]
 }
