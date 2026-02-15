@@ -1,12 +1,12 @@
 {
-  "version": "v260215.16 3:48a",
-  "release": 183,
-  "sha": "4f636ce1",
-  "fullSha": "4f636ce187e93ddce6efae70ab68ba7e5a9cdbb9",
+  "version": "v260215.17 4:06a",
+  "release": 184,
+  "sha": "573baad8",
+  "fullSha": "573baad8002aca16963ee5c729790882c0082c40",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 09:48:06+00",
-  "commits": [{"sha":"4f636ce1","message":"Add Oracle Cloud auto-provisioning scripts for DO droplet","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 10:06:38+00",
+  "commits": [{"sha":"573baad8","message":"Add browser-based Oracle auto-retry script (simpler than CLI setup)","author":"Rahul Sonnad"}]
 }
