@@ -1,12 +1,12 @@
 {
-  "version": "v260215.27 7:32a",
-  "release": 194,
-  "sha": "9e33e4a1",
-  "fullSha": "9e33e4a1bb90d69a0e474ecdd23c055c905a35e9",
+  "version": "v260215.28 8:23a",
+  "release": 195,
+  "sha": "47aa2834",
+  "fullSha": "47aa283407e001f51224fa5ade22011ce71e81ef",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 13:32:42+00",
-  "commits": [{"sha":"9e33e4a1","message":"Document Stripe payment integration and pay page in CLAUDE.md","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 14:23:20+00",
+  "commits": [{"sha":"47aa2834","message":"Add Brave Search API documentation to config and architecture docs","author":"Rahul Sonnad"}]
 }
