@@ -50,6 +50,8 @@ type EmailType =
   | "dl_upload_link"
   | "dl_verified"
   | "dl_mismatch"
+  // W-9 tax form
+  | "w9_request"
   // Feature builder
   | "feature_review"
   // Claudero AI developer
@@ -1617,6 +1619,65 @@ Match Score: ${data.match_score}%
 ${data.is_expired ? 'Note: ID appears to be expired' : ''}
 
 Review in Admin: ${data.admin_url}`
+      };
+
+    // ===== W-9 TAX FORM =====
+    case "w9_request":
+      return {
+        subject: "Action Required: W-9 Tax Form - Alpaca Playhouse",
+        html: `
+          <h2 style="margin:0 0 8px;font-size:22px;">W-9 Tax Form Required</h2>
+          <p>Hi ${data.first_name},</p>
+          <p>As part of your work arrangement with Alpaca Playhouse, we need you to complete a W-9 tax form. The IRS requires this from anyone we pay $600 or more in a calendar year.</p>
+
+          <div style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;padding:20px 24px;margin:20px 0;">
+            <p style="margin:0 0 8px;font-weight:600;color:#2a1f23;">You will need:</p>
+            <ul style="margin:0;padding-left:20px;color:#2a1f23;">
+              <li style="margin-bottom:6px;">Your legal name (as shown on your income tax return)</li>
+              <li style="margin-bottom:6px;">Your Social Security Number (SSN) or Employer ID Number (EIN)</li>
+              <li>Your current mailing address</li>
+            </ul>
+          </div>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px auto;text-align:center;">
+            <tr>
+              <td style="background:#d4883a;border-radius:8px;box-shadow:0 2px 8px rgba(212,136,58,0.30);">
+                <a href="${data.w9_url}" style="display:inline-block;padding:14px 36px;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:0.02em;" target="_blank">Complete W-9 Form</a>
+              </td>
+            </tr>
+          </table>
+
+          <div style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;padding:16px 20px;margin:20px 0;">
+            <p style="margin:0;font-size:13px;color:#7d6f74;line-height:1.5;">
+              &#128274; Your tax information is encrypted with AES-256 encryption. Only the last 4 digits of your SSN/EIN are visible to administrators.
+            </p>
+          </div>
+
+          <p style="font-size:14px;color:#7d6f74;">This link will expire in 7 days. If you need a new link, please let us know.</p>
+          <p>If you have any questions, feel free to reply to this email.</p>
+          <p>Best regards,<br><strong>Alpaca Playhouse</strong></p>
+        `,
+        text: `W-9 Tax Form Required
+
+Hi ${data.first_name},
+
+As part of your work arrangement with Alpaca Playhouse, we need you to complete a W-9 tax form. The IRS requires this from anyone we pay $600 or more in a calendar year.
+
+You will need:
+- Your legal name (as shown on your income tax return)
+- Your Social Security Number (SSN) or Employer ID Number (EIN)
+- Your current mailing address
+
+Complete your W-9 form here: ${data.w9_url}
+
+Your tax information is encrypted with AES-256 encryption. Only the last 4 digits of your SSN/EIN are visible to administrators.
+
+This link will expire in 7 days. If you need a new link, please let us know.
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+Alpaca Playhouse`
       };
 
     // ===== PAI EMAIL =====
