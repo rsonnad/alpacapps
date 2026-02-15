@@ -172,6 +172,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `regenerate-ical/` - Regenerates iCal feeds when assignments change
 - `process-square-payment/` - Server-side Square payment processing
 - `refund-square-payment/` - Square payment refunds
+- `square-webhook/` - Receives Square webhook for payment/refund status changes (ACH PENDING→COMPLETED/FAILED)
 - `record-payment/` - AI-assisted payment matching (Gemini)
 - `resolve-payment/` - Manual payment resolution for pending matches
 - `confirm-deposit-payment/` - Deposit payment confirmation workflow
@@ -203,6 +204,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `paypal-webhook` | `supabase functions deploy paypal-webhook --no-verify-jwt` |
 | `reprocess-pai-email` | `supabase functions deploy reprocess-pai-email --no-verify-jwt` |
 | `api` | `supabase functions deploy api --no-verify-jwt` |
+| `square-webhook` | `supabase functions deploy square-webhook --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
@@ -1378,6 +1380,19 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **Admin settings**: Active toggle, test mode toggle, test connection, discovered machines list
    - **Auto-discovery**: First getStatus creates glowforge_machines rows from API response
    - **Cost**: $0 (undocumented API, no rate limits known)
+
+44. **Square Webhook for ACH Payment Tracking** - Async payment status updates
+   - **Edge function**: `square-webhook` — receives `payment.created`, `payment.updated`, `refund.created`, `refund.updated`
+   - **Signature verification**: HMAC-SHA256 (`x-square-hmacsha256-signature` header)
+   - **Key use case**: ACH bank transfer payments go PENDING → COMPLETED/FAILED over 1-3 business days
+   - **DB**: `square_config.webhook_signature_key` stores the HMAC key from Square Developer Console
+   - **DB**: `square_payments` columns: `square_source_type`, `square_event_id` (dedup), `completed_at`, `failed_at`, `failure_reason`
+   - **Notifications**: Sends admin email to `payments@alpacaplayhouse.com` on ACH status changes
+   - **Ledger sync**: Automatically updates linked `ledger` entries on payment completion/failure
+   - **Dedup**: Tracks `square_event_id` to prevent duplicate processing on webhook retries (up to 11 retries over 24h)
+   - **Deployment**: `supabase functions deploy square-webhook --no-verify-jwt`
+   - **Setup**: Register webhook at Square Developer Console → Webhooks → Add subscription → copy Signature Key → store in `square_config.webhook_signature_key`
+   - **Webhook URL**: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/square-webhook`
 
 ## Testing Changes
 
