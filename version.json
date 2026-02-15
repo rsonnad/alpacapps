@@ -1,12 +1,12 @@
 {
-  "version": "v260215.17 4:06a",
-  "release": 184,
-  "sha": "573baad8",
-  "fullSha": "573baad8002aca16963ee5c729790882c0082c40",
+  "version": "v260215.18 4:18a",
+  "release": 185,
+  "sha": "15b921f6",
+  "fullSha": "15b921f62149094a1d57222d0265fecef640c2dc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 10:06:38+00",
-  "commits": [{"sha":"573baad8","message":"Add browser-based Oracle auto-retry script (simpler than CLI setup)","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 10:18:53+00",
+  "commits": [{"sha":"06916f9c","message":"Add receipt detection heuristic override + reprocess edge function","author":"Rahul Sonnad"},{"sha":"15b921f6","message":"Merge remote-tracking branch 'origin/claude/heuristic-gauss'","author":"Rahul Sonnad"}]
 }
