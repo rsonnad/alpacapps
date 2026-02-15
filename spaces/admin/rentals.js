@@ -1988,6 +1988,33 @@ window.sendForSignatureAction = async function() {
   }, 100);
 };
 
+/**
+ * Re-create SignWell document when old one no longer exists (404).
+ * Creates a new document, updates the DB, and refreshes the UI.
+ */
+async function recreateSignwellDocument(app) {
+  if (!app.agreement_document_url) {
+    showToast('No lease PDF found — generate one first from the Documents tab', 'error');
+    return false;
+  }
+  if (!app.person?.email) {
+    showToast('Applicant has no email address on file', 'error');
+    return false;
+  }
+  showToast('Old document expired — creating new signature request...', 'info');
+  const recipientName = `${app.person.first_name} ${app.person.last_name}`;
+  await signwellService.sendForSignature(
+    app.id,
+    app.agreement_document_url,
+    app.person.email,
+    recipientName
+  );
+  await loadApplications();
+  openRentalDetail(currentApplicationId, getActiveDetailTab());
+  showToast('New signature request sent to tenant', 'success');
+  return true;
+}
+
 window.resendSignatureAction = async function() {
   if (!currentApplicationId) return;
   const app = allApplications.find(a => a.id === currentApplicationId);
@@ -2000,8 +2027,11 @@ window.resendSignatureAction = async function() {
     showToast('Signing reminder sent to tenant', 'success');
   } catch (error) {
     if (error.status === 404) {
-      showToast('Document no longer exists on SignWell. Click "Send for Signature" on the Documents tab to create a new one.', 'error');
-      switchDetailTab('documents');
+      try {
+        await recreateSignwellDocument(app);
+      } catch (e) {
+        showToast('Error re-creating document: ' + e.message, 'error');
+      }
     } else {
       showToast('Error: ' + error.message, 'error');
     }
@@ -2029,7 +2059,11 @@ window.checkSignatureStatusAction = async function() {
   } catch (error) {
     console.error('Error checking status:', error);
     if (error.status === 404) {
-      showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+      try {
+        await recreateSignwellDocument(app);
+      } catch (e) {
+        showToast('Error re-creating document: ' + e.message, 'error');
+      }
     } else {
       showToast('Error: ' + error.message, 'error');
     }
@@ -3317,7 +3351,12 @@ function setupEventListeners() {
     } catch (error) {
       console.error('Error checking signature status:', error);
       if (error.status === 404) {
-        showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+        try {
+          await recreateSignwellDocument(app);
+          return; // UI already refreshed by recreateSignwellDocument
+        } catch (e) {
+          showToast('Error re-creating document: ' + e.message, 'error');
+        }
       } else {
         showToast('Error: ' + error.message, 'error');
       }
@@ -3356,7 +3395,11 @@ function setupEventListeners() {
     } catch (error) {
       console.error('Error sending reminder:', error);
       if (error.status === 404) {
-        showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+        try {
+          await recreateSignwellDocument(app);
+        } catch (e) {
+          showToast('Error re-creating document: ' + e.message, 'error');
+        }
       } else {
         showToast('Error: ' + error.message, 'error');
       }
