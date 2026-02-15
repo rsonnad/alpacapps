@@ -7,6 +7,19 @@ const INIT_TIMEOUT_MS = 10000; // 10 seconds for initial auth check
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
 const CACHED_AUTH_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
+/**
+ * Split a display name into first_name and last_name.
+ * Returns { first_name, last_name } or {} if name can't be parsed.
+ */
+function splitDisplayName(displayName) {
+  if (!displayName) return {};
+  const parts = displayName.trim().split(/\s+/);
+  if (parts.length === 0 || !parts[0]) return {};
+  // Single word or looks like an email prefix — treat as first name only
+  if (parts.length === 1) return { first_name: parts[0] };
+  return { first_name: parts[0], last_name: parts.slice(1).join(' ') };
+}
+
 // Structured auth logger
 const authLog = {
   _fmt(level, msg, data) {
@@ -363,6 +376,7 @@ async function handleAuthChange(session) {
               auth_user_id: session.user.id,
               email: userEmail,
               display_name: displayName,
+              ...splitDisplayName(displayName),
               role: invitation.role,
               invited_by: invitation.invited_by,
             })
@@ -417,6 +431,7 @@ async function handleAuthChange(session) {
               auth_user_id: session.user.id,
               email: userEmail,
               display_name: displayName,
+              ...splitDisplayName(displayName),
               role: 'public',
             })
             .select()
