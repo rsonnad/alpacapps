@@ -2,6 +2,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 import { uploadToR2 } from "../_shared/r2-upload.ts";
+import {
+  extractReceiptData,
+  looksLikeReceipt,
+  upsertVendor,
+  createPurchase,
+} from "../_shared/receipt-processor.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -448,7 +454,7 @@ This is an automated reply from Claudero at Alpaca Playhouse.`;
 // PAI EMAIL HANDLER
 // =============================================
 
-type PaiEmailClassification = "question" | "document" | "command" | "spam" | "other";
+type PaiEmailClassification = "question" | "document" | "receipt" | "command" | "spam" | "other";
 
 /** Spam emails per rolling window that triggers an admin alert. */
 const PAI_SPAM_ALERT_THRESHOLD = 10;
@@ -480,7 +486,8 @@ async function classifyPaiEmail(
 Classify this email into ONE of these categories:
 - "spam" — Unsolicited marketing, phishing, scams, newsletters the recipient didn't sign up for, SEO pitches, link spam, crypto spam, adult content, automated bot messages, or any clearly unwanted bulk email. When in doubt between spam and other, lean toward spam.
 - "question" — A real person asking about the property, amenities, policies, move-in, availability, etc.
-- "document" — A real person sending a document (manual, guide, receipt, etc.) for storage/reference. Has attachments or mentions sending a file.
+- "receipt" — A receipt, invoice, or purchase confirmation from a business. Keywords: receipt, invoice, order, purchase, payment confirmation.
+- "document" — A real person sending a document (manual, guide, etc.) for storage/reference. Has attachments or mentions sending a file.
 - "command" — A real person requesting a smart home action (lights, music, thermostat, locks, etc.)
 - "other" — Legitimate but unrelated email that doesn't fit the above categories.
 
@@ -488,7 +495,7 @@ Email subject: ${subject}
 Email body (first 1000 chars): ${bodyText.substring(0, 1000)}
 Has attachments: ${hasAttachments}
 
-Respond with ONLY a JSON object: {"type": "spam|question|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
+Respond with ONLY a JSON object: {"type": "spam|question|receipt|document|command|other", "confidence": 0.0-1.0, "summary": "brief one-line summary"}`;
 
   try {
     const res = await fetch(
@@ -522,7 +529,7 @@ Respond with ONLY a JSON object: {"type": "spam|question|document|command|other"
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       return {
-        type: ["question", "document", "command", "spam", "other"].includes(parsed.type) ? parsed.type : "other",
+        type: ["question", "document", "receipt", "command", "spam", "other"].includes(parsed.type) ? parsed.type : "other",
         confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
         summary: parsed.summary || "",
       };
@@ -847,7 +854,125 @@ async function handlePaiEmail(
     return;
   }
 
-  if (classification.type === "document" && hasAttachments) {
+  if (classification.type === "receipt" && hasAttachments) {
+    // === RECEIPT: Extract vendor info, create purchase record, upload receipt ===
+    console.log("Processing receipt email...");
+    const processedReceipts: Array<{ vendor: string; amount: number; filename: string }> = [];
+
+    for (let i = 0; i < attachmentsMetadata.length; i++) {
+      const att = attachmentsMetadata[i];
+      const filename = att.filename || att.name || `receipt-${i}`;
+      const contentType = att.content_type || att.type || "application/octet-stream";
+
+      // Only process images and PDFs as potential receipts
+      if (
+        !contentType.startsWith("image/") &&
+        !contentType.includes("pdf") &&
+        !looksLikeReceipt(filename, subject)
+      ) {
+        console.log(`Skipping non-receipt attachment: ${filename}`);
+        continue;
+      }
+
+      try {
+        const attachmentId = att.id;
+        if (!attachmentId) {
+          console.error(`No attachment ID for attachment ${i}, skipping`);
+          continue;
+        }
+
+        // Download attachment
+        const downloaded = await downloadResendAttachment(resendApiKey, emailId, attachmentId, filename);
+        if (!downloaded) continue;
+
+        // Extract receipt data using Gemini Vision
+        console.log(`Extracting receipt data from ${filename}...`);
+        const receiptData = await extractReceiptData(downloaded.data, downloaded.contentType, filename);
+
+        if (!receiptData) {
+          console.log(`Could not extract receipt data from ${filename}, treating as regular document`);
+          continue;
+        }
+
+        console.log(`Extracted receipt: ${receiptData.vendor.name}, $${receiptData.totalAmount}`);
+
+        // Upload to R2 for permanent storage
+        const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_").toLowerCase();
+        const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const r2Key = `receipts/${datePrefix}/${sanitizedFilename}`;
+        const publicUrl = await uploadToR2(r2Key, downloaded.data, downloaded.contentType);
+
+        // Upsert vendor
+        const vendorId = await upsertVendor(supabase, receiptData.vendor);
+        console.log(`Vendor ${receiptData.vendor.name}: ${vendorId || "not created"}`);
+
+        // Create purchase record
+        const purchaseId = await createPurchase(
+          supabase,
+          receiptData,
+          vendorId,
+          publicUrl,
+          emailRecord.id
+        );
+
+        if (purchaseId) {
+          processedReceipts.push({
+            vendor: receiptData.vendor.name,
+            amount: receiptData.totalAmount,
+            filename,
+          });
+
+          // Log Gemini API usage
+          await supabase.from("api_usage_log").insert({
+            vendor: "gemini",
+            category: "receipt_extraction",
+            endpoint: "generateContent",
+            estimated_cost_usd: 0.001, // Approximate cost for vision API call
+            metadata: {
+              vendor: receiptData.vendor.name,
+              amount: receiptData.totalAmount,
+              filename,
+              source: "pai_email",
+            },
+          });
+        }
+
+        // Log R2 upload
+        await supabase.from("api_usage_log").insert({
+          vendor: "cloudflare_r2",
+          category: "r2_receipt_upload",
+          endpoint: "PutObject",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { key: r2Key, size_bytes: downloaded.data.length },
+        });
+      } catch (err) {
+        console.error(`Error processing receipt ${filename}:`, err.message);
+      }
+    }
+
+    if (processedReceipts.length > 0) {
+      // Auto-reply confirming receipt processing
+      const receiptsList = processedReceipts
+        .map((r) => `• ${r.vendor}: $${r.amount.toFixed(2)} (${r.filename})`)
+        .join("\n");
+
+      await sendPaiReply(
+        resendApiKey,
+        senderEmail,
+        `Thank you for sending ${processedReceipts.length === 1 ? "the receipt" : `${processedReceipts.length} receipts`}! I've processed and logged:\n\n${receiptsList}\n\nYou can view all purchases at https://alpacaplayhouse.com/spaces/admin/purchases.html`,
+        subject,
+        bodyText || bodyHtml || ""
+      );
+
+      // Update email record
+      await supabase
+        .from("inbound_emails")
+        .update({ route_action: "receipt_processed" })
+        .eq("id", emailRecord.id);
+    }
+  } else if (classification.type === "document" && hasAttachments) {
     // === DOCUMENT: Download, upload to R2, index, notify admin ===
     const uploadedFiles: Array<{ name: string; type: string; size: string }> = [];
 
