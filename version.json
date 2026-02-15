@@ -1,12 +1,12 @@
 {
-  "version": "v260215.36 12:55p",
-  "release": 203,
-  "sha": "d17459ab",
-  "fullSha": "d17459ab396f3f401a704568ebde70c1ab3d16dc",
+  "version": "v260215.37 1:01p",
+  "release": 204,
+  "sha": "d77cb393",
+  "fullSha": "d77cb3938fa40dee62bf2df9f12169bf24a48ddd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 18:55:06+00",
-  "commits": [{"sha":"86a05e9b","message":"Auto-populate first_name/last_name from display_name on sign-up","author":"Rahul Sonnad"},{"sha":"d17459ab","message":"Merge branch 'claude/friendly-pare'","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 19:01:59+00",
+  "commits": [{"sha":"e56fd430","message":"Add branded W-9 request email template","author":"Rahul Sonnad"},{"sha":"d77cb393","message":"Merge branch 'claude/relaxed-heyrovsky'","author":"Rahul Sonnad"}]
 }
