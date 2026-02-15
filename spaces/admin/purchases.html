@@ -1,457 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Purchases & Receipts - AlpacApps Admin</title>
-    <link rel="stylesheet" href="../../shared/admin.css" />
-    <link rel="stylesheet" href="./admin.css" />
-    <style>
-      .purchases-grid {
-        display: grid;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Purchases & Receipts - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <style>
+    .purchases-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
 
-      .purchase-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 1rem;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1rem;
-        transition: box-shadow 0.2s;
-      }
+    .purchase-card {
+      background: white;
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      transition: box-shadow 0.2s;
+    }
 
-      .purchase-card:hover {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
+    .purchase-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-      .purchase-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 0.5rem;
-      }
+    .purchase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
 
-      .vendor-name {
-        font-weight: 600;
-        font-size: 1.125rem;
-        color: #1f2937;
-      }
+    .vendor-name {
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: #1f2937;
+    }
 
-      .purchase-amount {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #059669;
-      }
+    .purchase-amount {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #059669;
+    }
 
-      .purchase-meta {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
-      }
+    .purchase-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.875rem;
+      color: var(--text-muted, #6b7280);
+      margin-bottom: 0.5rem;
+    }
 
-      .purchase-meta > span {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
+    .purchase-meta > span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
 
-      .category-badge {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        background: #e0e7ff;
-        color: #4338ca;
-      }
+    .category-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: #e0e7ff;
+      color: #4338ca;
+    }
 
-      .items-list {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e5e7eb;
-      }
+    .items-list {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-color, #e5e7eb);
+    }
 
-      .items-list h4 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
-      }
+    .items-list h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
 
-      .item {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.875rem;
-        color: #6b7280;
-        padding: 0.25rem 0;
-      }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--text-muted, #6b7280);
+      padding: 0.25rem 0;
+    }
 
-      .receipt-thumbnail {
-        width: 120px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid #e5e7eb;
-        cursor: pointer;
-      }
+    .receipt-thumbnail {
+      width: 120px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border-color, #e5e7eb);
+      cursor: pointer;
+    }
 
-      .receipt-thumbnail:hover {
-        opacity: 0.8;
-      }
+    .receipt-thumbnail:hover {
+      opacity: 0.8;
+    }
 
-      .filters {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-      }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
 
-      .filters input,
-      .filters select {
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        font-size: 0.875rem;
-      }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px;
+      padding: 1rem;
+    }
 
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-muted, #6b7280);
+      margin-bottom: 0.25rem;
+    }
 
-      .stat-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 1rem;
-      }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
 
-      .stat-label {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-      }
+    .vendors-section {
+      margin-top: 3rem;
+    }
 
-      .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1f2937;
-      }
+    .vendor-list {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
 
-      .vendors-section {
-        margin-top: 3rem;
-      }
+    .vendor-item {
+      background: white;
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 6px;
+      padding: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-      .vendor-list {
-        display: grid;
-        gap: 0.5rem;
-        margin-top: 1rem;
-      }
+    .vendor-info h4 {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
 
-      .vendor-item {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 0.75rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+    .vendor-contact {
+      font-size: 0.875rem;
+      color: var(--text-muted, #6b7280);
+    }
 
-      .vendor-info h4 {
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.25rem;
-      }
+    .vendor-stats {
+      text-align: right;
+      font-size: 0.875rem;
+    }
 
-      .vendor-contact {
-        font-size: 0.875rem;
-        color: #6b7280;
-      }
+    .vendor-total {
+      font-weight: 700;
+      color: #059669;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
 
-      .vendor-stats {
-        text-align: right;
-        font-size: 0.875rem;
-      }
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
 
-      .vendor-total {
-        font-weight: 700;
-        color: #059669;
-        font-size: 1rem;
-      }
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
 
-      .lightbox {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-      }
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
 
-      .lightbox.active {
-        display: flex;
-      }
+    <span data-site-version style="display:none">v260215.12 3:29a</span>
 
-      .lightbox img {
-        max-width: 90%;
-        max-height: 90%;
-        object-fit: contain;
-      }
-
-      .lightbox-close {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="lightbox" class="lightbox">
-      <button class="lightbox-close" onclick="closeLightbox()">✕ Close</button>
-      <img id="lightboxImage" src="" alt="Receipt" />
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
     </div>
 
-    <div id="app"></div>
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
 
-    <script type="module">
-      import { initAdminShell } from "../../shared/admin-shell.js";
-      import { supabase } from "../../shared/supabase.js";
-      import { showToast } from "../../shared/site-components.js";
+    <!-- Main Content -->
+    <main class="manage-content">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="margin: 0;">Purchases & Receipts</h2>
+            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">Track property purchases and vendor receipts</p>
+          </div>
+        </div>
 
-      let purchases = [];
-      let vendors = [];
-      let currentFilter = { vendor: "", category: "", minDate: "", maxDate: "" };
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value" id="totalSpent">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Purchases</div>
+            <div class="stat-value" id="purchaseCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Average Purchase</div>
+            <div class="stat-value" id="avgPurchase">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Date Range</div>
+            <div class="stat-value" style="font-size: 1rem;" id="dateRange">N/A</div>
+          </div>
+        </div>
 
-      async function loadPurchases() {
-        try {
-          const { data, error } = await supabase
-            .from("purchases")
-            .select("*")
-            .order("purchase_date", { ascending: false, nullsFirst: false })
-            .order("created_at", { ascending: false });
-
-          if (error) throw error;
-          purchases = data || [];
-          renderPurchases();
-          calculateStats();
-        } catch (err) {
-          console.error("Error loading purchases:", err);
-          showToast("Failed to load purchases", "error");
-        }
-      }
-
-      async function loadVendors() {
-        try {
-          const { data, error } = await supabase
-            .from("vendors")
-            .select("*")
-            .order("total_spent", { ascending: false, nullsFirst: false });
-
-          if (error) throw error;
-          vendors = data || [];
-          renderVendors();
-        } catch (err) {
-          console.error("Error loading vendors:", err);
-          showToast("Failed to load vendors", "error");
-        }
-      }
-
-      function filterPurchases() {
-        return purchases.filter((p) => {
-          if (currentFilter.vendor && !p.vendor_name.toLowerCase().includes(currentFilter.vendor.toLowerCase())) {
-            return false;
-          }
-          if (currentFilter.category && p.category !== currentFilter.category) {
-            return false;
-          }
-          if (currentFilter.minDate && p.purchase_date < currentFilter.minDate) {
-            return false;
-          }
-          if (currentFilter.maxDate && p.purchase_date > currentFilter.maxDate) {
-            return false;
-          }
-          return true;
-        });
-      }
-
-      function renderPurchases() {
-        const filtered = filterPurchases();
-        const container = document.getElementById("purchasesGrid");
-
-        if (filtered.length === 0) {
-          container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No purchases found</p>';
-          return;
-        }
-
-        container.innerHTML = filtered
-          .map((p) => {
-            const items = p.items ? (typeof p.items === "string" ? JSON.parse(p.items) : p.items) : [];
-            const hasItems = items && items.length > 0;
-
-            return `
-            <div class="purchase-card">
-              <div>
-                <div class="purchase-header">
-                  <div class="vendor-name">${p.vendor_name}</div>
-                  <div class="purchase-amount">$${p.total_amount.toFixed(2)}</div>
-                </div>
-                <div class="purchase-meta">
-                  ${p.purchase_date ? `<span>📅 ${new Date(p.purchase_date).toLocaleDateString()}</span>` : ""}
-                  ${p.category ? `<span class="category-badge">${p.category}</span>` : ""}
-                  ${p.payment_method ? `<span>💳 ${p.payment_method.replace(/_/g, " ")}</span>` : ""}
-                </div>
-                ${hasItems ? `
-                  <div class="items-list">
-                    <h4>Items (${items.length}):</h4>
-                    ${items.slice(0, 5).map(item => `
-                      <div class="item">
-                        <span>${item.quantity ? `${item.quantity}x ` : ""}${item.name}</span>
-                        <span>$${(item.price || 0).toFixed(2)}</span>
-                      </div>
-                    `).join("")}
-                    ${items.length > 5 ? `<div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem;">+${items.length - 5} more items</div>` : ""}
-                  </div>
-                ` : ""}
-              </div>
-              ${p.receipt_url ? `
-                <div>
-                  <img src="${p.receipt_url}" alt="Receipt" class="receipt-thumbnail" onclick="openLightbox('${p.receipt_url}')" />
-                </div>
-              ` : ""}
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Vendor</label>
+              <input type="text" id="vendorFilter" placeholder="Filter by vendor..." style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
             </div>
-          `;
-          })
-          .join("");
-      }
-
-      function calculateStats() {
-        const filtered = filterPurchases();
-        const total = filtered.reduce((sum, p) => sum + parseFloat(p.total_amount || 0), 0);
-        const count = filtered.length;
-        const avgPurchase = count > 0 ? total / count : 0;
-
-        // Get date range
-        const dates = filtered.map(p => p.purchase_date).filter(Boolean).sort();
-        const dateRange = dates.length > 0 ? `${new Date(dates[0]).toLocaleDateString()} - ${new Date(dates[dates.length - 1]).toLocaleDateString()}` : "N/A";
-
-        document.getElementById("totalSpent").textContent = `$${total.toFixed(2)}`;
-        document.getElementById("purchaseCount").textContent = count;
-        document.getElementById("avgPurchase").textContent = `$${avgPurchase.toFixed(2)}`;
-        document.getElementById("dateRange").textContent = dateRange;
-      }
-
-      function renderVendors() {
-        const container = document.getElementById("vendorsList");
-
-        if (vendors.length === 0) {
-          container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No vendors found</p>';
-          return;
-        }
-
-        container.innerHTML = vendors
-          .map((v) => `
-            <div class="vendor-item">
-              <div class="vendor-info">
-                <h4>${v.name}</h4>
-                <div class="vendor-contact">
-                  ${v.email ? `📧 ${v.email}` : ""}
-                  ${v.phone ? ` • 📞 ${v.phone}` : ""}
-                  ${v.category ? ` • ${v.category}` : ""}
-                </div>
-              </div>
-              <div class="vendor-stats">
-                <div class="vendor-total">$${(v.total_spent || 0).toFixed(2)}</div>
-                <div style="color: #6b7280;">${v.purchase_count || 0} purchase${v.purchase_count === 1 ? "" : "s"}</div>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-
-      function applyFilters() {
-        currentFilter.vendor = document.getElementById("vendorFilter").value;
-        currentFilter.category = document.getElementById("categoryFilter").value;
-        currentFilter.minDate = document.getElementById("minDate").value;
-        currentFilter.maxDate = document.getElementById("maxDate").value;
-        renderPurchases();
-        calculateStats();
-      }
-
-      function resetFilters() {
-        document.getElementById("vendorFilter").value = "";
-        document.getElementById("categoryFilter").value = "";
-        document.getElementById("minDate").value = "";
-        document.getElementById("maxDate").value = "";
-        currentFilter = { vendor: "", category: "", minDate: "", maxDate: "" };
-        renderPurchases();
-        calculateStats();
-      }
-
-      window.openLightbox = (url) => {
-        document.getElementById("lightboxImage").src = url;
-        document.getElementById("lightbox").classList.add("active");
-      };
-
-      window.closeLightbox = () => {
-        document.getElementById("lightbox").classList.remove("active");
-      };
-
-      async function init() {
-        const user = await initAdminShell(document.getElementById("app"), {
-          title: "Purchases & Receipts",
-          showBackLink: true,
-          backLinkUrl: "./manage.html",
-          backLinkText: "← Back to Admin",
-        });
-
-        if (!user) return;
-
-        const content = `
-          <div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-            <h1 style="margin-bottom: 2rem;">Purchases & Receipts</h1>
-
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-label">Total Spent</div>
-                <div class="stat-value" id="totalSpent">$0.00</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Total Purchases</div>
-                <div class="stat-value" id="purchaseCount">0</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Average Purchase</div>
-                <div class="stat-value" id="avgPurchase">$0.00</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Date Range</div>
-                <div class="stat-value" style="font-size: 1rem;" id="dateRange">N/A</div>
-              </div>
-            </div>
-
-            <div class="filters">
-              <input type="text" id="vendorFilter" placeholder="Filter by vendor..." onchange="applyFilters()" />
-              <select id="categoryFilter" onchange="applyFilters()">
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Category</label>
+              <select id="categoryFilter" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
                 <option value="">All Categories</option>
                 <option value="grocery">Grocery</option>
                 <option value="hardware">Hardware</option>
@@ -464,32 +266,40 @@
                 <option value="supplies">Supplies</option>
                 <option value="other">Other</option>
               </select>
-              <input type="date" id="minDate" onchange="applyFilters()" />
-              <span style="align-self: center;">to</span>
-              <input type="date" id="maxDate" onchange="applyFilters()" />
-              <button onclick="resetFilters()" class="btn">Reset Filters</button>
             </div>
-
-            <div class="purchases-grid" id="purchasesGrid"></div>
-
-            <div class="vendors-section">
-              <h2 style="margin-bottom: 1rem;">Vendors</h2>
-              <div class="vendor-list" id="vendorsList"></div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">From</label>
+              <input type="date" id="minDate" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">To</label>
+              <input type="date" id="maxDate" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+            <div>
+              <button id="resetFiltersBtn" class="btn-small btn-secondary" style="width: 100%;">Reset Filters</button>
             </div>
           </div>
-        `;
+        </div>
 
-        document.querySelector("main").innerHTML = content;
+        <div class="purchases-grid" id="purchasesGrid">
+          <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading purchases...</p>
+        </div>
 
-        // Make filter functions globally available
-        window.applyFilters = applyFilters;
-        window.resetFilters = resetFilters;
+        <div class="vendors-section">
+          <h3 style="margin-bottom: 1rem;">Vendors</h3>
+          <div class="vendor-list" id="vendorsList">
+            <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading vendors...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
-        await loadPurchases();
-        await loadVendors();
-      }
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../../shared/instant-chrome.js"></script>
 
-      init();
-    </script>
-  </body>
+  <script type="module" src="../../shared/version-info.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3"></script>
+  <script type="module" src="purchases.js"></script>
+</body>
 </html>
