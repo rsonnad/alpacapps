@@ -148,7 +148,7 @@ function renderPurchases() {
         <div class="purchase-card">
           <div>
             <div class="purchase-header">
-              <div class="vendor-name">${escapeHtml(p.vendor_name || 'Unknown')}</div>
+              <a href="#vendor-${p.vendor_id || ''}" class="vendor-name" style="text-decoration: none; color: inherit; cursor: pointer;">${escapeHtml(p.vendor_name || 'Unknown')}</a>
               <div class="purchase-amount">$${(p.total_amount || 0).toFixed(2)}</div>
             </div>
             <div class="purchase-meta">
@@ -217,14 +217,15 @@ function renderVendors() {
 
   container.innerHTML = vendors
     .map((v) => `
-      <div class="vendor-item">
+      <div class="vendor-item" id="vendor-${v.id}">
         <div class="vendor-info">
           <h4>${escapeHtml(v.name || 'Unknown')}</h4>
           <div class="vendor-contact">
-            ${v.email ? `📧 ${escapeHtml(v.email)}` : ''}
-            ${v.phone ? ` • 📞 ${escapeHtml(v.phone)}` : ''}
-            ${v.category ? ` • ${escapeHtml(v.category)}` : ''}
+            ${v.phone ? `📞 ${escapeHtml(v.phone)}` : ''}
+            ${v.email ? `${v.phone ? ' • ' : ''}📧 ${escapeHtml(v.email)}` : ''}
+            ${v.category ? `${v.phone || v.email ? ' • ' : ''}${escapeHtml(v.category)}` : ''}
           </div>
+          ${v.address ? `<div class="vendor-contact" style="margin-top: 0.25rem;">📍 ${escapeHtml(v.address)}</div>` : ''}
         </div>
         <div class="vendor-stats">
           <div class="vendor-total">$${(v.total_spent || 0).toFixed(2)}</div>
