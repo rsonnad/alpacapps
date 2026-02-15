@@ -1990,25 +1990,37 @@ window.sendForSignatureAction = async function() {
 
 /**
  * Re-create SignWell document when old one no longer exists (404).
+ * If no PDF exists, auto-generates one from the template first.
  * Creates a new document, updates the DB, and refreshes the UI.
  */
 async function recreateSignwellDocument(app) {
-  if (!app.agreement_document_url) {
-    showToast('No lease PDF found — generate one first from the Documents tab', 'error');
-    return false;
-  }
   if (!app.person?.email) {
     showToast('Applicant has no email address on file', 'error');
     return false;
   }
-  showToast('Old document expired — creating new signature request...', 'info');
+
+  let pdfUrl = app.agreement_document_url;
+
+  // If no PDF URL, regenerate from template
+  if (!pdfUrl) {
+    showToast('Regenerating lease PDF...', 'info');
+    const template = await leaseTemplateService.getActiveTemplate();
+    const agreementData = await rentalService.getAgreementData(app.id);
+    if (!template || !agreementData) {
+      showToast('Cannot regenerate PDF — no template or terms data. Fill in Terms first.', 'error');
+      return false;
+    }
+    const parsedContent = leaseTemplateService.parseTemplate(template.content, agreementData);
+    const { url } = await pdfService.generateAndUploadLeasePdf(
+      parsedContent, app.id, { tenantName: agreementData.tenantName }
+    );
+    await rentalService.updateAgreementStatus(app.id, 'generated', url);
+    pdfUrl = url;
+  }
+
+  showToast('Creating new signature request...', 'info');
   const recipientName = `${app.person.first_name} ${app.person.last_name}`;
-  await signwellService.sendForSignature(
-    app.id,
-    app.agreement_document_url,
-    app.person.email,
-    recipientName
-  );
+  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName);
   await loadApplications();
   openRentalDetail(currentApplicationId, getActiveDetailTab());
   showToast('New signature request sent to tenant', 'success');
