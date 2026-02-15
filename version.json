@@ -1,12 +1,12 @@
 {
-  "version": "v260215.04 1:32a",
-  "release": 171,
-  "sha": "1401e7b9",
-  "fullSha": "1401e7b970ded2803cbf1b4e54c6df11cd1496c8",
+  "version": "v260215.05 1:59a",
+  "release": 172,
+  "sha": "6e8c7477",
+  "fullSha": "6e8c747740f8339fc16626a3044b9c658baef454",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 07:32:52+00",
-  "commits": [{"sha":"1401e7b9","message":"Auto-recreate SignWell document when old one returns 404","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 07:59:40+00",
+  "commits": [{"sha":"6e8c7477","message":"Auto-regenerate lease PDF when missing during SignWell 404 recovery","author":"Rahul Sonnad"}]
 }
