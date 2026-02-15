@@ -1,12 +1,12 @@
 {
-  "version": "v260215.18 4:18a",
-  "release": 185,
-  "sha": "15b921f6",
-  "fullSha": "15b921f62149094a1d57222d0265fecef640c2dc",
+  "version": "v260215.19 5:46a",
+  "release": 186,
+  "sha": "0631b94c",
+  "fullSha": "0631b94cb63d8187991680bcdd8a0453f306f13c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 10:18:53+00",
-  "commits": [{"sha":"06916f9c","message":"Add receipt detection heuristic override + reprocess edge function","author":"Rahul Sonnad"},{"sha":"15b921f6","message":"Merge remote-tracking branch 'origin/claude/heuristic-gauss'","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 11:46:37+00",
+  "commits": [{"sha":"93394f02","message":"Vendor name links to vendor section + show address in vendor info","author":"Rahul Sonnad"},{"sha":"0631b94c","message":"Merge remote-tracking branch 'origin/claude/heuristic-gauss'","author":"Rahul Sonnad"}]
 }
