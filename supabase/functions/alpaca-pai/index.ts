@@ -476,7 +476,8 @@ IMPORTANT: Lights must be ON to change color or brightness. If the user asks to 
 Actions: play, pause, next, previous, set volume (0-100), play a favorite by name, pause all zones
 ANNOUNCEMENTS: Use the "announce" tool to make spoken announcements on Sonos speakers via high-quality TTS. You can announce to a specific room or all speakers (omit room for whole-house). Voices: Kore (default, clear), Puck (energetic), Charon (warm), Fenrir (bold), Leda (cheerful), Orus (firm), Aoede (bright), Zephyr (breezy).
 Note: Use room names exactly as the user says them. Common zones: Kitchen, Living Room, Master, Skyloft, Garage Mahal, Front Porch, Back Yard.
-IMPORTANT: For questions about HOW to play audio (computer audio, YouTube, streaming, connecting devices to Sonos), use lookup_document AND Google Search. Don't answer from memory — the correct answer depends on the specific setup and there are third-party tools (Chrome extensions, etc.) that help.`);
+CRITICAL: AirPlay does NOT work with any Sonos speaker at this property. The speakers are older S1-generation models that do not support AirPlay. The ONLY room with AirPlay is the Sauna (via a separate WiiM Pro receiver, Apple devices only). NEVER suggest AirPlay to Sonos — it will not work.
+IMPORTANT: For questions about HOW to play audio (computer audio, YouTube, streaming, connecting devices to Sonos), ALWAYS use lookup_document first (search for "sonos sound system"), then supplement with Google Search if needed. Don't answer from memory — the correct answer depends on the specific setup and there are third-party tools (Chrome extensions, etc.) that help.`);
 
   // Tesla
   if (scope.teslaVehicles.length) {
