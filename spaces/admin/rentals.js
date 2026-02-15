@@ -2034,18 +2034,23 @@ window.resendSignatureAction = async function() {
     showToast('No SignWell document found — use Manual Document Entry to update status', 'error');
     return;
   }
+  const btn = document.querySelector('[onclick="resendSignatureAction()"]');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
   try {
     await signwellService.sendReminder(app.signwell_document_id);
     showToast('Signing reminder sent to tenant', 'success');
+    if (btn) { btn.textContent = 'Sent ✓'; setTimeout(() => { btn.textContent = 'Resend Request'; btn.disabled = false; }, 3000); }
   } catch (error) {
     if (error.status === 404) {
       try {
         await recreateSignwellDocument(app);
       } catch (e) {
         showToast('Error re-creating document: ' + e.message, 'error');
+        if (btn) { btn.textContent = 'Resend Request'; btn.disabled = false; }
       }
     } else {
       showToast('Error: ' + error.message, 'error');
+      if (btn) { btn.textContent = 'Resend Request'; btn.disabled = false; }
     }
   }
 };
@@ -2057,6 +2062,8 @@ window.checkSignatureStatusAction = async function() {
     showToast('No SignWell document found', 'error');
     return;
   }
+  const btn = document.querySelector('[onclick="checkSignatureStatusAction()"]');
+  if (btn) { btn.textContent = 'Checking...'; btn.disabled = true; }
   try {
     const status = await signwellService.getDocumentStatus(app.signwell_document_id);
     const recipientStatus = status.recipients?.[0]?.status || 'unknown';
@@ -2079,6 +2086,8 @@ window.checkSignatureStatusAction = async function() {
     } else {
       showToast('Error: ' + error.message, 'error');
     }
+  } finally {
+    if (btn) { btn.textContent = 'Check Status'; btn.disabled = false; }
   }
 };
 
