@@ -1,12 +1,12 @@
 {
-  "version": "v260215.28 8:23a",
-  "release": 195,
-  "sha": "47aa2834",
-  "fullSha": "47aa283407e001f51224fa5ade22011ce71e81ef",
+  "version": "v260215.29 10:19a",
+  "release": 196,
+  "sha": "3a46f02a",
+  "fullSha": "3a46f02a32fa30e19da3400d0ba7e35acedc52a1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 14:23:20+00",
-  "commits": [{"sha":"47aa2834","message":"Add Brave Search API documentation to config and architecture docs","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-15 16:19:12+00",
+  "commits": [{"sha":"3a46f02a","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
