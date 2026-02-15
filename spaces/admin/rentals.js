@@ -1995,13 +1995,17 @@ window.resendSignatureAction = async function() {
     showToast('No SignWell document found — use Manual Document Entry to update status', 'error');
     return;
   }
-  // Delegate to the documents tab button which has cooldown protection
-  switchDetailTab('documents');
-  setTimeout(() => {
-    const btn = document.getElementById('resendSignatureBtn');
-    if (btn && !btn.disabled) btn.click();
-    else showToast('Please wait before resending', 'warning');
-  }, 100);
+  try {
+    await signwellService.sendReminder(app.signwell_document_id);
+    showToast('Signing reminder sent to tenant', 'success');
+  } catch (error) {
+    if (error.status === 404) {
+      showToast('Document no longer exists on SignWell. Click "Send for Signature" on the Documents tab to create a new one.', 'error');
+      switchDetailTab('documents');
+    } else {
+      showToast('Error: ' + error.message, 'error');
+    }
+  }
 };
 
 window.checkSignatureStatusAction = async function() {
