@@ -16,7 +16,7 @@ import { setupVersionInfo } from './version-info.js';
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
   'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
+  'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
 ];
 const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting',
@@ -30,6 +30,7 @@ const ALL_ADMIN_TABS = [
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
   { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
+  { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff' },
