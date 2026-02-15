@@ -241,6 +241,23 @@ Content-Type: application/json
 - `payment_date`, `payment_method`
 - `period_start`, `period_end`, `notes`
 
+## Web Search (Brave Search API)
+
+PAI has access to real-time web search via Brave Search API. The API key is stored as Supabase secret `BRAVE_API_KEY`.
+
+### Search the web
+```
+GET https://api.search.brave.com/res/v1/web/search?q={query}&count=5
+Headers:
+  Accept: application/json
+  Accept-Encoding: gzip
+  X-Subscription-Token: {BRAVE_API_KEY}
+```
+
+Response includes `web.results[]` with `title`, `url`, `description`, `age` (freshness).
+
+Use cases: current events, local business info, prices, news, anything not in property knowledge base.
+
 ## Web UI
 
 Admin interface: https://alpacaplayhouse.com/
