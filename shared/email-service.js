@@ -34,6 +34,8 @@ export const EMAIL_TYPES = {
   DL_UPLOAD_LINK: 'dl_upload_link',
   DL_VERIFIED: 'dl_verified',
   DL_MISMATCH: 'dl_mismatch',
+  // W-9 tax form
+  W9_REQUEST: 'w9_request',
   // Payment statement
   PAYMENT_STATEMENT: 'payment_statement',
 };
