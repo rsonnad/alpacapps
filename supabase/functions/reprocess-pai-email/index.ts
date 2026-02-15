@@ -10,7 +10,8 @@ async function downloadResendAttachment(
   attachmentId: string,
   filename: string
 ): Promise<{ data: Uint8Array; contentType: string; filename: string } | null> {
-  const url = `${RESEND_API_URL}/emails/${emailId}/attachments/${attachmentId}`;
+  // Use Resend's receiving endpoint for inbound email attachments
+  const url = `${RESEND_API_URL}/emails/receiving/${emailId}/attachments/${attachmentId}`;
   console.log(`Downloading attachment from Resend: ${url}`);
 
   const res = await fetch(url, {
