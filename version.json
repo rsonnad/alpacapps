@@ -1,12 +1,12 @@
 {
-  "version": "v260215.14 3:37a",
-  "release": 181,
-  "sha": "666b75d6",
-  "fullSha": "666b75d623379b7d2ecd39ae45e8bbd9353fbf96",
+  "version": "v260215.15 3:43a",
+  "release": 182,
+  "sha": "36e455ef",
+  "fullSha": "36e455ef109fb6ec389f76716fbe891730e1525a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 09:37:28+00",
-  "commits": [{"sha":"666b75d6","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-15 09:43:26+00",
+  "commits": [{"sha":"2555d489","message":"Add automated contract signing reminders + update escalation schedule","author":"Rahul Sonnad"},{"sha":"3697a3d3","message":"Fix Resend attachment download endpoint + add scripts/.gitignore","author":"Rahul Sonnad"},{"sha":"36e455ef","message":"Fix reprocess-pai-email: strip hardcoded credentials, fix endpoint, fix keywords","author":"Rahul Sonnad"}]
 }
