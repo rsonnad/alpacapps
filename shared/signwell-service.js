@@ -46,7 +46,9 @@ async function signwellRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `SignWell API error: ${response.status}`);
+    const err = new Error(errorData.message || `SignWell API error: ${response.status}`);
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();

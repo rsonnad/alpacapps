@@ -2024,7 +2024,11 @@ window.checkSignatureStatusAction = async function() {
     }
   } catch (error) {
     console.error('Error checking status:', error);
-    showToast('Error: ' + error.message, 'error');
+    if (error.status === 404) {
+      showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+    } else {
+      showToast('Error: ' + error.message, 'error');
+    }
   }
 };
 
@@ -3308,7 +3312,11 @@ function setupEventListeners() {
       }
     } catch (error) {
       console.error('Error checking signature status:', error);
-      showToast('Error: ' + error.message, 'error');
+      if (error.status === 404) {
+        showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+      } else {
+        showToast('Error: ' + error.message, 'error');
+      }
     } finally {
       btn.textContent = originalText;
       btn.disabled = false;
@@ -3343,7 +3351,11 @@ function setupEventListeners() {
       }, 1000);
     } catch (error) {
       console.error('Error sending reminder:', error);
-      showToast('Error: ' + error.message, 'error');
+      if (error.status === 404) {
+        showToast('Document no longer exists on SignWell. Use "Send for Signature" to create a new one.', 'error');
+      } else {
+        showToast('Error: ' + error.message, 'error');
+      }
       btn.textContent = originalText;
       btn.disabled = false;
     }
