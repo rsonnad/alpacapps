@@ -1,12 +1,9 @@
 /**
- * Payment Overdue Check
- * Detects overdue rent and event payments, sends escalating reminders
- * to both the payer and alpacaplayhouse@gmail.com.
+ * Payment & Contract Overdue Check
+ * Detects overdue rent, event payments, AND unsigned rental contracts.
+ * Sends escalating reminders to the payer + CC team@alpacaplayhouse.com.
  *
- * Reminders include a table of all overdue periods, a "Pay Now" button
- * linking to /pay with prefilled params, and branded payment method cards.
- *
- * Escalation: day 1 (friendly), day 3 (firm), day 7+ (urgent)
+ * Escalation: day 1 (friendly), day 3 (firm), day 5 (persistent), day 7+ (urgent)
  *
  * Trigger: Daily via pg_cron at 10 AM CT (3 PM UTC)
  * Deploy: supabase functions deploy payment-overdue-check
@@ -20,8 +17,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
-const ESCALATION_DAYS = [1, 3, 7]; // days after due date
+const TEAM_EMAIL = 'team@alpacaplayhouse.com';
+const ESCALATION_DAYS = [1, 3, 5, 7]; // days after due date
 const PAY_BASE_URL = 'https://alpacaplayhouse.com/pay/';
 
 interface OverdueItem {
@@ -36,13 +33,23 @@ interface OverdueItem {
   dueDate: string; // YYYY-MM-DD
   daysOverdue: number;
   rateTerm?: string;
+  spaceName?: string;
+  signwellDocumentId?: string;
 }
 
 function getEscalationLevel(daysOverdue: number): number | null {
-  if (daysOverdue >= 7) return 3;
+  if (daysOverdue >= 7) return 4;
+  if (daysOverdue >= 5) return 3;
   if (daysOverdue >= 3) return 2;
   if (daysOverdue >= 1) return 1;
   return null;
+}
+
+function getEscalationLabel(level: number | null): string {
+  if (level === 1) return 'Friendly';
+  if (level === 2) return 'Firm';
+  if (level === 3) return 'Persistent';
+  return 'Urgent';
 }
 
 function formatDate(dateStr: string): string {
@@ -179,6 +186,103 @@ function buildPaymentMethodCardsHtml(
   }).join('\n');
 }
 
+/** Build contract signing reminder email */
+function buildContractReminderEmail(
+  item: OverdueItem,
+  level: number,
+): { subject: string; html: string; text: string } {
+  const spaceName = item.spaceName || 'your space';
+  const daysSince = item.daysOverdue;
+
+  let headerBg: string;
+  let headerSubtext: string;
+  let subject: string;
+  let introText: string;
+
+  if (level === 1) {
+    headerBg = 'linear-gradient(135deg, #2d3024 0%, #3a3f30 100%)';
+    headerSubtext = 'Lease Signing Reminder';
+    subject = `Reminder: Please sign your lease agreement - Alpaca Playhouse`;
+    introText = `Just a friendly reminder that your lease agreement for <strong>${spaceName}</strong> is ready for your signature. It was sent on ${formatDate(item.dueDate)}.`;
+  } else if (level === 2) {
+    headerBg = 'linear-gradient(135deg, #5d4037 0%, #4e342e 100%)';
+    headerSubtext = 'Lease Signing Follow-Up';
+    subject = `Follow-Up: Lease agreement awaiting signature - Alpaca Playhouse`;
+    introText = `This is a follow-up &mdash; your lease agreement for <strong>${spaceName}</strong> is still awaiting your signature. It was sent ${daysSince} days ago.`;
+  } else if (level === 3) {
+    headerBg = 'linear-gradient(135deg, #e65100 0%, #bf360c 100%)';
+    headerSubtext = 'Lease Signing - Action Needed';
+    subject = `Action Needed: Lease for ${spaceName} awaiting signature - Alpaca Playhouse`;
+    introText = `We haven't received your signature on the lease for <strong>${spaceName}</strong> yet. It's been ${daysSince} days since we sent it. Please sign soon to secure your space.`;
+  } else {
+    headerBg = 'linear-gradient(135deg, #b71c1c 0%, #c62828 100%)';
+    headerSubtext = 'Urgent: Lease Awaiting Signature';
+    subject = `URGENT: Lease for ${spaceName} unsigned after ${daysSince} days - Alpaca Playhouse`;
+    introText = `Your lease for <strong>${spaceName}</strong> has been awaiting your signature for <strong>${daysSince} days</strong>. Please sign immediately or contact us if you have questions.`;
+  }
+
+  const statusColor = daysSince >= 7 ? '#c62828' : daysSince >= 5 ? '#e65100' : daysSince >= 3 ? '#f57c00' : '#333';
+
+  const html = `
+    <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+      <div style="background:${headerBg};padding:28px 32px;text-align:center;">
+        <h1 style="color:white;margin:0;font-size:22px;font-weight:600;">Alpaca Playhouse</h1>
+        <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:14px;">${headerSubtext}</p>
+      </div>
+      <div style="padding:28px 32px;">
+        <p style="color:#333;font-size:15px;margin-bottom:4px;">Hi ${item.personFirstName},</p>
+        <p style="color:#555;font-size:14px;line-height:1.5;margin-bottom:20px;">${introText}</p>
+
+        <div style="background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;">Space</td>
+              <td style="padding:6px 0;color:#333;font-weight:600;text-align:right;">${spaceName}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;">Sent On</td>
+              <td style="padding:6px 0;color:#333;text-align:right;">${formatDate(item.dueDate)}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;">Days Waiting</td>
+              <td style="padding:6px 0;color:${statusColor};font-weight:600;text-align:right;">${daysSince} days</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align:center;margin-bottom:24px;">
+          <p style="color:#555;font-size:14px;margin-bottom:12px;">Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".</p>
+        </div>
+
+        <p style="color:#888;font-size:13px;margin-top:20px;line-height:1.5;">If you've already signed, please disregard this notice &mdash; it may take a moment to process. If you have questions about the lease terms, reply to this email.</p>
+        <p style="color:#555;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+      </div>
+      <div style="background:#f5f5f5;padding:16px 32px;text-align:center;border-top:1px solid #eee;">
+        <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
+      </div>
+    </div>
+  `;
+
+  const text = `${headerSubtext}
+
+Hi ${item.personFirstName},
+
+${introText.replace(/<[^>]*>/g, '').replace(/&mdash;/g, '—')}
+
+Space: ${spaceName}
+Sent On: ${formatDate(item.dueDate)}
+Days Waiting: ${daysSince} days
+
+Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".
+
+If you've already signed, please disregard this notice. If you have questions about the lease terms, reply to this email.
+
+Best regards,
+Alpaca Playhouse`;
+
+  return { subject, html, text };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -201,7 +305,7 @@ Deno.serve(async (req) => {
     today.setHours(12, 0, 0, 0);
     const todayStr = today.toISOString().split('T')[0];
 
-    console.log(`Payment overdue check running for ${todayStr}`);
+    console.log(`Payment & contract overdue check running for ${todayStr}`);
 
     // ========== A. Detect overdue rent ==========
     const { data: activeAssignments, error: assignError } = await supabase
@@ -357,16 +461,67 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Found ${overdueItems.length} overdue items`);
+    // ========== C. Detect unsigned rental contracts ==========
+    const { data: unsignedContracts, error: contractError } = await supabase
+      .from('rental_applications')
+      .select(`
+        id, agreement_status, agreement_sent_at, signwell_document_id,
+        is_archived, is_test,
+        approved_space:approved_space_id (id, name),
+        person:person_id (id, first_name, last_name, email)
+      `)
+      .eq('agreement_status', 'sent')
+      .or('is_archived.is.null,is_archived.eq.false')
+      .or('is_test.is.null,is_test.eq.false');
+
+    if (contractError) {
+      console.error('Error querying unsigned contracts:', contractError);
+      // Don't throw — continue with payment reminders even if contract query fails
+    } else {
+      for (const app of (unsignedContracts || [])) {
+        const person = app.person as { id: string; first_name: string; last_name: string; email: string } | null;
+        if (!person?.email) continue;
+        if (!app.agreement_sent_at) continue;
+
+        const sentDate = new Date(app.agreement_sent_at);
+        sentDate.setHours(12, 0, 0, 0);
+        const diffMs = today.getTime() - sentDate.getTime();
+        const daysSinceSent = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (daysSinceSent < 1 || daysSinceSent > 30) continue;
+
+        const space = app.approved_space as { id: string; name: string } | null;
+
+        overdueItems.push({
+          sourceType: 'contract_unsigned',
+          sourceId: app.id,
+          personId: person.id,
+          personEmail: person.email,
+          personFirstName: person.first_name,
+          personLastName: person.last_name,
+          periodLabel: `Lease Agreement - ${space?.name || 'your space'}`,
+          amountDue: 0,
+          dueDate: app.agreement_sent_at.split('T')[0],
+          daysOverdue: daysSinceSent,
+          spaceName: space?.name || 'your space',
+          signwellDocumentId: app.signwell_document_id,
+        });
+      }
+    }
+
+    const paymentItems = overdueItems.filter(i => i.sourceType !== 'contract_unsigned');
+    const contractItems = overdueItems.filter(i => i.sourceType === 'contract_unsigned');
+
+    console.log(`Found ${paymentItems.length} overdue payment items, ${contractItems.length} unsigned contracts`);
 
     if (overdueItems.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No overdue payments found', date: todayStr }),
+        JSON.stringify({ message: 'No overdue payments or unsigned contracts found', date: todayStr }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // ========== C. Group by person and filter by escalation ==========
+    // ========== D. Load existing reminders for deduplication ==========
     const { data: existingReminders } = await supabase
       .from('payment_reminders')
       .select('source_type, source_id, due_date, escalation_level, recipient_type')
@@ -386,8 +541,10 @@ Deno.serve(async (req) => {
       .eq('is_active', true)
       .order('display_order');
 
-    // Group overdue items by person
-    const personGroups = new Map<string, OverdueItem[]>();
+    // Group overdue items by person, separated by type
+    const personPaymentGroups = new Map<string, OverdueItem[]>();
+    const personContractGroups = new Map<string, OverdueItem[]>();
+
     for (const item of overdueItems) {
       const level = getEscalationLevel(item.daysOverdue);
       if (!level) continue;
@@ -396,21 +553,28 @@ Deno.serve(async (req) => {
       const maxPayerLevel = reminderMap.get(payerKey) || 0;
       if (level <= maxPayerLevel) continue;
 
-      if (!personGroups.has(item.personId)) {
-        personGroups.set(item.personId, []);
+      if (item.sourceType === 'contract_unsigned') {
+        if (!personContractGroups.has(item.personId)) {
+          personContractGroups.set(item.personId, []);
+        }
+        personContractGroups.get(item.personId)!.push(item);
+      } else {
+        if (!personPaymentGroups.has(item.personId)) {
+          personPaymentGroups.set(item.personId, []);
+        }
+        personPaymentGroups.get(item.personId)!.push(item);
       }
-      personGroups.get(item.personId)!.push(item);
     }
 
-    // ========== D. Send grouped reminders ==========
+    // ========== E. Send payment reminders ==========
     let remindersSent = 0;
-    let skipped = 0;
     let errors = 0;
-    const adminDigestItems: OverdueItem[] = [];
+    const adminPaymentDigest: OverdueItem[] = [];
+    const adminContractDigest: OverdueItem[] = [];
 
-    // Pre-fetch ID verification status for all persons with overdue items
+    // Pre-fetch ID verification status for persons with overdue payments
     const personIdVerification = new Map<string, { needsId: boolean; uploadUrl: string | null }>();
-    for (const [personId] of personGroups) {
+    for (const [personId] of personPaymentGroups) {
       try {
         const { data: apps } = await supabase
           .from('rental_applications')
@@ -422,7 +586,6 @@ Deno.serve(async (req) => {
         const needsId = !latestApp || latestApp.identity_verification_status !== 'verified';
         let uploadUrl: string | null = null;
         if (needsId) {
-          // Generate an upload token (7-day expiry)
           const expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + 7);
           const { data: tokenData } = await supabase
@@ -445,20 +608,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    for (const [personId, items] of personGroups) {
+    // Send payment reminders (existing logic with CC team@)
+    for (const [personId, items] of personPaymentGroups) {
       const first = items[0];
       const totalDue = items.reduce((sum, i) => sum + i.amountDue, 0);
       const maxDaysOverdue = Math.max(...items.map(i => i.daysOverdue));
       const level = getEscalationLevel(maxDaysOverdue)!;
       const periodsCount = items.length;
 
-      // Look up space name
       const spaceName = assignmentSpaceNames.get(first.sourceId) || 'your space';
-
-      // ID verification info
       const idInfo = personIdVerification.get(personId) || { needsId: false, uploadUrl: null };
 
-      // Build table rows for each overdue period
       const periodRows = items.map(item => {
         const statusColor = item.daysOverdue >= 7 ? '#c62828' : item.daysOverdue >= 1 ? '#e65100' : '#888';
         const statusText = item.daysOverdue > 0 ? `${item.daysOverdue} days overdue` : 'Due today';
@@ -469,7 +629,6 @@ Deno.serve(async (req) => {
         </tr>`;
       }).join('\n');
 
-      // Determine tone
       let headerBg: string;
       let headerSubtext: string;
       let subject: string;
@@ -485,6 +644,11 @@ Deno.serve(async (req) => {
         headerSubtext = 'Rent Payment Follow-Up';
         subject = `Rent Payment Follow-Up - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
         introText = `This is a follow-up regarding <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of rent</strong> outstanding for the <strong>${spaceName}</strong>. Please submit payment at your earliest convenience.`;
+      } else if (level === 3) {
+        headerBg = 'linear-gradient(135deg, #e65100 0%, #bf360c 100%)';
+        headerSubtext = 'Rent Payment - Action Needed';
+        subject = `Action Needed: Rent Payment - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
+        introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of rent</strong> outstanding for the <strong>${spaceName}</strong>. Please submit payment as soon as possible.`;
       } else {
         headerBg = 'linear-gradient(135deg, #b71c1c 0%, #c62828 100%)';
         headerSubtext = 'Urgent: Rent Payment Overdue';
@@ -492,7 +656,6 @@ Deno.serve(async (req) => {
         introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of overdue rent</strong> totaling <strong>${formatCurrency(totalDue)}</strong> for the <strong>${spaceName}</strong>. Please submit payment immediately to avoid additional fees.`;
       }
 
-      // Build pay URL
       const payUrl = buildPayUrl({
         amount: totalDue,
         personId: first.personId,
@@ -504,10 +667,7 @@ Deno.serve(async (req) => {
         referenceId: first.sourceId,
       });
 
-      // Build memo text
       const memoText = `${first.personFirstName} rent`;
-
-      // Build payment method cards
       const methodCardsHtml = buildPaymentMethodCardsHtml(paymentMethods || [], memoText);
 
       const emailHtml = `
@@ -600,7 +760,6 @@ If you've already sent payment, please disregard this notice.
 Best regards,
 Alpaca Playhouse`;
 
-      // --- Send to payer ---
       try {
         const emailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -611,6 +770,7 @@ Alpaca Playhouse`;
           body: JSON.stringify({
             from: 'Alpaca Team <team@alpacaplayhouse.com>',
             to: [first.personEmail],
+            cc: [TEAM_EMAIL],
             reply_to: 'team@alpacaplayhouse.com',
             subject,
             html: emailHtml,
@@ -620,7 +780,6 @@ Alpaca Playhouse`;
 
         if (emailRes.ok) {
           const resendData = await emailRes.json();
-          // Record reminder for each item in this group
           for (const item of items) {
             await supabase.from('payment_reminders').insert({
               source_type: item.sourceType,
@@ -639,11 +798,11 @@ Alpaca Playhouse`;
             });
           }
           remindersSent += items.length;
-          adminDigestItems.push(...items);
-          console.log(`Sent L${level} grouped reminder (${items.length} periods, ${formatCurrency(totalDue)}) to ${first.personEmail}`);
+          adminPaymentDigest.push(...items);
+          console.log(`Sent L${level} payment reminder (${items.length} periods, ${formatCurrency(totalDue)}) to ${first.personEmail}`);
         } else {
           const errBody = await emailRes.json();
-          console.error(`Failed to send to ${first.personEmail}:`, errBody);
+          console.error(`Failed to send payment reminder to ${first.personEmail}:`, errBody);
           for (const item of items) {
             await supabase.from('payment_reminders').insert({
               source_type: item.sourceType,
@@ -664,44 +823,196 @@ Alpaca Playhouse`;
           errors++;
         }
       } catch (err) {
-        console.error(`Error sending to ${first.personEmail}:`, err);
+        console.error(`Error sending payment reminder to ${first.personEmail}:`, err);
         errors++;
       }
     }
 
-    // --- Send admin digest ---
-    if (adminDigestItems.length > 0) {
+    // ========== F. Send contract signing reminders ==========
+    for (const [personId, items] of personContractGroups) {
+      for (const item of items) {
+        const level = getEscalationLevel(item.daysOverdue)!;
+        const { subject, html, text } = buildContractReminderEmail(item, level);
+
+        try {
+          const emailRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'Alpaca Team <team@alpacaplayhouse.com>',
+              to: [item.personEmail],
+              cc: [TEAM_EMAIL],
+              reply_to: 'team@alpacaplayhouse.com',
+              subject,
+              html,
+              text,
+            }),
+          });
+
+          if (emailRes.ok) {
+            const resendData = await emailRes.json();
+            await supabase.from('payment_reminders').insert({
+              source_type: 'contract_unsigned',
+              source_id: item.sourceId,
+              person_id: item.personId,
+              period_label: item.periodLabel,
+              amount_due: 0,
+              due_date: item.dueDate,
+              days_overdue: item.daysOverdue,
+              channel: 'email',
+              recipient: item.personEmail,
+              recipient_type: 'payer',
+              status: 'sent',
+              escalation_level: level,
+              metadata: { resend_id: resendData.id, signwell_document_id: item.signwellDocumentId },
+            });
+            remindersSent++;
+            adminContractDigest.push(item);
+            console.log(`Sent L${level} contract reminder (${item.spaceName}) to ${item.personEmail}`);
+          } else {
+            const errBody = await emailRes.json();
+            console.error(`Failed to send contract reminder to ${item.personEmail}:`, errBody);
+            await supabase.from('payment_reminders').insert({
+              source_type: 'contract_unsigned',
+              source_id: item.sourceId,
+              person_id: item.personId,
+              period_label: item.periodLabel,
+              amount_due: 0,
+              due_date: item.dueDate,
+              days_overdue: item.daysOverdue,
+              channel: 'email',
+              recipient: item.personEmail,
+              recipient_type: 'payer',
+              status: 'failed',
+              escalation_level: level,
+              error_message: JSON.stringify(errBody),
+            });
+            errors++;
+          }
+        } catch (err) {
+          console.error(`Error sending contract reminder to ${item.personEmail}:`, err);
+          errors++;
+        }
+      }
+    }
+
+    // ========== G. Send admin digest ==========
+    const allDigestItems = [...adminPaymentDigest, ...adminContractDigest];
+    if (allDigestItems.length > 0) {
       try {
-        // Group by person for admin digest
-        const personSummaries = new Map<string, { name: string; items: OverdueItem[]; total: number }>();
-        for (const item of adminDigestItems) {
+        // Payment section
+        const paymentSummaries = new Map<string, { name: string; items: OverdueItem[]; total: number }>();
+        for (const item of adminPaymentDigest) {
           const key = item.personId;
-          if (!personSummaries.has(key)) {
-            personSummaries.set(key, {
+          if (!paymentSummaries.has(key)) {
+            paymentSummaries.set(key, {
               name: `${item.personFirstName} ${item.personLastName}`,
               items: [],
               total: 0,
             });
           }
-          const s = personSummaries.get(key)!;
+          const s = paymentSummaries.get(key)!;
           s.items.push(item);
           s.total += item.amountDue;
         }
 
-        const totalOverdue = adminDigestItems.reduce((sum, i) => sum + i.amountDue, 0);
+        const totalOverdue = adminPaymentDigest.reduce((sum, i) => sum + i.amountDue, 0);
 
-        const itemRows = Array.from(personSummaries.values()).map(s => {
+        const paymentRows = Array.from(paymentSummaries.values()).map(s => {
           const maxDays = Math.max(...s.items.map(i => i.daysOverdue));
           const level = getEscalationLevel(maxDays);
-          const levelLabel = level === 1 ? 'Friendly' : level === 2 ? 'Firm' : 'Urgent';
           return `<tr>
             <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${s.name}</td>
             <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${s.items.length} period${s.items.length > 1 ? 's' : ''}</td>
             <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${formatCurrency(s.total)}</td>
             <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${maxDays}d</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${levelLabel}</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${getEscalationLabel(level)}</td>
           </tr>`;
         }).join('\n');
+
+        // Contract section
+        const contractRows = adminContractDigest.map(item => {
+          const level = getEscalationLevel(item.daysOverdue);
+          return `<tr>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${item.personFirstName} ${item.personLastName}</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${item.spaceName || 'Unknown'}</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${item.daysOverdue}d</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #eee;">${getEscalationLabel(level)}</td>
+          </tr>`;
+        }).join('\n');
+
+        // Build subject
+        const subjectParts: string[] = [];
+        if (adminPaymentDigest.length > 0) {
+          subjectParts.push(`Late Payments (${paymentSummaries.size})`);
+        }
+        if (adminContractDigest.length > 0) {
+          subjectParts.push(`Unsigned Contracts (${adminContractDigest.length})`);
+        }
+        const digestSubject = `${subjectParts.join(' + ')} - Alpaca Playhouse`;
+
+        let digestHtml = `<h2>Overdue Report - ${formatDate(todayStr)}</h2>`;
+
+        if (adminPaymentDigest.length > 0) {
+          digestHtml += `
+            <h3>Overdue Payments</h3>
+            <p>${adminPaymentDigest.length} overdue period${adminPaymentDigest.length > 1 ? 's' : ''} across ${paymentSummaries.size} tenant${paymentSummaries.size > 1 ? 's' : ''} totaling <strong>${formatCurrency(totalOverdue)}</strong>. Reminders have been sent.</p>
+            <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+              <thead>
+                <tr style="background: #f0f0f0;">
+                  <th style="padding: 8px 10px; text-align: left;">Tenant</th>
+                  <th style="padding: 8px 10px; text-align: left;">Periods</th>
+                  <th style="padding: 8px 10px; text-align: left;">Amount</th>
+                  <th style="padding: 8px 10px; text-align: left;">Max Overdue</th>
+                  <th style="padding: 8px 10px; text-align: left;">Level</th>
+                </tr>
+              </thead>
+              <tbody>${paymentRows}</tbody>
+            </table>
+          `;
+        }
+
+        if (adminContractDigest.length > 0) {
+          digestHtml += `
+            <h3>Unsigned Contracts</h3>
+            <p>${adminContractDigest.length} lease agreement${adminContractDigest.length > 1 ? 's' : ''} awaiting signature. Reminders have been sent.</p>
+            <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+              <thead>
+                <tr style="background: #f0f0f0;">
+                  <th style="padding: 8px 10px; text-align: left;">Applicant</th>
+                  <th style="padding: 8px 10px; text-align: left;">Space</th>
+                  <th style="padding: 8px 10px; text-align: left;">Days Unsigned</th>
+                  <th style="padding: 8px 10px; text-align: left;">Level</th>
+                </tr>
+              </thead>
+              <tbody>${contractRows}</tbody>
+            </table>
+          `;
+        }
+
+        digestHtml += `<p style="color: #666; font-size: 0.9em;">This is an automated report from the payment & contract overdue checker.</p>`;
+
+        // Plain text version
+        let digestText = `Overdue Report - ${formatDate(todayStr)}\n\n`;
+        if (adminPaymentDigest.length > 0) {
+          digestText += `OVERDUE PAYMENTS\n${adminPaymentDigest.length} overdue payments totaling ${formatCurrency(totalOverdue)}.\n\n`;
+          digestText += Array.from(paymentSummaries.values()).map(s => {
+            const maxDays = Math.max(...s.items.map(i => i.daysOverdue));
+            return `- ${s.name}: ${s.items.length} periods, ${formatCurrency(s.total)} (${maxDays}d overdue)`;
+          }).join('\n');
+          digestText += '\n\n';
+        }
+        if (adminContractDigest.length > 0) {
+          digestText += `UNSIGNED CONTRACTS\n${adminContractDigest.length} lease agreements awaiting signature.\n\n`;
+          digestText += adminContractDigest.map(i =>
+            `- ${i.personFirstName} ${i.personLastName}: ${i.spaceName || 'Unknown'} (${i.daysOverdue}d unsigned)`
+          ).join('\n');
+          digestText += '\n\n';
+        }
+        digestText += 'Reminders have been sent.';
 
         const adminEmailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -711,39 +1022,10 @@ Alpaca Playhouse`;
           },
           body: JSON.stringify({
             from: 'Alpaca System <auto@alpacaplayhouse.com>',
-            to: [ADMIN_EMAIL],
-            subject: `Late Payment Report: ${personSummaries.size} tenant${personSummaries.size > 1 ? 's' : ''} (${formatCurrency(totalOverdue)})`,
-            html: `
-              <h2>Late Payment Report - ${formatDate(todayStr)}</h2>
-              <p>${adminDigestItems.length} overdue period${adminDigestItems.length > 1 ? 's' : ''} across ${personSummaries.size} tenant${personSummaries.size > 1 ? 's' : ''} totaling <strong>${formatCurrency(totalOverdue)}</strong>. Reminders have been sent.</p>
-
-              <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
-                <thead>
-                  <tr style="background: #f0f0f0;">
-                    <th style="padding: 8px 10px; text-align: left;">Tenant</th>
-                    <th style="padding: 8px 10px; text-align: left;">Periods</th>
-                    <th style="padding: 8px 10px; text-align: left;">Amount</th>
-                    <th style="padding: 8px 10px; text-align: left;">Max Overdue</th>
-                    <th style="padding: 8px 10px; text-align: left;">Level</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemRows}
-                </tbody>
-              </table>
-
-              <p style="color: #666; font-size: 0.9em;">This is an automated report from the payment overdue checker.</p>
-            `,
-            text: `Late Payment Report - ${formatDate(todayStr)}
-
-${adminDigestItems.length} overdue payments totaling ${formatCurrency(totalOverdue)}.
-
-${Array.from(personSummaries.values()).map(s => {
-  const maxDays = Math.max(...s.items.map(i => i.daysOverdue));
-  return `- ${s.name}: ${s.items.length} periods, ${formatCurrency(s.total)} (${maxDays}d overdue)`;
-}).join('\n')}
-
-Reminders have been sent.`,
+            to: [TEAM_EMAIL],
+            subject: digestSubject,
+            html: digestHtml,
+            text: digestText,
           }),
         });
 
@@ -753,18 +1035,22 @@ Reminders have been sent.`,
             source_type: 'admin_digest',
             source_id: null,
             person_id: null,
-            period_label: `${adminDigestItems.length} overdue payments`,
+            period_label: `${allDigestItems.length} overdue items`,
             amount_due: totalOverdue,
             due_date: todayStr,
             days_overdue: 0,
             channel: 'email',
-            recipient: ADMIN_EMAIL,
+            recipient: TEAM_EMAIL,
             recipient_type: 'admin',
             status: 'sent',
             escalation_level: 0,
-            metadata: { resend_id: resendData.id, items: adminDigestItems.length },
+            metadata: {
+              resend_id: resendData.id,
+              payment_items: adminPaymentDigest.length,
+              contract_items: adminContractDigest.length,
+            },
           });
-          console.log(`Admin digest sent to ${ADMIN_EMAIL}`);
+          console.log(`Admin digest sent to ${TEAM_EMAIL}`);
         } else {
           const errBody = await adminEmailRes.json();
           console.error('Failed to send admin digest:', errBody);
@@ -774,8 +1060,9 @@ Reminders have been sent.`,
       }
     }
 
-    // ========== E. Log API usage ==========
-    const emailsSent = personGroups.size + (adminDigestItems.length > 0 ? 1 : 0);
+    // ========== H. Log API usage ==========
+    const totalPersons = new Set([...personPaymentGroups.keys(), ...personContractGroups.keys()]).size;
+    const emailsSent = totalPersons + (allDigestItems.length > 0 ? 1 : 0);
     if (emailsSent > 0) {
       await supabase.from('api_usage_log').insert({
         vendor: 'resend',
@@ -784,22 +1071,28 @@ Reminders have been sent.`,
         units: emailsSent,
         unit_type: 'emails',
         estimated_cost_usd: emailsSent * 0.00028,
-        metadata: { overdue_items: overdueItems.length, reminders_sent: remindersSent, skipped, persons: personGroups.size },
+        metadata: {
+          overdue_items: overdueItems.length,
+          payment_items: paymentItems.length,
+          contract_items: contractItems.length,
+          reminders_sent: remindersSent,
+          persons: totalPersons,
+        },
       });
     }
 
     const result = {
       success: true,
       date: todayStr,
-      overdueFound: overdueItems.length,
-      personsNotified: personGroups.size,
+      overduePayments: paymentItems.length,
+      unsignedContracts: contractItems.length,
+      personsNotified: totalPersons,
       remindersSent,
-      skipped,
       errors,
-      adminDigestSent: adminDigestItems.length > 0,
+      adminDigestSent: allDigestItems.length > 0,
     };
 
-    console.log('Payment overdue check complete:', result);
+    console.log('Payment & contract overdue check complete:', result);
 
     return new Response(
       JSON.stringify(result),
@@ -807,7 +1100,7 @@ Reminders have been sent.`,
     );
 
   } catch (error) {
-    console.error('Payment overdue check error:', error);
+    console.error('Payment & contract overdue check error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
