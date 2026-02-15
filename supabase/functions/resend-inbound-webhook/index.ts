@@ -821,6 +821,16 @@ async function handlePaiEmail(
   const classification = await classifyPaiEmail(subject, bodyText || bodyHtml, hasAttachments);
   console.log(`PAI classification: type=${classification.type}, confidence=${classification.confidence}, summary="${classification.summary}"`);
 
+  // Heuristic override: if classified as "document" but subject/filenames look like a receipt, upgrade to "receipt"
+  if (classification.type === "document" && hasAttachments) {
+    const attachmentFilenames = attachmentsMetadata.map((a: any) => a.filename || a.name || "").join(" ");
+    if (looksLikeReceipt(attachmentFilenames, subject)) {
+      console.log(`Overriding classification from "document" to "receipt" based on subject/filename heuristic`);
+      classification.type = "receipt";
+      classification.summary = `[heuristic override] ${classification.summary}`;
+    }
+  }
+
   // Log usage for cost tracking
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
   if (geminiApiKey) {
