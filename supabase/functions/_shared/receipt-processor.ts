@@ -47,8 +47,14 @@ export async function extractReceiptData(
   }
 
   try {
-    // Convert buffer to base64 for Gemini API
-    const base64Data = btoa(String.fromCharCode(...fileBuffer));
+    // Convert buffer to base64 for Gemini API (chunk to avoid stack overflow on large files)
+    let binaryStr = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < fileBuffer.length; i += chunkSize) {
+      const chunk = fileBuffer.subarray(i, i + chunkSize);
+      binaryStr += String.fromCharCode(...chunk);
+    }
+    const base64Data = btoa(binaryStr);
 
     const prompt = `You are a receipt parser. Extract ALL information from this receipt/invoice.
 
