@@ -101,16 +101,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!accessTokenMode) {
-    // Normal auth flow — require login
+    // Init auth but don't require it — this is a public page
     await initAuth();
-    if (!requireAuth('/login/')) return;
-  }
-  document.body.classList.add('authed');
-
-  // Public header: show profile when signed in, Sign In link when not
-  if (!accessTokenMode) {
     initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
   }
+  document.body.classList.add('authed');
 
   // Check for URL parameters
   const directSpaceId = urlParams.get('id');
