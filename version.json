@@ -1,12 +1,12 @@
 {
-  "version": "v260215.35 12:53p",
-  "release": 202,
-  "sha": "8f13fe06",
-  "fullSha": "8f13fe06b7c4504e7014c486af515016c3f5b53d",
+  "version": "v260215.36 12:55p",
+  "release": 203,
+  "sha": "d17459ab",
+  "fullSha": "d17459ab396f3f401a704568ebde70c1ab3d16dc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-15 18:53:48+00",
-  "commits": [{"sha":"8f13fe06","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-15 18:55:06+00",
+  "commits": [{"sha":"86a05e9b","message":"Auto-populate first_name/last_name from display_name on sign-up","author":"Rahul Sonnad"},{"sha":"d17459ab","message":"Merge branch 'claude/friendly-pare'","author":"Rahul Sonnad"}]
 }
