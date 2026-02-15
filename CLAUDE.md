@@ -201,6 +201,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
 | `vapi-webhook` | `supabase functions deploy vapi-webhook --no-verify-jwt` |
 | `paypal-webhook` | `supabase functions deploy paypal-webhook --no-verify-jwt` |
+| `reprocess-pai-email` | `supabase functions deploy reprocess-pai-email --no-verify-jwt` |
 | `api` | `supabase functions deploy api --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 

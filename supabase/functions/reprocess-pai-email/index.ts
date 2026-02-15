@@ -150,7 +150,7 @@ serve(async (req) => {
           title: filename,
           description: `Uploaded via email by ${senderName} (${senderEmail}). Subject: ${subject}`,
           category: "email-upload",
-          keywords: [fileExt, "email-upload", senderName.toLowerCase(), "septic", "receipt", "maintenance"],
+          keywords: [fileExt, "email-upload", senderName.toLowerCase(), ...subject.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3)],
           storage_bucket: "r2",
           storage_path: r2Key,
           source_url: publicUrl,

@@ -10,22 +10,28 @@ import { createClient } from '@supabase/supabase-js';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { readFileSync } from 'fs';
 
-const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 
-// Try to get service role key from environment or from local secret file
-let SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const REQUIRED_ENV = {
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+};
 
-// If not in env, try to read from a local .env file or use the project default
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.log('SUPABASE_SERVICE_ROLE_KEY not in environment, using default key...');
-  // This is the service role key from the Supabase dashboard
-  SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwNzU4MTQ3OCwiZXhwIjoyMDIzMTU3NDc4fQ.8PqJHNXgQWPtXz3fzQZb2eI0qWKC5k5bxY_0f5N8XZc';
+const missing = Object.entries(REQUIRED_ENV).filter(([, v]) => !v).map(([k]) => k);
+if (missing.length > 0) {
+  console.error(`Missing required environment variables: ${missing.join(', ')}`);
+  console.error('Set them in your shell or in a .env file before running this script.');
+  process.exit(1);
 }
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_Nnd6Vn9a_LgSBPz4k3kWRcTiNqCe7iipg';
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '9cd3a280a54ce2a5b382602f0247b577';
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || 'e096a89017992c90daf23b7be0b5da0a';
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || 'fc4716d54e00d0e7f936e442dfc7b6240d3e5163c721237f24936ed95be3764f';
+const SUPABASE_SERVICE_ROLE_KEY = REQUIRED_ENV.SUPABASE_SERVICE_ROLE_KEY;
+const RESEND_API_KEY = REQUIRED_ENV.RESEND_API_KEY;
+const R2_ACCOUNT_ID = REQUIRED_ENV.R2_ACCOUNT_ID;
+const R2_ACCESS_KEY_ID = REQUIRED_ENV.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = REQUIRED_ENV.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'alpacapps';
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || 'https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev';
 
@@ -41,7 +47,7 @@ const s3 = new S3Client({
 });
 
 async function downloadResendAttachment(emailId, attachmentId, filename) {
-  const url = `https://api.resend.com/emails/${emailId}/attachments/${attachmentId}`;
+  const url = `https://api.resend.com/emails/receiving/${emailId}/attachments/${attachmentId}`;
   console.log(`Downloading attachment from Resend: ${url}`);
 
   const res = await fetch(url, {
@@ -162,7 +168,7 @@ async function reprocessEmail(resendEmailId) {
         title: filename,
         description: `Uploaded via email by ${senderName} (${senderEmail}). Subject: ${subject}`,
         category: 'email-upload',
-        keywords: [fileExt, 'email-upload', senderName.toLowerCase(), 'septic', 'receipt', 'maintenance'],
+        keywords: [fileExt, 'email-upload', senderName.toLowerCase(), ...subject.toLowerCase().split(/\s+/).filter(w => w.length > 3)],
         storage_bucket: 'r2',
         storage_path: r2Key,
         source_url: publicUrl,
