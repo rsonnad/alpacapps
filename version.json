@@ -1,12 +1,12 @@
 {
-  "version": "v260216.06 1:42p",
-  "release": 210,
-  "sha": "da191f77",
-  "fullSha": "da191f77f84c796b69f9696168966a938163c27f",
+  "version": "v260216.07 1:47p",
+  "release": 211,
+  "sha": "d24dd4bd",
+  "fullSha": "d24dd4bd2f01167673309266d7476f393faa469c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 19:42:56+00",
-  "commits": [{"sha":"da191f77","message":"Fix $0 rental rate bug: allow zero-rate rentals","author":"Rahul"}]
+  "pushedAt": "2026-02-16 19:47:20+00",
+  "commits": [{"sha":"d24dd4bd","message":"Fix $0 rate checklist display: third instance of >0 check","author":"Rahul"}]
 }
