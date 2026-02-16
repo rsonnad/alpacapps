@@ -47,6 +47,7 @@ let calendarHasMoreReservations = true;
 // Lease generation state
 let currentLeaseTemplate = null;
 let currentAgreementData = null;
+let currentLeasePageCount = null;
 
 // Terms auto-save timeout
 let termsAutoSaveTimeout = null;
@@ -1707,10 +1708,46 @@ function closeRentalDetail() {
 // RENTAL ACTIONS
 // =============================================
 
+/**
+ * Disable all action pane buttons and footer buttons during async operations.
+ * Returns a restore function to re-enable them (or pass a label to show on the clicked CTA).
+ */
+function setActionPaneLoading(loadingLabel) {
+  const actionPane = document.getElementById('actionPaneActions');
+  const footer = document.getElementById('rentalActions');
+  const allBtns = [
+    ...(actionPane ? actionPane.querySelectorAll('button') : []),
+    ...(footer ? footer.querySelectorAll('button') : []),
+  ];
+  const originals = allBtns.map(b => ({ el: b, text: b.textContent, disabled: b.disabled }));
+
+  allBtns.forEach(b => {
+    b.disabled = true;
+    b.style.opacity = '0.6';
+    b.style.cursor = 'wait';
+  });
+
+  // If a loading label was provided, set it on the primary CTA
+  if (loadingLabel && actionPane) {
+    const cta = actionPane.querySelector('.action-pane-cta') || actionPane.querySelector('.btn-primary');
+    if (cta) cta.textContent = loadingLabel;
+  }
+
+  return function restore() {
+    originals.forEach(({ el, text, disabled }) => {
+      el.disabled = disabled;
+      el.textContent = text;
+      el.style.opacity = '';
+      el.style.cursor = '';
+    });
+  };
+}
+
 window.openRentalDetail = openRentalDetail;
 
 window.inviteToApplyAction = async function() {
   if (!currentApplicationId) return;
+  const restore = setActionPaneLoading('Inviting...');
   try {
     const result = await rentalService.inviteToApply(currentApplicationId);
     // Send invite email
@@ -1724,12 +1761,14 @@ window.inviteToApplyAction = async function() {
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
 window.archiveApplication = async function() {
   if (!currentApplicationId) return;
   if (!confirm('Archive this application? It will be hidden from the pipeline.')) return;
+  const restore = setActionPaneLoading('Archiving...');
   try {
     await rentalService.archiveApplication(currentApplicationId);
     closeRentalDetail();
@@ -1737,6 +1776,7 @@ window.archiveApplication = async function() {
     showToast('Application archived', 'success');
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
@@ -1756,12 +1796,14 @@ window.toggleTestFlag = async function() {
 
 window.startReviewApplication = async function() {
   if (!currentApplicationId) return;
+  const restore = setActionPaneLoading('Starting Review...');
   try {
     await rentalService.startReview(currentApplicationId);
     await loadApplications();
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
@@ -1783,6 +1825,7 @@ window.approveApplication = async function() {
     return;
   }
 
+  const restore = setActionPaneLoading('Approving...');
   try {
     await rentalService.approveApplication(currentApplicationId, {
       spaceId,
@@ -1819,6 +1862,7 @@ window.approveApplication = async function() {
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
@@ -1826,6 +1870,8 @@ window.denyApplication = async function() {
   if (!currentApplicationId) return;
   const app = allApplications.find(a => a.id === currentApplicationId);
   const reason = prompt('Reason for denial (optional):');
+  if (reason === null) return; // user cancelled prompt
+  const restore = setActionPaneLoading('Denying...');
   try {
     await rentalService.denyApplication(currentApplicationId, reason);
     await loadApplications();
@@ -1845,12 +1891,19 @@ window.denyApplication = async function() {
     closeRentalDetail();
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
 window.generateAgreement = async function() {
-  await generateLeasePdf();
-  switchDetailTab('documents');
+  const restore = setActionPaneLoading('Generating...');
+  try {
+    await generateLeasePdf();
+    switchDetailTab('documents');
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+    restore();
+  }
 };
 
 window.editTerms = function() {
@@ -1982,10 +2035,15 @@ window.markAgreementSigned = async function() {
 };
 
 window.sendForSignatureAction = async function() {
+  const restore = setActionPaneLoading('Sending...');
   switchDetailTab('documents');
   setTimeout(() => {
     const btn = document.getElementById('sendForSignatureBtn');
-    if (btn && !btn.disabled) btn.click();
+    if (btn && !btn.disabled) {
+      btn.click();
+    } else {
+      restore();
+    }
   }, 100);
 };
 
@@ -2003,6 +2061,7 @@ async function recreateSignwellDocument(app) {
   let pdfUrl = app.agreement_document_url;
 
   // If no PDF URL, regenerate from template
+  let pageCount = currentLeasePageCount || app.lease_page_count;
   if (!pdfUrl) {
     showToast('Regenerating lease PDF...', 'info');
     const template = await leaseTemplateService.getActiveTemplate();
@@ -2012,16 +2071,18 @@ async function recreateSignwellDocument(app) {
       return false;
     }
     const parsedContent = leaseTemplateService.parseTemplate(template.content, agreementData);
-    const { url } = await pdfService.generateAndUploadLeasePdf(
+    const result = await pdfService.generateAndUploadLeasePdf(
       parsedContent, app.id, { tenantName: agreementData.tenantName }
     );
-    await rentalService.updateAgreementStatus(app.id, 'generated', url);
-    pdfUrl = url;
+    await rentalService.updateAgreementStatus(app.id, 'generated', result.url);
+    pdfUrl = result.url;
+    pageCount = result.pageCount;
+    currentLeasePageCount = pageCount;
   }
 
   showToast('Creating new signature request...', 'info');
   const recipientName = `${app.person.first_name} ${app.person.last_name}`;
-  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName);
+  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName, pageCount);
   await loadApplications();
   openRentalDetail(currentApplicationId, getActiveDetailTab());
   showToast('New signature request sent to tenant', 'success');
@@ -2125,6 +2186,7 @@ window.confirmMoveIn = async function() {
   if (!currentApplicationId) return;
   if (!confirm('Confirm move-in? This will create an active assignment.')) return;
   const app = allApplications.find(a => a.id === currentApplicationId);
+  const restore = setActionPaneLoading('Confirming...');
   try {
     await rentalService.confirmMoveIn(currentApplicationId);
     await loadApplications();
@@ -2150,6 +2212,7 @@ window.confirmMoveIn = async function() {
     closeRentalDetail();
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
   }
 };
 
@@ -2917,14 +2980,17 @@ async function generateLeasePdf() {
     );
 
     // Generate and upload PDF with smart filename
-    const { url, filename } = await pdfService.generateAndUploadLeasePdf(
+    const { url, filename, pageCount } = await pdfService.generateAndUploadLeasePdf(
       parsedContent,
       currentApplicationId,
       { tenantName: currentAgreementData.tenantName }
     );
+    currentLeasePageCount = pageCount;
 
-    // Update application with PDF URL
+    // Update application with PDF URL and page count
     await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url);
+    // Store page count for SignWell signature placement
+    await supabase.from('rental_applications').update({ lease_page_count: pageCount }).eq('id', currentApplicationId);
 
     // Reload applications and refresh UI
     await loadApplications();
@@ -2972,7 +3038,8 @@ async function sendForSignature() {
       currentApplicationId,
       app.agreement_document_url,
       app.person.email,
-      recipientName
+      recipientName,
+      currentLeasePageCount || app.lease_page_count
     );
 
     // Also send a notification email via Resend
