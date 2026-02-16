@@ -80,8 +80,8 @@ function renderHeader(options = {}) {
     <header class="aap-header ${headerClass} ${colorClass}" id="aap-header">
       <div class="aap-header__inner">
         <a href="${BASE_PATH}/" class="aap-header__logo">
-          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" height="30" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
-          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" height="22" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
+          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" height="30" width="30" fetchpriority="high" decoding="async" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
+          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" height="22" width="175" fetchpriority="high" decoding="async" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
           ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
         </a>
         <nav class="aap-nav" id="aap-nav">
@@ -149,8 +149,8 @@ function renderFooter() {
     <footer class="aap-footer">
       <div class="aap-footer__content">
         <div class="aap-footer__logo">
-          <img src="${IMAGES.iconInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__icon">
-          <img src="${IMAGES.wordmarkInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__wordmark">
+          <img src="${IMAGES.iconInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__icon" width="52" height="52" loading="lazy" decoding="async">
+          <img src="${IMAGES.wordmarkInverted}" alt="Alpaca Playhouse Austin" class="aap-footer__wordmark" width="200" height="24" loading="lazy" decoding="async">
         </div>
 
         <div class="aap-footer__social">
