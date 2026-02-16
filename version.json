@@ -1,12 +1,12 @@
 {
-  "version": "v260216.10 2:03p",
-  "release": 214,
-  "sha": "17fb0597",
-  "fullSha": "17fb05972e35c03143b4654f6355641c7a11c4c1",
+  "version": "v260216.12 2:19p",
+  "release": 216,
+  "sha": "6ada0165",
+  "fullSha": "6ada016583843d693bbb5fac5f39d2992ae530d3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 20:03:39+00",
-  "commits": [{"sha":"17fb0597","message":"Update spaces/ical/spartan-trailer.ics [automated]","author":"Rahul"}]
+  "pushedAt": "2026-02-16 20:19:52+00",
+  "commits": [{"sha":"6ada0165","message":"Fix rental pipeline: button loading states + SignWell landlord signatures","author":"Rahul"}]
 }
