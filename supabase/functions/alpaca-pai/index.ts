@@ -2406,45 +2406,52 @@ async function executeToolCall(
         const query = args.query;
         if (!query) return "Error: search query is required.";
 
-        const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-        if (!GEMINI_API_KEY) return "Error: search not configured.";
+        const BRAVE_API_KEY = Deno.env.get("BRAVE_API_KEY");
+        if (!BRAVE_API_KEY) return "Error: web search not configured (BRAVE_API_KEY missing).";
 
-        const searchUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const searchUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5`;
         const searchResp = await fetch(searchUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: query }] }],
-            tools: [{ google_search: {} }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
-          }),
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "Accept-Encoding": "gzip",
+            "X-Subscription-Token": BRAVE_API_KEY,
+          },
         });
 
         if (!searchResp.ok) {
-          const err = await searchResp.json().catch(() => ({}));
-          console.error("Web search error:", JSON.stringify(err));
-          return `Search failed: ${err?.error?.message || searchResp.status}`;
+          const errText = await searchResp.text().catch(() => "");
+          console.error("Brave search error:", searchResp.status, errText);
+          return `Search failed (HTTP ${searchResp.status}). Try again later.`;
         }
 
-        const searchResult = await searchResp.json();
-        const searchText = searchResult.candidates?.[0]?.content?.parts
-          ?.filter((p: any) => p.text)
-          ?.map((p: any) => p.text)
-          ?.join("") || "No results found.";
+        const braveResult = await searchResp.json();
+        const webResults = braveResult.web?.results || [];
 
+        if (webResults.length === 0) return `No web results found for "${query}".`;
+
+        // Format results as numbered list with title, URL, description, and freshness
+        const formatted = webResults
+          .map((r: any, i: number) => {
+            const age = r.age ? ` (${r.age})` : "";
+            return `${i + 1}. ${r.title}${age}\n   ${r.url}\n   ${r.description || ""}`;
+          })
+          .join("\n\n");
+
+        // Fire-and-forget: log usage to api_usage_log
         const supabaseAdmin2 = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
         supabaseAdmin2.from("api_usage_log").insert({
-          vendor: "gemini",
+          vendor: "brave",
           category: "pai_web_search",
-          endpoint: "generateContent+google_search",
-          input_tokens: searchResult.usageMetadata?.promptTokenCount || 0,
-          output_tokens: searchResult.usageMetadata?.candidatesTokenCount || 0,
-          estimated_cost_usd: 0.035,
-          metadata: { model: "gemini-2.5-flash", query },
+          endpoint: "web_search",
+          units: 1,
+          unit_type: "queries",
+          estimated_cost_usd: 0, // Free tier (2,000/mo); change to 0.003 if on paid plan
+          metadata: { query, result_count: webResults.length },
           app_user_id: scope.appUserId || null,
         }).then(() => {});
 
-        return `Web search results for "${query}":\n${searchText}`;
+        return `Web search results for "${query}":\n\n${formatted}`;
       }
 
       default:
@@ -3090,7 +3097,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
   let geminiCallCount = 0;
-  let usedGoogleSearch = false;
+  // (google_search grounding removed — now using Brave Search API via web_search tool)
 
   let geminiResult = await callGemini(
     GEMINI_API_KEY,
@@ -3172,7 +3179,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       totalInputTokens += usageN.promptTokenCount || 0;
       totalOutputTokens += (usageN.candidatesTokenCount || 0) + (usageN.thoughtsTokenCount || 0);
     }
-    if (geminiResult.candidates?.[0]?.groundingMetadata) usedGoogleSearch = true;
+    // (grounding metadata check removed — Brave Search used instead of google_search)
   }
 
   // 8. Extract final text
@@ -3200,12 +3207,10 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   }
 
   // 9. Log Gemini usage to api_usage_log + check spend alert
-  // $35/1000 grounded prompts = $0.035 per grounded prompt (but 1500/day free)
-  const groundingCost = usedGoogleSearch ? 0.035 : 0;
+  // Brave Search costs tracked separately in web_search tool handler
   const estimatedCost =
     (totalInputTokens / 1_000_000) * GEMINI_INPUT_COST_PER_M +
-    (totalOutputTokens / 1_000_000) * GEMINI_OUTPUT_COST_PER_M +
-    groundingCost;
+    (totalOutputTokens / 1_000_000) * GEMINI_OUTPUT_COST_PER_M;
 
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -3225,7 +3230,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       source: channelName,
       gemini_calls: geminiCallCount,
       tool_calls: actionsTaken.length,
-      google_search: usedGoogleSearch,
+      web_search_provider: "brave",
     },
     app_user_id: scope.appUserId || null,
   }).then(() => {});
