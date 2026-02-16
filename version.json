@@ -1,12 +1,12 @@
 {
-  "version": "v260216.08 1:54p",
-  "release": 212,
-  "sha": "936daacd",
-  "fullSha": "936daacd17978d43c58b72e3b08197a998c18390",
+  "version": "v260216.10 2:03p",
+  "release": 214,
+  "sha": "17fb0597",
+  "fullSha": "17fb05972e35c03143b4654f6355641c7a11c4c1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 19:54:35+00",
-  "commits": [{"sha":"936daacd","message":"Fix $0 rate approval: fourth instance of falsy rate check","author":"Rahul"}]
+  "pushedAt": "2026-02-16 20:03:39+00",
+  "commits": [{"sha":"17fb0597","message":"Update spaces/ical/spartan-trailer.ics [automated]","author":"Rahul"}]
 }
