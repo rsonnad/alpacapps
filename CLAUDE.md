@@ -713,6 +713,16 @@ Common page URLs for testing links (use only on main deploys):
 3. **Don't expose personal info in consumer view** - Load assignment dates only, not person details
 4. **Toast notifications in admin** - Use `showToast(message, type)` not `alert()`
 5. **Lightbox for images** - Use `openLightbox(url)` for full-size image viewing
+6. **Use Tailwind CSS for all new UI** - When writing new HTML or modifying existing elements, use Tailwind utility classes with AAP theme tokens instead of writing custom CSS. Use the `aap-*` prefixed tokens to stay on-brand:
+   - Colors: `bg-aap-cream`, `bg-aap-dark`, `text-aap-amber`, `text-aap-text-muted`, `border-aap-border`
+   - Shadows: `shadow-aap`, `shadow-aap-sm`, `shadow-aap-lg`, `shadow-aap-xl`
+   - Radius: `rounded-aap` (8px), `rounded-aap-lg` (16px)
+   - Status: `text-aap-success`, `text-aap-error`, `text-aap-warning`, `text-aap-info`
+   - Layout: use Tailwind's `flex`, `grid`, `gap-*`, `p-*`, `m-*` utilities
+   - Responsive: `md:` for tablet+, `lg:` for desktop
+   - States: `hover:`, `focus:`, `active:` prefixes
+   - **Don't rewrite working CSS** — only use Tailwind for new code or when actively modifying an element
+   - **Run `npm run css:build`** after adding new Tailwind classes (CI also rebuilds on push)
 
 ## API Cost Accounting (REQUIRED)
 
