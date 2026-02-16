@@ -1,12 +1,12 @@
 {
-  "version": "v260216.05 12:13p",
-  "release": 209,
-  "sha": "e4a54231",
-  "fullSha": "e4a5423147167e057ac27a1675fbe1bde027d5f8",
+  "version": "v260216.06 1:42p",
+  "release": 210,
+  "sha": "da191f77",
+  "fullSha": "da191f77f84c796b69f9696168966a938163c27f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 18:13:10+00",
-  "commits": [{"sha":"e4a54231","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-16 19:42:56+00",
+  "commits": [{"sha":"da191f77","message":"Fix $0 rental rate bug: allow zero-rate rentals","author":"Rahul"}]
 }
