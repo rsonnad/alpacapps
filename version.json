@@ -1,12 +1,12 @@
 {
-  "version": "v260216.12 2:19p",
-  "release": 216,
-  "sha": "6ada0165",
-  "fullSha": "6ada016583843d693bbb5fac5f39d2992ae530d3",
+  "version": "v260216.13 3:56p",
+  "release": 217,
+  "sha": "f98c46be",
+  "fullSha": "f98c46be763db7b770a92b6435af1756d034e235",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 20:19:52+00",
-  "commits": [{"sha":"6ada0165","message":"Fix rental pipeline: button loading states + SignWell landlord signatures","author":"Rahul"}]
+  "pushedAt": "2026-02-16 21:56:21+00",
+  "commits": [{"sha":"f98c46be","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
