@@ -240,6 +240,77 @@ api_usage_log   - Cost tracking for all external API calls
                    app_user_id [FK->app_users], created_at)
 ```
 
+## Square Webhook Columns (Added to existing tables)
+```
+square_config additions:
+  webhook_signature_key    - HMAC key from Square Developer Console
+
+square_payments additions:
+  square_source_type       - CARD, BANK_ACCOUNT
+  square_event_id          - Webhook event ID for dedup
+  completed_at             - When ACH payment completed
+  failed_at                - When ACH payment failed
+  failure_reason           - Reason for failure
+```
+
+## Stripe Payment System
+```
+stripe_config       - Stripe API credentials + webhook secrets (single row, id=1)
+                      (publishable_key, secret_key, sandbox_publishable_key, sandbox_secret_key,
+                       webhook_secret, sandbox_webhook_secret, connect_enabled, is_active, test_mode)
+stripe_payments     - Inbound payment records linked to PaymentIntents
+                      (payment_type, reference_type, reference_id, amount, original_amount,
+                       fee_code_used, status [pending/completed/failed/refunded],
+                       stripe_payment_intent_id, stripe_charge_id, receipt_url,
+                       error_message, person_id, person_name, ledger_id [FK->ledger],
+                       is_test, created_at, updated_at)
+payment_methods     - Display methods on pay page (Zelle, Venmo, PayPal, ACH)
+                      (name, method_type, account_identifier, account_name,
+                       qr_code_media_id [FK->media], display_order, is_active, instructions)
+```
+
+## Anova Precision Oven System
+```
+anova_config        - Anova Developer API configuration (single row, id=1)
+                      (pat, ws_url, is_active, test_mode, last_error, last_synced_at)
+anova_ovens         - Anova oven devices with cached state
+                      (cooker_id [unique], name, oven_type, firmware_version,
+                       hardware_version, space_id [FK->spaces], display_order,
+                       is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
+```
+
+## Glowforge Laser Cutter System
+```
+glowforge_config    - Glowforge Cloud API configuration (single row, id=1)
+                      (email, session_cookies, session_expires_at,
+                       is_active, test_mode, last_error, last_synced_at)
+glowforge_machines  - Glowforge machines with cached state
+                      (machine_id [unique], name, machine_type,
+                       space_id [FK->spaces], display_order,
+                       is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
+```
+
+## Spotify Integration
+```
+spotify_config  - Spotify API configuration (singleton row, id=1)
+                  (client_id, client_secret, refresh_token, access_token,
+                   token_expires_at, is_active, test_mode)
+```
+
+## Brand Configuration
+```
+brand_config    - Singleton (id=1) brand configuration stored as JSONB
+                  (config [jsonb], updated_at, updated_by [FK->app_users])
+```
+
+## Prompt Library
+```
+prompts         - Versioned prompt library (multiple versions per name)
+                  (name, version, content, category, description,
+                   metadata [jsonb], is_active, created_by [FK->app_users])
+                  Unique: (name, version); unique partial index on (name) WHERE is_active
+```
+
 ## Legacy (Deprecated - don't use for new features)
 ```
 photos          - Old photo storage

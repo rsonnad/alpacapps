@@ -7,6 +7,9 @@ HOMEAUTOMATION.local.md
 # Nested repo clone (used by bug-fixer on droplet)
 alpacapps/
 
+# Root node_modules (Tailwind CSS build tools)
+node_modules/
+
 # OS files
 .DS_Store
 

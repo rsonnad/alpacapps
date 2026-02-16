@@ -39,6 +39,14 @@
 | `event-payment-reminder` | Daily cron: 10-day payment reminders for events |
 | `ask-question` | PAI Q&A backend |
 | `api` | **Centralized Internal REST API** — single permissioned endpoint for all entity CRUD (20 resources). Role-based access (0=public, 1=resident, 2=staff, 3=admin, 4=oracle). Smart name/space resolution, auto-timestamps, row-level scoping. See `API.md`. |
+| `square-webhook` | Receives Square webhook for payment/refund status changes (ACH PENDING→COMPLETED/FAILED) |
+| `process-stripe-payment` | Creates Stripe PaymentIntent for ACH/card payments (returns clientSecret) |
+| `stripe-webhook` | Receives Stripe webhook for payment/transfer status changes, sends confirmation emails |
+| `stripe-connect-onboard` | Stripe Connect Express account creation + onboarding for associate payouts |
+| `stripe-payout` | Outbound ACH payments to associates via Stripe Connect Transfers |
+| `anova-control` | Anova Precision Oven control via WebSocket API (getStatus, startCook, stopCook) (resident+ auth) |
+| `glowforge-control` | Glowforge laser cutter status via cookie-based web API (getStatus) (resident+ auth) |
+| `reprocess-pai-email` | Reprocess failed PAI email classifications |
 
 ## Deployment Flags
 
@@ -48,7 +56,8 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 ```
 sonos-control, govee-control, nest-control, resend-inbound-webhook,
 telnyx-webhook, whatsapp-webhook, signwell-webhook, tesla-command, lg-control,
-alpaca-pai, verify-identity, vapi-server, vapi-webhook, paypal-webhook, api
+anova-control, glowforge-control, alpaca-pai, verify-identity, vapi-server,
+vapi-webhook, paypal-webhook, reprocess-pai-email, api, square-webhook, stripe-webhook
 ```
 
 ### Default JWT verification (all others):

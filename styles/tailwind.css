@@ -1,0 +1,64 @@
+/* AlpacApps Tailwind CSS — source file
+ *
+ * This file is compiled by Tailwind CSS v4 CLI into styles/tailwind.out.css.
+ * It imports Tailwind and maps our existing AAP design tokens into the theme.
+ *
+ * Build: npx @tailwindcss/cli -i styles/tailwind.css -o styles/tailwind.out.css --minify
+ * Dev:   npx @tailwindcss/cli -i styles/tailwind.css -o styles/tailwind.out.css --watch
+ */
+
+@import "tailwindcss";
+
+/* =============================================
+   CONTENT SOURCES
+   Tailwind v4 scans these paths for class usage
+   ============================================= */
+@source "../**/*.html";
+@source "../shared/**/*.js";
+@source "../spaces/**/*.js";
+@source "../residents/**/*.js";
+@source "../associates/**/*.js";
+@source "../pay/**/*.js";
+@source "../kiosk/**/*.js";
+@source "../community/**/*.js";
+@source "../events/**/*.js";
+
+/* =============================================
+   THEME — AAP Design Tokens
+   Maps our CSS custom properties to Tailwind utilities.
+   Usage: bg-aap-cream, text-aap-dark, border-aap-border, etc.
+   ============================================= */
+@theme {
+  /* Colors — warm alpaca palette */
+  --color-aap-cream: #faf9f6;
+  --color-aap-cream-muted: #f2f0e8;
+  --color-aap-dark: #1c1618;
+  --color-aap-text: #2a1f23;
+  --color-aap-text-light: #faf9f6;
+  --color-aap-text-muted: #7d6f74;
+  --color-aap-amber: #d4883a;
+  --color-aap-amber-hover: #be7830;
+  --color-aap-amber-light: rgba(212, 136, 58, 0.1);
+  --color-aap-border: #e6e2d9;
+  --color-aap-overlay: rgba(28, 22, 24, 0.6);
+
+  /* Status colors */
+  --color-aap-success: #2d8a4e;
+  --color-aap-error: #c53030;
+  --color-aap-warning: #d69e2e;
+  --color-aap-info: #3182ce;
+
+  /* Typography */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Border radius */
+  --radius-aap: 8px;
+  --radius-aap-lg: 16px;
+
+  /* Shadows — warm, subtle */
+  --shadow-aap-sm: 0 1px 2px rgba(42, 31, 35, 0.04);
+  --shadow-aap: 0 2px 8px rgba(42, 31, 35, 0.06), 0 1px 2px rgba(42, 31, 35, 0.04);
+  --shadow-aap-lg: 0 8px 24px rgba(42, 31, 35, 0.08), 0 2px 6px rgba(42, 31, 35, 0.04);
+  --shadow-aap-xl: 0 16px 48px rgba(42, 31, 35, 0.12), 0 4px 12px rgba(42, 31, 35, 0.06);
+}
