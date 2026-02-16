@@ -23,23 +23,26 @@ const ADMIN_PERMISSION_KEYS = [
 ];
 
 const ALL_ADMIN_TABS = [
-  // Staff section
-  { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'staff' },
-  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff' },
-  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
-  { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
-  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
-  { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
-  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
-  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
-  { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff' },
-  { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'staff' },
-  { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
-  // Admin section
+  // Top-level navigation (3 tabs)
+  { id: 'dashboard', label: 'Dashboard', href: 'dashboard.html', permission: 'view_spaces', section: 'staff' },
+  { id: 'connections', label: 'Connections', href: 'connections.html', permission: 'view_spaces', section: 'staff' },
+  { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'staff' },
+  // Legacy pages (still accessible via direct URL, not in top nav)
+  { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'more' },
+  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'more' },
+  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'more' },
+  { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'more' },
+  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'more' },
+  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'more' },
+  { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'more' },
+  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'more' },
+  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'more' },
+  { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'more' },
+  { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'more' },
+  { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'more' },
+  // Admin section (still accessible via direct URL)
   { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
   { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
-  { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
   { id: 'releases', label: 'Releases', href: 'releases.html', permission: 'view_settings', section: 'admin' },
   { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin' },
   { id: 'brand', label: 'Brand', href: 'brand.html', permission: 'view_settings', section: 'admin' },
