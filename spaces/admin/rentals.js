@@ -1777,7 +1777,7 @@ window.approveApplication = async function() {
   const securityDeposit = parseFloat(document.getElementById('termSecurityDeposit').value) || 0;
   const additionalTerms = document.getElementById('termAdditionalTerms').value.trim() || null;
 
-  if (!spaceId || !rate || !moveInDate) {
+  if (!spaceId || (isNaN(rate) || rate < 0) || !moveInDate) {
     showToast('Please fill in Space, Rate, and Move-in Date on the Terms tab', 'warning');
     switchDetailTab('terms');
     return;
