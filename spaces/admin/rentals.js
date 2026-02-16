@@ -1619,7 +1619,7 @@ function rentalTermsFilled() {
   const spaceId = document.getElementById('termSpace')?.value;
   const rate = document.getElementById('termRate')?.value;
   const moveIn = document.getElementById('termMoveIn')?.value;
-  return !!(spaceId && rate && parseFloat(rate) > 0 && moveIn);
+  return !!(spaceId && rate !== '' && parseFloat(rate) >= 0 && moveIn);
 }
 
 function updateRentalActions(app) {

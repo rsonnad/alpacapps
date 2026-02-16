@@ -382,19 +382,19 @@ async function saveTerms(applicationId, terms) {
     updated_at: new Date().toISOString(),
   };
 
-  // Only update fields that have values
+  // Only update fields that have values (use != null to allow 0)
   if (spaceId) updateData.approved_space_id = spaceId;
-  if (rate) updateData.approved_rate = rate;
+  if (rate != null && rate !== '') updateData.approved_rate = rate;
   if (rateTerm) updateData.approved_rate_term = rateTerm;
   if (moveInDate) updateData.approved_move_in = moveInDate;
   if (leaseEndDate !== undefined) updateData.approved_lease_end = leaseEndDate;
   if (noticePeriod) updateData.notice_period = noticePeriod;
-  if (rate) updateData.move_in_deposit_amount = moveInDepositAmount;
+  if (rate != null && rate !== '') updateData.move_in_deposit_amount = moveInDepositAmount;
   if (securityDepositAmount !== undefined) updateData.security_deposit_amount = securityDepositAmount;
   // Reservation deposit: save explicitly set value, or default to rate if rate is set
   if (reservationDepositAmount !== undefined) {
     updateData.reservation_deposit_amount = reservationDepositAmount ?? (rate || 0);
-  } else if (rate) {
+  } else if (rate != null && rate !== '') {
     updateData.reservation_deposit_amount = rate;
   }
   if (additionalTerms !== undefined) updateData.additional_terms = additionalTerms;
