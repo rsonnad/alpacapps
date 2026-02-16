@@ -34,9 +34,11 @@
           '<div class="aap-header__inner">' +
             '<a href="/" class="aap-header__logo">' +
               '<img src="' + b + '/alpaca-head-black-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__icon" ' +
+                'height="30" style="height:30px;width:auto;" ' +
                 'data-light-src="' + b + '/alpaca-head-white-transparent.png" ' +
                 'data-dark-src="' + b + '/alpaca-head-black-transparent.png">' +
               '<img src="' + b + '/wordmark-black-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" ' +
+                'height="22" style="height:22px;width:auto;" ' +
                 'data-light-src="' + b + '/wordmark-white-transparent.png" ' +
                 'data-dark-src="' + b + '/wordmark-black-transparent.png">' +
             '</a>' +
