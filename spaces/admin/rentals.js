@@ -1362,8 +1362,9 @@ function renderApplicationsPane(app, guidance, actions) {
   } else {
     // under_review — show terms checklist
     const hasSpace = !!(document.getElementById('termSpace')?.value || app.approved_space_id);
-    const rateVal = document.getElementById('termRate')?.value || app.approved_rate;
-    const hasRate = !!(rateVal && parseFloat(rateVal) > 0);
+    const rateEl = document.getElementById('termRate')?.value;
+    const rateVal = (rateEl !== '' && rateEl != null) ? rateEl : app.approved_rate;
+    const hasRate = !!(rateVal !== '' && rateVal != null && parseFloat(rateVal) >= 0);
     const hasMoveIn = !!(document.getElementById('termMoveIn')?.value || app.approved_move_in);
     const allFilled = hasSpace && hasRate && hasMoveIn;
 
