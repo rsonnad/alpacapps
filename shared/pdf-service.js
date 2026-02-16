@@ -55,9 +55,11 @@ async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf
 
   // Return the PDF as a blob
   const pdfBlob = doc.output('blob');
+  const pageCount = doc.internal.getNumberOfPages();
   return {
     blob: pdfBlob,
     filename,
+    pageCount,
     doc, // Return doc in case caller wants to save directly
   };
 }
@@ -315,7 +317,7 @@ async function generateAndUploadLeasePdf(markdownContent, applicationId, options
   const storagePath = `lease-${applicationId}-${Date.now()}.pdf`;
 
   // Generate PDF
-  const { blob } = await generateLeasePdf(markdownContent, displayFilename);
+  const { blob, pageCount } = await generateLeasePdf(markdownContent, displayFilename);
 
   // Upload to storage
   const url = await uploadPdfToStorage(blob, storagePath);
@@ -323,6 +325,7 @@ async function generateAndUploadLeasePdf(markdownContent, applicationId, options
   return {
     url,
     filename: displayFilename,
+    pageCount,
   };
 }
 

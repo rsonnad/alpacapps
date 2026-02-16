@@ -57,12 +57,19 @@ async function signwellRequest(endpoint, options = {}) {
 /**
  * Create a document for signing
  * @param {string} pdfUrl - URL of the PDF to sign (must be publicly accessible)
- * @param {string} recipientEmail - Email address of the signer
- * @param {string} recipientName - Name of the signer
+ * @param {string} recipientEmail - Email address of the signer (tenant)
+ * @param {string} recipientName - Name of the signer (tenant)
  * @param {Object} options - Additional options
+ * @param {number} options.pageCount - Total pages in the PDF (signature fields go on last page)
+ * @param {string} options.documentName - Custom document name
  */
 async function createDocument(pdfUrl, recipientEmail, recipientName, options = {}) {
   const config = await getConfig();
+
+  // Signature fields go on the last page where the signature lines are in the template.
+  // The lease template has: Landlord signature first, then Tenant signature below.
+  // A4 page at 72 DPI is approximately 595 x 842 pixels.
+  const signaturePage = options.pageCount || 1;
 
   const documentData = {
     test_mode: config.test_mode,
@@ -76,33 +83,63 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
     recipients: [
       {
         id: '1',
+        name: 'Rahul Sonnad',
+        email: 'alpacaplayhouse@gmail.com',
+        role: 'Landlord',
+      },
+      {
+        id: '2',
         name: recipientName,
         email: recipientEmail,
         role: 'Tenant',
       },
     ],
-    // Add signature field at the bottom of the document
     // fields is a 2D array — one array of fields per file
+    // Positions based on the lease template layout:
+    //   "Landlords Signature:" line ~ y=530 on last page
+    //   "Tenants Signature:" line ~ y=640 on last page
     fields: [
       [
+        // Landlord signature + date
         {
           type: 'signature',
           required: true,
           recipient_id: '1',
-          page: 1,
+          page: signaturePage,
           x: 50,
-          y: 650,
+          y: 520,
           width: 200,
-          height: 50,
+          height: 40,
         },
         {
           type: 'date',
           required: true,
           recipient_id: '1',
-          page: 1,
+          page: signaturePage,
           x: 50,
-          y: 720,
-          width: 100,
+          y: 580,
+          width: 120,
+          height: 20,
+        },
+        // Tenant signature + date
+        {
+          type: 'signature',
+          required: true,
+          recipient_id: '2',
+          page: signaturePage,
+          x: 50,
+          y: 630,
+          width: 200,
+          height: 40,
+        },
+        {
+          type: 'date',
+          required: true,
+          recipient_id: '2',
+          page: signaturePage,
+          x: 50,
+          y: 690,
+          width: 120,
           height: 20,
         },
       ],
@@ -192,11 +229,13 @@ async function linkDocumentToApplication(applicationId, signwellDocumentId) {
  * 1. Creates document in SignWell
  * 2. Links to rental application
  * 3. Returns document info
+ * @param {number} pageCount - Total pages in the PDF (for signature field placement)
  */
-async function sendForSignature(applicationId, pdfUrl, recipientEmail, recipientName) {
+async function sendForSignature(applicationId, pdfUrl, recipientEmail, recipientName, pageCount) {
   // Create document in SignWell
   const document = await createDocument(pdfUrl, recipientEmail, recipientName, {
     documentName: `Lease Agreement - ${recipientName}`,
+    pageCount,
   });
 
   // Link to application
