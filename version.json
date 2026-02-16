@@ -1,12 +1,12 @@
 {
-  "version": "v260216.01 12:10a",
-  "release": 205,
-  "sha": "3bff8aab",
-  "fullSha": "3bff8aab281c7f40e99c884feb88bb7da8b97914",
+  "version": "v260216.02 12:24a",
+  "release": 206,
+  "sha": "6fbb5239",
+  "fullSha": "6fbb5239b30fe7fdfdf3613976d58c13074928aa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-16 06:10:51+00",
-  "commits": [{"sha":"39056199","message":"Add Tailwind CSS v4 to frontend build pipeline","author":"Rahul Sonnad"},{"sha":"3bff8aab","message":"Fix FOUC: add inline height to instant-chrome header logos","author":"Rahul Sonnad"}]
+  "pushedAt": "2026-02-16 06:24:46+00",
+  "commits": [{"sha":"6fbb5239","message":"Make Ask PAI the default resident landing page","author":"Rahul"}]
 }
