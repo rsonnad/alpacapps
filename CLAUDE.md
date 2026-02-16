@@ -30,7 +30,8 @@ The `/mistiq/` directory is a **separate, unrelated project** (Mistiq Staffing).
 AlpacApps is a property management system for AlpacApps Residency. It manages rental spaces, tenants, bookings, payments, and photos.
 
 **Tech Stack:**
-- Frontend: Vanilla HTML/CSS/JavaScript (no framework)
+- Frontend: Vanilla HTML/CSS/JavaScript (no framework) + Tailwind CSS v4
+- CSS: CSS custom properties (`--aap-*`) + Tailwind utility classes (coexist)
 - Mobile: Capacitor 8 (iOS + Android) wrapping mobile-first SPA
 - Backend: Supabase (PostgreSQL + Storage + Auth + Edge Functions)
 - Hosting: GitHub Pages (static site)
@@ -1478,6 +1479,18 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **Cost tracking**: `api_usage_log` with vendor `brave`, category `pai_web_search`
    - **Pricing**: Free tier 2,000 queries/month, Base $5/mo for 20,000 queries
    - **Rate limit**: 1 QPS
+
+47. **Tailwind CSS v4 Integration** - Utility-class CSS alongside existing custom properties
+   - **Version**: Tailwind CSS v4.1 (CSS-first config, no `tailwind.config.js`)
+   - **Source**: `styles/tailwind.css` — theme definition with AAP tokens + content sources
+   - **Output**: `styles/tailwind.out.css` — compiled + minified, committed to repo
+   - **CI**: GitHub Actions builds Tailwind before version bump on every push to main
+   - **Local dev**: `npm run css:watch` for live rebuilds, `npm run css:build` for one-time
+   - **Coverage**: All 54 pages that load `site.css` also load `tailwind.out.css`
+   - **Coexistence**: Existing `--aap-*` CSS custom properties remain unchanged; Tailwind adds utility classes
+   - **Theme tokens**: `bg-aap-cream`, `text-aap-amber`, `border-aap-border`, `shadow-aap`, `rounded-aap`, etc.
+   - **No framework**: Still vanilla HTML/CSS/JS — Tailwind is CSS-only, no React required
+   - **Package.json**: Root `package.json` added for Tailwind CLI (`npm run css:build`)
 
 ## Testing Changes
 

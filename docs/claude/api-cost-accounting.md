@@ -41,6 +41,10 @@
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
+| `stripe` | Stripe payment processing (ACH, card, Connect payouts) |
+| `brave` | Brave Search API (web search for PAI) |
+| `anova` | Anova Precision Oven Developer API |
+| `glowforge` | Glowforge Cloud API (undocumented) |
 | `alpacapps_api` | Internal REST API calls (self-tracking) |
 
 ## Categories (Granular)
@@ -77,6 +81,13 @@
 | `airbnb_ical_sync` | Airbnb calendar sync |
 | `r2_document_upload` | Document upload to Cloudflare R2 |
 | `pai_email_classification` | PAI email classification via Gemini |
+| `pai_web_search` | PAI web search queries via Brave Search API |
+| `stripe_payment_processing` | Stripe inbound payment transactions (ACH, card) |
+| `stripe_associate_payout` | Stripe Connect outbound transfers to associates |
+| `square_webhook` | Square webhook event receipt |
+| `anova_oven_control` | Anova oven commands (start, stop) |
+| `anova_oven_poll` | Anova oven status polling |
+| `glowforge_status_poll` | Glowforge machine status polling |
 | `api_spaces_list` | Internal API: spaces list calls |
 | `api_tasks_create` | Internal API: task creation calls |
 | `api_{resource}_{action}` | Internal API: auto-generated per resource/action |
@@ -126,6 +137,10 @@ await supabase.from('api_usage_log').insert({
 | SignWell | Included (25 docs/month free) |
 | Square | 2.6% + $0.10/transaction |
 | PayPal Payouts | $0.25/payout (US) |
+| Stripe | ACH: 0.8% capped at $5; Cards: 2.9% + $0.30; Connect: $0.25/payout |
+| Brave Search | Free: 2,000/mo; Base: $5/mo for 20,000; $0.003/query overage |
+| Glowforge | $0 (undocumented API) |
+| Anova | $0 (free developer API) |
 
 ## Cost Aggregation
 

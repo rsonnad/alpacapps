@@ -39,7 +39,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
         │                                 │
         │  ┌─────────────────────────┐    │
         │  │    Edge Functions       │    │
-        │  │  (30 serverless funcs)  │    │
+        │  │  (38+ serverless funcs)  │    │
         │  │  incl. Centralized API  │    │
         │  └─────────────────────────┘    │
         │                                 │
@@ -87,13 +87,25 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Mobile App (Android) | Play Store (pending) | Capacitor 8, same codebase as iOS |
 | Brave Web Search | Brave Search API | API key as Supabase secret `BRAVE_API_KEY` |
 | OTA Updates | Capgo | `@capgo/capacitor-updater` for live web asset pushes |
+| Stripe Payments | Stripe API | Config in `stripe_config` table |
+| Square Webhook | Supabase Edge Function | `square-webhook` (payment/refund status) |
+| Stripe Webhook | Supabase Edge Function | `stripe-webhook` (payment/transfer status) |
+| PAI Discord Bot | DigitalOcean → Oracle Cloud | `pai-discord.service` (bridges Discord → alpaca-pai) |
+| Anova Oven | Anova Developer API | WebSocket API, config in `anova_config` table |
+| Glowforge Laser | Glowforge Cloud API | Undocumented API, config in `glowforge_config` table |
+| Payment Page | GitHub Pages | Self-service tenant payment at `/pay/` |
+| Oracle Cloud (Migration) | Oracle Cloud Always Free | ARM64 4-core 24GB replacing DO ($0/mo) |
 
 ## Repository Structure
 
 ```
 alpacapps/
 ├── index.html              # Landing page (redirects to spaces)
-├── styles.css              # Global styling
+├── package.json            # Root package.json (Tailwind CSS build tools)
+├── styles/
+│   ├── site.css            # Main site styles (CSS custom properties, DM Sans)
+│   ├── tailwind.css        # Tailwind v4 source (theme + content sources)
+│   └── tailwind.out.css    # Compiled Tailwind CSS (built by CI)
 ├── app.js                  # Legacy (redirects)
 ├── 404.html                # GitHub Pages 404 handler
 │
@@ -131,6 +143,8 @@ alpacapps/
 │   ├── identity-service.js # Identity verification
 │   ├── payout-service.js   # PayPal payouts
 │   ├── accounting-service.js # Accounting/ledger service
+│   ├── stripe-service.js    # Stripe payment processing (config, PaymentIntent, Stripe.js)
+│   ├── brand-config.js      # Brand configuration loader (colors, fonts, logos from DB)
 │   ├── voice-service.js    # Vapi voice assistant config
 │   ├── pai-widget.js       # PAI floating chat widget
 │   ├── chat-widget.js      # Chat widget component
@@ -139,7 +153,7 @@ alpacapps/
 │   ├── version-info.js     # Version badge click handler
 │   └── timezone.js         # Timezone utilities (Austin/Chicago)
 │
-├── supabase/               # Supabase Edge Functions (30 functions)
+├── supabase/               # Supabase Edge Functions (38+ functions)
 │   └── functions/
 │       ├── _shared/           # Shared modules across edge functions
 │       │   ├── permissions.ts      # Permission checking helpers
@@ -176,7 +190,15 @@ alpacapps/
 │       ├── vapi-webhook/      # Vapi call lifecycle events
 │       ├── airbnb-sync/       # Airbnb iCal → blocking assignments
 │       ├── ical/              # Export assignments as iCal per space
-│       └── regenerate-ical/   # Regenerate iCal on assignment changes
+│       ├── regenerate-ical/   # Regenerate iCal on assignment changes
+│       ├── square-webhook/       # Square payment/refund status webhook (ACH tracking)
+│       ├── process-stripe-payment/ # Create Stripe PaymentIntent (ACH/card)
+│       ├── stripe-webhook/       # Stripe payment/transfer status webhook
+│       ├── stripe-connect-onboard/ # Stripe Connect Express account creation
+│       ├── stripe-payout/        # Outbound ACH payments via Stripe Connect
+│       ├── anova-control/        # Anova Precision Oven WebSocket API proxy
+│       ├── glowforge-control/    # Glowforge laser cutter status API
+│       └── reprocess-pai-email/  # Reprocess failed PAI email classifications
 │
 ├── login/                  # Login page
 │   ├── index.html
@@ -207,6 +229,9 @@ alpacapps/
 │   ├── templates.html/.js  # Lease/event template editor
 │   ├── settings.html/.js   # System settings
 │   └── users.html/.js      # User management + invitations
+│
+├── pay/                   # Self-service tenant payment page
+│   └── index.html         # Stripe PaymentElement + manual methods (Zelle, Venmo, PayPal)
 │
 ├── residents/             # Resident-facing pages (auth required, resident+ role)
 │   ├── climate.html       # Climate page: thermostats + weather forecast
@@ -265,13 +290,20 @@ alpacapps/
 │   ├── lighting-data.js     # Govee device groups + control
 │   ├── climate-data.js      # Nest thermostat state + control
 │   ├── cars-data.js         # Tesla vehicle data + commands
-│   └── laundry-data.js      # LG washer/dryer state + control
+│   ├── laundry-data.js      # LG washer/dryer state + control
+│   ├── oven-data.js          # Anova oven state + control via `anova-control` edge function
+│   └── glowforge-data.js     # Glowforge laser cutter status via `glowforge-control` edge function
 │
 ├── feature-builder/       # PAI Feature Builder (runs on DO droplet)
 │   ├── feature_builder.js # Poll DB → Claude Code → branch → merge
 │   ├── package.json       # Dependencies
 │   ├── install.sh         # Server setup script
 │   └── feature-builder.service  # systemd unit file
+│
+├── pai-discord/           # PAI Discord Bot (bridges Discord → alpaca-pai edge function)
+│   ├── bot.js             # Discord.js v14 bot (DMs, channels, @mentions)
+│   ├── pai-discord.service # systemd unit file
+│   └── install.sh         # Droplet installation script
 │
 ├── bug-reporter-extension/ # Chrome extension for bug reporting
 │   ├── manifest.json       # Manifest V3
@@ -469,6 +501,7 @@ Acknowledgments (boolean flags for each policy):
 - `location_id` - Square business location ID
 - `environment` - 'sandbox' or 'production'
 - `is_active` - Whether Square payments are enabled
+- `webhook_signature_key` - HMAC key from Square Developer Console
 
 **fee_settings** - Configurable default fees
 - `id` (uuid, PK)
@@ -500,7 +533,48 @@ Acknowledgments (boolean flags for each policy):
 - `original_amount` - Original fee before code
 - `status` - 'pending', 'completed', 'failed', 'refunded'
 - `receipt_url` - Square receipt URL
+- `square_source_type` - CARD, BANK_ACCOUNT
+- `square_event_id` - Webhook event ID for dedup
+- `completed_at` - When ACH payment completed
+- `failed_at` - When ACH payment failed
+- `failure_reason` - Reason for failure
 - `created_at`
+
+### Stripe Payment System
+
+**stripe_config** - Stripe API credentials + webhook secrets (single row, id=1)
+- `publishable_key`, `secret_key`, `sandbox_publishable_key`, `sandbox_secret_key`
+- `webhook_secret`, `sandbox_webhook_secret`
+- `connect_enabled`, `is_active`, `test_mode`
+
+**stripe_payments** - Inbound payment records linked to PaymentIntents
+- `payment_type`, `reference_type`, `reference_id`
+- `amount`, `original_amount`, `fee_code_used`
+- `status` - pending, completed, failed, refunded
+- `stripe_payment_intent_id`, `stripe_charge_id`, `receipt_url`
+- `error_message`, `person_id`, `person_name`
+- `ledger_id` (FK → ledger), `is_test`
+
+### Anova Precision Oven System
+
+**anova_config** - Anova Developer API configuration (single row, id=1)
+- `pat`, `ws_url`, `is_active`, `test_mode`, `last_error`, `last_synced_at`
+
+**anova_ovens** - Anova oven devices with cached state
+- `cooker_id` (unique), `name`, `oven_type`, `firmware_version`, `hardware_version`
+- `space_id` (FK → spaces), `display_order`, `is_active`
+- `last_state` (jsonb), `last_synced_at`, `lan_ip`, `notes`
+
+### Glowforge Laser Cutter System
+
+**glowforge_config** - Glowforge Cloud API configuration (single row, id=1)
+- `email`, `session_cookies`, `session_expires_at`
+- `is_active`, `test_mode`, `last_error`, `last_synced_at`
+
+**glowforge_machines** - Glowforge machines with cached state
+- `machine_id` (unique), `name`, `machine_type`
+- `space_id` (FK → spaces), `display_order`, `is_active`
+- `last_state` (jsonb), `last_synced_at`, `lan_ip`, `notes`
 
 ### Telnyx SMS System
 
@@ -794,14 +868,41 @@ This is UI-level only, not enforced at database level. For true security, implem
 
 ## Deployment
 
+### CSS Build System (Tailwind v4)
+
+Tailwind CSS v4 is available for utility-class styling alongside the existing CSS custom properties.
+
+**Source file:** `styles/tailwind.css` — defines theme tokens (AAP color palette, fonts, shadows, radii) and content sources.
+**Output file:** `styles/tailwind.out.css` — compiled + minified, committed to repo (no server-side build).
+**CI:** GitHub Actions builds Tailwind before the version bump on every push to main.
+
+```bash
+# Local development (watch mode)
+npm run css:watch
+
+# One-time build
+npm run css:build
+```
+
+All 54 pages that load `styles/site.css` also load `styles/tailwind.out.css`. The two coexist — use Tailwind utilities for new code, existing CSS for established patterns.
+
+**Tailwind utility examples mapped to AAP tokens:**
+- `bg-aap-cream` → `#faf9f6`
+- `text-aap-amber` → `#d4883a`
+- `border-aap-border` → `#e6e2d9`
+- `shadow-aap` → warm subtle shadow
+- `rounded-aap` → 8px border radius
+
 ### Making UI Changes
 ```bash
 cd ~/Downloads/genalpaca-admin
 # edit files
+npm run css:build        # rebuild Tailwind if you used new utility classes
 git add .
 git commit -m "Description"
 git push
 # Wait 1-2 min, hard refresh browser
+# CI will also rebuild Tailwind CSS as part of the version bump
 ```
 
 ### Database Changes
@@ -894,6 +995,39 @@ When generating lease agreements, the system calculates credits toward first mon
 // - Records transaction in square_payments table
 ```
 
+**Square Webhook (ACH Payment Tracking):**
+The `square-webhook` edge function receives `payment.created`, `payment.updated`, `refund.created`, and `refund.updated` events from Square. This is critical for ACH bank transfer payments which go PENDING and take 1-3 business days to settle.
+
+- Signature verification: HMAC-SHA256 (`x-square-hmacsha256-signature` header)
+- Deduplication via `square_event_id` column
+- Updates `square_payments` and `ledger` tables on COMPLETED/FAILED
+- Sends admin notification emails on ACH status changes
+- Deploy: `supabase functions deploy square-webhook --no-verify-jwt`
+- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/square-webhook`
+- Setup: Square Developer Console → Webhooks → subscribe to payment.* and refund.* events
+
+### Stripe (Inbound Payments + Associate Payouts)
+- API: Stripe PaymentIntents (inbound ACH/card) + Stripe Connect Transfers (outbound payouts)
+- Auth: Secret key for server-side, publishable key for client-side Stripe.js
+- Config: `stripe_config` table (publishable/secret keys for sandbox + production, webhook secrets, test_mode)
+- DB: `stripe_payments` (PaymentIntent tracking), `payment_methods` (display methods on pay page)
+
+**Payment Page** (`/pay/index.html`):
+Self-service payment page for tenants with URL params for pre-filling (amount, description, person_id, etc.).
+Shows Zelle/Venmo/PayPal (free, manual) + Stripe ACH/card (online, 0.8% fee capped at $5).
+Stripe PaymentElement mounts with PaymentIntent clientSecret from `process-stripe-payment` edge function.
+
+**Edge Functions:**
+- `process-stripe-payment` — Creates PaymentIntent, returns clientSecret for Stripe.js
+- `stripe-webhook` — HMAC-SHA256 verified; handles `payment_intent.succeeded/failed`, `transfer.paid/failed/reversed`, `account.updated`
+- `stripe-connect-onboard` — Creates Stripe Connect Express accounts for associate payouts
+- `stripe-payout` — Outbound ACH transfers to associates via Stripe Connect
+
+**Confirmation Email:**
+Rich receipt with payment history, outstanding balance calculation, and "Pay Now" link for remaining balance.
+
+**Pricing:** ACH: 0.8% capped at $5; Cards: 2.9% + $0.30; Connect transfers: $0.25/payout
+
 ### Google Drive (Legacy)
 - Rental agreements previously stored in Drive
 - Folder: `1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ`
@@ -930,6 +1064,33 @@ When generating lease agreements, the system calculates credits toward first mon
 - **Rate limit**: 1 QPS, 2,000 queries/month (free tier)
 - **Cost**: Free tier: 2,000/mo; Base: $5/mo for 20,000 queries
 - **Cost tracking**: `api_usage_log` with vendor `brave`, category `pai_web_search`
+
+### Anova Precision Oven
+- API: Anova Developer API via WebSocket (`wss://devices.anovaculinary.io`)
+- Auth: Personal Access Token (PAT) from Anova app
+- Architecture: Per-request WebSocket in `anova-control` edge function (no polling worker)
+- Commands: `CMD_APO_START`, `CMD_APO_STOP`, `CMD_APO_SET_TEMPERATURE_UNIT`
+- State data: temp (dry/wet bulbs), probe, timer, door, fan speed, steam/humidity, heating elements, water tank
+- DB: `anova_config` (PAT, ws_url), `anova_ovens` (cached state in `last_state` JSONB)
+- Cost: $0 (free API)
+
+### Glowforge Laser Cutter
+- API: Undocumented Glowforge Cloud API (community reverse-engineered)
+- Auth: Cookie-based session auth (CSRF token + login → session cookies)
+- Architecture: Per-request in `glowforge-control` edge function (read-only status)
+- Credentials: Stored as Supabase secrets (`GLOWFORGE_EMAIL`, `GLOWFORGE_PASSWORD`)
+- Session caching: Cookies cached in `glowforge_config.session_cookies` with 7-day expiry
+- DB: `glowforge_config` (session/config), `glowforge_machines` (cached state in `last_state` JSONB)
+- Cost: $0 (undocumented API)
+
+### PAI Discord Bot
+- Architecture: Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
+- Bridges Discord messages → `alpaca-pai` edge function (same as web chat, email, voice)
+- Service: `pai-discord.service` (systemd, bugfixer user) on DO droplet → Oracle Cloud
+- Auth: Service role key with `context.source: "discord"`, user lookup via `app_users.discord_id`
+- Features: Per-user conversation history (12 msgs, 30 min TTL), typing indicators, message splitting (2000 char limit)
+- Listens to: configured channel IDs + DMs + @mentions
+- Discord guild: Alpacord (ID: `1471023710755487867`)
 
 ### Media Library
 - Centralized media management at `/spaces/admin/manage.html`

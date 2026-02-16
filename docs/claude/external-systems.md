@@ -122,3 +122,57 @@
 - Client-side tokenization via `shared/square-service.js`
 - Edge functions: `process-square-payment`, `refund-square-payment`
 - Pricing: 2.6% + $0.10 per transaction
+
+## Square Webhook (ACH Payment Tracking)
+- Edge function: `square-webhook` receives `payment.created`, `payment.updated`, `refund.created`, `refund.updated`
+- Signature: HMAC-SHA256 via `x-square-hmacsha256-signature` header
+- Key use case: ACH bank transfers go PENDING → COMPLETED/FAILED (1-3 business days)
+- DB: `square_config.webhook_signature_key`, `square_payments` columns: `square_source_type`, `square_event_id`, `completed_at`, `failed_at`, `failure_reason`
+- Notifications: Admin email on ACH status changes
+- Dedup: Tracks `square_event_id` to prevent duplicate processing
+- Deploy: `supabase functions deploy square-webhook --no-verify-jwt`
+- Webhook URL: `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/square-webhook`
+
+## Stripe (Inbound Payments + Associate Payouts)
+- **Inbound**: Stripe PaymentIntents (ACH bank transfer + card) via `/pay/` self-service page
+- **Outbound**: Stripe Connect Transfers for associate payouts
+- **Edge functions**: `process-stripe-payment` (PaymentIntent), `stripe-webhook` (HMAC-verified), `stripe-connect-onboard` (Express accounts), `stripe-payout` (transfers)
+- **Config**: `stripe_config` table (publishable/secret keys, webhook secrets, test_mode)
+- **DB**: `stripe_payments` (PaymentIntent tracking), `payment_methods` (display on pay page)
+- **Client**: `shared/stripe-service.js` (config loader, PaymentIntent creation, Stripe.js v3 loader)
+- **Confirmation email**: Rich receipt with payment history, outstanding balance, "Pay Now" link
+- **Pricing**: ACH 0.8% capped $5; Cards 2.9% + $0.30; Connect $0.25/payout
+
+## PAI Discord Bot
+- Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
+- Bridges Discord messages → `alpaca-pai` edge function
+- Service: `pai-discord.service` (systemd) on DO droplet → Oracle Cloud
+- Auth: Service role key with `context.source: "discord"`, user lookup via `app_users.discord_id`
+- Per-user conversation history (12 msgs, 30 min TTL), typing indicators
+- Listens to: configured channel IDs + DMs + @mentions
+- Discord guild: Alpacord
+
+## Anova Precision Oven
+- API: Anova Developer API via WebSocket (`wss://devices.anovaculinary.io`)
+- Auth: PAT from Anova app → stored in `anova_config` table
+- Architecture: Per-request WebSocket in `anova-control` edge function (no polling worker)
+- Commands: startCook, stopCook, setTemperatureUnit
+- State: temp (dry/wet bulbs), probe, timer, door, fan speed, steam, heating elements, water tank
+- DB: `anova_config` (PAT, ws_url), `anova_ovens` (cached state in `last_state` JSONB)
+- Cost: $0 (free API)
+
+## Glowforge Laser Cutter
+- API: Undocumented Glowforge Cloud API (community reverse-engineered)
+- Auth: Cookie-based session auth (CSRF + login → session cookies)
+- Architecture: Per-request in `glowforge-control` edge function (read-only status)
+- Credentials: Supabase secrets (`GLOWFORGE_EMAIL`, `GLOWFORGE_PASSWORD`)
+- Session caching: 7-day cookie expiry, auto-re-authenticates
+- DB: `glowforge_config`, `glowforge_machines` (cached state)
+- Cost: $0 (undocumented API)
+
+## Brave Search (Web Search for PAI)
+- API: Brave Search API v1 (`https://api.search.brave.com/res/v1/web/search`)
+- Auth: `X-Subscription-Token` header, Supabase secret `BRAVE_API_KEY`
+- Used by: `alpaca-pai` edge function as `search_web` tool
+- Rate limit: 1 QPS, 2,000 queries/month (free tier)
+- Cost: Free 2,000/mo; Base $5/mo for 20,000; $0.003/query overage

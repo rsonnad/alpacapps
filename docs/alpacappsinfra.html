@@ -6,6 +6,7 @@
   <title>AlpacApps Infra &mdash; Infrastructure Replication Guide</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
     :root {
       --bg: #ffffff;
@@ -949,8 +950,9 @@
           <div class="layer-items">
             <span>Database + Auth + Storage</span>
             <span>Website + Hosting</span>
+            <span>Tailwind CSS v4</span>
           </div>
-          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Free</div>
+          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Tailwind &bull; Free</div>
         </div>
 
       </div>
@@ -991,6 +993,8 @@
                                              &nearr;          &darr;
 Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media storage, optional)</div>
     <p><strong>Key principle:</strong> No backend server. All application logic runs client-side in the browser. Supabase provides the database, authentication, and serverless functions. For file storage, you can use Supabase Storage (1 GB free) or Cloudflare R2 (10 GB free, zero egress fees). GitHub Pages serves static files for free.</p>
+
+    <p><strong>CSS:</strong> Tailwind CSS v4 is available alongside existing CSS custom properties. The Tailwind source (<code>styles/tailwind.css</code>) defines AAP design tokens (colors, fonts, shadows, radii) and is compiled to <code>styles/tailwind.out.css</code> by GitHub Actions CI on every push. Use <code>npm run css:build</code> locally or <code>npm run css:watch</code> for development. All pages load both <code>site.css</code> (custom properties) and <code>tailwind.out.css</code> (utility classes).</p>
 
     <h3>Select what you need</h3>
     <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Core services are pre-selected. Toggle optional ones on or off.</p>
@@ -2206,7 +2210,8 @@ function downloadClaudeMd() {
     '## Project Overview\n\n' +
     name + ' is a [type of system] for [purpose]. It manages [core entities].\n\n' +
     '**Tech Stack:**\n' +
-    '- Frontend: Vanilla HTML/CSS/JavaScript (no framework)\n' +
+    '- Frontend: Vanilla HTML/CSS/JavaScript (no framework) + Tailwind CSS v4\n' +
+    '- CSS: CSS custom properties + Tailwind utility classes (coexist)\n' +
     '- Backend: Supabase (PostgreSQL + Storage + Auth)\n' +
     '- Hosting: GitHub Pages (static site)\n\n' +
     '## Architecture\n\n' +
