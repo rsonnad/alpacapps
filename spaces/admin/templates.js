@@ -16,7 +16,7 @@ import { formatDateAustin } from '../../shared/timezone.js';
 // =============================================
 
 let authState = null;
-let activeSection = null; // 'lease' | 'event' | 'worktrade' | email template_key
+let activeSection = null; // 'lease' | 'event' | 'worktrade' | 'renter_waiver' | 'event_waiver' | email template_key
 let emailTemplateList = [];
 let currentEmailTemplateKey = null;
 let emailHtmlSource = ''; // source-of-truth for the current email HTML
@@ -34,6 +34,8 @@ const SECTION_IDS = {
   lease: 'leaseTemplateSection',
   event: 'eventTemplateSection',
   worktrade: 'worktradeTemplateSection',
+  renter_waiver: 'renterWaiverTemplateSection',
+  event_waiver: 'eventWaiverTemplateSection',
 };
 
 // =============================================
@@ -143,6 +145,64 @@ async function loadTemplatesPanel() {
   }
 
   await loadWorktradeTemplateHistory();
+
+  // Load renter waiver placeholder reference
+  const renterWaiverPlaceholders = leaseTemplateService.getAvailablePlaceholders('renter_waiver');
+  const renterWaiverPlaceholderList = document.getElementById('renterWaiverPlaceholderList');
+  if (renterWaiverPlaceholderList) {
+    renterWaiverPlaceholderList.innerHTML = Object.entries(renterWaiverPlaceholders)
+      .map(([key, desc]) => `
+        <div class="placeholder-item">
+          <code>{{${key}}}</code>
+          <span class="placeholder-desc">${desc}</span>
+        </div>
+      `).join('');
+  }
+
+  // Load active renter waiver template
+  try {
+    const renterWaiverTemplate = await leaseTemplateService.getActiveTemplate('renter_waiver');
+    if (renterWaiverTemplate) {
+      document.getElementById('renterWaiverTemplateName').value = renterWaiverTemplate.name;
+      document.getElementById('renterWaiverTemplateContent').value = renterWaiverTemplate.content;
+    } else {
+      document.getElementById('renterWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('renter_waiver');
+    }
+  } catch (e) {
+    console.error('Error loading renter waiver template:', e);
+    document.getElementById('renterWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('renter_waiver');
+  }
+
+  await loadRenterWaiverTemplateHistory();
+
+  // Load event waiver placeholder reference
+  const eventWaiverPlaceholders = leaseTemplateService.getAvailablePlaceholders('event_waiver');
+  const eventWaiverPlaceholderList = document.getElementById('eventWaiverPlaceholderList');
+  if (eventWaiverPlaceholderList) {
+    eventWaiverPlaceholderList.innerHTML = Object.entries(eventWaiverPlaceholders)
+      .map(([key, desc]) => `
+        <div class="placeholder-item">
+          <code>{{${key}}}</code>
+          <span class="placeholder-desc">${desc}</span>
+        </div>
+      `).join('');
+  }
+
+  // Load active event waiver template
+  try {
+    const eventWaiverTemplate = await leaseTemplateService.getActiveTemplate('event_waiver');
+    if (eventWaiverTemplate) {
+      document.getElementById('eventWaiverTemplateName').value = eventWaiverTemplate.name;
+      document.getElementById('eventWaiverTemplateContent').value = eventWaiverTemplate.content;
+    } else {
+      document.getElementById('eventWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('event_waiver');
+    }
+  } catch (e) {
+    console.error('Error loading event waiver template:', e);
+    document.getElementById('eventWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('event_waiver');
+  }
+
+  await loadEventWaiverTemplateHistory();
 }
 
 // =============================================
@@ -245,7 +305,7 @@ function renderWelcomeStats() {
 
   statsEl.innerHTML = `
     <div class="tmpl-welcome-stat">
-      <span class="stat-num">3</span>
+      <span class="stat-num">5</span>
       <span class="stat-label">Documents</span>
     </div>
     <div class="tmpl-welcome-stat">
@@ -265,6 +325,8 @@ function selectTemplate(type, key) {
   document.getElementById('leaseTemplateSection').style.display = 'none';
   document.getElementById('eventTemplateSection').style.display = 'none';
   document.getElementById('worktradeTemplateSection').style.display = 'none';
+  document.getElementById('renterWaiverTemplateSection').style.display = 'none';
+  document.getElementById('eventWaiverTemplateSection').style.display = 'none';
   document.getElementById('emailEditorView').style.display = 'none';
 
   // Clear all active states in sidebar
@@ -306,7 +368,7 @@ function setupSearch() {
 
 function filterSidebar(query) {
   // Filter document template items
-  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"]').forEach(item => {
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"]').forEach(item => {
     const text = item.querySelector('.tmpl-nav-text').textContent.toLowerCase();
     item.style.display = text.includes(query) || !query ? '' : 'none';
   });
@@ -382,7 +444,7 @@ function closeMobileSidebar() {
 
 function setupEventListeners() {
   // Document template nav items
-  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"]').forEach(btn => {
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"]').forEach(btn => {
     btn.addEventListener('click', () => {
       selectTemplate(btn.dataset.type, btn.dataset.key);
     });
@@ -400,6 +462,14 @@ function setupEventListeners() {
   // Work trade template buttons
   document.getElementById('loadDefaultWorktradeTemplateBtn')?.addEventListener('click', loadDefaultWorktradeTemplate);
   document.getElementById('saveWorktradeTemplateBtn')?.addEventListener('click', saveWorktradeTemplate);
+
+  // Renter waiver template buttons
+  document.getElementById('loadDefaultRenterWaiverBtn')?.addEventListener('click', loadDefaultRenterWaiver);
+  document.getElementById('saveRenterWaiverBtn')?.addEventListener('click', saveRenterWaiverTemplate);
+
+  // Event/Guest waiver template buttons
+  document.getElementById('loadDefaultEventWaiverBtn')?.addEventListener('click', loadDefaultEventWaiver);
+  document.getElementById('saveEventWaiverBtn')?.addEventListener('click', saveEventWaiverTemplate);
 
   // Email template buttons
   document.getElementById('emailPreviewBtn')?.addEventListener('click', emailPreviewTemplate);
@@ -792,6 +862,226 @@ function loadDefaultWorktradeTemplate() {
   document.getElementById('worktradeTemplateContent').value = worktradeTemplateService.getDefaultTemplate();
   document.getElementById('worktradeTemplateName').value = 'Standard Work Trade Agreement';
   showToast('Default work trade template loaded', 'info');
+}
+
+// =============================================
+// RENTER WAIVER TEMPLATE FUNCTIONS
+// =============================================
+
+async function loadRenterWaiverTemplateHistory() {
+  try {
+    const templates = await leaseTemplateService.getAllTemplates('renter_waiver');
+    const tbody = document.getElementById('renterWaiverTemplateHistoryBody');
+    if (!tbody) return;
+
+    if (templates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = templates.map(t => `
+      <tr>
+        <td>${t.name}</td>
+        <td>v${t.version}</td>
+        <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+        <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
+        <td>
+          <button class="btn-small" data-action="load-renter-waiver-template" data-id="${t.id}">Load</button>
+          ${!t.is_active ? `<button class="btn-small" data-action="set-active-renter-waiver-template" data-id="${t.id}">Set Active</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-action="load-renter-waiver-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const { data } = await supabase.from('lease_templates').select('*').eq('id', btn.dataset.id).single();
+        if (data) {
+          document.getElementById('renterWaiverTemplateName').value = data.name;
+          document.getElementById('renterWaiverTemplateContent').value = data.content;
+          showToast('Renter waiver template loaded', 'success');
+        }
+      });
+    });
+    tbody.querySelectorAll('[data-action="set-active-renter-waiver-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await leaseTemplateService.setActiveTemplate(btn.dataset.id);
+          await loadRenterWaiverTemplateHistory();
+          showToast('Renter waiver template set as active', 'success');
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Error loading renter waiver template history:', e);
+  }
+}
+
+async function saveRenterWaiverTemplate() {
+  const name = document.getElementById('renterWaiverTemplateName').value.trim();
+  const content = document.getElementById('renterWaiverTemplateContent').value;
+  const makeActive = document.getElementById('renterWaiverMakeActive').checked;
+
+  if (!name) {
+    showToast('Please enter a template name', 'warning');
+    return;
+  }
+
+  if (!content.trim()) {
+    showToast('Template content cannot be empty', 'warning');
+    return;
+  }
+
+  const validation = leaseTemplateService.validateTemplate(content, 'renter_waiver');
+  const validationDiv = document.getElementById('renterWaiverTemplateValidation');
+
+  if (!validation.isValid) {
+    validationDiv.innerHTML = `
+      <div class="validation-error">
+        <strong>Validation Errors:</strong>
+        <ul>${validation.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+    return;
+  }
+
+  if (validation.warnings.length > 0) {
+    validationDiv.innerHTML = `
+      <div class="validation-warning">
+        <strong>Warnings:</strong>
+        <ul>${validation.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+  } else {
+    validationDiv.style.display = 'none';
+  }
+
+  try {
+    await leaseTemplateService.saveTemplate(content, name, makeActive, 'renter_waiver');
+    await loadRenterWaiverTemplateHistory();
+    showToast('Renter waiver template saved!', 'success');
+  } catch (e) {
+    showToast('Error saving template: ' + e.message, 'error');
+  }
+}
+
+function loadDefaultRenterWaiver() {
+  document.getElementById('renterWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('renter_waiver');
+  document.getElementById('renterWaiverTemplateName').value = 'Renter Liability Waiver';
+  showToast('Default renter waiver loaded', 'info');
+}
+
+// =============================================
+// EVENT/GUEST WAIVER TEMPLATE FUNCTIONS
+// =============================================
+
+async function loadEventWaiverTemplateHistory() {
+  try {
+    const templates = await leaseTemplateService.getAllTemplates('event_waiver');
+    const tbody = document.getElementById('eventWaiverTemplateHistoryBody');
+    if (!tbody) return;
+
+    if (templates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = templates.map(t => `
+      <tr>
+        <td>${t.name}</td>
+        <td>v${t.version}</td>
+        <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+        <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
+        <td>
+          <button class="btn-small" data-action="load-event-waiver-template" data-id="${t.id}">Load</button>
+          ${!t.is_active ? `<button class="btn-small" data-action="set-active-event-waiver-template" data-id="${t.id}">Set Active</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-action="load-event-waiver-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const { data } = await supabase.from('lease_templates').select('*').eq('id', btn.dataset.id).single();
+        if (data) {
+          document.getElementById('eventWaiverTemplateName').value = data.name;
+          document.getElementById('eventWaiverTemplateContent').value = data.content;
+          showToast('Event waiver template loaded', 'success');
+        }
+      });
+    });
+    tbody.querySelectorAll('[data-action="set-active-event-waiver-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await leaseTemplateService.setActiveTemplate(btn.dataset.id);
+          await loadEventWaiverTemplateHistory();
+          showToast('Event waiver template set as active', 'success');
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Error loading event waiver template history:', e);
+  }
+}
+
+async function saveEventWaiverTemplate() {
+  const name = document.getElementById('eventWaiverTemplateName').value.trim();
+  const content = document.getElementById('eventWaiverTemplateContent').value;
+  const makeActive = document.getElementById('eventWaiverMakeActive').checked;
+
+  if (!name) {
+    showToast('Please enter a template name', 'warning');
+    return;
+  }
+
+  if (!content.trim()) {
+    showToast('Template content cannot be empty', 'warning');
+    return;
+  }
+
+  const validation = leaseTemplateService.validateTemplate(content, 'event_waiver');
+  const validationDiv = document.getElementById('eventWaiverTemplateValidation');
+
+  if (!validation.isValid) {
+    validationDiv.innerHTML = `
+      <div class="validation-error">
+        <strong>Validation Errors:</strong>
+        <ul>${validation.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+    return;
+  }
+
+  if (validation.warnings.length > 0) {
+    validationDiv.innerHTML = `
+      <div class="validation-warning">
+        <strong>Warnings:</strong>
+        <ul>${validation.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+  } else {
+    validationDiv.style.display = 'none';
+  }
+
+  try {
+    await leaseTemplateService.saveTemplate(content, name, makeActive, 'event_waiver');
+    await loadEventWaiverTemplateHistory();
+    showToast('Event waiver template saved!', 'success');
+  } catch (e) {
+    showToast('Error saving template: ' + e.message, 'error');
+  }
+}
+
+function loadDefaultEventWaiver() {
+  document.getElementById('eventWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('event_waiver');
+  document.getElementById('eventWaiverTemplateName').value = 'Event/Guest Liability Waiver';
+  showToast('Default event/guest waiver loaded', 'info');
 }
 
 // =============================================

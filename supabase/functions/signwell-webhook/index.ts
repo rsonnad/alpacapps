@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
         application_fee_paid,
         application_fee_amount,
         approved_move_in,
+        waiver_template_id,
         approved_space:approved_space_id (
           id,
           name
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
     // Process based on document type
     if (isRental) {
       return await processRentalAgreement(
-        supabase, rentalApp, pdfBuffer, paymentMethodsHtml, paymentMethodsText, documentId
+        supabase, rentalApp, pdfBuffer, paymentMethodsHtml, paymentMethodsText, documentId, payload
       );
     } else if (isEvent) {
       return await processEventAgreement(
@@ -209,7 +210,8 @@ async function processRentalAgreement(
   pdfBuffer: ArrayBuffer,
   paymentMethodsHtml: string,
   paymentMethodsText: string,
-  documentId: string
+  documentId: string,
+  payload?: SignWellWebhookPayload
 ) {
   const person = application.person as { id: string; first_name: string; last_name: string; email: string } | null;
   const tenantName = person
@@ -255,6 +257,38 @@ async function processRentalAgreement(
   }
 
   console.log(`Rental document ${documentId} signed and processed successfully`);
+
+  // Record waiver signature if a waiver was included in the lease
+  if (application.waiver_template_id) {
+    try {
+      // Look up the waiver template version
+      const { data: waiverTemplate } = await supabase
+        .from('lease_templates')
+        .select('id, version, type')
+        .eq('id', application.waiver_template_id)
+        .single();
+
+      const tenantRecipient = payload?.recipients?.find((r: any) => r.email !== 'alpacaplayhouse@gmail.com');
+      const signerName = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+
+      await supabase.from('waiver_signatures').insert({
+        waiver_type: 'renter_waiver',
+        template_version: waiverTemplate?.version || 1,
+        signer_name: signerName,
+        signer_email: person?.email || '',
+        person_id: person?.id || null,
+        rental_application_id: application.id,
+        signwell_document_id: documentId,
+        signed_pdf_url: signedPdfUrl,
+        signed_at: tenantRecipient?.signed_at || new Date().toISOString(),
+      });
+
+      console.log(`Waiver signature recorded for rental application ${application.id}`);
+    } catch (waiverErr) {
+      // Don't fail the whole webhook if waiver recording fails
+      console.error('Error recording waiver signature:', waiverErr);
+    }
+  }
 
   // Calculate amounts
   const reservationDeposit = application.reservation_deposit_amount || application.approved_rate || 0;
