@@ -1,12 +1,12 @@
 {
-  "version": "v260217.10 2:16p",
-  "release": 229,
-  "sha": "b44e2f0e7",
-  "fullSha": "b44e2f0e7ac0ee20813f3577a8027bb909e7e239",
+  "version": "v260217.11 3:05p",
+  "release": 230,
+  "sha": "fadd2583f",
+  "fullSha": "fadd2583f92f61636888feae6e726efe586ecc1f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-17 20:16:49+00",
-  "commits": [{"sha":"b44e2f0e7","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-17 21:05:25+00",
+  "commits": [{"sha":"97a9a9181","message":"fix: lease agreement template — title, notice period, and rate display","author":"Rahul"},{"sha":"fadd2583f","message":"Merge branch 'claude/zen-bardeen'","author":"Rahul"}]
 }
