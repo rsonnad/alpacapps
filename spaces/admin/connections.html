@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Connections - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <link rel="stylesheet" href="../../styles/tailwind.out.css">
+  <style>
+    .connections-subtabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+    .connections-subtab {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .connections-subtab:hover { color: var(--text); }
+    .connections-subtab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .connections-panel { display: none; }
+    .connections-panel.active { display: block; }
+
+    /* API connection cards */
+    .api-connections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .api-connection-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 12px);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .api-connection-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .api-connection-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .api-connection-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .api-connection-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .api-connection-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .api-connection-status {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .api-connection-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .dot.connected { background: var(--success, #22c55e); }
+    .dot.disconnected { background: var(--text-muted, #9ca3af); }
+    .dot.error { background: var(--occupied, #ef4444); }
+
+    /* Uploads section */
+    .uploads-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg, 12px);
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--bg);
+      transition: border-color 0.2s;
+    }
+    .uploads-area:hover { border-color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .connections-subtabs { padding: 0 1rem; }
+      .api-connections-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Unauthorized message -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden">
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
+      <p>Your account is not authorized to access admin features.</p>
+      <div class="unauthorized-actions">
+        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260216.12 2:19p</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <!-- Tab Navigation (Dashboard / Connections / Settings) -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Sub-tabs: API Connections | Uploads -->
+    <div class="connections-subtabs">
+      <button class="connections-subtab active" data-panel="apiConnections">API Connections</button>
+      <button class="connections-subtab" data-panel="uploads">Uploads</button>
+    </div>
+
+    <!-- API Connections Panel -->
+    <div id="apiConnections" class="connections-panel active">
+      <main class="manage-container">
+        <div class="api-connections-grid" id="connectionsGrid">
+          <!-- Populated by JS -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Uploads Panel -->
+    <div id="uploads" class="connections-panel">
+      <main class="manage-container">
+        <div class="uploads-area">
+          <svg class="mx-auto mb-3" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted);">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+          <p style="font-weight:600; color:var(--text); margin-bottom:0.25rem;">Upload documents</p>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Drag & drop files here, or click to browse. Uploaded files will be available to PAI for lookup.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="imageLightbox" class="lightbox-overlay hidden">
+    <button class="lightbox-close">&times;</button>
+    <img id="lightboxImage" src="" alt="Full size">
+    <button id="lightboxPrev" class="lightbox-nav lightbox-prev">&#8249;</button>
+    <button id="lightboxNext" class="lightbox-nav lightbox-next">&#8250;</button>
+  </div>
+
+  <script type="module">
+    import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+    import { supabase } from '../../shared/supabase.js';
+
+    // ── Sub-tab switching ──
+    const subtabs = document.querySelectorAll('.connections-subtab');
+    const panels = document.querySelectorAll('.connections-panel');
+    subtabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        subtabs.forEach(b => b.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.panel).classList.add('active');
+      });
+    });
+
+    // ── API Connection definitions ──
+    const API_CONNECTIONS = [
+      { key: 'supabase',   name: 'Supabase',     icon: '⚡', bg: '#3ecf8e20', desc: 'Database, auth, storage, edge functions', status: 'connected' },
+      { key: 'stripe',     name: 'Stripe',        icon: '💳', bg: '#635bff20', desc: 'Inbound payments (ACH + card) and associate payouts', configTable: 'stripe_config' },
+      { key: 'square',     name: 'Square',        icon: '◼️', bg: '#00684820', desc: 'Payment processing for fees and deposits', configTable: 'square_config' },
+      { key: 'paypal',     name: 'PayPal',        icon: '🅿️', bg: '#00308720', desc: 'Associate payouts', configTable: 'paypal_config' },
+      { key: 'resend',     name: 'Resend',        icon: '✉️', bg: '#00000010', desc: 'Outbound and inbound email', status: 'connected' },
+      { key: 'telnyx',     name: 'Telnyx',        icon: '💬', bg: '#00c85320', desc: 'SMS sending and receiving', configTable: 'telnyx_config' },
+      { key: 'signwell',   name: 'SignWell',      icon: '✍️', bg: '#4f46e520', desc: 'E-signature for lease agreements', configTable: 'signwell_config' },
+      { key: 'vapi',       name: 'Vapi',          icon: '📞', bg: '#7c3aed20', desc: 'AI voice phone assistant', configTable: 'vapi_config' },
+      { key: 'gemini',     name: 'Google Gemini', icon: '🤖', bg: '#4285f420', desc: 'AI chat, image generation, payment matching', status: 'connected' },
+      { key: 'anthropic',  name: 'Anthropic',     icon: '🧠', bg: '#d4883a20', desc: 'Identity verification via Claude Vision', status: 'connected' },
+      { key: 'brave',      name: 'Brave Search',  icon: '🦁', bg: '#fb542b20', desc: 'Web search for PAI assistant', status: 'connected' },
+      { key: 'tesla',      name: 'Tesla Fleet',   icon: '🚗', bg: '#cc000020', desc: 'Vehicle data polling and commands', configTable: 'tesla_accounts' },
+      { key: 'nest',       name: 'Google Nest',   icon: '🌡️', bg: '#0f9d5820', desc: 'Smart thermostat control', configTable: 'nest_config' },
+      { key: 'govee',      name: 'Govee',         icon: '💡', bg: '#fbbf2420', desc: 'Smart lighting control (63 devices)', configTable: 'govee_config' },
+      { key: 'lg',         name: 'LG ThinQ',      icon: '🧺', bg: '#a50034 20', desc: 'Washer and dryer monitoring', configTable: 'lg_config' },
+      { key: 'anova',      name: 'Anova',         icon: '🍳', bg: '#ff6b0020', desc: 'Precision oven control', configTable: 'anova_config' },
+      { key: 'glowforge',  name: 'Glowforge',     icon: '🔥', bg: '#1e3a5f20', desc: 'Laser cutter status monitoring', configTable: 'glowforge_config' },
+      { key: 'owm',        name: 'OpenWeatherMap', icon: '🌤️', bg: '#eb6e4b20', desc: 'Weather forecast data', configTable: 'weather_config' },
+      { key: 'quiltt',     name: 'Quiltt',        icon: '🏦', bg: '#1a237e20', desc: 'Open banking — bank account linking', configTable: 'quiltt_config' },
+      { key: 'spotify',    name: 'Spotify',       icon: '🎵', bg: '#1db95420', desc: 'Music playback integration', configTable: 'spotify_config' },
+      { key: 'r2',         name: 'Cloudflare R2', icon: '☁️', bg: '#f4880020', desc: 'Object storage for documents', configTable: 'r2_config' },
+    ];
+
+    // ── Render connection cards ──
+    function renderConnections(statuses) {
+      const grid = document.getElementById('connectionsGrid');
+      grid.innerHTML = API_CONNECTIONS.map(c => {
+        const st = c.status || statuses[c.key] || 'disconnected';
+        const dotClass = st === 'connected' ? 'connected' : st === 'error' ? 'error' : 'disconnected';
+        const label = st === 'connected' ? 'Connected' : st === 'error' ? 'Error' : 'Not configured';
+        return `
+          <div class="api-connection-card" data-key="${c.key}">
+            <div class="api-connection-header">
+              <div class="api-connection-icon" style="background:${c.bg}">${c.icon}</div>
+              <span class="api-connection-name">${c.name}</span>
+            </div>
+            <div class="api-connection-desc">${c.desc}</div>
+            <div class="api-connection-status">
+              <span class="dot ${dotClass}"></span>
+              <span>${label}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Check which services have active config ──
+    async function checkConnectionStatuses() {
+      const statuses = {};
+
+      // Check each configurable service in parallel
+      const checks = API_CONNECTIONS
+        .filter(c => c.configTable && !c.status)
+        .map(async (c) => {
+          try {
+            const { data, error } = await supabase
+              .from(c.configTable)
+              .select('is_active')
+              .limit(1)
+              .maybeSingle();
+            statuses[c.key] = (!error && data?.is_active) ? 'connected' : 'disconnected';
+          } catch {
+            statuses[c.key] = 'disconnected';
+          }
+        });
+
+      await Promise.all(checks);
+      return statuses;
+    }
+
+    // ── Init ──
+    initAdminPage({
+      activeTab: 'connections',
+      requiredRole: 'staff',
+      section: 'staff',
+      onReady: async (authState) => {
+        // Render with placeholder statuses first
+        renderConnections({});
+
+        // Then check actual statuses
+        const statuses = await checkConnectionStatuses();
+        renderConnections(statuses);
+      }
+    });
+  </script>
+</body>
+</html>
