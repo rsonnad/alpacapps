@@ -1275,6 +1275,7 @@ interface OutboundZellePayment {
   recipientName: string;
   confirmationNumber: string | null;
   bank: string;
+  memo: string | null;
 }
 
 /**
@@ -1315,12 +1316,15 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
     // "To" field has full name, sometimes with phone: "Fabiola Batres (512-552-4098)"
     const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)(?:\s*\([\d-]+\))?/);
     const confMatch = normalized.match(/Confirmation\s+Number\s+(\d+)/i);
+    // Schwab includes a "Message" field with the sender's memo (e.g., "alpaca playhouse cleaning")
+    const msgMatch = normalized.match(/Message\s+(.+?)(?:\s+As of\b|$)/i);
     if (amountMatch && toMatch) {
       return {
         amount: parseFloat(amountMatch[1].replace(/,/g, "")),
         recipientName: toMatch[1].trim(),
         confirmationNumber: confMatch ? confMatch[1] : null,
         bank: "schwab",
+        memo: msgMatch ? msgMatch[1].trim() : null,
       };
     }
   }
@@ -1334,6 +1338,7 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
       recipientName: chaseMatch[2].trim(),
       confirmationNumber: null,
       bank: "chase",
+      memo: null,
     };
   }
 
@@ -1352,6 +1357,7 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
       recipientName,
       confirmationNumber: null,
       bank: "generic",
+      memo: null,
     };
   }
 
@@ -1364,6 +1370,8 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
     const amountField = normalized.match(/Amount:?\s+\$([\d,]+\.\d{2})/i);
     const toField = normalized.match(/(?:Recipient|Sent to|To):?\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)/i);
     const confField = normalized.match(/(?:Confirmation|Transaction|Reference)\s*(?:Number|ID|#):?\s*(\d+)/i);
+    // Try to extract memo/note/message field
+    const memoField = normalized.match(/(?:Message|Memo|Note|Description):?\s+(.+?)(?:\s+(?:As of|From|Sent|Thank)\b|$)/i);
     if (amountField && toField) {
       const recipientName = toField[1].trim();
       if (/alpaca/i.test(recipientName)) {
@@ -1374,6 +1382,7 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
         recipientName,
         confirmationNumber: confField ? confField[1] : null,
         bank: "generic",
+        memo: memoField ? memoField[1].trim() : null,
       };
     }
   }
@@ -1397,29 +1406,50 @@ async function handleOutboundZellePayment(
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Create expense/refund ledger entry
+  // Determine category from memo or context:
+  // - "cleaning", "maintenance", "repair" → associate_payment (contractor work)
+  // - "refund", "deposit" → refund
+  // - Otherwise → other (admin can recategorize)
+  const memoLower = (outbound.memo || "").toLowerCase();
+  let category = "other";
+  if (/refund|deposit return/i.test(memoLower)) {
+    category = "refund";
+  } else if (/clean|maint|repair|lawn|landscap|plumb|electric|paint|handyman|contractor|work/i.test(memoLower)) {
+    category = "associate_payment";
+  } else if (nameMatch) {
+    // If we matched a known person but no clear memo, default to associate_payment
+    category = "associate_payment";
+  }
+
+  // Build description with memo
+  const memoStr = outbound.memo ? ` — "${outbound.memo}"` : "";
+  const confStr = outbound.confirmationNumber ? `, conf#${outbound.confirmationNumber}` : "";
+
+  // Create expense ledger entry
   const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
     direction: "expense",
-    category: "refund",
+    category,
     amount: outbound.amount,
     payment_method: "zelle",
     transaction_date: today,
     person_id: personId,
     person_name: personName,
     status: "completed",
-    description: `Outbound Zelle payment to ${personName} (auto-recorded${outbound.confirmationNumber ? `, conf#${outbound.confirmationNumber}` : ""})`,
+    description: `Outbound Zelle to ${personName}${memoStr} (auto-recorded${confStr})`,
+    notes: outbound.memo || null,
     recorded_by: "system:zelle-outbound-email",
   }).select("id").single();
 
   if (ledgerError) {
     console.error("Failed to create outbound Zelle ledger entry:", ledgerError);
   } else {
-    console.log(`Outbound Zelle ledger entry created: ${ledgerEntry.id}, $${outbound.amount} to ${personName}`);
+    console.log(`Outbound Zelle ledger entry created: ${ledgerEntry.id}, $${outbound.amount} to ${personName}, category=${category}`);
   }
 
   // Notify admin
   const adminEmail = "team@alpacaplayhouse.com";
-  const subject = `Outbound Zelle Payment Recorded: $${outbound.amount.toFixed(2)} to ${personName}`;
+  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : "Other (verify)";
+  const subject = `Outbound Zelle Recorded: $${outbound.amount.toFixed(2)} to ${personName}${outbound.memo ? ` — ${outbound.memo}` : ""}`;
   const html = `
     <div style="font-family:-apple-system,sans-serif;max-width:600px;">
       <h2 style="color:#2d7d46;">&#x2705; Outbound Payment Auto-Recorded</h2>
@@ -1427,11 +1457,12 @@ async function handleOutboundZellePayment(
         <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${outbound.amount.toFixed(2)}</td></tr>
         <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Sent To</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.recipientName}</td></tr>
         ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${outbound.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.memo}</td></tr>` : ""}
         ${outbound.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.confirmationNumber}</td></tr>` : ""}
         <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Zelle outbound (${outbound.bank})</td></tr>
-        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">Refund</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${categoryLabel}</td></tr>
       </table>
-      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded as an expense/refund in the ledger. Verify the category is correct in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded in the ledger. Verify the category in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
     </div>
   `;
 
@@ -2187,7 +2218,7 @@ async function handlePaymentEmail(
   // 1b. Try to parse as outbound Zelle payment (refund/payout sent)
   const outboundParsed = parseOutboundZellePayment(bodyText);
   if (outboundParsed) {
-    console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}`);
+    console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}, memo="${outboundParsed.memo || ""}"`);
     await handleOutboundZellePayment(supabase, resendApiKey, outboundParsed);
     return;
   }
