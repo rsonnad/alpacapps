@@ -466,6 +466,7 @@ Deno.serve(async (req) => {
       .from('rental_applications')
       .select(`
         id, agreement_status, agreement_sent_at, signwell_document_id,
+        approved_move_in, approved_lease_end,
         is_archived, is_test,
         approved_space:approved_space_id (id, name),
         person:person_id (id, first_name, last_name, email)
@@ -489,6 +490,15 @@ Deno.serve(async (req) => {
         const daysSinceSent = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
         if (daysSinceSent < 1 || daysSinceSent > 30) continue;
+
+        // Skip if the lease period has already ended — no point reminding about an expired lease
+        if (app.approved_lease_end) {
+          const leaseEnd = new Date(app.approved_lease_end + 'T23:59:59');
+          if (leaseEnd < today) {
+            console.log(`Skipping contract reminder for ${person.email}: lease ended ${app.approved_lease_end}`);
+            continue;
+          }
+        }
 
         const space = app.approved_space as { id: string; name: string } | null;
 
