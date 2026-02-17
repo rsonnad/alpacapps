@@ -1245,7 +1245,252 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
     };
   }
 
+  // US Bank format (from sender's bank perspective):
+  // "Your Zelle payment of $999.77 to Alpaca Playhouse has been deposited."
+  // This is inbound — someone sent money TO Alpaca Playhouse via their US Bank account.
+  // Sender name comes from the email's From or account info, not the body text.
+  // We extract the amount; sender name needs to come from email metadata or "Sent from account" info.
+  const usbankInbound = /Your Zelle.{0,5} payment of \$([\d,]+\.\d{2}) to (?:Alpaca|alpaca)/im;
+  const usbankMatch = normalized.match(usbankInbound);
+  if (usbankMatch) {
+    // US Bank emails don't include sender's name in body — they say "Sent from account ending in: XXXX"
+    // The sender name must be resolved from the forwarding context or email From header
+    return {
+      amount: parseFloat(usbankMatch[1].replace(/,/g, "")),
+      senderName: "Unknown (US Bank sender)",
+      confirmationNumber: null,
+      bank: "usbank",
+    };
+  }
+
   return null;
+}
+
+// =============================================
+// OUTBOUND ZELLE PAYMENT PARSING (sent payments / refunds)
+// =============================================
+
+interface OutboundZellePayment {
+  amount: number;
+  recipientName: string;
+  confirmationNumber: string | null;
+  bank: string;
+  memo: string | null;
+}
+
+/**
+ * Parse outbound Zelle payment details from email body text.
+ * Detects sent/outbound payment patterns from various banks.
+ *
+ * Common traits across banks (for future-proofing):
+ * - All mention "Zelle" somewhere in the email
+ * - All contain a dollar amount
+ * - All reference a recipient name
+ * - Many have a confirmation/transaction number
+ * - Many use structured fields (Amount, To, Confirmation Number)
+ *
+ * Bank-specific patterns are tried first, then a generic structured-field
+ * fallback catches new banks that use similar layouts.
+ *
+ * Known formats:
+ * - Schwab: "your payment to NAME has finished processing" + structured fields
+ * - Chase: "You sent $X to NAME with Zelle"
+ * - BOA: "Your Zelle payment of $X to NAME was successful"
+ * - US Bank: "Your Zelle payment of $X to NAME has been deposited" (outbound variant)
+ *
+ * IMPORTANT: Inbound payments TO Alpaca Playhouse are handled by parseZellePayment.
+ * This function only handles money SENT FROM Alpaca Playhouse accounts.
+ */
+function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | null {
+  const normalized = bodyText.replace(/\s+/g, " ");
+
+  // ---- Bank-specific patterns (high confidence) ----
+
+  // Charles Schwab outbound (structured format):
+  // "your payment to Fabiola has finished processing"
+  // "Confirmation Number 4886778504"
+  // "Amount $105.00"
+  // "To Fabiola Batres (512-552-4098)"
+  if (/your payment to .+? has finished processing/i.test(normalized)) {
+    const amountMatch = normalized.match(/Amount\s+\$([\d,]+\.\d{2})/i);
+    // "To" field has name, sometimes with phone: "Fabiola Batres (512-552-4098)" or "ZIA - 808-855-8882"
+    // Support single-word names (ZIA), multi-word names (Fabiola Batres), and names followed by phone/dash
+    const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)(?:\s*[-–(]\s*[\d-]+)?/);
+    const confMatch = normalized.match(/Confirmation\s+Number\s+(\d+)/i);
+    // Schwab includes a "Message" field with the sender's memo (e.g., "alpaca playhouse cleaning")
+    // The memo is short text between "Message" and "As of" (or next sentence boundary).
+    // Be strict: only grab up to ~100 chars, stop at "As of", "Thank", "Sincerely", period+space, or newline-like patterns.
+    const msgMatch = normalized.match(/\bMessage\s+([A-Za-z0-9][^.]{2,100}?)(?:\s+As of\b|\s+Thank|\s+Sincerely|\.\s|$)/i);
+    if (amountMatch && toMatch) {
+      return {
+        amount: parseFloat(amountMatch[1].replace(/,/g, "")),
+        recipientName: toMatch[1].trim(),
+        confirmationNumber: confMatch ? confMatch[1] : null,
+        bank: "schwab",
+        memo: msgMatch ? msgMatch[1].trim() : null,
+      };
+    }
+  }
+
+  // Chase outbound: "You sent $841.47 to Rachel Wen with Zelle"
+  const chaseOutbound = /You sent \$([\d,]+\.\d{2}) to (.+?)(?:\s+with Zelle)?(?:\s*\.|$)/im;
+  const chaseMatch = normalized.match(chaseOutbound);
+  if (chaseMatch) {
+    return {
+      amount: parseFloat(chaseMatch[1].replace(/,/g, "")),
+      recipientName: chaseMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "chase",
+      memo: null,
+    };
+  }
+
+  // BOA / US Bank / generic: "Your Zelle payment of $X to NAME was successful/deposited/sent/completed"
+  // Covers multiple banks that use "Zelle payment of $X to NAME" phrasing.
+  // Only treated as outbound if recipient is NOT Alpaca Playhouse (that's inbound).
+  const zellePaymentTo = /(?:Your )?Zelle.{0,5} payment of \$([\d,]+\.\d{2}) to (.+?) (?:was |has been )(?:successful|sent|completed|deposited|processed)/im;
+  const zelleToMatch = normalized.match(zellePaymentTo);
+  if (zelleToMatch) {
+    const recipientName = zelleToMatch[2].trim();
+    if (/alpaca/i.test(recipientName)) {
+      return null; // Inbound — handled by parseZellePayment
+    }
+    return {
+      amount: parseFloat(zelleToMatch[1].replace(/,/g, "")),
+      recipientName,
+      confirmationNumber: null,
+      bank: "generic",
+      memo: null,
+    };
+  }
+
+  // ---- Generic structured-field fallback ----
+  // Many bank Zelle emails use structured fields like:
+  //   Amount: $105.00    To: Fabiola Batres    Confirmation Number: 123456
+  // If the email mentions "Zelle" and has these fields, treat as outbound.
+  // Guard: only match if NOT mentioning "received from" (which is inbound).
+  if (/zelle/i.test(normalized) && !/received from/i.test(normalized) && !/deposited the \$/i.test(normalized)) {
+    const amountField = normalized.match(/Amount:?\s+\$([\d,]+\.\d{2})/i);
+    const toField = normalized.match(/(?:Recipient|Sent to|To):?\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)(?:\s*[-–(]\s*[\d-]+)?/i);
+    const confField = normalized.match(/(?:Confirmation|Transaction|Reference)\s*(?:Number|ID|#):?\s*(\d+)/i);
+    // Try to extract memo/note/message field
+    const memoField = normalized.match(/(?:Message|Memo|Note|Description):?\s+(.+?)(?:\s+(?:As of|From|Sent|Thank)\b|$)/i);
+    if (amountField && toField) {
+      const recipientName = toField[1].trim();
+      if (/alpaca/i.test(recipientName)) {
+        return null; // Inbound
+      }
+      return {
+        amount: parseFloat(amountField[1].replace(/,/g, "")),
+        recipientName,
+        confirmationNumber: confField ? confField[1] : null,
+        bank: "generic",
+        memo: memoField ? memoField[1].trim() : null,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Handle an outbound Zelle payment (refund/payout sent to someone).
+ * Creates an expense ledger entry and notifies admin.
+ */
+async function handleOutboundZellePayment(
+  supabase: any,
+  resendApiKey: string,
+  outbound: OutboundZellePayment
+): Promise<void> {
+  // Try to match recipient to a person in the DB
+  const nameMatch = await matchByName(supabase, outbound.recipientName);
+  const personId = nameMatch?.person_id || null;
+  const personName = nameMatch?.name || outbound.recipientName;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Determine category from memo or context:
+  // - "cleaning", "maintenance", "repair" → associate_payment (contractor work)
+  // - "refund", "deposit" → refund
+  // - "decor", "supplies", "order", "purchase", "merch" → merchandise
+  // - Known person in DB → associate_payment (contractor)
+  // - Otherwise → other (admin can recategorize)
+  const memoLower = (outbound.memo || "").toLowerCase();
+  let category = "other";
+  if (/refund|deposit return/i.test(memoLower)) {
+    category = "refund";
+  } else if (/clean|maint|repair|lawn|landscap|plumb|electric|paint|handyman|contractor|work/i.test(memoLower)) {
+    category = "associate_payment";
+  } else if (/decor|suppli|order|purchas|merch|material|equipment|furniture|appliance|hardware|tool|part/i.test(memoLower)) {
+    category = "merchandise";
+  } else if (nameMatch) {
+    // If we matched a known person but no clear memo, default to associate_payment
+    category = "associate_payment";
+  }
+
+  // Build description with memo
+  const memoStr = outbound.memo ? ` — "${outbound.memo}"` : "";
+  const confStr = outbound.confirmationNumber ? `, conf#${outbound.confirmationNumber}` : "";
+
+  // Create expense ledger entry
+  const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
+    direction: "expense",
+    category,
+    amount: outbound.amount,
+    payment_method: "zelle",
+    transaction_date: today,
+    person_id: personId,
+    person_name: personName,
+    status: "completed",
+    description: `Outbound Zelle to ${personName}${memoStr} (auto-recorded${confStr})`,
+    notes: outbound.memo || null,
+    recorded_by: "system:zelle-outbound-email",
+  }).select("id").single();
+
+  if (ledgerError) {
+    console.error("Failed to create outbound Zelle ledger entry:", ledgerError);
+  } else {
+    console.log(`Outbound Zelle ledger entry created: ${ledgerEntry.id}, $${outbound.amount} to ${personName}, category=${category}`);
+  }
+
+  // Notify admin
+  const adminEmail = "team@alpacaplayhouse.com";
+  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : category === "merchandise" ? "Merchandise/Supplies" : "Other (verify)";
+  const subject = `Outbound Zelle Recorded: $${outbound.amount.toFixed(2)} to ${personName}${outbound.memo ? ` — ${outbound.memo}` : ""}`;
+  const html = `
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+      <h2 style="color:#2d7d46;">&#x2705; Outbound Payment Auto-Recorded</h2>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${outbound.amount.toFixed(2)}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Sent To</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.recipientName}</td></tr>
+        ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${outbound.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.memo}</td></tr>` : ""}
+        ${outbound.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.confirmationNumber}</td></tr>` : ""}
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Zelle outbound (${outbound.bank})</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${categoryLabel}</td></tr>
+      </table>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded in the ledger. Verify the category in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+    </div>
+  `;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        to: [adminEmail],
+        subject,
+        html,
+      }),
+    });
+    console.log("Outbound Zelle payment notification sent to admin");
+  } catch (err) {
+    console.error("Failed to send outbound Zelle notification:", err);
+  }
 }
 
 // =============================================
@@ -1959,7 +2204,7 @@ async function sendPaymentNotification(
 
 /**
  * Main handler for payments@ emails.
- * Attempts to parse both Zelle and PayPal payment notifications.
+ * Attempts to parse Zelle (inbound + outbound) and PayPal payment notifications.
  */
 async function handlePaymentEmail(
   emailRecord: any,
@@ -1977,15 +2222,50 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1b. Try to parse as Zelle payment
+  // 1b. Try to parse as outbound Zelle payment (refund/payout sent)
+  const outboundParsed = parseOutboundZellePayment(bodyText);
+  if (outboundParsed) {
+    console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}, memo="${outboundParsed.memo || ""}"`);
+    await handleOutboundZellePayment(supabase, resendApiKey, outboundParsed);
+    return;
+  }
+
+  // 1c. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried Zelle + PayPal), notifying admin");
-    await sendPaymentNotification(resendApiKey, "unparseable", {
-      parsed: { amount: 0, senderName: "Unknown", confirmationNumber: null },
-      personName: "",
-      applicationId: "",
-    });
+    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), forwarding to admin for review");
+    // Forward the unrecognized email to admin for manual classification
+    try {
+      const subject = emailRecord.subject || "Unknown payment email";
+      const snippet = (bodyText || "").substring(0, 500).replace(/\s+/g, " ").trim();
+      await fetch(`${RESEND_API_URL}/emails`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+          to: ["alpacaplayhouse@gmail.com"],
+          subject: `Unrecognized payment email: ${subject}`,
+          html: `
+            <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+              <h2 style="color:#e67e22;">&#x26A0;&#xFE0F; Unrecognized Payment Email</h2>
+              <p>A forwarded email to <strong>payments@alpacaplayhouse.com</strong> could not be automatically classified as Zelle, PayPal, or any known payment format.</p>
+              <p><strong>Original subject:</strong> ${subject}</p>
+              <p><strong>From:</strong> ${emailRecord.from_address || "unknown"}</p>
+              <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+              <p style="font-size:0.85rem;color:#666;"><strong>Body preview:</strong></p>
+              <pre style="background:#f8f8f8;padding:12px;border-radius:4px;font-size:0.8rem;white-space:pre-wrap;max-height:300px;overflow:auto;">${snippet}</pre>
+              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Please review and manually record in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a> if needed.</p>
+            </div>
+          `,
+        }),
+      });
+      console.log("Unrecognized payment email forwarded to admin");
+    } catch (err) {
+      console.error("Failed to forward unrecognized payment email:", err);
+    }
     return;
   }
 
