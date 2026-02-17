@@ -1317,7 +1317,9 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
     const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)(?:\s*\([\d-]+\))?/);
     const confMatch = normalized.match(/Confirmation\s+Number\s+(\d+)/i);
     // Schwab includes a "Message" field with the sender's memo (e.g., "alpaca playhouse cleaning")
-    const msgMatch = normalized.match(/Message\s+(.+?)(?:\s+As of\b|$)/i);
+    // The memo is short text between "Message" and "As of" (or next sentence boundary).
+    // Be strict: only grab up to ~100 chars, stop at "As of", "Thank", "Sincerely", period+space, or newline-like patterns.
+    const msgMatch = normalized.match(/\bMessage\s+([A-Za-z0-9][^.]{2,100}?)(?:\s+As of\b|\s+Thank|\s+Sincerely|\.\s|$)/i);
     if (amountMatch && toMatch) {
       return {
         amount: parseFloat(amountMatch[1].replace(/,/g, "")),
