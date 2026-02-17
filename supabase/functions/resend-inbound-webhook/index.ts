@@ -1281,18 +1281,29 @@ interface OutboundZellePayment {
  * Parse outbound Zelle payment details from email body text.
  * Detects sent/outbound payment patterns from various banks.
  *
+ * Common traits across banks (for future-proofing):
+ * - All mention "Zelle" somewhere in the email
+ * - All contain a dollar amount
+ * - All reference a recipient name
+ * - Many have a confirmation/transaction number
+ * - Many use structured fields (Amount, To, Confirmation Number)
+ *
+ * Bank-specific patterns are tried first, then a generic structured-field
+ * fallback catches new banks that use similar layouts.
+ *
  * Known formats:
  * - Schwab: "your payment to NAME has finished processing" + structured fields
- *   (Confirmation Number, Amount, To fields in body)
- * - US Bank: "Your Zelle payment of $X to NAME has been deposited" (from sender's perspective)
  * - Chase: "You sent $X to NAME with Zelle"
  * - BOA: "Your Zelle payment of $X to NAME was successful"
+ * - US Bank: "Your Zelle payment of $X to NAME has been deposited" (outbound variant)
  *
- * IMPORTANT: US Bank "payment of $X to Alpaca Playhouse" is INBOUND (money TO us),
- * handled by parseZellePayment. This function only handles money SENT FROM us.
+ * IMPORTANT: Inbound payments TO Alpaca Playhouse are handled by parseZellePayment.
+ * This function only handles money SENT FROM Alpaca Playhouse accounts.
  */
 function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | null {
   const normalized = bodyText.replace(/\s+/g, " ");
+
+  // ---- Bank-specific patterns (high confidence) ----
 
   // Charles Schwab outbound (structured format):
   // "your payment to Fabiola has finished processing"
@@ -1326,16 +1337,45 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
     };
   }
 
-  // Bank of America outbound: "Your Zelle payment of $X to NAME was successful/sent/completed"
-  const boaOutbound = /(?:Your )?Zelle payment of \$([\d,]+\.\d{2}) to (.+?) was (?:successful|sent|completed)/im;
-  const boaMatch = normalized.match(boaOutbound);
-  if (boaMatch) {
+  // BOA / US Bank / generic: "Your Zelle payment of $X to NAME was successful/deposited/sent/completed"
+  // Covers multiple banks that use "Zelle payment of $X to NAME" phrasing.
+  // Only treated as outbound if recipient is NOT Alpaca Playhouse (that's inbound).
+  const zellePaymentTo = /(?:Your )?Zelle.{0,5} payment of \$([\d,]+\.\d{2}) to (.+?) (?:was |has been )(?:successful|sent|completed|deposited|processed)/im;
+  const zelleToMatch = normalized.match(zellePaymentTo);
+  if (zelleToMatch) {
+    const recipientName = zelleToMatch[2].trim();
+    if (/alpaca/i.test(recipientName)) {
+      return null; // Inbound — handled by parseZellePayment
+    }
     return {
-      amount: parseFloat(boaMatch[1].replace(/,/g, "")),
-      recipientName: boaMatch[2].trim(),
+      amount: parseFloat(zelleToMatch[1].replace(/,/g, "")),
+      recipientName,
       confirmationNumber: null,
-      bank: "boa",
+      bank: "generic",
     };
+  }
+
+  // ---- Generic structured-field fallback ----
+  // Many bank Zelle emails use structured fields like:
+  //   Amount: $105.00    To: Fabiola Batres    Confirmation Number: 123456
+  // If the email mentions "Zelle" and has these fields, treat as outbound.
+  // Guard: only match if NOT mentioning "received from" (which is inbound).
+  if (/zelle/i.test(normalized) && !/received from/i.test(normalized) && !/deposited the \$/i.test(normalized)) {
+    const amountField = normalized.match(/Amount:?\s+\$([\d,]+\.\d{2})/i);
+    const toField = normalized.match(/(?:Recipient|Sent to|To):?\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)/i);
+    const confField = normalized.match(/(?:Confirmation|Transaction|Reference)\s*(?:Number|ID|#):?\s*(\d+)/i);
+    if (amountField && toField) {
+      const recipientName = toField[1].trim();
+      if (/alpaca/i.test(recipientName)) {
+        return null; // Inbound
+      }
+      return {
+        amount: parseFloat(amountField[1].replace(/,/g, "")),
+        recipientName,
+        confirmationNumber: confField ? confField[1] : null,
+        bank: "generic",
+      };
+    }
   }
 
   return null;
