@@ -42,6 +42,7 @@ export const CATEGORY_LABELS = {
   damage_deduction: 'Damage Deduction',
   late_fee: 'Late Fee',
   associate_payment: 'Associate Payment',
+  merchandise: 'Merchandise/Supplies',
   other: 'Other'
 };
 
