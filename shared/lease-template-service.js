@@ -29,6 +29,7 @@ const PLACEHOLDERS = {
   first_month_due: 'Amount due for first month after all credits applied',
   notice_period: 'Notice period code (e.g., "30_days")',
   notice_period_display: 'Formatted notice period (e.g., "30 days notice required")',
+  lease_term_block: 'Full lease term section (auto-generated based on fixed vs continuous)',
   additional_terms: 'Custom additional terms',
 };
 
@@ -268,6 +269,7 @@ function parseTemplate(templateContent, agreementData) {
     first_month_due: agreementData.firstMonthDue,
     notice_period: agreementData.noticePeriod,
     notice_period_display: agreementData.noticePeriodDisplay,
+    lease_term_block: agreementData.leaseTermBlock || '',
     additional_terms: agreementData.additionalTerms || '',
   };
 
@@ -326,6 +328,7 @@ function getTemplatePreview(templateContent) {
     firstMonthDue: '$0',
     noticePeriod: '30_days',
     noticePeriodDisplay: '30 days notice required',
+    leaseTermBlock: 'This Lease shall commence on: **February 15, 2026**\n\nand continue on a month-to-month basis until terminated by either party with at least **30 days** written notice, which may be given on any date.',
     additionalTerms: 'Tenant agrees to maintain the garden area.',
   };
 
