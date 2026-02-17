@@ -1,12 +1,12 @@
 {
-  "version": "v260216.14 9:18p",
-  "release": 218,
-  "sha": "99e8d85b",
-  "fullSha": "99e8d85be609af4bc0ad83950d51bf19a93af235",
+  "version": "v260216.15 9:27p",
+  "release": 219,
+  "sha": "68c80569",
+  "fullSha": "68c8056985e4e5e36f2d3d0fdd5e7e1060487b16",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-17 03:18:49+00",
-  "commits": [{"sha":"522d7790","message":"Restructure admin nav: Dashboard, Connections, Settings","author":"Rahul"},{"sha":"99e8d85b","message":"Merge branch 'claude/heuristic-davinci'","author":"Rahul"}]
+  "pushedAt": "2026-02-17 03:27:03+00",
+  "commits": [{"sha":"68c80569","message":"Revert \"Merge branch 'claude/heuristic-davinci'\"","author":"Rahul"}]
 }
