@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize auth and admin page
   authState = await initAdminPage({
     activeTab: 'settings',
-    requiredRole: 'admin',
-    section: 'staff',
+    requiredRole: 'admin', // Settings require admin access
+    section: 'admin',
     onReady: async (state) => {
       // Load settings data
       await loadSettingsPanel();
