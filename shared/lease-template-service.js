@@ -1,6 +1,7 @@
 /**
  * Lease Template Service
  * Handles lease template storage, parsing, and placeholder substitution
+ * Supports multiple template types: lease, renter_waiver, event_waiver
  */
 
 import { supabase } from './supabase.js';
@@ -31,21 +32,44 @@ const PLACEHOLDERS = {
   additional_terms: 'Custom additional terms',
 };
 
+// Placeholders for waiver templates (subset of lease + waiver-specific)
+const WAIVER_PLACEHOLDERS = {
+  tenant_name: 'Full name of the signer',
+  tenant_email: 'Email address of the signer',
+  tenant_phone: 'Phone number of the signer',
+  signing_date: 'Current date formatted (e.g., "2nd day of February 2026")',
+  dwelling_description: 'Name of the rental space (renter waiver only)',
+};
+
+// Placeholders for event waiver templates
+const EVENT_WAIVER_PLACEHOLDERS = {
+  client_name: 'Full name of the guest/attendee',
+  client_email: 'Email address of the guest/attendee',
+  client_phone: 'Phone number of the guest/attendee',
+  event_date: 'Date of the event',
+  signing_date: 'Current date formatted',
+};
+
 /**
  * Get all available placeholders with descriptions
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
-function getAvailablePlaceholders() {
+function getAvailablePlaceholders(type = 'lease') {
+  if (type === 'renter_waiver') return WAIVER_PLACEHOLDERS;
+  if (type === 'event_waiver') return EVENT_WAIVER_PLACEHOLDERS;
   return PLACEHOLDERS;
 }
 
 /**
- * Get the active lease template
+ * Get the active template of a given type
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
-async function getActiveTemplate() {
+async function getActiveTemplate(type = 'lease') {
   const { data, error } = await supabase
     .from('lease_templates')
     .select('*')
     .eq('is_active', true)
+    .eq('type', type)
     .order('version', { ascending: false })
     .limit(1)
     .single();
@@ -59,12 +83,14 @@ async function getActiveTemplate() {
 }
 
 /**
- * Get all templates
+ * Get all templates of a given type
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
-async function getAllTemplates() {
+async function getAllTemplates(type = 'lease') {
   const { data, error } = await supabase
     .from('lease_templates')
     .select('*')
+    .eq('type', type)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -77,27 +103,30 @@ async function getAllTemplates() {
 
 /**
  * Save a new template or update existing
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
-async function saveTemplate(content, name, makeActive = false) {
+async function saveTemplate(content, name, makeActive = false, type = 'lease') {
   // Validate template first
-  const validation = validateTemplate(content);
+  const validation = validateTemplate(content, type);
   if (!validation.isValid) {
     throw new Error(`Invalid template: ${validation.errors.join(', ')}`);
   }
 
-  // If making active, deactivate all others first
+  // If making active, deactivate all others of the same type first
   if (makeActive) {
     await supabase
       .from('lease_templates')
       .update({ is_active: false })
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('type', type);
   }
 
-  // Get current max version for this name
+  // Get current max version for this name and type
   const { data: existing } = await supabase
     .from('lease_templates')
     .select('version')
     .eq('name', name)
+    .eq('type', type)
     .order('version', { ascending: false })
     .limit(1);
 
@@ -110,6 +139,7 @@ async function saveTemplate(content, name, makeActive = false) {
       content,
       version: newVersion,
       is_active: makeActive,
+      type,
     })
     .select()
     .single();
@@ -123,14 +153,24 @@ async function saveTemplate(content, name, makeActive = false) {
 }
 
 /**
- * Set a template as active
+ * Set a template as active (scoped to same type)
  */
 async function setActiveTemplate(templateId) {
-  // Deactivate all
+  // First, get the template to know its type
+  const { data: tmpl } = await supabase
+    .from('lease_templates')
+    .select('type')
+    .eq('id', templateId)
+    .single();
+
+  const type = tmpl?.type || 'lease';
+
+  // Deactivate all of the same type
   await supabase
     .from('lease_templates')
     .update({ is_active: false })
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('type', type);
 
   // Activate selected
   const { data, error } = await supabase
@@ -150,11 +190,19 @@ async function setActiveTemplate(templateId) {
 
 /**
  * Validate a template for correct placeholders
+ * @param {string} type - Template type for placeholder validation
  */
-function validateTemplate(content) {
+function validateTemplate(content, type = 'lease') {
   const errors = [];
   const warnings = [];
   const foundPlaceholders = [];
+
+  // Use appropriate placeholder set for validation
+  const validPlaceholders = type === 'event_waiver'
+    ? { ...PLACEHOLDERS, ...EVENT_WAIVER_PLACEHOLDERS }
+    : type === 'renter_waiver'
+      ? { ...PLACEHOLDERS, ...WAIVER_PLACEHOLDERS }
+      : PLACEHOLDERS;
 
   // Find all placeholders in the template
   const placeholderRegex = /\{\{(\w+)\}\}/g;
@@ -164,13 +212,18 @@ function validateTemplate(content) {
     const placeholder = match[1];
     foundPlaceholders.push(placeholder);
 
-    if (!PLACEHOLDERS[placeholder]) {
+    if (!validPlaceholders[placeholder]) {
       errors.push(`Unknown placeholder: {{${placeholder}}}`);
     }
   }
 
-  // Check for required placeholders (warnings only)
-  const requiredPlaceholders = ['tenant_name', 'lease_start_date', 'rate_display'];
+  // Check for required placeholders (warnings only) — varies by type
+  const requiredMap = {
+    lease: ['tenant_name', 'lease_start_date', 'rate_display'],
+    renter_waiver: ['tenant_name', 'signing_date'],
+    event_waiver: ['client_name', 'signing_date'],
+  };
+  const requiredPlaceholders = requiredMap[type] || requiredMap.lease;
   for (const required of requiredPlaceholders) {
     if (!foundPlaceholders.includes(required)) {
       warnings.push(`Missing recommended placeholder: {{${required}}}`);
@@ -379,10 +432,198 @@ Name: {{tenant_name}}
 Date: _________________________
 `;
 
+// ============================================================
+// DEFAULT RENTER WAIVER TEMPLATE
+// ============================================================
+
+const DEFAULT_RENTER_WAIVER = `# WAIVER OF LIABILITY, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT
+
+**PLEASE READ CAREFULLY BEFORE SIGNING. THIS IS A RELEASE OF LIABILITY AND WAIVER OF CERTAIN LEGAL RIGHTS.**
+
+---
+
+**Property Owner:** Revocable Trust of Subhash Sonnad ("Owner")
+**Property Address:** 160 Still Forest Drive, Cedar Creek, Texas 78612
+
+**Resident/Renter:** {{tenant_name}} ("Participant")
+
+**Date:** {{signing_date}}
+
+---
+
+## 1. ACTIVITIES AND FACILITIES
+
+The Owner makes available certain recreational amenities and facilities on the property at 160 Still Forest Drive, Cedar Creek, Texas 78612, including but not limited to:
+
+- **Hot sauna(s)** (dry sauna and/or infrared sauna)
+- **Cold plunge pool / ice bath**
+- **Swim spa / hydrotherapy pool**
+- **Climbing structures** (designed for individuals in strong athletic condition only)
+- Outdoor grounds, trails, decks, patios, and common areas
+- Other recreational equipment and amenities as may be present on the property
+
+## 2. ACKNOWLEDGMENT OF RISKS
+
+I, **{{tenant_name}}**, acknowledge and understand that participation in or use of the above-described activities and facilities involves **inherent and significant risks of serious bodily injury, disability, and death.** These risks include, but are not limited to:
+
+- **Hot sauna:** Heat exhaustion, heat stroke, dehydration, burns, cardiovascular complications, loss of consciousness, and exacerbation of pre-existing medical conditions
+- **Cold plunge / ice bath:** Hypothermia, cold shock response, cardiac arrhythmia, hyperventilation, drowning, and loss of consciousness
+- **Swim spa:** Drowning, slips and falls on wet surfaces, entrapment, chemical irritation, and injuries from water jets or currents
+- **Climbing structures:** Falls from height, broken bones, sprains, strains, head injuries, spinal injuries, paralysis, and death. **These structures are designed and intended exclusively for individuals in strong athletic condition; use by others significantly increases the risk of serious injury**
+- **Outdoor grounds:** Fire ant bites and stings, venomous snake or insect encounters, uneven terrain, exposure to thorns, rocks, and other natural hazards. **Participants should not go barefoot on the property grounds at any time due to the presence of fire ants and other dangers that pose serious risk to bare feet**
+- General risks of physical exertion, pre-existing medical conditions, equipment failure, negligence of other participants, and hazards that may not be readily apparent
+
+**I understand that the above list is not exhaustive and that other risks, both known and unknown, may exist.**
+
+## 3. VOLUNTARY ASSUMPTION OF RISK
+
+I voluntarily and freely choose to use the property amenities and facilities described above. **I assume full responsibility for any and all risks of injury, illness, disability, or death** arising from my participation in or use of these facilities, whether caused by the negligence of the Owner, its agents, employees, or otherwise.
+
+## 4. MEDICAL FITNESS REPRESENTATION
+
+I represent and warrant that I am physically fit and sufficiently healthy to participate in the activities described above. I have no medical condition, disability, or other limitation that would prevent or restrict my safe participation. **With respect to climbing structures specifically, I represent that I am in strong athletic condition sufficient for their intended use.** I agree that it is my responsibility to consult with a physician prior to use of any amenity about which I have health or safety concerns.
+
+## 5. WAIVER AND RELEASE OF LIABILITY
+
+**TO THE FULLEST EXTENT PERMITTED BY TEXAS LAW, I HEREBY RELEASE, WAIVE, DISCHARGE, AND COVENANT NOT TO SUE** the Revocable Trust of Subhash Sonnad, its trustees, agents, employees, representatives, successors, and assigns (collectively, the "Released Parties") from **any and all liability, claims, demands, causes of action, costs, and expenses** (including attorneys' fees) arising out of or related to any loss, damage, or injury, including death, that may be sustained by me, or to any property belonging to me, **WHETHER CAUSED BY THE NEGLIGENCE OF THE RELEASED PARTIES OR OTHERWISE,** while participating in or using the facilities and amenities at 160 Still Forest Drive, Cedar Creek, Texas 78612.
+
+## 6. INDEMNIFICATION
+
+I agree to **indemnify, defend, and hold harmless** the Released Parties from any and all claims, suits, losses, damages, costs, and expenses (including reasonable attorneys' fees) arising out of or related to my use of the property amenities and facilities, including any claim brought by or on behalf of my family members, heirs, personal representatives, or assigns.
+
+## 7. TEXAS LAW COMPLIANCE
+
+This Agreement is entered into in the State of Texas and shall be governed by and construed in accordance with the laws of the State of Texas. I acknowledge that Texas law recognizes the validity of pre-injury releases and waivers of liability for negligence in recreational activities. **This Agreement is intended to be as broad and inclusive as permitted under Texas law.** Any dispute arising under this Agreement shall be subject to the exclusive jurisdiction of the courts of Bastrop County, Texas.
+
+## 8. ELECTRONIC SIGNATURE
+
+I acknowledge that this document is being executed electronically in compliance with the federal Electronic Signatures in Global and National Commerce Act (ESIGN Act, 15 U.S.C. § 7001 et seq.) and the Texas Uniform Electronic Transactions Act (Texas Business & Commerce Code, Chapter 322). My electronic signature below has the same legal force and effect as a handwritten signature.
+
+## 9. SEVERABILITY
+
+If any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect. The invalid or unenforceable provision shall be modified to the minimum extent necessary to make it valid and enforceable while preserving the parties' intent.
+
+## 10. ENTIRE AGREEMENT
+
+This Waiver of Liability constitutes the entire agreement between the parties regarding assumption of risk and release of liability for use of property amenities. This waiver is incorporated into and made a part of any residential lease agreement between the parties.
+
+---
+
+## ACKNOWLEDGMENT AND SIGNATURE
+
+**I HAVE READ THIS WAIVER OF LIABILITY, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT IN ITS ENTIRETY. I FULLY UNDERSTAND ITS TERMS AND UNDERSTAND THAT I AM GIVING UP SUBSTANTIAL LEGAL RIGHTS, INCLUDING THE RIGHT TO SUE. I ACKNOWLEDGE THAT I AM SIGNING THIS AGREEMENT FREELY AND VOLUNTARILY, AND INTEND MY SIGNATURE TO BE A COMPLETE AND UNCONDITIONAL RELEASE OF ALL LIABILITY TO THE GREATEST EXTENT ALLOWED BY TEXAS LAW.**
+
+**PARTICIPANT**
+
+Signature: _________________________
+
+Name: {{tenant_name}}
+
+Date: _________________________
+`;
+
+// ============================================================
+// DEFAULT EVENT/GUEST WAIVER TEMPLATE
+// ============================================================
+
+const DEFAULT_EVENT_WAIVER = `# WAIVER OF LIABILITY, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT
+
+## FOR GUESTS AND EVENT ATTENDEES
+
+**PLEASE READ CAREFULLY BEFORE SIGNING. THIS IS A RELEASE OF LIABILITY AND WAIVER OF CERTAIN LEGAL RIGHTS.**
+
+---
+
+**Property Owner:** Revocable Trust of Subhash Sonnad ("Owner")
+**Property Address:** 160 Still Forest Drive, Cedar Creek, Texas 78612
+
+**Guest/Attendee:** {{client_name}} ("Participant")
+- **Email:** {{client_email}}
+
+**Date:** {{signing_date}}
+
+**Event Date:** {{event_date}}
+
+---
+
+## 1. ACTIVITIES AND FACILITIES
+
+The Owner makes available certain recreational amenities and facilities on the property at 160 Still Forest Drive, Cedar Creek, Texas 78612 (the "Alpaca Playhouse"), including but not limited to:
+
+- **Hot sauna(s)** (dry sauna and/or infrared sauna)
+- **Cold plunge pool / ice bath**
+- **Swim spa / hydrotherapy pool**
+- **Climbing structures** (designed for individuals in strong athletic condition only)
+- Outdoor grounds, trails, decks, patios, and common areas
+- Other recreational equipment and amenities as may be present on the property
+
+## 2. ACKNOWLEDGMENT OF RISKS
+
+I, **{{client_name}}**, acknowledge and understand that my presence at the property and participation in or use of the above-described activities and facilities involves **inherent and significant risks of serious bodily injury, disability, and death.** These risks include, but are not limited to:
+
+- **Hot sauna:** Heat exhaustion, heat stroke, dehydration, burns, cardiovascular complications, loss of consciousness, and exacerbation of pre-existing medical conditions
+- **Cold plunge / ice bath:** Hypothermia, cold shock response, cardiac arrhythmia, hyperventilation, drowning, and loss of consciousness
+- **Swim spa:** Drowning, slips and falls on wet surfaces, entrapment, chemical irritation, and injuries from water jets or currents
+- **Climbing structures:** Falls from height, broken bones, sprains, strains, head injuries, spinal injuries, paralysis, and death. **These structures are designed and intended exclusively for individuals in strong athletic condition; use by others significantly increases the risk of serious injury**
+- **Outdoor grounds:** Fire ant bites and stings, venomous snake or insect encounters, uneven terrain, exposure to thorns, rocks, and other natural hazards. **Guests should not go barefoot on the property grounds at any time due to the presence of fire ants and other dangers that pose serious risk to bare feet**
+- General risks of physical exertion, pre-existing medical conditions, equipment failure, negligence of other participants, and hazards that may not be readily apparent
+
+**I understand that the above list is not exhaustive and that other risks, both known and unknown, may exist.**
+
+## 3. VOLUNTARY ASSUMPTION OF RISK
+
+I voluntarily and freely choose to enter the property and use any amenities and facilities available to me. **I assume full responsibility for any and all risks of injury, illness, disability, or death** arising from my presence at or use of the property, whether caused by the negligence of the Owner, its agents, employees, event organizers, or otherwise.
+
+## 4. MEDICAL FITNESS REPRESENTATION
+
+I represent and warrant that I am physically fit and sufficiently healthy to participate in any activities I choose to engage in while at the property. I have no medical condition, disability, or other limitation that would prevent or restrict my safe participation. **With respect to climbing structures specifically, I represent that I am in strong athletic condition sufficient for their intended use.** I agree that it is my sole responsibility to refrain from using any amenity for which I am not physically qualified.
+
+## 5. WAIVER AND RELEASE OF LIABILITY
+
+**TO THE FULLEST EXTENT PERMITTED BY TEXAS LAW, I HEREBY RELEASE, WAIVE, DISCHARGE, AND COVENANT NOT TO SUE** the Revocable Trust of Subhash Sonnad, its trustees, agents, employees, representatives, event hosts, event organizers, successors, and assigns (collectively, the "Released Parties") from **any and all liability, claims, demands, causes of action, costs, and expenses** (including attorneys' fees) arising out of or related to any loss, damage, or injury, including death, that may be sustained by me, or to any property belonging to me, **WHETHER CAUSED BY THE NEGLIGENCE OF THE RELEASED PARTIES OR OTHERWISE,** while present at or using the facilities and amenities at 160 Still Forest Drive, Cedar Creek, Texas 78612.
+
+## 6. INDEMNIFICATION
+
+I agree to **indemnify, defend, and hold harmless** the Released Parties from any and all claims, suits, losses, damages, costs, and expenses (including reasonable attorneys' fees) arising out of or related to my presence at the property or use of the property amenities and facilities, including any claim brought by or on behalf of my family members, heirs, personal representatives, or assigns.
+
+## 7. TEXAS LAW COMPLIANCE
+
+This Agreement is entered into in the State of Texas and shall be governed by and construed in accordance with the laws of the State of Texas. I acknowledge that Texas law recognizes the validity of pre-injury releases and waivers of liability for negligence in recreational activities. **This Agreement is intended to be as broad and inclusive as permitted under Texas law.** Any dispute arising under this Agreement shall be subject to the exclusive jurisdiction of the courts of Bastrop County, Texas.
+
+## 8. ELECTRONIC SIGNATURE
+
+I acknowledge that this document is being executed electronically in compliance with the federal Electronic Signatures in Global and National Commerce Act (ESIGN Act, 15 U.S.C. § 7001 et seq.) and the Texas Uniform Electronic Transactions Act (Texas Business & Commerce Code, Chapter 322). My electronic signature below has the same legal force and effect as a handwritten signature.
+
+## 9. SEVERABILITY
+
+If any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect. The invalid or unenforceable provision shall be modified to the minimum extent necessary to make it valid and enforceable while preserving the parties' intent.
+
+## 10. ENTIRE AGREEMENT
+
+This Waiver of Liability constitutes the entire agreement between the parties regarding assumption of risk and release of liability for presence at and use of the property. This waiver is binding regardless of whether the Participant is attending a hosted event, visiting as an invited guest, or present on the property for any other lawful purpose.
+
+---
+
+## ACKNOWLEDGMENT AND SIGNATURE
+
+**I HAVE READ THIS WAIVER OF LIABILITY, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT IN ITS ENTIRETY. I FULLY UNDERSTAND ITS TERMS AND UNDERSTAND THAT I AM GIVING UP SUBSTANTIAL LEGAL RIGHTS, INCLUDING THE RIGHT TO SUE. I ACKNOWLEDGE THAT I AM SIGNING THIS AGREEMENT FREELY AND VOLUNTARILY, AND INTEND MY SIGNATURE TO BE A COMPLETE AND UNCONDITIONAL RELEASE OF ALL LIABILITY TO THE GREATEST EXTENT ALLOWED BY TEXAS LAW.**
+
+**PARTICIPANT**
+
+Signature: _________________________
+
+Name: {{client_name}}
+
+Date: _________________________
+`;
+
 /**
  * Get the default template content
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
-function getDefaultTemplate() {
+function getDefaultTemplate(type = 'lease') {
+  if (type === 'renter_waiver') return DEFAULT_RENTER_WAIVER;
+  if (type === 'event_waiver') return DEFAULT_EVENT_WAIVER;
   return DEFAULT_TEMPLATE;
 }
 
