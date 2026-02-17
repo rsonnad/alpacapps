@@ -581,6 +581,25 @@ async function getAgreementData(applicationId) {
     '60_days': '60 days notice required',
   }[app.notice_period] || '30 days notice required';
 
+  // Build the lease term block based on notice period type
+  const leaseStartFormatted = formatLeaseDate(app.approved_move_in);
+  const leaseEndFormatted = formatLeaseDate(app.approved_lease_end) || 'Open-ended';
+  const noticePeriodLabel = {
+    '1_day': '1 day',
+    '1_week': '1 week',
+    '30_days': '30 days',
+    '60_days': '60 days',
+  }[app.notice_period];
+
+  let leaseTermBlock;
+  if (app.notice_period === 'none') {
+    // Fixed-length lease
+    leaseTermBlock = `This Lease shall commence on: **${leaseStartFormatted}**\n\nand continue until: **${leaseEndFormatted}**\n\nThis is a fixed-length lease. No early termination is permitted by either party except as otherwise provided in this agreement.`;
+  } else {
+    // Continuous/rolling lease with notice period
+    leaseTermBlock = `This Lease shall commence on: **${leaseStartFormatted}**\n\nand continue on a month-to-month basis until terminated by either party with at least **${noticePeriodLabel}** written notice, which may be given on any date.`;
+  }
+
   // Format rate term for display
   const rateTermDisplay = {
     'monthly': 'month',
@@ -633,12 +652,12 @@ async function getAgreementData(applicationId) {
     dwellingDescription: space?.name || 'TBD',
     dwellingLocation: space?.location || '',
 
-    // Financial
-    rate: app.approved_rate ? `$${app.approved_rate}` : 'TBD',
+    // Financial (use != null to allow $0 rates)
+    rate: app.approved_rate != null ? `$${app.approved_rate}` : 'TBD',
     rateTerm: rateTermDisplay,
-    rateDisplay: app.approved_rate ? `$${app.approved_rate}/${rateTermDisplay}` : 'TBD',
-    securityDeposit: app.security_deposit_amount ? `$${app.security_deposit_amount}` : '$0',
-    moveInDeposit: app.move_in_deposit_amount ? `$${app.move_in_deposit_amount}` : 'TBD',
+    rateDisplay: app.approved_rate != null ? `$${app.approved_rate}/${rateTermDisplay}` : 'TBD',
+    securityDeposit: app.security_deposit_amount != null ? `$${app.security_deposit_amount}` : '$0',
+    moveInDeposit: app.move_in_deposit_amount != null ? `$${app.move_in_deposit_amount}` : 'TBD',
     reservationDeposit: reservationDepositAmount > 0 ? `$${reservationDepositAmount}` : '$0',
 
     // Credits toward first month
@@ -652,6 +671,7 @@ async function getAgreementData(applicationId) {
     // Notice period
     noticePeriod: app.notice_period || '30_days',
     noticePeriodDisplay: noticePeriodDisplay,
+    leaseTermBlock: leaseTermBlock,
 
     // Additional terms
     additionalTerms: app.additional_terms || null,
