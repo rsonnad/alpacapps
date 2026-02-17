@@ -18,6 +18,29 @@ A running list of planned improvements and new features for AlpacApps / AlpacApp
 
 ---
 
+---
+
+## Domain Migration — GoDaddy → Cloudflare
+
+**Context:** All domains are currently on GoDaddy. Renewal prices are inflated (~$22+/yr for .com + $10/yr WHOIS privacy). The GoDaddy interface is painful.
+
+**Plan:**
+
+- Consolidate all domains into the existing Cloudflare account (already used for R2 / AlpacApps)
+- At-cost pricing (~$10/yr for .com, no renewal markup, free WHOIS privacy)
+- One dashboard for domains + R2 + DNS + CDN
+- Point DNS records to Vercel, DO droplet, Supabase, etc. as needed
+- Cloudflare DNS stays as nameservers (free CDN, DDoS protection, fast propagation)
+
+**Transfer steps (per domain):**
+
+1. Unlock domain at GoDaddy
+2. Get EPP/auth code from GoDaddy
+3. Cloudflare dashboard → Register Domains → Transfer
+4. Enter auth code, pay at-cost renewal
+5. Confirm via email (~5 days to complete)
+6. Set up DNS records pointing to actual hosts
+
 ## Other Ideas (TBD)
 
 - *Add more items here as you decide to track them.*
