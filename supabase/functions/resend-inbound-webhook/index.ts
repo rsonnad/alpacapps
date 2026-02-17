@@ -1313,8 +1313,9 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
   // "To Fabiola Batres (512-552-4098)"
   if (/your payment to .+? has finished processing/i.test(normalized)) {
     const amountMatch = normalized.match(/Amount\s+\$([\d,]+\.\d{2})/i);
-    // "To" field has full name, sometimes with phone: "Fabiola Batres (512-552-4098)"
-    const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)(?:\s*\([\d-]+\))?/);
+    // "To" field has name, sometimes with phone: "Fabiola Batres (512-552-4098)" or "ZIA - 808-855-8882"
+    // Support single-word names (ZIA), multi-word names (Fabiola Batres), and names followed by phone/dash
+    const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)(?:\s*[-–(]\s*[\d-]+)?/);
     const confMatch = normalized.match(/Confirmation\s+Number\s+(\d+)/i);
     // Schwab includes a "Message" field with the sender's memo (e.g., "alpaca playhouse cleaning")
     // The memo is short text between "Message" and "As of" (or next sentence boundary).
@@ -1370,7 +1371,7 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
   // Guard: only match if NOT mentioning "received from" (which is inbound).
   if (/zelle/i.test(normalized) && !/received from/i.test(normalized) && !/deposited the \$/i.test(normalized)) {
     const amountField = normalized.match(/Amount:?\s+\$([\d,]+\.\d{2})/i);
-    const toField = normalized.match(/(?:Recipient|Sent to|To):?\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)/i);
+    const toField = normalized.match(/(?:Recipient|Sent to|To):?\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)(?:\s*[-–(]\s*[\d-]+)?/i);
     const confField = normalized.match(/(?:Confirmation|Transaction|Reference)\s*(?:Number|ID|#):?\s*(\d+)/i);
     // Try to extract memo/note/message field
     const memoField = normalized.match(/(?:Message|Memo|Note|Description):?\s+(.+?)(?:\s+(?:As of|From|Sent|Thank)\b|$)/i);
@@ -1411,6 +1412,8 @@ async function handleOutboundZellePayment(
   // Determine category from memo or context:
   // - "cleaning", "maintenance", "repair" → associate_payment (contractor work)
   // - "refund", "deposit" → refund
+  // - "decor", "supplies", "order", "purchase", "merch" → merchandise
+  // - Known person in DB → associate_payment (contractor)
   // - Otherwise → other (admin can recategorize)
   const memoLower = (outbound.memo || "").toLowerCase();
   let category = "other";
@@ -1418,6 +1421,8 @@ async function handleOutboundZellePayment(
     category = "refund";
   } else if (/clean|maint|repair|lawn|landscap|plumb|electric|paint|handyman|contractor|work/i.test(memoLower)) {
     category = "associate_payment";
+  } else if (/decor|suppli|order|purchas|merch|material|equipment|furniture|appliance|hardware|tool|part/i.test(memoLower)) {
+    category = "merchandise";
   } else if (nameMatch) {
     // If we matched a known person but no clear memo, default to associate_payment
     category = "associate_payment";
@@ -1450,7 +1455,7 @@ async function handleOutboundZellePayment(
 
   // Notify admin
   const adminEmail = "team@alpacaplayhouse.com";
-  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : "Other (verify)";
+  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : category === "merchandise" ? "Merchandise/Supplies" : "Other (verify)";
   const subject = `Outbound Zelle Recorded: $${outbound.amount.toFixed(2)} to ${personName}${outbound.memo ? ` — ${outbound.memo}` : ""}`;
   const html = `
     <div style="font-family:-apple-system,sans-serif;max-width:600px;">
@@ -2228,12 +2233,39 @@ async function handlePaymentEmail(
   // 1c. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), notifying admin");
-    await sendPaymentNotification(resendApiKey, "unparseable", {
-      parsed: { amount: 0, senderName: "Unknown", confirmationNumber: null },
-      personName: "",
-      applicationId: "",
-    });
+    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), forwarding to admin for review");
+    // Forward the unrecognized email to admin for manual classification
+    try {
+      const subject = emailRecord.subject || "Unknown payment email";
+      const snippet = (bodyText || "").substring(0, 500).replace(/\s+/g, " ").trim();
+      await fetch(`${RESEND_API_URL}/emails`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+          to: ["alpacaplayhouse@gmail.com"],
+          subject: `Unrecognized payment email: ${subject}`,
+          html: `
+            <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+              <h2 style="color:#e67e22;">&#x26A0;&#xFE0F; Unrecognized Payment Email</h2>
+              <p>A forwarded email to <strong>payments@alpacaplayhouse.com</strong> could not be automatically classified as Zelle, PayPal, or any known payment format.</p>
+              <p><strong>Original subject:</strong> ${subject}</p>
+              <p><strong>From:</strong> ${emailRecord.from_address || "unknown"}</p>
+              <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+              <p style="font-size:0.85rem;color:#666;"><strong>Body preview:</strong></p>
+              <pre style="background:#f8f8f8;padding:12px;border-radius:4px;font-size:0.8rem;white-space:pre-wrap;max-height:300px;overflow:auto;">${snippet}</pre>
+              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Please review and manually record in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a> if needed.</p>
+            </div>
+          `,
+        }),
+      });
+      console.log("Unrecognized payment email forwarded to admin");
+    } catch (err) {
+      console.error("Failed to forward unrecognized payment email:", err);
+    }
     return;
   }
 
