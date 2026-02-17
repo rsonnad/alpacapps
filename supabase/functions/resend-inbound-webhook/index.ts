@@ -1249,6 +1249,137 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
 }
 
 // =============================================
+// OUTBOUND ZELLE PAYMENT PARSING (sent payments / refunds)
+// =============================================
+
+interface OutboundZellePayment {
+  amount: number;
+  recipientName: string;
+  confirmationNumber: string | null;
+  bank: string;
+}
+
+/**
+ * Parse outbound Zelle payment details from email body text.
+ * Detects "You sent $X to NAME" patterns from various banks.
+ */
+function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | null {
+  const normalized = bodyText.replace(/\s+/g, " ");
+
+  // Charles Schwab outbound: "You sent $841.47 to RACHEL WEN" or "sent a $841.47 payment to RACHEL WEN"
+  const schwabOutbound = /(?:You |you )?sent (?:a )?\$([\d,]+\.\d{2})(?: payment)? to (.+?)(?:\s*\(confirmation number (\d+)\))?(?:\s*\.|$)/im;
+  const schwabMatch = normalized.match(schwabOutbound);
+  if (schwabMatch) {
+    return {
+      amount: parseFloat(schwabMatch[1].replace(/,/g, "")),
+      recipientName: schwabMatch[2].trim(),
+      confirmationNumber: schwabMatch[3] || null,
+      bank: "schwab",
+    };
+  }
+
+  // Chase outbound: "You sent $841.47 to Rachel Wen with Zelle" or "You sent $X.XX to NAME"
+  const chaseOutbound = /You sent \$([\d,]+\.\d{2}) to (.+?)(?:\s+with Zelle)?(?:\s*\.|$)/im;
+  const chaseMatch = normalized.match(chaseOutbound);
+  if (chaseMatch) {
+    return {
+      amount: parseFloat(chaseMatch[1].replace(/,/g, "")),
+      recipientName: chaseMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "chase",
+    };
+  }
+
+  // Bank of America outbound: "Your Zelle payment of $841.47 to Rachel Wen was successful"
+  const boaOutbound = /(?:Your )?Zelle payment of \$([\d,]+\.\d{2}) to (.+?) was (?:successful|sent|completed)/im;
+  const boaMatch = normalized.match(boaOutbound);
+  if (boaMatch) {
+    return {
+      amount: parseFloat(boaMatch[1].replace(/,/g, "")),
+      recipientName: boaMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "boa",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Handle an outbound Zelle payment (refund/payout sent to someone).
+ * Creates an expense ledger entry and notifies admin.
+ */
+async function handleOutboundZellePayment(
+  supabase: any,
+  resendApiKey: string,
+  outbound: OutboundZellePayment
+): Promise<void> {
+  // Try to match recipient to a person in the DB
+  const nameMatch = await matchByName(supabase, outbound.recipientName);
+  const personId = nameMatch?.person_id || null;
+  const personName = nameMatch?.name || outbound.recipientName;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Create expense/refund ledger entry
+  const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
+    direction: "expense",
+    category: "refund",
+    amount: outbound.amount,
+    payment_method: "zelle",
+    transaction_date: today,
+    person_id: personId,
+    person_name: personName,
+    status: "completed",
+    description: `Outbound Zelle payment to ${personName} (auto-recorded${outbound.confirmationNumber ? `, conf#${outbound.confirmationNumber}` : ""})`,
+    recorded_by: "system:zelle-outbound-email",
+  }).select("id").single();
+
+  if (ledgerError) {
+    console.error("Failed to create outbound Zelle ledger entry:", ledgerError);
+  } else {
+    console.log(`Outbound Zelle ledger entry created: ${ledgerEntry.id}, $${outbound.amount} to ${personName}`);
+  }
+
+  // Notify admin
+  const adminEmail = "team@alpacaplayhouse.com";
+  const subject = `Outbound Zelle Payment Recorded: $${outbound.amount.toFixed(2)} to ${personName}`;
+  const html = `
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+      <h2 style="color:#2d7d46;">&#x2705; Outbound Payment Auto-Recorded</h2>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${outbound.amount.toFixed(2)}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Sent To</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.recipientName}</td></tr>
+        ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${outbound.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.confirmationNumber}</td></tr>` : ""}
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Zelle outbound (${outbound.bank})</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">Refund</td></tr>
+      </table>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded as an expense/refund in the ledger. Verify the category is correct in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+    </div>
+  `;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        to: [adminEmail],
+        subject,
+        html,
+      }),
+    });
+    console.log("Outbound Zelle payment notification sent to admin");
+  } catch (err) {
+    console.error("Failed to send outbound Zelle notification:", err);
+  }
+}
+
+// =============================================
 // PAYPAL PAYMENT EMAIL PARSING
 // =============================================
 
@@ -1959,7 +2090,7 @@ async function sendPaymentNotification(
 
 /**
  * Main handler for payments@ emails.
- * Attempts to parse both Zelle and PayPal payment notifications.
+ * Attempts to parse Zelle (inbound + outbound) and PayPal payment notifications.
  */
 async function handlePaymentEmail(
   emailRecord: any,
@@ -1977,10 +2108,18 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1b. Try to parse as Zelle payment
+  // 1b. Try to parse as outbound Zelle payment (refund/payout sent)
+  const outboundParsed = parseOutboundZellePayment(bodyText);
+  if (outboundParsed) {
+    console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}`);
+    await handleOutboundZellePayment(supabase, resendApiKey, outboundParsed);
+    return;
+  }
+
+  // 1c. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried Zelle + PayPal), notifying admin");
+    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), notifying admin");
     await sendPaymentNotification(resendApiKey, "unparseable", {
       parsed: { amount: 0, senderName: "Unknown", confirmationNumber: null },
       personName: "",
