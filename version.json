@@ -1,12 +1,12 @@
 {
-  "version": "v260217.05 5:54a",
-  "release": 224,
-  "sha": "caa94380",
-  "fullSha": "caa94380a6dd60720fee99719bbcc387d6eff909",
+  "version": "v260217.06 5:58a",
+  "release": 225,
+  "sha": "c533bd99",
+  "fullSha": "c533bd9975b1a6f3f66e1537fcbd625e56e50038",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-17 11:54:10+00",
-  "commits": [{"sha":"934bf787","message":"feat: auto-record outbound Zelle payments (refunds/payouts)","author":"Rahul"},{"sha":"e6520e51","message":"fix: update Zelle parsers with real email patterns","author":"Rahul"},{"sha":"1418d07d","message":"feat: generic Zelle outbound parser for bank-agnostic matching","author":"Rahul"},{"sha":"7ae046a3","message":"feat: extract Zelle memo and auto-categorize outbound payments","author":"Rahul"},{"sha":"f779233f","message":"fix: tighten Schwab memo regex to prevent grabbing entire email body","author":"Rahul"},{"sha":"d35eea88","message":"fix: outbound Zelle parser handles single-word names + add merchandise category","author":"Rahul"},{"sha":"e289c623","message":"feat: add merchandise category label to accounting display","author":"Rahul"},{"sha":"caa94380","message":"Merge branch 'claude/unruffled-wiles'","author":"Rahul"}]
+  "pushedAt": "2026-02-17 11:58:08+00",
+  "commits": [{"sha":"e5d94d78","message":"feat: add digital waiver infrastructure (renter + event/guest)","author":"Rahul"},{"sha":"dc88ebcd","message":"feat: dual signatures — separate lease + waiver signing in one document","author":"Rahul"},{"sha":"c533bd99","message":"Merge branch 'claude/elegant-diffie'","author":"Rahul"}]
 }
