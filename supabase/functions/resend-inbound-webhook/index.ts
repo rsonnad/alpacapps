@@ -1245,6 +1245,24 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
     };
   }
 
+  // US Bank format (from sender's bank perspective):
+  // "Your Zelle payment of $999.77 to Alpaca Playhouse has been deposited."
+  // This is inbound — someone sent money TO Alpaca Playhouse via their US Bank account.
+  // Sender name comes from the email's From or account info, not the body text.
+  // We extract the amount; sender name needs to come from email metadata or "Sent from account" info.
+  const usbankInbound = /Your Zelle.{0,5} payment of \$([\d,]+\.\d{2}) to (?:Alpaca|alpaca)/im;
+  const usbankMatch = normalized.match(usbankInbound);
+  if (usbankMatch) {
+    // US Bank emails don't include sender's name in body — they say "Sent from account ending in: XXXX"
+    // The sender name must be resolved from the forwarding context or email From header
+    return {
+      amount: parseFloat(usbankMatch[1].replace(/,/g, "")),
+      senderName: "Unknown (US Bank sender)",
+      confirmationNumber: null,
+      bank: "usbank",
+    };
+  }
+
   return null;
 }
 
@@ -1261,24 +1279,42 @@ interface OutboundZellePayment {
 
 /**
  * Parse outbound Zelle payment details from email body text.
- * Detects "You sent $X to NAME" patterns from various banks.
+ * Detects sent/outbound payment patterns from various banks.
+ *
+ * Known formats:
+ * - Schwab: "your payment to NAME has finished processing" + structured fields
+ *   (Confirmation Number, Amount, To fields in body)
+ * - US Bank: "Your Zelle payment of $X to NAME has been deposited" (from sender's perspective)
+ * - Chase: "You sent $X to NAME with Zelle"
+ * - BOA: "Your Zelle payment of $X to NAME was successful"
+ *
+ * IMPORTANT: US Bank "payment of $X to Alpaca Playhouse" is INBOUND (money TO us),
+ * handled by parseZellePayment. This function only handles money SENT FROM us.
  */
 function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | null {
   const normalized = bodyText.replace(/\s+/g, " ");
 
-  // Charles Schwab outbound: "You sent $841.47 to RACHEL WEN" or "sent a $841.47 payment to RACHEL WEN"
-  const schwabOutbound = /(?:You |you )?sent (?:a )?\$([\d,]+\.\d{2})(?: payment)? to (.+?)(?:\s*\(confirmation number (\d+)\))?(?:\s*\.|$)/im;
-  const schwabMatch = normalized.match(schwabOutbound);
-  if (schwabMatch) {
-    return {
-      amount: parseFloat(schwabMatch[1].replace(/,/g, "")),
-      recipientName: schwabMatch[2].trim(),
-      confirmationNumber: schwabMatch[3] || null,
-      bank: "schwab",
-    };
+  // Charles Schwab outbound (structured format):
+  // "your payment to Fabiola has finished processing"
+  // "Confirmation Number 4886778504"
+  // "Amount $105.00"
+  // "To Fabiola Batres (512-552-4098)"
+  if (/your payment to .+? has finished processing/i.test(normalized)) {
+    const amountMatch = normalized.match(/Amount\s+\$([\d,]+\.\d{2})/i);
+    // "To" field has full name, sometimes with phone: "Fabiola Batres (512-552-4098)"
+    const toMatch = normalized.match(/\bTo\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)(?:\s*\([\d-]+\))?/);
+    const confMatch = normalized.match(/Confirmation\s+Number\s+(\d+)/i);
+    if (amountMatch && toMatch) {
+      return {
+        amount: parseFloat(amountMatch[1].replace(/,/g, "")),
+        recipientName: toMatch[1].trim(),
+        confirmationNumber: confMatch ? confMatch[1] : null,
+        bank: "schwab",
+      };
+    }
   }
 
-  // Chase outbound: "You sent $841.47 to Rachel Wen with Zelle" or "You sent $X.XX to NAME"
+  // Chase outbound: "You sent $841.47 to Rachel Wen with Zelle"
   const chaseOutbound = /You sent \$([\d,]+\.\d{2}) to (.+?)(?:\s+with Zelle)?(?:\s*\.|$)/im;
   const chaseMatch = normalized.match(chaseOutbound);
   if (chaseMatch) {
@@ -1290,7 +1326,7 @@ function parseOutboundZellePayment(bodyText: string): OutboundZellePayment | nul
     };
   }
 
-  // Bank of America outbound: "Your Zelle payment of $841.47 to Rachel Wen was successful"
+  // Bank of America outbound: "Your Zelle payment of $X to NAME was successful/sent/completed"
   const boaOutbound = /(?:Your )?Zelle payment of \$([\d,]+\.\d{2}) to (.+?) was (?:successful|sent|completed)/im;
   const boaMatch = normalized.match(boaOutbound);
   if (boaMatch) {
