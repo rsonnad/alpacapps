@@ -2979,6 +2979,12 @@ async function generateLeasePdf() {
       currentAgreementData
     );
 
+    // Generate lease-only PDF first to determine its page count (for SignWell field placement)
+    const leaseOnlyResult = await pdfService.generateLeasePdf(parsedContent, 'temp.pdf');
+    const leaseOnlyPageCount = leaseOnlyResult.pageCount;
+    let hasWaiver = false;
+    let waiverTemplateId = null;
+
     // Auto-append active renter waiver (if one exists)
     try {
       const waiverTemplate = await leaseTemplateService.getActiveTemplate('renter_waiver');
@@ -2987,25 +2993,35 @@ async function generateLeasePdf() {
           waiverTemplate.content,
           currentAgreementData
         );
-        // Append waiver after the lease with a page break
+        // Append waiver after the lease with a page break separator
         parsedContent += '\n\n---\n\n' + parsedWaiver;
+        hasWaiver = true;
+        waiverTemplateId = waiverTemplate.id;
       }
     } catch (e) {
       console.warn('No active renter waiver template found, generating lease without waiver:', e.message);
     }
 
-    // Generate and upload PDF with smart filename
-    const { url, filename, pageCount } = await pdfService.generateAndUploadLeasePdf(
+    // Generate and upload the combined PDF (lease + waiver)
+    const { url, filename, pageCount, leaseOnlyPageCount: storedLeasePages } = await pdfService.generateAndUploadLeasePdf(
       parsedContent,
       currentApplicationId,
-      { tenantName: currentAgreementData.tenantName }
+      {
+        tenantName: currentAgreementData.tenantName,
+        leaseOnlyPageCount: hasWaiver ? leaseOnlyPageCount : undefined,
+      }
     );
     currentLeasePageCount = pageCount;
 
-    // Update application with PDF URL and page count
+    // Update application with PDF URL and page counts
     await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url);
-    // Store page count for SignWell signature placement
-    await supabase.from('rental_applications').update({ lease_page_count: pageCount }).eq('id', currentApplicationId);
+    // Store both total page count and lease-only page count for SignWell signature placement
+    const updateData = { lease_page_count: pageCount };
+    if (hasWaiver) {
+      updateData.lease_only_page_count = leaseOnlyPageCount;
+      updateData.waiver_template_id = waiverTemplateId;
+    }
+    await supabase.from('rental_applications').update(updateData).eq('id', currentApplicationId);
 
     // Reload applications and refresh UI
     await loadApplications();
@@ -3049,12 +3065,19 @@ async function sendForSignature() {
 
     // Send document to SignWell for signing
     const recipientName = `${app.person.first_name} ${app.person.last_name}`;
+    const totalPageCount = currentLeasePageCount || app.lease_page_count;
+    const leaseOnlyPages = app.lease_only_page_count || totalPageCount;
+    const hasWaiver = leaseOnlyPages < totalPageCount;
     const document = await signwellService.sendForSignature(
       currentApplicationId,
       app.agreement_document_url,
       app.person.email,
       recipientName,
-      currentLeasePageCount || app.lease_page_count
+      totalPageCount,
+      {
+        leaseSignaturePage: leaseOnlyPages,
+        waiverSignaturePage: hasWaiver ? totalPageCount : null,
+      }
     );
 
     // Also send a notification email via Resend
