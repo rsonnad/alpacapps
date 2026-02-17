@@ -60,16 +60,94 @@ async function signwellRequest(endpoint, options = {}) {
  * @param {string} recipientEmail - Email address of the signer (tenant)
  * @param {string} recipientName - Name of the signer (tenant)
  * @param {Object} options - Additional options
- * @param {number} options.pageCount - Total pages in the PDF (signature fields go on last page)
+ * @param {number} options.pageCount - Total pages in the PDF
  * @param {string} options.documentName - Custom document name
+ * @param {number} options.leaseSignaturePage - Page for lease signatures (defaults to last page)
+ * @param {number|null} options.waiverSignaturePage - Page for waiver signature (null = no waiver)
  */
 async function createDocument(pdfUrl, recipientEmail, recipientName, options = {}) {
   const config = await getConfig();
 
-  // Signature fields go on the last page where the signature lines are in the template.
-  // The lease template has: Landlord signature first, then Tenant signature below.
   // A4 page at 72 DPI is approximately 595 x 842 pixels.
-  const signaturePage = options.pageCount || 1;
+  // Lease signature fields go on the lease's last page.
+  // If a waiver is appended, waiver signature fields go on the document's last page.
+  const leaseSignaturePage = options.leaseSignaturePage || options.pageCount || 1;
+  const waiverSignaturePage = options.waiverSignaturePage || null;
+
+  // Build signature fields array
+  const fields = [
+    // === LEASE AGREEMENT SIGNATURES (on lease section's last page) ===
+    // Landlord signature + date
+    {
+      type: 'signature',
+      required: true,
+      recipient_id: '1',
+      page: leaseSignaturePage,
+      x: 50,
+      y: 520,
+      width: 200,
+      height: 40,
+    },
+    {
+      type: 'date',
+      required: true,
+      recipient_id: '1',
+      page: leaseSignaturePage,
+      x: 50,
+      y: 580,
+      width: 120,
+      height: 20,
+    },
+    // Tenant signature + date (lease)
+    {
+      type: 'signature',
+      required: true,
+      recipient_id: '2',
+      page: leaseSignaturePage,
+      x: 50,
+      y: 630,
+      width: 200,
+      height: 40,
+    },
+    {
+      type: 'date',
+      required: true,
+      recipient_id: '2',
+      page: leaseSignaturePage,
+      x: 50,
+      y: 690,
+      width: 120,
+      height: 20,
+    },
+  ];
+
+  // === WAIVER SIGNATURE (on waiver section's last page, tenant only) ===
+  // The waiver is a separate acknowledgment — only the tenant/participant signs it.
+  // This ensures conspicuous, separate waiver acceptance for stronger legal enforceability.
+  if (waiverSignaturePage) {
+    fields.push(
+      {
+        type: 'signature',
+        required: true,
+        recipient_id: '2',
+        page: waiverSignaturePage,
+        x: 50,
+        y: 630,
+        width: 200,
+        height: 40,
+      },
+      {
+        type: 'date',
+        required: true,
+        recipient_id: '2',
+        page: waiverSignaturePage,
+        x: 50,
+        y: 690,
+        width: 120,
+        height: 20,
+      }
+    );
+  }
 
   const documentData = {
     test_mode: config.test_mode,
@@ -95,55 +173,7 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
       },
     ],
     // fields is a 2D array — one array of fields per file
-    // Positions based on the lease template layout:
-    //   "Landlords Signature:" line ~ y=530 on last page
-    //   "Tenants Signature:" line ~ y=640 on last page
-    fields: [
-      [
-        // Landlord signature + date
-        {
-          type: 'signature',
-          required: true,
-          recipient_id: '1',
-          page: signaturePage,
-          x: 50,
-          y: 520,
-          width: 200,
-          height: 40,
-        },
-        {
-          type: 'date',
-          required: true,
-          recipient_id: '1',
-          page: signaturePage,
-          x: 50,
-          y: 580,
-          width: 120,
-          height: 20,
-        },
-        // Tenant signature + date
-        {
-          type: 'signature',
-          required: true,
-          recipient_id: '2',
-          page: signaturePage,
-          x: 50,
-          y: 630,
-          width: 200,
-          height: 40,
-        },
-        {
-          type: 'date',
-          required: true,
-          recipient_id: '2',
-          page: signaturePage,
-          x: 50,
-          y: 690,
-          width: 120,
-          height: 20,
-        },
-      ],
-    ],
+    fields: [fields],
     // Send email automatically
     delivery: 'email',
   };
@@ -229,13 +259,18 @@ async function linkDocumentToApplication(applicationId, signwellDocumentId) {
  * 1. Creates document in SignWell
  * 2. Links to rental application
  * 3. Returns document info
- * @param {number} pageCount - Total pages in the PDF (for signature field placement)
+ * @param {number} pageCount - Total pages in the PDF
+ * @param {Object} pageOptions - Page-specific signature placement
+ * @param {number} pageOptions.leaseSignaturePage - Page for lease signatures
+ * @param {number|null} pageOptions.waiverSignaturePage - Page for waiver signature (null = no waiver)
  */
-async function sendForSignature(applicationId, pdfUrl, recipientEmail, recipientName, pageCount) {
+async function sendForSignature(applicationId, pdfUrl, recipientEmail, recipientName, pageCount, pageOptions = {}) {
   // Create document in SignWell
   const document = await createDocument(pdfUrl, recipientEmail, recipientName, {
     documentName: `Lease Agreement - ${recipientName}`,
     pageCount,
+    leaseSignaturePage: pageOptions.leaseSignaturePage || pageCount,
+    waiverSignaturePage: pageOptions.waiverSignaturePage || null,
   });
 
   // Link to application

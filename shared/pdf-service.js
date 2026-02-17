@@ -310,6 +310,8 @@ function generateLeaseFilename(tenantName, date = new Date()) {
  * @param {string} applicationId - The application ID (used for storage path)
  * @param {Object} options - Optional metadata
  * @param {string} options.tenantName - Tenant name for the filename
+ * @param {number} options.leaseOnlyPageCount - If provided, the page count of the lease-only portion
+ *   (before waiver was appended). Used for placing SignWell signature fields on the correct pages.
  */
 async function generateAndUploadLeasePdf(markdownContent, applicationId, options = {}) {
   const displayFilename = generateLeaseFilename(options.tenantName);
@@ -326,6 +328,8 @@ async function generateAndUploadLeasePdf(markdownContent, applicationId, options
     url,
     filename: displayFilename,
     pageCount,
+    // If a lease-only page count was provided, pass it through for SignWell field placement
+    leaseOnlyPageCount: options.leaseOnlyPageCount || pageCount,
   };
 }
 
