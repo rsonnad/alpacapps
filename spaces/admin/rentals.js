@@ -2974,10 +2974,25 @@ async function generateLeasePdf() {
     }
 
     // Parse template with application data
-    const parsedContent = leaseTemplateService.parseTemplate(
+    let parsedContent = leaseTemplateService.parseTemplate(
       currentLeaseTemplate.content,
       currentAgreementData
     );
+
+    // Auto-append active renter waiver (if one exists)
+    try {
+      const waiverTemplate = await leaseTemplateService.getActiveTemplate('renter_waiver');
+      if (waiverTemplate) {
+        const parsedWaiver = leaseTemplateService.parseTemplate(
+          waiverTemplate.content,
+          currentAgreementData
+        );
+        // Append waiver after the lease with a page break
+        parsedContent += '\n\n---\n\n' + parsedWaiver;
+      }
+    } catch (e) {
+      console.warn('No active renter waiver template found, generating lease without waiver:', e.message);
+    }
 
     // Generate and upload PDF with smart filename
     const { url, filename, pageCount } = await pdfService.generateAndUploadLeasePdf(

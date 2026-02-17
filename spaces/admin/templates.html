@@ -69,7 +69,7 @@
           <div class="tmpl-nav-group">
             <div class="tmpl-nav-group-label">
               <span>Documents</span>
-              <span class="tmpl-nav-count">3</span>
+              <span class="tmpl-nav-count">5</span>
             </div>
             <button class="tmpl-nav-item" data-type="lease" data-key="lease">
               <span class="tmpl-nav-icon tmpl-icon-doc"></span>
@@ -82,6 +82,14 @@
             <button class="tmpl-nav-item" data-type="worktrade" data-key="worktrade">
               <span class="tmpl-nav-icon tmpl-icon-doc"></span>
               <span class="tmpl-nav-text">Work Trade Agreement</span>
+            </button>
+            <button class="tmpl-nav-item" data-type="renter_waiver" data-key="renter_waiver">
+              <span class="tmpl-nav-icon tmpl-icon-doc"></span>
+              <span class="tmpl-nav-text">Renter Waiver</span>
+            </button>
+            <button class="tmpl-nav-item" data-type="event_waiver" data-key="event_waiver">
+              <span class="tmpl-nav-icon tmpl-icon-doc"></span>
+              <span class="tmpl-nav-text">Event/Guest Waiver</span>
             </button>
           </div>
 
@@ -326,6 +334,136 @@
                     </tr>
                   </thead>
                   <tbody id="worktradeTemplateHistoryBody">
+                    <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Renter Waiver Template Section -->
+          <div id="renterWaiverTemplateSection" style="display: none;">
+            <div class="section">
+              <div class="section-header">
+                <h2>Renter Waiver Template</h2>
+                <div class="header-actions">
+                  <button type="button" id="loadDefaultRenterWaiverBtn" class="btn-small">Load Default</button>
+                  <button type="button" id="saveRenterWaiverBtn" class="btn-small btn-primary">Save Template</button>
+                </div>
+              </div>
+              <div class="section-body">
+                <p class="text-muted" style="margin-bottom: 1rem;">
+                  Edit the renter liability waiver template. This waiver is <strong>automatically appended to all lease agreements</strong> when generating PDFs.
+                  Use <code>{{placeholder}}</code> syntax for dynamic fields.
+                </p>
+
+                <div class="template-editor-container">
+                  <div class="template-editor">
+                    <label for="renterWaiverTemplateName">Template Name</label>
+                    <input type="text" id="renterWaiverTemplateName" value="Renter Liability Waiver" style="margin-bottom: 1rem;">
+
+                    <label for="renterWaiverTemplateContent">Template Content</label>
+                    <textarea id="renterWaiverTemplateContent" class="template-textarea" rows="20" placeholder="Enter renter waiver template content..."></textarea>
+                  </div>
+
+                  <div class="placeholder-reference">
+                    <h4>Available Placeholders</h4>
+                    <div id="renterWaiverPlaceholderList" class="placeholder-list"></div>
+                  </div>
+                </div>
+
+                <div class="template-actions" style="margin-top: 1rem;">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="renterWaiverMakeActive" checked>
+                    Set as active template
+                  </label>
+                </div>
+
+                <div id="renterWaiverTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">
+                <h2>Template History</h2>
+              </div>
+              <div class="section-body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Version</th>
+                      <th>Created</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="renterWaiverTemplateHistoryBody">
+                    <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event/Guest Waiver Template Section -->
+          <div id="eventWaiverTemplateSection" style="display: none;">
+            <div class="section">
+              <div class="section-header">
+                <h2>Event/Guest Waiver Template</h2>
+                <div class="header-actions">
+                  <button type="button" id="loadDefaultEventWaiverBtn" class="btn-small">Load Default</button>
+                  <button type="button" id="saveEventWaiverBtn" class="btn-small btn-primary">Save Template</button>
+                </div>
+              </div>
+              <div class="section-body">
+                <p class="text-muted" style="margin-bottom: 1rem;">
+                  Edit the guest/event attendee liability waiver template. This waiver is signed independently by event guests and visitors.
+                  Use <code>{{placeholder}}</code> syntax for dynamic fields.
+                </p>
+
+                <div class="template-editor-container">
+                  <div class="template-editor">
+                    <label for="eventWaiverTemplateName">Template Name</label>
+                    <input type="text" id="eventWaiverTemplateName" value="Event/Guest Liability Waiver" style="margin-bottom: 1rem;">
+
+                    <label for="eventWaiverTemplateContent">Template Content</label>
+                    <textarea id="eventWaiverTemplateContent" class="template-textarea" rows="20" placeholder="Enter event/guest waiver template content..."></textarea>
+                  </div>
+
+                  <div class="placeholder-reference">
+                    <h4>Available Placeholders</h4>
+                    <div id="eventWaiverPlaceholderList" class="placeholder-list"></div>
+                  </div>
+                </div>
+
+                <div class="template-actions" style="margin-top: 1rem;">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="eventWaiverMakeActive" checked>
+                    Set as active template
+                  </label>
+                </div>
+
+                <div id="eventWaiverTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">
+                <h2>Template History</h2>
+              </div>
+              <div class="section-body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Version</th>
+                      <th>Created</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="eventWaiverTemplateHistoryBody">
                     <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
                   </tbody>
                 </table>
