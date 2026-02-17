@@ -79,6 +79,7 @@ async function loadEvents() {
     renderEventPipeline();
     initEventCalendarControls();
     renderEventCalendar();
+    loadWaiverSignatures();
   } catch (error) {
     console.error('Error loading events:', error);
     showToast('Error loading events', 'error');
@@ -1074,3 +1075,70 @@ window.toggleEventTestFlag = async function() {
     showToast('Error: ' + error.message, 'error');
   }
 };
+
+// =============================================
+// SIGNED WAIVERS
+// =============================================
+
+let allWaiverSignatures = [];
+
+async function loadWaiverSignatures() {
+  try {
+    const { data, error } = await supabase
+      .from('waiver_signatures')
+      .select('id, waiver_type, signer_name, signer_email, signer_phone, signed_at, event_request_id')
+      .order('signed_at', { ascending: false });
+
+    if (error) throw error;
+    allWaiverSignatures = data || [];
+    renderWaiverTable(allWaiverSignatures);
+  } catch (err) {
+    console.error('Error loading waivers:', err);
+    const tbody = document.getElementById('waiverTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#c0392b; padding:1rem;">Error loading waivers</td></tr>';
+  }
+}
+
+function renderWaiverTable(waivers) {
+  const tbody = document.getElementById('waiverTableBody');
+  const countEl = document.getElementById('waiverCount');
+  if (!tbody) return;
+
+  if (countEl) countEl.textContent = waivers.length;
+
+  if (waivers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:1.5rem;">No signed waivers yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = waivers.map(w => {
+    const name = isDemoUser() ? redactString(w.signer_name, 'name') : w.signer_name;
+    const email = isDemoUser() ? redactString(w.signer_email || '', 'email') : (w.signer_email || '—');
+    const phone = isDemoUser() ? redactString(w.signer_phone || '', 'phone') : (w.signer_phone || '—');
+    const signed = w.signed_at ? formatDateAustin(w.signed_at) : '—';
+    return `<tr>
+      <td><strong>${name}</strong></td>
+      <td>${email}</td>
+      <td>${phone}</td>
+      <td>${signed}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Waiver search
+const waiverSearchInput = document.getElementById('waiverSearch');
+if (waiverSearchInput) {
+  waiverSearchInput.addEventListener('input', () => {
+    const q = waiverSearchInput.value.trim().toLowerCase();
+    if (!q) {
+      renderWaiverTable(allWaiverSignatures);
+      return;
+    }
+    const filtered = allWaiverSignatures.filter(w =>
+      (w.signer_name || '').toLowerCase().includes(q) ||
+      (w.signer_email || '').toLowerCase().includes(q) ||
+      (w.signer_phone || '').toLowerCase().includes(q)
+    );
+    renderWaiverTable(filtered);
+  });
+}

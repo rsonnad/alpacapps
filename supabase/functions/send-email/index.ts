@@ -61,6 +61,8 @@ type EmailType =
   | "pai_document_received"
   // Payment statement
   | "payment_statement"
+  // Waiver
+  | "waiver_confirmation"
   // Custom (raw HTML passthrough)
   | "custom";
 
@@ -1748,6 +1750,37 @@ Files:
 ${fileList}
 
 Files have been uploaded to R2 and added to the document index as inactive (pending admin review).`
+      };
+    }
+
+    case "waiver_confirmation": {
+      const sigDate = data.signing_date || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      return {
+        subject: "Waiver Signed \u2014 Alpaca Playhouse",
+        html: `
+          <h2 style="color: #3d8b7a;">Waiver Signed Successfully</h2>
+          <p>Hi <strong>${data.signer_name}</strong>,</p>
+          <p>This confirms that you have electronically signed the <strong>Waiver of Liability, Assumption of Risk, and Indemnity Agreement</strong> for the Alpaca Playhouse.</p>
+
+          <div style="background: #f0faf7; padding: 15px; border-radius: 8px; border-left: 4px solid #3d8b7a; margin: 15px 0;">
+            <strong>Name:</strong> ${data.signer_name}<br>
+            <strong>Date:</strong> ${sigDate}<br>
+            ${data.confirmation_ref ? `<strong>Reference:</strong> ${data.confirmation_ref}` : ''}
+          </div>
+
+          <p>Thank you for signing. If you have any questions about the property or your visit, feel free to reply to this email or contact us at <a href="tel:+17377474737">(737) 747-4737</a>.</p>
+        `,
+        text: `Waiver Signed Successfully
+
+Hi ${data.signer_name},
+
+This confirms that you have electronically signed the Waiver of Liability, Assumption of Risk, and Indemnity Agreement for the Alpaca Playhouse.
+
+Name: ${data.signer_name}
+Date: ${sigDate}
+${data.confirmation_ref ? `Reference: ${data.confirmation_ref}` : ''}
+
+Thank you for signing. If you have any questions, contact us at (737) 747-4737.`
       };
     }
 

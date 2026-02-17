@@ -197,6 +197,35 @@
             </form>
           </div>
         </div>
+
+        <!-- Signed Waivers Section -->
+        <details class="section" style="margin-top: 1.5rem;">
+          <summary class="section-header" style="cursor: pointer;">
+            <h2>Signed Waivers</h2>
+            <span id="waiverCount" class="text-muted">0</span>
+          </summary>
+          <div class="section-body">
+            <div class="flex items-center gap-2 mb-3 flex-wrap">
+              <input type="text" id="waiverSearch" placeholder="Search by name or email..." class="form-input" style="flex:1; min-width: 200px;">
+              <a href="https://alpacaplayhouse.com/waiver/" target="_blank" class="btn-small" title="Open guest waiver page" style="white-space: nowrap;">Waiver Page &#8599;</a>
+            </div>
+            <div id="waiverTableContainer" style="overflow-x: auto;">
+              <table class="data-table" id="waiverTable" style="width: 100%; font-size: 0.85rem;">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Signed</th>
+                  </tr>
+                </thead>
+                <tbody id="waiverTableBody">
+                  <tr><td colspan="4" style="text-align:center; color: #999; padding: 1.5rem;">Loading waivers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   </div>
