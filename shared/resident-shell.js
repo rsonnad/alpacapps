@@ -322,13 +322,7 @@ function renderUserInfo(el, appUser, profileHref) {
     ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
     : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
 
-  // Role-based navigation links
-  const role = appUser.role || '';
-  const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
-  const manageLink = isStaffOrAdmin
-    ? `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`
-    : '';
-
+  // On intranet pages, all tabs are already visible — no nav links needed in dropdown
   el.innerHTML = `
     <button class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
       ${avatarHtml}<span class="user-profile-name">${escapeHtml(name)}</span>
@@ -336,7 +330,6 @@ function renderUserInfo(el, appUser, profileHref) {
     <div class="user-menu-dropdown hidden">
       <div id="roleBadge" class="role-badge dropdown-role-badge" style="display:none"></div>
       <a href="${profileHref}" class="user-menu-item">Profile</a>
-      ${manageLink}
       <button type="button" class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
 
