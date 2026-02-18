@@ -28,6 +28,7 @@ initAssociatePage({
 
 const STORAGE_KEY_ASSIGNED = 'projectInquiry_assignedTo';
 const STORAGE_KEY_SPECIAL = 'projectInquiry_specialType';
+const STORAGE_KEY_SPACE = 'projectInquiry_space';
 
 async function initApp() {
   await Promise.all([loadSpaces(), loadUsers()]);
@@ -54,13 +55,20 @@ function restoreDropdownSelections() {
       sel.value = savedSpecial;
     }
   }
+
+  const savedSpace = localStorage.getItem(STORAGE_KEY_SPACE);
+  if (savedSpace) {
+    const sel = document.getElementById('spaceSelect');
+    if ([...sel.options].some(o => o.value === savedSpace)) {
+      sel.value = savedSpace;
+    }
+  }
 }
 
 function persistDropdownSelections() {
-  const assignedVal = document.getElementById('assignedToSelect').value;
-  const specialVal = document.getElementById('specialTypeSelect').value;
-  localStorage.setItem(STORAGE_KEY_ASSIGNED, assignedVal);
-  localStorage.setItem(STORAGE_KEY_SPECIAL, specialVal);
+  localStorage.setItem(STORAGE_KEY_ASSIGNED, document.getElementById('assignedToSelect').value);
+  localStorage.setItem(STORAGE_KEY_SPECIAL, document.getElementById('specialTypeSelect').value);
+  localStorage.setItem(STORAGE_KEY_SPACE, document.getElementById('spaceSelect').value);
 }
 
 // =============================================
@@ -146,6 +154,14 @@ async function loadUsers() {
 // =============================================
 // Dynamic field visibility
 // =============================================
+// Question type config — each type defines its action button and label.
+// Add new types here as needed (e.g. 'material_id', 'damage_assess').
+const QUESTION_TYPE_CONFIG = {
+  color_pick: { btnId: 'btnAnalyze', icon: '🎨', label: 'Analyze Color Options' },
+  // Future types:
+  // material_id: { btnId: 'btnAnalyze', icon: '🪵', label: 'Identify Material' },
+};
+
 function setupDynamicFields() {
   const questionInput = document.getElementById('questionInput');
   const specialTypeField = document.getElementById('specialTypeField');
@@ -155,13 +171,22 @@ function setupDynamicFields() {
 
   function updateFieldVisibility() {
     const hasQuestion = questionInput.value.trim().length > 0;
-    const hasSpecialType = specialTypeSelect.value !== '';
+    const selectedType = specialTypeSelect.value;
+    const typeConfig = QUESTION_TYPE_CONFIG[selectedType];
 
-    // When question is typed → hide Question Type dropdown, show Submit Question button
-    // When no question → show Question Type dropdown, show Analyze only if a type is selected
+    // When question is typed → hide Question Type, show Submit Question button
+    // When no question → show Question Type, show type-specific button only if a type is selected
     specialTypeField.style.display = hasQuestion ? 'none' : '';
     btnSubmitQuestion.style.display = hasQuestion ? '' : 'none';
-    btnAnalyze.style.display = (!hasQuestion && hasSpecialType) ? '' : 'none';
+    btnAnalyze.style.display = (!hasQuestion && typeConfig) ? '' : 'none';
+
+    // Update the action button label/icon to match selected type
+    if (typeConfig) {
+      const iconSpan = btnAnalyze.querySelector('span:first-child');
+      const labelSpan = btnAnalyze.querySelector('span:last-child');
+      if (iconSpan) iconSpan.textContent = typeConfig.icon;
+      if (labelSpan) labelSpan.textContent = typeConfig.label;
+    }
 
     // Enable/disable based on photo
     btnSubmitQuestion.disabled = !uploadedMedia;
@@ -189,6 +214,7 @@ function setupEventListeners() {
   // Persist dropdown selections on change
   document.getElementById('assignedToSelect').addEventListener('change', persistDropdownSelections);
   document.getElementById('specialTypeSelect').addEventListener('change', persistDropdownSelections);
+  document.getElementById('spaceSelect').addEventListener('change', persistDropdownSelections);
 
   // Camera capture (Take Photo)
   cameraInput.addEventListener('change', (e) => {
