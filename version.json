@@ -1,12 +1,12 @@
 {
-  "version": "v260218.45 12:33p",
-  "release": 279,
-  "sha": "351ed6cf4",
-  "fullSha": "351ed6cf49f4647121f2114ea8a5ec2bcb39d132",
+  "version": "v260218.46 12:39p",
+  "release": 280,
+  "sha": "20b383aff",
+  "fullSha": "20b383aff733e1fc5d7114503a09a48aa3cf608e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 18:33:22+00",
-  "commits": [{"sha":"a6a177120","message":"Remove Manage link from profile dropdown, keep only Intranet","author":"Rahul"},{"sha":"351ed6cf4","message":"Merge branch 'claude/vibrant-roentgen'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 18:39:35+00",
+  "commits": [{"sha":"5c88c8c07","message":"Fix profile page crash: add missing telegram/facebook_url columns","author":"Rahul"},{"sha":"20b383aff","message":"Merge branch 'claude/heuristic-blackwell'","author":"Rahul"}]
 }
