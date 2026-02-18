@@ -55,18 +55,16 @@
       border-radius: 8px; cursor: pointer; font-size: 0.9rem;
     }
 
-    /* Tab Switcher */
-    .tabs { display: flex; background: #fff; border-radius: 10px; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    /* Tab Switcher — underline style (matches admin detail tabs) */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border, #e5e5e5); margin-bottom: 1rem; overflow-x: auto; }
     .tabs button {
-      flex: 1; padding: 0.65rem; background: none; border: none; font-size: 0.85rem;
-      font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative;
+      flex: none; padding: 0.625rem 1rem; background: none; border: none;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      font-size: 0.85rem; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; white-space: nowrap; transition: color 0.15s ease, border-color 0.15s ease;
     }
-    .tabs button.active { color: var(--accent); }
-    .tabs button.active::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 3px; background: var(--accent); border-radius: 2px; }
-
-    /* Tab Content */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tabs button:hover { color: var(--text, #1c1618); }
+    .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
     /* Today Section */
     .today-card { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
@@ -514,7 +512,7 @@
       </details>
 
       <!-- Tab Navigation -->
-      <div class="tabs">
+      <div class="tabs" id="workTabs">
         <button class="active" data-tab="today">Today</button>
         <button data-tab="history">History</button>
         <button data-tab="coworkers">Coworkers</button>

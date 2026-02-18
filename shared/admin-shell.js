@@ -9,6 +9,7 @@ import { errorLogger } from './error-logger.js';
 import { supabaseHealth } from './supabase-health.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
+import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -132,6 +133,11 @@ export function renderTabNav(activeTab, authState, section = 'staff') {
     const icon = TAB_ICONS[tab.id] || '';
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
   }).join('');
+
+  // ARIA + auto-scroll active tab into view on mobile
+  initNavTabList(tabsContainer, '.manage-tab');
+  if (switcher) initNavTabList(switcher, '.context-switcher-btn');
+  scrollActiveIntoView(tabsContainer);
 }
 
 // =============================================

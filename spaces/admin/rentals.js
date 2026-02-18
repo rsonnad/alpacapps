@@ -25,6 +25,7 @@ import {
   setupLightbox
 } from '../../shared/admin-shell.js';
 import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { initTabList } from '../../shared/tab-utils.js';
 
 // =============================================
 // STATE
@@ -1248,7 +1249,10 @@ function switchDetailTab(tabName) {
   const page = document.getElementById('applicantDetailPage');
   if (!page) return;
   page.querySelectorAll('.detail-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.detailTab === tabName);
+    const isTarget = t.dataset.detailTab === tabName;
+    t.classList.toggle('active', isTarget);
+    t.setAttribute('aria-selected', String(isTarget));
+    t.setAttribute('tabindex', isTarget ? '0' : '-1');
   });
   page.querySelectorAll('.detail-tab-content').forEach(c => {
     c.classList.toggle('active', c.id === tabName + 'Tab');
@@ -3436,12 +3440,20 @@ function setupEventListeners() {
   // Back button
   document.getElementById('detailBackBtn')?.addEventListener('click', closeRentalDetail);
 
-  // Detail tab navigation
-  document.querySelectorAll('#applicantDetailPage .detail-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      switchDetailTab(tab.dataset.detailTab);
+  // Detail tab navigation (ARIA + keyboard nav via tab-utils; clicks handled by switchDetailTab)
+  const detailTabsContainer = document.querySelector('#applicantDetailPage .detail-tabs');
+  if (detailTabsContainer) {
+    initTabList(detailTabsContainer, {
+      tabSelector: '.detail-tab',
+      panelForTab: (tab) => document.getElementById(tab.dataset.detailTab + 'Tab'),
+      handleClicks: false,
+      fade: true,
     });
-  });
+    // Keep existing click handlers for switchDetailTab (used by inline onclick= too)
+    detailTabsContainer.querySelectorAll('.detail-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchDetailTab(tab.dataset.detailTab));
+    });
+  }
 
   // Terms auto-save
   setupTermsAutoSave();
