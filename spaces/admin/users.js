@@ -1160,6 +1160,8 @@ const PERM_GROUPS = [
     keys: ['view_voice', 'manage_voice'], adminKey: null },
   { id: 'todo',     icon: '✅', label: 'Todo',     bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
     keys: ['view_todo', 'manage_todo'], adminKey: null },
+  { id: 'appdev',   icon: '🤖', label: 'App Dev',  bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
+    keys: ['view_appdev', 'approve_appdev'], adminKey: null },
   // -- Admin-only --
   { id: 'users',    icon: '👥', label: 'Users & Permissions', bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
     keys: ['view_users', 'manage_users', 'manage_permissions'], adminKey: null },
@@ -1179,7 +1181,7 @@ const PERM_GROUPS = [
 // Super-sections that group the above
 const PERM_SUPER_SECTIONS = [
   { label: 'Resident', groupIds: ['lighting','music','cameras','climate','laundry','cars','profile','pai'] },
-  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo'] },
+  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo','appdev'] },
   { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting'] },
   { label: 'Associate',groupIds: ['associate'] },
 ];
