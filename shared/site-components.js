@@ -381,7 +381,7 @@ function renderUserMenuHTML(appUser, profileHref) {
 
   // Role-based navigation links
   const role = appUser.role || '';
-  const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
+  const isResident = ['admin', 'oracle', 'staff', 'resident', 'associate'].includes(role);
 
   let navLinks = '';
   if (isResident) {
@@ -428,7 +428,7 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
       const mobileList = mobileLi?.parentElement;
       if (mobileList && mobileLi) {
         const role = state.appUser.role || '';
-        const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
+        const isResident = ['admin', 'oracle', 'staff', 'resident', 'associate'].includes(role);
         const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
 
         // Build mobile nav items for authenticated user
