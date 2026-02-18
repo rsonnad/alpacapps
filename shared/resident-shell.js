@@ -38,6 +38,23 @@ const DEVICE_PAGE_PATHS = new Set([
   'sensors.html', 'sensors',
 ]);
 
+// Compact SVG icons for tabs (16x16, stroke-based)
+const _i = (d) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const TAB_ICONS = {
+  list:       _i('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'),
+  homeauto:   _i('<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 018.91 14"/>'),
+  music:      _i('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
+  cameras:    _i('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'),
+  climate:    _i('<path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>'),
+  appliances: _i('<rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/>'),
+  cars:       _i('<path d="M5 17h14v-3l2-4H3l2 4v3z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 10l1.5-4h11L19 10"/>'),
+  sensors:    _i('<path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10"/><path d="M7 12a5 5 0 015-5"/><circle cx="12" cy="12" r="1"/>'),
+  profile:    _i('<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+  bookkeeping:_i('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'),
+  media:      _i('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
+  askpai:     _i('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'),
+};
+
 const DEVICE_SUBTABS = [
   { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
@@ -141,7 +158,8 @@ function renderResidentTabNav(activeTab, authState) {
 
   tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;
-    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
+    const icon = TAB_ICONS[tab.id] || '';
+    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
   }).join('');
 }
 
@@ -203,7 +221,8 @@ function renderDeviceSubTabNav(activeTab, authState) {
 
   subTabContainer.innerHTML = visibleSubtabs.map((tab) => {
     const isActive = tab.id === activeDeviceSubTab;
-    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
+    const icon = TAB_ICONS[tab.id] || '';
+    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
   }).join('');
 }
 
@@ -272,12 +291,11 @@ function renderContextSwitcher(authState) {
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
   const activeContext = DEVICE_PAGE_PATHS.has(currentPath) ? 'devices' : 'resident';
 
-  const btns = tabs.map(tab => {
+  switcher.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeContext;
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');
-  switcher.innerHTML = `<div class="context-switcher-pill">${btns}</div>`;
 }
 
 // =============================================

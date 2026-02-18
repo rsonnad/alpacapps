@@ -106,7 +106,7 @@ function renderContextSwitcher() {
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
   }).join('');
-  switcher.innerHTML = `<div class="context-switcher-pill">${btns}</div>`;
+  switcher.innerHTML = btns;
 
   switcher.classList.remove('hidden');
 }
