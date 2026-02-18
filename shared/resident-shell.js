@@ -226,6 +226,33 @@ function renderContextSwitcher(authState) {
   const hasDevicePerms = hasAnyPermission(...DEVICE_PERMISSION_KEYS);
   const hasAssociatePerms = hasAnyPermission('clock_in_out', 'view_own_hours');
 
+  // Staff/Admin tab mapping: permission → first accessible page
+  const STAFF_TAB_MAP = [
+    { perm: 'view_spaces', href: 'spaces.html' },
+    { perm: 'view_rentals', href: 'rentals.html' },
+    { perm: 'view_events', href: 'events.html' },
+    { perm: 'view_media', href: 'media.html' },
+    { perm: 'view_sms', href: 'sms-messages.html' },
+    { perm: 'view_purchases', href: 'purchases.html' },
+    { perm: 'view_hours', href: 'worktracking.html' },
+    { perm: 'view_faq', href: 'faq.html' },
+    { perm: 'view_voice', href: 'voice.html' },
+    { perm: 'view_todo', href: 'todo.html' },
+    { perm: 'view_appdev', href: 'appdev.html' },
+  ];
+  const ADMIN_TAB_MAP = [
+    { perm: 'view_users', href: 'users.html' },
+    { perm: 'view_passwords', href: 'passwords.html' },
+    { perm: 'view_settings', href: 'settings.html' },
+    { perm: 'view_templates', href: 'templates.html' },
+    { perm: 'view_accounting', href: 'accounting.html' },
+    { perm: 'admin_pai_settings', href: '/residents/lifeofpaiadmin.html' },
+  ];
+  const firstStaff = STAFF_TAB_MAP.find(t => hasAnyPermission(t.perm));
+  const firstAdmin = ADMIN_TAB_MAP.find(t => hasAnyPermission(t.perm));
+  const staffHref = firstStaff ? (firstStaff.href.startsWith('/') ? firstStaff.href : `/spaces/admin/${firstStaff.href}`) : '/spaces/admin/';
+  const adminHref = firstAdmin ? (firstAdmin.href.startsWith('/') ? firstAdmin.href : `/spaces/admin/${firstAdmin.href}`) : '/spaces/admin/users.html';
+
   // Build tabs — only show tabs the user has access to
   const tabs = [];
   if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: '/residents/devices.html' });
@@ -233,8 +260,8 @@ function renderContextSwitcher(authState) {
   if (hasAssociatePerms || ['staff', 'admin', 'oracle'].includes(role)) {
     tabs.push({ id: 'associate', label: 'Associates', href: '/associates/worktracking.html' });
   }
-  if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: '/spaces/admin/' });
-  if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' });
+  if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
+  if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
 
   // Hide if only one tab (nothing to switch between)
   if (tabs.length <= 1) {
