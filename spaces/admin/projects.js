@@ -163,7 +163,7 @@ function renderTable(tasks) {
 }
 
 function statusLabel(s) {
-  return { open: 'Open', in_progress: 'In Progress', done: 'Done' }[s] || s;
+  return { open: 'Open', in_progress: 'In Progress', on_hold: 'On Hold', done: 'Done' }[s] || s;
 }
 
 async function updateStats() {
@@ -171,6 +171,7 @@ async function updateStats() {
   document.getElementById('statTotal').textContent = stats.total;
   document.getElementById('statOpen').textContent = stats.open;
   document.getElementById('statInProgress').textContent = stats.in_progress;
+  document.getElementById('statOnHold').textContent = stats.on_hold;
   document.getElementById('statDone').textContent = stats.done;
 }
 
