@@ -142,6 +142,19 @@
 
     .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
 
+    /* Photo thumbs in modal */
+    .admin-photo-thumb {
+      position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer; display: inline-block;
+    }
+    .admin-photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .admin-photo-thumb .photo-remove {
+      position: absolute; top: 2px; right: 2px; width: 18px; height: 18px;
+      background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+      font-size: 0.65rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; line-height: 1;
+    }
+
     @media (max-width: 768px) {
       .task-table th.hide-mobile, .task-table td.hide-mobile { display: none; }
     }
@@ -265,6 +278,9 @@
       <label>Notes</label>
       <textarea id="inputNotes"></textarea>
 
+      <label>Description</label>
+      <textarea id="inputDescription" placeholder="Detailed description..." style="min-height:80px"></textarea>
+
       <label>Priority</label>
       <select id="inputPriority">
         <option value="">None</option>
@@ -293,6 +309,13 @@
         <option value="in_progress">In Progress</option>
         <option value="done">Done</option>
       </select>
+
+      <label>Photos</label>
+      <div id="adminTaskPhotos" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem"></div>
+      <label class="btn-upload-photo" for="adminPhotoInput" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.35rem 0.75rem;border:1px dashed var(--border);border-radius:6px;font-size:0.8rem;color:var(--text-muted);cursor:pointer;margin-bottom:0.75rem">
+        <span>+ Add Photo</span>
+      </label>
+      <input type="file" id="adminPhotoInput" accept="image/*" style="display:none" multiple>
 
       <div class="modal-actions">
         <button class="btn-cancel" id="btnModalCancel">Cancel</button>

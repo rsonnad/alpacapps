@@ -455,7 +455,7 @@ async function handleTasks(supabase: any, req: ApiRequest, auth: any, _perm: any
       }
       if (req.filters?.space_id) query = query.eq("space_id", req.filters.space_id);
       if (req.filters?.search) {
-        query = query.or(`title.ilike.%${req.filters.search}%,notes.ilike.%${req.filters.search}%`);
+        query = query.or(`title.ilike.%${req.filters.search}%,notes.ilike.%${req.filters.search}%,description.ilike.%${req.filters.search}%`);
       }
       // Fuzzy space name filter
       if (req.filters?.space_name) {
@@ -487,6 +487,7 @@ async function handleTasks(supabase: any, req: ApiRequest, auth: any, _perm: any
       const payload: any = {
         title: req.data.title,
         notes: req.data.notes || null,
+        description: req.data.description || null,
         priority: req.data.priority || null,
         status: req.data.status || "open",
         location_label: req.data.location_label || null,
@@ -526,6 +527,7 @@ async function handleTasks(supabase: any, req: ApiRequest, auth: any, _perm: any
 
       if ("title" in (req.data || {})) payload.title = req.data!.title;
       if ("notes" in (req.data || {})) payload.notes = req.data!.notes || null;
+      if ("description" in (req.data || {})) payload.description = req.data!.description || null;
       if ("priority" in (req.data || {})) payload.priority = req.data!.priority || null;
       if ("location_label" in (req.data || {})) payload.location_label = req.data!.location_label || null;
 

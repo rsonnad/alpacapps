@@ -118,6 +118,58 @@
 
     .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 
+    /* Edit button on cards */
+    .task-actions .btn-edit {
+      border-color: var(--accent, #d4883a); color: var(--accent, #d4883a);
+    }
+    .task-actions .btn-edit:hover { background: rgba(212,136,58,0.08); }
+
+    /* Task description on cards */
+    .task-description {
+      margin-top: 0.25rem; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;
+      font-style: italic;
+    }
+
+    /* Task photo thumbnails on cards */
+    .task-card-photos {
+      display: flex; gap: 0.3rem; margin-top: 0.4rem; flex-wrap: wrap;
+    }
+    .task-card-photos img {
+      width: 40px; height: 40px; object-fit: cover; border-radius: 4px;
+      border: 1px solid var(--border); cursor: pointer;
+    }
+
+    /* Photo grid in modal */
+    .task-photo-grid {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;
+    }
+    .task-photo-thumb {
+      position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer;
+    }
+    .task-photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .task-photo-thumb .photo-remove {
+      position: absolute; top: 2px; right: 2px; width: 18px; height: 18px;
+      background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+      font-size: 0.65rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; line-height: 1;
+    }
+    .photo-upload-row { display: flex; gap: 0.5rem; }
+    .btn-upload-photo {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.35rem 0.75rem; border: 1px dashed var(--border); border-radius: 6px;
+      font-size: 0.8rem; color: var(--text-muted); cursor: pointer;
+    }
+    .btn-upload-photo:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Simple lightbox */
+    .simple-lightbox {
+      position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .simple-lightbox.hidden { display: none; }
+    .simple-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+
     /* Add project button */
     .btn-add-project {
       margin-left: auto;
@@ -261,21 +313,26 @@
     </div>
   </div>
 
-  <!-- Add Project Modal -->
+  <!-- Add/Edit Project Modal -->
   <div class="modal-overlay hidden" id="addProjectModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>New Project</h3>
+        <h3 id="modalTitle">New Project</h3>
         <button class="modal-close" id="btnCloseModal">&times;</button>
       </div>
       <form id="addProjectForm">
+        <input type="hidden" id="editTaskId">
         <div class="form-group">
           <label for="newTitle">Title <span class="required">*</span></label>
           <input type="text" id="newTitle" required placeholder="What needs to be done?">
         </div>
         <div class="form-group">
           <label for="newNotes">Notes</label>
-          <textarea id="newNotes" rows="2" placeholder="Additional details..."></textarea>
+          <textarea id="newNotes" rows="2" placeholder="Short summary..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="newDescription">Description</label>
+          <textarea id="newDescription" rows="4" placeholder="Detailed description, steps, context..."></textarea>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -295,18 +352,50 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label for="newSpace">Location</label>
-          <select id="newSpace">
-            <option value="">No Location</option>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newSpace">Location</label>
+            <select id="newSpace">
+              <option value="">No Location</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newLocationLabel">Location Note</label>
+            <input type="text" id="newLocationLabel" placeholder="e.g. Attic, Shed...">
+          </div>
+        </div>
+        <div class="form-group hidden" id="statusGroup">
+          <label for="newStatus">Status</label>
+          <select id="newStatus">
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
           </select>
         </div>
+
+        <!-- Photos -->
+        <div class="form-group" id="photosSection">
+          <label>Photos</label>
+          <div id="taskPhotos" class="task-photo-grid"></div>
+          <div class="photo-upload-row">
+            <label class="btn-upload-photo" for="photoInput">
+              <span>+ Add Photo</span>
+            </label>
+            <input type="file" id="photoInput" accept="image/*" style="display:none" multiple>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn-cancel" id="btnCancelModal">Cancel</button>
           <button type="submit" class="btn-submit" id="btnSubmitProject">Create Project</button>
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- Simple image lightbox -->
+  <div class="simple-lightbox hidden" id="simpleLightbox">
+    <img id="lightboxImg" src="" alt="Full size">
   </div>
 
   <!-- Instant chrome: skip spinner + pre-render header for returning users -->

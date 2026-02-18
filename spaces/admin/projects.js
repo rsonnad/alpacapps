@@ -4,6 +4,7 @@
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { supabase } from '../../shared/supabase.js';
 import { projectService } from '../../shared/project-service.js';
+import { mediaService } from '../../shared/media-service.js';
 
 let allTasks = [];
 let spaces = [];
@@ -144,8 +145,9 @@ function renderTable(tasks) {
       <td><input type="checkbox" class="row-check" data-id="${t.id}" ${checked}></td>
       <td>${pLabel ? `<span class="priority-badge ${pClass}">${pLabel}</span>` : ''}</td>
       <td class="title-cell">
-        <div class="title-text">${esc(t.title)}</div>
+        <div class="title-text">${t.task_number ? `<span style="color:var(--text-muted);font-weight:400">#${t.task_number}</span> ` : ''}${esc(t.title)}</div>
         ${t.notes ? `<div class="notes-text">${esc(t.notes)}</div>` : ''}
+        ${t.description ? `<div class="notes-text" style="font-style:italic">${esc(t.description.length > 80 ? t.description.substring(0, 80) + '...' : t.description)}</div>` : ''}
       </td>
       <td>${t.assigned_name ? `<span class="assignee-badge">${esc(t.assigned_name)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
       <td>${esc(location)}</td>
@@ -255,6 +257,23 @@ function bindEvents() {
     }
   });
 
+  // Photo upload
+  document.getElementById('adminPhotoInput').addEventListener('change', handleAdminPhotoUpload);
+
+  // Photo remove (delegated)
+  document.getElementById('adminTaskPhotos').addEventListener('click', async (e) => {
+    const removeBtn = e.target.closest('.photo-remove');
+    if (!removeBtn) return;
+    try {
+      await projectService.removeTaskPhoto(removeBtn.dataset.photoId);
+      const taskId = document.getElementById('editTaskId').value;
+      if (taskId) await loadAdminTaskPhotos(taskId);
+      showToast('Photo removed', 'success');
+    } catch (err) {
+      showToast('Remove failed', 'error');
+    }
+  });
+
   // Bulk status
   document.getElementById('btnBulkStatus').addEventListener('click', async () => {
     const status = document.getElementById('bulkStatus').value;
@@ -278,33 +297,48 @@ function openAddModal() {
   document.getElementById('editTaskId').value = '';
   document.getElementById('inputTitle').value = '';
   document.getElementById('inputNotes').value = '';
+  document.getElementById('inputDescription').value = '';
   document.getElementById('inputPriority').value = '';
   document.getElementById('inputSpace').value = '';
   document.getElementById('inputLocationLabel').value = '';
   document.getElementById('inputAssignee').value = '';
   document.getElementById('inputStatus').value = 'open';
+  document.getElementById('adminTaskPhotos').innerHTML = '';
   document.getElementById('taskModal').classList.add('open');
 }
 
-function openEditModal(task) {
+async function openEditModal(task) {
   document.getElementById('modalTitle').textContent = 'Edit Task';
   document.getElementById('editTaskId').value = task.id;
   document.getElementById('inputTitle').value = task.title;
   document.getElementById('inputNotes').value = task.notes || '';
+  document.getElementById('inputDescription').value = task.description || '';
   document.getElementById('inputPriority').value = task.priority || '';
   document.getElementById('inputSpace').value = task.space_id || '';
   document.getElementById('inputLocationLabel').value = task.location_label || '';
   document.getElementById('inputStatus').value = task.status;
 
-  // Set assignee
+  // Set assignee with fallback matching
   const assigneeSel = document.getElementById('inputAssignee');
   if (task.assigned_to) {
     assigneeSel.value = `user:${task.assigned_to}:${task.assigned_name || ''}`;
+    // Fallback: match by UUID prefix if exact match fails
+    if (!assigneeSel.value) {
+      for (const opt of assigneeSel.options) {
+        if (opt.value.startsWith(`user:${task.assigned_to}:`)) {
+          assigneeSel.value = opt.value;
+          break;
+        }
+      }
+    }
   } else if (task.assigned_name) {
     assigneeSel.value = `name:${task.assigned_name}`;
   } else {
     assigneeSel.value = '';
   }
+
+  // Load photos
+  await loadAdminTaskPhotos(task.id);
 
   document.getElementById('taskModal').classList.add('open');
 }
@@ -332,6 +366,7 @@ async function saveTask() {
   const payload = {
     title,
     notes: document.getElementById('inputNotes').value.trim(),
+    description: document.getElementById('inputDescription').value.trim(),
     priority: document.getElementById('inputPriority').value ? parseInt(document.getElementById('inputPriority').value) : null,
     spaceId: document.getElementById('inputSpace').value || null,
     locationLabel: document.getElementById('inputLocationLabel').value.trim() || null,
@@ -354,6 +389,54 @@ async function saveTask() {
     console.error('Save failed:', err);
     showToast('Save failed', 'error');
   }
+}
+
+// ---- Admin Task Photos ----
+async function loadAdminTaskPhotos(taskId) {
+  const container = document.getElementById('adminTaskPhotos');
+  container.innerHTML = '';
+  try {
+    const photos = await projectService.getTaskPhotos(taskId);
+    photos.forEach(p => {
+      if (!p.media?.url) return;
+      const thumb = document.createElement('div');
+      thumb.className = 'admin-photo-thumb';
+      thumb.innerHTML = `
+        <img src="${p.media.url}" alt="Task photo">
+        <button class="photo-remove" data-photo-id="${p.id}" title="Remove">&times;</button>
+      `;
+      thumb.querySelector('img').addEventListener('click', () => {
+        window.open(p.media.url, '_blank');
+      });
+      container.appendChild(thumb);
+    });
+  } catch (err) {
+    console.error('Failed to load task photos:', err);
+  }
+}
+
+async function handleAdminPhotoUpload(e) {
+  const taskId = document.getElementById('editTaskId').value;
+  if (!taskId) {
+    showToast('Save the task first, then add photos', 'warning');
+    e.target.value = '';
+    return;
+  }
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  for (const file of files) {
+    try {
+      const media = await mediaService.uploadMedia(file, { category: 'task' });
+      await projectService.addTaskPhoto(taskId, media.id);
+    } catch (err) {
+      console.error('Photo upload failed:', err);
+      showToast('Photo upload failed', 'error');
+    }
+  }
+  e.target.value = '';
+  await loadAdminTaskPhotos(taskId);
+  showToast(`${files.length} photo(s) added`, 'success');
 }
 
 function esc(str) {
