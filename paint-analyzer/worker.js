@@ -1,7 +1,7 @@
 /**
  * Paint Color Analyzer Worker
  * Polls Supabase `paint_analysis_jobs` table for pending jobs,
- * analyzes images via Anthropic Claude Sonnet 4.6 Vision API,
+ * analyzes images via Claude CLI (Sonnet 4.6, using existing OAuth),
  * searches Brave for matching paint products, and stores results.
  *
  * Runs on the DO/Oracle server alongside other workers.
@@ -9,6 +9,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { writeFile, mkdir, unlink } from 'fs/promises';
+import { spawn } from 'child_process';
 import path from 'path';
 
 // ============================================
@@ -16,26 +17,18 @@ import path from 'path';
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '10000');
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
+const CLAUDE_TIMEOUT_MS = parseInt(process.env.CLAUDE_TIMEOUT_MS || '180000'); // 3 min
 const MAX_SEARCH_RESULTS = 5;
 const TEMP_DIR = '/tmp/paint-analyzer';
-
-// Anthropic pricing (Sonnet 4.6 per 1M tokens — check current pricing)
-const INPUT_PRICE_PER_M = 3.00;
-const OUTPUT_PRICE_PER_M = 15.00;
 
 // Brave pricing
 const BRAVE_COST_PER_QUERY = 0; // Free tier (2,000/mo); set to 0.003 if paid
 
 if (!SUPABASE_SERVICE_KEY) {
   console.error('SUPABASE_SERVICE_ROLE_KEY is required');
-  process.exit(1);
-}
-if (!ANTHROPIC_API_KEY) {
-  console.error('ANTHROPIC_API_KEY is required');
   process.exit(1);
 }
 if (!BRAVE_API_KEY) {
@@ -55,21 +48,28 @@ function log(level, msg, data = {}) {
 }
 
 // ============================================
-// Image download
+// Image download — saves to disk for Claude CLI
 // ============================================
-async function downloadImage(url) {
+async function downloadImageToDisk(url, jobId) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to download image: ${response.status}`);
   const buffer = Buffer.from(await response.arrayBuffer());
-  const mimeType = response.headers.get('content-type') || 'image/jpeg';
-  return { base64: buffer.toString('base64'), mimeType };
+
+  // Determine extension from content-type
+  const ct = response.headers.get('content-type') || 'image/jpeg';
+  const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : 'jpg';
+  const filePath = path.join(TEMP_DIR, `${jobId}.${ext}`);
+
+  await writeFile(filePath, buffer);
+  log('info', `Image saved: ${filePath} (${Math.round(buffer.length / 1024)}KB)`);
+  return filePath;
 }
 
 // ============================================
-// Claude Vision Analysis
+// Claude CLI Analysis (uses existing OAuth on server)
 // ============================================
-async function analyzeWithClaude(imageBase64, mimeType, caption) {
-  const prompt = `Analyze this photo of a surface/wall for paint color matching. ${caption ? `Context: "${caption}".` : ''}
+async function analyzeWithClaudeCLI(imagePath, caption) {
+  const prompt = `Look at the image file at ${imagePath} using your Read tool. This is a photo of a surface/wall for paint color matching. ${caption ? `Context: "${caption}".` : ''}
 
 Identify ALL distinct paint colors visible on the surfaces. For each color:
 1. Give it a descriptive name (e.g. "Warm Beige", "Sage Green")
@@ -83,7 +83,7 @@ Also provide:
 - Overall surface analysis (condition, material, texture)
 - Any preparation recommendations before repainting
 
-Return ONLY valid JSON (no markdown fences, no extra text) with this schema:
+Return ONLY valid JSON (no markdown, no extra text) with this schema:
 {
   "colors": [
     {
@@ -100,67 +100,107 @@ Return ONLY valid JSON (no markdown fences, no extra text) with this schema:
   "recommendations": "Preparation recommendations"
 }`;
 
-  log('info', 'Calling Claude Vision API', { model: CLAUDE_MODEL });
+  log('info', 'Spawning Claude CLI', { model: CLAUDE_MODEL, image: imagePath });
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 2048,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mimeType,
-              data: imageBase64,
-            },
-          },
-          { type: 'text', text: prompt },
-        ],
-      }],
-    }),
+  const args = [
+    '-p', prompt,
+    '--allowedTools', 'Read',
+    '--max-turns', '5',
+    '--output-format', 'json',
+    '--dangerously-skip-permissions',
+    '--model', CLAUDE_MODEL,
+  ];
+
+  return new Promise((resolve, reject) => {
+    const child = spawn('claude', args, {
+      cwd: TEMP_DIR,
+      env: {
+        ...process.env,
+        CI: 'true',
+        HOME: process.env.HOME || '/home/bugfixer',
+      },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      const chunk = data.toString();
+      stderr += chunk;
+      if (chunk.trim()) {
+        log('debug', 'Claude stderr', { text: chunk.trim().substring(0, 200) });
+      }
+    });
+
+    child.stdin.end();
+
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error(`Claude CLI timed out after ${CLAUDE_TIMEOUT_MS / 1000}s`));
+    }, CLAUDE_TIMEOUT_MS);
+
+    child.on('close', (code) => {
+      clearTimeout(timeout);
+
+      log('info', 'Claude CLI exited', { code, stdout_len: stdout.length, stderr_len: stderr.length });
+
+      if (code !== 0 && !stdout.trim()) {
+        reject(new Error(`Claude CLI exited with code ${code}: ${stderr.substring(0, 500)}`));
+        return;
+      }
+
+      // Parse the JSON output from Claude CLI
+      try {
+        const cliOutput = JSON.parse(stdout);
+
+        // Claude CLI --output-format json returns { result, ... }
+        // The actual content is in result (text) or could be the top-level object
+        let textContent = '';
+        if (typeof cliOutput.result === 'string') {
+          textContent = cliOutput.result;
+        } else if (cliOutput.content) {
+          // May be an array of content blocks
+          for (const block of (Array.isArray(cliOutput.content) ? cliOutput.content : [cliOutput.content])) {
+            if (block.type === 'text') textContent += block.text;
+            else if (typeof block === 'string') textContent += block;
+          }
+        } else {
+          // Try the raw stdout as-is
+          textContent = stdout;
+        }
+
+        // Strip markdown fences if present
+        textContent = textContent.trim();
+        if (textContent.startsWith('```')) {
+          textContent = textContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+
+        // Find the JSON object in the response
+        const jsonStart = textContent.indexOf('{');
+        const jsonEnd = textContent.lastIndexOf('}');
+        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+          textContent = textContent.substring(jsonStart, jsonEnd + 1);
+        }
+
+        const analysis = JSON.parse(textContent);
+
+        // Extract cost info from CLI output if available
+        const inputTokens = cliOutput.usage?.input_tokens || cliOutput.input_tokens || 0;
+        const outputTokens = cliOutput.usage?.output_tokens || cliOutput.output_tokens || 0;
+        const costUsd = cliOutput.usage?.cost_usd || cliOutput.cost_usd || 0;
+
+        resolve({ analysis, inputTokens, outputTokens, costUsd });
+      } catch (parseErr) {
+        log('error', 'Failed to parse Claude CLI output', { stdout: stdout.substring(0, 1000) });
+        reject(new Error('Claude CLI returned unparseable output: ' + parseErr.message));
+      }
+    });
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-
-  // Extract token usage
-  const inputTokens = data.usage?.input_tokens || 0;
-  const outputTokens = data.usage?.output_tokens || 0;
-
-  // Parse the text response as JSON
-  let textContent = '';
-  for (const block of data.content || []) {
-    if (block.type === 'text') textContent += block.text;
-  }
-
-  // Strip markdown fences if present
-  textContent = textContent.trim();
-  if (textContent.startsWith('```')) {
-    textContent = textContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-  }
-
-  let analysis;
-  try {
-    analysis = JSON.parse(textContent);
-  } catch (parseErr) {
-    log('error', 'Failed to parse Claude response as JSON', { text: textContent.substring(0, 500) });
-    throw new Error('Claude returned invalid JSON: ' + parseErr.message);
-  }
-
-  return { analysis, inputTokens, outputTokens };
 }
 
 // ============================================
@@ -229,7 +269,6 @@ async function searchBrave(query, store) {
 
 /**
  * Parse a Brave search result into structured paint match data.
- * Uses heuristics to extract brand, product name, paint code from title/description.
  */
 function parsePaintResult(result, store) {
   const title = result.title || '';
@@ -286,10 +325,6 @@ async function logApiUsage(vendor, category, endpoint, job, extra = {}) {
   }
 }
 
-function calculateClaudeCost(inputTokens, outputTokens) {
-  return ((inputTokens * INPUT_PRICE_PER_M) + (outputTokens * OUTPUT_PRICE_PER_M)) / 1_000_000;
-}
-
 // ============================================
 // Process a single job
 // ============================================
@@ -306,22 +341,22 @@ async function processJob(job) {
     })
     .eq('id', job.id);
 
-  try {
-    // 1. Download image
-    log('info', 'Downloading image...');
-    const { base64, mimeType } = await downloadImage(job.image_url);
-    log('info', `Image downloaded: ${mimeType}, ${Math.round(base64.length / 1024)}KB base64`);
+  let imagePath = null;
 
-    // 2. Analyze with Claude
-    const { analysis, inputTokens, outputTokens } = await analyzeWithClaude(base64, mimeType, job.caption);
+  try {
+    // 1. Download image to disk
+    log('info', 'Downloading image...');
+    imagePath = await downloadImageToDisk(job.image_url, job.id);
+
+    // 2. Analyze with Claude CLI
+    const { analysis, inputTokens, outputTokens, costUsd } = await analyzeWithClaudeCLI(imagePath, job.caption);
     log('info', `Claude analysis complete: ${analysis.colors?.length || 0} colors found`, { inputTokens, outputTokens });
 
     // Log Claude usage
-    const claudeCost = calculateClaudeCost(inputTokens, outputTokens);
     await logApiUsage('anthropic', 'paint_color_analysis', CLAUDE_MODEL, job, {
       input_tokens: inputTokens,
       output_tokens: outputTokens,
-      estimated_cost_usd: claudeCost,
+      estimated_cost_usd: costUsd,
       metadata: { model: CLAUDE_MODEL, colors_found: analysis.colors?.length || 0 },
     });
 
@@ -344,7 +379,7 @@ async function processJob(job) {
     }
 
     // 4. Update job as completed
-    const totalCost = claudeCost + (searchResults.totalQueries * BRAVE_COST_PER_QUERY);
+    const totalCost = (costUsd || 0) + (searchResults.totalQueries * BRAVE_COST_PER_QUERY);
     await supabase
       .from('paint_analysis_jobs')
       .update({
@@ -377,6 +412,11 @@ async function processJob(job) {
 
     if (newStatus === 'pending') {
       log('info', `Job ${job.id} will retry (attempt ${newAttempt}/${job.max_attempts || 3})`);
+    }
+  } finally {
+    // Clean up temp image
+    if (imagePath) {
+      try { await unlink(imagePath); } catch { /* ignore */ }
     }
   }
 }
