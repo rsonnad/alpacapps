@@ -1,0 +1,13 @@
+{
+  "name": "genalpaca-paint-analyzer",
+  "version": "1.0.0",
+  "description": "Paint color analysis worker — Claude Vision + Brave Search",
+  "type": "module",
+  "scripts": {
+    "start": "node worker.js",
+    "dev": "node --watch worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

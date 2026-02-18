@@ -25,6 +25,7 @@ const ADMIN_PERMISSION_KEYS = [
 const ASSOCIATE_TABS = [
   { id: 'hours', label: 'Work Planning', href: 'worktracking.html' },
   { id: 'projects', label: 'Projects', href: 'projects.html' },
+  { id: 'paint', label: 'Paint Colors', href: 'paintcolors.html' },
 ];
 
 // =============================================
