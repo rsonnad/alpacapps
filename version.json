@@ -1,12 +1,12 @@
 {
-  "version": "v260218.16 3:38a",
-  "release": 250,
-  "sha": "a231bfb84",
-  "fullSha": "a231bfb849555c43a4c2ce2ac8c00f113c17ab39",
+  "version": "v260218.17 3:45a",
+  "release": 251,
+  "sha": "3d6935c29",
+  "fullSha": "3d6935c29e777274ab51ad4ae5808b6bbbd5c821",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:38:59+00",
-  "commits": [{"sha":"a231bfb84","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-18 09:45:04+00",
+  "commits": [{"sha":"3d6935c29","message":"Fix context switcher to only show accessible tabs","author":"Rahul"}]
 }
