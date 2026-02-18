@@ -11,6 +11,7 @@ import { supabaseHealth } from './supabase-health.js';
 import { initPaiWidget } from './pai-widget.js';
 import { setupVersionInfo } from './version-info.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
+import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -161,6 +162,11 @@ function renderResidentTabNav(activeTab, authState) {
     const icon = TAB_ICONS[tab.id] || '';
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
   }).join('');
+
+  // ARIA + auto-scroll active tab into view on mobile
+  initNavTabList(tabsContainer, '.manage-tab');
+  if (switcher) initNavTabList(switcher, '.context-switcher-btn');
+  scrollActiveIntoView(tabsContainer);
 }
 
 function hasTabAccess(tab, authState) {
@@ -224,6 +230,10 @@ function renderDeviceSubTabNav(activeTab, authState) {
     const icon = TAB_ICONS[tab.id] || '';
     return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
   }).join('');
+
+  // ARIA + auto-scroll active tab into view on mobile
+  initNavTabList(subTabContainer, '.manage-tab');
+  scrollActiveIntoView(subTabContainer);
 }
 
 function normalizeRouteToken(token) {

@@ -10,6 +10,7 @@ import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
 import { identityService } from '../shared/identity-service.js';
 import { projectService } from '../shared/project-service.js';
 import { payoutService } from '../shared/payout-service.js';
+import { initTabList } from '../shared/tab-utils.js';
 
 // =============================================
 // STATE
@@ -813,20 +814,23 @@ async function handleStripeConnect() {
 // EVENT LISTENERS
 // =============================================
 function setupEventListeners() {
-  // Tab switching
-  document.querySelectorAll('.tabs button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      const tabId = `tab${btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)}`;
-      document.getElementById(tabId).classList.add('active');
-      // Load tab data on switch
-      if (btn.dataset.tab === 'history') refreshHistory();
-      else if (btn.dataset.tab === 'coworkers') refreshCoworkers();
-      else if (btn.dataset.tab === 'payment') refreshPaymentTab();
+  // Tab switching (ARIA + keyboard nav + click handling via tab-utils)
+  const workTabsContainer = document.getElementById('workTabs');
+  if (workTabsContainer) {
+    initTabList(workTabsContainer, {
+      tabSelector: 'button',
+      panelForTab: (btn) => {
+        const tabId = `tab${btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)}`;
+        return document.getElementById(tabId);
+      },
+      onSwitch: (btn) => {
+        if (btn?.dataset?.tab === 'history') refreshHistory();
+        else if (btn?.dataset?.tab === 'coworkers') refreshCoworkers();
+        else if (btn?.dataset?.tab === 'payment') refreshPaymentTab();
+      },
+      fade: true,
     });
-  });
+  }
 
   // Clock out prompt
   document.getElementById('btnClockoutSubmit').addEventListener('click', () => {

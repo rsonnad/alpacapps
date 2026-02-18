@@ -236,6 +236,9 @@
   border-bottom: 2px solid var(--border);
   margin-bottom: 1.5rem;
   overflow-x: auto;
+  background: var(--bg-subtle, #f8f7f5);
+  padding: 0.25rem 0.5rem 0;
+  border-radius: 6px 6px 0 0;
 }
 
 .detail-tab {

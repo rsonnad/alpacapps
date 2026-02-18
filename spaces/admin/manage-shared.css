@@ -34,36 +34,38 @@
   padding: 0;
 }
 
-/* Context switcher — clean tab bar (top-level section tabs) */
+/* Context switcher — pill/segment control (top-level section toggle) */
 .context-switcher {
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding: 0 2rem;
+  padding: 0.375rem 2rem;
   display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle, #f5f4f2);
 }
 
 .context-switcher-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
   font-weight: 500;
   text-decoration: none;
   color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  border: none;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
   cursor: pointer;
 }
 
 .context-switcher-btn:hover:not(.active) {
   color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .context-switcher-btn.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
   font-weight: 600;
   cursor: default;
 }
@@ -431,24 +433,24 @@
   }
 
   .context-switcher {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 0.3rem 1rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .context-switcher-btn {
-    padding: 0.4rem 0.65rem;
+    padding: 0.35rem 0.65rem;
     font-size: 0.78rem;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .manage-tab {
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
     white-space: nowrap;
     flex-shrink: 0;
+    min-height: 44px;
   }
 
   .section-header {
@@ -1116,4 +1118,15 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   .brand-type-label {
     width: auto;
   }
+}
+
+/* ─── Tab panel fade transitions ─────────────────────────────── */
+.tab-panel-fade {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.tab-panel-fade.active {
+  opacity: 1;
+  pointer-events: auto;
 }

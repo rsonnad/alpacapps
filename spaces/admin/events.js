@@ -17,6 +17,7 @@ import {
   setupLightbox
 } from '../../shared/admin-shell.js';
 import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { initTabList } from '../../shared/tab-utils.js';
 
 // =============================================
 // STATE
@@ -661,10 +662,14 @@ function updateEventDetailActions(req) {
 }
 
 function switchToEventTab(tabName) {
-  document.querySelectorAll('.event-detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.event-detail-tab').forEach(t => {
+    const isTarget = t.dataset.eventTab === tabName;
+    t.classList.toggle('active', isTarget);
+    t.setAttribute('aria-selected', String(isTarget));
+    t.setAttribute('tabindex', isTarget ? '0' : '-1');
+  });
   document.querySelectorAll('.event-detail-tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.event-detail-tab[data-event-tab="${tabName}"]`).classList.add('active');
-  document.getElementById(`${tabName}Tab`).classList.add('active');
+  document.getElementById(`${tabName}Tab`)?.classList.add('active');
 }
 
 // =============================================
@@ -1024,12 +1029,19 @@ function setupEventListeners() {
     if (e.target.id === 'eventDetailModal') closeEventDetail();
   });
 
-  // Event detail tab navigation
-  document.querySelectorAll('.event-detail-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      switchToEventTab(tab.dataset.eventTab);
+  // Event detail tab navigation (ARIA + keyboard nav via tab-utils; clicks handled by switchToEventTab)
+  const eventDetailTabsContainer = document.querySelector('.detail-tabs');
+  if (eventDetailTabsContainer) {
+    initTabList(eventDetailTabsContainer, {
+      tabSelector: '.event-detail-tab',
+      panelForTab: (tab) => document.getElementById(tab.dataset.eventTab + 'Tab'),
+      handleClicks: false,
+      fade: true,
     });
-  });
+    eventDetailTabsContainer.querySelectorAll('.event-detail-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchToEventTab(tab.dataset.eventTab));
+    });
+  }
 
   // Save terms button
   document.getElementById('saveEventTermsBtn')?.addEventListener('click', saveEventTerms);
