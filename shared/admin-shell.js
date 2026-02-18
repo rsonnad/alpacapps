@@ -4,7 +4,7 @@
  */
 
 import { supabase } from './supabase.js';
-import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } from './auth.js';
+import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission, hasPermission } from './auth.js';
 import { errorLogger } from './error-logger.js';
 import { supabaseHealth } from './supabase-health.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
@@ -174,12 +174,18 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
     return;
   }
 
+  // Resolve Staff/Admin hrefs to the first page the user actually has permission for
+  const firstStaffTab = ALL_ADMIN_TABS.find(t => t.section === 'staff' && hasAnyPermission(t.permission));
+  const firstAdminTab = ALL_ADMIN_TABS.find(t => t.section === 'admin' && hasAnyPermission(t.permission));
+  const staffHref = firstStaffTab ? (firstStaffTab.href.startsWith('/') ? firstStaffTab.href : `/spaces/admin/${firstStaffTab.href}`) : '/spaces/admin/';
+  const adminHref = firstAdminTab ? (firstAdminTab.href.startsWith('/') ? firstAdminTab.href : `/spaces/admin/${firstAdminTab.href}`) : '/spaces/admin/users.html';
+
   const tabs = [
     { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
     { id: 'resident', label: 'Residents', href: '/residents/' },
     { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
-    { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
-    { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
+    { id: 'staff', label: 'Staff', href: staffHref },
+    { id: 'admin', label: 'Admin', href: adminHref },
   ];
 
   const safeSection = hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff';
@@ -278,6 +284,13 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       const userLevel = ROLE_LEVEL[userRole] || 0;
       const requiredLevel = ROLE_LEVEL[requiredRole] || 0;
       meetsRequirement = userLevel >= requiredLevel;
+      // Also allow access if the user has the specific tab permission (e.g. resident with view_appdev)
+      if (!meetsRequirement) {
+        const tabDef = ALL_ADMIN_TABS.find(t => t.id === activeTab);
+        if (tabDef?.permission && state.hasPermission?.(tabDef.permission)) {
+          meetsRequirement = true;
+        }
+      }
     }
 
     if (state.appUser && meetsRequirement) {
