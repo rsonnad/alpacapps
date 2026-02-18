@@ -220,31 +220,32 @@ function renderContextSwitcher(authState) {
   const switcher = document.getElementById('contextSwitcher');
   if (!switcher) return;
 
-  // Admin/oracle users always see the context switcher regardless of granular permissions
   const role = authState?.appUser?.role;
-  const isAdminRole = role === 'admin' || role === 'oracle';
   const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
   const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
-  if (!isAdminRole && !hasStaffPerms && !hasAdminPerms) {
+  const hasDevicePerms = hasAnyPermission(...DEVICE_PERMISSION_KEYS);
+  const hasAssociatePerms = hasAnyPermission('clock_in_out', 'view_own_hours');
+
+  // Build tabs — only show tabs the user has access to
+  const tabs = [];
+  if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: '/residents/devices.html' });
+  tabs.push({ id: 'resident', label: 'Residents', href: '/residents/' });
+  if (hasAssociatePerms || ['staff', 'admin', 'oracle'].includes(role)) {
+    tabs.push({ id: 'associate', label: 'Associates', href: '/associates/worktracking.html' });
+  }
+  if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: '/spaces/admin/' });
+  if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' });
+
+  // Hide if only one tab (nothing to switch between)
+  if (tabs.length <= 1) {
     switcher.classList.add('hidden');
     return;
   }
-
-  const tabs = [
-    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
-    { id: 'resident', label: 'Residents', href: '/residents/' },
-    { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
-    { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
-    { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
-  ];
 
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
   const activeContext = DEVICE_PAGE_PATHS.has(currentPath) ? 'devices' : 'resident';
 
   const btns = tabs.map(tab => {
-    if (tab.id === 'admin' && !hasAdminPerms) {
-      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
-    }
     const isActive = tab.id === activeContext;
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
