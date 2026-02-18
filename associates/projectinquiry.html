@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>Paint Colors - AlpacAPPs</title>
+  <title>Project Inquiry - AlpacAPPs</title>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="stylesheet" href="../spaces/styles.css?v=5">
@@ -74,7 +74,7 @@
       color: var(--text-muted, #6b7280);
       margin-bottom: 0.25rem;
     }
-    .form-field input, .form-field select {
+    .form-field input, .form-field select, .form-field textarea {
       width: 100%;
       box-sizing: border-box;
       padding: 0.5rem 0.6rem;
@@ -83,9 +83,13 @@
       font-size: 0.9rem;
       font-family: inherit;
     }
+    .form-field textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
 
-    /* Analyze button */
-    .btn-analyze {
+    /* Action buttons */
+    .btn-action {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -101,8 +105,10 @@
       cursor: pointer;
       transition: opacity 0.2s;
     }
-    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-analyze:hover:not(:disabled) { opacity: 0.9; }
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-action:hover:not(:disabled) { opacity: 0.9; }
+    .btn-action.btn-question { background: #2563eb; }
+    .btn-action.btn-question:hover:not(:disabled) { opacity: 0.9; }
 
     /* Processing spinner */
     .processing-card {
@@ -131,6 +137,17 @@
     }
     .surface-card h3 { font-size: 0.9rem; font-weight: 700; margin: 0 0 0.5rem; color: #166534; }
     .surface-card p { font-size: 0.85rem; color: #15803d; margin: 0; line-height: 1.5; }
+
+    /* Answer card (for general questions) */
+    .answer-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .answer-card h3 { font-size: 0.9rem; font-weight: 700; margin: 0 0 0.5rem; color: #1e40af; }
+    .answer-card p { font-size: 0.85rem; color: #1d4ed8; margin: 0; line-height: 1.5; white-space: pre-wrap; }
+    .answer-card .question-text { font-style: italic; color: #6b7280; margin-bottom: 0.5rem; }
 
     /* Color result cards */
     .color-card {
@@ -181,6 +198,23 @@
     }
 
     /* History */
+    .history-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent, #d4883a);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 1rem 0 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 2px solid var(--accent, #d4883a);
+    }
+    .history-section-title:first-child { margin-top: 0; }
+    .history-group-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted, #6b7280);
+      margin: 0.75rem 0 0.25rem;
+    }
     .history-item {
       background: var(--bg-card, #fff);
       border-radius: 10px;
@@ -190,9 +224,11 @@
       transition: box-shadow 0.2s;
     }
     .history-item:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .history-item.for-me { border-left: 3px solid var(--accent, #d4883a); }
     .history-meta { display: flex; justify-content: space-between; align-items: center; }
     .history-date { font-size: 0.8rem; color: var(--text-muted); }
     .history-caption { font-size: 0.85rem; font-weight: 600; margin-top: 0.25rem; }
+    .history-from { font-size: 0.75rem; color: var(--text-muted); }
     .history-colors { display: flex; gap: 4px; margin-top: 0.5rem; }
     .history-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
     .history-actions { display: flex; gap: 0.5rem; }
@@ -229,6 +265,17 @@
     }
     .badge-surface { background: #dbeafe; color: #1d4ed8; }
     .badge-paint { background: #fef3c7; color: #92400e; }
+    .badge-type {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge-type.general { background: #eff6ff; color: #2563eb; }
+    .badge-type.color-pick { background: #fef3c7; color: #92400e; }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,6 +335,22 @@
 
         <div class="form-card" style="margin-top:0.75rem">
           <div class="form-field">
+            <label>Question for (optional)</label>
+            <select id="assignedToSelect">
+              <option value="">AI Only</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>General Question (optional)</label>
+            <textarea id="questionInput" placeholder="e.g. What type of wood is this? Is there water damage?"></textarea>
+          </div>
+          <div class="form-field" id="specialTypeField">
+            <label>Special Type</label>
+            <select id="specialTypeSelect">
+              <option value="color_pick">Color Pick</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label>Caption (optional)</label>
             <input type="text" id="captionInput" placeholder="e.g. Master bedroom north wall">
           </div>
@@ -297,9 +360,13 @@
               <option value="">— No space —</option>
             </select>
           </div>
-          <button class="btn-analyze" id="btnAnalyze" disabled>
+          <button class="btn-action" id="btnAnalyze" disabled>
             <span>🎨</span>
             <span>Analyze Color Options</span>
+          </button>
+          <button class="btn-action btn-question" id="btnSubmitQuestion" disabled style="display:none">
+            <span>❓</span>
+            <span>Submit Question</span>
           </button>
         </div>
       </div>
@@ -308,7 +375,7 @@
       <div id="processingSection" style="display:none">
         <div class="processing-card">
           <div class="spinner"></div>
-          <p style="font-weight:600;margin:0 0 0.25rem">Analyzing colors...</p>
+          <p id="processingTitle" style="font-weight:600;margin:0 0 0.25rem">Processing...</p>
           <p style="font-size:0.8rem;color:var(--text-muted);margin:0">This usually takes 30-60 seconds</p>
         </div>
       </div>
@@ -316,10 +383,11 @@
       <!-- Results -->
       <div id="resultsSection" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-          <h2 style="font-size:1.1rem;font-weight:700;margin:0">Color Analysis</h2>
-          <button class="btn-icon" id="btnNewAnalysis" title="New analysis">+ New</button>
+          <h2 id="resultsTitle" style="font-size:1.1rem;font-weight:700;margin:0">Results</h2>
+          <button class="btn-icon" id="btnNewAnalysis" title="New inquiry">+ New</button>
         </div>
 
+        <div id="answerResult"></div>
         <div id="surfaceAnalysis"></div>
 
         <div id="colorCards" style="display:grid;grid-template-columns:1fr;gap:0.75rem;margin-top:0.75rem"></div>
@@ -327,9 +395,9 @@
 
       <!-- History -->
       <div id="historySection" style="margin-top:1.5rem">
-        <h3 style="font-size:0.9rem;font-weight:700;color:var(--text-muted);margin:0 0 0.5rem">Recent Analyses</h3>
+        <h3 style="font-size:0.9rem;font-weight:700;color:var(--text-muted);margin:0 0 0.5rem">Recent Inquiries</h3>
         <div id="historyList" style="display:flex;flex-direction:column;gap:0.5rem">
-          <p id="historyEmpty" style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:1rem">No analyses yet. Upload a photo to get started.</p>
+          <p id="historyEmpty" style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:1rem">No inquiries yet. Upload a photo to get started.</p>
         </div>
       </div>
     </div>
@@ -339,6 +407,6 @@
   <script src="../shared/instant-chrome.js"></script>
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
-  <script type="module" src="paintcolors.js"></script>
+  <script type="module" src="projectinquiry.js"></script>
 </body>
 </html>

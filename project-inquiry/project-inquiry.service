@@ -1,0 +1,19 @@
+[Unit]
+Description=AlpacApps Project Inquiry Worker
+After=network.target
+
+[Service]
+Type=simple
+User=bugfixer
+Environment=HOME=/home/bugfixer
+WorkingDirectory=/opt/project-inquiry
+EnvironmentFile=/opt/project-inquiry/.env
+ExecStart=/usr/bin/node /opt/project-inquiry/worker.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=project-inquiry
+
+[Install]
+WantedBy=multi-user.target
