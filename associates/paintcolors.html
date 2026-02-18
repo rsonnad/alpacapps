@@ -13,23 +13,20 @@
   <style>
     .app-container { max-width: 700px; margin: 0 auto; padding: 1rem; }
 
-    /* Upload zone */
-    .upload-zone {
-      border: 2px dashed var(--border, #d1d5db);
-      border-radius: 12px;
-      padding: 2rem 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      background: var(--bg-card, #fff);
+    /* Photo upload actions (matches worktracking pattern) */
+    .photo-upload-actions { display: flex; gap: 0.75rem; }
+    .photo-action-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem 0.5rem; border: 2px dashed #d1d5db; border-radius: 10px;
+      background: #fff; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      font-family: inherit;
     }
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--accent, #d4883a);
-      background: #fef7f0;
-    }
-    .upload-zone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    .upload-zone .label { font-size: 0.95rem; color: var(--text-muted, #6b7280); }
-    .upload-zone input[type="file"] { display: none; }
+    .photo-action-btn:hover { border-color: var(--accent); background: #f8fafc; }
+    .photo-action-btn:active { background: #f1f5f9; transform: scale(0.98); }
+    .photo-action-btn input[type="file"] { display: none; }
+    .photo-action-icon { font-size: 1.5rem; margin-bottom: 0.2rem; }
+    .photo-action-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .photo-action-hint { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
 
     /* Preview */
     .upload-preview {
@@ -267,10 +264,18 @@
     <div class="app-container">
       <!-- Upload Section -->
       <div id="uploadSection">
-        <div id="uploadZone" class="upload-zone">
-          <div class="icon">📷</div>
-          <div class="label">Tap to upload a photo of the surface</div>
-          <input type="file" id="fileInput" accept="image/*" capture="environment">
+        <div id="uploadButtons" class="photo-upload-actions">
+          <label class="photo-action-btn" for="cameraInput">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment">
+            <span class="photo-action-icon">📷</span>
+            <span class="photo-action-label">Take Photo</span>
+          </label>
+          <label class="photo-action-btn" for="fileInput">
+            <input type="file" id="fileInput" accept="image/*">
+            <span class="photo-action-icon">🖼️</span>
+            <span class="photo-action-label">Upload Photo</span>
+            <span class="photo-action-hint">From gallery or files</span>
+          </label>
         </div>
 
         <div id="uploadPreview" class="upload-preview" style="display:none">
@@ -294,7 +299,7 @@
           </div>
           <button class="btn-analyze" id="btnAnalyze" disabled>
             <span>🎨</span>
-            <span>Analyze Colors</span>
+            <span>Analyze Color Options</span>
           </button>
         </div>
       </div>
