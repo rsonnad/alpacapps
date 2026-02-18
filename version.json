@@ -1,12 +1,12 @@
 {
-  "version": "v260218.19 5:44a",
-  "release": 253,
-  "sha": "055b11f98",
-  "fullSha": "055b11f982ea6457f29a00fed9d2aef83eed8279",
+  "version": "v260218.20 6:06a",
+  "release": 254,
+  "sha": "a93ac5dfe",
+  "fullSha": "a93ac5dfeebb80f4e8c7c507f535a596eb8e6caf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 11:44:55+00",
-  "commits": [{"sha":"055b11f98","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-18 12:06:20+00",
+  "commits": [{"sha":"15a819b81","message":"Redesign context switcher: pill buttons → clean underline tabs with icons","author":"Rahul"},{"sha":"a93ac5dfe","message":"Merge branch 'claude/lucid-snyder'","author":"Rahul"}]
 }
