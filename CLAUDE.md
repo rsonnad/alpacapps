@@ -18,6 +18,23 @@ https://alpacaplayhouse.com/path/to/affected-page.html
 - List clickable URLs to every page affected by the change
 - These lines go at the **very end** — nothing after them
 
+## MANDATORY: Update PRODUCTDESIGN.md on Significant Decisions
+
+**When you make a decision that affects WHY the product is built the way it is, update `PRODUCTDESIGN.md`.**
+
+This includes (but is not limited to):
+- Choosing a new vendor or service over alternatives
+- Selecting an AI model for a new use case
+- Changing the business model, pricing, or cost structure
+- Designing a new user-facing feature with meaningful tradeoffs
+- Changing environment or infrastructure configuration patterns
+- Adding or removing a payment method, communication channel, or integration
+- Making a deliberate tradeoff (e.g. simplicity over flexibility, cost over capability)
+
+**How to update:** Add a new subsection under the relevant section (or create a new section) following the existing pattern: **Decision** (what was decided), **Why** (reasoning, alternatives considered, tradeoffs accepted). Keep entries concise — a few sentences per bullet, not paragraphs.
+
+**When NOT to update:** Routine bug fixes, minor UI tweaks, or implementation details that don't reflect a product-level choice. If the change is purely technical (how) rather than strategic (why), it belongs in `ARCHITECTURE.md` or `CLAUDE.md` instead.
+
 ## Excluded: `/mistiq/`
 
 The `/mistiq/` directory is a **separate, unrelated project** (Mistiq Staffing). It shares this repo for hosting convenience only. Do NOT:
