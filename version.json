@@ -1,12 +1,12 @@
 {
-  "version": "v260218.15 3:37a",
-  "release": 249,
-  "sha": "8cb4297f8",
-  "fullSha": "8cb4297f8cd1550002fb06bff13dca0d71135a75",
+  "version": "v260218.16 3:38a",
+  "release": 250,
+  "sha": "a231bfb84",
+  "fullSha": "a231bfb849555c43a4c2ce2ac8c00f113c17ab39",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:37:51+00",
-  "commits": [{"sha":"5085afaff","message":"fix: hide wordmark in mobile nav to remove stray horizontal line","author":"Rahul"},{"sha":"8cb4297f8","message":"Merge branch 'claude/happy-hugle'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:38:59+00",
+  "commits": [{"sha":"a231bfb84","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
