@@ -1,9 +1,10 @@
 /**
  * Instant Chrome - Skip loading spinner for returning users with cached auth.
  *
- * Also pre-renders the site header shell (logo + wordmark + background) so
- * there is no visual flash when switching between authenticated pages.
- * The full header (nav links, auth menu, mobile nav) is injected later by
+ * Pre-renders an empty header shell (background bar only, no logo images) so
+ * content doesn't jump when the full header loads. Logo images are omitted
+ * here to avoid FOUC where they briefly render at natural size.
+ * The full header (logos, nav, auth, mobile nav) is injected by
  * the page's module script via injectSiteNav(), which replaces this shell.
  *
  * IMPORTANT: This must be a regular (non-module) script so it executes
@@ -23,31 +24,17 @@
     if (overlay) overlay.style.display = 'none';
     if (content) content.classList.remove('hidden');
 
-    // Pre-render header shell to prevent logo/wordmark flash.
-    // This renders the same structure as renderHeader({ transparent: false, light: false })
-    // but without nav links, auth, or mobile nav (those are added by injectSiteNav later).
+    // Pre-render header shell so content doesn't jump when full header loads.
+    // Only renders the header container (no logo images) to avoid FOUC where
+    // images briefly render at natural size before CSS constrains them.
+    // The full header (logos, nav, auth) is injected by injectSiteNav() moments later.
     var header = document.getElementById('siteHeader');
     if (header && !header.children.length) {
-      var b = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos';
       header.innerHTML =
         '<header class="aap-header aap-header--solid aap-header--dark" id="aap-header">' +
           '<div class="aap-header__inner">' +
-            '<a href="/" class="aap-header__logo">' +
-              '<img src="' + b + '/alpaca-head-black-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__icon" ' +
-                'height="30" style="height:30px;width:auto;" ' +
-                'data-light-src="' + b + '/alpaca-head-white-transparent.png" ' +
-                'data-dark-src="' + b + '/alpaca-head-black-transparent.png">' +
-              '<img src="' + b + '/wordmark-black-transparent.png" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" ' +
-                'height="22" style="height:22px;width:auto;" ' +
-                'data-light-src="' + b + '/wordmark-white-transparent.png" ' +
-                'data-dark-src="' + b + '/wordmark-black-transparent.png">' +
-            '</a>' +
+            '<a href="/" class="aap-header__logo"></a>' +
             '<div id="aapHeaderAuth" class="aap-header-auth"></div>' +
-            '<button class="aap-menu-toggle" id="aap-menu-toggle" aria-label="Toggle menu">' +
-              '<span class="aap-menu-toggle__bar"></span>' +
-              '<span class="aap-menu-toggle__bar"></span>' +
-              '<span class="aap-menu-toggle__bar"></span>' +
-            '</button>' +
           '</div>' +
         '</header>';
     }
