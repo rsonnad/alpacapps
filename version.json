@@ -1,12 +1,12 @@
 {
-  "version": "v260218.12 3:20a",
-  "release": 246,
-  "sha": "099152815",
-  "fullSha": "099152815e04daa209dbfa39506d72a726f16722",
+  "version": "v260218.13 3:27a",
+  "release": 247,
+  "sha": "c5d3d679e",
+  "fullSha": "c5d3d679e8fa5ca6978c55cc7854163689475c28",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:20:21+00",
-  "commits": [{"sha":"099152815","message":"feat: show context switcher to all users + redesign as prominent nav","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:27:17+00",
+  "commits": [{"sha":"5a063473b","message":"fix: remove auth gate that blocks /spaces/ page for unauthenticated users","author":"Rahul"},{"sha":"c5d3d679e","message":"Merge branch 'claude/blissful-dubinsky'","author":"Rahul"}]
 }
