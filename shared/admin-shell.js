@@ -180,19 +180,27 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   const staffHref = firstStaffTab ? (firstStaffTab.href.startsWith('/') ? firstStaffTab.href : `/spaces/admin/${firstStaffTab.href}`) : '/spaces/admin/';
   const adminHref = firstAdminTab ? (firstAdminTab.href.startsWith('/') ? firstAdminTab.href : `/spaces/admin/${firstAdminTab.href}`) : '/spaces/admin/users.html';
 
-  const tabs = [
-    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
-    { id: 'resident', label: 'Residents', href: '/residents/' },
-    { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
-    { id: 'staff', label: 'Staff', href: staffHref },
-    { id: 'admin', label: 'Admin', href: adminHref },
-  ];
+  const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars', 'view_oven', 'view_glowforge'];
+  const hasDevicePerms = hasAnyPermission(...DEVICE_PERMISSION_KEYS);
+  const hasAssociatePerms = hasAnyPermission('clock_in_out', 'view_own_hours');
+
+  const tabs = [];
+  if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: '/residents/devices.html' });
+  tabs.push({ id: 'resident', label: 'Residents', href: '/residents/' });
+  if (hasAssociatePerms || ['staff', 'admin', 'oracle'].includes(userRole)) {
+    tabs.push({ id: 'associate', label: 'Associates', href: '/associates/worktracking.html' });
+  }
+  if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
+  if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
+
+  // Hide if only one tab (nothing to switch between)
+  if (tabs.length <= 1) {
+    switcher.classList.add('hidden');
+    return;
+  }
 
   const safeSection = hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff';
   const btns = tabs.map(tab => {
-    if (tab.id === 'admin' && !hasAdminPerms) {
-      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
-    }
     const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
     const activeClass = isActive ? ' active' : '';
     return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
