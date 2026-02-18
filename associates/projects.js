@@ -9,6 +9,7 @@ import { projectService } from '../shared/project-service.js';
 let currentUser = null;
 let allTasks = [];
 let myTasksActive = false;
+let modalDataLoaded = false;
 
 // ---- Init ----
 initAssociatePage({
@@ -26,12 +27,16 @@ async function loadAssignees() {
   try {
     const names = await projectService.getAssigneeNames();
     const sel = document.getElementById('filterAssignee');
+    const currentVal = sel.value;
+    // Clear existing options except the first "All People"
+    while (sel.options.length > 1) sel.remove(1);
     names.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
       sel.appendChild(opt);
     });
+    sel.value = currentVal; // preserve selection
   } catch (e) {
     console.error('Failed to load assignees:', e);
   }
@@ -185,6 +190,15 @@ function bindEvents() {
     loadTasks();
   });
 
+  // Add Project
+  document.getElementById('btnAddProject').addEventListener('click', openAddModal);
+  document.getElementById('btnCloseModal').addEventListener('click', closeAddModal);
+  document.getElementById('btnCancelModal').addEventListener('click', closeAddModal);
+  document.getElementById('addProjectModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeAddModal();
+  });
+  document.getElementById('addProjectForm').addEventListener('submit', handleAddProject);
+
   // Task action buttons (delegated)
   document.getElementById('taskList').addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-action]');
@@ -212,6 +226,91 @@ function bindEvents() {
       btn.disabled = false;
     }
   });
+}
+
+// ---- Add Project Modal ----
+async function openAddModal() {
+  const modal = document.getElementById('addProjectModal');
+  modal.classList.remove('hidden');
+  document.getElementById('newTitle').focus();
+
+  // Load spaces and users on first open
+  if (!modalDataLoaded) {
+    modalDataLoaded = true;
+    try {
+      const [spaces, users] = await Promise.all([
+        projectService.getSpaces(),
+        projectService.getUsers(),
+      ]);
+
+      const spaceSel = document.getElementById('newSpace');
+      spaces.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        spaceSel.appendChild(opt);
+      });
+
+      const assigneeSel = document.getElementById('newAssignee');
+      users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify({ id: u.id, name: u.display_name });
+        opt.textContent = u.display_name;
+        assigneeSel.appendChild(opt);
+      });
+    } catch (e) {
+      console.error('Failed to load modal data:', e);
+    }
+  }
+}
+
+function closeAddModal() {
+  document.getElementById('addProjectModal').classList.add('hidden');
+  document.getElementById('addProjectForm').reset();
+}
+
+async function handleAddProject(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmitProject');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  try {
+    const title = document.getElementById('newTitle').value.trim();
+    const notes = document.getElementById('newNotes').value.trim();
+    const priority = document.getElementById('newPriority').value;
+    const spaceId = document.getElementById('newSpace').value;
+    const assigneeVal = document.getElementById('newAssignee').value;
+
+    let assignedTo = null;
+    let assignedName = null;
+    if (assigneeVal) {
+      const parsed = JSON.parse(assigneeVal);
+      assignedTo = parsed.id;
+      assignedName = parsed.name;
+    }
+
+    await projectService.createTask({
+      title,
+      notes,
+      priority: priority ? parseInt(priority) : null,
+      spaceId: spaceId || null,
+      assignedTo,
+      assignedName,
+      status: 'open',
+    });
+
+    showToast('Project created', 'success');
+    closeAddModal();
+    await loadTasks();
+    await loadAssignees(); // refresh assignee filter if new name
+  } catch (err) {
+    console.error('Failed to create project:', err);
+    showToast('Failed to create project', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Project';
+  }
 }
 
 function esc(str) {
