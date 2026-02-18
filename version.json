@@ -1,12 +1,12 @@
 {
-  "version": "v260218.14 3:36a",
-  "release": 248,
-  "sha": "1e91e9c01",
-  "fullSha": "1e91e9c0197e8cd84cec9c590b2f75b04a21dde2",
+  "version": "v260218.15 3:37a",
+  "release": 249,
+  "sha": "8cb4297f8",
+  "fullSha": "8cb4297f8cd1550002fb06bff13dca0d71135a75",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:36:43+00",
-  "commits": [{"sha":"1e91e9c01","message":"Fix Access Denied for permission-based staff page access","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:37:51+00",
+  "commits": [{"sha":"5085afaff","message":"fix: hide wordmark in mobile nav to remove stray horizontal line","author":"Rahul"},{"sha":"8cb4297f8","message":"Merge branch 'claude/happy-hugle'","author":"Rahul"}]
 }
