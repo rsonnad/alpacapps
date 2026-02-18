@@ -1,12 +1,12 @@
 {
-  "version": "v260218.28 8:04a",
-  "release": 262,
-  "sha": "2d7b7f77c",
-  "fullSha": "2d7b7f77c73adc82a4dad96f40dee764e2ba3382",
+  "version": "v260218.30 8:08a",
+  "release": 264,
+  "sha": "66b68bca1",
+  "fullSha": "66b68bca182e54516faa3b4c646710f421b440fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 14:04:28+00",
-  "commits": [{"sha":"f241c29d9","message":"fix: Paint Colors page missing site.css causing oversized logo and broken UX","author":"Rahul"},{"sha":"2d7b7f77c","message":"Merge branch 'claude/pensive-merkle'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 14:08:02+00",
+  "commits": [{"sha":"47084bb09","message":"update paint colors: use worktracking-style upload buttons + rename analyze","author":"Rahul"},{"sha":"66b68bca1","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
 }
