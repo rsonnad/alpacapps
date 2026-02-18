@@ -1,12 +1,12 @@
 {
-  "version": "v260217.13 11:11p",
-  "release": 232,
-  "sha": "8d05e62dd",
-  "fullSha": "8d05e62dd4136af1e3e428b95f01e761422cb838",
+  "version": "v260217.14 11:41p",
+  "release": 233,
+  "sha": "29862a6f8",
+  "fullSha": "29862a6f8ea24ba5def03e412e1810a1ea34566f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 05:11:36+00",
-  "commits": [{"sha":"69e48b142","message":"fix: stop sending lease signing reminders after lease period ends","author":"Rahul"},{"sha":"8d05e62dd","message":"Merge branch 'claude/affectionate-bouman'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 05:41:53+00",
+  "commits": [{"sha":"29862a6f8","message":"docs: add PRODUCTDESIGN.md capturing design decisions and rationale","author":"Rahul"}]
 }
