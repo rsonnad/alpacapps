@@ -379,17 +379,13 @@ function renderUserMenuHTML(appUser, profileHref) {
     ? `<img src="${avatarUrl}" alt="" class="user-avatar">`
     : `<span class="user-avatar user-avatar--initials">${initials}</span>`;
 
-  // Role-based navigation links
+  // Role-based navigation links — on public pages, show "Intranet" for resident+; no "Manage" link
   const role = appUser.role || '';
-  const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
   const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
 
   let navLinks = '';
   if (isResident) {
     navLinks += `<a href="/residents/lighting.html" class="user-menu-item">Intranet</a>`;
-  }
-  if (isStaffOrAdmin) {
-    navLinks += `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`;
   }
 
   return `
@@ -433,15 +429,11 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
       if (mobileList && mobileLi) {
         const role = state.appUser.role || '';
         const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
-        const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
 
-        // Build mobile nav items for authenticated user
+        // Build mobile nav items — on public pages, show "Intranet" for resident+; no "Manage"
         const mobileItems = [];
         if (isResident) {
           mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/lighting.html" class="aap-mobile-nav__link">Intranet</a></li>`);
-        }
-        if (isStaffOrAdmin) {
-          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/spaces/admin/spaces.html" class="aap-mobile-nav__link">Manage</a></li>`);
         }
         mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/profile.html" class="aap-mobile-nav__link">Profile</a></li>`);
         mobileItems.push(`<li class="aap-mobile-nav__item"><button class="aap-mobile-nav__link aap-mobile-nav__signout" id="mobileSignOutBtn" style="background:none;border:none;color:#c0392b;cursor:pointer;font:inherit;padding:inherit;width:100%;text-align:left;">Sign Out</button></li>`);
