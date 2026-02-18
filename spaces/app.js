@@ -105,8 +105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initAuth();
     initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
   }
-  document.body.classList.add('authed');
-
   // Check for URL parameters
   const directSpaceId = urlParams.get('id');
   const viewParam = urlParams.get('view');
