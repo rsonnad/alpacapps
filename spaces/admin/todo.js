@@ -13,6 +13,7 @@ import { getAuthState } from '../../shared/auth.js';
 
 let categories = [];
 let allItems = [];
+let searchQuery = '';
 
 // =============================================
 // DATA LOADING
@@ -290,6 +291,54 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+// =============================================
+// SEARCH
+// =============================================
+
+function itemMatchesSearch(item, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const title = (item.title || '').toLowerCase();
+  const desc = (item.description || '').toLowerCase();
+  const badge = (item.badge || '').toLowerCase();
+  return title.includes(q) || desc.includes(q) || badge.includes(q);
+}
+
+function highlightText(text, query) {
+  if (!query || !text) return esc(text);
+  const escaped = esc(text);
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${q})`, 'gi');
+  return escaped.replace(re, '<span class="todo-search-highlight">$1</span>');
+}
+
+function highlightHtml(html, query) {
+  // For description HTML, highlight only text nodes (simple approach)
+  if (!query || !html) return html;
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${q})`, 'gi');
+  // Split on HTML tags, highlight only non-tag segments
+  return html.replace(/(<[^>]+>)|([^<]+)/g, (match, tag, text) => {
+    if (tag) return tag;
+    return text.replace(re, '<span class="todo-search-highlight">$1</span>');
+  });
+}
+
+function updateSearchUI() {
+  const countEl = document.getElementById('todoSearchCount');
+  const clearBtn = document.getElementById('todoSearchClear');
+
+  if (!searchQuery) {
+    countEl.textContent = '';
+    clearBtn.classList.add('hidden');
+    return;
+  }
+
+  clearBtn.classList.remove('hidden');
+  const matchCount = allItems.filter(i => itemMatchesSearch(i, searchQuery)).length;
+  countEl.textContent = `${matchCount}/${allItems.length}`;
+}
+
 function render() {
   // Summary
   const total = allItems.length;
@@ -307,16 +356,20 @@ function render() {
 
   // Categories
   document.getElementById('todoContainer').innerHTML = categories.map(cat => {
+    const visibleItems = cat.items.filter(i => itemMatchesSearch(i, searchQuery));
+    const catHidden = searchQuery && visibleItems.length === 0;
     const catDone = cat.items.filter(i => i.is_checked).length;
     const catTotal = cat.items.length;
     const allDone = catDone === catTotal && catTotal > 0;
+    // If searching, force categories open so results are visible
+    const collapsed = searchQuery ? false : allDone;
 
     return `
-      <div class="todo-category${allDone ? ' collapsed' : ''}" data-cat="${cat.id}">
+      <div class="todo-category${collapsed ? ' collapsed' : ''}${catHidden ? ' search-hidden' : ''}" data-cat="${cat.id}">
         <div class="todo-category-header" onclick="this.parentElement.classList.toggle('collapsed')">
           ${cat.icon_svg || defaultIcon}
           <h2>${esc(cat.title)}</h2>
-          <span class="todo-category-progress"><span class="${allDone ? 'done' : ''}">${catDone}/${catTotal}</span></span>
+          <span class="todo-category-progress"><span class="${allDone ? 'done' : ''}">${searchQuery ? `${visibleItems.length}/` : ''}${catDone}/${catTotal}</span></span>
           <div class="todo-cat-actions" onclick="event.stopPropagation()">
             <button class="todo-action-btn" title="Add item" data-action="add-item" data-cat-id="${cat.id}">${icons.plus}</button>
             <button class="todo-action-btn" title="Edit" data-action="edit-cat" data-cat-id="${cat.id}">${icons.edit}</button>
@@ -327,20 +380,23 @@ function render() {
         </div>
         <div class="todo-items">
           ${cat.items.map((item, idx) => {
+            const matches = itemMatchesSearch(item, searchQuery);
             const checked = item.is_checked;
             const badgeHtml = item.badge ? `<span class="todo-badge ${item.badge}">${item.badge}</span>` : '';
             const checkedInfo = checked && item.checked_at ? `<div class="todo-checked-info">${timeAgo(item.checked_at)}</div>` : '';
+            const titleHtml = searchQuery ? highlightText(item.title, searchQuery) : esc(item.title);
+            const descHtml = item.description ? (searchQuery ? highlightHtml(item.description, searchQuery) : item.description) : '';
             return `
-              <div class="todo-item${checked ? ' checked' : ''}">
+              <div class="todo-item${checked ? ' checked' : ''}${!matches ? ' search-hidden' : ''}">
                 <input type="checkbox" class="todo-checkbox" data-id="${item.id}" ${checked ? 'checked' : ''}>
                 <div class="todo-item-content">
-                  <div class="todo-item-title">${esc(item.title)}</div>
-                  ${item.description ? `<div class="todo-item-desc">${item.description}</div>` : ''}
+                  <div class="todo-item-title">${titleHtml}</div>
+                  ${descHtml ? `<div class="todo-item-desc">${descHtml}</div>` : ''}
                   ${checkedInfo}
                 </div>
                 ${badgeHtml}
+                <button class="todo-item-edit-btn" title="Edit" data-action="edit-item" data-item-id="${item.id}">${icons.edit}</button>
                 <div class="todo-item-actions" onclick="event.stopPropagation()">
-                  <button class="todo-action-btn" title="Edit" data-action="edit-item" data-item-id="${item.id}">${icons.edit}</button>
                   <button class="todo-action-btn" title="Move up" data-action="move-item-up" data-item-id="${item.id}" ${idx === 0 ? 'disabled' : ''}>${icons.up}</button>
                   <button class="todo-action-btn" title="Move down" data-action="move-item-down" data-item-id="${item.id}" ${idx === cat.items.length - 1 ? 'disabled' : ''}>${icons.down}</button>
                 </div>
@@ -351,6 +407,8 @@ function render() {
       </div>
     `;
   }).join('');
+
+  updateSearchUI();
 }
 
 // =============================================
@@ -378,6 +436,19 @@ function setupEventListeners() {
       case 'move-item-up': moveItem(itemId, 'up'); break;
       case 'move-item-down': moveItem(itemId, 'down'); break;
     }
+  });
+
+  // Search
+  const searchInput = document.getElementById('todoSearch');
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value.trim();
+    render();
+  });
+  document.getElementById('todoSearchClear').addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    render();
+    searchInput.focus();
   });
 
   document.getElementById('resetAllBtn').addEventListener('click', handleResetAll);
