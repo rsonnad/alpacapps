@@ -26,11 +26,41 @@ initAssociatePage({
   }
 });
 
+const STORAGE_KEY_ASSIGNED = 'projectInquiry_assignedTo';
+const STORAGE_KEY_SPECIAL = 'projectInquiry_specialType';
+
 async function initApp() {
   await Promise.all([loadSpaces(), loadUsers()]);
+  restoreDropdownSelections();
   setupEventListeners();
   setupDynamicFields();
   await loadHistory();
+}
+
+function restoreDropdownSelections() {
+  const savedAssigned = localStorage.getItem(STORAGE_KEY_ASSIGNED);
+  const savedSpecial = localStorage.getItem(STORAGE_KEY_SPECIAL);
+
+  if (savedAssigned) {
+    const sel = document.getElementById('assignedToSelect');
+    // Only restore if the value exists in the dropdown
+    if ([...sel.options].some(o => o.value === savedAssigned)) {
+      sel.value = savedAssigned;
+    }
+  }
+  if (savedSpecial) {
+    const sel = document.getElementById('specialTypeSelect');
+    if ([...sel.options].some(o => o.value === savedSpecial)) {
+      sel.value = savedSpecial;
+    }
+  }
+}
+
+function persistDropdownSelections() {
+  const assignedVal = document.getElementById('assignedToSelect').value;
+  const specialVal = document.getElementById('specialTypeSelect').value;
+  localStorage.setItem(STORAGE_KEY_ASSIGNED, assignedVal);
+  localStorage.setItem(STORAGE_KEY_SPECIAL, specialVal);
 }
 
 // =============================================
@@ -143,6 +173,10 @@ function setupEventListeners() {
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnSubmitQuestion = document.getElementById('btnSubmitQuestion');
   const btnNewAnalysis = document.getElementById('btnNewAnalysis');
+
+  // Persist dropdown selections on change
+  document.getElementById('assignedToSelect').addEventListener('change', persistDropdownSelections);
+  document.getElementById('specialTypeSelect').addEventListener('change', persistDropdownSelections);
 
   // Camera capture (Take Photo)
   cameraInput.addEventListener('change', (e) => {
