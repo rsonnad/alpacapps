@@ -1,14 +1,14 @@
 #!/bin/bash
-# Paint Color Analyzer Worker — Install Script
+# Project Inquiry Worker — Install Script
 # Run on the DO/Oracle server as root
 
 set -e
 
-INSTALL_DIR="/opt/paint-analyzer"
-SERVICE_NAME="paint-analyzer"
+INSTALL_DIR="/opt/project-inquiry"
+SERVICE_NAME="project-inquiry"
 USER="bugfixer"
 
-echo "=== Installing Paint Color Analyzer Worker ==="
+echo "=== Installing Project Inquiry Worker ==="
 
 # Create directory
 mkdir -p "$INSTALL_DIR"
@@ -22,10 +22,9 @@ if [ ! -f "$INSTALL_DIR/.env" ]; then
   cat > "$INSTALL_DIR/.env" << 'EOF'
 SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<paste-service-role-key>
-ANTHROPIC_API_KEY=<paste-anthropic-api-key>
+GEMINI_API_KEY=<paste-gemini-api-key>
 BRAVE_API_KEY=<paste-brave-api-key>
 POLL_INTERVAL_MS=10000
-CLAUDE_MODEL=claude-sonnet-4-6
 EOF
   echo ">>> Created .env — fill in the API keys!"
 else
@@ -40,8 +39,7 @@ cd "$INSTALL_DIR"
 sudo -u "$USER" npm install --production
 
 # Install systemd service
-cp "$INSTALL_DIR/../genalpaca-admin/paint-analyzer/paint-analyzer.service" /etc/systemd/system/ 2>/dev/null || \
-  cp "$(dirname "$0")/paint-analyzer.service" /etc/systemd/system/
+cp "$(dirname "$0")/project-inquiry.service" /etc/systemd/system/
 
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
