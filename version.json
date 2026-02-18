@@ -1,12 +1,12 @@
 {
-  "version": "v260218.20 6:06a",
-  "release": 254,
-  "sha": "a93ac5dfe",
-  "fullSha": "a93ac5dfeebb80f4e8c7c507f535a596eb8e6caf",
+  "version": "v260218.21 6:12a",
+  "release": 255,
+  "sha": "4c9babdeb",
+  "fullSha": "4c9babdebb3d151143e5477c3172866a4f8c4b3f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 12:06:20+00",
-  "commits": [{"sha":"15a819b81","message":"Redesign context switcher: pill buttons → clean underline tabs with icons","author":"Rahul"},{"sha":"a93ac5dfe","message":"Merge branch 'claude/lucid-snyder'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 12:12:32+00",
+  "commits": [{"sha":"b3a430fe8","message":"Style tab icons: center above label, use text color instead of opacity","author":"Rahul"},{"sha":"4c9babdeb","message":"Merge branch 'claude/lucid-snyder'","author":"Rahul"}]
 }
