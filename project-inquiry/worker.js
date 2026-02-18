@@ -1,16 +1,16 @@
 /**
- * Paint Color Analyzer Worker
- * Polls Supabase `paint_analysis_jobs` table for pending jobs,
- * analyzes images via Claude CLI (Sonnet 4.6, using existing OAuth),
- * searches Brave for matching paint products, and stores results.
+ * Project Inquiry Worker
+ * Polls Supabase `project_inquiries` table for pending jobs.
  *
+ * Two inquiry types:
+ * - "color_pick": Analyzes image via Gemini Flash → searches Brave for matching paints
+ * - "general": Answers a free-text question about the image via Gemini Flash
+ *
+ * Uses Gemini 2.5 Flash for fast, low-cost image analysis (no Claude CLI needed).
  * Runs on the DO/Oracle server alongside other workers.
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import { spawn } from 'child_process';
-import path from 'path';
 
 // ============================================
 // Configuration
@@ -18,11 +18,14 @@ import path from 'path';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '10000');
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
-const CLAUDE_TIMEOUT_MS = parseInt(process.env.CLAUDE_TIMEOUT_MS || '180000'); // 3 min
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_SEARCH_RESULTS = 5;
-const TEMP_DIR = '/tmp/paint-analyzer';
+
+// Gemini pricing (2.5 Flash: $0.15/1M input, $3.50/1M output under 200k context)
+const GEMINI_INPUT_COST_PER_TOKEN = 0.15 / 1_000_000;
+const GEMINI_OUTPUT_COST_PER_TOKEN = 3.50 / 1_000_000;
 
 // Brave pricing
 const BRAVE_COST_PER_QUERY = 0; // Free tier (2,000/mo); set to 0.003 if paid
@@ -33,6 +36,10 @@ if (!SUPABASE_SERVICE_KEY) {
 }
 if (!BRAVE_API_KEY) {
   console.error('BRAVE_API_KEY is required');
+  process.exit(1);
+}
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is required');
   process.exit(1);
 }
 
@@ -48,28 +55,100 @@ function log(level, msg, data = {}) {
 }
 
 // ============================================
-// Image download — saves to disk for Claude CLI
+// Download image as base64 for Gemini
 // ============================================
-async function downloadImageToDisk(url, jobId) {
+async function downloadImageAsBase64(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to download image: ${response.status}`);
   const buffer = Buffer.from(await response.arrayBuffer());
 
-  // Determine extension from content-type
   const ct = response.headers.get('content-type') || 'image/jpeg';
-  const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : 'jpg';
-  const filePath = path.join(TEMP_DIR, `${jobId}.${ext}`);
+  const mimeType = ct.split(';')[0].trim();
+  const base64 = buffer.toString('base64');
 
-  await writeFile(filePath, buffer);
-  log('info', `Image saved: ${filePath} (${Math.round(buffer.length / 1024)}KB)`);
-  return filePath;
+  log('info', `Image downloaded: ${Math.round(buffer.length / 1024)}KB, ${mimeType}`);
+  return { base64, mimeType };
 }
 
 // ============================================
-// Claude CLI Analysis (uses existing OAuth on server)
+// Gemini API call with vision
 // ============================================
-async function analyzeWithClaudeCLI(imagePath, caption) {
-  const prompt = `Look at the image file at ${imagePath} using your Read tool. This is a photo of a surface/wall for paint color matching. ${caption ? `Context: "${caption}".` : ''}
+async function callGemini(prompt, imageBase64, imageMimeType, jsonMode = false) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+  const parts = [
+    { text: prompt },
+    { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
+  ];
+
+  const generationConfig = {
+    temperature: 0.2,
+    maxOutputTokens: 4096,
+  };
+
+  if (jsonMode) {
+    generationConfig.responseMimeType = 'application/json';
+  }
+
+  let response = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig,
+      }),
+    });
+
+    if (response.ok || response.status !== 429) break;
+    log('warn', `Gemini rate limited (attempt ${attempt + 1}), retrying...`);
+    await sleep((attempt + 1) * 2000);
+  }
+
+  if (!response || !response.ok) {
+    const errorText = response ? await response.text() : 'no response';
+    throw new Error(`Gemini API error ${response?.status}: ${errorText.substring(0, 500)}`);
+  }
+
+  const data = await response.json();
+  const usage = data.usageMetadata || {};
+  const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  const inputTokens = usage.promptTokenCount || 0;
+  const outputTokens = usage.candidatesTokenCount || 0;
+  const costUsd = (inputTokens * GEMINI_INPUT_COST_PER_TOKEN) + (outputTokens * GEMINI_OUTPUT_COST_PER_TOKEN);
+
+  log('info', 'Gemini response received', { inputTokens, outputTokens, cost: costUsd.toFixed(4), text_len: textContent.length });
+
+  return { textContent, inputTokens, outputTokens, costUsd };
+}
+
+// ============================================
+// Parse JSON from Gemini output
+// ============================================
+function extractJSON(text) {
+  let cleaned = text.trim();
+  // Strip markdown fences if present
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  }
+
+  // Find JSON object
+  const jsonStart = cleaned.indexOf('{');
+  const jsonEnd = cleaned.lastIndexOf('}');
+  if (jsonStart >= 0 && jsonEnd > jsonStart) {
+    cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+// ============================================
+// Process Color Pick inquiry
+// ============================================
+async function processColorPick(job, imageBase64, imageMimeType) {
+  const prompt = `This is a photo of a surface/wall for paint color matching. ${job.caption ? `Context: "${job.caption}".` : ''}
 
 Identify ALL distinct paint colors visible on the surfaces. For each color:
 1. Give it a descriptive name (e.g. "Warm Beige", "Sage Green")
@@ -83,7 +162,7 @@ Also provide:
 - Overall surface analysis (condition, material, texture)
 - Any preparation recommendations before repainting
 
-Return ONLY valid JSON (no markdown, no extra text) with this schema:
+Return valid JSON with this schema:
 {
   "colors": [
     {
@@ -100,107 +179,95 @@ Return ONLY valid JSON (no markdown, no extra text) with this schema:
   "recommendations": "Preparation recommendations"
 }`;
 
-  log('info', 'Spawning Claude CLI', { model: CLAUDE_MODEL, image: imagePath });
+  const { textContent, inputTokens, outputTokens, costUsd } = await callGemini(prompt, imageBase64, imageMimeType, true);
 
-  const args = [
-    '-p', prompt,
-    '--allowedTools', 'Read',
-    '--max-turns', '5',
-    '--output-format', 'json',
-    '--dangerously-skip-permissions',
-    '--model', CLAUDE_MODEL,
-  ];
+  let analysis;
+  try {
+    analysis = JSON.parse(textContent);
+  } catch {
+    analysis = extractJSON(textContent);
+  }
 
-  return new Promise((resolve, reject) => {
-    const child = spawn('claude', args, {
-      cwd: TEMP_DIR,
-      env: {
-        ...process.env,
-        CI: 'true',
-        HOME: process.env.HOME || '/home/bugfixer',
-      },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+  log('info', `Gemini analysis complete: ${analysis.colors?.length || 0} colors found`, { inputTokens, outputTokens });
 
-    let stdout = '';
-    let stderr = '';
-
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on('data', (data) => {
-      const chunk = data.toString();
-      stderr += chunk;
-      if (chunk.trim()) {
-        log('debug', 'Claude stderr', { text: chunk.trim().substring(0, 200) });
-      }
-    });
-
-    child.stdin.end();
-
-    const timeout = setTimeout(() => {
-      child.kill('SIGTERM');
-      reject(new Error(`Claude CLI timed out after ${CLAUDE_TIMEOUT_MS / 1000}s`));
-    }, CLAUDE_TIMEOUT_MS);
-
-    child.on('close', (code) => {
-      clearTimeout(timeout);
-
-      log('info', 'Claude CLI exited', { code, stdout_len: stdout.length, stderr_len: stderr.length });
-
-      if (code !== 0 && !stdout.trim()) {
-        reject(new Error(`Claude CLI exited with code ${code}: ${stderr.substring(0, 500)}`));
-        return;
-      }
-
-      // Parse the JSON output from Claude CLI
-      try {
-        const cliOutput = JSON.parse(stdout);
-
-        // Claude CLI --output-format json returns { result, ... }
-        // The actual content is in result (text) or could be the top-level object
-        let textContent = '';
-        if (typeof cliOutput.result === 'string') {
-          textContent = cliOutput.result;
-        } else if (cliOutput.content) {
-          // May be an array of content blocks
-          for (const block of (Array.isArray(cliOutput.content) ? cliOutput.content : [cliOutput.content])) {
-            if (block.type === 'text') textContent += block.text;
-            else if (typeof block === 'string') textContent += block;
-          }
-        } else {
-          // Try the raw stdout as-is
-          textContent = stdout;
-        }
-
-        // Strip markdown fences if present
-        textContent = textContent.trim();
-        if (textContent.startsWith('```')) {
-          textContent = textContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-        }
-
-        // Find the JSON object in the response
-        const jsonStart = textContent.indexOf('{');
-        const jsonEnd = textContent.lastIndexOf('}');
-        if (jsonStart >= 0 && jsonEnd > jsonStart) {
-          textContent = textContent.substring(jsonStart, jsonEnd + 1);
-        }
-
-        const analysis = JSON.parse(textContent);
-
-        // Extract cost info from CLI output if available
-        const inputTokens = cliOutput.usage?.input_tokens || cliOutput.input_tokens || 0;
-        const outputTokens = cliOutput.usage?.output_tokens || cliOutput.output_tokens || 0;
-        const costUsd = cliOutput.usage?.cost_usd || cliOutput.cost_usd || 0;
-
-        resolve({ analysis, inputTokens, outputTokens, costUsd });
-      } catch (parseErr) {
-        log('error', 'Failed to parse Claude CLI output', { stdout: stdout.substring(0, 1000) });
-        reject(new Error('Claude CLI returned unparseable output: ' + parseErr.message));
-      }
-    });
+  // Log Gemini usage
+  await logApiUsage('gemini', 'project_inquiry_color_pick', GEMINI_MODEL, job, {
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    estimated_cost_usd: costUsd,
+    metadata: { model: GEMINI_MODEL, colors_found: analysis.colors?.length || 0 },
   });
+
+  // Search for paint matches
+  let searchResults = { colors: [], totalQueries: 0 };
+  if (analysis.colors && analysis.colors.length > 0) {
+    log('info', `Searching for paint matches for ${analysis.colors.length} colors...`);
+    searchResults = await searchPaintMatches(analysis.colors);
+    log('info', `Search complete: ${searchResults.totalQueries} queries`);
+
+    // Log Brave usage
+    await logApiUsage('brave', 'project_inquiry_color_pick', 'web_search', job, {
+      units: searchResults.totalQueries,
+      unit_type: 'queries',
+      estimated_cost_usd: searchResults.totalQueries * BRAVE_COST_PER_QUERY,
+      metadata: { colors_searched: analysis.colors.length, total_queries: searchResults.totalQueries },
+    });
+  }
+
+  // Update job as completed
+  const totalCost = (costUsd || 0) + (searchResults.totalQueries * BRAVE_COST_PER_QUERY);
+  await supabase
+    .from('project_inquiries')
+    .update({
+      status: 'completed',
+      analysis_result: analysis,
+      search_results: searchResults,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      estimated_cost_usd: totalCost,
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', job.id);
+
+  log('info', `Job ${job.id} completed (color_pick)`, { cost: totalCost.toFixed(4) });
+}
+
+// ============================================
+// Process General Question inquiry
+// ============================================
+async function processGeneralQuestion(job, imageBase64, imageMimeType) {
+  const prompt = `${job.caption ? `Context: "${job.caption}". ` : ''}A property associate is asking the following question about this image:
+
+"${job.question}"
+
+Please provide a clear, helpful, and detailed answer. Focus on practical advice relevant to property management, maintenance, or renovation. If you can identify specific products, materials, or issues, mention them by name.`;
+
+  const { textContent, inputTokens, outputTokens, costUsd } = await callGemini(prompt, imageBase64, imageMimeType, false);
+
+  log('info', 'Gemini answered general question', { inputTokens, outputTokens, answer_len: textContent.length });
+
+  // Log Gemini usage
+  await logApiUsage('gemini', 'project_inquiry_general', GEMINI_MODEL, job, {
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    estimated_cost_usd: costUsd,
+    metadata: { model: GEMINI_MODEL, question: job.question?.substring(0, 100) },
+  });
+
+  // Update job as completed
+  await supabase
+    .from('project_inquiries')
+    .update({
+      status: 'completed',
+      answer: textContent,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      estimated_cost_usd: costUsd || 0,
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', job.id);
+
+  log('info', `Job ${job.id} completed (general)`, { cost: (costUsd || 0).toFixed(4) });
 }
 
 // ============================================
@@ -326,14 +393,19 @@ async function logApiUsage(vendor, category, endpoint, job, extra = {}) {
 }
 
 // ============================================
-// Process a single job
+// Process a single job (routes to type-specific handler)
 // ============================================
 async function processJob(job) {
-  log('info', `Processing job ${job.id}`, { caption: job.caption, image_url: job.image_url?.substring(0, 80) });
+  log('info', `Processing job ${job.id}`, {
+    type: job.inquiry_type,
+    caption: job.caption,
+    question: job.question?.substring(0, 60),
+    image_url: job.image_url?.substring(0, 80),
+  });
 
   // Mark as processing
   await supabase
-    .from('paint_analysis_jobs')
+    .from('project_inquiries')
     .update({
       status: 'processing',
       started_at: new Date().toISOString(),
@@ -341,59 +413,18 @@ async function processJob(job) {
     })
     .eq('id', job.id);
 
-  let imagePath = null;
-
   try {
-    // 1. Download image to disk
+    // Download image as base64 for Gemini
     log('info', 'Downloading image...');
-    imagePath = await downloadImageToDisk(job.image_url, job.id);
+    const { base64, mimeType } = await downloadImageAsBase64(job.image_url);
 
-    // 2. Analyze with Claude CLI
-    const { analysis, inputTokens, outputTokens, costUsd } = await analyzeWithClaudeCLI(imagePath, job.caption);
-    log('info', `Claude analysis complete: ${analysis.colors?.length || 0} colors found`, { inputTokens, outputTokens });
-
-    // Log Claude usage
-    await logApiUsage('anthropic', 'paint_color_analysis', CLAUDE_MODEL, job, {
-      input_tokens: inputTokens,
-      output_tokens: outputTokens,
-      estimated_cost_usd: costUsd,
-      metadata: { model: CLAUDE_MODEL, colors_found: analysis.colors?.length || 0 },
-    });
-
-    // 3. Search for paint matches
-    let searchResults = { colors: [], totalQueries: 0 };
-    if (analysis.colors && analysis.colors.length > 0) {
-      log('info', `Searching for paint matches for ${analysis.colors.length} colors...`);
-      searchResults = await searchPaintMatches(analysis.colors);
-      log('info', `Search complete: ${searchResults.totalQueries} queries`, {
-        matches: searchResults.colors.map(c => c.matches.length),
-      });
-
-      // Log Brave usage
-      await logApiUsage('brave', 'paint_color_search', 'web_search', job, {
-        units: searchResults.totalQueries,
-        unit_type: 'queries',
-        estimated_cost_usd: searchResults.totalQueries * BRAVE_COST_PER_QUERY,
-        metadata: { colors_searched: analysis.colors.length, total_queries: searchResults.totalQueries },
-      });
+    // Route to type-specific processing
+    if (job.inquiry_type === 'general') {
+      await processGeneralQuestion(job, base64, mimeType);
+    } else {
+      // Default: color_pick
+      await processColorPick(job, base64, mimeType);
     }
-
-    // 4. Update job as completed
-    const totalCost = (costUsd || 0) + (searchResults.totalQueries * BRAVE_COST_PER_QUERY);
-    await supabase
-      .from('paint_analysis_jobs')
-      .update({
-        status: 'completed',
-        analysis_result: analysis,
-        search_results: searchResults,
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        estimated_cost_usd: totalCost,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', job.id);
-
-    log('info', `Job ${job.id} completed successfully`, { cost: totalCost.toFixed(4) });
 
   } catch (err) {
     log('error', `Job ${job.id} failed`, { error: err.message });
@@ -402,7 +433,7 @@ async function processJob(job) {
     const newStatus = newAttempt >= (job.max_attempts || 3) ? 'failed' : 'pending';
 
     await supabase
-      .from('paint_analysis_jobs')
+      .from('project_inquiries')
       .update({
         status: newStatus,
         error_message: err.message,
@@ -412,11 +443,6 @@ async function processJob(job) {
 
     if (newStatus === 'pending') {
       log('info', `Job ${job.id} will retry (attempt ${newAttempt}/${job.max_attempts || 3})`);
-    }
-  } finally {
-    // Clean up temp image
-    if (imagePath) {
-      try { await unlink(imagePath); } catch { /* ignore */ }
     }
   }
 }
@@ -431,7 +457,7 @@ async function pollForJobs() {
 
   try {
     const { data: jobs, error } = await supabase
-      .from('paint_analysis_jobs')
+      .from('project_inquiries')
       .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
@@ -458,13 +484,10 @@ async function pollForJobs() {
 // ============================================
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-log('info', '🎨 Paint Color Analyzer Worker starting', {
+log('info', '📋 Project Inquiry Worker starting', {
   poll_interval: POLL_INTERVAL_MS,
-  model: CLAUDE_MODEL,
+  model: GEMINI_MODEL,
 });
-
-// Ensure temp dir exists
-await mkdir(TEMP_DIR, { recursive: true });
 
 // Initial poll
 await pollForJobs();
@@ -472,4 +495,4 @@ await pollForJobs();
 // Start poll loop
 setInterval(pollForJobs, POLL_INTERVAL_MS);
 
-log('info', 'Worker running — polling for paint analysis jobs');
+log('info', 'Worker running — polling for project inquiries');
