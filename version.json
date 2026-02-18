@@ -1,12 +1,12 @@
 {
-  "version": "v260218.46 12:39p",
-  "release": 280,
-  "sha": "20b383aff",
-  "fullSha": "20b383aff733e1fc5d7114503a09a48aa3cf608e",
+  "version": "v260218.47 1:06p",
+  "release": 281,
+  "sha": "f2e9a9756",
+  "fullSha": "f2e9a9756cf193fa714131c8b0103e76545ae18a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 18:39:35+00",
-  "commits": [{"sha":"5c88c8c07","message":"Fix profile page crash: add missing telegram/facebook_url columns","author":"Rahul"},{"sha":"20b383aff","message":"Merge branch 'claude/heuristic-blackwell'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 19:06:57+00",
+  "commits": [{"sha":"f2e9a9756","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
