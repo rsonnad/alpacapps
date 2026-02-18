@@ -70,7 +70,10 @@ async function loadCameras() {
   const grouped = {};
   for (const stream of data) {
     if (deviceScope && !deviceScope.fullAccess) {
-      const canAccess = deviceScope.canAccessSpaceId(stream.space_id)
+      // Cameras without a space_id are common/security cameras — accessible to all residents
+      const hasSpaceId = !!stream.space_id;
+      const canAccess = !hasSpaceId
+        || deviceScope.canAccessSpaceId(stream.space_id)
         || deviceScope.canAccessSpaceName(stream.location)
         || deviceScope.canAccessSpaceName(stream.camera_name);
       if (!canAccess) continue;
