@@ -64,6 +64,7 @@
     .task-table tr:hover td { background: var(--bg); }
     .task-table tr.done td { opacity: 0.55; }
     .task-table tr.on-hold td { opacity: 0.65; background: #fdf2f8; }
+    .task-table .row-num-cell { color: var(--text-muted); opacity: 0.5; font-size: 0.8rem; text-align: right; font-variant-numeric: tabular-nums; }
     .task-table .title-cell { max-width: 350px; }
     .task-table .title-text { font-weight: 600; }
     .task-table tr.done .title-text { text-decoration: line-through; }
@@ -256,6 +257,7 @@
           <thead>
             <tr>
               <th style="width:30px"><input type="checkbox" id="selectAll"></th>
+              <th style="width:30px">#</th>
               <th style="width:40px">P</th>
               <th>Task</th>
               <th>Assignee</th>
@@ -265,7 +267,7 @@
             </tr>
           </thead>
           <tbody id="taskTableBody">
-            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+            <tr><td colspan="8" class="empty-state">Loading...</td></tr>
           </tbody>
         </table>
       </div>
