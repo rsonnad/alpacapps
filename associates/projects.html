@@ -32,6 +32,7 @@
     .stat-chip.open .num { color: #2563eb; }
     .stat-chip.in-progress .num { color: #d97706; }
     .stat-chip.done .num { color: #16a34a; }
+    .stat-chip.on-hold .num { color: #9d174d; }
 
     /* Filters */
     .filter-bar {
@@ -110,6 +111,8 @@
     .task-actions .btn-start:hover { background: #fffbeb; }
     .task-actions .btn-done { border-color: #16a34a; color: #16a34a; }
     .task-actions .btn-done:hover { background: #f0fdf4; }
+    .task-actions .btn-hold { border-color: #9d174d; color: #9d174d; }
+    .task-actions .btn-hold:hover { background: #fce7f3; }
     .task-actions .btn-reopen { border-color: #6b7280; color: #6b7280; }
 
     .empty-state {
@@ -280,6 +283,7 @@
       <div class="stats-bar" id="statsBar">
         <div class="stat-chip open"><span class="num" id="statOpen">0</span> Open</div>
         <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
+        <div class="stat-chip on-hold"><span class="num" id="statOnHold">0</span> On Hold</div>
         <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
         <button class="btn-add-project" id="btnAddProject" title="Add New Project">+</button>
       </div>
@@ -291,9 +295,10 @@
           <option value="">All People</option>
         </select>
         <select id="filterStatus">
-          <option value="">Open + In Progress</option>
+          <option value="">Active (not Done)</option>
           <option value="open">Open</option>
           <option value="in_progress">In Progress</option>
+          <option value="on_hold">On Hold</option>
           <option value="done">Done</option>
           <option value="all">All</option>
         </select>
@@ -369,6 +374,7 @@
           <select id="newStatus">
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
+            <option value="on_hold">On Hold</option>
             <option value="done">Done</option>
           </select>
         </div>

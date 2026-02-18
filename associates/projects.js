@@ -140,16 +140,24 @@ function renderTaskCard(task) {
   let actions = `<button class="btn-edit" data-id="${task.id}" data-action="edit">Edit</button>`;
   if (task.status === 'open') {
     actions += `<button class="btn-start" data-id="${task.id}" data-action="start">Start Working</button>
+               <button class="btn-hold" data-id="${task.id}" data-action="hold">Hold</button>
                <button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>`;
   } else if (task.status === 'in_progress') {
-    actions += `<button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>
+    actions += `<button class="btn-hold" data-id="${task.id}" data-action="hold">Hold</button>
+               <button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>`;
+  } else if (task.status === 'on_hold') {
+    actions += `<button class="btn-start" data-id="${task.id}" data-action="start">Resume</button>
                <button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   } else {
     actions += `<button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   }
 
-  const statusBadge = task.status === 'in_progress'
-    ? '<span style="color:#d97706;font-weight:600;font-size:0.75rem">IN PROGRESS</span>' : '';
+  let statusBadge = '';
+  if (task.status === 'in_progress') {
+    statusBadge = '<span style="color:#d97706;font-weight:600;font-size:0.75rem">IN PROGRESS</span>';
+  } else if (task.status === 'on_hold') {
+    statusBadge = '<span style="color:#9d174d;font-weight:600;font-size:0.75rem">ON HOLD</span>';
+  }
 
   const thumbUrl = taskThumbnails[task.id];
   const photoHtml = thumbUrl
@@ -185,6 +193,7 @@ function updateStats() {
   projectService.getTaskStats().then(stats => {
     document.getElementById('statOpen').textContent = stats.open;
     document.getElementById('statInProgress').textContent = stats.in_progress;
+    document.getElementById('statOnHold').textContent = stats.on_hold;
     document.getElementById('statDone').textContent = stats.done;
   });
 }
@@ -247,6 +256,9 @@ function bindEvents() {
       if (action === 'start') {
         await projectService.updateTask(id, { status: 'in_progress' });
         showToast('Task started', 'success');
+      } else if (action === 'hold') {
+        await projectService.updateTask(id, { status: 'on_hold' });
+        showToast('Task put on hold', 'info');
       } else if (action === 'done') {
         await projectService.updateTask(id, { status: 'done' });
         showToast('Task completed', 'success');
