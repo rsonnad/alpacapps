@@ -102,6 +102,32 @@ class ProjectService {
     return [...new Set((data || []).map(t => t.assigned_name))];
   }
 
+  /**
+   * Get spaces for location dropdown (non-archived, ordered by name)
+   */
+  async getSpaces() {
+    const { data, error } = await supabase
+      .from('spaces')
+      .select('id, name')
+      .eq('is_archived', false)
+      .order('name');
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Get app_users for assignee dropdown (admin, staff, associate roles)
+   */
+  async getUsers() {
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('id, display_name, role')
+      .in('role', ['admin', 'staff', 'associate'])
+      .order('display_name');
+    if (error) throw error;
+    return data || [];
+  }
+
   // ---- Task Mutations ----
 
   /**

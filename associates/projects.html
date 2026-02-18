@@ -117,6 +117,69 @@
     }
 
     .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+    /* Add project button */
+    .btn-add-project {
+      margin-left: auto;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent, #d4883a); color: #fff;
+      border: none; font-size: 1.3rem; font-weight: 700; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .btn-add-project:hover { opacity: 0.85; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-card {
+      background: var(--bg-card, #fff); border-radius: 12px; width: 100%; max-width: 480px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; font-size: 1.4rem; cursor: pointer;
+      color: var(--text-muted); padding: 0 0.25rem; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    #addProjectForm { padding: 1rem; }
+    .form-group { margin-bottom: 0.75rem; }
+    .form-group label {
+      display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .form-group .required { color: #ef4444; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.5rem 0.6rem; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; background: var(--bg); font-family: inherit;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: var(--accent, #d4883a);
+    }
+    .form-row { display: flex; gap: 0.75rem; }
+    .form-row .form-group { flex: 1; }
+    .form-actions {
+      display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;
+      padding-top: 0.75rem; border-top: 1px solid var(--border);
+    }
+    .form-actions button {
+      padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border);
+    }
+    .btn-cancel { background: var(--bg); color: var(--text); }
+    .btn-cancel:hover { background: var(--border); }
+    .btn-submit { background: var(--accent, #d4883a); color: #fff; border-color: transparent; }
+    .btn-submit:hover { opacity: 0.9; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
   <script type="module" src="../shared/version-info.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -166,6 +229,7 @@
         <div class="stat-chip open"><span class="num" id="statOpen">0</span> Open</div>
         <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
         <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
+        <button class="btn-add-project" id="btnAddProject" title="Add New Project">+</button>
       </div>
 
       <!-- Filters -->
@@ -194,6 +258,54 @@
       <div id="taskList">
         <div class="loading">Loading tasks...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Add Project Modal -->
+  <div class="modal-overlay hidden" id="addProjectModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>New Project</h3>
+        <button class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <form id="addProjectForm">
+        <div class="form-group">
+          <label for="newTitle">Title <span class="required">*</span></label>
+          <input type="text" id="newTitle" required placeholder="What needs to be done?">
+        </div>
+        <div class="form-group">
+          <label for="newNotes">Notes</label>
+          <textarea id="newNotes" rows="2" placeholder="Additional details..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newPriority">Priority</label>
+            <select id="newPriority">
+              <option value="">No Priority</option>
+              <option value="1">P1 - Urgent</option>
+              <option value="2">P2 - High</option>
+              <option value="3">P3 - Medium</option>
+              <option value="4">P4 - Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newAssignee">Assign To</label>
+            <select id="newAssignee">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="newSpace">Location</label>
+          <select id="newSpace">
+            <option value="">No Location</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btnCancelModal">Cancel</button>
+          <button type="submit" class="btn-submit" id="btnSubmitProject">Create Project</button>
+        </div>
+      </form>
     </div>
   </div>
 
