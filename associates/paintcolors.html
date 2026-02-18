@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Paint Colors - AlpacAPPs</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="../spaces/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="../styles/tailwind.out.css">
+  <style>
+    .app-container { max-width: 700px; margin: 0 auto; padding: 1rem; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border, #d1d5db);
+      border-radius: 12px;
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--bg-card, #fff);
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent, #d4883a);
+      background: #fef7f0;
+    }
+    .upload-zone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .upload-zone .label { font-size: 0.95rem; color: var(--text-muted, #6b7280); }
+    .upload-zone input[type="file"] { display: none; }
+
+    /* Preview */
+    .upload-preview {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-card, #fff);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .upload-preview img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      display: block;
+    }
+    .upload-preview .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Form fields */
+    .form-card {
+      background: var(--bg-card, #fff);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .form-field { margin-bottom: 0.75rem; }
+    .form-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted, #6b7280);
+      margin-bottom: 0.25rem;
+    }
+    .form-field input, .form-field select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid var(--border, #d1d5db);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    /* Analyze button */
+    .btn-analyze {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent, #d4883a);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-analyze:hover:not(:disabled) { opacity: 0.9; }
+
+    /* Processing spinner */
+    .processing-card {
+      background: var(--bg-card, #fff);
+      border-radius: 12px;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: var(--accent, #d4883a);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Surface analysis card */
+    .surface-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .surface-card h3 { font-size: 0.9rem; font-weight: 700; margin: 0 0 0.5rem; color: #166534; }
+    .surface-card p { font-size: 0.85rem; color: #15803d; margin: 0; line-height: 1.5; }
+
+    /* Color result cards */
+    .color-card {
+      background: var(--bg-card, #fff);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .color-swatch {
+      height: 80px;
+      width: 100%;
+    }
+    .color-info { padding: 0.75rem; }
+    .color-name { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem; }
+    .color-hex { font-size: 0.8rem; color: var(--text-muted, #6b7280); font-family: monospace; }
+    .color-meta { font-size: 0.75rem; color: var(--text-muted, #6b7280); margin-top: 0.5rem; }
+    .color-meta span { display: inline-block; margin-right: 0.75rem; }
+
+    /* Paint match cards */
+    .match-list { margin-top: 0.5rem; border-top: 1px solid var(--border, #e5e5e5); padding-top: 0.5rem; }
+    .match-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .match-item:last-child { border-bottom: none; }
+    .match-info { flex: 1; min-width: 0; }
+    .match-brand { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+    .match-product { font-size: 0.85rem; font-weight: 600; }
+    .match-code { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+    .match-store { font-size: 0.7rem; color: var(--text-muted); }
+    .match-link {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      white-space: nowrap;
+      color: var(--accent, #d4883a);
+      border: 1px solid var(--accent, #d4883a);
+      transition: background 0.2s, color 0.2s;
+    }
+    .match-link:hover {
+      background: var(--accent, #d4883a);
+      color: #fff;
+    }
+
+    /* History */
+    .history-item {
+      background: var(--bg-card, #fff);
+      border-radius: 10px;
+      padding: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    .history-item:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .history-meta { display: flex; justify-content: space-between; align-items: center; }
+    .history-date { font-size: 0.8rem; color: var(--text-muted); }
+    .history-caption { font-size: 0.85rem; font-weight: 600; margin-top: 0.25rem; }
+    .history-colors { display: flex; gap: 4px; margin-top: 0.5rem; }
+    .history-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+    .history-actions { display: flex; gap: 0.5rem; }
+    .btn-icon {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border, #d1d5db);
+      background: transparent; cursor: pointer; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-icon:hover { background: #f3f4f6; }
+    .btn-icon.danger:hover { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+
+    /* Upload progress */
+    .upload-progress {
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .upload-progress .bar {
+      height: 100%;
+      background: var(--accent, #d4883a);
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .badge-surface { background: #dbeafe; color: #1d4ed8; }
+    .badge-paint { background: #fef3c7; color: #92400e; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="module" src="../shared/version-info.js"></script>
+</head>
+<body>
+  <div id="toastContainer"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-container">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay" style="display:none">
+    <div class="spinner-container" style="text-align:center">
+      <p style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem">Access Restricted</p>
+      <p style="font-size:0.85rem;color:var(--text-muted)">You need associate access to view this page.</p>
+      <a href="../" style="display:inline-block;margin-top:1rem;padding:0.5rem 1.5rem;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Go Home</a>
+    </div>
+  </div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version class="site-nav__version">v000000.00</span>
+
+    <div class="context-switcher" id="contextSwitcher"></div>
+
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <div class="app-container">
+      <!-- Upload Section -->
+      <div id="uploadSection">
+        <div id="uploadZone" class="upload-zone">
+          <div class="icon">📷</div>
+          <div class="label">Tap to upload a photo of the surface</div>
+          <input type="file" id="fileInput" accept="image/*" capture="environment">
+        </div>
+
+        <div id="uploadPreview" class="upload-preview" style="display:none">
+          <img id="previewImage" src="" alt="Preview">
+          <button class="remove-btn" id="btnRemove" title="Remove photo">&times;</button>
+          <div class="upload-progress" id="uploadProgress" style="display:none">
+            <div class="bar" id="uploadBar"></div>
+          </div>
+        </div>
+
+        <div class="form-card" style="margin-top:0.75rem">
+          <div class="form-field">
+            <label>Caption (optional)</label>
+            <input type="text" id="captionInput" placeholder="e.g. Master bedroom north wall">
+          </div>
+          <div class="form-field">
+            <label>Space (optional)</label>
+            <select id="spaceSelect">
+              <option value="">— No space —</option>
+            </select>
+          </div>
+          <button class="btn-analyze" id="btnAnalyze" disabled>
+            <span>🎨</span>
+            <span>Analyze Colors</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Processing -->
+      <div id="processingSection" style="display:none">
+        <div class="processing-card">
+          <div class="spinner"></div>
+          <p style="font-weight:600;margin:0 0 0.25rem">Analyzing colors...</p>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin:0">This usually takes 30-60 seconds</p>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="resultsSection" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+          <h2 style="font-size:1.1rem;font-weight:700;margin:0">Color Analysis</h2>
+          <button class="btn-icon" id="btnNewAnalysis" title="New analysis">+ New</button>
+        </div>
+
+        <div id="surfaceAnalysis"></div>
+
+        <div id="colorCards" style="display:grid;grid-template-columns:1fr;gap:0.75rem;margin-top:0.75rem"></div>
+      </div>
+
+      <!-- History -->
+      <div id="historySection" style="margin-top:1.5rem">
+        <h3 style="font-size:0.9rem;font-weight:700;color:var(--text-muted);margin:0 0 0.5rem">Recent Analyses</h3>
+        <div id="historyList" style="display:flex;flex-direction:column;gap:0.5rem">
+          <p id="historyEmpty" style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:1rem">No analyses yet. Upload a photo to get started.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../shared/instant-chrome.js"></script>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="paintcolors.js"></script>
+</body>
+</html>
