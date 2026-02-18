@@ -1,12 +1,12 @@
 {
-  "version": "v260218.37 8:58a",
-  "release": 271,
-  "sha": "fe005e3ff",
-  "fullSha": "fe005e3ffef567defe57d9cb6908cf527fcc34b6",
+  "version": "v260218.38 9:14a",
+  "release": 272,
+  "sha": "803edcc5f",
+  "fullSha": "803edcc5f45690cefc732a5e6a36ba85538eb9b3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 14:58:06+00",
-  "commits": [{"sha":"de1ebb359","message":"type-driven Question Type + persist Space selection","author":"Rahul"},{"sha":"fe005e3ff","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 15:14:28+00",
+  "commits": [{"sha":"803edcc5f","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
