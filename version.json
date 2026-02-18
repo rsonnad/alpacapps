@@ -1,12 +1,12 @@
 {
-  "version": "v260218.22 6:44a",
-  "release": 256,
-  "sha": "93c157e99",
-  "fullSha": "93c157e9946d314699224cc85ff5a5da244e9869",
+  "version": "v260218.23 7:03a",
+  "release": 257,
+  "sha": "e68ae6edd",
+  "fullSha": "e68ae6edd6324c2efcd9ac2c452d1c2f5edef552",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 12:44:02+00",
-  "commits": [{"sha":"93c157e99","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-18 13:03:49+00",
+  "commits": [{"sha":"ab18462fa","message":"Tab UI improvements: ARIA, keyboard nav, visual hierarchy, touch targets","author":"Rahul"},{"sha":"e68ae6edd","message":"Merge branch 'claude/eager-curran'","author":"Rahul"}]
 }
