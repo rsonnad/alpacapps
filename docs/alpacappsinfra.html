@@ -786,7 +786,7 @@
     }
     .calc-svc__info { display: flex; flex-direction: column; min-width: 0; }
     .calc-svc__name { font-weight: 600; font-size: 0.88rem; }
-    .calc-svc__desc { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .calc-svc__desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
 
     .calc-tiers {
       display: grid;
@@ -976,13 +976,14 @@
       <a href="#resend"><span class="num">5</span> Resend (Email)</a>
       <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
       <a href="#square"><span class="num">7</span> Square (Payments)</a>
-      <a href="#signwell"><span class="num">8</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">9</span> Google Gemini (AI)</a>
-      <a href="#workers"><span class="num">10</span> Background Workers</a>
-      <a href="#domain"><span class="num">11</span> Custom Domain</a>
-      <a href="#template"><span class="num">12</span> CLAUDE.md Templates</a>
-      <a href="#checklist"><span class="num">13</span> Day-One Checklist</a>
-      <a href="#mobile"><span class="num">14</span> Mobile App (iOS &amp; Android)</a>
+      <a href="#stripe"><span class="num">8</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">9</span> SignWell (E-Signatures)</a>
+      <a href="#gemini"><span class="num">10</span> Google Gemini (AI)</a>
+      <a href="#workers"><span class="num">11</span> Background Workers</a>
+      <a href="#domain"><span class="num">12</span> Custom Domain</a>
+      <a href="#template"><span class="num">13</span> CLAUDE.md Templates</a>
+      <a href="#checklist"><span class="num">14</span> Day-One Checklist</a>
+      <a href="#mobile"><span class="num">15</span> Mobile App (iOS &amp; Android)</a>
     </div>
   </nav>
 
@@ -1064,6 +1065,15 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
           <span class="calc-svc__desc">Payment processing</span>
         </span>
         <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="stripe" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Stripe</span>
+          <span class="calc-svc__desc">ACH &amp; card payments, Connect payouts</span>
+        </span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">0.8%&ndash;2.9%</span>
       </label>
       <label class="calc-svc">
         <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
@@ -1403,7 +1413,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 9 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 10 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
@@ -1568,9 +1578,51 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 8. SignWell -->
+  <!-- 8. Stripe -->
+  <div class="section" id="stripe">
+    <h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+    <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Sign up at <a href="https://dashboard.stripe.com/register" target="_blank">dashboard.stripe.com/register</a></li>
+      <li>Get your API keys at <a href="https://dashboard.stripe.com/apikeys" target="_blank">dashboard.stripe.com/apikeys</a>:
+        <ul>
+          <li><strong>Publishable key</strong> (starts with <code>pk_test_</code> or <code>pk_live_</code>)</li>
+          <li><strong>Secret key</strong> (starts with <code>sk_test_</code> or <code>sk_live_</code>)</li>
+        </ul>
+      </li>
+      <li>Set up a webhook at <a href="https://dashboard.stripe.com/webhooks" target="_blank">dashboard.stripe.com/webhooks</a>:
+        <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/functions/v1/stripe-webhook</code></pre>
+      </li>
+      <li>Subscribe to events: <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code>, <code>transfer.paid</code>, <code>transfer.failed</code>, <code>account.updated</code></li>
+      <li>Copy the <strong>Webhook Signing Secret</strong> (starts with <code>whsec_</code>)</li>
+      <li><em>(Optional)</em> Enable <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank">Stripe Connect</a> for outbound associate payouts</li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### Payments (Stripe)
+- Publishable key (test): `pk_test_...`
+- Secret key (test): `sk_test_...`
+- Publishable key (live): `pk_live_...`
+- Secret key (live): `sk_live_...`
+- Webhook signing secret: `whsec_...`
+- Config stored in `stripe_config` table
+- Edge functions: `process-stripe-payment`, `stripe-webhook`
+- Deploy webhook with `--no-verify-jwt`
+- Stripe.js v3: https://js.stripe.com/v3/</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Set up Stripe payment processing. Create the stripe_config and stripe_payments tables, a process-stripe-payment edge function (PaymentIntent creation), a stripe-webhook edge function (HMAC-verified), and a client-side stripe-service.js module. Support ACH bank transfers and card payments."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will create tables, insert config, write and deploy both edge functions, create the client module, commit, and push.</span>
+    </div>
+  </div>
+
+  <!-- 9. SignWell -->
   <div class="section" id="signwell">
-    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">8. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1598,9 +1650,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 9. Gemini -->
+  <!-- 10. Gemini -->
   <div class="section" id="gemini">
-    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">9. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
@@ -1624,9 +1676,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 10. Cloudflare R2 -->
+  <!-- 11. Cloudflare R2 -->
   <div class="section" id="cloudflare-r2-setup">
-    <h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">10. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2>
+    <h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2>
     <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1658,9 +1710,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 11. Background Workers -->
+  <!-- 12. Background Workers -->
   <div class="section" id="workers">
-    <h2>11. Background Workers (Optional)</h2>
+    <h2>12. Background Workers (Optional)</h2>
 
     <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
 
@@ -1710,9 +1762,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </p>
   </div>
 
-  <!-- 12. Custom Domain -->
+  <!-- 13. Custom Domain -->
   <div class="section" id="domain">
-    <h2>12. Custom Domain (Optional)</h2>
+    <h2>13. Custom Domain (Optional)</h2>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
@@ -1785,9 +1837,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ul>
   </div>
 
-  <!-- 13. CLAUDE.md Templates -->
+  <!-- 14. CLAUDE.md Templates -->
   <div class="section" id="template">
-    <h2>13. CLAUDE.md Templates</h2>
+    <h2>14. CLAUDE.md Templates</h2>
     <p>Claude Code uses two files for project context: <code>CLAUDE.md</code> (checked into the repo) for shareable project context, and <code>CLAUDE.local.md</code> (gitignored) for credentials and operator directives. Enter your project name and download both.</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
@@ -1820,9 +1872,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </div>
 
-  <!-- 14. Day-One Checklist -->
+  <!-- 15. Day-One Checklist -->
   <div class="section" id="checklist">
-    <h2>14. Day-One Checklist</h2>
+    <h2>15. Day-One Checklist</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
 
@@ -1866,6 +1918,13 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Copy: Application ID, sandbox access token, location ID</li>
     </ul>
 
+    <p><strong>Payments &mdash; Free until you process (Stripe):</strong></p>
+    <ul class="checklist">
+      <li>Create Stripe account at <a href="https://dashboard.stripe.com/register" target="_blank">stripe.com</a></li>
+      <li>Set up webhook endpoint, subscribe to payment + transfer events</li>
+      <li>Copy: publishable key, secret key, webhook signing secret</li>
+    </ul>
+
     <p><strong>E-Signatures &mdash; Free tier (SignWell):</strong></p>
     <ul class="checklist">
       <li>Create SignWell account</li>
@@ -1903,9 +1962,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
   </div>
 
-  <!-- 15. Mobile App -->
+  <!-- 16. Mobile App -->
   <div class="section" id="mobile">
-    <h2>15. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2>
+    <h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2>
     <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
 
     <h3>How It Works</h3>
@@ -1991,6 +2050,7 @@ function recalcCost() {
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
     'telnyx':      { basic: 0, complicated: 60, hyper: 180 },
     'square':      { basic: 0, complicated: 0, hyper: 0 },
+    'stripe':      { basic: 0, complicated: 0, hyper: 0 },
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
@@ -2009,6 +2069,7 @@ function recalcCost() {
     'resend':      'Resend (email)',
     'telnyx':      'Telnyx (SMS)',
     'square':      'Square (payments)',
+    'stripe':      'Stripe (payments)',
     'signwell':    'SignWell (e-sign)',
     'gemini':      'Google Gemini (AI)',
     'cloudflare-r2': 'Cloudflare R2 (storage)',
@@ -2026,6 +2087,7 @@ function recalcCost() {
     'cloudflare-r2': { basic: '10 GB free, zero egress fees, 10M reads/mo', complicated: '10 GB free, zero egress fees, 10M reads/mo', hyper: '10 GB free; $0.015/GB-mo beyond that, zero egress' },
     'telnyx':   { complicated: '~$5/mo: phone number + ~1,000 SMS', hyper: '~$15/mo: higher volume SMS' },
     'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
+    'stripe':   { complicated: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout', hyper: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout' },
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
     'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
     'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' },
@@ -2243,6 +2305,11 @@ function downloadClaudeMd() {
     '### Payments (Square)\n' +
     '- Config in `square_config` table\n' +
     '- Edge function: `process-square-payment`\n\n' +
+    '### Payments (Stripe)\n' +
+    '- Config in `stripe_config` table\n' +
+    '- Edge functions: `process-stripe-payment`, `stripe-webhook`\n' +
+    '- Client: `shared/stripe-service.js`\n' +
+    '- ACH: 0.8% capped at $5; Cards: 2.9% + 30\\u00a2\n\n' +
     '### E-Signatures (SignWell)\n' +
     '- Config in `signwell_config` table\n' +
     '- Edge function: `signwell-webhook`\n\n' +
@@ -2301,6 +2368,11 @@ function downloadClaudeLocalMd() {
     '### Square (Payments)\n' +
     '- Application ID: YOUR_APP_ID\n' +
     '- Location ID: YOUR_LOCATION_ID\n\n' +
+    '### Stripe (Payments)\n' +
+    '- Publishable key (test): `pk_test_...`\n' +
+    '- Secret key (test): `sk_test_...`\n' +
+    '- Webhook secret: `whsec_...`\n' +
+    '- Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`\n\n' +
     '### SignWell (E-Signatures)\n' +
     '- Account: YOUR_EMAIL\n' +
     '- Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook`\n';
