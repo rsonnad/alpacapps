@@ -1136,6 +1136,36 @@ Message:
 ${data.message || 'No message'}`
       };
 
+    // ===== ACCESS REQUEST =====
+    case "access_request":
+      return {
+        subject: `[Access Request] ${data.user_name} → ${data.page_name}`,
+        html: `
+          <h2 style="color: #333;">Access Request</h2>
+          <p><strong>${data.user_name}</strong> (${data.user_role}) is requesting access to a page they can't reach.</p>
+          <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 80px;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.user_name}</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.user_email}">${data.user_email}</a></td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Role</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.user_role}</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Page</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="${data.page_url}">${data.page_name}</a></td></tr>
+          </table>
+          ${data.message ? `<div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #d4883a; margin: 16px 0; white-space: pre-wrap;">${data.message}</div>` : ''}
+          <p style="margin-top: 20px;"><a href="https://alpacaplayhouse.com/spaces/admin/users.html" style="background: #d4883a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Manage Users</a></p>
+        `,
+        text: `Access Request
+
+${data.user_name} (${data.user_role}) is requesting access.
+
+Name: ${data.user_name}
+Email: ${data.user_email}
+Role: ${data.user_role}
+Page: ${data.page_name}
+URL: ${data.page_url}
+${data.message ? `\nMessage: ${data.message}` : ''}
+
+Manage users: https://alpacaplayhouse.com/spaces/admin/users.html`
+      };
+
     // ===== COMMUNITY FIT INQUIRY =====
     case "community_fit_inquiry":
       return {

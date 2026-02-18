@@ -23,15 +23,8 @@
     <p>Loading...</p>
   </div>
 
-  <!-- Unauthorized message -->
-  <div id="unauthorizedOverlay" class="loading-overlay hidden">
-    <div class="unauthorized-card">
-      <h2>Access Denied</h2>
-      <p id="unauthorizedEmail" style="opacity:0.7;font-size:0.9em"></p>
-      <p>Only administrators can manage FAQ entries.</p>
-      <a href="/spaces/admin/" class="btn-secondary">Back to Admin</a>
-    </div>
-  </div>
+  <!-- Access denied (populated by JS) -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
 
   <!-- Main content -->
   <div id="appContent" class="hidden">
