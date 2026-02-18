@@ -1,12 +1,12 @@
 {
-  "version": "v260218.36 8:55a",
-  "release": 270,
-  "sha": "5a1d9bc8f",
-  "fullSha": "5a1d9bc8fb82100fb72f6860ad558b062cf9dfce",
+  "version": "v260218.37 8:58a",
+  "release": 271,
+  "sha": "fe005e3ff",
+  "fullSha": "fe005e3ffef567defe57d9cb6908cf527fcc34b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 14:55:46+00",
-  "commits": [{"sha":"32c4d621a","message":"relabel Special Type → Question Type with blank default","author":"Rahul"},{"sha":"5a1d9bc8f","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 14:58:06+00",
+  "commits": [{"sha":"de1ebb359","message":"type-driven Question Type + persist Space selection","author":"Rahul"},{"sha":"fe005e3ff","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
 }
