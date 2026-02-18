@@ -300,8 +300,8 @@ async function handleAvatarUpload(file) {
 
     if (dbError) throw dbError;
 
-    profileData.avatar_url = avatarUrl;
-    renderAvatar(avatarUrl, profileData.display_name || profileData.email);
+    if (profileData) profileData.avatar_url = avatarUrl;
+    renderAvatar(avatarUrl, profileData?.display_name || profileData?.email || '');
 
     // Update cached auth state
     updateCachedAuth({ avatar_url: avatarUrl });
@@ -316,7 +316,9 @@ async function handleAvatarUpload(file) {
 function compressAvatar(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
       const canvas = document.createElement('canvas');
       let w = img.width;
       let h = img.height;
@@ -339,8 +341,11 @@ function compressAvatar(file) {
         0.85
       );
     };
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+    img.src = objectUrl;
   });
 }
 
