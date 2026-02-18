@@ -149,18 +149,30 @@ async function loadUsers() {
 function setupDynamicFields() {
   const questionInput = document.getElementById('questionInput');
   const specialTypeField = document.getElementById('specialTypeField');
+  const specialTypeSelect = document.getElementById('specialTypeSelect');
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnSubmitQuestion = document.getElementById('btnSubmitQuestion');
 
-  questionInput.addEventListener('input', () => {
+  function updateFieldVisibility() {
     const hasQuestion = questionInput.value.trim().length > 0;
+    const hasSpecialType = specialTypeSelect.value !== '';
+
+    // When question is typed → hide Question Type dropdown, show Submit Question button
+    // When no question → show Question Type dropdown, show Analyze only if a type is selected
     specialTypeField.style.display = hasQuestion ? 'none' : '';
-    btnAnalyze.style.display = hasQuestion ? 'none' : '';
     btnSubmitQuestion.style.display = hasQuestion ? '' : 'none';
+    btnAnalyze.style.display = (!hasQuestion && hasSpecialType) ? '' : 'none';
 
     // Enable/disable based on photo
     btnSubmitQuestion.disabled = !uploadedMedia;
-  });
+    btnAnalyze.disabled = !uploadedMedia;
+  }
+
+  questionInput.addEventListener('input', updateFieldVisibility);
+  specialTypeSelect.addEventListener('change', updateFieldVisibility);
+
+  // Run once on init to set correct state (e.g. restored blank selection)
+  updateFieldVisibility();
 }
 
 // =============================================
