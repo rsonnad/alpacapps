@@ -55,32 +55,22 @@ async function loadSpaces() {
 // Event listeners
 // =============================================
 function setupEventListeners() {
-  const uploadZone = document.getElementById('uploadZone');
+  const cameraInput = document.getElementById('cameraInput');
   const fileInput = document.getElementById('fileInput');
   const btnRemove = document.getElementById('btnRemove');
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnNewAnalysis = document.getElementById('btnNewAnalysis');
 
-  // Click to upload
-  uploadZone.addEventListener('click', () => fileInput.click());
+  // Camera capture (Take Photo)
+  cameraInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleFileSelected(e.target.files[0]);
+    e.target.value = '';
+  });
 
-  // File selected
+  // File picker (Upload Photo)
   fileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) handleFileSelected(e.target.files[0]);
-  });
-
-  // Drag and drop
-  uploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadZone.classList.add('dragover');
-  });
-  uploadZone.addEventListener('dragleave', () => {
-    uploadZone.classList.remove('dragover');
-  });
-  uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) handleFileSelected(e.dataTransfer.files[0]);
+    e.target.value = '';
   });
 
   // Remove photo
@@ -110,7 +100,7 @@ async function handleFileSelected(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('previewImage').src = e.target.result;
-    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('uploadButtons').style.display = 'none';
     document.getElementById('uploadPreview').style.display = '';
   };
   reader.readAsDataURL(file);
@@ -151,8 +141,9 @@ async function handleFileSelected(file) {
 
 function resetUpload() {
   uploadedMedia = null;
+  document.getElementById('cameraInput').value = '';
   document.getElementById('fileInput').value = '';
-  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('uploadButtons').style.display = '';
   document.getElementById('uploadPreview').style.display = 'none';
   document.getElementById('uploadProgress').style.display = 'none';
   document.getElementById('uploadBar').style.width = '0%';
