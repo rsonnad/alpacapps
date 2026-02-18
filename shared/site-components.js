@@ -381,15 +381,11 @@ function renderUserMenuHTML(appUser, profileHref) {
 
   // Role-based navigation links
   const role = appUser.role || '';
-  const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
   const isResident = ['admin', 'oracle', 'staff', 'resident'].includes(role);
 
   let navLinks = '';
   if (isResident) {
     navLinks += `<a href="/residents/lighting.html" class="user-menu-item">Intranet</a>`;
-  }
-  if (isStaffOrAdmin) {
-    navLinks += `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`;
   }
 
   return `
