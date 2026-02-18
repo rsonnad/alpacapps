@@ -1,12 +1,12 @@
 {
-  "version": "v260218.34 8:45a",
-  "release": 268,
-  "sha": "2492cc51c",
-  "fullSha": "2492cc51ce5bf196ed00d2c6a50b150948b8b503",
+  "version": "v260218.35 8:53a",
+  "release": 269,
+  "sha": "c7afc3d64",
+  "fullSha": "c7afc3d642b493eee0fd54438496d7d6665e101b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 14:45:56+00",
-  "commits": [{"sha":"eec653ec7","message":"feat: generalize Paint Colors → Project Inquiry","author":"Rahul"},{"sha":"2492cc51c","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 14:53:06+00",
+  "commits": [{"sha":"d6812d1bb","message":"persist Question For and Special Type dropdown selections","author":"Rahul"},{"sha":"c7afc3d64","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
 }
