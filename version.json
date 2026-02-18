@@ -1,12 +1,12 @@
 {
-  "version": "v260218.04 2:05a",
-  "release": 238,
-  "sha": "b182d662a",
-  "fullSha": "b182d662a206d386d0f43eac878bc6bb44f5b410",
+  "version": "v260218.05 2:19a",
+  "release": 239,
+  "sha": "343a88348",
+  "fullSha": "343a88348ea45833ce1816828ef4724986af5904",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 08:05:25+00",
-  "commits": [{"sha":"c28b1abe0","message":"feat: add New Project creation on Projects page","author":"Rahul"},{"sha":"b182d662a","message":"Merge branch 'claude/elastic-ellis'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 08:19:39+00",
+  "commits": [{"sha":"7c4928134","message":"fix: allow all residents to see cameras without space_id","author":"Rahul"},{"sha":"343a88348","message":"fix: allow all residents to see cameras (device scope fix)","author":"Rahul"}]
 }
