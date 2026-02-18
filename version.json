@@ -1,12 +1,12 @@
 {
-  "version": "v260218.05 2:19a",
-  "release": 239,
-  "sha": "343a88348",
-  "fullSha": "343a88348ea45833ce1816828ef4724986af5904",
+  "version": "v260218.06 2:22a",
+  "release": 240,
+  "sha": "0a4390fa8",
+  "fullSha": "0a4390fa85754dbf391f431316487635a00182ab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 08:19:39+00",
-  "commits": [{"sha":"7c4928134","message":"fix: allow all residents to see cameras without space_id","author":"Rahul"},{"sha":"343a88348","message":"fix: allow all residents to see cameras (device scope fix)","author":"Rahul"}]
+  "pushedAt": "2026-02-18 08:22:47+00",
+  "commits": [{"sha":"97e3a4c7c","message":"chore: add setup-alpacapps-infra skill reference docs","author":"Rahul"},{"sha":"0a4390fa8","message":"chore: add setup-alpacapps-infra skill reference docs","author":"Rahul"}]
 }
