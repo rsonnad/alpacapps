@@ -1,12 +1,12 @@
 {
-  "version": "v260218.09 3:09a",
-  "release": 243,
-  "sha": "12f49d99e",
-  "fullSha": "12f49d99e4a8e7c2a017d36b0f57404693da4c5f",
+  "version": "v260218.10 3:11a",
+  "release": 244,
+  "sha": "79840d397",
+  "fullSha": "79840d39757118052e72a34920bedf5cb6ffb57d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:09:35+00",
-  "commits": [{"sha":"12f49d99e","message":"fix: add App Dev permission group to user permissions modal","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:11:12+00",
+  "commits": [{"sha":"042892df9","message":"fix: remove blocking @import Google Fonts from CSS (fixes Brave/DuckDuckGo loading)","author":"Rahul"},{"sha":"79840d397","message":"Merge: fix blocking @import Google Fonts for privacy browsers","author":"Rahul"}]
 }
