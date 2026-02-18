@@ -81,7 +81,7 @@ class ProjectService {
       .select('status');
     if (error) throw error;
 
-    const stats = { total: 0, open: 0, in_progress: 0, done: 0 };
+    const stats = { total: 0, open: 0, in_progress: 0, on_hold: 0, done: 0 };
     (data || []).forEach(t => {
       stats.total++;
       stats[t.status] = (stats[t.status] || 0) + 1;

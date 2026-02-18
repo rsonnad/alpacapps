@@ -33,6 +33,7 @@
     .summary-card.open .num { color: #2563eb; }
     .summary-card.in-progress .num { color: #d97706; }
     .summary-card.done .num { color: #16a34a; }
+    .summary-card.on-hold .num { color: #9d174d; }
 
     /* Toolbar */
     .toolbar {
@@ -84,6 +85,7 @@
     .status-badge.open { background: #dbeafe; color: #1e40af; }
     .status-badge.in_progress { background: #fef3c7; color: #92400e; }
     .status-badge.done { background: #d1fae5; color: #065f46; }
+    .status-badge.on_hold { background: #fce7f3; color: #9d174d; }
 
     /* Assignee badge */
     .assignee-badge {
@@ -206,6 +208,7 @@
         <div class="summary-card"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
         <div class="summary-card open"><div class="num" id="statOpen">0</div><div class="label">Open</div></div>
         <div class="summary-card in-progress"><div class="num" id="statInProgress">0</div><div class="label">In Progress</div></div>
+        <div class="summary-card on-hold"><div class="num" id="statOnHold">0</div><div class="label">On Hold</div></div>
         <div class="summary-card done"><div class="num" id="statDone">0</div><div class="label">Done</div></div>
       </div>
 
@@ -214,9 +217,10 @@
         <input type="text" id="searchInput" placeholder="Search tasks...">
         <select id="filterAssignee"><option value="">All People</option></select>
         <select id="filterStatus">
-          <option value="">Open + In Progress</option>
+          <option value="">Active (not Done)</option>
           <option value="open">Open</option>
           <option value="in_progress">In Progress</option>
+          <option value="on_hold">On Hold</option>
           <option value="done">Done</option>
           <option value="all">All</option>
         </select>
@@ -239,6 +243,7 @@
           <option value="">Change status...</option>
           <option value="open">Open</option>
           <option value="in_progress">In Progress</option>
+          <option value="on_hold">On Hold</option>
           <option value="done">Done</option>
         </select>
         <button id="btnBulkStatus">Apply</button>
@@ -307,6 +312,7 @@
       <select id="inputStatus">
         <option value="open">Open</option>
         <option value="in_progress">In Progress</option>
+        <option value="on_hold">On Hold</option>
         <option value="done">Done</option>
       </select>
 
