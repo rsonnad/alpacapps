@@ -5,6 +5,7 @@
 
 import { initAuth, getAuthState, signOut, signInWithPassword, signInWithGoogle, onAuthStateChange, hasPermission } from '../../shared/auth.js';
 import { userHasTeslaAccount } from '../../shared/services/cars-data.js';
+import { initTabList } from '../../shared/tab-utils.js';
 
 // =============================================
 // STATE
@@ -170,20 +171,36 @@ function switchTab(tabId) {
   document.querySelectorAll('.m-tab-content').forEach(s => s.classList.remove('active'));
   document.getElementById(`tab-${tabId}`)?.classList.add('active');
 
-  // Update tab bar buttons
-  document.querySelectorAll('.m-tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-tab="${tabId}"]`)?.classList.add('active');
+  // Update tab bar buttons + ARIA
+  document.querySelectorAll('.m-tab-btn').forEach(b => {
+    const isTarget = b.dataset.tab === tabId;
+    b.classList.toggle('active', isTarget);
+    b.setAttribute('aria-selected', String(isTarget));
+    b.setAttribute('tabindex', isTarget ? '0' : '-1');
+  });
 
   currentTab = tabId;
   initTab(tabId);
 }
 
 function setupTabBar() {
-  document.getElementById('tabBar')?.addEventListener('click', (e) => {
+  const tabBar = document.getElementById('tabBar');
+  if (!tabBar) return;
+
+  // Click handling (existing)
+  tabBar.addEventListener('click', (e) => {
     const btn = e.target.closest('.m-tab-btn');
     if (!btn || btn.classList.contains('hidden')) return;
     const tab = btn.dataset.tab;
     if (tab) switchTab(tab);
+  });
+
+  // ARIA setup + keyboard navigation (no click handling — handled above)
+  initTabList(tabBar, {
+    tabSelector: '.m-tab-btn',
+    panelForTab: (btn) => document.getElementById(`tab-${btn.dataset.tab}`),
+    handleClicks: false,
+    fade: false, // mobile already uses opacity transitions via CSS
   });
 }
 
