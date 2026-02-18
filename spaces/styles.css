@@ -273,6 +273,10 @@ body {
     display: none;
   }
 
+  .site-nav__wordmark {
+    display: none;
+  }
+
   .site-nav__toggle {
     display: flex;
     align-items: center;
@@ -294,10 +298,6 @@ body {
 
   .site-nav__icon {
     height: 32px;
-  }
-
-  .site-nav__wordmark {
-    display: none;
   }
 }
 
