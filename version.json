@@ -1,12 +1,12 @@
 {
-  "version": "v260218.06 2:22a",
-  "release": 240,
-  "sha": "0a4390fa8",
-  "fullSha": "0a4390fa85754dbf391f431316487635a00182ab",
+  "version": "v260218.07 2:59a",
+  "release": 241,
+  "sha": "f8007396c",
+  "fullSha": "f8007396c89f0e366995fa5777a20876d71ae794",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 08:22:47+00",
-  "commits": [{"sha":"97e3a4c7c","message":"chore: add setup-alpacapps-infra skill reference docs","author":"Rahul"},{"sha":"0a4390fa8","message":"chore: add setup-alpacapps-infra skill reference docs","author":"Rahul"}]
+  "pushedAt": "2026-02-18 08:59:55+00",
+  "commits": [{"sha":"f8007396c","message":"fix: self-host Supabase JS + Leaflet to fix loading in privacy browsers","author":"Rahul"}]
 }
