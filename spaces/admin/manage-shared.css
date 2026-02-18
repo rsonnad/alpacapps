@@ -39,43 +39,45 @@
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding: 0.4rem 2rem 0.1rem;
+  padding: 0.5rem 2rem 0;
 }
 
 /* Inner pill with the rounded background */
 .context-switcher-pill {
   display: inline-flex;
-  background: var(--border);
-  border-radius: 8px;
-  padding: 3px;
+  background: var(--aap-dark, #1c1618);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 2px;
 }
 
 .context-switcher-btn {
-  padding: 0.2rem 0.7rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-decoration: none;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.55);
   transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .context-switcher-btn:hover:not(.active) {
-  color: var(--text);
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.08);
 }
 
 .context-switcher-btn.active {
-  background: var(--bg-card);
-  color: var(--text);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  background: var(--aap-amber, #d4883a);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(212,136,58,0.35);
   cursor: default;
 }
 
 .context-switcher-btn.disabled {
-  color: var(--text-muted);
-  opacity: 0.5;
+  color: rgba(255,255,255,0.25);
   cursor: not-allowed;
   text-decoration: none;
 }
