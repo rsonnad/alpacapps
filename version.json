@@ -1,12 +1,12 @@
 {
-  "version": "v260218.11 3:17a",
-  "release": 245,
-  "sha": "9ed1eb187",
-  "fullSha": "9ed1eb187be0a92837d4d5465d7da4cffc2dc20c",
+  "version": "v260218.12 3:20a",
+  "release": 246,
+  "sha": "099152815",
+  "fullSha": "099152815e04daa209dbfa39506d72a726f16722",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:17:54+00",
-  "commits": [{"sha":"9ed1eb187","message":"fix: add view_appdev to resident-shell STAFF_PERMISSION_KEYS","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:20:21+00",
+  "commits": [{"sha":"099152815","message":"feat: show context switcher to all users + redesign as prominent nav","author":"Rahul"}]
 }
