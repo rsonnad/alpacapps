@@ -36,7 +36,7 @@ class ProjectService {
       query = query.eq('space_id', filters.spaceId);
     }
     if (filters.search) {
-      query = query.ilike('title', `%${filters.search}%`);
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
     }
 
     const { data, error } = await query;
@@ -133,12 +133,13 @@ class ProjectService {
   /**
    * Create a new task
    */
-  async createTask({ title, notes, priority, spaceId, locationLabel, assignedTo, assignedName, status }) {
+  async createTask({ title, notes, description, priority, spaceId, locationLabel, assignedTo, assignedName, status }) {
     const { data, error } = await supabase
       .from('tasks')
       .insert({
         title,
         notes: notes || null,
+        description: description || null,
         priority: priority || null,
         space_id: spaceId || null,
         location_label: locationLabel || null,
@@ -160,6 +161,7 @@ class ProjectService {
 
     if ('title' in updates) payload.title = updates.title;
     if ('notes' in updates) payload.notes = updates.notes || null;
+    if ('description' in updates) payload.description = updates.description || null;
     if ('priority' in updates) payload.priority = updates.priority || null;
     if ('spaceId' in updates) payload.space_id = updates.spaceId || null;
     if ('locationLabel' in updates) payload.location_label = updates.locationLabel || null;
@@ -207,6 +209,53 @@ class ProjectService {
         updated_at: new Date().toISOString(),
       })
       .in('id', taskIds);
+    if (error) throw error;
+  }
+
+  // ---- Task Photos ----
+
+  async getTaskPhotos(taskId) {
+    const { data, error } = await supabase
+      .from('task_photos')
+      .select('*, media:media_id(id, url, caption, media_type)')
+      .eq('task_id', taskId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  }
+
+  async getTaskPhotoThumbnails(taskIds) {
+    if (!taskIds.length) return {};
+    const { data, error } = await supabase
+      .from('task_photos')
+      .select('task_id, media:media_id(id, url)')
+      .in('task_id', taskIds)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    const thumbnails = {};
+    (data || []).forEach(row => {
+      if (!thumbnails[row.task_id] && row.media?.url) {
+        thumbnails[row.task_id] = row.media.url;
+      }
+    });
+    return thumbnails;
+  }
+
+  async addTaskPhoto(taskId, mediaId, caption = null) {
+    const { data, error } = await supabase
+      .from('task_photos')
+      .insert({ task_id: taskId, media_id: mediaId, caption: caption || null })
+      .select('*, media:media_id(id, url, caption, media_type)')
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async removeTaskPhoto(taskPhotoId) {
+    const { error } = await supabase
+      .from('task_photos')
+      .delete()
+      .eq('id', taskPhotoId);
     if (error) throw error;
   }
 }
