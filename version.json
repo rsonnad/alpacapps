@@ -1,12 +1,12 @@
 {
-  "version": "v260218.10 3:11a",
-  "release": 244,
-  "sha": "79840d397",
-  "fullSha": "79840d39757118052e72a34920bedf5cb6ffb57d",
+  "version": "v260218.11 3:17a",
+  "release": 245,
+  "sha": "9ed1eb187",
+  "fullSha": "9ed1eb187be0a92837d4d5465d7da4cffc2dc20c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 09:11:12+00",
-  "commits": [{"sha":"042892df9","message":"fix: remove blocking @import Google Fonts from CSS (fixes Brave/DuckDuckGo loading)","author":"Rahul"},{"sha":"79840d397","message":"Merge: fix blocking @import Google Fonts for privacy browsers","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:17:54+00",
+  "commits": [{"sha":"9ed1eb187","message":"fix: add view_appdev to resident-shell STAFF_PERMISSION_KEYS","author":"Rahul"}]
 }
