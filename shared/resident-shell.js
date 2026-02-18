@@ -395,6 +395,87 @@ function injectSiteNav() {
 }
 
 // =============================================
+// ACCESS DENIED OVERLAY
+// =============================================
+
+function renderAccessDenied(state, activeTab) {
+  const overlay = document.getElementById('unauthorizedOverlay');
+  if (!overlay) return;
+
+  const displayName = state.appUser?.display_name || state.appUser?.email || state.user?.email || 'Unknown';
+  const role = state.appUser?.role || 'none';
+  const email = state.appUser?.email || state.user?.email || '';
+  const pageName = document.title?.split(' - ')[0] || activeTab || window.location.pathname.split('/').pop()?.replace('.html', '') || 'this page';
+
+  overlay.innerHTML = `
+    <div class="unauthorized-card">
+      <h2>Access Denied</h2>
+      <p style="font-size:1.05em;color:var(--text);margin-bottom:0.25rem"><strong>${escapeHtml(displayName)}</strong></p>
+      <p style="opacity:0.6;font-size:0.85em;margin-bottom:1rem">${escapeHtml(role)}</p>
+      <p style="color:var(--text-muted)">You are trying to access <strong>${escapeHtml(pageName)}</strong>, for which you don't have permission.</p>
+      <p style="color:var(--text-muted);font-size:0.85em;margin-top:0.75rem">You may request access below.</p>
+      <div style="margin-top:1rem">
+        <textarea id="accessRequestMsg" rows="2" placeholder="Reason for access (optional)" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--border,#ddd);border-radius:8px;font-family:inherit;font-size:0.85rem;resize:vertical;background:var(--bg,#fff);color:var(--text,#333)"></textarea>
+      </div>
+      <div class="unauthorized-actions" style="flex-direction:column;align-items:stretch">
+        <button id="requestAccessBtn" class="btn-secondary" style="background:var(--accent,#d4883a);color:#fff;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600">Request Access</button>
+        <div style="display:flex;gap:0.75rem;justify-content:center">
+          <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+          <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Wire up Sign Out
+  const signOutBtn = overlay.querySelector('#signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async () => {
+      await signOut();
+      window.location.href = '/login/';
+    });
+  }
+
+  // Wire up Request Access
+  const requestBtn = overlay.querySelector('#requestAccessBtn');
+  if (requestBtn) {
+    requestBtn.addEventListener('click', async () => {
+      requestBtn.disabled = true;
+      requestBtn.textContent = 'Sending...';
+      try {
+        const msg = overlay.querySelector('#accessRequestMsg')?.value?.trim() || '';
+        await supabase.functions.invoke('send-email', {
+          body: {
+            template: 'access_request',
+            to: 'team@alpacaplayhouse.com',
+            data: {
+              user_name: displayName,
+              user_email: email,
+              user_role: role,
+              page_name: pageName,
+              page_url: window.location.href,
+              message: msg
+            }
+          }
+        });
+        requestBtn.textContent = 'Request Sent';
+        requestBtn.style.opacity = '0.6';
+      } catch (e) {
+        console.error('Failed to send access request:', e);
+        requestBtn.textContent = 'Failed — try again';
+        requestBtn.disabled = false;
+      }
+    });
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// =============================================
 // AUTH & PAGE INITIALIZATION
 // =============================================
 
@@ -527,6 +608,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
       document.getElementById('loadingOverlay').classList.add('hidden');
+      renderAccessDenied(state, activeTab);
       document.getElementById('unauthorizedOverlay').classList.remove('hidden');
     } else if (!state.isAuthenticated && !pageContentShown) {
       window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
