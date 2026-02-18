@@ -1,12 +1,12 @@
 {
-  "version": "v260218.35 8:53a",
-  "release": 269,
-  "sha": "c7afc3d64",
-  "fullSha": "c7afc3d642b493eee0fd54438496d7d6665e101b",
+  "version": "v260218.36 8:55a",
+  "release": 270,
+  "sha": "5a1d9bc8f",
+  "fullSha": "5a1d9bc8fb82100fb72f6860ad558b062cf9dfce",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 14:53:06+00",
-  "commits": [{"sha":"d6812d1bb","message":"persist Question For and Special Type dropdown selections","author":"Rahul"},{"sha":"c7afc3d64","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 14:55:46+00",
+  "commits": [{"sha":"32c4d621a","message":"relabel Special Type → Question Type with blank default","author":"Rahul"},{"sha":"5a1d9bc8f","message":"Merge branch 'claude/stupefied-faraday'","author":"Rahul"}]
 }
