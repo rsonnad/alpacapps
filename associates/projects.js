@@ -1,15 +1,19 @@
 /**
  * Associate Projects Page
  * Task board view — all associates can see all tasks and update status.
+ * Supports add, edit, status transitions, and photo uploads.
  */
 
 import { initAssociatePage, showToast } from '../shared/associate-shell.js';
 import { projectService } from '../shared/project-service.js';
+import { mediaService } from '../shared/media-service.js';
 
 let currentUser = null;
 let allTasks = [];
 let myTasksActive = false;
 let modalDataLoaded = false;
+let editingTaskId = null;
+let taskThumbnails = {};
 
 // ---- Init ----
 initAssociatePage({
@@ -28,7 +32,6 @@ async function loadAssignees() {
     const names = await projectService.getAssigneeNames();
     const sel = document.getElementById('filterAssignee');
     const currentVal = sel.value;
-    // Clear existing options except the first "All People"
     while (sel.options.length > 1) sel.remove(1);
     names.forEach(name => {
       const opt = document.createElement('option');
@@ -36,7 +39,7 @@ async function loadAssignees() {
       opt.textContent = name;
       sel.appendChild(opt);
     });
-    sel.value = currentVal; // preserve selection
+    sel.value = currentVal;
   } catch (e) {
     console.error('Failed to load assignees:', e);
   }
@@ -47,6 +50,16 @@ async function loadTasks() {
   try {
     const filters = getFilters();
     allTasks = await projectService.getAllTasks(filters);
+
+    // Load photo thumbnails
+    const taskIds = allTasks.map(t => t.id);
+    try {
+      taskThumbnails = await projectService.getTaskPhotoThumbnails(taskIds);
+    } catch (e) {
+      console.warn('Failed to load thumbnails:', e);
+      taskThumbnails = {};
+    }
+
     renderTasks(allTasks);
     updateStats(allTasks);
   } catch (e) {
@@ -64,7 +77,6 @@ function getFilters() {
   } else if (status) {
     filters.status = status;
   } else {
-    // Default: open + in_progress — we'll fetch all and filter client-side
     filters.status = 'all';
   }
 
@@ -85,7 +97,6 @@ function getFilters() {
 function renderTasks(tasks) {
   const container = document.getElementById('taskList');
 
-  // Client-side filter for default "Open + In Progress"
   const statusFilter = document.getElementById('filterStatus').value;
   if (!statusFilter) {
     tasks = tasks.filter(t => t.status !== 'done');
@@ -96,7 +107,6 @@ function renderTasks(tasks) {
     return;
   }
 
-  // Group by priority
   const groups = {};
   const labels = { 1: 'P1 — Urgent', 2: 'P2 — High', 3: 'P3 — Medium', 4: 'P4 — Low', null: 'No Priority' };
 
@@ -127,31 +137,42 @@ function renderTaskCard(task) {
   const location = task.space?.name || task.location_label || '';
   const doneClass = task.status === 'done' ? 'done' : '';
 
-  let actions = '';
+  let actions = `<button class="btn-edit" data-id="${task.id}" data-action="edit">Edit</button>`;
   if (task.status === 'open') {
-    actions = `<button class="btn-start" data-id="${task.id}" data-action="start">Start Working</button>
+    actions += `<button class="btn-start" data-id="${task.id}" data-action="start">Start Working</button>
                <button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>`;
   } else if (task.status === 'in_progress') {
-    actions = `<button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>
+    actions += `<button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>
                <button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   } else {
-    actions = `<button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
+    actions += `<button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   }
 
   const statusBadge = task.status === 'in_progress'
     ? '<span style="color:#d97706;font-weight:600;font-size:0.75rem">IN PROGRESS</span>' : '';
 
+  const thumbUrl = taskThumbnails[task.id];
+  const photoHtml = thumbUrl
+    ? `<div class="task-card-photos"><img src="${esc(thumbUrl)}" loading="lazy" data-lightbox="${esc(thumbUrl)}"></div>`
+    : '';
+
+  const descHtml = task.description
+    ? `<div class="task-description">${esc(task.description.length > 120 ? task.description.substring(0, 120) + '...' : task.description)}</div>`
+    : '';
+
   return `<div class="task-card ${doneClass}">
     <div class="task-card-top">
       <span class="task-priority ${pClass}">${pLabel}</span>
       <div class="task-card-body">
-        <div class="task-title">${esc(task.title)}</div>
+        <div class="task-title">${task.task_number ? `<span style="color:var(--text-muted);font-weight:400">#${task.task_number}</span> ` : ''}${esc(task.title)}</div>
         <div class="task-meta">
           ${location ? `<span class="task-location">${esc(location)}</span>` : ''}
           ${task.assigned_name ? `<span class="task-assignee">${esc(task.assigned_name)}</span>` : ''}
           ${statusBadge}
         </div>
         ${task.notes ? `<div class="task-notes">${esc(task.notes)}</div>` : ''}
+        ${descHtml}
+        ${photoHtml}
         ${task.status === 'done' && task.completed_date ? `<div class="task-completed-date">Completed: ${esc(task.completed_date)}</div>` : ''}
         ${task.status === 'done' && task.completed_at && !task.completed_date ? `<div class="task-completed-date">Completed: ${new Date(task.completed_at).toLocaleDateString()}</div>` : ''}
         <div class="task-actions">${actions}</div>
@@ -160,8 +181,7 @@ function renderTaskCard(task) {
   </div>`;
 }
 
-function updateStats(tasks) {
-  // Stats count ALL tasks regardless of filter — fetch separate
+function updateStats() {
   projectService.getTaskStats().then(stats => {
     document.getElementById('statOpen').textContent = stats.open;
     document.getElementById('statInProgress').textContent = stats.in_progress;
@@ -192,22 +212,37 @@ function bindEvents() {
 
   // Add Project
   document.getElementById('btnAddProject').addEventListener('click', openAddModal);
-  document.getElementById('btnCloseModal').addEventListener('click', closeAddModal);
-  document.getElementById('btnCancelModal').addEventListener('click', closeAddModal);
+  document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+  document.getElementById('btnCancelModal').addEventListener('click', closeModal);
   document.getElementById('addProjectModal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeAddModal();
+    if (e.target === e.currentTarget) closeModal();
   });
-  document.getElementById('addProjectForm').addEventListener('submit', handleAddProject);
+  document.getElementById('addProjectForm').addEventListener('submit', handleSaveProject);
 
   // Task action buttons (delegated)
   document.getElementById('taskList').addEventListener('click', async (e) => {
+    // Lightbox clicks on thumbnails
+    const lbImg = e.target.closest('[data-lightbox]');
+    if (lbImg) {
+      e.stopPropagation();
+      document.getElementById('lightboxImg').src = lbImg.dataset.lightbox;
+      document.getElementById('simpleLightbox').classList.remove('hidden');
+      return;
+    }
+
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
 
     const id = btn.dataset.id;
     const action = btn.dataset.action;
-    btn.disabled = true;
 
+    if (action === 'edit') {
+      const task = allTasks.find(t => t.id === id);
+      if (task) openEditModal(task);
+      return;
+    }
+
+    btn.disabled = true;
     try {
       if (action === 'start') {
         await projectService.updateTask(id, { status: 'in_progress' });
@@ -226,61 +261,155 @@ function bindEvents() {
       btn.disabled = false;
     }
   });
+
+  // Photo upload
+  document.getElementById('photoInput').addEventListener('change', handlePhotoUpload);
+
+  // Photo remove (delegated)
+  document.getElementById('taskPhotos').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.photo-remove');
+    if (!btn) return;
+    e.stopPropagation();
+    const photoId = btn.dataset.photoId;
+    if (!photoId) return;
+    try {
+      await projectService.removeTaskPhoto(photoId);
+      btn.closest('.task-photo-thumb').remove();
+      showToast('Photo removed', 'success');
+    } catch (err) {
+      showToast('Failed to remove photo', 'error');
+    }
+  });
+
+  // Lightbox in modal photos
+  document.getElementById('taskPhotos').addEventListener('click', (e) => {
+    const img = e.target.closest('img');
+    if (!img || e.target.closest('.photo-remove')) return;
+    document.getElementById('lightboxImg').src = img.src;
+    document.getElementById('simpleLightbox').classList.remove('hidden');
+  });
+
+  // Close lightbox
+  document.getElementById('simpleLightbox').addEventListener('click', () => {
+    document.getElementById('simpleLightbox').classList.add('hidden');
+  });
 }
 
-// ---- Add Project Modal ----
-async function openAddModal() {
-  const modal = document.getElementById('addProjectModal');
-  modal.classList.remove('hidden');
-  document.getElementById('newTitle').focus();
+// ---- Modal ----
+async function ensureModalData() {
+  if (modalDataLoaded) return;
+  modalDataLoaded = true;
+  try {
+    const [spaces, users] = await Promise.all([
+      projectService.getSpaces(),
+      projectService.getUsers(),
+    ]);
 
-  // Load spaces and users on first open
-  if (!modalDataLoaded) {
-    modalDataLoaded = true;
-    try {
-      const [spaces, users] = await Promise.all([
-        projectService.getSpaces(),
-        projectService.getUsers(),
-      ]);
+    const spaceSel = document.getElementById('newSpace');
+    spaces.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      spaceSel.appendChild(opt);
+    });
 
-      const spaceSel = document.getElementById('newSpace');
-      spaces.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        spaceSel.appendChild(opt);
-      });
-
-      const assigneeSel = document.getElementById('newAssignee');
-      users.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = JSON.stringify({ id: u.id, name: u.display_name });
-        opt.textContent = u.display_name;
-        assigneeSel.appendChild(opt);
-      });
-    } catch (e) {
-      console.error('Failed to load modal data:', e);
-    }
+    const assigneeSel = document.getElementById('newAssignee');
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify({ id: u.id, name: u.display_name });
+      opt.textContent = u.display_name;
+      assigneeSel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Failed to load modal data:', e);
   }
 }
 
-function closeAddModal() {
-  document.getElementById('addProjectModal').classList.add('hidden');
-  document.getElementById('addProjectForm').reset();
+async function openAddModal() {
+  editingTaskId = null;
+  document.getElementById('modalTitle').textContent = 'New Project';
+  document.getElementById('editTaskId').value = '';
+  document.getElementById('btnSubmitProject').textContent = 'Create Project';
+  document.getElementById('statusGroup').classList.add('hidden');
+
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newNotes').value = '';
+  document.getElementById('newDescription').value = '';
+  document.getElementById('newPriority').value = '';
+  document.getElementById('newAssignee').value = '';
+  document.getElementById('newSpace').value = '';
+  document.getElementById('newLocationLabel').value = '';
+  document.getElementById('newStatus').value = 'open';
+  document.getElementById('taskPhotos').innerHTML = '';
+
+  await ensureModalData();
+
+  const modal = document.getElementById('addProjectModal');
+  modal.classList.remove('hidden');
+  document.getElementById('newTitle').focus();
 }
 
-async function handleAddProject(e) {
+async function openEditModal(task) {
+  editingTaskId = task.id;
+  document.getElementById('modalTitle').textContent = 'Edit Project';
+  document.getElementById('editTaskId').value = task.id;
+  document.getElementById('btnSubmitProject').textContent = 'Save Changes';
+  document.getElementById('statusGroup').classList.remove('hidden');
+
+  document.getElementById('newTitle').value = task.title || '';
+  document.getElementById('newNotes').value = task.notes || '';
+  document.getElementById('newDescription').value = task.description || '';
+  document.getElementById('newPriority').value = task.priority || '';
+  document.getElementById('newSpace').value = task.space_id || '';
+  document.getElementById('newLocationLabel').value = task.location_label || '';
+  document.getElementById('newStatus').value = task.status || 'open';
+
+  await ensureModalData();
+
+  // Set assignee
+  const assigneeSel = document.getElementById('newAssignee');
+  assigneeSel.value = '';
+  if (task.assigned_to) {
+    for (const opt of assigneeSel.options) {
+      if (!opt.value) continue;
+      try {
+        const parsed = JSON.parse(opt.value);
+        if (parsed.id === task.assigned_to) {
+          assigneeSel.value = opt.value;
+          break;
+        }
+      } catch {}
+    }
+  }
+
+  // Load photos
+  await loadTaskPhotos(task.id);
+
+  const modal = document.getElementById('addProjectModal');
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('addProjectModal').classList.add('hidden');
+  editingTaskId = null;
+}
+
+async function handleSaveProject(e) {
   e.preventDefault();
   const btn = document.getElementById('btnSubmitProject');
+  const isEdit = !!document.getElementById('editTaskId').value;
   btn.disabled = true;
-  btn.textContent = 'Creating...';
+  btn.textContent = isEdit ? 'Saving...' : 'Creating...';
 
   try {
     const title = document.getElementById('newTitle').value.trim();
     const notes = document.getElementById('newNotes').value.trim();
+    const description = document.getElementById('newDescription').value.trim();
     const priority = document.getElementById('newPriority').value;
     const spaceId = document.getElementById('newSpace').value;
+    const locationLabel = document.getElementById('newLocationLabel').value.trim();
     const assigneeVal = document.getElementById('newAssignee').value;
+    const status = document.getElementById('newStatus').value;
 
     let assignedTo = null;
     let assignedName = null;
@@ -290,27 +419,84 @@ async function handleAddProject(e) {
       assignedName = parsed.name;
     }
 
-    await projectService.createTask({
+    const payload = {
       title,
       notes,
+      description,
       priority: priority ? parseInt(priority) : null,
       spaceId: spaceId || null,
+      locationLabel: locationLabel || null,
       assignedTo,
       assignedName,
-      status: 'open',
-    });
+    };
 
-    showToast('Project created', 'success');
-    closeAddModal();
+    if (isEdit) {
+      payload.status = status;
+      await projectService.updateTask(editingTaskId, payload);
+      showToast('Project updated', 'success');
+    } else {
+      payload.status = 'open';
+      await projectService.createTask(payload);
+      showToast('Project created', 'success');
+    }
+
+    closeModal();
     await loadTasks();
-    await loadAssignees(); // refresh assignee filter if new name
+    await loadAssignees();
   } catch (err) {
-    console.error('Failed to create project:', err);
-    showToast('Failed to create project', 'error');
+    console.error('Failed to save project:', err);
+    showToast('Failed to save project', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Create Project';
+    btn.textContent = isEdit ? 'Save Changes' : 'Create Project';
   }
+}
+
+// ---- Photos ----
+async function loadTaskPhotos(taskId) {
+  const container = document.getElementById('taskPhotos');
+  container.innerHTML = '';
+  try {
+    const photos = await projectService.getTaskPhotos(taskId);
+    photos.forEach(p => {
+      const url = p.media?.url;
+      if (!url) return;
+      const div = document.createElement('div');
+      div.className = 'task-photo-thumb';
+      div.innerHTML = `<img src="${esc(url)}" loading="lazy">
+        <button class="photo-remove" data-photo-id="${p.id}" title="Remove">&times;</button>`;
+      container.appendChild(div);
+    });
+  } catch (e) {
+    console.error('Failed to load task photos:', e);
+  }
+}
+
+async function handlePhotoUpload(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  const taskId = document.getElementById('editTaskId').value;
+  if (!taskId) {
+    showToast('Create the project first, then add photos by editing it', 'info');
+    e.target.value = '';
+    return;
+  }
+
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    showToast('Uploading photo...', 'info');
+    try {
+      const result = await mediaService.upload(file, { category: 'projects' });
+      if (!result.success) throw new Error(result.error || 'Upload failed');
+      await projectService.addTaskPhoto(taskId, result.media.id);
+      await loadTaskPhotos(taskId);
+      showToast('Photo added', 'success');
+    } catch (err) {
+      showToast('Photo upload failed: ' + err.message, 'error');
+    }
+  }
+  e.target.value = '';
 }
 
 function esc(str) {
