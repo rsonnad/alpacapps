@@ -1,12 +1,12 @@
 {
-  "version": "v260217.12 3:25p",
-  "release": 231,
-  "sha": "317a08fbd",
-  "fullSha": "317a08fbd89df67d14fbd08fa651732f109d8b65",
+  "version": "v260217.13 11:11p",
+  "release": 232,
+  "sha": "8d05e62dd",
+  "fullSha": "8d05e62dd4136af1e3e428b95f01e761422cb838",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-17 21:25:03+00",
-  "commits": [{"sha":"317a08fbd","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-18 05:11:36+00",
+  "commits": [{"sha":"69e48b142","message":"fix: stop sending lease signing reminders after lease period ends","author":"Rahul"},{"sha":"8d05e62dd","message":"Merge branch 'claude/affectionate-bouman'","author":"Rahul"}]
 }
