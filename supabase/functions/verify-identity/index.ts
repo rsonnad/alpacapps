@@ -1,6 +1,6 @@
 /**
  * Identity Verification Edge Function
- * Receives DL photo uploads, calls Claude Vision to extract data,
+ * Receives DL photo uploads, calls Gemini Vision to extract data,
  * compares to rental applicant or associate, auto-approves or flags for review.
  *
  * Supports two contexts:
@@ -25,11 +25,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (!anthropicApiKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY not configured');
     }
 
     // Parse multipart form data
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
     const documentUrl = signedUrlData?.signedUrl || '';
 
-    // Call Claude Vision API with retry on content filter blocks
+    // Call Gemini Vision API with retry
     const uint8Array = new Uint8Array(fileBuffer);
     let binaryString = '';
     for (let i = 0; i < uint8Array.length; i++) {
@@ -149,44 +149,47 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
 
     let extracted: Record<string, any> | null = null;
     let lastError = '';
+    let inputTokens = 0;
+    let outputTokens = 0;
+
+    // Map common image MIME types to Gemini-supported types
+    const mimeType = file.type === 'image/jpg' ? 'image/jpeg' : file.type;
 
     for (let attempt = 0; attempt < prompts.length; attempt++) {
       const promptText = prompts[attempt];
 
       try {
-        const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+        const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',
-          headers: {
-            'x-api-key': anthropicApiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-5-20250929',
-            max_tokens: 1024,
-            messages: [{
+            contents: [{
               role: 'user',
-              content: [
+              parts: [
                 {
-                  type: 'image',
-                  source: {
-                    type: 'base64',
-                    media_type: file.type,
+                  inlineData: {
+                    mimeType,
                     data: base64Image,
                   },
                 },
-                { type: 'text', text: promptText },
+                { text: promptText },
               ],
             }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 1024,
+              responseMimeType: 'application/json',
+            },
           }),
         });
 
-        if (!claudeResponse.ok) {
-          const errBody = await claudeResponse.text();
-          console.error(`Claude API error (attempt ${attempt + 1}):`, errBody);
+        if (!geminiResponse.ok) {
+          const errBody = await geminiResponse.text();
+          console.error(`Gemini API error (attempt ${attempt + 1}):`, errBody);
 
-          // Check for content filter block — retry with alternate prompt
-          if (errBody.includes('content filtering') || errBody.includes('Output blocked')) {
+          // Check for safety/content filter block — retry with alternate prompt
+          if (errBody.includes('SAFETY') || errBody.includes('blocked') || errBody.includes('HARM')) {
             lastError = 'Content filter triggered';
             console.log(`Content filter block on attempt ${attempt + 1}, ${attempt + 1 < prompts.length ? 'retrying with alternate prompt...' : 'no more retries'}`);
             continue;
@@ -195,17 +198,30 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
           throw new Error('Failed to analyze document');
         }
 
-        const claudeResult = await claudeResponse.json();
-        const extractedText = claudeResult.content?.[0]?.text || '';
+        const geminiResult = await geminiResponse.json();
 
-        // Check if response itself was blocked (stop_reason = 'content_filter')
-        if (claudeResult.stop_reason === 'content_filter' || !extractedText) {
-          console.log(`Content filter in response (attempt ${attempt + 1}), ${attempt + 1 < prompts.length ? 'retrying...' : 'no more retries'}`);
+        // Check for safety blocks in candidates
+        const candidate = geminiResult.candidates?.[0];
+        if (candidate?.finishReason === 'SAFETY' || !candidate?.content) {
+          console.log(`Safety block in response (attempt ${attempt + 1}), ${attempt + 1 < prompts.length ? 'retrying...' : 'no more retries'}`);
           lastError = 'Content filter triggered on response';
           continue;
         }
 
-        // Parse JSON from Claude response (handle markdown code blocks)
+        const extractedText = candidate.content?.parts?.[0]?.text || '';
+
+        // Track token usage
+        const usage = geminiResult.usageMetadata || {};
+        inputTokens = usage.promptTokenCount || 0;
+        outputTokens = usage.candidatesTokenCount || 0;
+
+        if (!extractedText) {
+          console.log(`Empty response (attempt ${attempt + 1}), ${attempt + 1 < prompts.length ? 'retrying...' : 'no more retries'}`);
+          lastError = 'Empty AI response';
+          continue;
+        }
+
+        // Parse JSON from Gemini response (handle markdown code blocks)
         let cleanJson = extractedText.trim();
         if (cleanJson.startsWith('```')) {
           cleanJson = cleanJson.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
@@ -216,7 +232,7 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
           console.log(`Successfully extracted ID data on attempt ${attempt + 1}`);
           break; // Success — exit retry loop
         } catch {
-          console.error(`Failed to parse Claude response (attempt ${attempt + 1}):`, extractedText);
+          console.error(`Failed to parse Gemini response (attempt ${attempt + 1}):`, extractedText);
           lastError = 'Failed to parse document data';
           continue;
         }
@@ -226,6 +242,17 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
         if (attempt + 1 >= prompts.length) throw fetchErr;
       }
     }
+
+    // Log API usage regardless of success/failure
+    await supabase.from('api_usage_log').insert({
+      vendor: 'gemini',
+      category: 'identity_verification',
+      endpoint: 'generateContent',
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      estimated_cost_usd: (inputTokens * 0.15 / 1_000_000) + (outputTokens * 3.50 / 1_000_000), // Gemini 2.5 Flash pricing
+      metadata: { model: 'gemini-2.5-flash', success: !!extracted },
+    });
 
     if (!extracted) {
       // All attempts failed — return a user-friendly error instead of crashing
