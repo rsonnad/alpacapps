@@ -1,7 +1,7 @@
 {
-  "name": "genalpaca-paint-analyzer",
+  "name": "genalpaca-project-inquiry",
   "version": "1.0.0",
-  "description": "Paint color analysis worker — Claude Vision + Brave Search",
+  "description": "Project inquiry worker — Gemini Vision + Brave Search",
   "type": "module",
   "scripts": {
     "start": "node worker.js",
