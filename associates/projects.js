@@ -122,13 +122,14 @@ function renderTasks(tasks) {
 
   const order = [1, 2, 3, 4, 'null'];
   let html = '';
+  let rowNum = 1;
 
   order.forEach(key => {
     const g = groups[key];
     if (!g || !g.length) return;
     html += `<div class="task-group">
       <div class="task-group-header">${labels[key === 'null' ? null : key]} (${g.length})</div>`;
-    g.forEach(t => { html += renderTaskCard(t); });
+    g.forEach(t => { html += renderTaskCard(t, rowNum++); });
     html += '</div>';
   });
 
@@ -136,14 +137,14 @@ function renderTasks(tasks) {
   if (onHoldTasks.length) {
     html += `<div class="task-group">
       <div class="task-group-header" style="color:#9d174d">On Hold (${onHoldTasks.length})</div>`;
-    onHoldTasks.forEach(t => { html += renderTaskCard(t); });
+    onHoldTasks.forEach(t => { html += renderTaskCard(t, rowNum++); });
     html += '</div>';
   }
 
   container.innerHTML = html;
 }
 
-function renderTaskCard(task) {
+function renderTaskCard(task, rowNum) {
   const pClass = task.priority ? `p${task.priority}` : 'pnone';
   const pLabel = task.priority ? `P${task.priority}` : '—';
   const location = task.space?.name || task.location_label || '';
@@ -180,11 +181,14 @@ function renderTaskCard(task) {
     ? `<div class="task-description">${esc(task.description.length > 120 ? task.description.substring(0, 120) + '...' : task.description)}</div>`
     : '';
 
+  const canonId = task.canonical_id || '';
+
   return `<div class="task-card ${doneClass}">
     <div class="task-card-top">
+      <div class="task-row-num">${rowNum}</div>
       <span class="task-priority ${pClass}">${pLabel}</span>
       <div class="task-card-body">
-        <div class="task-title">${task.task_number ? `<span style="color:var(--text-muted);font-weight:400">#${task.task_number}</span> ` : ''}${esc(task.title)}</div>
+        <div class="task-title">${canonId ? `<span class="task-canon-id">${esc(canonId)}</span> ` : ''}${esc(task.title)}</div>
         <div class="task-meta">
           ${location ? `<span class="task-location">${esc(location)}</span>` : ''}
           ${task.assigned_name ? `<span class="task-assignee">${esc(task.assigned_name)}</span>` : ''}

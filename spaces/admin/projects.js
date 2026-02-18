@@ -131,22 +131,24 @@ function renderTable(tasks) {
   const tbody = document.getElementById('taskTableBody');
 
   if (!tasks.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tasks match your filters.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No tasks match your filters.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = tasks.map(t => {
+  tbody.innerHTML = tasks.map((t, idx) => {
     const pClass = t.priority ? `p${t.priority}` : '';
     const pLabel = t.priority ? `P${t.priority}` : '';
     const location = t.space?.name || t.location_label || '';
     const checked = selectedIds.has(t.id) ? 'checked' : '';
+    const canonId = t.canonical_id || '';
 
     const rowClass = t.status === 'done' ? 'done' : (t.status === 'on_hold' ? 'on-hold' : '');
     return `<tr class="${rowClass}">
       <td><input type="checkbox" class="row-check" data-id="${t.id}" ${checked}></td>
+      <td class="row-num-cell">${idx + 1}</td>
       <td>${pLabel ? `<span class="priority-badge ${pClass}">${pLabel}</span>` : ''}</td>
       <td class="title-cell">
-        <div class="title-text">${t.task_number ? `<span style="color:var(--text-muted);font-weight:400">#${t.task_number}</span> ` : ''}${esc(t.title)}</div>
+        <div class="title-text">${canonId ? `<span style="color:var(--text-muted);font-weight:400">${esc(canonId)}</span> ` : ''}${esc(t.title)}</div>
         ${t.notes ? `<div class="notes-text">${esc(t.notes)}</div>` : ''}
         ${t.description ? `<div class="notes-text" style="font-style:italic">${esc(t.description.length > 80 ? t.description.substring(0, 80) + '...' : t.description)}</div>` : ''}
       </td>
