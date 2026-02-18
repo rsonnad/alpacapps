@@ -1,12 +1,12 @@
 {
-  "version": "v260218.07 2:59a",
-  "release": 241,
-  "sha": "f8007396c",
-  "fullSha": "f8007396c89f0e366995fa5777a20876d71ae794",
+  "version": "v260218.08 3:02a",
+  "release": 242,
+  "sha": "20dea6126",
+  "fullSha": "20dea6126726ce42d14cf883e40a5742ceeafc80",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 08:59:55+00",
-  "commits": [{"sha":"f8007396c","message":"fix: self-host Supabase JS + Leaflet to fix loading in privacy browsers","author":"Rahul"}]
+  "pushedAt": "2026-02-18 09:02:52+00",
+  "commits": [{"sha":"20dea6126","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
