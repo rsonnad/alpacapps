@@ -1,12 +1,12 @@
 {
-  "version": "v260218.42 11:30a",
-  "release": 276,
-  "sha": "763f03507",
-  "fullSha": "763f035073d498ac13b764b0bcd757ca98306c7e",
+  "version": "v260218.43 12:01p",
+  "release": 277,
+  "sha": "9c8717602",
+  "fullSha": "9c871760287de75d124a2d6d0c184e233d588956",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 17:30:31+00",
-  "commits": [{"sha":"ed886bea8","message":"Fix on_hold visual state and sort on-hold tasks to own section","author":"Rahul"},{"sha":"763f03507","message":"Merge branch 'claude/musing-jang'","author":"Rahul"}]
+  "pushedAt": "2026-02-18 18:01:33+00",
+  "commits": [{"sha":"7be60675b","message":"Add canonical task IDs (YYMon-NN) and row order numbers","author":"Rahul"},{"sha":"9c8717602","message":"Merge branch 'claude/musing-jang'","author":"Rahul"}]
 }
