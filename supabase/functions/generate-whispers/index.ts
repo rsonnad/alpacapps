@@ -1,7 +1,7 @@
 /**
  * Generate Whispers Edge Function
  *
- * Calls Claude or Gemini to generate a batch of whisper templates for a chapter,
+ * Calls Gemini to generate a batch of whisper templates for a chapter,
  * then inserts them into the spirit_whispers table.
  *
  * Requires admin role. Reads AI config from spirit_whisper_config.
@@ -23,7 +23,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 // ============================================
@@ -149,43 +148,10 @@ CRITICAL RULES:
 
 // AI model pricing (per million tokens)
 const MODEL_PRICING: Record<string, { input: number; output: number; provider: string }> = {
-  'claude-opus-4-6':       { input: 5.00,  output: 25.00, provider: 'anthropic' },
-  'claude-sonnet-4-5':     { input: 3.00,  output: 15.00, provider: 'anthropic' },
-  'claude-haiku-4-5':      { input: 1.00,  output: 5.00,  provider: 'anthropic' },
-  'gemini-2.5-flash':      { input: 0,     output: 0,     provider: 'gemini' },
+  'gemini-2.5-flash':      { input: 0.15,  output: 3.50,  provider: 'gemini' },
   'gemini-2.5-flash-lite': { input: 0,     output: 0,     provider: 'gemini' },
+  'gemini-2.5-pro':        { input: 1.25,  output: 10.00, provider: 'gemini' },
 };
-
-async function callClaude(model: string, systemPrompt: string, userPrompt: string) {
-  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
-  });
-
-  if (!resp.ok) {
-    const errBody = await resp.text();
-    throw new Error(`Claude API error ${resp.status}: ${errBody.substring(0, 300)}`);
-  }
-
-  const result = await resp.json();
-  const text = result.content?.[0]?.text || '';
-  const inputTokens = result.usage?.input_tokens || 0;
-  const outputTokens = result.usage?.output_tokens || 0;
-
-  return { text: text.trim(), inputTokens, outputTokens };
-}
 
 async function callGemini(model: string, systemPrompt: string, userPrompt: string) {
   if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured');
@@ -323,7 +289,7 @@ serve(async (req) => {
     }
 
     const model = config.story_ai_model || 'gemini-2.5-flash';
-    const provider = config.story_ai_provider || 'gemini';
+    const provider = 'gemini'; // Always use Gemini
 
     // Build prompts
     const systemPrompt = config.story_system_prompt || DEFAULT_SYSTEM_PROMPT;
@@ -334,15 +300,8 @@ serve(async (req) => {
 
     console.log(`Generating ${count} whispers for Chapter ${chapter} using ${provider}/${model}`);
 
-    // Call AI
-    let aiResult;
-    if (provider === 'anthropic') {
-      // For Claude, add JSON instruction since it doesn't have responseMimeType
-      const jsonInstructedPrompt = userPrompt + '\n\nIMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation, just the JSON array.';
-      aiResult = await callClaude(model, systemPrompt, jsonInstructedPrompt);
-    } else {
-      aiResult = await callGemini(model, systemPrompt, userPrompt);
-    }
+    // Call Gemini
+    const aiResult = await callGemini(model, systemPrompt, userPrompt);
 
     if (!aiResult || !aiResult.text) {
       return new Response(

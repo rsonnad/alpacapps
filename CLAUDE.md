@@ -187,7 +187,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
 - `anova-control/` - Anova Precision Oven control via WebSocket API (getStatus, startCook, stopCook) (resident+ auth)
 - `glowforge-control/` - Glowforge laser cutter status via cookie-based web API (getStatus) (resident+ auth)
-- `verify-identity/` - Driver's license photo → Claude Vision API → auto-verify applicants/associates
+- `verify-identity/` - Driver's license photo → Gemini Vision → auto-verify applicants/associates
 - `paypal-payout/` - Sends PayPal payouts to associates
 - `paypal-webhook/` - Receives PayPal payout status updates
 - `vapi-server/` - Returns dynamic assistant config to Vapi on incoming calls
@@ -468,7 +468,7 @@ payouts              - Payout records for associate payments
 upload_tokens        - Secure tokenized upload links for ID verification
                       (token, person_id [FK→people], app_user_id [FK→app_users],
                        purpose, expires_at, used_at)
-identity_verifications - Extracted DL data from Claude Vision API
+identity_verifications - Extracted DL data from Gemini Vision API
                       (person_id, app_user_id, photo_url,
                        extracted_name, extracted_dob, extracted_dl_number,
                        extracted_address, match_status [auto_approved/flagged/rejected],
@@ -740,6 +740,7 @@ Common page URLs for testing links (use only on main deploys):
    - States: `hover:`, `focus:`, `active:` prefixes
    - **Don't rewrite working CSS** — only use Tailwind for new code or when actively modifying an element
    - **Run `npm run css:build`** after adding new Tailwind classes (CI also rebuilds on push)
+7. **Use Claude CLI, never the Anthropic API directly** - For any process running on the DO droplet, Oracle instance, or any server where the CLI can run, always use the `claude` CLI (Claude Code) as a subprocess — never call the Anthropic API directly with an API key. For Supabase Edge Functions (Deno serverless) where the CLI can't run, use **Gemini** instead of Anthropic. There are zero places in the codebase that should call the Anthropic API directly — all workers use Claude CLI, all edge functions use Gemini.
 
 ## API Cost Accounting (REQUIRED)
 
@@ -771,7 +772,7 @@ Use these exact vendor strings:
 | Vendor | Services |
 |--------|----------|
 | `gemini` | Gemini API (image gen, PAI chat, payment matching) |
-| `anthropic` | Claude API (identity verification, bug analysis) |
+| `anthropic` | **Deprecated — do not use.** Workers use Claude CLI; edge functions use Gemini. |
 | `vapi` | Vapi voice calls |
 | `telnyx` | SMS sending/receiving |
 | `resend` | Email sending |
@@ -802,7 +803,7 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `pai_smart_home` | PAI smart home commands (lights, music, climate) |
 | `life_of_pai_backstory` | Life of PAI backstory generation |
 | `life_of_pai_voice` | Life of PAI voice/personality generation |
-| `identity_verification` | DL photo verification via Claude Vision |
+| `identity_verification` | DL photo verification via Gemini Vision |
 | `lease_esignature` | Lease document e-signatures |
 | `payment_matching` | AI-assisted payment matching |
 | `bug_analysis` | Bug Scout automated bug analysis |
@@ -1333,8 +1334,8 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - Hourly rate per associate, space association
    - DB: `associate_profiles`, `time_entries`, `work_photos`
    - Service: `shared/hours-service.js`
-27. **Identity Verification** - Driver's license verification via Claude Vision API
-   - `verify-identity` edge function: photo → Claude Vision → extract name/DOB/DL#/address
+27. **Identity Verification** - Driver's license verification via Gemini Vision API
+   - `verify-identity` edge function: photo → Gemini Vision → extract name/DOB/DL#/address
    - Auto-compares to applicant or associate profile data
    - Auto-approves exact matches, flags mismatches for admin review
    - Tokenized secure upload links (expire after 7 days)
