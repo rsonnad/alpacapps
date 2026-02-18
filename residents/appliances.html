@@ -25,17 +25,8 @@
     <p>Loading...</p>
   </div>
 
-  <!-- Unauthorized message -->
-  <div id="unauthorizedOverlay" class="loading-overlay hidden">
-    <div class="unauthorized-card">
-      <h2>Access Denied</h2>
-      <p>Your account is not authorized to access resident features.</p>
-      <div class="unauthorized-actions">
-        <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
-        <button id="signOutBtn" class="btn-secondary">Sign Out</button>
-      </div>
-    </div>
-  </div>
+  <!-- Access denied (populated by JS) -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
 
   <!-- Main app content -->
   <div id="appContent" class="hidden">
