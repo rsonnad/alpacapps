@@ -165,6 +165,39 @@
       transition: width 0.3s ease;
     }
 
+    .todo-search {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .todo-search svg { color: var(--text-muted); flex-shrink: 0; }
+    .todo-search input {
+      flex: 1; border: none; outline: none; background: none;
+      font-size: 0.9rem; color: var(--text); min-width: 0;
+    }
+    .todo-search input::placeholder { color: var(--text-muted); }
+
+    .todo-search-count {
+      font-size: 0.75rem; color: var(--text-muted); white-space: nowrap;
+    }
+
+    .todo-search-clear {
+      border: none; background: none; color: var(--text-muted);
+      font-size: 1.2rem; cursor: pointer; padding: 0 0.25rem; line-height: 1;
+    }
+    .todo-search-clear:hover { color: var(--text); }
+
+    .todo-category.search-hidden { display: none; }
+    .todo-item.search-hidden { display: none; }
+    .todo-search-highlight { background: #fef3c7; border-radius: 2px; }
+
     .todo-actions { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
 
     .todo-cat-actions, .todo-item-actions {
@@ -174,6 +207,14 @@
       transition: opacity 0.15s;
       flex-shrink: 0;
     }
+
+    .todo-item-edit-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; padding: 4px;
+      border: none; background: none; color: var(--text-muted);
+      cursor: pointer; border-radius: 4px; flex-shrink: 0;
+    }
+    .todo-item-edit-btn:hover { color: var(--accent); background: var(--bg); }
 
     .todo-category-header:hover .todo-cat-actions,
     .todo-item:hover .todo-item-actions { opacity: 1; }
@@ -253,6 +294,13 @@
     <main class="manage-content todo-page">
       <div class="todo-summary" id="todoSummary"></div>
       <div class="todo-progress-bar"><div class="todo-progress-fill" id="todoProgressFill"></div></div>
+
+      <div class="todo-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="todoSearch" placeholder="Search tasks..." autocomplete="off">
+        <span class="todo-search-count" id="todoSearchCount"></span>
+        <button class="todo-search-clear hidden" id="todoSearchClear">&times;</button>
+      </div>
 
       <div class="todo-actions">
         <button class="btn-small btn-secondary" id="resetAllBtn">Reset All</button>
