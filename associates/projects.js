@@ -107,10 +107,14 @@ function renderTasks(tasks) {
     return;
   }
 
+  // Separate on_hold tasks into their own section at the bottom
+  const onHoldTasks = tasks.filter(t => t.status === 'on_hold');
+  const activeTasks = tasks.filter(t => t.status !== 'on_hold');
+
   const groups = {};
   const labels = { 1: 'P1 — Urgent', 2: 'P2 — High', 3: 'P3 — Medium', 4: 'P4 — Low', null: 'No Priority' };
 
-  tasks.forEach(t => {
+  activeTasks.forEach(t => {
     const key = t.priority || 'null';
     if (!groups[key]) groups[key] = [];
     groups[key].push(t);
@@ -128,6 +132,14 @@ function renderTasks(tasks) {
     html += '</div>';
   });
 
+  // On Hold section at the very end
+  if (onHoldTasks.length) {
+    html += `<div class="task-group">
+      <div class="task-group-header" style="color:#9d174d">On Hold (${onHoldTasks.length})</div>`;
+    onHoldTasks.forEach(t => { html += renderTaskCard(t); });
+    html += '</div>';
+  }
+
   container.innerHTML = html;
 }
 
@@ -135,7 +147,7 @@ function renderTaskCard(task) {
   const pClass = task.priority ? `p${task.priority}` : 'pnone';
   const pLabel = task.priority ? `P${task.priority}` : '—';
   const location = task.space?.name || task.location_label || '';
-  const doneClass = task.status === 'done' ? 'done' : '';
+  const doneClass = task.status === 'done' ? 'done' : (task.status === 'on_hold' ? 'on-hold' : '');
 
   let actions = `<button class="btn-edit" data-id="${task.id}" data-action="edit">Edit</button>`;
   if (task.status === 'open') {

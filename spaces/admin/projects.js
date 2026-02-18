@@ -141,7 +141,8 @@ function renderTable(tasks) {
     const location = t.space?.name || t.location_label || '';
     const checked = selectedIds.has(t.id) ? 'checked' : '';
 
-    return `<tr class="${t.status === 'done' ? 'done' : ''}">
+    const rowClass = t.status === 'done' ? 'done' : (t.status === 'on_hold' ? 'on-hold' : '');
+    return `<tr class="${rowClass}">
       <td><input type="checkbox" class="row-check" data-id="${t.id}" ${checked}></td>
       <td>${pLabel ? `<span class="priority-badge ${pClass}">${pLabel}</span>` : ''}</td>
       <td class="title-cell">
