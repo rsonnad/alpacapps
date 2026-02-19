@@ -269,12 +269,6 @@ function renderAccessDenied(state, activeTab) {
   }
 }
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
 /**
  * Initialize an associate page with auth flow.
  * @param {Object} options
