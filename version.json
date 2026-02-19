@@ -1,12 +1,12 @@
 {
-  "version": "v260218.48 1:12p",
-  "release": 282,
-  "sha": "ce8e88c70",
-  "fullSha": "ce8e88c7015324cf71c5d7c9ff642d762e75aa6e",
+  "version": "v260219.01 5:11a",
+  "release": 283,
+  "sha": "a62734603",
+  "fullSha": "a62734603c83f2c665dce1a46b6a4a2f567646e7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-18 19:12:44+00",
-  "commits": [{"sha":"abc7a7b99","message":"Improve Access Denied page with user info, page context, and request form","author":"Rahul"},{"sha":"ce8e88c70","message":"Merge branch 'claude/lucid-dubinsky'","author":"Rahul"}]
+  "pushedAt": "2026-02-19 11:11:45+00",
+  "commits": [{"sha":"a62734603","message":"Fix site-wide crash: remove duplicate escapeHtml function declarations","author":"Rahul"}]
 }
