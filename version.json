@@ -1,12 +1,12 @@
 {
-  "version": "v260220.05 3:57a",
-  "release": 290,
-  "sha": "88b735fcf",
-  "fullSha": "88b735fcf481aae1832e7edc35543ee6bd3097d1",
+  "version": "v260220.06 4:11a",
+  "release": 291,
+  "sha": "6dc38f246",
+  "fullSha": "6dc38f24605d6e775315aea76c4fe0c6f107a93a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 09:57:22+00",
-  "commits": [{"sha":"78577518e","message":"Add India business visa guide page for EU citizens","author":"Rahul"},{"sha":"88b735fcf","message":"Merge branch 'claude/serene-curran'","author":"Rahul"}]
+  "pushedAt": "2026-02-20 10:11:27+00",
+  "commits": [{"sha":"27e9bb485","message":"Add Poland sauna business guide for Americans","author":"Rahul"},{"sha":"6dc38f246","message":"Merge branch 'claude/serene-curran'","author":"Rahul"}]
 }
