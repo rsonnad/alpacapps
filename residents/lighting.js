@@ -1325,13 +1325,13 @@ function updateGroupStatus(groupId) {
   }
 
   const colorSwatch = state.color
-    ? `<span class="color-swatch" style="background:${state.color}"></span>`
+    ? `<span class="color-swatch-label"><span class="color-swatch" style="background:${state.color}"></span>Color</span>`
     : '';
 
   if (state.on) {
     const brightnessStr = state.brightness != null ? ` @ ${state.brightness}%` : '';
     const tempStr = state.colorTemp ? ` ${state.colorTemp}K` : '';
-    statusEl.innerHTML = `${colorSwatch}<span>On${brightnessStr}${tempStr}</span>`;
+    statusEl.innerHTML = `<span>On${brightnessStr}${tempStr}</span>${colorSwatch}`;
     statusEl.className = 'group-status on';
   } else {
     statusEl.innerHTML = '<span>Off</span>';
