@@ -251,12 +251,13 @@ function updateClockUI() {
 }
 
 async function handleClockIn() {
-  const spaceId = getSelectedSpaceId();
-  if (!spaceId) {
+  const spaceVal = document.getElementById('spaceSelector').value;
+  if (!spaceVal) {
     showToast('Please select a space before clocking in', 'error');
     document.getElementById('spaceSelector').focus();
     return;
   }
+  const spaceId = getSelectedSpaceId(); // null for virtual/other, UUID for real spaces
   const btn = document.getElementById('clockBtn');
   btn.disabled = true;
   try {
@@ -970,7 +971,7 @@ async function handleManualSubmit() {
     showToast('Please fill in date, clock in, and clock out times', 'error');
     return;
   }
-  if (!getSelectedSpaceId()) {
+  if (!document.getElementById('spaceSelector').value) {
     showToast('Please select a space', 'error');
     return;
   }
