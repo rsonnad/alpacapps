@@ -1173,6 +1173,8 @@ const PERM_GROUPS = [
     keys: ['view_templates', 'manage_templates'], adminKey: null },
   { id: 'accounting',icon:'💰', label: 'Accounting',bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
     keys: ['view_accounting', 'manage_accounting'], adminKey: null },
+  { id: 'testdev',icon:'🧪', label: 'Test Dev',bg: '#fef3c7', headerBg: '#fde68a', headerColor: '#92400e',
+    keys: ['view_testdev'], adminKey: null },
   // -- Associate --
   { id: 'associate', icon: '🔧', label: 'Associate Work', bg: '#fce7f3', headerBg: '#f9d0e7', headerColor: '#9d174d',
     keys: ['clock_in_out', 'upload_work_photos', 'view_own_hours', 'manage_payment_prefs'], adminKey: null },
@@ -1182,7 +1184,7 @@ const PERM_GROUPS = [
 const PERM_SUPER_SECTIONS = [
   { label: 'Resident', groupIds: ['lighting','music','cameras','climate','laundry','cars','profile','pai'] },
   { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo','appdev'] },
-  { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting'] },
+  { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting','testdev'] },
   { label: 'Associate',groupIds: ['associate'] },
 ];
 
