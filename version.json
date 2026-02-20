@@ -1,12 +1,12 @@
 {
-  "version": "v260220.12 7:59a",
-  "release": 297,
-  "sha": "ebcf4e48b",
-  "fullSha": "ebcf4e48be839320eeb89d5f9d3ebdb5c2ece4ec",
+  "version": "v260220.13 8:04a",
+  "release": 298,
+  "sha": "64af6440d",
+  "fullSha": "64af6440d59085540d8db0dce81919857ab39419",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 13:59:43+00",
-  "commits": [{"sha":"ebcf4e48b","message":"Fix clock-in validation to accept Virtual and Other as valid space selections","author":"klient"}]
+  "pushedAt": "2026-02-20 14:04:21+00",
+  "commits": [{"sha":"64af6440d","message":"Fix Test Dev tab visibility: use view_settings permission","author":"klient"}]
 }
