@@ -1,12 +1,12 @@
 {
-  "version": "v260220.03 3:34a",
-  "release": 288,
-  "sha": "9c45fccbd",
-  "fullSha": "9c45fccbd8c9d9b852fbf58e17efb4f04421451a",
+  "version": "v260220.05 3:57a",
+  "release": 290,
+  "sha": "88b735fcf",
+  "fullSha": "88b735fcf481aae1832e7edc35543ee6bd3097d1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 09:34:34+00",
-  "commits": [{"sha":"4096e0793","message":"feat: I want a better font for the \"AI developer...\" phrase on this page.  It \\n\\nAutomated feature from PAI request #1a4865e1-1bde-4d42-b8ad-29137c08ceba.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"9c45fccbd","message":"Merge feature/20260220-1a4865e1 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-20 09:57:22+00",
+  "commits": [{"sha":"78577518e","message":"Add India business visa guide page for EU citizens","author":"Rahul"},{"sha":"88b735fcf","message":"Merge branch 'claude/serene-curran'","author":"Rahul"}]
 }
