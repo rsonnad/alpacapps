@@ -1,12 +1,12 @@
 {
-  "version": "v260220.08 5:11a",
-  "release": 293,
-  "sha": "5b0d8af91",
-  "fullSha": "5b0d8af91c6381a22c8ad825d9c6551acfed1680",
+  "version": "v260220.09 5:26a",
+  "release": 294,
+  "sha": "cd69c90c3",
+  "fullSha": "cd69c90c36af0c49c40cf0d93f5aa72391cd64ac",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 11:11:48+00",
-  "commits": [{"sha":"5b0d8af91","message":"Add 'Remote' workplace option with per-user sticky selection","author":"klient"}]
+  "pushedAt": "2026-02-20 11:26:37+00",
+  "commits": [{"sha":"cd69c90c3","message":"Add 'Virtual' option to space selector for non-physical work","author":"klient"}]
 }
