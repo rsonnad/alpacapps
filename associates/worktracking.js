@@ -25,6 +25,7 @@ let spacesMap = {};
 let scheduleData = [];
 let scheduleActuals = {};
 let scheduleLoaded = false;
+let editingEntryId = null;
 
 // =============================================
 // INITIALIZATION
@@ -364,9 +365,13 @@ async function refreshToday() {
       const desc = e.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">${escapeHtml(e.description)}</div>` : '';
       const manual = e.is_manual ? '<span class="manual-badge" style="margin-left:0.3rem;">Manual</span>' : '';
       const spaceLabel = e.space_id && spacesMap[e.space_id] ? `<span class="space-tag">${escapeHtml(spacesMap[e.space_id])}</span>` : '';
+      const editBtn = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')">Edit</button>` : '';
       return `<div class="entry-row">
         <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${desc}</div>
-        <span class="entry-duration">${dur}</span>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          ${editBtn}
+          <span class="entry-duration">${dur}</span>
+        </div>
       </div>`;
     }).join('');
   } catch (err) {
@@ -641,6 +646,7 @@ async function refreshHistory() {
         const paidClass = e.is_paid ? 'paid' : 'unpaid';
         const manualHtml = e.is_manual ? `<span class="manual-badge" title="${escapeHtml(e.manual_reason || 'Manual entry')}">Manual</span>` : '';
         const spaceHtml = e.space_id && spacesMap[e.space_id] ? `<div class="ed-desc">${escapeHtml(spacesMap[e.space_id])}</div>` : '';
+        const editBtnHtml = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')">Edit</button>` : '';
 
         return `<div class="history-entry">
           <div class="entry-time-block">
@@ -649,7 +655,7 @@ async function refreshHistory() {
             <span class="etb-out">${co}</span>
           </div>
           <div class="entry-detail">
-            <div class="ed-duration">${dur}${manualHtml}</div>
+            <div class="ed-duration">${dur}${manualHtml}${editBtnHtml}</div>
             ${desc}
             ${spaceHtml}
           </div>
@@ -911,6 +917,15 @@ function setupEventListeners() {
   // Stripe Connect button
   document.getElementById('btnStripeConnect')?.addEventListener('click', handleStripeConnect);
 
+  // Edit entry modal
+  document.getElementById('btnEditClose').addEventListener('click', closeEditModal);
+  document.getElementById('editEntryModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeEditModal();
+  });
+  document.getElementById('btnEditSubmit').addEventListener('click', handleEditSubmit);
+  document.getElementById('editClockIn').addEventListener('input', computeEditDuration);
+  document.getElementById('editClockOut').addEventListener('input', computeEditDuration);
+
   // Manual entry modal
   document.getElementById('btnManualEntry').addEventListener('click', openManualModal);
   document.getElementById('btnManualClose').addEventListener('click', closeManualModal);
@@ -1014,6 +1029,125 @@ async function handleManualSubmit() {
     btn.textContent = 'Add Entry';
   }
 }
+
+// =============================================
+// EDIT ENTRY
+// =============================================
+async function openEditModal(entryId) {
+  // Fetch the entry from today's or history entries
+  const { data: entry, error } = await supabase
+    .from('time_entries')
+    .select('*')
+    .eq('id', entryId)
+    .single();
+
+  if (error || !entry) {
+    showToast('Failed to load entry', 'error');
+    return;
+  }
+
+  // Don't allow editing paid entries
+  if (entry.is_paid) {
+    showToast('Paid entries cannot be edited', 'error');
+    return;
+  }
+
+  // Don't allow editing active (clocked-in) entries
+  if (!entry.clock_out) {
+    showToast('Clock out first before editing', 'error');
+    return;
+  }
+
+  editingEntryId = entryId;
+
+  // Populate space dropdown
+  const editSpace = document.getElementById('editSpace');
+  let opts = '<option value="">No space</option>';
+  for (const [id, name] of Object.entries(spacesMap)) {
+    opts += `<option value="${id}"${id === entry.space_id ? ' selected' : ''}>${escapeHtml(name)}</option>`;
+  }
+  editSpace.innerHTML = opts;
+
+  // Populate fields
+  const ciDate = new Date(entry.clock_in);
+  const coDate = new Date(entry.clock_out);
+  document.getElementById('editDate').value = ciDate.toISOString().split('T')[0];
+  document.getElementById('editClockIn').value = ciDate.toTimeString().slice(0, 5);
+  document.getElementById('editClockOut').value = coDate.toTimeString().slice(0, 5);
+  document.getElementById('editDesc').value = entry.description || '';
+
+  // Compute duration display
+  computeEditDuration();
+
+  document.getElementById('editEntryModal').classList.add('visible');
+}
+
+function closeEditModal() {
+  document.getElementById('editEntryModal').classList.remove('visible');
+  editingEntryId = null;
+}
+
+function computeEditDuration() {
+  const date = document.getElementById('editDate').value;
+  const ci = document.getElementById('editClockIn').value;
+  const co = document.getElementById('editClockOut').value;
+  const durEl = document.getElementById('editDuration');
+  if (!ci || !co) { durEl.textContent = '—'; return; }
+  const ciDate = new Date(`${date || new Date().toISOString().split('T')[0]}T${ci}`);
+  const coDate = new Date(`${date || new Date().toISOString().split('T')[0]}T${co}`);
+  const diffMs = coDate - ciDate;
+  if (diffMs <= 0) { durEl.textContent = 'Invalid (out must be after in)'; durEl.style.color = '#ef4444'; return; }
+  const mins = Math.round(diffMs / 60000);
+  const earned = (mins / 60) * parseFloat(profile.hourly_rate || 0);
+  durEl.style.color = '#0f766e';
+  durEl.textContent = `${HoursService.formatDuration(mins)} — ${HoursService.formatCurrency(earned)}`;
+}
+
+async function handleEditSubmit() {
+  if (!editingEntryId) return;
+
+  const date = document.getElementById('editDate').value;
+  const clockIn = document.getElementById('editClockIn').value;
+  const clockOut = document.getElementById('editClockOut').value;
+  const description = document.getElementById('editDesc').value.trim();
+  const spaceId = document.getElementById('editSpace').value || null;
+
+  if (!date || !clockIn || !clockOut) {
+    showToast('Please fill in date, clock in, and clock out times', 'error');
+    return;
+  }
+
+  const ciDateTime = `${date}T${clockIn}`;
+  const coDateTime = `${date}T${clockOut}`;
+  if (new Date(coDateTime) <= new Date(ciDateTime)) {
+    showToast('Clock out must be after clock in', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnEditSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    await hoursService.updateEntry(editingEntryId, {
+      clock_in: new Date(ciDateTime).toISOString(),
+      clock_out: new Date(coDateTime).toISOString(),
+      description: description || null,
+      space_id: spaceId
+    });
+    showToast('Entry updated!', 'success');
+    closeEditModal();
+    await Promise.all([refreshToday(), refreshHistory()]);
+  } catch (err) {
+    showToast('Failed to update entry: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+
+// Make openEditModal available to onclick handlers in rendered HTML
+window._openEditModal = openEditModal;
 
 // =============================================
 // SCHEDULING

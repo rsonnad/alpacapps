@@ -417,6 +417,13 @@
     }
     .btn-save-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* Edit entry button */
+    .entry-edit-btn {
+      background: none; border: none; cursor: pointer; padding: 0.25rem;
+      font-size: 0.7rem; color: #6366f1; font-weight: 600; white-space: nowrap;
+    }
+    .entry-edit-btn:hover { text-decoration: underline; }
+
     @media (max-width: 768px) {
       .app-container { padding: 0.75rem; }
       .clock-btn { width: 150px; height: 150px; font-size: 1.2rem; }
@@ -627,6 +634,43 @@
           <button class="btn-save-pref" id="btnSavePref">Save Preference</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit Entry Modal -->
+  <div class="modal-overlay" id="editEntryModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>Edit Time Entry</h3>
+        <button class="modal-close" id="btnEditClose">&times;</button>
+      </div>
+      <div class="modal-field">
+        <label>Date</label>
+        <input type="date" id="editDate">
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Clock In</label>
+          <input type="time" id="editClockIn">
+        </div>
+        <div class="modal-field">
+          <label>Clock Out</label>
+          <input type="time" id="editClockOut">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Duration</label>
+        <div class="computed-duration" id="editDuration">—</div>
+      </div>
+      <div class="modal-field">
+        <label>Work Description</label>
+        <textarea id="editDesc" placeholder="What did you work on?"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Space</label>
+        <select id="editSpace"></select>
+      </div>
+      <button class="btn-modal-submit" id="btnEditSubmit">Save Changes</button>
     </div>
   </div>
 
