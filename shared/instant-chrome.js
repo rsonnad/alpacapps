@@ -1,11 +1,11 @@
 /**
- * Instant Chrome - Skip loading spinner for returning users with cached auth.
+ * Instant Chrome - Pre-render header shell for returning users with cached auth.
  *
- * Pre-renders a header shell with properly-sized logo images so content
- * doesn't jump when the full header loads. Logo images include explicit
- * width/height attributes to prevent FOUC (flash of unstyled content).
- * The full header (nav, auth, mobile nav) is injected by
- * the page's module script via injectSiteNav(), which replaces this shell.
+ * NOTE: Overlay hiding and content visibility are now handled by inline
+ * <script>+<style> in each page's <head> (runs before first paint).
+ * This script's main job is pre-rendering the header shell with logo images.
+ * The overlay.style.display='none' and content.classList.remove('hidden')
+ * calls below are redundant but kept for backwards compatibility.
  *
  * IMPORTANT: This must be a regular (non-module) script so it executes
  * synchronously before module scripts. Place it at the end of <body>,
@@ -35,8 +35,8 @@
         '<header class="aap-header aap-header--solid aap-header--dark" id="aap-header">' +
           '<div class="aap-header__inner">' +
             '<a href="/" class="aap-header__logo">' +
-              '<img src="' + logoBase + '/alpaca-head-black-transparent.png" alt="" class="aap-header__icon" width="21" height="30">' +
-              '<img src="' + logoBase + '/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" width="22" height="22">' +
+              '<img src="' + logoBase + '/alpaca-head-black-transparent.png" alt="" class="aap-header__icon" width="21" height="30" style="height:30px;width:auto;max-width:none">' +
+              '<img src="' + logoBase + '/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" width="22" height="22" style="height:22px;width:auto;max-width:none">' +
             '</a>' +
             '<div id="aapHeaderAuth" class="aap-header-auth"></div>' +
           '</div>' +
