@@ -156,13 +156,14 @@ async function loadSpaces() {
     }
 
     const sel = document.getElementById('spaceSelector');
-    sel.innerHTML = '<option value="">Select space...</option>';
+    let opts = '<option value="">Select space...</option>';
     for (const s of (data || [])) {
       const label = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
-      sel.innerHTML += `<option value="${s.id}">${escapeHtml(label)}</option>`;
+      opts += `<option value="${s.id}">${escapeHtml(label)}</option>`;
     }
-    sel.innerHTML += '<option value="virtual">Virtual</option>';
-    sel.innerHTML += '<option value="other">Other</option>';
+    opts += '<option value="virtual">Virtual</option>';
+    opts += '<option value="other">Other</option>';
+    sel.innerHTML = opts;
 
     // Restore sticky selection
     const saved = localStorage.getItem(SPACE_KEY);
@@ -251,10 +252,12 @@ function updateClockUI() {
 }
 
 async function handleClockIn() {
-  const spaceVal = document.getElementById('spaceSelector').value;
+  const spaceSel = document.getElementById('spaceSelector');
+  const spaceVal = spaceSel.value;
+  console.log('[clockIn] spaceSelector.value =', JSON.stringify(spaceVal), 'selectedIndex =', spaceSel.selectedIndex);
   if (!spaceVal) {
     showToast('Please select a space before clocking in', 'error');
-    document.getElementById('spaceSelector').focus();
+    spaceSel.focus();
     return;
   }
   const spaceId = getSelectedSpaceId(); // null for virtual/other, UUID for real spaces
