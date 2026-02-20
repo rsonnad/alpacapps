@@ -1,12 +1,12 @@
 {
-  "version": "v260219.03 9:47a",
-  "release": 285,
-  "sha": "73748bdf6",
-  "fullSha": "73748bdf67905236d20d2a6dd120550fda22b1c0",
+  "version": "v260220.01 12:43a",
+  "release": 286,
+  "sha": "a438de4ff",
+  "fullSha": "a438de4ff186a1cf3f198ce018bcfc5ce6628547",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmjduv7",
-  "pushedAt": "2026-02-19 15:47:12+00",
-  "commits": [{"sha":"73748bdf6","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "machine": "runnervmwffz4",
+  "pushedAt": "2026-02-20 06:43:11+00",
+  "commits": [{"sha":"89af96fc7","message":"Replace loading spinner with branded logo + fix icon FOUC across all pages","author":"Rahul"},{"sha":"a438de4ff","message":"Merge branch 'claude/awesome-elion'","author":"Rahul"}]
 }
