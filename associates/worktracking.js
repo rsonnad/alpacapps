@@ -157,12 +157,12 @@ async function loadSpaces() {
 
     const sel = document.getElementById('spaceSelector');
     sel.innerHTML = '<option value="">Select space...</option>';
-    sel.innerHTML += '<option value="virtual">Virtual</option>';
-    sel.innerHTML += '<option value="other">Other</option>';
     for (const s of (data || [])) {
       const label = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
       sel.innerHTML += `<option value="${s.id}">${escapeHtml(label)}</option>`;
     }
+    sel.innerHTML += '<option value="virtual">Virtual</option>';
+    sel.innerHTML += '<option value="other">Other</option>';
 
     // Restore sticky selection
     const saved = localStorage.getItem(SPACE_KEY);
