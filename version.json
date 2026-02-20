@@ -1,12 +1,12 @@
 {
-  "version": "v260220.07 5:07a",
-  "release": 292,
-  "sha": "e167861d5",
-  "fullSha": "e167861d5fc6c9b9ca3bb95cce4f7c491afaabfa",
+  "version": "v260220.08 5:11a",
+  "release": 293,
+  "sha": "5b0d8af91",
+  "fullSha": "5b0d8af91c6381a22c8ad825d9c6551acfed1680",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 11:07:17+00",
-  "commits": [{"sha":"e167861d5","message":"Add 'Color' label to lighting group color swatch for clarity","author":"klient"}]
+  "pushedAt": "2026-02-20 11:11:48+00",
+  "commits": [{"sha":"5b0d8af91","message":"Add 'Remote' workplace option with per-user sticky selection","author":"klient"}]
 }
