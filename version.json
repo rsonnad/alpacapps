@@ -1,12 +1,12 @@
 {
-  "version": "v260220.13 8:04a",
-  "release": 298,
-  "sha": "64af6440d",
-  "fullSha": "64af6440d59085540d8db0dce81919857ab39419",
+  "version": "v260220.14 8:09a",
+  "release": 299,
+  "sha": "fe7aafad7",
+  "fullSha": "fe7aafad7d44166bac9022e1d83dfb3f27ff8a59",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 14:04:21+00",
-  "commits": [{"sha":"64af6440d","message":"Fix Test Dev tab visibility: use view_settings permission","author":"klient"}]
+  "pushedAt": "2026-02-20 14:09:56+00",
+  "commits": [{"sha":"fe7aafad7","message":"Debug clock-in space validation + build options as single innerHTML set","author":"klient"}]
 }
