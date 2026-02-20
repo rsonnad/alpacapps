@@ -1,10 +1,10 @@
 /**
  * Instant Chrome - Skip loading spinner for returning users with cached auth.
  *
- * Pre-renders an empty header shell (background bar only, no logo images) so
- * content doesn't jump when the full header loads. Logo images are omitted
- * here to avoid FOUC where they briefly render at natural size.
- * The full header (logos, nav, auth, mobile nav) is injected by
+ * Pre-renders a header shell with properly-sized logo images so content
+ * doesn't jump when the full header loads. Logo images include explicit
+ * width/height attributes to prevent FOUC (flash of unstyled content).
+ * The full header (nav, auth, mobile nav) is injected by
  * the page's module script via injectSiteNav(), which replaces this shell.
  *
  * IMPORTANT: This must be a regular (non-module) script so it executes
@@ -24,16 +24,20 @@
     if (overlay) overlay.style.display = 'none';
     if (content) content.classList.remove('hidden');
 
-    // Pre-render header shell so content doesn't jump when full header loads.
-    // Only renders the header container (no logo images) to avoid FOUC where
-    // images briefly render at natural size before CSS constrains them.
-    // The full header (logos, nav, auth) is injected by injectSiteNav() moments later.
+    // Pre-render header shell with sized logo images.
+    // Explicit width/height attributes prevent the images from ever rendering
+    // at their natural size (319x453 / 512x512) during the brief window before
+    // CSS applies .aap-header__icon { height: 30px }.
     var header = document.getElementById('siteHeader');
     if (header && !header.children.length) {
+      var logoBase = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos';
       header.innerHTML =
         '<header class="aap-header aap-header--solid aap-header--dark" id="aap-header">' +
           '<div class="aap-header__inner">' +
-            '<a href="/" class="aap-header__logo"></a>' +
+            '<a href="/" class="aap-header__logo">' +
+              '<img src="' + logoBase + '/alpaca-head-black-transparent.png" alt="" class="aap-header__icon" width="21" height="30">' +
+              '<img src="' + logoBase + '/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" width="22" height="22">' +
+            '</a>' +
             '<div id="aapHeaderAuth" class="aap-header-auth"></div>' +
           '</div>' +
         '</header>';
