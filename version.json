@@ -1,12 +1,12 @@
 {
-  "version": "v260220.10 5:30a",
-  "release": 295,
-  "sha": "66cb3be43",
-  "fullSha": "66cb3be43c797d2822c8847cfb60ee97911ec024",
+  "version": "v260220.11 7:57a",
+  "release": 296,
+  "sha": "8f4afe584",
+  "fullSha": "8f4afe5843a48542a3e3f3702d004a7d6af13afa",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 11:30:10+00",
-  "commits": [{"sha":"66cb3be43","message":"Move Virtual and Other options to end of space selector list","author":"klient"}]
+  "pushedAt": "2026-02-20 13:57:19+00",
+  "commits": [{"sha":"8f4afe584","message":"Add Test Dev admin page with GitHub commit viewer","author":"klient"}]
 }
