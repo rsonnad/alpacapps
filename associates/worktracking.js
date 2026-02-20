@@ -157,6 +157,7 @@ async function loadSpaces() {
 
     const sel = document.getElementById('spaceSelector');
     sel.innerHTML = '<option value="">Select space...</option>';
+    sel.innerHTML += '<option value="virtual">Virtual</option>';
     sel.innerHTML += '<option value="other">Other</option>';
     for (const s of (data || [])) {
       const label = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
@@ -180,7 +181,7 @@ async function loadSpaces() {
 
 function getSelectedSpaceId() {
   const val = document.getElementById('spaceSelector').value;
-  return val && val !== 'other' ? val : null;
+  return val && val !== 'other' && val !== 'virtual' ? val : null;
 }
 
 function getSelectedTaskId() {
