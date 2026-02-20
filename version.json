@@ -1,12 +1,12 @@
 {
-  "version": "v260220.01 12:43a",
-  "release": 286,
-  "sha": "a438de4ff",
-  "fullSha": "a438de4ff186a1cf3f198ce018bcfc5ce6628547",
+  "version": "v260220.02 2:30a",
+  "release": 287,
+  "sha": "bcf768b12",
+  "fullSha": "bcf768b129ec916a2dd2285e638fd2edca70f801",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 06:43:11+00",
-  "commits": [{"sha":"89af96fc7","message":"Replace loading spinner with branded logo + fix icon FOUC across all pages","author":"Rahul"},{"sha":"a438de4ff","message":"Merge branch 'claude/awesome-elion'","author":"Rahul"}]
+  "pushedAt": "2026-02-20 08:30:29+00",
+  "commits": [{"sha":"bcf768b12","message":"Eliminate icon FOUC on all authenticated pages","author":"Rahul"}]
 }
