@@ -1,12 +1,12 @@
 {
-  "version": "v260220.11 7:57a",
-  "release": 296,
-  "sha": "8f4afe584",
-  "fullSha": "8f4afe5843a48542a3e3f3702d004a7d6af13afa",
+  "version": "v260220.12 7:59a",
+  "release": 297,
+  "sha": "ebcf4e48b",
+  "fullSha": "ebcf4e48be839320eeb89d5f9d3ebdb5c2ece4ec",
   "actor": "grotkoaleksandra",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-20 13:57:19+00",
-  "commits": [{"sha":"8f4afe584","message":"Add Test Dev admin page with GitHub commit viewer","author":"klient"}]
+  "pushedAt": "2026-02-20 13:59:43+00",
+  "commits": [{"sha":"ebcf4e48b","message":"Fix clock-in validation to accept Virtual and Other as valid space selections","author":"klient"}]
 }
