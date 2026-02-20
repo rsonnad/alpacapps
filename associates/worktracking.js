@@ -55,6 +55,7 @@ async function initApp() {
   setupEventListeners();
   requestLocation();
   await loadSpaces();
+  initWorkplaceSelector();
   await loadTasksForSelector();
   await refreshAll();
 
@@ -110,6 +111,32 @@ function getLocation() {
 // SPACE SELECTOR (sticky)
 // =============================================
 const SPACE_KEY = 'worktracking-selected-space';
+const WORKPLACE_KEY = 'worktracking-selected-workplace';
+
+function initWorkplaceSelector() {
+  const sel = document.getElementById('workplaceSelector');
+  if (!sel) return;
+
+  // Build per-user key
+  const userId = authState?.appUser?.id || '';
+  const key = `${WORKPLACE_KEY}-${userId}`;
+
+  // Restore saved selection
+  const saved = localStorage.getItem(key);
+  if (saved && sel.querySelector(`option[value="${saved}"]`)) {
+    sel.value = saved;
+  }
+
+  // Persist on change
+  sel.addEventListener('change', () => {
+    localStorage.setItem(key, sel.value);
+  });
+}
+
+function getSelectedWorkplace() {
+  const sel = document.getElementById('workplaceSelector');
+  return sel ? sel.value : 'onsite';
+}
 
 async function loadSpaces() {
   try {
