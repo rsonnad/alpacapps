@@ -409,30 +409,6 @@
 
         <!-- Form -->
         <div id="paymentForm">
-          <!-- Preset summary -->
-          <div class="pay-summary" id="presetSummary" style="display:none;">
-            <div class="pay-summary__label">Amount Due</div>
-            <div class="pay-summary__amount" id="summaryAmount"></div>
-            <div class="pay-summary__desc" id="summaryDesc"></div>
-          </div>
-
-          <!-- Amount -->
-          <div class="pay-field" id="amountGroup">
-            <label class="pay-field__label" for="payAmount">Payment Amount</label>
-            <div class="pay-field__dollar">
-              <input type="number" id="payAmount" class="pay-field__input pay-field__input--amount" placeholder="0.00" min="0.50" step="0.01">
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div class="pay-field" id="descGroup">
-            <label class="pay-field__label" for="payDesc">What is this payment for?</label>
-            <input type="text" id="payDesc" class="pay-field__input" placeholder="e.g. February rent, security deposit">
-          </div>
-
-          <!-- Error -->
-          <div class="pay-error" id="payError"></div>
-
           <!-- ═══════ PAYMENT METHODS — hardcoded so they always show ═══════ -->
           <div class="pay-methods" id="methodsSection">
             <p class="pay-methods__title">Payment Methods</p>
@@ -467,6 +443,30 @@
 
           <!-- Stripe ACH divider -->
           <div class="pay-divider"><span>or pay online via bank transfer</span></div>
+
+          <!-- Preset summary -->
+          <div class="pay-summary" id="presetSummary" style="display:none;">
+            <div class="pay-summary__label">Amount Due</div>
+            <div class="pay-summary__amount" id="summaryAmount"></div>
+            <div class="pay-summary__desc" id="summaryDesc"></div>
+          </div>
+
+          <!-- Amount -->
+          <div class="pay-field" id="amountGroup">
+            <label class="pay-field__label" for="payAmount">Payment Amount</label>
+            <div class="pay-field__dollar">
+              <input type="number" id="payAmount" class="pay-field__input pay-field__input--amount" placeholder="0.00" min="0.50" step="0.01">
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="pay-field" id="descGroup">
+            <label class="pay-field__label" for="payDesc">What is this payment for?</label>
+            <input type="text" id="payDesc" class="pay-field__input" placeholder="e.g. February rent, security deposit">
+          </div>
+
+          <!-- Error -->
+          <div class="pay-error" id="payError"></div>
 
           <div id="stripeSection">
             <div id="payment-element"></div>
