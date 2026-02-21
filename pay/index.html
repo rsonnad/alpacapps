@@ -207,11 +207,43 @@
       font-size: 14px;
       text-decoration: none;
     }
-    a.pay-methods__handle { color: var(--accent); }
-    a.pay-methods__handle:hover { text-decoration: underline; }
+    a.pay-methods__handle { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+    a.pay-methods__handle:hover { text-decoration-thickness: 2px; }
     .pay-methods__note {
       color: var(--text-muted);
       font-size: 12px;
+    }
+    .pay-methods__qr-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .pay-methods__qr-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .pay-methods__qr-wrap {
+      display: none;
+      padding: 12px 0 4px;
+      text-align: center;
+    }
+    .pay-methods__qr-wrap.visible { display: block; }
+    .pay-methods__qr-wrap img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .pay-methods__qr-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
     }
     .pay-methods__free {
       margin-left: auto;
@@ -414,14 +446,24 @@
               <span class="pay-methods__badge" style="background:#3d95ce;">Venmo</span>
               <a class="pay-methods__handle" href="https://venmo.com/rahuliox" target="_blank" rel="noopener">@rahuliox</a>
               <span class="pay-methods__note">Last 4: 7096</span>
+              <button class="pay-methods__qr-toggle" onclick="toggleQR('venmo-qr')">QR</button>
               <span class="pay-methods__free">No fee</span>
+            </div>
+            <div class="pay-methods__qr-wrap" id="venmo-qr">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fvenmo.com%2Frahuliox" alt="Venmo QR Code">
+              <div class="pay-methods__qr-label">Scan to pay via Venmo</div>
             </div>
 
             <div class="pay-methods__row" data-method="paypal">
               <span class="pay-methods__badge" style="background:#003087;">PayPal</span>
               <a class="pay-methods__handle" href="https://paypal.me/rahuliox" target="_blank" rel="noopener">rahulioson@gmail.com</a>
               <span class="pay-methods__note">Friends &amp; Family only</span>
+              <button class="pay-methods__qr-toggle" onclick="toggleQR('paypal-qr')">QR</button>
               <span class="pay-methods__free">Free (F&amp;F)</span>
+            </div>
+            <div class="pay-methods__qr-wrap" id="paypal-qr">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpaypal.me%2Frahuliox" alt="PayPal QR Code">
+              <div class="pay-methods__qr-label">Scan to pay via PayPal &bull; select Friends &amp; Family</div>
             </div>
           </div>
 
@@ -553,11 +595,22 @@
       payBtn.textContent = amt > 0 ? 'Pay $' + amt.toFixed(2) + ' via Bank Transfer' : 'Pay via Bank Transfer';
     }
 
+    // Toggle QR code visibility
+    function toggleQR(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+
     // Progressive enhancement: update hardcoded methods with fresh DB data
     // Links for payment methods
     var METHOD_LINKS = {
       venmo: 'https://venmo.com/rahuliox',
       paypal: 'https://paypal.me/rahuliox'
+    };
+
+    var METHOD_QR_LABELS = {
+      venmo: 'Scan to pay via Venmo',
+      paypal: 'Scan to pay via PayPal \u2022 select Friends & Family'
     };
 
     function refreshPaymentMethodsFromDB() {
@@ -581,8 +634,8 @@
 
           var container = document.getElementById('methodsSection');
 
-          // Remove old hardcoded rows
-          var existingRows = container.querySelectorAll('.pay-methods__row');
+          // Remove old hardcoded rows and QR wraps
+          var existingRows = container.querySelectorAll('.pay-methods__row, .pay-methods__qr-wrap');
           for (var r = 0; r < existingRows.length; r++) {
             existingRows[r].remove();
           }
@@ -594,6 +647,7 @@
             var bg = BADGE_COLORS[m.method_type] || '#888';
             var freeLabel = m.method_type === 'paypal' ? 'Free (F&F)' : 'No fee';
             var link = METHOD_LINKS[m.method_type];
+            var qrId = m.method_type + '-qr';
 
             var row = document.createElement('div');
             row.className = 'pay-methods__row';
@@ -612,17 +666,33 @@
               }
             }
 
-            // Short note — extract only key info, skip verbose instructions
+            // Short note
             if (m.method_type === 'venmo') {
               html += '<span class="pay-methods__note">Last 4: 7096</span>';
             } else if (m.method_type === 'paypal') {
               html += '<span class="pay-methods__note">Friends &amp; Family only</span>';
             }
 
+            // QR toggle for methods with links
+            if (link) {
+              html += '<button class="pay-methods__qr-toggle" onclick="toggleQR(\'' + qrId + '\')">QR</button>';
+            }
+
             html += '<span class="pay-methods__free">' + freeLabel + '</span>';
 
             row.innerHTML = html;
             fragment.appendChild(row);
+
+            // QR code container
+            if (link) {
+              var qrWrap = document.createElement('div');
+              qrWrap.className = 'pay-methods__qr-wrap';
+              qrWrap.id = qrId;
+              var encodedUrl = encodeURIComponent(link);
+              qrWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodedUrl + '" alt="' + m.name + ' QR Code">'
+                + '<div class="pay-methods__qr-label">' + (METHOD_QR_LABELS[m.method_type] || 'Scan to pay') + '</div>';
+              fragment.appendChild(qrWrap);
+            }
           }
           container.appendChild(fragment);
         })
