@@ -456,14 +456,9 @@
 
             <div class="pay-methods__row" data-method="paypal">
               <span class="pay-methods__badge" style="background:#003087;">PayPal</span>
-              <a class="pay-methods__handle" href="https://paypal.me/rahuliox" target="_blank" rel="noopener">rahulioson@gmail.com</a>
+              <span class="pay-methods__handle">rahulioson@gmail.com</span>
               <span class="pay-methods__note">Friends &amp; Family only</span>
-              <button class="pay-methods__qr-toggle" onclick="toggleQR('paypal-qr')">QR</button>
               <span class="pay-methods__free">Free (F&amp;F)</span>
-            </div>
-            <div class="pay-methods__qr-wrap" id="paypal-qr">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpaypal.me%2Frahuliox" alt="PayPal QR Code">
-              <div class="pay-methods__qr-label">Scan to pay via PayPal &bull; select Friends &amp; Family</div>
             </div>
           </div>
 
@@ -604,8 +599,7 @@
     // Progressive enhancement: update hardcoded methods with fresh DB data
     // Links for payment methods
     var METHOD_LINKS = {
-      venmo: 'https://venmo.com/rahuliox',
-      paypal: 'https://paypal.me/rahuliox'
+      venmo: 'https://venmo.com/rahuliox'
     };
 
     var METHOD_QR_LABELS = {
