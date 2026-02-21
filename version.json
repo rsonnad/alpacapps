@@ -1,12 +1,12 @@
 {
-  "version": "v260220.18 11:20p",
-  "release": 303,
-  "sha": "a72f2fc12",
-  "fullSha": "a72f2fc12028716699d80e5b02b9e17193448a92",
+  "version": "v260220.19 11:32p",
+  "release": 304,
+  "sha": "bcbaaf386",
+  "fullSha": "bcbaaf386335a302dcc8282f438db875e1f45c72",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-21 05:20:52+00",
-  "commits": [{"sha":"f715031fe","message":"Replace QR text button with QR code icon on pay page","author":"Rahul"},{"sha":"a72f2fc12","message":"Merge branch 'claude/sleepy-brattain'","author":"Rahul"}]
+  "pushedAt": "2026-02-21 05:32:20+00",
+  "commits": [{"sha":"648874a77","message":"Move amount/description fields below bank transfer divider","author":"Rahul"},{"sha":"bcbaaf386","message":"Merge branch 'claude/sleepy-brattain'","author":"Rahul"}]
 }
