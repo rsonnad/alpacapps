@@ -1,12 +1,12 @@
 {
-  "version": "v260220.16 11:01p",
-  "release": 301,
-  "sha": "27cc9fb15",
-  "fullSha": "27cc9fb1509f8bee7a70a7b857a7eede66e0f449",
+  "version": "v260220.17 11:15p",
+  "release": 302,
+  "sha": "fa6e83232",
+  "fullSha": "fa6e8323261ee17ecbaf45e53484dcac6b9dd79e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-21 05:01:28+00",
-  "commits": [{"sha":"7a2431fec","message":"Add clickable payment links and QR codes to pay page","author":"Rahul"},{"sha":"27cc9fb15","message":"Merge branch 'claude/sleepy-brattain'","author":"Rahul"}]
+  "pushedAt": "2026-02-21 05:15:35+00",
+  "commits": [{"sha":"0115fd897","message":"Change PayPal to email rahulioson@gmail.com, remove paypal.me/rahuliox","author":"Rahul"},{"sha":"fa6e83232","message":"Merge branch 'claude/sleepy-brattain'","author":"Rahul"}]
 }
