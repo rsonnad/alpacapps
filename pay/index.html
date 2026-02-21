@@ -217,14 +217,15 @@
       background: none;
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 2px 7px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 4px;
       color: var(--text-muted);
       cursor: pointer;
       flex-shrink: 0;
-      font-family: inherit;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
     }
     .pay-methods__qr-toggle:hover { border-color: var(--accent); color: var(--accent); }
     .pay-methods__qr-wrap {
@@ -446,7 +447,7 @@
               <span class="pay-methods__badge" style="background:#3d95ce;">Venmo</span>
               <a class="pay-methods__handle" href="https://venmo.com/rahuliox" target="_blank" rel="noopener">@rahuliox</a>
               <span class="pay-methods__note">Last 4: 7096</span>
-              <button class="pay-methods__qr-toggle" onclick="toggleQR('venmo-qr')">QR</button>
+              <button class="pay-methods__qr-toggle" onclick="toggleQR('venmo-qr')" title="Show QR code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="5" y="5" width="2" height="2"/><rect x="17" y="5" width="2" height="2"/><rect x="5" y="17" width="2" height="2"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 4h2v-2h-2zm0-4h2v2h-2z"/></svg></button>
               <span class="pay-methods__free">No fee</span>
             </div>
             <div class="pay-methods__qr-wrap" id="venmo-qr">
@@ -669,7 +670,7 @@
 
             // QR toggle for methods with links
             if (link) {
-              html += '<button class="pay-methods__qr-toggle" onclick="toggleQR(\'' + qrId + '\')">QR</button>';
+              html += '<button class="pay-methods__qr-toggle" onclick="toggleQR(\'' + qrId + '\')" title="Show QR code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="5" y="5" width="2" height="2"/><rect x="17" y="5" width="2" height="2"/><rect x="5" y="17" width="2" height="2"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 4h2v-2h-2zm0-4h2v2h-2z"/></svg></button>';
             }
 
             html += '<span class="pay-methods__free">' + freeLabel + '</span>';
