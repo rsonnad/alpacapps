@@ -11,14 +11,14 @@ const PAGE_WIDTH = 210; // A4 width in mm
 const PAGE_HEIGHT = 297; // A4 height in mm
 const MARGIN_LEFT = 20;
 const MARGIN_RIGHT = 20;
-const MARGIN_TOP = 20;
-const MARGIN_BOTTOM = 20;
+const MARGIN_TOP = 15;
+const MARGIN_BOTTOM = 15;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
-const LINE_HEIGHT = 7;
-const FONT_SIZE_BODY = 11;
-const FONT_SIZE_H1 = 18;
-const FONT_SIZE_H2 = 14;
-const FONT_SIZE_H3 = 12;
+const LINE_HEIGHT = 5;
+const FONT_SIZE_BODY = 10;
+const FONT_SIZE_H1 = 14;
+const FONT_SIZE_H2 = 12;
+const FONT_SIZE_H3 = 11;
 
 /**
  * Parse markdown-like content and render to PDF
@@ -90,14 +90,14 @@ function renderLine(doc, line, y) {
 
   // Empty line - add small space
   if (!trimmedLine) {
-    return y + 4;
+    return y + 2.5;
   }
 
   // Horizontal rule
   if (trimmedLine === '---' || trimmedLine === '***') {
     doc.setDrawColor(200, 200, 200);
     doc.line(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y);
-    return y + 8;
+    return y + 5;
   }
 
   // Headers
@@ -106,7 +106,7 @@ function renderLine(doc, line, y) {
     doc.setFont('helvetica', 'bold');
     const text = trimmedLine.substring(2);
     doc.text(text, MARGIN_LEFT, y);
-    return y + LINE_HEIGHT + 6;
+    return y + LINE_HEIGHT + 4;
   }
 
   if (trimmedLine.startsWith('## ')) {
@@ -114,7 +114,7 @@ function renderLine(doc, line, y) {
     doc.setFont('helvetica', 'bold');
     const text = trimmedLine.substring(3);
     doc.text(text, MARGIN_LEFT, y);
-    return y + LINE_HEIGHT + 4;
+    return y + LINE_HEIGHT + 3;
   }
 
   if (trimmedLine.startsWith('### ')) {
