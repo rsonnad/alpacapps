@@ -14,6 +14,7 @@ let myTasksActive = false;
 let modalDataLoaded = false;
 let editingTaskId = null;
 let taskThumbnails = {};
+let searchDebounce = null;
 
 // ---- Init ----
 initAssociatePage({
@@ -89,6 +90,9 @@ function getFilters() {
     const assignee = document.getElementById('filterAssignee').value;
     if (assignee) filters.assignedName = assignee;
   }
+
+  const search = document.getElementById('searchInput').value.trim();
+  if (search) filters.search = search;
 
   return filters;
 }
@@ -216,6 +220,12 @@ function updateStats() {
 
 // ---- Events ----
 function bindEvents() {
+  // Search with debounce
+  document.getElementById('searchInput').addEventListener('input', () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(loadTasks, 300);
+  });
+
   // Filters
   document.getElementById('filterAssignee').addEventListener('change', () => {
     myTasksActive = false;
