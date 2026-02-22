@@ -1,12 +1,12 @@
 {
-  "version": "v260220.19 11:32p",
-  "release": 304,
-  "sha": "bcbaaf386",
-  "fullSha": "bcbaaf386335a302dcc8282f438db875e1f45c72",
+  "version": "v260222.01 7:07a",
+  "release": 305,
+  "sha": "af2a34db5",
+  "fullSha": "af2a34db52b22f71dd48213119d1f3936082b87e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-21 05:32:20+00",
-  "commits": [{"sha":"648874a77","message":"Move amount/description fields below bank transfer divider","author":"Rahul"},{"sha":"bcbaaf386","message":"Merge branch 'claude/sleepy-brattain'","author":"Rahul"}]
+  "pushedAt": "2026-02-22 13:07:49+00",
+  "commits": [{"sha":"af2a34db5","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
