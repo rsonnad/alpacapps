@@ -634,7 +634,7 @@ async function refreshHistory() {
 
     const daysHtml = days.map(day => {
       const badgeClass = day.hasPaid && day.hasUnpaid ? 'mixed' : (day.hasPaid ? 'paid' : 'unpaid');
-      const badgeText = day.hasPaid && day.hasUnpaid ? 'Partial' : (day.hasPaid ? 'Paid' : 'Unpaid');
+      const badgeText = day.hasPaid && day.hasUnpaid ? 'Partial' : (day.hasPaid ? 'Paid' : 'Pending');
 
       const entriesHtml = day.entries.map(e => {
         const ci = HoursService.formatTime(e.clock_in);
@@ -660,7 +660,7 @@ async function refreshHistory() {
             ${spaceHtml}
           </div>
           ${earned ? `<div class="entry-earned">${earned}</div>` : ''}
-          <div class="entry-paid-dot ${paidClass}" title="${e.is_paid ? 'Paid' : 'Unpaid'}"></div>
+          <div class="entry-paid-dot ${paidClass}" title="${e.is_paid ? 'Paid' : 'Payment pending'}"></div>
         </div>`;
       }).join('');
 
@@ -672,7 +672,7 @@ async function refreshHistory() {
           </div>
           <div class="day-totals">
             <div class="day-hours">${HoursService.formatDuration(day.totalMinutes)}</div>
-            <div class="day-amount">${HoursService.formatCurrency(day.totalAmount)}</div>
+            <div class="day-amount">${HoursService.formatCurrency(day.totalAmount)} earned</div>
           </div>
         </div>
         <div class="day-entries">${entriesHtml}</div>
