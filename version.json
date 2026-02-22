@@ -1,12 +1,12 @@
 {
-  "version": "v260222.02 7:12a",
-  "release": 306,
-  "sha": "097c6ebe4",
-  "fullSha": "097c6ebe447337b6c0abc24388480ea62fbc0e57",
+  "version": "v260222.03 8:48a",
+  "release": 307,
+  "sha": "96f3bce12",
+  "fullSha": "96f3bce1240a62b0ba8490ba01462692410207b1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-22 13:12:22+00",
-  "commits": [{"sha":"097c6ebe4","message":"Update Mistiq audition dates to Feb 24 – Mar 1 in English and Thai","author":"Rahul"}]
+  "pushedAt": "2026-02-22 14:48:10+00",
+  "commits": [{"sha":"96f3bce12","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
