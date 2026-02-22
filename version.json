@@ -1,12 +1,12 @@
 {
-  "version": "v260222.03 8:48a",
-  "release": 307,
-  "sha": "96f3bce12",
-  "fullSha": "96f3bce1240a62b0ba8490ba01462692410207b1",
+  "version": "v260222.04 8:53a",
+  "release": 308,
+  "sha": "01c31eade",
+  "fullSha": "01c31eade1b72ee8b0f7382a82c98bd8e17ca64b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-22 14:48:10+00",
-  "commits": [{"sha":"96f3bce12","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-22 14:53:32+00",
+  "commits": [{"sha":"01c31eade","message":"Add native Mistiq job application forms (EN + TH) with click tracking","author":"Rahul"}]
 }
