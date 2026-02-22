@@ -3,20 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="../../favicon.png">
-  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
-  <title>Intake Survey — Mistique Journey</title>
-  <meta name="description" content="Complete your intake survey to prepare for your Mistique Journey experience.">
-
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="/mistiq/styles.css">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Apply — Mistique Journey</title>
+  <meta name="description" content="Apply for the Global Traveling Massage Therapist position at Mistique Journey. Travel the world doing transformative bodywork.">
+  <link rel="stylesheet" href="/mistiq/styles.css">
   <script type="module" src="/shared/version-info.js"></script>
 </head>
 <body>
+
   <!-- Header -->
   <header class="mistiq-header mistiq-header--scrolled" id="mistiq-header">
     <div class="mistiq-header__inner">
@@ -24,31 +19,17 @@
         <span class="mistiq-header__logo-text">Mistique Journey</span>
         <span title="Site version" class="mistiq-header__version"></span>
       </a>
-
       <nav class="mistiq-nav" id="mistiq-nav">
         <ul class="mistiq-nav__list">
           <li><a href="/mistiq/jobs/" class="mistiq-nav__link">Jobs</a></li>
-          <li><a href="/visiting/" class="mistiq-nav__link">Visiting</a></li>
-          <li><a href="/spaces/" class="mistiq-nav__link">Rentals</a></li>
-          <li><a href="/events/" class="mistiq-nav__link">Events</a></li>
-          <li><a href="/community/" class="mistiq-nav__link">Community</a></li>
-          <li><a href="/photos/" class="mistiq-nav__link">Photos</a></li>
-          <li><a href="/contact/" class="mistiq-nav__link">Contact</a></li>
           <li class="mistiq-lang-picker">
             <span class="mistiq-lang-picker__current">🇺🇸</span>
             <div class="mistiq-lang-picker__dropdown">
-              <a href="/mistiq/th/" class="mistiq-lang-picker__flag" title="ภาษาไทย">🇹🇭</a>
-              <a href="/mistiq/es/" class="mistiq-lang-picker__flag" title="Español">🇪🇸</a>
-              <a href="/mistiq/de/" class="mistiq-lang-picker__flag" title="Deutsch">🇩🇪</a>
-              <a href="/mistiq/pl/" class="mistiq-lang-picker__flag" title="Polski">🇵🇱</a>
-              <a href="/mistiq/ru/" class="mistiq-lang-picker__flag" title="Русский">🇷🇺</a>
-              <a href="/mistiq/zh/" class="mistiq-lang-picker__flag" title="中文">🇨🇳</a>
-              <a href="/mistiq/ja/" class="mistiq-lang-picker__flag" title="日本語">🇯🇵</a>
+              <a href="/mistiq/th/apply/" class="mistiq-lang-picker__flag" title="ภาษาไทย">🇹🇭</a>
             </div>
           </li>
         </ul>
       </nav>
-
       <button class="mistiq-menu-toggle" id="mistiq-menu-toggle" aria-label="Toggle menu">
         <span class="mistiq-menu-toggle__bar"></span>
         <span class="mistiq-menu-toggle__bar"></span>
@@ -62,153 +43,239 @@
     <button class="mistiq-mobile-nav__close" id="mistiq-mobile-nav-close" aria-label="Close menu">×</button>
     <ul class="mistiq-mobile-nav__list">
       <li class="mistiq-mobile-nav__item"><a href="/mistiq/jobs/" class="mistiq-mobile-nav__link">Jobs</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/visiting/" class="mistiq-mobile-nav__link">Visiting</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/spaces/" class="mistiq-mobile-nav__link">Rentals</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/events/" class="mistiq-mobile-nav__link">Events</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/community/" class="mistiq-mobile-nav__link">Community</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/photos/" class="mistiq-mobile-nav__link">Photos</a></li>
-      <li class="mistiq-mobile-nav__item"><a href="/contact/" class="mistiq-mobile-nav__link">Contact</a></li>
       <li class="mistiq-mobile-nav__item mistiq-mobile-nav__lang">
-        <a href="/mistiq/th/" title="ภาษาไทย">🇹🇭</a>
-        <a href="/mistiq/es/" title="Español">🇪🇸</a>
-        <a href="/mistiq/de/" title="Deutsch">🇩🇪</a>
-        <a href="/mistiq/pl/" title="Polski">🇵🇱</a>
-        <a href="/mistiq/ru/" title="Русский">🇷🇺</a>
-        <a href="/mistiq/zh/" title="中文">🇨🇳</a>
-        <a href="/mistiq/ja/" title="日本語">🇯🇵</a>
+        <a href="/mistiq/th/apply/" title="ภาษาไทย">🇹🇭</a>
       </li>
     </ul>
   </div>
 
   <!-- Content -->
-  <div class="mistiq-page-content">
-    <div class="mistiq-container">
-      <div class="mistiq-form-wrapper">
-        <h1>Intake Survey</h1>
-        <p class="mistiq-form-intro">Please complete this form to help us prepare for your Mistique Journey experience. Your responses will help us personalize your session.</p>
+  <div class="mq-apply-page">
+    <div class="mq-apply-container">
 
-        <form id="intake-form" class="mistiq-form">
-          <div class="mistiq-form__section">
-            <h2>Personal Information</h2>
-
-            <div class="mistiq-form__group">
-              <label for="name" class="mistiq-form__label">Full Name *</label>
-              <input type="text" id="name" name="name" required class="mistiq-form__input">
-            </div>
-
-            <div class="mistiq-form__row">
-              <div class="mistiq-form__group">
-                <label for="email" class="mistiq-form__label">Email *</label>
-                <input type="email" id="email" name="email" required class="mistiq-form__input">
-              </div>
-
-              <div class="mistiq-form__group">
-                <label for="phone" class="mistiq-form__label">Phone Number *</label>
-                <input type="tel" id="phone" name="phone" required class="mistiq-form__input">
-              </div>
-            </div>
-
-            <div class="mistiq-form__group">
-              <label for="preferred-date" class="mistiq-form__label">Preferred Date</label>
-              <input type="date" id="preferred-date" name="preferred_date" class="mistiq-form__input">
-            </div>
-          </div>
-
-          <div class="mistiq-form__section">
-            <h2>Health & Wellness</h2>
-
-            <div class="mistiq-form__group">
-              <label for="health-conditions" class="mistiq-form__label">Do you have any health conditions we should be aware of?</label>
-              <textarea id="health-conditions" name="health_conditions" rows="3" class="mistiq-form__input" placeholder="Please list any conditions, injuries, or areas of concern..."></textarea>
-            </div>
-
-            <div class="mistiq-form__group">
-              <label for="medications" class="mistiq-form__label">Are you currently taking any medications?</label>
-              <textarea id="medications" name="medications" rows="2" class="mistiq-form__input" placeholder="List any medications or supplements..."></textarea>
-            </div>
-
-            <div class="mistiq-form__group">
-              <label class="mistiq-form__label">Have you experienced any of the following? (Check all that apply)</label>
-              <div class="mistiq-form__checkboxes">
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="massage">
-                  <span>Massage therapy</span>
-                </label>
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="yoga">
-                  <span>Yoga practice</span>
-                </label>
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="breathwork">
-                  <span>Breathwork</span>
-                </label>
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="meditation">
-                  <span>Meditation</span>
-                </label>
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="sauna">
-                  <span>Sauna / Heat therapy</span>
-                </label>
-                <label class="mistiq-form__checkbox">
-                  <input type="checkbox" name="experience[]" value="coldplunge">
-                  <span>Cold plunge / Ice bath</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="mistiq-form__section">
-            <h2>Your Intentions</h2>
-
-            <div class="mistiq-form__group">
-              <label for="intentions" class="mistiq-form__label">What are your intentions for this journey? *</label>
-              <textarea id="intentions" name="intentions" rows="4" required class="mistiq-form__input" placeholder="What would you like to achieve or explore during your session?"></textarea>
-            </div>
-
-            <div class="mistiq-form__group">
-              <label for="focus-areas" class="mistiq-form__label">Are there specific areas of your body you'd like us to focus on?</label>
-              <textarea id="focus-areas" name="focus_areas" rows="3" class="mistiq-form__input" placeholder="e.g., shoulders, lower back, hips..."></textarea>
-            </div>
-
-            <div class="mistiq-form__group">
-              <label for="pressure" class="mistiq-form__label">Preferred pressure level for bodywork</label>
-              <select id="pressure" name="pressure" class="mistiq-form__input">
-                <option value="">Select preference...</option>
-                <option value="light">Light / Gentle</option>
-                <option value="medium">Medium</option>
-                <option value="firm">Firm / Deep</option>
-                <option value="varies">Varies by area</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="mistiq-form__section">
-            <h2>Additional Information</h2>
-
-            <div class="mistiq-form__group">
-              <label for="referral" class="mistiq-form__label">How did you hear about Mistique Journey?</label>
-              <input type="text" id="referral" name="referral" class="mistiq-form__input" placeholder="Friend, social media, event, etc.">
-            </div>
-
-            <div class="mistiq-form__group">
-              <label for="additional-notes" class="mistiq-form__label">Anything else you'd like us to know?</label>
-              <textarea id="additional-notes" name="additional_notes" rows="3" class="mistiq-form__input"></textarea>
-            </div>
-          </div>
-
-          <div class="mistiq-form__actions">
-            <button type="submit" class="mistiq-btn mistiq-btn--submit">Submit Intake Survey</button>
-          </div>
-        </form>
-
-        <div id="form-success" class="mistiq-form-success" style="display: none;">
-          <h2>Thank You!</h2>
-          <p>Your intake survey has been submitted. We'll be in touch soon to confirm your Mistique Journey session.</p>
-          <p>Questions? Contact us at <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a></p>
-          <a href="/mistiq/" class="mistiq-btn mistiq-btn--submit">Return to Mistique Journey</a>
-        </div>
+      <div class="mq-apply-header">
+        <h1>Job Application</h1>
+        <p class="mq-apply-subtitle">Global Traveling Massage Therapist &amp; Wellness Ambassador<br>
+          <em>Mistique Journey @ Alpaca Playhouse, Austin Texas</em></p>
+        <p class="mq-apply-note">Interviews in Bangkok &amp; Chiang Mai · Feb 24 – Mar 1, 2026</p>
+        <a href="/mistiq/th/apply/" class="mq-lang-switch">🇹🇭 กรอกฟอร์มภาษาไทย</a>
       </div>
+
+      <form id="apply-form" class="mq-form" novalidate>
+
+        <!-- Section 1: Personal Information -->
+        <div class="mq-form-section">
+          <h2>Personal Information</h2>
+
+          <div class="mq-form-group mq-required">
+            <label for="full_name">Full Name (Thai &amp; English)</label>
+            <input type="text" id="full_name" name="full_name" required placeholder="Your full name in Thai and English">
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label for="phone">Phone Number, WhatsApp, or Line ID</label>
+            <input type="text" id="phone" name="phone" required placeholder="e.g. +66 81 234 5678 or LineID">
+          </div>
+
+          <div class="mq-form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com">
+          </div>
+
+          <div class="mq-form-group">
+            <label for="city">Current City &amp; Country of Residence</label>
+            <input type="text" id="city" name="city" placeholder="e.g. Bangkok, Thailand">
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" required>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label>Do you currently have a valid passport?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="passport" value="Yes" required><span>Yes</span></label>
+              <label class="mq-radio"><input type="radio" name="passport" value="No, but can apply"><span>No, but can apply</span></label>
+              <label class="mq-radio"><input type="radio" name="passport" value="Other"><span>Other</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label for="visas">Do you hold any valid US or European visas?</label>
+            <input type="text" id="visas" name="visas" placeholder="List any current US or European visas, or leave blank">
+          </div>
+        </div>
+
+        <!-- Section 2: Skills & Qualifications -->
+        <div class="mq-form-section">
+          <h2>Skills &amp; Qualifications</h2>
+
+          <div class="mq-form-group mq-required">
+            <label>Thai Massage Proficiency — rate yourself 1 (beginner) to 10 (expert)</label>
+            <div class="mq-scale-group">
+              <div class="mq-scale-labels"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+              <div class="mq-radio-row">
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="1" required><span>1</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="2"><span>2</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="3"><span>3</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="4"><span>4</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="5"><span>5</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="6"><span>6</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="7"><span>7</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="8"><span>8</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="9"><span>9</span></label>
+                <label class="mq-radio-scale"><input type="radio" name="thai_massage_level" value="10"><span>10</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label for="other_massage">Other specialized massage styles and bodywork techniques</label>
+            <textarea id="other_massage" name="other_massage" rows="3" placeholder="e.g. Swedish, deep tissue, aromatherapy, reflexology..."></textarea>
+          </div>
+
+          <div class="mq-form-group">
+            <label>English communication skills</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="english_level" value="Excellent"><span>Excellent</span></label>
+              <label class="mq-radio"><input type="radio" name="english_level" value="Good"><span>Good</span></label>
+              <label class="mq-radio"><input type="radio" name="english_level" value="Basic"><span>Basic</span></label>
+              <label class="mq-radio"><input type="radio" name="english_level" value="Very Little"><span>Very Little</span></label>
+              <label class="mq-radio"><input type="radio" name="english_level" value="Other"><span>Other</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label>How much do you want to learn more English?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="english_learning" value="I know enough already" required><span>I know enough already</span></label>
+              <label class="mq-radio"><input type="radio" name="english_learning" value="Some study is fine"><span>Some study is fine</span></label>
+              <label class="mq-radio"><input type="radio" name="english_learning" value="Happy to study a lot"><span>Happy to study a lot</span></label>
+              <label class="mq-radio"><input type="radio" name="english_learning" value="Daily 3+ hours, very motivated"><span>Daily 3+ hours, very motivated</span></label>
+              <label class="mq-radio"><input type="radio" name="english_learning" value="Other"><span>Other</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label>How easily can you walk 5 km?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="walking_ability" value="Very easily"><span>Very easily</span></label>
+              <label class="mq-radio"><input type="radio" name="walking_ability" value="Easily"><span>Easily</span></label>
+              <label class="mq-radio"><input type="radio" name="walking_ability" value="With some difficulty"><span>With some difficulty</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label for="travel_experience">Past international travel experience</label>
+            <textarea id="travel_experience" name="travel_experience" rows="3" placeholder="Countries visited, purpose, duration..."></textarea>
+          </div>
+        </div>
+
+        <!-- Section 3: Motivations & Fit -->
+        <div class="mq-form-section">
+          <h2>Motivations &amp; Fit</h2>
+
+          <div class="mq-form-group">
+            <label for="interest_reason">Why are you interested in this global traveling role?</label>
+            <textarea id="interest_reason" name="interest_reason" rows="4" placeholder="Tell us what draws you to this opportunity..."></textarea>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label>What are your primary interests? (Select all that apply)</label>
+            <div class="mq-checkbox-group">
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Wellness/Biohacking"><span>Wellness / Biohacking</span></label>
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Technology/AI"><span>Technology / AI</span></label>
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Yoga/Fitness"><span>Yoga / Fitness</span></label>
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Music/Arts"><span>Music / Arts</span></label>
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Personal Growth"><span>Personal Growth</span></label>
+              <label class="mq-checkbox"><input type="checkbox" name="primary_interests" value="Other"><span>Other</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label>Are you comfortable speaking and socializing with people from many different cultures?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="cultural_comfort" value="Yes, I'm outgoing and social" required><span>Yes, I'm outgoing and social</span></label>
+              <label class="mq-radio"><input type="radio" name="cultural_comfort" value="Mostly yes"><span>Mostly yes</span></label>
+              <label class="mq-radio"><input type="radio" name="cultural_comfort" value="Not very comfortable"><span>Not very comfortable</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label>Do you smoke tobacco?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="tobacco" value="No"><span>No</span></label>
+              <label class="mq-radio"><input type="radio" name="tobacco" value="Yes"><span>Yes</span></label>
+            </div>
+          </div>
+
+          <div class="mq-form-group">
+            <label>Do you consume alcohol?</label>
+            <div class="mq-radio-group">
+              <label class="mq-radio"><input type="radio" name="alcohol" value="No"><span>No</span></label>
+              <label class="mq-radio"><input type="radio" name="alcohol" value="Occasionally"><span>Occasionally</span></label>
+              <label class="mq-radio"><input type="radio" name="alcohol" value="Regularly"><span>Regularly</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Availability -->
+        <div class="mq-form-section">
+          <h2>Availability</h2>
+
+          <div class="mq-form-group">
+            <label for="interview_availability">Earliest date available for an interview (Bangkok or Chiang Mai, Feb 24 – Mar 1)</label>
+            <input type="date" id="interview_availability" name="interview_availability" min="2026-02-24" max="2026-03-01">
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label for="trial_availability">Expected availability for the 1-week paid trial in Thailand</label>
+            <textarea id="trial_availability" name="trial_availability" rows="2" required placeholder="e.g. March 2026, flexible, need 2 weeks notice..."></textarea>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label for="travel_readiness">When would you be available to travel abroad for work?</label>
+            <textarea id="travel_readiness" name="travel_readiness" rows="2" required placeholder="e.g. April 2026 onwards, need to arrange passport first..."></textarea>
+          </div>
+
+          <div class="mq-form-group mq-required">
+            <label for="thailand_return">How many times and months per year would you need to return to Thailand?</label>
+            <textarea id="thailand_return" name="thailand_return" rows="2" required placeholder="e.g. 2–3 times per year, 1 month each visit..."></textarea>
+          </div>
+        </div>
+
+        <!-- Section 5: Additional -->
+        <div class="mq-form-section">
+          <h2>Any Questions for Us?</h2>
+
+          <div class="mq-form-group">
+            <label for="additional_questions">Do you have any questions we can answer?</label>
+            <textarea id="additional_questions" name="additional_questions" rows="4" placeholder="Optional — ask us anything about the role, travel, compensation, etc."></textarea>
+          </div>
+        </div>
+
+        <div id="form-error" class="mq-form-error" style="display:none;"></div>
+
+        <div class="mq-form-actions">
+          <button type="submit" class="mq-submit-btn" id="submit-btn">
+            <span id="submit-text">Submit Application</span>
+            <span id="submit-loading" style="display:none;">Sending…</span>
+          </button>
+          <p class="mq-form-privacy">Your information is kept private and used only for this application.</p>
+        </div>
+
+      </form>
+
+      <!-- Success Message -->
+      <div id="form-success" class="mq-success" style="display:none;">
+        <div class="mq-success-icon">✓</div>
+        <h2>Application Received!</h2>
+        <p>Thank you for applying to Mistique Journey. We'll review your application and be in touch soon.</p>
+        <p>Questions? Email us at <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a></p>
+        <a href="/mistiq/jobs/" class="mq-back-btn">← Back to Job Posting</a>
+      </div>
+
     </div>
   </div>
 
@@ -216,213 +283,416 @@
   <footer class="mistiq-footer">
     <div class="mistiq-footer__content">
       <p class="mistiq-footer__brand">Mistique Journey</p>
-      <p class="mistiq-footer__location">at The Austin Alpaca Playhouse</p>
-      <a href="/" class="mistiq-footer__link">Visit The Austin Alpaca Playhouse</a>
+      <p class="mistiq-footer__location">@ Austin, Texas USA — <a href="https://alpacaplayhouse.com" class="mistiq-footer__link">Alpaca Playhouse</a></p>
       <p class="mistiq-footer__copyright">© 2026 Mistique Journey. All rights reserved.</p>
     </div>
   </footer>
 
   <style>
-    .mistiq-page-content {
-      padding-top: 100px;
-      padding-bottom: var(--mistiq-space-xl);
+    .mq-apply-page {
+      padding-top: 90px;
+      padding-bottom: 60px;
       min-height: 100vh;
+      background: var(--mistiq-bg);
     }
 
-    .mistiq-form-wrapper {
-      max-width: 700px;
+    .mq-apply-container {
+      max-width: 720px;
       margin: 0 auto;
+      padding: 0 20px;
     }
 
-    .mistiq-form-wrapper h1 {
+    .mq-apply-header {
       text-align: center;
-      margin-bottom: var(--mistiq-space-sm);
+      margin-bottom: 36px;
     }
 
-    .mistiq-form-intro {
-      text-align: center;
+    .mq-apply-header h1 {
+      font-size: 2.4rem;
+      color: var(--mistiq-text);
+      margin-bottom: 10px;
+    }
+
+    .mq-apply-subtitle {
       color: var(--mistiq-text-light);
-      margin-bottom: var(--mistiq-space-lg);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 6px;
     }
 
-    .mistiq-form__section {
-      background: white;
-      padding: var(--mistiq-space-md);
-      border-radius: 12px;
-      margin-bottom: var(--mistiq-space-md);
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    .mq-apply-note {
+      display: inline-block;
+      background: var(--mistiq-gold);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 14px;
     }
 
-    .mistiq-form__section h2 {
-      font-size: 1.25rem;
+    .mq-lang-switch {
+      display: inline-block;
+      font-size: 0.9rem;
       color: var(--mistiq-accent);
-      margin-bottom: var(--mistiq-space-md);
-      padding-bottom: var(--mistiq-space-sm);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .mq-lang-switch:hover { color: var(--mistiq-accent-dark); }
+
+    /* Form sections */
+    .mq-form-section {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+
+    .mq-form-section h2 {
+      font-size: 1.2rem;
+      color: var(--mistiq-accent);
+      margin: 0 0 22px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--mistiq-warm);
     }
 
-    .mistiq-form__group {
-      margin-bottom: var(--mistiq-space-md);
+    .mq-form-group {
+      margin-bottom: 22px;
     }
 
-    .mistiq-form__row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--mistiq-space-md);
-    }
+    .mq-form-group:last-child { margin-bottom: 0; }
 
-    @media (max-width: 600px) {
-      .mistiq-form__row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .mistiq-form__label {
+    .mq-form-group label:first-child {
       display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 0.95rem;
       color: var(--mistiq-text);
+      margin-bottom: 8px;
+      line-height: 1.4;
     }
 
-    .mistiq-form__input {
+    .mq-required label:first-child::after {
+      content: ' *';
+      color: #c0392b;
+    }
+
+    /* Inputs */
+    .mq-form-group input[type="text"],
+    .mq-form-group input[type="email"],
+    .mq-form-group input[type="date"],
+    .mq-form-group textarea {
       width: 100%;
-      padding: 0.875rem 1rem;
+      padding: 10px 14px;
       border: 1px solid var(--mistiq-warm);
       border-radius: 8px;
       font-family: inherit;
       font-size: 1rem;
       background: var(--mistiq-bg);
+      color: var(--mistiq-text);
       transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
     }
 
-    .mistiq-form__input:focus {
+    .mq-form-group input:focus,
+    .mq-form-group textarea:focus {
       outline: none;
       border-color: var(--mistiq-accent);
-      box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+      box-shadow: 0 0 0 3px rgba(139,115,85,0.12);
     }
 
-    textarea.mistiq-form__input {
-      resize: vertical;
-      min-height: 80px;
+    .mq-form-group textarea { resize: vertical; min-height: 80px; }
+
+    /* Radio groups */
+    .mq-radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .mistiq-form__checkboxes {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 0.75rem;
-    }
-
-    .mistiq-form__checkbox {
+    .mq-radio {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
       cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
     }
 
-    .mistiq-form__checkbox input {
+    .mq-radio:hover { background: var(--mistiq-bg-alt); }
+
+    .mq-radio input[type="radio"] {
       width: 18px;
       height: 18px;
       accent-color: var(--mistiq-accent);
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
-    .mistiq-form__actions {
+    .mq-radio span { font-size: 0.95rem; color: var(--mistiq-text); }
+
+    /* Scale (1–10) */
+    .mq-scale-group { overflow-x: auto; }
+
+    .mq-radio-row {
+      display: flex;
+      gap: 6px;
+      padding: 4px 0;
+    }
+
+    .mq-radio-scale {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      min-width: 44px;
+    }
+
+    .mq-radio-scale input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--mistiq-accent);
+      cursor: pointer;
+    }
+
+    .mq-radio-scale span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--mistiq-text-light);
+    }
+
+    /* Checkboxes */
+    .mq-checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .mq-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--mistiq-warm);
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .mq-checkbox:hover { background: var(--mistiq-bg-alt); }
+
+    .mq-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--mistiq-accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .mq-checkbox span { font-size: 0.9rem; color: var(--mistiq-text); }
+
+    /* Actions */
+    .mq-form-actions {
       text-align: center;
-      padding-top: var(--mistiq-space-md);
+      padding-top: 10px;
     }
 
-    .mistiq-btn--submit {
+    .mq-submit-btn {
       background: var(--mistiq-accent);
       color: white;
-      padding: 1rem 3rem;
+      border: none;
+      padding: 14px 48px;
       font-size: 1.1rem;
+      font-family: inherit;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-weight: 600;
     }
 
-    .mistiq-btn--submit:hover {
-      background: var(--mistiq-accent-dark);
-      color: white;
+    .mq-submit-btn:hover { background: var(--mistiq-accent-dark); }
+    .mq-submit-btn:active { transform: scale(0.98); }
+    .mq-submit-btn:disabled { background: #bbb; cursor: not-allowed; }
+
+    .mq-form-privacy {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--mistiq-text-light);
     }
 
-    .mistiq-form-success {
+    /* Error */
+    .mq-form-error {
+      background: #fdecea;
+      border: 1px solid #f5c6c6;
+      color: #c0392b;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    /* Success */
+    .mq-success {
       background: white;
-      padding: var(--mistiq-space-lg);
       border-radius: 12px;
+      padding: 48px 32px;
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
     }
 
-    .mistiq-form-success h2 {
-      color: var(--mistiq-accent);
+    .mq-success-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #27ae60;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .mq-success h2 { color: var(--mistiq-accent); margin-bottom: 12px; }
+    .mq-success p { color: var(--mistiq-text-light); margin-bottom: 10px; }
+    .mq-success a { color: var(--mistiq-accent); }
+
+    .mq-back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      background: var(--mistiq-accent);
+      color: white;
+      padding: 10px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .mq-back-btn:hover { background: var(--mistiq-accent-dark); color: white; }
+
+    @media (max-width: 480px) {
+      .mq-checkbox-group { grid-template-columns: 1fr; }
+      .mq-radio-row { gap: 4px; }
+      .mq-radio-scale { min-width: 32px; }
+      .mq-form-section { padding: 20px 16px; }
     }
   </style>
 
   <script>
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('mistiq-menu-toggle');
-    const mobileNav = document.getElementById('mistiq-mobile-nav');
-    const mobileNavClose = document.getElementById('mistiq-mobile-nav-close');
+    const EDGE_FN = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/mistiq-apply';
 
-    menuToggle.addEventListener('click', () => {
-      mobileNav.classList.add('mistiq-mobile-nav--open');
+    // Mobile menu
+    document.getElementById('mistiq-menu-toggle').addEventListener('click', () => {
+      document.getElementById('mistiq-mobile-nav').classList.add('mistiq-mobile-nav--open');
       document.body.style.overflow = 'hidden';
     });
-
-    mobileNavClose.addEventListener('click', () => {
-      mobileNav.classList.remove('mistiq-mobile-nav--open');
+    document.getElementById('mistiq-mobile-nav-close').addEventListener('click', () => {
+      document.getElementById('mistiq-mobile-nav').classList.remove('mistiq-mobile-nav--open');
       document.body.style.overflow = '';
     });
 
-    mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileNav.classList.remove('mistiq-mobile-nav--open');
-        document.body.style.overflow = '';
-      });
-    });
+    // Track page view (fire-and-forget)
+    fetch(EDGE_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'track',
+        event_type: 'pageview',
+        page: 'apply_en',
+        language: 'en',
+        referrer: document.referrer || null,
+      }),
+    }).catch(() => {});
 
-    // Form handling
-    const form = document.getElementById('intake-form');
-    const successMsg = document.getElementById('form-success');
+    // Form submission
+    const form = document.getElementById('apply-form');
+    const successEl = document.getElementById('form-success');
+    const errorEl = document.getElementById('form-error');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errorEl.style.display = 'none';
 
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
+      // Validate required radio groups
+      const requiredRadios = ['passport', 'thai_massage_level', 'english_learning', 'cultural_comfort'];
+      for (const name of requiredRadios) {
+        if (!form.querySelector(`input[name="${name}"]:checked`)) {
+          errorEl.textContent = 'Please answer all required fields (marked with *).';
+          errorEl.style.display = 'block';
+          errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
 
-      // Collect checkbox values
-      const experiences = formData.getAll('experience[]');
-      data.experiences = experiences.join(', ');
+      // Validate at least one primary interest
+      const interests = form.querySelectorAll('input[name="primary_interests"]:checked');
+      if (interests.length === 0) {
+        errorEl.textContent = 'Please select at least one primary interest.';
+        errorEl.style.display = 'block';
+        errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const fd = new FormData(form);
+      const data = {
+        action: 'apply',
+        language: 'en',
+        referrer: document.referrer || null,
+        full_name: fd.get('full_name'),
+        phone: fd.get('phone'),
+        email: fd.get('email'),
+        city: fd.get('city'),
+        dob: fd.get('dob'),
+        passport: fd.get('passport'),
+        visas: fd.get('visas'),
+        thai_massage_level: fd.get('thai_massage_level'),
+        other_massage: fd.get('other_massage'),
+        english_level: fd.get('english_level'),
+        english_learning: fd.get('english_learning'),
+        walking_ability: fd.get('walking_ability'),
+        travel_experience: fd.get('travel_experience'),
+        interest_reason: fd.get('interest_reason'),
+        primary_interests: fd.getAll('primary_interests'),
+        cultural_comfort: fd.get('cultural_comfort'),
+        tobacco: fd.get('tobacco'),
+        alcohol: fd.get('alcohol'),
+        interview_availability: fd.get('interview_availability'),
+        trial_availability: fd.get('trial_availability'),
+        travel_readiness: fd.get('travel_readiness'),
+        thailand_return: fd.get('thailand_return'),
+        additional_questions: fd.get('additional_questions'),
+      };
+
+      submitBtn.disabled = true;
+      submitText.style.display = 'none';
+      submitLoading.style.display = 'inline';
 
       try {
-        // For now, use mailto fallback
-        const mailtoLink = `mailto:team@alpacaplayhouse.com?subject=${encodeURIComponent('Mistique Journey Intake Survey')}&body=${encodeURIComponent(`
-Name: ${data.name}
-Email: ${data.email}
-Phone: ${data.phone}
-Preferred Date: ${data.preferred_date || 'Not specified'}
+        const res = await fetch(EDGE_FN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
 
-HEALTH & WELLNESS
-Health Conditions: ${data.health_conditions || 'None specified'}
-Medications: ${data.medications || 'None specified'}
-Previous Experiences: ${data.experiences || 'None selected'}
+        if (!res.ok) throw new Error('Server error. Please try again.');
 
-INTENTIONS
-Intentions: ${data.intentions}
-Focus Areas: ${data.focus_areas || 'Not specified'}
-Pressure Preference: ${data.pressure || 'Not specified'}
-
-ADDITIONAL
-Referral: ${data.referral || 'Not specified'}
-Notes: ${data.additional_notes || 'None'}
-        `)}`;
-
-        window.location.href = mailtoLink;
-
-        // Show success message
         form.style.display = 'none';
-        successMsg.style.display = 'block';
+        successEl.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
-        console.error('Form error:', err);
-        alert('There was an error submitting the form. Please email team@alpacaplayhouse.com directly.');
+        errorEl.textContent = err.message || 'Something went wrong. Please email team@alpacaplayhouse.com directly.';
+        errorEl.style.display = 'block';
+        errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        submitBtn.disabled = false;
+        submitText.style.display = 'inline';
+        submitLoading.style.display = 'none';
       }
     });
   </script>
