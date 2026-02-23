@@ -1,12 +1,12 @@
 {
-  "version": "v260222.07 10:24a",
-  "release": 311,
-  "sha": "12f31fc5b",
-  "fullSha": "12f31fc5b73ae5213513239f1419905be4d535dc",
+  "version": "v260222.08 11:50p",
+  "release": 312,
+  "sha": "ebcb93768",
+  "fullSha": "ebcb937682fac06ab24c38cac4e2cb7461d084c8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-22 16:24:14+00",
-  "commits": [{"sha":"12f31fc5b","message":"Reduce PDF font sizes and spacing for lease documents","author":"Rahul"}]
+  "pushedAt": "2026-02-23 05:50:45+00",
+  "commits": [{"sha":"ebcb93768","message":"Fix invitation lookup failing on duplicate pending invitations","author":"Rahul"}]
 }
