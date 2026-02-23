@@ -1,12 +1,12 @@
 {
-  "version": "v260223.06 9:15a",
-  "release": 318,
-  "sha": "cbb8cb243",
-  "fullSha": "cbb8cb2438ed7b02c3961c10aef138fd37f4a4c7",
+  "version": "v260223.07 2:02p",
+  "release": 319,
+  "sha": "39444ace4",
+  "fullSha": "39444ace4cf571a5cb5278545f9eaf4217e42529",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-23 15:15:59+00",
-  "commits": [{"sha":"68e91fb32","message":"feat: I need to be paid for the hours I’ve worked\\n\\nAutomated feature from PAI request #ecb80ef4-005d-4d39-ba8a-e4450155a7bb.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"cbb8cb243","message":"Merge feature/20260223-ecb80ef4 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-23 20:02:58+00",
+  "commits": [{"sha":"39444ace4","message":"Remove Manage link from mobile nav to match desktop","author":"Rahul"}]
 }
