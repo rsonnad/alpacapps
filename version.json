@@ -1,12 +1,12 @@
 {
-  "version": "v260223.01 2:53a",
-  "release": 313,
-  "sha": "b762e9729",
-  "fullSha": "b762e97291a5557a59538dac2ef12037e6eb9d8f",
+  "version": "v260223.02 2:56a",
+  "release": 314,
+  "sha": "a13150a6d",
+  "fullSha": "a13150a6da5f177fcbb4c625f60e18b224f4e27b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-23 08:53:44+00",
-  "commits": [{"sha":"b762e9729","message":"Fix SignWell signature fields to align with PDF signature text positions","author":"Rahul"}]
+  "pushedAt": "2026-02-23 08:56:37+00",
+  "commits": [{"sha":"a13150a6d","message":"Fix waiver PARTICIPANT detection when lease signatures section is active","author":"Rahul"}]
 }
