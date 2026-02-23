@@ -350,7 +350,9 @@ async function handleAuthChange(session) {
           .select('*')
           .eq('email', userEmail)
           .eq('status', 'pending')
-          .single(),
+          .order('invited_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
         AUTH_TIMEOUT_MS,
         'Invitation check timed out'
       );
