@@ -49,6 +49,7 @@ let calendarHasMoreReservations = true;
 let currentLeaseTemplate = null;
 let currentAgreementData = null;
 let currentLeasePageCount = null;
+let currentSignaturePositions = null;
 
 // Terms auto-save timeout
 let termsAutoSaveTimeout = null;
@@ -2082,11 +2083,14 @@ async function recreateSignwellDocument(app) {
     pdfUrl = result.url;
     pageCount = result.pageCount;
     currentLeasePageCount = pageCount;
+    currentSignaturePositions = result.signaturePositions || null;
   }
 
   showToast('Creating new signature request...', 'info');
   const recipientName = `${app.person.first_name} ${app.person.last_name}`;
-  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName, pageCount);
+  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName, pageCount, {
+    signaturePositions: currentSignaturePositions,
+  });
   await loadApplications();
   openRentalDetail(currentApplicationId, getActiveDetailTab());
   showToast('New signature request sent to tenant', 'success');
@@ -3007,7 +3011,7 @@ async function generateLeasePdf() {
     }
 
     // Generate and upload the combined PDF (lease + waiver)
-    const { url, filename, pageCount, leaseOnlyPageCount: storedLeasePages } = await pdfService.generateAndUploadLeasePdf(
+    const { url, filename, pageCount, leaseOnlyPageCount: storedLeasePages, signaturePositions } = await pdfService.generateAndUploadLeasePdf(
       parsedContent,
       currentApplicationId,
       {
@@ -3016,6 +3020,7 @@ async function generateLeasePdf() {
       }
     );
     currentLeasePageCount = pageCount;
+    currentSignaturePositions = signaturePositions || null;
 
     // Update application with PDF URL and page counts
     await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url);
@@ -3081,6 +3086,7 @@ async function sendForSignature() {
       {
         leaseSignaturePage: leaseOnlyPages,
         waiverSignaturePage: hasWaiver ? totalPageCount : null,
+        signaturePositions: currentSignaturePositions,
       }
     );
 

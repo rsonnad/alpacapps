@@ -64,19 +64,28 @@ async function signwellRequest(endpoint, options = {}) {
  * @param {string} options.documentName - Custom document name
  * @param {number} options.leaseSignaturePage - Page for lease signatures (defaults to last page)
  * @param {number|null} options.waiverSignaturePage - Page for waiver signature (null = no waiver)
+ * @param {Object} options.signaturePositions - Dynamic Y positions from PDF generation (72-DPI pixels)
  */
 async function createDocument(pdfUrl, recipientEmail, recipientName, options = {}) {
   const config = await getConfig();
 
   // A4 page at 72 DPI is approximately 595 x 842 pixels.
-  // Lease signature fields go on the lease's last page.
-  // If a waiver is appended, waiver signature fields go on the document's last page.
+  // Lease signature fields go on the lease's signature page (detected during PDF generation).
+  // If a waiver is appended, waiver signature fields go on the waiver's signature page.
   const leaseSignaturePage = options.leaseSignaturePage || options.pageCount || 1;
   const waiverSignaturePage = options.waiverSignaturePage || null;
 
+  // Use dynamic positions from PDF generation if available, otherwise fall back to defaults.
+  // Default positions assume signatures section starts at top of a fresh page.
+  const sp = options.signaturePositions || {};
+  const landlordSigY = sp.landlordSignatureY || 115;
+  const landlordDateY = sp.landlordDateY || 175;
+  const tenantSigY = sp.tenantSignatureY || 200;
+  const tenantDateY = sp.tenantDateY || 255;
+
   // Build signature fields array
   const fields = [
-    // === LEASE AGREEMENT SIGNATURES (on lease section's last page) ===
+    // === LEASE AGREEMENT SIGNATURES (on lease section's signature page) ===
     // Landlord signature + date
     {
       type: 'signature',
@@ -84,18 +93,18 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
       recipient_id: '1',
       page: leaseSignaturePage,
       x: 50,
-      y: 520,
+      y: landlordSigY,
       width: 200,
-      height: 40,
+      height: 35,
     },
     {
       type: 'date',
       required: true,
       recipient_id: '1',
       page: leaseSignaturePage,
-      x: 50,
-      y: 580,
-      width: 120,
+      x: 100,
+      y: landlordDateY,
+      width: 150,
       height: 20,
     },
     // Tenant signature + date (lease)
@@ -105,26 +114,28 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
       recipient_id: '2',
       page: leaseSignaturePage,
       x: 50,
-      y: 630,
+      y: tenantSigY,
       width: 200,
-      height: 40,
+      height: 35,
     },
     {
       type: 'date',
       required: true,
       recipient_id: '2',
       page: leaseSignaturePage,
-      x: 50,
-      y: 690,
-      width: 120,
+      x: 100,
+      y: tenantDateY,
+      width: 150,
       height: 20,
     },
   ];
 
-  // === WAIVER SIGNATURE (on waiver section's last page, tenant only) ===
+  // === WAIVER SIGNATURE (on waiver section's signature page, tenant only) ===
   // The waiver is a separate acknowledgment — only the tenant/participant signs it.
   // This ensures conspicuous, separate waiver acceptance for stronger legal enforceability.
   if (waiverSignaturePage) {
+    const waiverSigY = sp.waiverSignatureY || 200;
+    const waiverDateY = sp.waiverDateY || 255;
     fields.push(
       {
         type: 'signature',
@@ -132,18 +143,18 @@ async function createDocument(pdfUrl, recipientEmail, recipientName, options = {
         recipient_id: '2',
         page: waiverSignaturePage,
         x: 50,
-        y: 630,
+        y: waiverSigY,
         width: 200,
-        height: 40,
+        height: 35,
       },
       {
         type: 'date',
         required: true,
         recipient_id: '2',
         page: waiverSignaturePage,
-        x: 50,
-        y: 690,
-        width: 120,
+        x: 100,
+        y: waiverDateY,
+        width: 150,
         height: 20,
       }
     );
@@ -271,6 +282,7 @@ async function sendForSignature(applicationId, pdfUrl, recipientEmail, recipient
     pageCount,
     leaseSignaturePage: pageOptions.leaseSignaturePage || pageCount,
     waiverSignaturePage: pageOptions.waiverSignaturePage || null,
+    signaturePositions: pageOptions.signaturePositions || null,
   });
 
   // Link to application
