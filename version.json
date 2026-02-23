@@ -1,12 +1,12 @@
 {
-  "version": "v260222.08 11:50p",
-  "release": 312,
-  "sha": "ebcb93768",
-  "fullSha": "ebcb937682fac06ab24c38cac4e2cb7461d084c8",
+  "version": "v260223.01 2:53a",
+  "release": 313,
+  "sha": "b762e9729",
+  "fullSha": "b762e97291a5557a59538dac2ef12037e6eb9d8f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-23 05:50:45+00",
-  "commits": [{"sha":"ebcb93768","message":"Fix invitation lookup failing on duplicate pending invitations","author":"Rahul"}]
+  "pushedAt": "2026-02-23 08:53:44+00",
+  "commits": [{"sha":"b762e9729","message":"Fix SignWell signature fields to align with PDF signature text positions","author":"Rahul"}]
 }
