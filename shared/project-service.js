@@ -36,7 +36,7 @@ class ProjectService {
       query = query.eq('space_id', filters.spaceId);
     }
     if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`);
     }
 
     const { data, error } = await query;
