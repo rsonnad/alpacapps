@@ -341,6 +341,14 @@ async function inviteUser(email, role, personInfo = {}) {
     // For prospects, use a placeholder email if none provided
     const inviteEmail = effectiveEmail || `prospect-${Date.now()}@noemail.local`;
 
+    // Delete any existing pending invitations for this email to avoid duplicates
+    // (which can cause .single() failures in the auth flow)
+    await supabase
+      .from('user_invitations')
+      .delete()
+      .eq('email', inviteEmail)
+      .eq('status', 'pending');
+
     // Create invitation record
     const { data: newInvite, error } = await supabase
       .from('user_invitations')
