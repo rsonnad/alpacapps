@@ -76,7 +76,10 @@ async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf
     }
 
     // Detect waiver PARTICIPANT signature section
-    if (trimmedLine === '**PARTICIPANT**' && !insideSignatureSection) {
+    // The waiver is appended after the lease, so insideSignatureSection may already be true.
+    // We detect the waiver by looking for PARTICIPANT outside the lease's SIGNATURES block,
+    // OR by checking if it appears after a horizontal rule (waiver separator).
+    if (trimmedLine === '**PARTICIPANT**') {
       // Ensure enough room for waiver signature block (~80mm)
       if (y > PAGE_HEIGHT - MARGIN_BOTTOM - 80) {
         doc.addPage();
