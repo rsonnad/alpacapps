@@ -429,15 +429,10 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
       if (mobileList && mobileLi) {
         const role = state.appUser.role || '';
         const isResident = ['admin', 'oracle', 'staff', 'resident', 'associate'].includes(role);
-        const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
-
         // Build mobile nav items for authenticated user
         const mobileItems = [];
         if (isResident) {
           mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/lighting.html" class="aap-mobile-nav__link">Intranet</a></li>`);
-        }
-        if (isStaffOrAdmin) {
-          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/spaces/admin/spaces.html" class="aap-mobile-nav__link">Manage</a></li>`);
         }
         mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/profile.html" class="aap-mobile-nav__link">Profile</a></li>`);
         mobileItems.push(`<li class="aap-mobile-nav__item"><button class="aap-mobile-nav__link aap-mobile-nav__signout" id="mobileSignOutBtn" style="background:none;border:none;color:#c0392b;cursor:pointer;font:inherit;padding:inherit;width:100%;text-align:left;">Sign Out</button></li>`);
