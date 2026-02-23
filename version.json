@@ -1,12 +1,12 @@
 {
-  "version": "v260223.04 4:49a",
-  "release": 316,
-  "sha": "ce8ba4714",
-  "fullSha": "ce8ba4714bbc0f9bdf46cc3e05fc600f413b167c",
+  "version": "v260223.05 4:50a",
+  "release": 317,
+  "sha": "d83bb1d0f",
+  "fullSha": "d83bb1d0f6e4ad957a371ccae6af858dfeaecc0a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-23 10:49:09+00",
-  "commits": [{"sha":"c5807426e","message":"feat: Can you make a search bar in projects so that I can look through all the\\n\\nAutomated feature from PAI request #f83e2d03-e08a-4b6a-a4d7-acc9526fc130.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"ce8ba4714","message":"Merge feature/20260222-f83e2d03 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-02-23 10:50:36+00",
+  "commits": [{"sha":"c95af8bb7","message":"fix: ON this community page, I lose the sign in and top navigation. The other\\n\\nAutomated fix from bug report #d2110dd4-1086-422f-b280-14a350f1a300.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Bug Fixer Bot"},{"sha":"d83bb1d0f","message":"Merge bugfix/20260223-d2110dd4-1086-422f-b280-14a350f1a300 into main","author":"Bug Fixer Bot"}]
 }
