@@ -706,10 +706,206 @@ async function refreshPaymentTab() {
     document.getElementById('payPaid').textContent = HoursService.formatCurrency(summary.paidAmount);
     document.getElementById('payUnpaid').textContent = HoursService.formatCurrency(summary.unpaidAmount);
 
+    // Get unpaid entries for detailed breakdown + rate mismatch detection
+    const unpaidEntries = await hoursService.getEntries(profile.id, { isPaid: false });
+    renderUnpaidBreakdown(unpaidEntries);
+    renderRateMismatchBanner(unpaidEntries);
+
+    // Show/hide request payment button
+    const requestBtn = document.getElementById('btnRequestPayment');
+    const hasUnpaidCompleted = unpaidEntries.some(e => e.clock_out);
+    requestBtn.style.display = hasUnpaidCompleted ? 'block' : 'none';
+
     // Show ID verification banner
     renderIdVerificationBanner(profile.identity_verification_status);
   } catch (err) {
     console.error('Failed to refresh payment tab:', err);
+  }
+}
+
+// =============================================
+// UNPAID BREAKDOWN & RATE MISMATCH
+// =============================================
+function renderUnpaidBreakdown(unpaidEntries) {
+  const container = document.getElementById('unpaidDetails');
+  if (!container) return;
+
+  const completedEntries = unpaidEntries.filter(e => e.clock_out);
+  if (!completedEntries.length) {
+    container.style.display = 'none';
+    return;
+  }
+
+  // Group by rate to show breakdown
+  const byRate = {};
+  for (const e of completedEntries) {
+    const rate = parseFloat(e.hourly_rate) || 0;
+    const key = rate.toFixed(2);
+    if (!byRate[key]) byRate[key] = { rate, totalMins: 0, totalAmt: 0, count: 0 };
+    const mins = parseFloat(e.duration_minutes) || 0;
+    byRate[key].totalMins += mins;
+    byRate[key].totalAmt += (mins / 60) * rate;
+    byRate[key].count++;
+  }
+
+  const groups = Object.values(byRate).sort((a, b) => b.rate - a.rate);
+  const currentRate = parseFloat(profile.hourly_rate) || 0;
+
+  // Only show breakdown if there are entries at different rates, or entries at $0
+  const hasZeroRate = groups.some(g => g.rate === 0);
+  const hasMultipleRates = groups.length > 1;
+  if (!hasZeroRate && !hasMultipleRates) {
+    container.style.display = 'none';
+    return;
+  }
+
+  let totalUnpaidMins = 0;
+  let totalAtCurrentRate = 0;
+  for (const e of completedEntries) {
+    const mins = parseFloat(e.duration_minutes) || 0;
+    totalUnpaidMins += mins;
+    totalAtCurrentRate += (mins / 60) * currentRate;
+  }
+
+  let html = '<div class="unpaid-breakdown">';
+  html += '<div style="font-weight:600;margin-bottom:0.35rem;color:#334155;">Unpaid Hours Breakdown</div>';
+
+  for (const g of groups) {
+    const hoursLabel = HoursService.formatDuration(g.totalMins);
+    const rateLabel = g.rate === 0 ? '$0/hr' : `${HoursService.formatCurrency(g.rate)}/hr`;
+    const amtClass = g.rate === 0 ? 'zero' : 'positive';
+    const amtLabel = HoursService.formatCurrency(g.totalAmt);
+    html += `<div class="ub-row">
+      <span><span class="ub-hours">${hoursLabel}</span> at ${rateLabel} (${g.count} ${g.count === 1 ? 'entry' : 'entries'})</span>
+      <span class="ub-amount ${amtClass}">${amtLabel}</span>
+    </div>`;
+  }
+
+  if (hasZeroRate && currentRate > 0) {
+    html += `<div class="ub-note">Some entries were logged at $0/hr before your rate was set. At your current rate of ${HoursService.formatCurrency(currentRate)}/hr, these hours would be worth ${HoursService.formatCurrency(totalAtCurrentRate)}. Use "Request Payment" below to ask admin to update.</div>`;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+function renderRateMismatchBanner(unpaidEntries) {
+  const banner = document.getElementById('rateMismatchBanner');
+  if (!banner) return;
+
+  const currentRate = parseFloat(profile.hourly_rate) || 0;
+  const completedEntries = unpaidEntries.filter(e => e.clock_out);
+
+  // Find entries where the recorded rate differs from current rate
+  const mismatchedEntries = completedEntries.filter(e => {
+    const entryRate = parseFloat(e.hourly_rate) || 0;
+    return Math.abs(entryRate - currentRate) > 0.001;
+  });
+
+  if (mismatchedEntries.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  let mismatchMins = 0;
+  let recordedAmt = 0;
+  let correctedAmt = 0;
+  for (const e of mismatchedEntries) {
+    const mins = parseFloat(e.duration_minutes) || 0;
+    mismatchMins += mins;
+    recordedAmt += (mins / 60) * (parseFloat(e.hourly_rate) || 0);
+    correctedAmt += (mins / 60) * currentRate;
+  }
+
+  const diff = correctedAmt - recordedAmt;
+  const hoursLabel = HoursService.formatHoursDecimal(mismatchMins);
+
+  banner.style.display = 'block';
+  banner.innerHTML = `<div class="rate-mismatch-banner">
+    <strong>Rate Update Needed</strong>
+    ${mismatchedEntries.length} time ${mismatchedEntries.length === 1 ? 'entry' : 'entries'} (${hoursLabel}h) ${mismatchedEntries.length === 1 ? 'was' : 'were'} recorded at a different hourly rate than your current rate of ${HoursService.formatCurrency(currentRate)}/hr.
+    <div class="mismatch-detail">
+      Currently showing: ${HoursService.formatCurrency(recordedAmt)} &rarr; Should be: ${HoursService.formatCurrency(correctedAmt)} (${diff >= 0 ? '+' : ''}${HoursService.formatCurrency(diff)})
+    </div>
+    <div class="mismatch-detail">Tap "Request Payment" to notify your admin to correct this.</div>
+  </div>`;
+}
+
+// =============================================
+// REQUEST PAYMENT
+// =============================================
+async function handleRequestPayment() {
+  const btn = document.getElementById('btnRequestPayment');
+  btn.disabled = true;
+  btn.textContent = 'Sending request...';
+
+  try {
+    // Get unpaid summary for the request
+    const unpaidSummary = await hoursService.getUnpaidSummary(profile.id);
+    if (unpaidSummary.count === 0 || unpaidSummary.totalMinutes === 0) {
+      showToast('No unpaid hours to request payment for', 'info');
+      return;
+    }
+
+    const currentRate = parseFloat(profile.hourly_rate) || 0;
+    const name = `${authState.appUser.first_name || ''} ${authState.appUser.last_name || ''}`.trim()
+      || authState.appUser.display_name
+      || authState.appUser.email;
+
+    // Check for rate-mismatched entries
+    const mismatchedEntries = unpaidSummary.entries.filter(e => {
+      const entryRate = parseFloat(e.hourly_rate) || 0;
+      return e.clock_out && Math.abs(entryRate - currentRate) > 0.001;
+    });
+
+    let correctedTotal = 0;
+    for (const e of unpaidSummary.entries) {
+      if (!e.clock_out) continue;
+      const mins = parseFloat(e.duration_minutes) || 0;
+      correctedTotal += (mins / 60) * currentRate;
+    }
+
+    // Send email to admin
+    const { sendEmail } = await import('../shared/email-service.js');
+    const adminEmail = 'team@alpacaplayhouse.com';
+
+    const hasRateMismatch = mismatchedEntries.length > 0;
+    const subject = `Payment Request from ${name}` + (hasRateMismatch ? ' (Rate Update Needed)' : '');
+
+    // Build a simple HTML body for the email
+    let body = `<p><strong>${escapeHtml(name)}</strong> is requesting payment for their logged hours.</p>`;
+    body += `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
+    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Unpaid Hours</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatHoursDecimal(unpaidSummary.totalMinutes)}h</td></tr>`;
+    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Current Rate</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatCurrency(currentRate)}/hr</td></tr>`;
+    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Recorded Total</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatCurrency(unpaidSummary.totalAmount)}</td></tr>`;
+    if (hasRateMismatch) {
+      body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;color:#dc2626;">Corrected Total (at current rate)</td><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:700;color:#dc2626;">${HoursService.formatCurrency(correctedTotal)}</td></tr>`;
+      body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;color:#92400e;">Entries Needing Rate Update</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${mismatchedEntries.length} entries</td></tr>`;
+    }
+    body += `</table>`;
+    if (hasRateMismatch) {
+      body += `<p style="color:#92400e;"><strong>Action needed:</strong> Some entries were recorded at the wrong rate. Go to <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Admin Hours</a>, filter by ${escapeHtml(name)}, select all unpaid entries, and click "Recalc" to update them to the current rate. Then "Mark Selected as Paid" to process payment.</p>`;
+    } else {
+      body += `<p>Go to <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Admin Hours</a> to review and process payment.</p>`;
+    }
+
+    const result = await sendEmail('custom', adminEmail, {}, {
+      subject,
+      html: body,
+    });
+
+    if (result.success) {
+      showToast('Payment request sent to admin!', 'success');
+    } else {
+      showToast('Failed to send request: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch (err) {
+    console.error('Failed to request payment:', err);
+    showToast('Failed to send payment request: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Request Payment';
   }
 }
 
@@ -908,6 +1104,9 @@ function setupEventListeners() {
 
   // Save payment preference
   document.getElementById('btnSavePref').addEventListener('click', savePaymentPref);
+
+  // Request payment
+  document.getElementById('btnRequestPayment').addEventListener('click', handleRequestPayment);
 
   // Payment method change — toggle Stripe Connect section vs payHandle
   document.getElementById('payMethod').addEventListener('change', (e) => {
