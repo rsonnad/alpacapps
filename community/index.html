@@ -113,45 +113,12 @@
     </div>
   </footer>
 
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module" src="../shared/version-info.js"></script>
-  <script>
-    // Header scroll behavior
-    const header = document.getElementById('aap-header');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        header.classList.remove('aap-header--transparent');
-        header.classList.add('aap-header--solid');
-        header.classList.remove('aap-header--light');
-        header.classList.add('aap-header--dark');
-      } else {
-        header.classList.add('aap-header--transparent');
-        header.classList.remove('aap-header--solid');
-        header.classList.add('aap-header--light');
-        header.classList.remove('aap-header--dark');
-      }
-    });
+  <script type="module">
+    import { initPublicPage } from '../shared/public-shell.js';
 
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('aap-menu-toggle');
-    const mobileNav = document.getElementById('aap-mobile-nav');
-    const mobileNavClose = document.getElementById('aap-mobile-nav-close');
-
-    menuToggle.addEventListener('click', () => {
-      mobileNav.classList.add('aap-mobile-nav--open');
-      document.body.style.overflow = 'hidden';
-    });
-
-    mobileNavClose.addEventListener('click', () => {
-      mobileNav.classList.remove('aap-mobile-nav--open');
-      document.body.style.overflow = '';
-    });
-
-    mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileNav.classList.remove('aap-mobile-nav--open');
-        document.body.style.overflow = '';
-      });
-    });
+    initPublicPage({ transparent: true, light: true, activePage: '/community/' });
   </script>
 
   <style>
