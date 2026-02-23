@@ -201,6 +201,38 @@
       border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%;
     }
 
+    /* Request Payment Button */
+    .btn-request-payment {
+      background: #6366f1; color: #fff; border: none; padding: 0.6rem 1.5rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+      width: 100%; margin-top: 0.75rem;
+    }
+    .btn-request-payment:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Rate mismatch banner */
+    .rate-mismatch-banner {
+      border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.75rem;
+      font-size: 0.85rem; line-height: 1.4;
+      background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;
+    }
+    .rate-mismatch-banner strong { display: block; margin-bottom: 0.25rem; }
+    .rate-mismatch-banner .mismatch-detail { font-size: 0.8rem; margin-top: 0.35rem; color: #78350f; }
+
+    /* Unpaid details breakdown */
+    .unpaid-breakdown {
+      margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;
+      font-size: 0.8rem; color: #64748b;
+    }
+    .unpaid-breakdown .ub-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.25rem 0;
+    }
+    .unpaid-breakdown .ub-hours { font-weight: 600; color: #334155; }
+    .unpaid-breakdown .ub-amount { font-weight: 700; }
+    .unpaid-breakdown .ub-amount.zero { color: #ef4444; }
+    .unpaid-breakdown .ub-amount.positive { color: #0f766e; }
+    .unpaid-breakdown .ub-note { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; font-style: italic; }
+
     /* Manual entry link */
     .manual-entry-link {
       display: inline-flex; align-items: center; gap: 0.3rem;
@@ -587,6 +619,7 @@
       <!-- Payment Tab -->
       <div class="tab-content" id="tabPayment">
         <div id="idVerificationBanner" style="display:none;"></div>
+        <div id="rateMismatchBanner" style="display:none;"></div>
         <div class="pay-card">
           <h3>Earnings Summary</h3>
           <div class="pay-summary">
@@ -594,6 +627,8 @@
             <div class="pay-stat"><div class="val green" id="payPaid">$0</div><div class="lbl">Paid</div></div>
             <div class="pay-stat"><div class="val red" id="payUnpaid">$0</div><div class="lbl">Pending</div></div>
           </div>
+          <div id="unpaidDetails" style="display:none;"></div>
+          <button class="btn-request-payment" id="btnRequestPayment" style="display:none;">Request Payment</button>
         </div>
 
         <div class="pay-card">
