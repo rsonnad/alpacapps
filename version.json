@@ -1,12 +1,12 @@
 {
-  "version": "v260224.04 11:08a",
-  "release": 323,
-  "sha": "49aa6e177",
-  "fullSha": "49aa6e177dced36c0e41c1f6cb10ab31d0f4681d",
+  "version": "v260224.05 11:52a",
+  "release": 324,
+  "sha": "3ab274c6c",
+  "fullSha": "3ab274c6c181f3a5f85fdb511c382f9a86587d4c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-24 17:08:53+00",
-  "commits": [{"sha":"23b25a8cd","message":"Fix SignWell usage count on accounting page","author":"Rahul"},{"sha":"49aa6e177","message":"Merge branch 'claude/beautiful-chatterjee'","author":"Rahul"}]
+  "pushedAt": "2026-02-24 17:52:57+00",
+  "commits": [{"sha":"3ab274c6c","message":"Add Within Center migration proposal page","author":"Rahul"}]
 }
