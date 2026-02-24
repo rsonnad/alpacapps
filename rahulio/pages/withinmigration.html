@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Within Center — Site Migration Proposal</title>
+  <meta property="og:title" content="Within Center: WordPress to Modern Stack Migration">
+  <meta property="og:description" content="Migration proposal for within.center — faster, cheaper, more secure, AI-editable.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       CSS Variables — Within Center Palette
+       ======================================== */
+    :root {
+      --teal:          #2A7A6E;
+      --teal-dark:     #1D5A51;
+      --teal-light:    #3A9A8E;
+      --teal-pale:     #E8F5F2;
+      --teal-muted:    #B8DDD6;
+      --sage:          #7FB5A0;
+      --cream:         #FAFBF9;
+      --cream-warm:    #F3F5F0;
+      --cream-dark:    #E8ECE4;
+      --dark:          #1A2A28;
+      --dark-soft:     #2E3E3C;
+      --text:          #2A3432;
+      --text-soft:     #4A5856;
+      --text-dim:      #7A8886;
+      --text-muted:    #A0ACA8;
+      --surface:       #FFFFFF;
+      --surface-warm:  #F8FAF7;
+      --border:        #D8E0DC;
+      --border-light:  #E8F0EC;
+      --success:       #2E7D42;
+      --warning:       #D4843A;
+      --error:         #C0392B;
+      --info:          #2980B9;
+      --radius:        10px;
+      --radius-lg:     16px;
+      --radius-xl:     24px;
+      --shadow-sm:     0 1px 3px rgba(26,42,40,0.06), 0 1px 2px rgba(26,42,40,0.04);
+      --shadow-md:     0 4px 12px rgba(26,42,40,0.08), 0 2px 4px rgba(26,42,40,0.04);
+      --shadow-lg:     0 12px 40px rgba(26,42,40,0.10), 0 4px 12px rgba(26,42,40,0.05);
+      --transition:    0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+       Reset & Base
+       ======================================== */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--dark);
+    }
+
+    a {
+      color: var(--teal);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    a:hover { color: var(--teal-dark); }
+
+    /* ========================================
+       Layout
+       ======================================== */
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ========================================
+       Header / Hero
+       ======================================== */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--teal-dark) 60%, var(--teal) 100%);
+      color: #fff;
+      padding: 80px 24px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero .subtitle {
+      font-size: 1.15rem;
+      opacity: 0.85;
+      font-weight: 300;
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+
+    .hero .date {
+      font-size: 0.85rem;
+      opacity: 0.55;
+      font-weight: 400;
+    }
+
+    .hero .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    /* ========================================
+       Sections
+       ======================================== */
+    .section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section h2 {
+      font-size: 1.75rem;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+
+    .section .section-desc {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+      max-width: 700px;
+    }
+
+    .section h3 {
+      font-size: 1.2rem;
+      margin: 32px 0 12px;
+      color: var(--teal-dark);
+    }
+
+    /* ========================================
+       Summary Cards
+       ======================================== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .summary-card .icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .summary-card .desc {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ========================================
+       Tables
+       ======================================== */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0 8px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: var(--surface);
+    }
+
+    thead th {
+      background: var(--dark);
+      color: #fff;
+      font-weight: 600;
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: var(--cream-warm);
+    }
+
+    tbody tr:hover {
+      background: var(--teal-pale);
+    }
+
+    tbody td:first-child {
+      font-weight: 500;
+      color: var(--dark);
+      white-space: nowrap;
+    }
+
+    .effort-low {
+      display: inline-block;
+      background: #E8F5E9;
+      color: #2E7D42;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .effort-med {
+      display: inline-block;
+      background: #FFF3E0;
+      color: #E65100;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .effort-high {
+      display: inline-block;
+      background: #FFEBEE;
+      color: #C62828;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .tag-better {
+      display: inline-block;
+      background: #E8F5E9;
+      color: #2E7D42;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .tag-different {
+      display: inline-block;
+      background: #E3F2FD;
+      color: #1565C0;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .tag-replaced {
+      display: inline-block;
+      background: #FFF3E0;
+      color: #E65100;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .tag-eliminated {
+      display: inline-block;
+      background: #F3E5F5;
+      color: #7B1FA2;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ========================================
+       Responsibility Matrix
+       ======================================== */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .matrix-grid { grid-template-columns: 1fr; }
+    }
+
+    .matrix-col {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .matrix-col .col-header {
+      padding: 20px 24px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .matrix-col .col-header .col-icon {
+      font-size: 1.4rem;
+    }
+
+    .matrix-col.owner .col-header {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .matrix-col.builder .col-header {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .matrix-col ul {
+      list-style: none;
+      padding: 16px 24px 24px;
+    }
+
+    .matrix-col li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.9rem;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .matrix-col li:last-child {
+      border-bottom: none;
+    }
+
+    .matrix-col li .li-icon {
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+
+    /* ========================================
+       Cost Comparison
+       ======================================== */
+    .cost-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .cost-grid { grid-template-columns: 1fr; }
+    }
+
+    .cost-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .cost-card .cost-header {
+      padding: 20px 24px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .cost-card.current .cost-header {
+      background: var(--text-dim);
+      color: #fff;
+    }
+
+    .cost-card.proposed .cost-header {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .cost-card .cost-body {
+      padding: 20px 24px;
+    }
+
+    .cost-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.9rem;
+    }
+
+    .cost-line:last-child { border-bottom: none; }
+
+    .cost-line .cost-item { color: var(--text-soft); }
+    .cost-line .cost-price { font-weight: 600; color: var(--dark); }
+
+    .cost-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0 0;
+      margin-top: 8px;
+      border-top: 2px solid var(--dark);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    /* ========================================
+       Steps / Phases
+       ======================================== */
+    .phase-list {
+      list-style: none;
+      counter-reset: phase;
+      margin-top: 24px;
+    }
+
+    .phase-list li {
+      counter-increment: phase;
+      padding: 16px 20px 16px 64px;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .phase-list li::before {
+      content: counter(phase);
+      position: absolute;
+      left: 20px;
+      top: 16px;
+      width: 28px;
+      height: 28px;
+      background: var(--teal);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .phase-list li strong {
+      color: var(--dark);
+    }
+
+    .phase-list li .phase-desc {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    /* ========================================
+       Callout Box
+       ======================================== */
+    .callout {
+      background: var(--teal-pale);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .callout p {
+      font-size: 0.92rem;
+      color: var(--teal-dark);
+    }
+
+    .callout strong {
+      color: var(--dark);
+    }
+
+    /* ========================================
+       Current Stack Info
+       ======================================== */
+    .stack-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 24px;
+    }
+
+    .stack-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-soft);
+    }
+
+    /* ========================================
+       Footer
+       ======================================== */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .footer a {
+      color: var(--teal);
+    }
+
+    /* ========================================
+       Print Styles
+       ======================================== */
+    @media print {
+      .hero { padding: 40px 20px; }
+      .section { padding: 24px 0; }
+      .summary-card:hover, tbody tr:hover { transform: none; background: inherit; }
+      body { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================
+       Hero
+       ======================================== -->
+  <header class="hero">
+    <div class="badge">Migration Proposal</div>
+    <h1>Within Center</h1>
+    <p class="subtitle">WordPress to Modern Stack Migration</p>
+    <p class="date">Prepared February 2026</p>
+  </header>
+
+  <div class="page-wrap">
+
+    <!-- ========================================
+         Executive Summary
+         ======================================== -->
+    <section class="section">
+      <h2>Executive Summary</h2>
+      <p class="section-desc">Migrate within.center from WordPress to a modern static stack — faster, cheaper, more secure, and editable with AI.</p>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="icon">&#9889;</div>
+          <div class="label">10x Faster</div>
+          <div class="desc">Static HTML loads in &lt;200ms vs WordPress 2-4 second page loads</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">&#128274;</div>
+          <div class="label">Zero Attack Surface</div>
+          <div class="desc">No PHP, no wp-admin, no plugin vulnerabilities, no SQL injection</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">&#128176;</div>
+          <div class="label">$0/mo Hosting</div>
+          <div class="desc">Free GitHub Pages hosting replaces $20-50/mo WP Engine</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">&#129302;</div>
+          <div class="label">AI-Editable</div>
+          <div class="desc">Any content change is a natural language conversation away</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Current WordPress Stack
+         ======================================== -->
+    <section class="section">
+      <h2>Current WordPress Stack</h2>
+      <p class="section-desc">Detected plugins, theme, and hosting from site analysis of within.center.</p>
+
+      <h3>Hosting &amp; Theme</h3>
+      <div class="stack-pills">
+        <span class="stack-pill">WP Engine (managed hosting)</span>
+        <span class="stack-pill">Salient Theme (ThemeNectar)</span>
+        <span class="stack-pill">Nectar Page Builder</span>
+      </div>
+
+      <h3>Active Plugins (9 detected)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Plugin</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Rank Math SEO</td><td>Search engine optimization</td></tr>
+            <tr><td>Google Site Kit</td><td>Analytics &amp; Search Console bridge</td></tr>
+            <tr><td>WP Data Access</td><td>Database management</td></tr>
+            <tr><td>Chaty</td><td>Multi-channel chat (WhatsApp + Messenger)</td></tr>
+            <tr><td>CallTrackingMetrics</td><td>Phone call analytics</td></tr>
+            <tr><td>LiveChat</td><td>Live support chat</td></tr>
+            <tr><td>WP Engine Cache</td><td>Hosting-bundled caching</td></tr>
+            <tr><td>WP Engine Sign-On</td><td>Hosting-bundled SSO</td></tr>
+            <tr><td>WooCommerce (probable)</td><td>Booking / e-commerce</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Analytics &amp; Tracking</h3>
+      <div class="stack-pills">
+        <span class="stack-pill">Google Tag Manager (2 containers)</span>
+        <span class="stack-pill">Facebook Pixel (2 pixels)</span>
+        <span class="stack-pill">LegitScript Compliance</span>
+        <span class="stack-pill">Advance Care Financing</span>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Current vs Proposed Stack
+         ======================================== -->
+    <section class="section">
+      <h2>Current vs. Proposed Stack</h2>
+      <p class="section-desc">Side-by-side comparison of what powers the site today vs. the new architecture.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>WordPress (Current)</th><th>New Stack (Proposed)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hosting</td><td>WP Engine ($20-50/mo)</td><td>GitHub Pages (free)</td></tr>
+            <tr><td>Server</td><td>PHP + MySQL</td><td>No server — static HTML + CDN</td></tr>
+            <tr><td>Database</td><td>MySQL (WP Engine managed)</td><td>Supabase (PostgreSQL, free tier)</td></tr>
+            <tr><td>File Storage</td><td>WordPress Media Library</td><td>Supabase Storage + Cloudflare R2</td></tr>
+            <tr><td>Page Builder</td><td>Salient / Nectar / WPBakery</td><td>Claude Code (AI edits HTML directly)</td></tr>
+            <tr><td>CMS / Editor</td><td>wp-admin dashboard</td><td>Claude Code (natural language)</td></tr>
+            <tr><td>SEO</td><td>Rank Math plugin</td><td>Static meta tags + JSON-LD (Claude Code manages)</td></tr>
+            <tr><td>E-commerce</td><td>WooCommerce</td><td>Custom booking system (Supabase + Stripe)</td></tr>
+            <tr><td>Email</td><td>WordPress + WP Engine SMTP</td><td>Resend API (transactional + branded templates)</td></tr>
+            <tr><td>Forms</td><td>Contact Form plugin</td><td>Supabase edge function + Resend</td></tr>
+            <tr><td>Analytics</td><td>Site Kit + GTM</td><td>Same GTM + Pixel (embed scripts, identical)</td></tr>
+            <tr><td>Chat</td><td>LiveChat + Chaty plugins</td><td>Same LiveChat + Chaty (embed scripts, identical)</td></tr>
+            <tr><td>SSL/HTTPS</td><td>WP Engine managed</td><td>GitHub Pages auto-provisions (Let's Encrypt)</td></tr>
+            <tr><td>Deployments</td><td>Plugin updates + theme updates</td><td>Git push to main (live in seconds)</td></tr>
+            <tr><td>AI Features</td><td>None</td><td>AI Q&amp;A chat, AI blog generation, AI content editing</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Features: Easily Duplicated
+         ======================================== -->
+    <section class="section">
+      <h2>Features: Easily Duplicated</h2>
+      <p class="section-desc">These translate directly from WordPress with minimal effort. Identical or better functionality.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Effort</th><th>How It Works</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Static pages (services, about, team, pricing)</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>HTML + Tailwind CSS. Shared header/footer injected via JS module. Same visual result, much faster.</td>
+            </tr>
+            <tr>
+              <td>Contact forms</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>Supabase edge function handles submissions. Email notification via Resend. Simpler than WordPress plugins.</td>
+            </tr>
+            <tr>
+              <td>Photo galleries</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>Media table in Supabase with tagging. Lightbox viewer. Client-side image compression on upload.</td>
+            </tr>
+            <tr>
+              <td>FAQ page</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>Database-driven FAQ entries with accordion UI. Bonus: AI-powered Q&amp;A answers visitor questions instantly.</td>
+            </tr>
+            <tr>
+              <td>Blog / articles</td>
+              <td><span class="effort-med">Medium</span></td>
+              <td>Posts table in Supabase with markdown content. Client-side markdown renderer. AI can generate articles.</td>
+            </tr>
+            <tr>
+              <td>Analytics (GTM, Facebook Pixel)</td>
+              <td><span class="effort-low">Trivial</span></td>
+              <td>Copy-paste embed scripts from WordPress source. Identical tracking, zero code change.</td>
+            </tr>
+            <tr>
+              <td>Chat widgets (LiveChat, Chaty)</td>
+              <td><span class="effort-low">Trivial</span></td>
+              <td>Same embed scripts. Identical functionality. No WordPress plugin needed.</td>
+            </tr>
+            <tr>
+              <td>Compliance badges (LegitScript)</td>
+              <td><span class="effort-low">Trivial</span></td>
+              <td>Image tag in footer. Copy-paste from existing site.</td>
+            </tr>
+            <tr>
+              <td>SEO (meta tags, structured data)</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>Static meta tags in HTML. JSON-LD structured data. Actually easier to control than Rank Math.</td>
+            </tr>
+            <tr>
+              <td>Responsive design</td>
+              <td><span class="effort-low">Low</span></td>
+              <td>Tailwind CSS handles responsive layouts natively. Animations via CSS + IntersectionObserver.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Features: What Changes
+         ======================================== -->
+    <section class="section">
+      <h2>Features: What Changes</h2>
+      <p class="section-desc">These features work differently in the new stack. Some are replaced, some are eliminated.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>WordPress Feature</th><th>Status</th><th>New Stack Replacement</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>wp-admin visual editor</td>
+              <td><span class="tag-replaced">Replaced</span></td>
+              <td>Claude Code edits HTML via natural language conversation. Faster for developers, but no GUI for non-technical users.</td>
+            </tr>
+            <tr>
+              <td>WooCommerce (booking/products)</td>
+              <td><span class="tag-replaced">Replaced</span></td>
+              <td>Custom booking system built on Supabase + Stripe. Purpose-built for appointment scheduling, not generic e-commerce.</td>
+            </tr>
+            <tr>
+              <td>Plugin ecosystem (60,000+ plugins)</td>
+              <td><span class="tag-different">Different</span></td>
+              <td>New features require code (built by Claude Code). More durable but no "install plugin" shortcut. Third-party SaaS widgets still work via embed scripts.</td>
+            </tr>
+            <tr>
+              <td>WordPress REST API</td>
+              <td><span class="tag-replaced">Replaced</span></td>
+              <td>Supabase REST API + custom edge functions. Any integrations pulling from WP API need re-pointing.</td>
+            </tr>
+            <tr>
+              <td>User accounts / login</td>
+              <td><span class="tag-different">Different</span></td>
+              <td>Supabase Auth handles registration and login. UI must be built (login page, account management). Works, but more initial effort.</td>
+            </tr>
+            <tr>
+              <td>Scheduled publishing</td>
+              <td><span class="tag-different">Different</span></td>
+              <td>Posts table has a published_at field. A small cron edge function auto-publishes on schedule. Needs to be built.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Features: What Gets Better
+         ======================================== -->
+    <section class="section">
+      <h2>Features: What Gets Better</h2>
+      <p class="section-desc">These are genuine improvements over WordPress — not just equivalent, but meaningfully better.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Improvement</th><th>Impact</th><th>Details</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Page speed</td>
+              <td><span class="tag-better">10x faster</span></td>
+              <td>Static HTML loads in &lt;200ms. WordPress serves PHP-generated pages with 2-4s TTFB. Core Web Vitals go from mediocre to perfect.</td>
+            </tr>
+            <tr>
+              <td>Security</td>
+              <td><span class="tag-better">Zero surface</span></td>
+              <td>No server, no admin panel, no PHP, no database queries on page load. Healthcare sites are high-value targets — this eliminates the attack surface entirely.</td>
+            </tr>
+            <tr>
+              <td>Hosting cost</td>
+              <td><span class="tag-better">$0/mo</span></td>
+              <td>GitHub Pages is free. Supabase free tier covers small sites. Saves $240-600/year vs WP Engine.</td>
+            </tr>
+            <tr>
+              <td>SEO (Core Web Vitals)</td>
+              <td><span class="tag-better">95-100 scores</span></td>
+              <td>Google ranks page speed. Static HTML achieves perfect Lighthouse scores. No render-blocking plugin CSS/JS.</td>
+            </tr>
+            <tr>
+              <td>AI-native editing</td>
+              <td><span class="tag-better">Unique</span></td>
+              <td>Say "update the pricing to $500" and it's done in seconds. Blog posts generated from prompts. FAQ answers auto-generated. No WordPress equivalent.</td>
+            </tr>
+            <tr>
+              <td>Zero maintenance</td>
+              <td><span class="tag-better">Eliminated</span></td>
+              <td>No plugin updates, no PHP version upgrades, no database optimization, no backup management. Static sites just work.</td>
+            </tr>
+            <tr>
+              <td>Custom booking</td>
+              <td><span class="tag-better">Purpose-built</span></td>
+              <td>Tighter integration than WooCommerce. Calendar, availability, Stripe deposits — built for appointment scheduling, not generic shopping carts.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Responsibility Matrix
+         ======================================== -->
+    <section class="section">
+      <h2>Who Does What</h2>
+      <p class="section-desc">Clear division of responsibilities between the site owner and the development team.</p>
+
+      <div class="matrix-grid">
+        <div class="matrix-col owner">
+          <div class="col-header">
+            <span class="col-icon">&#128100;</span> Site Owner Provides
+          </div>
+          <ul>
+            <li><span class="li-icon">&#128444;</span> Brand assets (logos, color codes, fonts)</li>
+            <li><span class="li-icon">&#128221;</span> Page content and copy (text for each page)</li>
+            <li><span class="li-icon">&#128247;</span> Photos and media files (team headshots, facility photos)</li>
+            <li><span class="li-icon">&#128273;</span> Third-party account credentials (GTM ID, FB Pixel ID, LiveChat license, LegitScript embed, CallTrackingMetrics)</li>
+            <li><span class="li-icon">&#128179;</span> Stripe account for payment processing</li>
+            <li><span class="li-icon">&#127760;</span> DNS access (domain registrar login)</li>
+            <li><span class="li-icon">&#128467;</span> Service details (names, prices, durations, availability schedule)</li>
+            <li><span class="li-icon">&#128203;</span> Provider schedule (days/hours per provider)</li>
+            <li><span class="li-icon">&#9989;</span> Review and approval of final site</li>
+          </ul>
+        </div>
+        <div class="matrix-col builder">
+          <div class="col-header">
+            <span class="col-icon">&#129302;</span> We Handle (Claude Code + Team)
+          </div>
+          <ul>
+            <li><span class="li-icon">&#128736;</span> Build all HTML pages with responsive design</li>
+            <li><span class="li-icon">&#128451;</span> Set up Supabase database and schema</li>
+            <li><span class="li-icon">&#128197;</span> Build custom booking system with Stripe</li>
+            <li><span class="li-icon">&#128240;</span> Migrate blog posts from WordPress</li>
+            <li><span class="li-icon">&#128172;</span> Set up AI-powered Q&amp;A chat</li>
+            <li><span class="li-icon">&#128270;</span> Configure SEO (meta tags, JSON-LD, sitemap)</li>
+            <li><span class="li-icon">&#128200;</span> Wire analytics (GTM, Pixel, CallTracking)</li>
+            <li><span class="li-icon">&#128231;</span> Set up email notifications (Resend)</li>
+            <li><span class="li-icon">&#127760;</span> DNS configuration and SSL setup</li>
+            <li><span class="li-icon">&#128260;</span> Data migration from WordPress</li>
+            <li><span class="li-icon">&#9999;</span> Ongoing content edits via AI (post-launch)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Custom Booking System
+         ======================================== -->
+    <section class="section">
+      <h2>Custom Booking System</h2>
+      <p class="section-desc">Purpose-built appointment scheduling to replace WooCommerce — designed specifically for healthcare/wellness services.</p>
+
+      <div class="callout">
+        <p><strong>Why custom instead of Calendly?</strong> Full control over the booking flow, tighter integration with the site's design, Stripe deposit collection, and no per-seat SaaS fees. The system is built once and runs at zero marginal cost.</p>
+      </div>
+
+      <h3>How It Works</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Step</th><th>Patient Experience</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1. Select Service</td><td>Choose from available services (Ketamine Therapy, IV Therapy, etc.) with descriptions, duration, and pricing</td></tr>
+            <tr><td>2. Pick a Date</td><td>Calendar shows available dates. Unavailable dates are grayed out automatically based on provider schedules and existing bookings.</td></tr>
+            <tr><td>3. Choose Time</td><td>Available time slots for the selected date, accounting for buffer time between appointments</td></tr>
+            <tr><td>4. Enter Info</td><td>Name, email, phone. Intake form acknowledgment checkbox.</td></tr>
+            <tr><td>5. Pay Deposit</td><td>Stripe-powered payment for deposit. Supports bank transfer (ACH) and card payments.</td></tr>
+            <tr><td>6. Confirmation</td><td>Booking confirmation page + email with calendar invite (.ics download)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Automated Notifications</h3>
+      <div class="stack-pills">
+        <span class="stack-pill">Booking confirmation email</span>
+        <span class="stack-pill">24-hour reminder</span>
+        <span class="stack-pill">Cancellation notice</span>
+        <span class="stack-pill">Admin notification on new booking</span>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Data Migration Process
+         ======================================== -->
+    <section class="section">
+      <h2>Data Migration Process</h2>
+      <p class="section-desc">Four-step process to move everything from WordPress to the new stack.</p>
+
+      <ol class="phase-list">
+        <li>
+          <strong>Export from WordPress</strong>
+          <div class="phase-desc">Extract all content via WordPress REST API — pages, blog posts, media library, WooCommerce products. Download all images and documents. Export form submission history as CSV for reference.</div>
+        </li>
+        <li>
+          <strong>Transform Content</strong>
+          <div class="phase-desc">Strip WordPress shortcodes and page builder markup. Rebuild each page as clean HTML + Tailwind. Convert blog posts to markdown and insert into the posts table. Re-upload media to Supabase Storage / Cloudflare R2 and update all image URLs.</div>
+        </li>
+        <li>
+          <strong>Configure Services</strong>
+          <div class="phase-desc">Set up Supabase database tables. Configure Stripe for payments. Set up Resend for email. Wire third-party scripts (GTM, Pixel, LiveChat). Populate booking services and provider availability.</div>
+        </li>
+        <li>
+          <strong>DNS Cutover</strong>
+          <div class="phase-desc">Run both sites in parallel for 1-2 weeks. Point within.center DNS to GitHub Pages. GitHub auto-provisions HTTPS. Verify all pages, forms, and analytics work. Decommission WordPress hosting.</div>
+        </li>
+      </ol>
+
+      <div class="callout">
+        <p><strong>URL preservation:</strong> All WordPress URL slugs are matched exactly so existing Google rankings and backlinks don't break. Updated sitemap submitted to Google Search Console.</p>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Cost Comparison
+         ======================================== -->
+    <section class="section">
+      <h2>Cost Comparison</h2>
+      <p class="section-desc">Monthly recurring costs: WordPress vs. the new stack.</p>
+
+      <div class="cost-grid">
+        <div class="cost-card current">
+          <div class="cost-header">WordPress (Current)</div>
+          <div class="cost-body">
+            <div class="cost-line"><span class="cost-item">WP Engine hosting</span><span class="cost-price">$30/mo</span></div>
+            <div class="cost-line"><span class="cost-item">Salient theme updates</span><span class="cost-price">$5/mo*</span></div>
+            <div class="cost-line"><span class="cost-item">Plugin maintenance time</span><span class="cost-price">$??/mo</span></div>
+            <div class="cost-line"><span class="cost-item">Security monitoring</span><span class="cost-price">$??/mo</span></div>
+            <div class="cost-total"><span>Estimated Total</span><span>$35+/mo</span></div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">*Annualized theme license. Plugin maintenance and security monitoring costs vary.</p>
+          </div>
+        </div>
+        <div class="cost-card proposed">
+          <div class="cost-header">New Stack (Proposed)</div>
+          <div class="cost-body">
+            <div class="cost-line"><span class="cost-item">GitHub Pages hosting</span><span class="cost-price">$0</span></div>
+            <div class="cost-line"><span class="cost-item">Supabase (free tier)</span><span class="cost-price">$0</span></div>
+            <div class="cost-line"><span class="cost-item">Cloudflare R2 (&lt;10 GB)</span><span class="cost-price">$0</span></div>
+            <div class="cost-line"><span class="cost-item">Resend email (free tier)</span><span class="cost-price">$0</span></div>
+            <div class="cost-line"><span class="cost-item">Plugin updates needed</span><span class="cost-price">$0</span></div>
+            <div class="cost-total"><span>Total</span><span>$0/mo</span></div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Stripe fees (0.8% ACH, 2.9%+$0.30 card) apply per transaction, same as current payment processing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================
+         Implementation Phases
+         ======================================== -->
+    <section class="section">
+      <h2>Implementation Phases</h2>
+      <p class="section-desc">Sequential phases from start to launch. No time estimates — just the logical order.</p>
+
+      <ol class="phase-list">
+        <li><strong>Foundation</strong><div class="phase-desc">Set up Supabase project, database schema, site configuration, and CSS theme.</div></li>
+        <li><strong>Homepage + Navigation</strong><div class="phase-desc">Build the homepage, header/footer, and responsive navigation. Establish the visual design system.</div></li>
+        <li><strong>Content Pages</strong><div class="phase-desc">Services, about, team, retreat, FAQ. Static HTML pages matching existing WordPress content.</div></li>
+        <li><strong>Booking System</strong><div class="phase-desc">Service catalog, availability engine, Stripe payment integration, confirmation emails.</div></li>
+        <li><strong>Blog</strong><div class="phase-desc">Posts database, listing page, individual post renderer, markdown support, AI content generation.</div></li>
+        <li><strong>Contact + AI Q&amp;A</strong><div class="phase-desc">Contact form with email routing. AI-powered chat that answers questions about services, pricing, and availability.</div></li>
+        <li><strong>Content Migration</strong><div class="phase-desc">Export WordPress data, transform content, re-upload media, populate blog posts.</div></li>
+        <li><strong>SEO + Analytics</strong><div class="phase-desc">Meta tags, JSON-LD structured data, sitemap, Open Graph tags, GTM, Facebook Pixel, CallTracking.</div></li>
+        <li><strong>Testing + QA</strong><div class="phase-desc">Cross-browser testing, mobile responsiveness, form submissions, booking flow, Lighthouse audits.</div></li>
+        <li><strong>DNS Cutover</strong><div class="phase-desc">Parallel run period, DNS switch, SSL verification, WordPress decommission.</div></li>
+      </ol>
+    </section>
+
+  </div>
+
+  <!-- ========================================
+       Footer
+       ======================================== -->
+  <footer class="footer">
+    <p>Prepared by AlpacApps &mdash; <a href="https://alpacaplayhouse.com">alpacaplayhouse.com</a></p>
+    <p style="margin-top: 4px;">Powered by GitHub Pages + Supabase + Cloudflare R2 + Claude Code</p>
+  </footer>
+
+</body>
+</html>
