@@ -1,12 +1,12 @@
 {
-  "version": "v260224.01 5:33a",
-  "release": 320,
-  "sha": "71b7c70bd",
-  "fullSha": "71b7c70bd06b26940e66ee9564930a7103ca3b3d",
+  "version": "v260224.02 6:03a",
+  "release": 321,
+  "sha": "ca27437e7",
+  "fullSha": "ca27437e7e2d9548f2f10ae3924ef58ccfbf9292",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-24 11:33:12+00",
-  "commits": [{"sha":"71b7c70bd","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
+  "pushedAt": "2026-02-24 12:03:06+00",
+  "commits": [{"sha":"75cdc37fc","message":"Add always-visible language dropdown on mobile for all Mistiq pages","author":"Claude"},{"sha":"ca27437e7","message":"Merge pull request #8 from rsonnad/claude/add-navigation-language-dropdown-cFWmZ","author":"Rahul"}]
 }
