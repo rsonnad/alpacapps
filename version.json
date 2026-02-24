@@ -1,12 +1,12 @@
 {
-  "version": "v260224.02 6:03a",
-  "release": 321,
-  "sha": "ca27437e7",
-  "fullSha": "ca27437e7e2d9548f2f10ae3924ef58ccfbf9292",
+  "version": "v260224.03 10:58a",
+  "release": 322,
+  "sha": "8ed0297cb",
+  "fullSha": "8ed0297cb63c1e350ce8b9c42ce379a5474e9200",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-24 12:03:06+00",
-  "commits": [{"sha":"75cdc37fc","message":"Add always-visible language dropdown on mobile for all Mistiq pages","author":"Claude"},{"sha":"ca27437e7","message":"Merge pull request #8 from rsonnad/claude/add-navigation-language-dropdown-cFWmZ","author":"Rahul"}]
+  "pushedAt": "2026-02-24 16:58:39+00",
+  "commits": [{"sha":"8cb1de05b","message":"fix: It's not ever explained that Alpacapps is a property management open sou\\n\\nAutomated fix from bug report #b4b4efa7-a672-4014-bad5-05ae2f9d4165.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Bug Fixer Bot"},{"sha":"8ed0297cb","message":"Merge bugfix/20260224-b4b4efa7-a672-4014-bad5-05ae2f9d4165 into main","author":"Bug Fixer Bot"}]
 }
