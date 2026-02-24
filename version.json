@@ -1,12 +1,12 @@
 {
-  "version": "v260223.07 2:02p",
-  "release": 319,
-  "sha": "39444ace4",
-  "fullSha": "39444ace4cf571a5cb5278545f9eaf4217e42529",
+  "version": "v260224.01 5:33a",
+  "release": 320,
+  "sha": "71b7c70bd",
+  "fullSha": "71b7c70bd06b26940e66ee9564930a7103ca3b3d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-23 20:02:58+00",
-  "commits": [{"sha":"39444ace4","message":"Remove Manage link from mobile nav to match desktop","author":"Rahul"}]
+  "pushedAt": "2026-02-24 11:33:12+00",
+  "commits": [{"sha":"71b7c70bd","message":"autodev report: deploy-donate-page (no code changes)","author":"Instruction Runner Bot"}]
 }
