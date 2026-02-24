@@ -1,12 +1,12 @@
 {
-  "version": "v260224.03 10:58a",
-  "release": 322,
-  "sha": "8ed0297cb",
-  "fullSha": "8ed0297cb63c1e350ce8b9c42ce379a5474e9200",
+  "version": "v260224.04 11:08a",
+  "release": 323,
+  "sha": "49aa6e177",
+  "fullSha": "49aa6e177dced36c0e41c1f6cb10ab31d0f4681d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwffz4",
-  "pushedAt": "2026-02-24 16:58:39+00",
-  "commits": [{"sha":"8cb1de05b","message":"fix: It's not ever explained that Alpacapps is a property management open sou\\n\\nAutomated fix from bug report #b4b4efa7-a672-4014-bad5-05ae2f9d4165.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Bug Fixer Bot"},{"sha":"8ed0297cb","message":"Merge bugfix/20260224-b4b4efa7-a672-4014-bad5-05ae2f9d4165 into main","author":"Bug Fixer Bot"}]
+  "pushedAt": "2026-02-24 17:08:53+00",
+  "commits": [{"sha":"23b25a8cd","message":"Fix SignWell usage count on accounting page","author":"Rahul"},{"sha":"49aa6e177","message":"Merge branch 'claude/beautiful-chatterjee'","author":"Rahul"}]
 }
