@@ -298,6 +298,13 @@ img {
   border-radius: 4px;
 }
 
+/* Header controls (lang picker + hamburger, always visible) */
+.mistiq-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Mobile menu toggle */
 .mistiq-menu-toggle {
   display: none;
@@ -320,6 +327,11 @@ img {
   background: var(--mistiq-text);
 }
 
+/* On desktop: hide the header-level lang picker (nav has its own) */
+.mistiq-header__controls .mistiq-lang-picker {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .mistiq-nav {
     display: none;
@@ -327,6 +339,11 @@ img {
 
   .mistiq-menu-toggle {
     display: block;
+  }
+
+  /* On mobile: show the header-level lang picker */
+  .mistiq-header__controls .mistiq-lang-picker {
+    display: flex;
   }
 }
 
