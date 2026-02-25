@@ -429,9 +429,13 @@ Alpaca Playhouse`
       };
 
     case "move_in_confirmed": {
-      const miRateDisplay = Number(data.monthly_rate) === 0 ? 'Complimentary' : `$${Number(data.monthly_rate).toLocaleString()}/mo`;
+      const isMonthly = data.is_monthly !== false; // default true for backwards compat
+      const isPaid = Number(data.monthly_rate) > 0;
+      const miRateDisplay = !isPaid ? 'Complimentary' : (isMonthly ? `$${Number(data.monthly_rate).toLocaleString()}/mo` : `$${Number(data.monthly_rate).toLocaleString()}`);
       const checkInDisplay = data.check_in_time === 'flexible' ? 'Flexible (no set time)' : (data.check_in_time || null);
       const checkOutDisplay = data.check_out_time === 'flexible' ? 'Flexible (no set time)' : (data.check_out_time || null);
+      const showRentDue = isPaid && isMonthly;
+      const showPaymentMethods = isPaid;
 
       // Access code section
       const accessCodeSection = data.access_code
@@ -477,18 +481,22 @@ Alpaca Playhouse`
                 </tr>
                 ${checkInRow}
                 ${checkOutRow}
+                ${data.lease_end_date ? `<tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out Date</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.lease_end_date}</td>
+                </tr>` : ''}
                 <tr>
                   <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
                   <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${miRateDisplay}</td>
                 </tr>
-                ${Number(data.monthly_rate) > 0 ? `<tr>
+                ${showRentDue ? `<tr>
                   <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rent Due</td>
                   <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.rent_due_day || '1st'} of each month</td>
                 </tr>` : ''}
               </table>
             </div>
 
-            ${Number(data.monthly_rate) > 0 ? `
+            ${showPaymentMethods ? `
             <div style="background:#faf9f6;border-radius:8px;padding:16px 20px;margin:24px 0;">
               <p style="margin:0 0 8px;font-weight:600;color:#333;font-size:14px;">Payment Methods</p>
               <table style="border-collapse:collapse;width:100%;font-size:14px;">
@@ -520,10 +528,11 @@ Your Details:
 - Move-in: ${data.move_in_date}
 ${checkInDisplay ? `- Check-in: ${checkInDisplay}` : ''}
 ${checkOutDisplay ? `- Check-out: ${checkOutDisplay}` : ''}
+${data.lease_end_date ? `- Check-out Date: ${data.lease_end_date}` : ''}
 - Rate: ${miRateDisplay}
-${Number(data.monthly_rate) > 0 ? `- Rent Due: ${data.rent_due_day || '1st'} of each month` : ''}
+${showRentDue ? `- Rent Due: ${data.rent_due_day || '1st'} of each month` : ''}
 
-${Number(data.monthly_rate) > 0 ? `Payment Methods:
+${showPaymentMethods ? `Payment Methods:
 - Venmo: @AlpacaPlayhouse
 - Zelle: alpacaplayhouse@gmail.com` : ''}
 
