@@ -221,12 +221,20 @@ export const emailService = {
    */
   async sendMoveInConfirmed(application) {
     const person = application.person;
+    // Determine if this is a monthly tenancy (>30 days or open-ended)
+    const moveIn = application.approved_move_in_date ? new Date(application.approved_move_in_date) : null;
+    const leaseEnd = application.approved_lease_end ? new Date(application.approved_lease_end) : null;
+    const stayDays = (moveIn && leaseEnd) ? Math.round((leaseEnd - moveIn) / (1000 * 60 * 60 * 24)) : null;
+    const isMonthly = stayDays === null || stayDays > 30;
+
     return sendEmail(EMAIL_TYPES.MOVE_IN_CONFIRMED, person.email, {
       first_name: person.first_name,
       space_name: application.space?.name || application.desired_space,
       move_in_date: formatDate(application.approved_move_in_date),
+      lease_end_date: application.approved_lease_end ? formatDate(application.approved_lease_end) : null,
       monthly_rate: application.approved_rate,
       rent_due_day: '1st',
+      is_monthly: isMonthly,
       access_code: application.access_code || null,
       check_in_time: application.check_in_time || null,
       check_out_time: application.check_out_time || null,

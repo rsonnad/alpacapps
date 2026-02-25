@@ -2233,7 +2233,8 @@ window.confirmMoveIn = async function() {
       const emailResult = await emailService.sendMoveInConfirmed({
         person: app.person,
         space: { name: space?.name },
-        approved_move_in_date: app.approved_move_in_date,
+        approved_move_in_date: app.approved_move_in,
+        approved_lease_end: app.approved_lease_end,
         approved_rate: app.approved_rate,
         access_code: accessCode,
         check_in_time: app.check_in_time,
