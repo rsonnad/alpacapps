@@ -127,20 +127,23 @@ export async function wrapEmailHtml(
 
   const accent = accentColor || c.accent;
 
+  const siteUrl = brand.website || 'https://alpacaplayhouse.com';
   const headerHtml = showHeader ? `
     <!-- Header -->
     <tr>
       <td style="background:${e.header.background};padding:${e.header.padding};text-align:center;">
-        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-          <tr>
-            <td style="padding-right:12px;vertical-align:middle;">
-              <img src="${iconUrl}" alt="" width="40" height="40" style="display:block;height:${e.header.logo_height};width:auto;" />
-            </td>
-            <td style="vertical-align:middle;">
-              <img src="${wordmarkUrl}" alt="${brand.full_name}" height="20" style="display:block;height:${e.header.wordmark_height};width:auto;" />
-            </td>
-          </tr>
-        </table>
+        <a href="${siteUrl}" style="text-decoration:none;" target="_blank">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+            <tr>
+              <td style="padding-right:12px;vertical-align:middle;">
+                <img src="${iconUrl}" alt="" width="40" height="40" style="display:block;height:${e.header.logo_height};width:auto;" />
+              </td>
+              <td style="vertical-align:middle;">
+                <img src="${wordmarkUrl}" alt="${brand.full_name}" height="20" style="display:block;height:${e.header.wordmark_height};width:auto;" />
+              </td>
+            </tr>
+          </table>
+        </a>
       </td>
     </tr>` : '';
 
