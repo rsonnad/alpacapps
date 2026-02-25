@@ -110,6 +110,9 @@ export const emailService = {
       monthly_rate: application.approved_rate,
       move_in_date: formatDate(application.approved_move_in_date),
       lease_end_date: application.approved_end_date ? formatDate(application.approved_end_date) : null,
+      require_lease: application.require_lease,
+      security_deposit_amount: application.security_deposit_amount || 0,
+      space_image_url: application.space_image_url || null,
     });
   },
 
@@ -224,6 +227,9 @@ export const emailService = {
       move_in_date: formatDate(application.approved_move_in_date),
       monthly_rate: application.approved_rate,
       rent_due_day: '1st',
+      access_code: application.access_code || null,
+      check_in_time: application.check_in_time || null,
+      check_out_time: application.check_out_time || null,
     });
   },
 
