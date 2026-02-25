@@ -24,7 +24,7 @@ const FALLBACK = {
     primary_name: 'Alpaca Playhouse',
     full_name: 'Alpaca Playhouse Austin',
     platform_name: 'AlpacApps',
-    tagline: 'Where the herd gathers',
+    tagline: 'We put the AI into Alpacas',
     address: '160 Still Forest Dr, Cedar Creek, TX 78612',
     website: 'https://alpacaplayhouse.com',
   },

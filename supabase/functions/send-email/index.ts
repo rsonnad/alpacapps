@@ -475,14 +475,13 @@ Alpaca Playhouse`
             <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${data.rent_due_day || '1st'} of each month</td>
           </tr>`);
       }
-
-      // Access code callout (green gradient, matches payment statement style)
-      const accessCodeSection = data.access_code
-        ? `<div style="background:linear-gradient(135deg,#e8f5e9 0%,#c8e6c9 100%);border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <div style="font-size:13px;color:#2e7d32;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Door Access Code</div>
-              <div style="font-size:28px;font-weight:700;color:#1b5e20;letter-spacing:2px;">${data.access_code}</div>
-            </div>`
-        : '';
+      // Access code as a smaller row in the table (after rate)
+      if (data.access_code) {
+        detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Door Code</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#2e7d32;font-weight:700;font-size:16px;letter-spacing:1px;">${data.access_code}</td>
+          </tr>`);
+      }
 
       // Payment methods with branded badges (same style as payment_statement)
       const methodBadges: Record<string, { bg: string; label: string }> = {
@@ -533,15 +532,13 @@ Alpaca Playhouse`
         html: `
           <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
             <p style="color:#333;font-size:16px;line-height:1.6;">Hi ${data.first_name},</p>
-            <p style="color:#555;font-size:15px;line-height:1.6;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
-
-            ${accessCodeSection}
+            <p style="color:#555;font-size:15px;line-height:1.6;">At the Alpaca Playhouse our goal is to redefine your idea of what an Alpaca Playhouse can be.</p>
 
             <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
               <thead>
                 <tr>
-                  <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;width:140px;">Detail</th>
-                  <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;"></th>
+                  <th style="padding:14px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#1c1618;font-weight:700;font-size:16px;letter-spacing:0.3px;width:140px;">Reservation Details</th>
+                  <th style="padding:14px 8px;text-align:left;border-bottom:2px solid #e0e0e0;"></th>
                 </tr>
               </thead>
               <tbody>
