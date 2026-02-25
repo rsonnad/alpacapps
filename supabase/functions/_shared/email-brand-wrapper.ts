@@ -14,8 +14,9 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-// In-memory cache for brand config
+// In-memory cache for brand config + gallery images
 let _brandCache: { config: any; fetchedAt: number } | null = null;
+let _galleryCache: { images: string[]; fetchedAt: number } | null = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
 
 // Hardcoded fallback (matches DB seed)
@@ -89,15 +90,52 @@ async function loadBrandConfig(): Promise<any> {
   return FALLBACK;
 }
 
+/**
+ * Load 2 latest AI-generated alpaca images (cached).
+ */
+async function loadGalleryImages(): Promise<string[]> {
+  if (_galleryCache && Date.now() - _galleryCache.fetchedAt < CACHE_TTL) {
+    return _galleryCache.images;
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await sb
+      .from("media")
+      .select("url")
+      .eq("category", "mktg")
+      .eq("is_archived", false)
+      .order("uploaded_at", { ascending: false })
+      .limit(2);
+
+    if (data && !error && data.length > 0) {
+      const urls = data.map((m: any) => m.url);
+      _galleryCache = { images: urls, fetchedAt: Date.now() };
+      return urls;
+    }
+  } catch (e) {
+    console.warn("Failed to load gallery images:", e);
+  }
+
+  _galleryCache = { images: [], fetchedAt: Date.now() };
+  return [];
+}
+
 export interface WrapOptions {
   /** Show the branded header with logo (default: true) */
   showHeader?: boolean;
   /** Show the branded footer with address (default: true) */
   showFooter?: boolean;
+  /** Show the alpaca image gallery above footer (default: true) */
+  showGallery?: boolean;
   /** Custom preheader text (hidden preview text in email clients) */
   preheader?: string;
   /** Override accent color for the CTA button */
   accentColor?: string;
+  /** Extra images to show above the alpaca gallery (e.g. space photo) */
+  extraImages?: string[];
 }
 
 /**
@@ -111,8 +149,11 @@ export async function wrapEmailHtml(
   innerHtml: string,
   options: WrapOptions = {}
 ): Promise<string> {
-  const { showHeader = true, showFooter = true, preheader = '', accentColor } = options;
-  const b = await loadBrandConfig();
+  const { showHeader = true, showFooter = true, showGallery = true, preheader = '', accentColor, extraImages } = options;
+  const [b, galleryImages] = await Promise.all([
+    loadBrandConfig(),
+    showGallery ? loadGalleryImages() : Promise.resolve([]),
+  ]);
 
   const c = b.colors?.primary || FALLBACK.colors.primary;
   const e = b.email || FALLBACK.email;
@@ -155,6 +196,18 @@ export async function wrapEmailHtml(
       </td>
     </tr>` : '';
 
+  // Build gallery: extra images (e.g. space photo) + alpaca imagery, stacked vertically
+  const allGalleryImages = [...(extraImages || []), ...galleryImages];
+  const galleryHtml = allGalleryImages.length > 0 ? `
+    <!-- Image Gallery -->
+    <tr>
+      <td style="padding:0 ${e.body.padding} 8px;">
+        ${allGalleryImages.map(url => `
+          <img src="${url}" alt="" width="536" style="display:block;width:100%;max-width:536px;height:auto;border-radius:8px;border:1px solid ${c.border};margin-bottom:8px;" />
+        `).join('')}
+      </td>
+    </tr>` : '';
+
   const preheaderHtml = preheader
     ? `<div style="display:none;font-size:1px;color:#faf9f6;line-height:1px;max-height:0;overflow:hidden;">${preheader}</div>`
     : '';
@@ -182,6 +235,7 @@ export async function wrapEmailHtml(
               ${innerHtml}
             </td>
           </tr>
+          ${galleryHtml}
           ${footerHtml}
         </table>
       </td>

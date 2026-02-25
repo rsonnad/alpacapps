@@ -230,6 +230,8 @@ export const emailService = {
     return sendEmail(EMAIL_TYPES.MOVE_IN_CONFIRMED, person.email, {
       first_name: person.first_name,
       space_name: application.space?.name || application.desired_space,
+      space_id: application.space?.id || null,
+      space_image_url: application.space_image_url || null,
       move_in_date: formatDate(application.approved_move_in_date),
       lease_end_date: application.approved_lease_end ? formatDate(application.approved_lease_end) : null,
       monthly_rate: application.approved_rate,
