@@ -98,23 +98,54 @@ done
 
 ## Supabase
 
+### Detect psql
+
+Before starting, locate the `psql` binary:
+```bash
+# macOS (Homebrew)
+/opt/homebrew/opt/libpq/bin/psql --version 2>/dev/null || psql --version 2>/dev/null
+
+# Linux
+psql --version 2>/dev/null
+# If missing: sudo apt-get install -y postgresql-client
+```
+Store the working psql path for all subsequent commands. If psql is not available on macOS, install it: `brew install libpq`.
+
 ### Check Existing Link
 
 ```bash
 supabase status 2>/dev/null
 ```
-If linked, extract project ref and skip creation.
+If linked, extract project ref and skip to "After Getting Project Ref".
 
 ### Option A: Management API (Preferred)
 
 Check for Management API token in CLAUDE.local.md (`SUPABASE_MGMT_TOKEN`).
 
-**If token available:**
+**If no token yet, ask user:**
 
-1. List orgs: `curl -s https://api.supabase.com/v1/organizations -H "Authorization: Bearer {MGMT_TOKEN}"`
-2. Get first org ID
-3. Ask user for: **project name**, **database password**, **region** (optional, default us-east-1)
-4. Create project:
+> I can automate your Supabase setup if you give me a Management API token.
+> 1. Open https://supabase.com/dashboard/account/tokens
+> 2. Click **Generate new token**, name it anything (e.g. "Claude Code")
+> 3. Copy the token (starts with `sbp_`) and paste it here
+
+**Once you have the token:**
+
+1. **List organizations:**
+   ```bash
+   curl -s https://api.supabase.com/v1/organizations \
+     -H "Authorization: Bearer {MGMT_TOKEN}"
+   ```
+2. **If no organizations exist, create one:**
+   ```bash
+   curl -X POST https://api.supabase.com/v1/organizations \
+     -H "Authorization: Bearer {MGMT_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Personal"}'
+   ```
+3. **Get the org ID** from step 1 or 2 response
+4. **Ask user for:** project name, database password, region (optional, default us-east-1)
+5. **Create project:**
    ```bash
    curl -X POST https://api.supabase.com/v1/projects \
      -H "Authorization: Bearer {MGMT_TOKEN}" \
@@ -127,18 +158,22 @@ Check for Management API token in CLAUDE.local.md (`SUPABASE_MGMT_TOKEN`).
        "db_pass": "{DB_PASSWORD}"
      }'
    ```
-5. Poll for provisioning (up to 2 min)
-6. Extract: `project_ref`, `anon_key`, `service_role_key`, `database.host`
+6. **Poll for provisioning** (up to 2 min — check `status` field until `ACTIVE_HEALTHY`)
+7. **Extract:** `project_ref`, `anon_key`, `service_role_key`, `database.host`
 
 ### Option B: Manual Creation
 
 Ask user in a single message:
 
 > Create a Supabase project:
-> 1. Go to https://supabase.com/dashboard/new/_
-> 2. Fill in project name, database password (save it!), region
-> 3. Click Create and wait 1-2 minutes
-> 4. Paste me: **Project ref** (subdomain in URL bar) and **Database password**
+> 1. Go to https://supabase.com/dashboard/projects
+> 2. Click **New Project**
+> 3. If prompted, create an organization first (any name, e.g. "Personal", Free plan)
+> 4. Fill in: **Project name**, **Database password** (save this!), **Region** (pick closest)
+> 5. Click **Create new project** and wait 1-2 minutes
+> 6. Once ready, paste me these two things:
+>    - **Project ref** — the subdomain in your URL bar (e.g. `abcdefghijklmnop` from `supabase.com/dashboard/project/abcdefghijklmnop`)
+>    - **Database password** — the one you just set
 
 ### After Getting Project Ref
 
@@ -156,7 +191,7 @@ Otherwise, tell user: "Get your anon key from https://supabase.com/dashboard/pro
 
 **Validate connection:**
 ```bash
-/opt/homebrew/opt/libpq/bin/psql "{POOLER_STRING}" -c "SELECT 1"
+psql "{POOLER_STRING}" -c "SELECT 1"
 ```
 If fails, try alternate regions: `aws-1-us-east-2`, `aws-0-us-west-1`
 
@@ -178,7 +213,7 @@ Store these for later steps.
 3. Link: `supabase link --project-ref {REF}`
 4. Validate: `supabase status`
 5. Create `shared/supabase.js` with project URL and anon key
-6. Test psql: `/opt/homebrew/opt/libpq/bin/psql "{POOLER_STRING}" -c "SELECT version()"`
+6. Test psql: `psql "{POOLER_STRING}" -c "SELECT version()"`
 7. Create domain-specific tables via psql (tailored to user's description, NOT hardcoded)
 8. Enable RLS: `ALTER TABLE {table} ENABLE ROW LEVEL SECURITY;`
 9. Create storage buckets with public read policies
