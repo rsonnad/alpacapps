@@ -71,6 +71,7 @@ function renderAll() {
   renderButtonDemo();
   renderEmailPreview();
   renderEmailComponents();
+  renderEmailDesignGuide();
   renderRawJson();
 }
 
@@ -409,6 +410,316 @@ function renderEmailComponents() {
       </div>
     `;
   }).join('');
+}
+
+// =============================================
+// EMAIL DESIGN GUIDE
+// =============================================
+
+function renderEmailDesignGuide() {
+  renderGuideLayout();
+  renderGuideTypography();
+  renderGuideSpacing();
+  renderGuideButtons();
+  renderGuideImages();
+  renderGuideColors();
+  renderGuideMobile();
+  renderGuideDarkMode();
+  renderGuideClientQuirks();
+  renderGuideHelpers();
+  renderGuideChecklist();
+}
+
+function guideTable(headers, rows) {
+  return `<table class="brand-table brand-table--compact">
+    <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function renderGuideLayout() {
+  const el = document.getElementById('guideLayout');
+  if (!el) return;
+  el.innerHTML = guideTable(
+    ['Property', 'Value', 'Why'],
+    [
+      ['Max width', '<code>600px</code>', 'Fits all preview panes without horizontal scrolling; clean retina math (600/2 = 300px mobile)'],
+      ['Outer wrapper', '<code>width:100%</code>', 'Fluid background fills viewport on all screen sizes'],
+      ['Inner container', '<code>max-width:600px; width:100%</code>', 'Centered, capped — scales down on mobile without media queries'],
+      ['Layout method', 'Table-based (<code>&lt;table role="presentation"&gt;</code>)', 'Required for Outlook desktop (Word rendering engine ignores div layout)'],
+      ['Column approach', 'Single-column preferred', '70%+ opens are mobile — multi-column requires complex stacking logic'],
+      ['Table attributes', '<code>cellpadding="0" cellspacing="0" border="0"</code>', 'Reset all default table spacing; set on every table element'],
+      ['Container radius', '<code>border-radius:12px</code>', 'Gracefully degrades to square in Outlook; looks polished elsewhere'],
+      ['Gmail size limit', '<code>&lt; 102KB</code> total HTML', 'Gmail clips emails over 102KB with "Message clipped" link — includes all HTML + inline CSS, excludes images'],
+    ]
+  );
+}
+
+function renderGuideTypography() {
+  const el = document.getElementById('guideTypography');
+  if (!el) return;
+  const c = brandConfig.colors?.primary || {};
+  el.innerHTML = `
+    ${guideTable(
+      ['Element', 'Desktop', 'Mobile (via @media)', 'Line Height'],
+      [
+        ['H1 / Title', '<code>28px</code>, weight 700', '<code>24px</code>', '<code>34px</code> (1.2&times;)'],
+        ['H2 / Subtitle', '<code>22px</code>, weight 600', '<code>20px</code>', '<code>28px</code> (1.27&times;)'],
+        ['H3 / Section head', '<code>18px</code>, weight 600', '<code>18px</code>', '<code>24px</code> (1.33&times;)'],
+        ['Body text', '<code>16px</code>, weight 400', '<code>16px</code>', '<code>26px</code> (1.6&times;)'],
+        ['Small / captions', '<code>13px</code>, weight 400', '<code>13px</code>', '<code>20px</code> (1.5&times;)'],
+        ['Footer / legal', '<code>12px</code>, weight 400', '<code>12px</code>', '<code>18px</code> (1.5&times;)'],
+        ['Button text', '<code>16px</code>, weight 600', '<code>16px</code>', '<code>1</code> (unitless)'],
+      ]
+    )}
+    <div style="margin-top:16px;">
+      ${guideTable(
+        ['Property', 'Value'],
+        [
+          ['Primary font stack', "<code>'DM Sans', Arial, Helvetica, sans-serif</code>"],
+          ['Outlook fallback', '<code>Arial, Helvetica, sans-serif</code> (forced via mso conditional)'],
+          ['Minimum font size', '<code>13px</code> — iOS auto-zooms text below 13px, breaking layout'],
+          ['Letter spacing', 'Avoid except on buttons (<code>0.02em</code>) — Outlook ignores it'],
+          ['Line height units', 'Always use <code>px</code> values, not unitless or % — most consistent across clients'],
+          ['Link color', `<code>${c.accent || '#d4883a'}</code> (accent) with <code>text-decoration:underline</code>`],
+          ['Muted text color', `<code>${c.text_muted || '#7d6f74'}</code> — passes 4.5:1 contrast on cream backgrounds`],
+        ]
+      )}
+    </div>`;
+}
+
+function renderGuideSpacing() {
+  const el = document.getElementById('guideSpacing');
+  if (!el) return;
+  el.innerHTML = guideTable(
+    ['Area', 'Padding', 'Notes'],
+    [
+      ['Email body content', '<code>32px</code> all sides', 'Gives 536px content area within 600px container. Reduces to 20px on mobile via @media'],
+      ['Header section', '<code>32px</code>', 'Vertically centers logo + wordmark. Reduces to 24px on mobile'],
+      ['Footer section', '<code>20px 32px</code>', 'Top/bottom 20px, sides 32px. Reduces to 16px 20px on mobile'],
+      ['Between paragraphs', '<code>margin:0 0 16px</code>', 'Bottom margin only — top margin collapses unpredictably in email clients'],
+      ['Above headings', '<code>margin:24px 0 8px</code>', '24px above to separate from prior content, 8px below into text'],
+      ['Callout box internal', '<code>20px 24px</code>', 'Comfortable reading space inside highlighted boxes'],
+      ['Callout box external', '<code>margin:16px 0</code>', 'Vertical separation from surrounding content'],
+      ['Above/below CTA button', '<code>margin:24px auto</code>', 'Generous whitespace makes the button a clear visual target'],
+      ['Image to text gap', '<code>16px</code> below image', 'Prevents content from feeling cramped against images'],
+      ['Spacer rows (Outlook)', '<code>&lt;td style="height:24px; font-size:0; line-height:0;"&gt;&amp;nbsp;&lt;/td&gt;</code>', 'Outlook needs height attribute + style + &amp;nbsp; to prevent row collapse'],
+    ]
+  );
+}
+
+function renderGuideButtons() {
+  const el = document.getElementById('guideButtons');
+  if (!el) return;
+  const btn = brandConfig.email?.button || {};
+  el.innerHTML = `
+    ${guideTable(
+      ['Property', 'Value'],
+      [
+        ['Background color', `<code>${btn.background || '#d4883a'}</code> (accent amber)`],
+        ['Text color', `<code>${btn.text_color || '#ffffff'}</code>`],
+        ['Padding', `<code>${btn.padding || '14px 36px'}</code> — gives ~48px height (exceeds 44px WCAG minimum)`],
+        ['Font', '<code>16px</code>, weight <code>600</code>, <code>letter-spacing:0.02em</code>'],
+        ['Border radius', `<code>${btn.border_radius || '8px'}</code> — ignored in Outlook (square corners), works everywhere else`],
+        ['Box shadow', `<code>${btn.shadow || '0 2px 8px rgba(212,136,58,0.30)'}</code>`],
+        ['Min-width', '<code>200px</code> recommended for readability'],
+        ['Structure', 'Table-based: <code>&lt;table&gt;&lt;td&gt;&lt;a&gt;</code> — the <code>&lt;td&gt;</code> carries the background color'],
+        ['Outlook fix', '<code>mso-padding-alt:14px 36px</code> on the <code>&lt;td&gt;</code> for correct padding in Word engine'],
+        ['Dark mode tip', 'Use <code>rgba(212,136,58,1)</code> instead of hex — Office 365 dark mode does not invert rgba values'],
+      ]
+    )}
+    <p style="margin-top:12px;font-size:13px;color:var(--aap-text-muted);">Use the <code>emailButton(text, url)</code> helper from <code>email-brand-wrapper.ts</code> — it handles all of the above automatically.</p>`;
+}
+
+function renderGuideImages() {
+  const el = document.getElementById('guideImages');
+  if (!el) return;
+  el.innerHTML = guideTable(
+    ['Property', 'Value', 'Why'],
+    [
+      ['Max display width', '<code>600px</code> (full-width) or <code>536px</code> (with body padding)', 'Never exceeds container width'],
+      ['Upload resolution', '<code>2&times;</code> display size (e.g. 1200px wide for 600px display)', 'Sharp on retina/HiDPI screens'],
+      ['Required attributes', '<code>width="600" style="width:100%; max-width:600px; height:auto; display:block; border:0;"</code>', 'HTML width for Outlook, CSS for responsive, display:block prevents 3-4px gap'],
+      ['File size per image', '<code>&lt; 200KB</code> (aim for 50-100KB)', 'Fast loading on mobile connections'],
+      ['Total images per email', '<code>&lt; 800KB</code> combined', 'Total weight budget including all images'],
+      ['Formats', 'JPEG for photos, PNG-24 for graphics/logos with transparency', 'PNG transparency essential for dark mode logo adaptation'],
+      ['Alt text', 'Always provide meaningful descriptions', 'Shown when images are blocked (common in corporate Outlook). Style with font-size, color, font-family'],
+      ['Background images', 'Avoid — Outlook requires VML, Gmail strips <code>background-image</code> from entire style blocks', 'Use solid color backgrounds as fallbacks instead'],
+    ]
+  );
+}
+
+function renderGuideColors() {
+  const el = document.getElementById('guideColors');
+  if (!el) return;
+  const c = brandConfig.colors?.primary || {};
+  el.innerHTML = `
+    <h4 style="margin:0 0 8px;">WCAG 2.2 AA Minimum Contrast Ratios</h4>
+    ${guideTable(
+      ['Text Type', 'Minimum Ratio', 'Our Value', 'Status'],
+      [
+        ['Normal text (&lt;18px)', '4.5:1', `<code>${c.text || '#2a1f23'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
+        ['Large text (&ge;18px bold)', '3:1', `<code>${c.text || '#2a1f23'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
+        ['Muted text', '4.5:1', `<code>${c.text_muted || '#7d6f74'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
+        ['Button text', '4.5:1', '<code>#ffffff</code> on <code>' + (c.accent || '#d4883a') + '</code>', '<span style="color:var(--aap-success);">Passes</span>'],
+        ['Footer text', '3:1 (large text only)', `<code>${c.text_muted || '#7d6f74'}</code> on <code>${c.background_muted || '#f2f0e8'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
+      ]
+    )}
+    <h4 style="margin:16px 0 8px;">Color Usage Rules</h4>
+    ${guideTable(
+      ['Rule', 'Detail'],
+      [
+        ['Never use pure black', 'Use <code>' + (c.text || '#2a1f23') + '</code> (brand dark) instead of <code>#000000</code> — reduces eye strain and looks more refined'],
+        ['Never use pure white text', 'Use <code>' + (c.text_light || '#faf9f6') + '</code> (cream white) — slightly warm tone matches brand'],
+        ['Links must be distinguishable', 'Use <code>' + (c.accent || '#d4883a') + '</code> (accent) with underline — must pass 3:1 against surrounding text color'],
+        ['Do not rely on color alone', 'Always pair color with text labels or icons to convey meaning (e.g. "Paid" not just green)'],
+        ['Divider lines', 'Use <code>' + (c.border || '#e6e2d9') + '</code> — subtle warm border that complements the cream palette'],
+      ]
+    )}`;
+}
+
+function renderGuideMobile() {
+  const el = document.getElementById('guideMobile');
+  if (!el) return;
+  el.innerHTML = `
+    ${guideTable(
+      ['Property', 'Value', 'Notes'],
+      [
+        ['Breakpoint', '<code>@media screen and (max-width:480px)</code>', 'Primary mobile breakpoint; desktop Gmail ignores @media entirely'],
+        ['Body padding (mobile)', '<code>24px 20px</code>', 'Reduced from 32px to give more content width on small screens'],
+        ['Minimum body font', '<code>16px</code>', 'iOS auto-zooms anything below 13px; 16px is comfortable reading size'],
+        ['Minimum any text', '<code>13px</code>', 'Never go below this — iOS zoom will break layout'],
+        ['Touch targets', '<code>44&times;44px</code> minimum', 'All tappable elements (buttons, links) — add padding around inline links'],
+        ['Layout approach', 'Fluid hybrid (no media query needed)', '<code>max-width</code> on inner container scales down naturally; @media adds refinements'],
+        ['Stacking pattern', '<code>width:100% !important; display:block !important</code>', 'Multi-column layouts should stack to single-column on mobile'],
+        ['Text size adjust', '<code>-webkit-text-size-adjust:100%</code>', 'Prevents iOS Mail from auto-resizing text; set on body'],
+      ]
+    )}
+    <p style="margin-top:12px;font-size:13px;color:var(--aap-text-muted);"><strong>Our wrapper handles this automatically.</strong> The <code>wrapEmailHtml()</code> function includes responsive <code>@media</code> rules that reduce padding on mobile and the fluid-hybrid container that scales without media queries.</p>`;
+}
+
+function renderGuideDarkMode() {
+  const el = document.getElementById('guideDarkMode');
+  if (!el) return;
+  el.innerHTML = `
+    <h4 style="margin:0 0 8px;">Client Dark Mode Behavior</h4>
+    ${guideTable(
+      ['Client', 'Behavior', 'CSS Control'],
+      [
+        ['Apple Mail (iOS/macOS)', 'Partial inversion; respects <code>prefers-color-scheme</code>', 'Full control via media query'],
+        ['Gmail (iOS/Android app)', 'Aggressive full inversion', 'Very limited; ignores most overrides'],
+        ['Gmail (web)', 'No dark mode inversion', 'N/A'],
+        ['Outlook (iOS)', 'Full inversion', 'Limited support'],
+        ['Outlook (desktop/new)', 'Injects <code>data-ogsc</code>/<code>data-ogsb</code> overrides', 'Target with attribute selectors'],
+        ['Yahoo Mail', 'No inversion in dark mode', 'N/A'],
+      ]
+    )}
+    <h4 style="margin:16px 0 8px;">Defensive Design Rules</h4>
+    ${guideTable(
+      ['Rule', 'Detail'],
+      [
+        ['Use PNG with transparency for logos', 'Adapts to any background color — our logo is white-on-transparent for this reason'],
+        ['Add white stroke around dark logos', '1-2px white outline ensures visibility when background is inverted to dark'],
+        ['Use <code>rgba()</code> for button backgrounds', '<code>rgba(212,136,58,1)</code> instead of <code>#d4883a</code> — Office 365 dark mode does not invert rgba values'],
+        ['Include <code>&lt;meta name="color-scheme" content="light dark"&gt;</code>', 'Tells clients the email supports both modes — our wrapper includes this'],
+        ['Do not rely on background color to convey meaning', 'Dark mode may invert or remove background colors entirely'],
+        ['Test with inverted colors', 'Manually invert your preview — if critical information disappears, redesign that element'],
+      ]
+    )}`;
+}
+
+function renderGuideClientQuirks() {
+  const el = document.getElementById('guideClientQuirks');
+  if (!el) return;
+  el.innerHTML = `
+    <h4 style="margin:0 0 8px;">Outlook Desktop (Word Engine)</h4>
+    ${guideTable(
+      ['Status', 'CSS Property'],
+      [
+        ['<span style="color:var(--aap-error);">Not supported</span>', '<code>border-radius</code>, <code>background-image</code> (CSS), <code>max-width</code>, <code>float</code>, <code>flexbox</code>, <code>grid</code>, <code>box-shadow</code>, <code>opacity</code>, CSS <code>width/height</code> on images'],
+        ['<span style="color:var(--aap-warning);">Requires workaround</span>', 'Padding (only works on <code>&lt;td&gt;</code>), margins on divs/images, VML for rounded corners'],
+        ['<span style="color:var(--aap-success);">Works</span>', 'HTML <code>width/height</code> attributes, <code>background-color</code>, <code>font-*</code>, <code>color</code>, <code>text-align</code>, <code>border</code>'],
+      ]
+    )}
+    <h4 style="margin:16px 0 8px;">Gmail</h4>
+    ${guideTable(
+      ['Limit', 'Detail'],
+      [
+        ['HTML size', '<code>102KB</code> — clips email with "Message clipped" link. Includes all HTML + inline CSS, not images'],
+        ['<code>&lt;style&gt;</code> block', '<code>8,192</code> characters max. A single syntax error invalidates all styles'],
+        ['Stripped properties', '<code>position</code>, <code>float</code>, transforms, animations, <code>box-shadow</code>, <code>filter</code>'],
+        ['Background image gotcha', 'If ANY rule in <code>&lt;style&gt;</code> contains <code>background-image:url(...)</code>, Gmail strips the ENTIRE style block'],
+        ['Media queries', 'Supported on mobile Gmail apps. Ignored on desktop Gmail web'],
+      ]
+    )}
+    <h4 style="margin:16px 0 8px;">Other Clients</h4>
+    ${guideTable(
+      ['Client', 'Quirk'],
+      [
+        ['Apple Mail', 'Most standards-compliant. Supports @font-face, CSS animations, flexbox. Design here first, degrade for others'],
+        ['Yahoo Mail', 'Converts <code>height</code> to <code>min-height</code>. Strips <code>!important</code> if there is a space before the <code>!</code>'],
+        ['Samsung Mail', 'Respects HTML <code>width</code> attribute literally (ignores CSS <code>max-width</code> on images). Fix: use both HTML and CSS width attributes'],
+      ]
+    )}`;
+}
+
+function renderGuideHelpers() {
+  const el = document.getElementById('guideHelpers');
+  if (!el) return;
+  el.innerHTML = `
+    ${guideTable(
+      ['Function', 'Usage', 'Description'],
+      [
+        ['<code>wrapEmailHtml(html, options)</code>', '<code>import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";</code>', 'Wraps inner HTML in full branded shell (header, body, footer). Options: <code>showHeader</code>, <code>showFooter</code>, <code>preheader</code>, <code>accentColor</code>'],
+        ['<code>emailButton(text, url)</code>', '<code>import { emailButton } from "../_shared/email-brand-wrapper.ts";</code>', 'Generates a table-based CTA button with brand styling and Outlook compatibility. Use inside email body content'],
+        ['<code>emailCallout(html)</code>', '<code>import { emailCallout } from "../_shared/email-brand-wrapper.ts";</code>', 'Generates a callout/info box with muted background and border. Use for key information, instructions, or summaries'],
+      ]
+    )}
+    <h4 style="margin:16px 0 8px;">Templates That Skip the Wrapper</h4>
+    <p style="font-size:13px;color:var(--aap-text-muted);margin-bottom:8px;">These 4 email types have their own complete HTML layouts and are NOT wrapped by <code>wrapEmailHtml()</code>:</p>
+    ${guideTable(
+      ['Template', 'Reason'],
+      [
+        ['<code>custom</code>', 'Raw HTML passthrough — admin provides complete HTML'],
+        ['<code>staff_invitation</code>', 'Has its own full branded layout with different header design'],
+        ['<code>pai_email_reply</code>', 'PAI-branded layout with PAI-specific styling'],
+        ['<code>payment_statement</code>', 'Complex table-heavy layout with gradient header for financial data'],
+      ]
+    )}
+    <p style="font-size:13px;color:var(--aap-text-muted);margin-top:12px;"><strong>All other email types use the wrapper.</strong> When creating a new email template, always use <code>wrapEmailHtml()</code> unless you have a specific reason to build a custom layout.</p>`;
+}
+
+function renderGuideChecklist() {
+  const el = document.getElementById('guideChecklist');
+  if (!el) return;
+  const checks = [
+    ['Total HTML under 102KB', 'Gmail clips emails over this limit. Check with: <code>new Blob([html]).size</code>'],
+    ['All images have alt text', 'Meaningful descriptions for when images are blocked (common in corporate Outlook)'],
+    ['All images have explicit width/height', 'Both HTML attributes AND inline CSS — Outlook needs HTML, responsive needs CSS'],
+    ['No font size below 13px', 'iOS auto-zooms small text, breaking layout'],
+    ['All padding on &lt;td&gt; elements only', 'Outlook strips padding from divs, p, and a elements'],
+    ['Tables have cellpadding="0" cellspacing="0" border="0"', 'Reset default browser table spacing'],
+    ['Tables have role="presentation"', 'Accessibility: prevents screen readers from announcing table structure'],
+    ['CTA button uses table-based pattern', 'Use <code>emailButton()</code> helper — div/a-only buttons break in Outlook'],
+    ['Links are underlined with accent color', 'Must be distinguishable from regular text, even without color vision'],
+    ['Preheader text is 70-100 characters', 'Preview text in inbox — too short pulls in body text, too long gets cut off'],
+    ['Tested on mobile viewport (375px)', 'Open the HTML file locally and resize browser to ~375px width'],
+    ['Button/link touch targets &ge; 44px', 'WCAG minimum for comfortable mobile tapping'],
+    ['No background-image in &lt;style&gt; block', 'Gmail strips entire style block if any rule contains background-image:url(...)'],
+    ['Colors pass WCAG AA contrast', 'Normal text: 4.5:1, large text: 3:1, UI components: 3:1'],
+    ['Footer includes address + platform name', 'CAN-SPAM compliance requires physical mailing address'],
+  ];
+  el.innerHTML = `<div class="brand-checklist">${checks.map(([item, detail]) =>
+    `<div class="brand-checklist-item">
+      <div class="brand-checklist-check">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:500;">${item}</div>
+        <div style="font-size:12px;color:var(--aap-text-muted);">${detail}</div>
+      </div>
+    </div>`
+  ).join('')}</div>`;
 }
 
 // =============================================

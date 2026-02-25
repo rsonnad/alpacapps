@@ -1078,6 +1078,34 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   border: 1px solid var(--border);
 }
 
+/* Email Design Guide */
+.brand-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brand-checklist-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.brand-checklist-check {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+.brand-table--compact th {
+  white-space: nowrap;
+}
+.brand-table--compact td code {
+  word-break: break-word;
+}
+
 /* Raw JSON */
 .brand-json {
   background: var(--bg);
