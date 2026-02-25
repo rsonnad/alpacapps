@@ -437,26 +437,95 @@ Alpaca Playhouse`
       const showRentDue = isPaid && isMonthly;
       const showPaymentMethods = isPaid;
 
-      // Access code section
+      // Build detail rows for the accounting-style table
+      const detailRows: string[] = [];
+      detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Space</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.space_name}</td>
+          </tr>`);
+      detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.move_in_date}</td>
+          </tr>`);
+      if (checkInDisplay) {
+        detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-in</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${checkInDisplay}</td>
+          </tr>`);
+      }
+      if (data.lease_end_date) {
+        detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.lease_end_date}</td>
+          </tr>`);
+      }
+      if (checkOutDisplay) {
+        detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out Time</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${checkOutDisplay}</td>
+          </tr>`);
+      }
+      detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${miRateDisplay}</td>
+          </tr>`);
+      if (showRentDue) {
+        detailRows.push(`<tr>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rent Due</td>
+            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${data.rent_due_day || '1st'} of each month</td>
+          </tr>`);
+      }
+
+      // Access code callout (green gradient, matches payment statement style)
       const accessCodeSection = data.access_code
         ? `<div style="background:linear-gradient(135deg,#e8f5e9 0%,#c8e6c9 100%);border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <p style="margin:0 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#2e7d32;">Door Access Code</p>
-              <p style="margin:0;font-size:28px;font-weight:700;color:#1b5e20;letter-spacing:2px;">${data.access_code}</p>
+              <div style="font-size:13px;color:#2e7d32;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Door Access Code</div>
+              <div style="font-size:28px;font-weight:700;color:#1b5e20;letter-spacing:2px;">${data.access_code}</div>
             </div>`
         : '';
 
-      // Check-in/out rows
-      const checkInRow = checkInDisplay
-        ? `<tr>
-              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-in</td>
-              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${checkInDisplay}</td>
-            </tr>`
-        : '';
-      const checkOutRow = checkOutDisplay
-        ? `<tr>
-              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out</td>
-              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${checkOutDisplay}</td>
-            </tr>`
+      // Payment methods with branded badges (same style as payment_statement)
+      const methodBadges: Record<string, { bg: string; label: string }> = {
+        venmo: { bg: '#3d95ce', label: 'Venmo' },
+        zelle: { bg: '#6c1cd3', label: 'Zelle' },
+        paypal: { bg: '#003087', label: 'PayPal' },
+        bank_ach: { bg: '#333333', label: 'Bank' },
+        stripe: { bg: '#635bff', label: 'Stripe' },
+      };
+
+      let miPaymentMethodsHtml = '';
+      if (showPaymentMethods && data._payment_methods_raw && Array.isArray(data._payment_methods_raw)) {
+        miPaymentMethodsHtml = data._payment_methods_raw.map((m: any) => {
+          const badge = methodBadges[m.method_type] || { bg: '#888', label: m.name || 'Other' };
+          const id = m.account_identifier ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>` : '';
+          const instr = m.instructions ? `<span style="color:#888;font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
+          return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+                <span style="display:inline-block;background:${badge.bg};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">${badge.label}</span>
+                ${id}${instr}
+              </td></tr>`;
+        }).join("\n");
+      } else if (showPaymentMethods) {
+        // Fallback hardcoded methods
+        miPaymentMethodsHtml = `
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+            <span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span>
+            <strong style="margin-left:8px;">@AlpacaPlayhouse</strong>
+          </td></tr>
+          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+            <span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span>
+            <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong>
+          </td></tr>`;
+      }
+
+      const miPaymentSection = showPaymentMethods && miPaymentMethodsHtml
+        ? `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
+              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">Payment Methods</p>
+              <table style="width:100%;border-collapse:collapse;font-size:14px;">${miPaymentMethodsHtml}</table>
+              ${data.pay_url ? `<div style="text-align:center;margin-top:16px;">
+                <a href="${data.pay_url}" style="display:inline-block;background:linear-gradient(135deg,#d4883a 0%,#b8702e 100%);color:white;padding:14px 36px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(212,136,58,0.3);">Pay Online</a>
+                <p style="margin:8px 0 0;font-size:12px;color:#999;">Secure payment via Stripe</p>
+              </div>` : ''}
+            </div>`
         : '';
 
       return {
@@ -464,49 +533,26 @@ Alpaca Playhouse`
         html: `
           <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
             <p style="color:#333;font-size:16px;line-height:1.6;">Hi ${data.first_name},</p>
-            <p style="color:#333;font-size:16px;line-height:1.6;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
+            <p style="color:#555;font-size:15px;line-height:1.6;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
 
             ${accessCodeSection}
 
-            <div style="background:#faf9f6;border-radius:12px;padding:24px;margin:24px 0;">
-              <p style="margin:0 0 16px;font-weight:700;color:#1c1618;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Your Details</p>
-              <table style="border-collapse:collapse;width:100%;font-size:15px;">
+            <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
+              <thead>
                 <tr>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Space</td>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.space_name}</td>
+                  <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;width:140px;">Detail</th>
+                  <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;"></th>
                 </tr>
-                <tr>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.move_in_date}</td>
-                </tr>
-                ${checkInRow}
-                ${checkOutRow}
-                ${data.lease_end_date ? `<tr>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out Date</td>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.lease_end_date}</td>
-                </tr>` : ''}
-                <tr>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${miRateDisplay}</td>
-                </tr>
-                ${showRentDue ? `<tr>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rent Due</td>
-                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.rent_due_day || '1st'} of each month</td>
-                </tr>` : ''}
-              </table>
-            </div>
+              </thead>
+              <tbody>
+              ${detailRows.join('\n')}
+              </tbody>
+            </table>
 
-            ${showPaymentMethods ? `
-            <div style="background:#faf9f6;border-radius:8px;padding:16px 20px;margin:24px 0;">
-              <p style="margin:0 0 8px;font-weight:600;color:#333;font-size:14px;">Payment Methods</p>
-              <table style="border-collapse:collapse;width:100%;font-size:14px;">
-                <tr><td style="padding:6px 0;"><span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span> <strong style="margin-left:8px;">@AlpacaPlayhouse</strong></td></tr>
-                <tr><td style="padding:6px 0;"><span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span> <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong></td></tr>
-              </table>
-            </div>` : ''}
+            ${miPaymentSection}
 
-            <div style="background:#f5f0eb;border-radius:8px;padding:16px 20px;margin:24px 0;">
-              <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">Please re-familiarize yourself with our key operational guidelines at this link: <a href="https://alpacaplayhouse.com/visiting" style="color:#d4883a;font-weight:600;">alpacaplayhouse.com/visiting</a> &mdash; which also has a map link to the property.</p>
+            <div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:16px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <span style="font-size:14px;color:#7b1fa2;line-height:1.6;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:#7b1fa2;font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>
             </div>
 
             <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
@@ -514,6 +560,7 @@ Alpaca Playhouse`
             </div>
 
             <p style="color:#555;font-size:15px;line-height:1.6;">If you have any questions or need anything, don't hesitate to reach out!</p>
+            <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
           </div>
         `,
         text: `Welcome to Alpaca Playhouse!
@@ -527,8 +574,8 @@ Your Details:
 - Space: ${data.space_name}
 - Move-in: ${data.move_in_date}
 ${checkInDisplay ? `- Check-in: ${checkInDisplay}` : ''}
-${checkOutDisplay ? `- Check-out: ${checkOutDisplay}` : ''}
-${data.lease_end_date ? `- Check-out Date: ${data.lease_end_date}` : ''}
+${data.lease_end_date ? `- Check-out: ${data.lease_end_date}` : ''}
+${checkOutDisplay ? `- Check-out Time: ${checkOutDisplay}` : ''}
 - Rate: ${miRateDisplay}
 ${showRentDue ? `- Rent Due: ${data.rent_due_day || '1st'} of each month` : ''}
 
@@ -536,7 +583,7 @@ ${showPaymentMethods ? `Payment Methods:
 - Venmo: @AlpacaPlayhouse
 - Zelle: alpacaplayhouse@gmail.com` : ''}
 
-Please re-familiarize yourself with our key operational guidelines: https://alpacaplayhouse.com/visiting — which also has a map link to the property.
+Please re-familiarize yourself with our operational guidelines: https://alpacaplayhouse.com/visiting — which also has a map link to the property.
 
 Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
 
@@ -795,8 +842,7 @@ Alpaca Playhouse`
               <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
             </div>
             <div style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0;">
-              <p style="margin:0;color:#999;font-size:12px;">160 Still Forest Drive, Cedar Creek, TX 78612</p>
-              <p style="margin:4px 0 0;color:#bbb;font-size:11px;">AlpacApps &bull; Alpaca Playhouse</p>
+              <p style="margin:0;color:#bbb;font-size:11px;">AlpacApps &bull; Alpaca Playhouse</p>
             </div>
           </div>
         `,
