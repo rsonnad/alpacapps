@@ -302,6 +302,41 @@
                   <small class="form-hint">Due after signing. Credited to first month.</small>
                 </div>
               </div>
+              <div class="form-grid" style="margin-top: 1rem;">
+                <div class="form-group">
+                  <label for="termCheckInTime">Check-in Time</label>
+                  <select id="termCheckInTime">
+                    <option value="">Not set</option>
+                    <option value="flexible">Flexible</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="1:00 PM">1:00 PM</option>
+                    <option value="2:00 PM">2:00 PM</option>
+                    <option value="3:00 PM">3:00 PM</option>
+                    <option value="4:00 PM">4:00 PM</option>
+                    <option value="5:00 PM">5:00 PM</option>
+                  </select>
+                  <small class="form-hint">Included in welcome email</small>
+                </div>
+                <div class="form-group">
+                  <label for="termCheckOutTime">Check-out Time</label>
+                  <select id="termCheckOutTime">
+                    <option value="">Not set</option>
+                    <option value="flexible">Flexible</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="1:00 PM">1:00 PM</option>
+                  </select>
+                  <small class="form-hint">Included in welcome email</small>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" id="termRequireLease" checked>
+                  Require lease agreement signing
+                </label>
+                <small class="form-hint">Uncheck for VIP/comp guests who don't need a lease</small>
+              </div>
               <div class="form-group" style="margin-top: 1rem;">
                 <label for="termAdditionalTerms">Additional Terms</label>
                 <textarea id="termAdditionalTerms" rows="4" placeholder="Any additional terms..."></textarea>
