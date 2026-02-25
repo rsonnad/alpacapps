@@ -247,6 +247,8 @@ img {
   line-height: 1;
   position: relative;
   top: 1px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .mistiq-lang-picker__current::after {
@@ -277,7 +279,8 @@ img {
 }
 
 .mistiq-lang-picker:hover .mistiq-lang-picker__dropdown,
-.mistiq-lang-picker:focus-within .mistiq-lang-picker__dropdown {
+.mistiq-lang-picker:focus-within .mistiq-lang-picker__dropdown,
+.mistiq-lang-picker--open .mistiq-lang-picker__dropdown {
   display: flex;
 }
 
@@ -327,8 +330,12 @@ img {
   background: var(--mistiq-text);
 }
 
-/* On desktop: hide the header-level lang picker (nav has its own) */
+/* On desktop: hide the header-level lang picker and mobile jobs link (nav has its own) */
 .mistiq-header__controls .mistiq-lang-picker {
+  display: none;
+}
+
+.mistiq-header__jobs-link {
   display: none;
 }
 
@@ -344,6 +351,25 @@ img {
   /* On mobile: show the header-level lang picker */
   .mistiq-header__controls .mistiq-lang-picker {
     display: flex;
+  }
+
+  /* On mobile: show a prominent Jobs link in the header */
+  .mistiq-header__jobs-link {
+    display: inline-block;
+    font-family: var(--mistiq-font-heading);
+    font-size: 1rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.3s;
+  }
+
+  .mistiq-header--scrolled .mistiq-header__jobs-link {
+    color: var(--mistiq-text);
+  }
+
+  .mistiq-header__jobs-link:hover {
+    color: var(--mistiq-gold);
   }
 }
 
