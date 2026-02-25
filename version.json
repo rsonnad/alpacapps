@@ -1,12 +1,12 @@
 {
-  "version": "v260225.13 3:50p",
-  "release": 337,
-  "sha": "8eef9a73e",
-  "fullSha": "8eef9a73e891269c739fb18c2c8b0d3873f958c2",
+  "version": "v260225.15 5:28p",
+  "release": 339,
+  "sha": "2ba74206a",
+  "fullSha": "2ba74206a4d5764828eeea2ce6a1de1d1f74a129",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-25 21:50:41+00",
-  "commits": [{"sha":"8eef9a73e","message":"Add OG tags to EN and TH mistiq pages for LINE/WhatsApp previews","author":"Rahul"}]
+  "pushedAt": "2026-02-25 23:28:51+00",
+  "commits": [{"sha":"1ec49fb4f","message":"Add comprehensive email design guide to brand style guide","author":"Rahul"},{"sha":"2ba74206a","message":"Merge remote-tracking branch 'origin/mystifying-shamir'","author":"Rahul"}]
 }
