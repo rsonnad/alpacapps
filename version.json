@@ -1,12 +1,12 @@
 {
-  "version": "v260225.07 2:04p",
-  "release": 331,
-  "sha": "0ebe30e93",
-  "fullSha": "0ebe30e93b65592a2a6833a0612ee3b4fee6ac66",
+  "version": "v260225.08 2:08p",
+  "release": 332,
+  "sha": "13e5f27fc",
+  "fullSha": "13e5f27fcdea8f8b5c89b11754b01855087e71dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-25 20:04:35+00",
-  "commits": [{"sha":"99236a442","message":"Hotlink email logo/wordmark to website","author":"Rahul"},{"sha":"0ebe30e93","message":"Merge branch 'hardcore-wiles'","author":"Rahul"}]
+  "pushedAt": "2026-02-25 20:08:16+00",
+  "commits": [{"sha":"87143a002","message":"Fix Mistiq mobile: lang picker click-toggle + Jobs link","author":"Rahul"},{"sha":"13e5f27fc","message":"Merge branch 'vigilant-clarke'","author":"Rahul"}]
 }
