@@ -19,8 +19,10 @@ curl -s https://{OWNER}.github.io/{REPO}/ | head -n 5
 ### 2. Supabase
 
 ```bash
+# Ensure psql is available (macOS: brew install libpq, Linux: apt install postgresql-client)
+
 # Database connection
-/opt/homebrew/opt/libpq/bin/psql "{POOLER_STRING}" -c "SELECT version(), current_database(), current_user"
+psql "{POOLER_STRING}" -c "SELECT version(), current_database(), current_user"
 
 # CLI is linked
 supabase status
