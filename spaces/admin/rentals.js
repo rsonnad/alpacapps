@@ -156,19 +156,6 @@ async function loadPaymentMethods() {
 }
 
 function populateRentalDropdowns() {
-  // Populate person dropdown
-  const personSelect = document.getElementById('newAppPersonId');
-  if (personSelect) {
-    personSelect.innerHTML = '<option value="">Select a person...</option>' +
-      allPeople.map(p => {
-        const pName = isDemoUser()
-          ? redactString(`${p.first_name || ''} ${p.last_name || ''}`, 'name')
-          : `${p.first_name || ''} ${p.last_name || ''}`;
-        const pEmail = isDemoUser() ? redactString(p.email || 'no email', 'email') : (p.email || 'no email');
-        return `<option value="${p.id}">${pName} (${pEmail})</option>`;
-      }).join('');
-  }
-
   // Populate space dropdown for new applications (no rate info - just space name)
   const spaceSelect = document.getElementById('newAppSpaceId');
   if (spaceSelect) {
@@ -2230,20 +2217,42 @@ window.confirmMoveIn = async function() {
 
 async function handleCreateApplication(e) {
   e.preventDefault();
-  const personId = document.getElementById('newAppPersonId').value;
+  const firstName = document.getElementById('newAppFirstName').value.trim();
+  const lastName = document.getElementById('newAppLastName').value.trim();
+  const email = document.getElementById('newAppEmail').value.trim();
   const spaceId = document.getElementById('newAppSpaceId').value || null;
 
-  if (!personId) {
-    showToast('Please select a person', 'warning');
+  if (!firstName || !email) {
+    showToast('First name and email are required', 'warning');
     return;
   }
 
   try {
+    // Check if person already exists by email
+    let personId;
+    const existing = allPeople.find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      personId = existing.id;
+    } else {
+      // Create new person
+      const { data: newPerson, error: personError } = await supabase
+        .from('people')
+        .insert({ first_name: firstName, last_name: lastName || null, email, type: 'prospect' })
+        .select('id')
+        .single();
+      if (personError) throw personError;
+      personId = newPerson.id;
+      // Refresh people list so future lookups find them
+      await loadPeople();
+    }
+
     await rentalService.createApplication(personId, {
       desired_space_id: spaceId,
     });
     await loadApplications();
-    document.getElementById('newAppPersonId').value = '';
+    document.getElementById('newAppFirstName').value = '';
+    document.getElementById('newAppLastName').value = '';
+    document.getElementById('newAppEmail').value = '';
     document.getElementById('newAppSpaceId').value = '';
     showToast('Application created', 'success');
   } catch (error) {
