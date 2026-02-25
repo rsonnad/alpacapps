@@ -956,13 +956,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - Admin UI: Settings tab has test mode toggle, compose SMS, bulk SMS, inbound SMS view
 
 ### DigitalOcean Droplet
-- Runs OpenClaw Discord bot and Bug Scout (`bug_scout.js`)
+- Runs autonomous workers and Claude Code Remote Control sessions
 - Bug Scout: polls `bug_reports` for pending bugs → runs Claude Code to fix → commits to `bugfix/` branch → merges to main
 - Feature Builder: `feature-builder/feature_builder.js` — polls PAI feature requests → runs Claude Code to implement
 - Bug fixer repo is a clone of this repo, used for verification screenshots
 - Uses `SKILL.md` for API knowledge
 - Queries Supabase directly for tenant/space info
 - **Workers on droplet:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`), PAI Discord Bot (`pai-discord.service`)
+- **Remote Control:** Claude Code 2.1.52+ with Max auth. SSH in → `scripts/remote-control.sh [project]` → connect from phone at `claude.ai/code`. See `docs/REMOTE-CONTROL.md`.
+- **Projects:** AlpacApps (`/opt/bug-fixer/repo`), Portsie (`/opt/portsie/repo`)
 
 ### Spotify (Music Integration)
 - **API**: Spotify Web API + Authorization Code Flow with PKCE
