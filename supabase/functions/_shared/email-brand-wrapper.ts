@@ -131,9 +131,9 @@ export async function wrapEmailHtml(
   const headerHtml = showHeader ? `
     <!-- Header -->
     <tr>
-      <td style="background:${e.header.background};padding:${e.header.padding};text-align:center;">
+      <td class="email-header-td" style="background:${e.header.background};padding:${e.header.padding};text-align:center;">
         <a href="${siteUrl}" style="text-decoration:none;" target="_blank">
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
             <tr>
               <td style="padding-right:12px;vertical-align:middle;">
                 <img src="${iconUrl}" alt="" width="40" height="40" style="display:block;height:${e.header.logo_height};width:auto;" />
@@ -150,35 +150,58 @@ export async function wrapEmailHtml(
   const footerHtml = showFooter ? `
     <!-- Footer -->
     <tr>
-      <td style="background:${e.footer.background};padding:${e.footer.padding};text-align:center;border-top:${e.footer.border_top};">
-        <p style="margin:0;color:${e.footer.text_color};font-size:12px;font-family:${fontFamily};">${brand.platform_name} &bull; ${brand.tagline}</p>
+      <td class="email-footer-td" style="background:${e.footer.background};padding:${e.footer.padding};text-align:center;border-top:${e.footer.border_top};">
+        <p style="margin:0 0 6px;color:${e.footer.text_color};font-size:12px;line-height:18px;font-family:${fontFamily};">${brand.address || ''}</p>
+        <p style="margin:0;color:${e.footer.text_color};font-size:11px;line-height:16px;font-family:${fontFamily};opacity:0.7;">${brand.platform_name} &bull; ${brand.tagline}</p>
       </td>
     </tr>` : '';
 
   const preheaderHtml = preheader
-    ? `<div style="display:none;font-size:1px;color:#faf9f6;line-height:1px;max-height:0;overflow:hidden;">${preheader}</div>`
+    ? `<div style="display:none;font-size:1px;color:${c.background_muted};line-height:1px;max-height:0;overflow:hidden;mso-hide:all;">${preheader}${'&#847;&zwnj;&nbsp;'.repeat(30)}</div>`
     : '';
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>${brand.full_name}</title>
-  <!--[if mso]><style>body,table,td{font-family:Arial,Helvetica,sans-serif!important}</style><![endif]-->
+  <!--[if gte mso 9]>
+  <xml>
+    <o:OfficeDocumentSettings>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+  </xml>
+  <![endif]-->
+  <!--[if mso]><style>body,table,td,p,a,h1,h2,h3,h4{font-family:Arial,Helvetica,sans-serif!important}a{color:${accent}}</style><![endif]-->
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table { border-collapse:collapse; mso-table-lspace:0; mso-table-rspace:0; }
+    img { border:0; -ms-interpolation-mode:bicubic; display:block; }
+    a { color:${accent}; text-decoration:underline; }
+    h1, h2, h3, h4, p { margin:0; }
+    @media screen and (max-width:480px) {
+      .email-body-td { padding:24px 20px !important; }
+      .email-header-td { padding:24px 20px !important; }
+      .email-footer-td { padding:16px 20px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:${c.background_muted};font-family:${fontFamily};-webkit-font-smoothing:antialiased;">
+<body style="margin:0;padding:0;background:${c.background_muted};font-family:${fontFamily};-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;">
   ${preheaderHtml}
-  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${c.background_muted};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${c.background_muted};">
     <tr>
       <td align="center" style="padding:24px 16px;">
         <!-- Email Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" width="${e.max_width}" style="max-width:${e.max_width};width:100%;background:${c.background};border-radius:12px;overflow:hidden;box-shadow:${FALLBACK.email.body.background === c.background ? '0 2px 12px rgba(42,31,35,0.06)' : 'none'};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:${e.max_width};width:100%;background:${c.background};border-radius:12px;overflow:hidden;box-shadow:${FALLBACK.email.body.background === c.background ? '0 2px 12px rgba(42,31,35,0.06)' : 'none'};">
           ${headerHtml}
           <!-- Body -->
           <tr>
-            <td style="padding:${e.body.padding};color:${e.body.text_color};font-size:16px;line-height:${e.body.line_height};font-family:${fontFamily};">
+            <td class="email-body-td" style="padding:${e.body.padding};color:${e.body.text_color};font-size:16px;line-height:${e.body.line_height};font-family:${fontFamily};">
               ${innerHtml}
             </td>
           </tr>
@@ -197,10 +220,10 @@ export async function wrapEmailHtml(
  */
 export function emailButton(text: string, url: string, config?: any): string {
   const e = config?.email?.button || FALLBACK.email.button;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px auto;text-align:center;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px auto;text-align:center;">
     <tr>
-      <td style="background:${e.background};border-radius:${e.border_radius};box-shadow:${e.shadow};">
-        <a href="${url}" style="display:inline-block;padding:${e.padding};color:${e.text_color};text-decoration:none;font-weight:${e.font_weight};font-size:16px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:0.02em;" target="_blank">${text}</a>
+      <td style="background:${e.background};border-radius:${e.border_radius};box-shadow:${e.shadow};mso-padding-alt:14px 36px;">
+        <a href="${url}" style="display:inline-block;padding:${e.padding};color:${e.text_color};text-decoration:none;font-weight:${e.font_weight};font-size:16px;line-height:1;font-family:'DM Sans',Arial,Helvetica,sans-serif;letter-spacing:0.02em;-webkit-text-size-adjust:none;" target="_blank">${text}</a>
       </td>
     </tr>
   </table>`;
