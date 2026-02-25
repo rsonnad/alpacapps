@@ -1,12 +1,12 @@
 {
-  "version": "v260225.10 3:12p",
-  "release": 334,
-  "sha": "ad2735def",
-  "fullSha": "ad2735def88c018ed473a40619def886d97d0d4f",
+  "version": "v260225.11 3:36p",
+  "release": 335,
+  "sha": "54c055fcd",
+  "fullSha": "54c055fcd134a1d56ea1c4df4ee472a8af9c8b40",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-25 21:12:16+00",
-  "commits": [{"sha":"ad2735def","message":"Redesign move-in email: accounting-style formatting, remove address from footers","author":"Rahul"}]
+  "pushedAt": "2026-02-25 21:36:48+00",
+  "commits": [{"sha":"d8b3bf678","message":"Fix Supabase setup flow: add org step, fix psql paths, add troubleshooting tip","author":"Rahul"},{"sha":"54c055fcd","message":"Merge branch 'unruffled-sanderson'","author":"Rahul"}]
 }
