@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <title>Apply — Mistique Journey</title>
+  <meta name="description" content="Apply for the Global Traveling Massage Therapist & Wellness Ambassador position at Mistique Journey.">
+  <link rel="stylesheet" href="/mistiq/styles.css">
+  <script type="module" src="/shared/version-info.js"></script>
+  <style>
+    .mf-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+    .mf-title {
+      font-family: var(--mistiq-font-heading);
+      font-size: 1.8rem;
+      color: var(--mistiq-text);
+      margin: 0 0 0.4rem;
+      text-align: center;
+    }
+    .mf-subtitle {
+      text-align: center;
+      color: var(--mistiq-text-light);
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+    }
+    .mf-section {
+      margin-bottom: 2rem;
+    }
+    .mf-section-title {
+      font-family: var(--mistiq-font-heading);
+      font-size: 1.1rem;
+      color: var(--mistiq-gold);
+      border-bottom: 2px solid var(--mistiq-warm);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .mf-field {
+      margin-bottom: 1.4rem;
+    }
+    .mf-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+      color: var(--mistiq-text);
+    }
+    .mf-label .mf-req {
+      color: #b84;
+      margin-left: 3px;
+    }
+    .mf-label .mf-hint {
+      font-weight: 400;
+      color: var(--mistiq-text-light);
+      font-size: 0.85rem;
+      display: block;
+      margin-top: 2px;
+    }
+    .mf-input, .mf-textarea, .mf-select {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--mistiq-warm);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: white;
+      color: var(--mistiq-text);
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .mf-input:focus, .mf-textarea:focus, .mf-select:focus {
+      outline: none;
+      border-color: var(--mistiq-gold);
+      box-shadow: 0 0 0 3px rgba(200,168,107,0.15);
+    }
+    .mf-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .mf-radio-group, .mf-checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .mf-radio-group label, .mf-checkbox-group label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+    .mf-radio-group input, .mf-checkbox-group input {
+      margin-top: 2px;
+      accent-color: var(--mistiq-gold);
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+    }
+    .mf-range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .mf-range {
+      flex: 1;
+      accent-color: var(--mistiq-gold);
+      height: 6px;
+    }
+    .mf-range-val {
+      font-size: 1.5rem;
+      font-family: var(--mistiq-font-heading);
+      color: var(--mistiq-gold);
+      min-width: 2.5rem;
+      text-align: center;
+      font-weight: 700;
+    }
+    .mf-range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--mistiq-text-light);
+      margin-top: 4px;
+    }
+    .mf-submit {
+      width: 100%;
+      padding: 1rem;
+      background: var(--mistiq-gold);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      font-family: var(--mistiq-font-heading);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 1rem;
+    }
+    .mf-submit:hover { background: #b8943a; }
+    .mf-submit:active { transform: scale(0.99); }
+    .mf-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .mf-success {
+      display: none;
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+    .mf-success__icon { font-size: 3rem; margin-bottom: 1rem; }
+    .mf-success__title {
+      font-family: var(--mistiq-font-heading);
+      font-size: 1.6rem;
+      color: var(--mistiq-gold);
+      margin-bottom: 0.75rem;
+    }
+    .mf-success__text { color: var(--mistiq-text-light); font-size: 1rem; line-height: 1.7; }
+    .mf-error-msg { color: #c0392b; font-size: 0.85rem; margin-top: 4px; display: none; }
+    .mf-card {
+      background: white;
+      border: 1px solid var(--mistiq-warm);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .mf-title { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="mistiq-header mistiq-header--scrolled">
+    <div class="mistiq-header__inner">
+      <a href="/mistiq/" class="mistiq-header__logo">
+        <span class="mistiq-header__logo-text">Mistique Journey</span>
+        <span title="Site version" class="mistiq-header__version"></span>
+      </a>
+      <nav class="mistiq-nav">
+        <ul class="mistiq-nav__list">
+          <li><a href="/mistiq/jobs/" class="mistiq-nav__link">← Back to Job Info</a></li>
+          <li><a href="/mistiq/th/apply-job/" class="mistiq-nav__link">🇹🇭 ภาษาไทย</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div style="padding-top: 80px; background: var(--mistiq-bg);">
+    <div class="mf-wrap">
+
+      <div id="mf-form-wrap">
+        <!-- Hero blurb -->
+        <div style="text-align:center; margin-bottom: 2.5rem;">
+          <h1 class="mf-title">Application Form</h1>
+          <p class="mf-subtitle">Global Traveling Massage Therapist &amp; Wellness Ambassador<br>
+          <a href="/mistiq/jobs/" style="color: var(--mistiq-gold); font-size:0.9rem;">← Read the full job description first</a></p>
+        </div>
+
+        <form id="mf-form" novalidate>
+
+          <!-- PERSONAL INFORMATION -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Personal Information</h2>
+
+            <div class="mf-field">
+              <label class="mf-label" for="full_name">Full Name <span class="mf-req">*</span>
+                <span class="mf-hint">Bilingual — Thai and English (e.g. สมใจ ดีมาก / Somjai Deemak)</span>
+              </label>
+              <input class="mf-input" id="full_name" name="full_name" type="text" required autocomplete="name">
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="phone">Phone Number, WhatsApp, or Line ID <span class="mf-req">*</span></label>
+              <input class="mf-input" id="phone" name="phone" type="text" required autocomplete="tel">
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="email">Email Address</label>
+              <input class="mf-input" id="email" name="email" type="email" autocomplete="email">
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="city">Current City of Residence</label>
+              <input class="mf-input" id="city" name="city" type="text">
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="dob">Date of Birth <span class="mf-req">*</span></label>
+              <input class="mf-input" id="dob" name="dob" type="date" required>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">Do you currently have a valid passport? <span class="mf-req">*</span></label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="has_passport" value="Yes, I have one" required> Yes, I have one</label>
+                <label><input type="radio" name="has_passport" value="No, but I can apply for one"> No, but I can apply for one</label>
+                <label><input type="radio" name="has_passport" value="Other"> Other</label>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="us_eu_visas">Do you currently hold any valid US or European visas?
+                <span class="mf-hint">If yes, specify type and expiry</span>
+              </label>
+              <textarea class="mf-textarea" id="us_eu_visas" name="us_eu_visas" style="min-height:70px;"></textarea>
+            </div>
+          </div>
+
+          <!-- MASSAGE SKILLS -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Massage Skills</h2>
+
+            <div class="mf-field">
+              <label class="mf-label">What is your level of proficiency in Thai Massage? <span class="mf-req">*</span></label>
+              <div class="mf-range-wrap">
+                <span style="font-size:0.85rem;color:var(--mistiq-text-light);white-space:nowrap;">Beginner</span>
+                <input class="mf-range" id="thai_massage_level" name="thai_massage_level" type="range" min="1" max="10" value="5" required>
+                <span style="font-size:0.85rem;color:var(--mistiq-text-light);white-space:nowrap;">Expert</span>
+                <span class="mf-range-val" id="thai_massage_level_val">5</span>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="other_massage_styles">Please list other specialized massage styles and bodywork techniques you know
+                <span class="mf-hint">e.g. deep tissue, sports, aroma, hot stone, craniosacral, etc.</span>
+              </label>
+              <textarea class="mf-textarea" id="other_massage_styles" name="other_massage_styles"></textarea>
+            </div>
+          </div>
+
+          <!-- ENGLISH & FITNESS -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">English &amp; Fitness</h2>
+
+            <div class="mf-field">
+              <label class="mf-label">How would you rate your English communication skills? <span class="mf-req">*</span></label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="english_level" value="Excellent (Fluent conversations)" required> Excellent — Fluent conversations</label>
+                <label><input type="radio" name="english_level" value="Good (Can hold conversations)"> Good — Can hold conversations</label>
+                <label><input type="radio" name="english_level" value="Basic (Some understanding, needs improvement)"> Basic — Some understanding, needs improvement</label>
+                <label><input type="radio" name="english_level" value="Very Little (know a few words)"> Very Little — Know a few words</label>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">How much do you want to learn more English? <span class="mf-req">*</span></label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="english_study" value="I know enough" required> I know enough</label>
+                <label><input type="radio" name="english_study" value="I could do some study"> I could do some study</label>
+                <label><input type="radio" name="english_study" value="I want to do a lot of study"> I want to do a lot of study</label>
+                <label><input type="radio" name="english_study" value="I will study every day (3+ hours)"> I will study every day (3+ hours)</label>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">How easily can you walk 5 km? <span class="mf-req">*</span></label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="can_walk_5km" value="Very easily" required> Very easily</label>
+                <label><input type="radio" name="can_walk_5km" value="Easily"> Easily</label>
+                <label><input type="radio" name="can_walk_5km" value="With some difficulty"> With some difficulty</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- BACKGROUND & MOTIVATION -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Background &amp; Motivation</h2>
+
+            <div class="mf-field">
+              <label class="mf-label" for="travel_experience">Please share your past international travel experience</label>
+              <textarea class="mf-textarea" id="travel_experience" name="travel_experience"></textarea>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="why_interested">Why are you interested in this global traveling role?</label>
+              <textarea class="mf-textarea" id="why_interested" name="why_interested"></textarea>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">What are your primary interests? <span class="mf-req">*</span>
+                <span class="mf-hint">Select all that apply</span>
+              </label>
+              <div class="mf-checkbox-group">
+                <label><input type="checkbox" name="primary_interests" value="Wellness and Biohacking"> Wellness and Biohacking</label>
+                <label><input type="checkbox" name="primary_interests" value="Technology and AI"> Technology and AI</label>
+                <label><input type="checkbox" name="primary_interests" value="Yoga and Fitness"> Yoga and Fitness</label>
+                <label><input type="checkbox" name="primary_interests" value="Music and Arts Festivals"> Music and Arts Festivals</label>
+                <label><input type="checkbox" name="primary_interests" value="Personal Growth and Development"> Personal Growth and Development</label>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">Are you comfortable speaking and socializing with diverse cultures? <span class="mf-req">*</span></label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="comfortable_socializing" value="Yes, I am outgoing and social" required> Yes, I am outgoing and social</label>
+                <label><input type="radio" name="comfortable_socializing" value="Mostly, but reserved sometimes"> Mostly, but reserved sometimes</label>
+                <label><input type="radio" name="comfortable_socializing" value="Not very comfortable"> Not very comfortable</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIFESTYLE -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Lifestyle</h2>
+
+            <div class="mf-field">
+              <label class="mf-label">Do you smoke tobacco?</label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="smokes" value="No"> No</label>
+                <label><input type="radio" name="smokes" value="Yes"> Yes</label>
+              </div>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label">Do you consume alcohol?</label>
+              <div class="mf-radio-group">
+                <label><input type="radio" name="drinks" value="No, I prefer not to drink"> No, I prefer not to drink</label>
+                <label><input type="radio" name="drinks" value="Occasionally"> Occasionally</label>
+                <label><input type="radio" name="drinks" value="Regularly"> Regularly</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- AVAILABILITY -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Availability</h2>
+
+            <div class="mf-field">
+              <label class="mf-label" for="earliest_interview_date">Earliest date available for interview
+                <span class="mf-hint">Interviews in Bangkok and Chiang Mai — February 24 – March 1, 2026</span>
+              </label>
+              <input class="mf-input" id="earliest_interview_date" name="earliest_interview_date" type="date" min="2026-02-24" max="2026-03-01">
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="trial_availability">Expected availability for 1-week paid trial in Thailand <span class="mf-req">*</span></label>
+              <input class="mf-input" id="trial_availability" name="trial_availability" type="text" placeholder="e.g. March 2026" required>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="travel_abroad_availability">When would you be available to travel abroad? <span class="mf-req">*</span></label>
+              <input class="mf-input" id="travel_abroad_availability" name="travel_abroad_availability" type="text" placeholder="e.g. After July 2026" required>
+            </div>
+
+            <div class="mf-field">
+              <label class="mf-label" for="thailand_returns">How many times per year do you typically return to Thailand for family/relatives? <span class="mf-req">*</span></label>
+              <input class="mf-input" id="thailand_returns" name="thailand_returns" type="text" placeholder="e.g. 1-2 times per year" required>
+            </div>
+          </div>
+
+          <!-- QUESTIONS -->
+          <div class="mf-card mf-section">
+            <h2 class="mf-section-title">Questions</h2>
+            <div class="mf-field">
+              <label class="mf-label" for="other_questions">Do you have any other questions about the job?</label>
+              <textarea class="mf-textarea" id="other_questions" name="other_questions"></textarea>
+            </div>
+          </div>
+
+          <div id="mf-submit-error" style="color:#c0392b;text-align:center;margin-bottom:1rem;display:none;">
+            Something went wrong. Please try again or email <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a>.
+          </div>
+
+          <button type="submit" class="mf-submit" id="mf-submit-btn">Submit Application</button>
+
+          <p style="text-align:center;color:var(--mistiq-text-light);font-size:0.85rem;margin-top:1rem;">
+            Questions? <a href="mailto:team@alpacaplayhouse.com" style="color:var(--mistiq-gold);">team@alpacaplayhouse.com</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- Success state -->
+      <div class="mf-success" id="mf-success">
+        <div class="mf-success__icon">🙏</div>
+        <h2 class="mf-success__title">Application Received!</h2>
+        <p class="mf-success__text">
+          Thank you for applying to Mistique Journey.<br>
+          We will review your application and contact you soon.<br><br>
+          <a href="/mistiq/jobs/" style="color:var(--mistiq-gold);">← Back to job listing</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mistiq-footer">
+    <div class="mistiq-footer__content">
+      <p class="mistiq-footer__brand">Mistique Journey</p>
+      <p class="mistiq-footer__location">@ Austin, Texas USA — <a href="https://alpacaplayhouse.com" class="mistiq-footer__link">Alpaca Playhouse</a></p>
+      <p class="mistiq-footer__copyright">© 2026 Mistique Journey. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const ENDPOINT = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/mistiq-form';
+    const LANG = 'en';
+
+    // ── Slider display ──────────────────────────────────────────────────────
+    const slider = document.getElementById('thai_massage_level');
+    const sliderVal = document.getElementById('thai_massage_level_val');
+    slider.addEventListener('input', () => { sliderVal.textContent = slider.value; });
+
+    // ── Track: page view ────────────────────────────────────────────────────
+    let pageViewSent = false;
+    setTimeout(() => {
+      if (pageViewSent) return;
+      pageViewSent = true;
+      navigator.sendBeacon(ENDPOINT, JSON.stringify({
+        type: 'track', event: 'page_view', lang: LANG,
+        data: { referrer: document.referrer || null }
+      }));
+    }, 3000); // Fire after 3s of actually reading the page
+
+    // ── Partial completion tracker ──────────────────────────────────────────
+    let partialSent = false;
+
+    function getFormData() {
+      const data = {};
+      const form = document.getElementById('mf-form');
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(el => {
+        if (!el.name) return;
+        if (el.type === 'checkbox') {
+          if (el.checked) {
+            if (!data[el.name]) data[el.name] = [];
+            data[el.name].push(el.value);
+          }
+        } else if (el.type === 'radio') {
+          if (el.checked) data[el.name] = el.value;
+        } else {
+          if (el.value) data[el.name] = el.value;
+        }
+      });
+      return data;
+    }
+
+    function countFilledFields(data) {
+      return Object.values(data).filter(v => v && !(Array.isArray(v) && v.length === 0)).length;
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (partialSent) return;
+      const data = getFormData();
+      if (countFilledFields(data) >= 3) {
+        partialSent = true;
+        navigator.sendBeacon(ENDPOINT, JSON.stringify({
+          type: 'track', event: 'partial_completion', lang: LANG, data
+        }));
+      }
+    });
+
+    // ── Form submission ─────────────────────────────────────────────────────
+    document.getElementById('mf-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Basic validation
+      const required = ['full_name', 'phone', 'dob'];
+      const radioRequired = ['has_passport', 'thai_massage_level', 'english_level', 'english_study', 'can_walk_5km', 'comfortable_socializing', 'trial_availability', 'travel_abroad_availability', 'thailand_returns'];
+      let valid = true;
+
+      required.forEach(name => {
+        const el = document.getElementById(name);
+        if (!el.value.trim()) { el.style.borderColor = '#c0392b'; valid = false; }
+        else el.style.borderColor = '';
+      });
+
+      if (!valid) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const btn = document.getElementById('mf-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+
+      const data = getFormData();
+      partialSent = true; // Don't fire partial after successful submit
+
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'submit', lang: LANG, data })
+        });
+
+        if (!res.ok) throw new Error('Server error');
+
+        document.getElementById('mf-form-wrap').style.display = 'none';
+        document.getElementById('mf-success').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        document.getElementById('mf-submit-error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit Application';
+      }
+    });
+  </script>
+</body>
+</html>
