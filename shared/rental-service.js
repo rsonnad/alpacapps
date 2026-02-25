@@ -91,7 +91,7 @@ async function getApplications(filters = {}) {
       *,
       person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate),
-      approved_space:approved_space_id(id, name, monthly_rate),
+      approved_space:approved_space_id(id, name, monthly_rate, access_code),
       assignment:assignment_id(id, status)
     `)
     .order('created_at', { ascending: false });
@@ -144,7 +144,7 @@ async function getApplication(applicationId) {
       *,
       person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate, location),
-      approved_space:approved_space_id(id, name, monthly_rate, location),
+      approved_space:approved_space_id(id, name, monthly_rate, location, access_code),
       assignment:assignment_id(id, status, start_date, end_date)
     `)
     .eq('id', applicationId)
@@ -173,8 +173,9 @@ function getPipelineStage(application) {
     return 'deposit';
   }
 
-  // Contract stage
-  if ([AGREEMENT_STATUS.GENERATED, AGREEMENT_STATUS.SENT, AGREEMENT_STATUS.SIGNED].includes(application.agreement_status)) {
+  // Contract stage (skip if lease not required)
+  if (application.require_lease !== false &&
+      [AGREEMENT_STATUS.GENERATED, AGREEMENT_STATUS.SENT, AGREEMENT_STATUS.SIGNED].includes(application.agreement_status)) {
     return 'contract';
   }
 
@@ -373,6 +374,9 @@ async function saveTerms(applicationId, terms) {
     reservationDepositAmount = null,
     noticePeriod = '30_days',
     additionalTerms = null,
+    requireLease,
+    checkInTime,
+    checkOutTime,
   } = terms;
 
   // Move-in deposit is always 1 period's rent
@@ -398,6 +402,9 @@ async function saveTerms(applicationId, terms) {
     updateData.reservation_deposit_amount = rate;
   }
   if (additionalTerms !== undefined) updateData.additional_terms = additionalTerms;
+  if (requireLease !== undefined) updateData.require_lease = requireLease;
+  if (checkInTime !== undefined) updateData.check_in_time = checkInTime || null;
+  if (checkOutTime !== undefined) updateData.check_out_time = checkOutTime || null;
 
   const { data, error } = await supabase
     .from('rental_applications')
@@ -1093,7 +1100,7 @@ async function confirmMoveIn(applicationId) {
     throw new Error('Deposit must be confirmed before move-in');
   }
 
-  if (app.agreement_status !== AGREEMENT_STATUS.SIGNED) {
+  if (app.require_lease !== false && app.agreement_status !== AGREEMENT_STATUS.SIGNED) {
     throw new Error('Rental agreement must be signed before move-in');
   }
 

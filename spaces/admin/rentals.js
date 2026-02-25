@@ -1076,6 +1076,9 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   const defaultReservationDeposit = app.approved_rate ?? approvedSpace?.monthly_rate ?? desiredSpace?.monthly_rate ?? 0;
   document.getElementById('termReservationDeposit').value = app.reservation_deposit_amount ?? defaultReservationDeposit;
   document.getElementById('termAdditionalTerms').value = app.additional_terms || '';
+  document.getElementById('termCheckInTime').value = app.check_in_time || '';
+  document.getElementById('termCheckOutTime').value = app.check_out_time || '';
+  document.getElementById('termRequireLease').checked = app.require_lease !== false;
 
   // ===== DOCUMENTS TAB =====
   const statusDisplay = document.getElementById('agreementStatusDisplay');
@@ -1394,22 +1397,37 @@ function renderApplicationsPane(app, guidance, actions) {
 
 function renderApprovedPane(app, guidance, actions) {
   const spaceName = app.approved_space?.name || 'Not set';
-  const rate = app.approved_rate ? rentalService.formatCurrency(app.approved_rate) + '/' + (app.approved_rate_term || 'mo') : 'Not set';
+  const rate = app.approved_rate != null ? rentalService.formatCurrency(app.approved_rate) + '/' + (app.approved_rate_term || 'mo') : 'Not set';
   const moveIn = app.approved_move_in ? rentalService.formatDate(app.approved_move_in) : 'Not set';
+  const requireLease = app.require_lease !== false;
 
-  guidance.innerHTML = `
-    <div class="action-pane-instruction">
-      <strong>Generate the rental agreement for signing.</strong>
-    </div>
-    <div class="action-pane-context">
-      Space: <strong>${spaceName}</strong> &middot; Rate: <strong>${rate}</strong> &middot; Move-in: <strong>${moveIn}</strong>
-    </div>
-  `;
-
-  actions.innerHTML = `
-    <button class="btn-primary action-pane-cta" onclick="generateAgreement()">Generate Agreement</button>
-    <button class="btn-secondary" onclick="switchDetailTab('terms')">Edit Terms</button>
-  `;
+  if (requireLease) {
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>Generate the rental agreement for signing.</strong>
+      </div>
+      <div class="action-pane-context">
+        Space: <strong>${spaceName}</strong> &middot; Rate: <strong>${rate}</strong> &middot; Move-in: <strong>${moveIn}</strong>
+      </div>
+    `;
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="generateAgreement()">Generate Agreement</button>
+      <button class="btn-secondary" onclick="switchDetailTab('terms')">Edit Terms</button>
+    `;
+  } else {
+    guidance.innerHTML = `
+      <div class="action-pane-instruction">
+        <strong>Lease not required. Request deposits to continue.</strong>
+      </div>
+      <div class="action-pane-context">
+        Space: <strong>${spaceName}</strong> &middot; Rate: <strong>${rate}</strong> &middot; Move-in: <strong>${moveIn}</strong>
+      </div>
+    `;
+    actions.innerHTML = `
+      <button class="btn-primary action-pane-cta" onclick="switchDetailTab('deposits')">Request Deposits</button>
+      <button class="btn-secondary" onclick="switchDetailTab('terms')">Edit Terms</button>
+    `;
+  }
 }
 
 function renderContractPane(app, guidance, actions) {
@@ -1500,21 +1518,26 @@ function renderReadyPane(app, guidance, actions) {
   const spaceName = app.approved_space?.name || '';
   const moveIn = app.approved_move_in ? rentalService.formatDate(app.approved_move_in) : '';
   const agSigned = app.agreement_status === 'signed';
+  const leaseNotRequired = app.require_lease === false;
   const depConfirmed = app.deposit_status === 'confirmed';
+
+  const agreementRow = leaseNotRequired
+    ? '<div class="checklist-row done">&#10003; Lease not required (VIP/comp)</div>'
+    : '<div class="checklist-row done">&#10003; Agreement signed</div>';
 
   guidance.innerHTML = `
     <div class="action-pane-instruction">
       <strong>Everything's in order. Confirm move-in to create the assignment.</strong>
     </div>
     <div class="action-pane-checklist">
-      <div class="checklist-row done">&#10003; Agreement signed</div>
+      ${agreementRow}
       <div class="checklist-row done">&#10003; Deposits confirmed</div>
       ${spaceName ? `<div class="checklist-row done">&#10003; Space: <span class="checklist-value">${spaceName}</span></div>` : ''}
       ${moveIn ? `<div class="checklist-row done">&#10003; Move-in: <span class="checklist-value">${moveIn}</span></div>` : ''}
     </div>
   `;
 
-  if (agSigned) {
+  if (agSigned || leaseNotRequired) {
     actions.innerHTML = `
       <button class="btn-primary action-pane-cta" onclick="confirmMoveIn()">Confirm Move-in</button>
     `;
@@ -1539,9 +1562,14 @@ function updateRentalStatusTracker(app) {
   const agreementStep = document.getElementById('detailTrackerAgreement');
   const agreementDetail = document.getElementById('detailTrackerAgreementDetail');
   const agStatus = app.agreement_status || 'pending';
-  const agLabels = { pending: 'Not started', generated: 'PDF generated', sent: 'Sent for signature', signed: 'Signed ✓' };
-  agreementStep.className = 'tracker-step ' + (agStatus === 'signed' ? 'complete' : (agStatus !== 'pending' ? 'active' : 'pending'));
-  agreementDetail.textContent = agLabels[agStatus] || agStatus;
+  if (app.require_lease === false) {
+    agreementStep.className = 'tracker-step complete';
+    agreementDetail.textContent = 'Not required (VIP)';
+  } else {
+    const agLabels = { pending: 'Not started', generated: 'PDF generated', sent: 'Sent for signature', signed: 'Signed ✓' };
+    agreementStep.className = 'tracker-step ' + (agStatus === 'signed' ? 'complete' : (agStatus !== 'pending' ? 'active' : 'pending'));
+    agreementDetail.textContent = agLabels[agStatus] || agStatus;
+  }
 
   // Deposit step — calculate total due for display
   const depositStep = document.getElementById('detailTrackerDeposit');
@@ -1568,13 +1596,13 @@ function updateRentalStatusTracker(app) {
   if (app.move_in_confirmed_at) {
     moveInStep.className = 'tracker-step complete';
     moveInDetail.textContent = 'Confirmed ✓';
-  } else if (depStatus === 'confirmed' && agStatus === 'signed') {
+  } else if (depStatus === 'confirmed' && (agStatus === 'signed' || app.require_lease === false)) {
     moveInStep.className = 'tracker-step active';
     moveInDetail.textContent = 'Ready';
   } else {
     moveInStep.className = 'tracker-step pending';
     const blockers = [];
-    if (agStatus !== 'signed') blockers.push('agreement');
+    if (app.require_lease !== false && agStatus !== 'signed') blockers.push('agreement');
     if (depStatus !== 'confirmed') {
       blockers.push(totalDueForTracker > 0
         ? `${rentalService.formatCurrency(totalDueForTracker)} deposit`
@@ -1664,11 +1692,11 @@ function updateRentalActions(app) {
       break;
 
     case 'ready':
-      if (app.agreement_status !== 'signed') {
+      if (app.require_lease === false || app.agreement_status === 'signed') {
+        buttons.push('<button class="btn-primary" onclick="confirmMoveIn()">Confirm Move-in</button>');
+      } else {
         buttons.push('<button class="btn-secondary" onclick="switchDetailTab(\'documents\')"><span style="color:var(--danger-color);">&#9679;</span> Agreement not signed</button>');
         buttons.push('<button class="btn-primary" disabled title="Agreement must be signed first" style="opacity:0.5;cursor:not-allowed;">Confirm Move-in</button>');
-      } else {
-        buttons.push('<button class="btn-primary" onclick="confirmMoveIn()">Confirm Move-in</button>');
       }
       break;
   }
@@ -1835,12 +1863,20 @@ window.approveApplication = async function() {
     const app = allApplications.find(a => a.id === currentApplicationId);
     if (app?.person?.email) {
       const space = allSpaces.find(s => s.id === spaceId);
+      // Get space photo for email
+      const spacePhoto = space?.media_spaces
+        ?.sort((a, b) => (a.display_order ?? 99) - (b.display_order ?? 99))
+        ?.[0]?.media?.url || null;
+      const requireLease = document.getElementById('termRequireLease')?.checked !== false;
       const emailResult = await emailService.sendApplicationApproved({
         person: app.person,
         space: { name: space?.name },
         approved_rate: rate,
         approved_move_in_date: moveInDate,
         approved_end_date: leaseEndDate,
+        require_lease: requireLease,
+        security_deposit_amount: securityDeposit,
+        space_image_url: spacePhoto,
       });
       if (emailResult.success) {
         showToast('Application approved & email sent', 'success');
@@ -1948,6 +1984,9 @@ function getTermsFormData() {
     securityDepositAmount: parseFloat(document.getElementById('termSecurityDeposit').value) || 0,
     reservationDepositAmount: parseFloat(document.getElementById('termReservationDeposit').value) || 0,
     additionalTerms: document.getElementById('termAdditionalTerms').value.trim() || null,
+    requireLease: document.getElementById('termRequireLease').checked,
+    checkInTime: document.getElementById('termCheckInTime').value || null,
+    checkOutTime: document.getElementById('termCheckOutTime').value || null,
   };
 }
 
@@ -1969,7 +2008,8 @@ function scheduleTermsAutoSave() {
 function setupTermsAutoSave() {
   const formFields = [
     'termSpace', 'termRate', 'termRateTerm', 'termMoveIn',
-    'termLeaseEnd', 'termNoticePeriod', 'termSecurityDeposit', 'termReservationDeposit', 'termAdditionalTerms'
+    'termLeaseEnd', 'termNoticePeriod', 'termSecurityDeposit', 'termReservationDeposit', 'termAdditionalTerms',
+    'termCheckInTime', 'termCheckOutTime', 'termRequireLease'
   ];
 
   formFields.forEach(fieldId => {
@@ -2189,11 +2229,15 @@ window.confirmMoveIn = async function() {
     // Send move-in confirmed email
     if (app?.person?.email) {
       const space = allSpaces.find(s => s.id === app.approved_space_id);
+      const accessCode = app.approved_space?.access_code || space?.access_code || null;
       const emailResult = await emailService.sendMoveInConfirmed({
         person: app.person,
         space: { name: space?.name },
         approved_move_in_date: app.approved_move_in_date,
         approved_rate: app.approved_rate,
+        access_code: accessCode,
+        check_in_time: app.check_in_time,
+        check_out_time: app.check_out_time,
       });
       if (emailResult.success) {
         showToast('Move-in confirmed & welcome email sent', 'success');

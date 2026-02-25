@@ -124,48 +124,105 @@ Best regards,
 Alpaca Playhouse`
       };
 
-    case "application_approved":
+    case "application_approved": {
+      const requireLease = data.require_lease !== false;
+      const hasDeposits = data.monthly_rate > 0 || (data.security_deposit_amount && data.security_deposit_amount > 0);
+      const rateDisplay = Number(data.monthly_rate) === 0 ? 'Complimentary' : `$${Number(data.monthly_rate).toLocaleString()}/mo`;
+
+      // Build conditional next steps
+      const nextSteps: string[] = [];
+      const nextStepsText: string[] = [];
+      if (requireLease) {
+        nextSteps.push('<li style="margin-bottom:8px;">Review and sign the lease agreement (we\'ll send it shortly)</li>');
+        nextStepsText.push('Review and sign the lease agreement (we\'ll send it shortly)');
+      }
+      if (hasDeposits) {
+        nextSteps.push('<li style="margin-bottom:8px;">Submit required deposits</li>');
+        nextStepsText.push('Submit required deposits');
+      }
+      nextSteps.push('<li style="margin-bottom:8px;">Get ready to move in!</li>');
+      nextStepsText.push('Get ready to move in!');
+
+      // Space image section
+      const spaceImageSection = data.space_image_url
+        ? `<div style="margin:24px 0;border-radius:12px;overflow:hidden;">
+              <img src="${data.space_image_url}" alt="${data.space_name}" style="width:100%;max-height:280px;object-fit:cover;display:block;">
+            </div>`
+        : '';
+
       return {
-        subject: "Congratulations! Your Application is Approved - Alpaca Playhouse",
+        subject: `Your space at the Alpaca Playhouse Austin is reserved`,
         html: `
-          <h2>Great news, ${data.first_name}!</h2>
-          <p>Your rental application has been <strong style="color: green;">approved</strong>!</p>
-          <h3>Lease Terms</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Space:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.space_name}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Monthly Rate:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.monthly_rate}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Move-in Date:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.move_in_date}</td></tr>
-            ${data.lease_end_date ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Lease End:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.lease_end_date}</td></tr>` : ''}
-          </table>
-          <p><strong>Next Steps:</strong></p>
-          <ol>
-            <li>Review the lease agreement (we'll send it shortly)</li>
-            <li>Sign the lease electronically</li>
-            <li>Submit required deposits</li>
-          </ol>
-          <p>We're excited to welcome you to Alpaca Playhouse!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="color:#333;font-size:16px;line-height:1.6;">Great news, ${data.first_name}!</p>
+            <p style="color:#333;font-size:16px;line-height:1.6;">The <strong>${data.space_name}</strong> space at the Alpaca Playhouse Austin has been reserved for you. And remember, at the Alpaca Playhouse, our goal is to redefine your idea of what an Alpaca Playhouse can be.</p>
+
+            ${spaceImageSection}
+
+            <div style="background:#faf9f6;border-radius:12px;padding:24px;margin:24px 0;">
+              <p style="margin:0 0 16px;font-weight:700;color:#1c1618;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Reservation Details</p>
+              <table style="border-collapse:collapse;width:100%;font-size:15px;">
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Space</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.space_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${rateDisplay}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.move_in_date}</td>
+                </tr>
+                ${data.lease_end_date ? `<tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Until</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.lease_end_date}</td>
+                </tr>` : ''}
+              </table>
+            </div>
+
+            ${nextSteps.length > 0 ? `
+            <div style="background:linear-gradient(135deg,#fff8f0 0%,#fef3e6 100%);border-left:4px solid #d4883a;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <p style="margin:0 0 12px;font-weight:700;color:#1c1618;font-size:15px;">Next Steps</p>
+              <ol style="margin:0;padding-left:20px;color:#555;line-height:1.6;">
+                ${nextSteps.join('')}
+              </ol>
+            </div>` : ''}
+
+            <div style="background:#f5f0eb;border-radius:8px;padding:16px 20px;margin:24px 0;">
+              <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">Please re-familiarize yourself with our key operational guidelines at this link: <a href="https://alpacaplayhouse.com/visiting" style="color:#d4883a;font-weight:600;">alpacaplayhouse.com/visiting</a> &mdash; which also has a map link to the property.</p>
+            </div>
+
+            <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <p style="margin:0;color:#555;font-size:13px;line-height:1.5;"><strong style="color:#333;">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>
+            </div>
+
+            <p style="color:#555;font-size:15px;line-height:1.6;">We're thrilled to have you joining the Alpaca Playhouse community. If you have any questions, just reply to this email!</p>
+          </div>
         `,
         text: `Great news, ${data.first_name}!
 
-Your rental application has been APPROVED!
+The ${data.space_name} space at the Alpaca Playhouse Austin has been reserved for you. And remember, at the Alpaca Playhouse, our goal is to redefine your idea of what an Alpaca Playhouse can be.
 
-Lease Terms:
+Reservation Details:
 - Space: ${data.space_name}
-- Monthly Rate: $${data.monthly_rate}
-- Move-in Date: ${data.move_in_date}
-${data.lease_end_date ? `- Lease End: ${data.lease_end_date}` : ''}
+- Rate: ${rateDisplay}
+- Move-in: ${data.move_in_date}
+${data.lease_end_date ? `- Until: ${data.lease_end_date}` : ''}
 
 Next Steps:
-1. Review the lease agreement (we'll send it shortly)
-2. Sign the lease electronically
-3. Submit required deposits
+${nextStepsText.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
-We're excited to welcome you to Alpaca Playhouse!
+Please re-familiarize yourself with our key operational guidelines: https://alpacaplayhouse.com/visiting — which also has a map link to the property.
+
+Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
+
+We're thrilled to have you joining the Alpaca Playhouse community!
 
 Best regards,
 Alpaca Playhouse`
       };
+    }
 
     case "application_denied":
       return {
@@ -371,49 +428,115 @@ Best regards,
 Alpaca Playhouse`
       };
 
-    case "move_in_confirmed":
+    case "move_in_confirmed": {
+      const miRateDisplay = Number(data.monthly_rate) === 0 ? 'Complimentary' : `$${Number(data.monthly_rate).toLocaleString()}/mo`;
+      const checkInDisplay = data.check_in_time === 'flexible' ? 'Flexible (no set time)' : (data.check_in_time || null);
+      const checkOutDisplay = data.check_out_time === 'flexible' ? 'Flexible (no set time)' : (data.check_out_time || null);
+
+      // Access code section
+      const accessCodeSection = data.access_code
+        ? `<div style="background:linear-gradient(135deg,#e8f5e9 0%,#c8e6c9 100%);border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <p style="margin:0 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#2e7d32;">Door Access Code</p>
+              <p style="margin:0;font-size:28px;font-weight:700;color:#1b5e20;letter-spacing:2px;">${data.access_code}</p>
+            </div>`
+        : '';
+
+      // Check-in/out rows
+      const checkInRow = checkInDisplay
+        ? `<tr>
+              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-in</td>
+              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${checkInDisplay}</td>
+            </tr>`
+        : '';
+      const checkOutRow = checkOutDisplay
+        ? `<tr>
+              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out</td>
+              <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${checkOutDisplay}</td>
+            </tr>`
+        : '';
+
       return {
         subject: "Welcome Home! Move-in Confirmed - Alpaca Playhouse",
         html: `
-          <h2>Welcome to Alpaca Playhouse!</h2>
-          <p>Hi ${data.first_name},</p>
-          <p>Your move-in is confirmed and your lease is now active!</p>
-          <h3>Your Rental Details</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Space:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.space_name}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Lease Start:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.move_in_date}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Monthly Rent:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.monthly_rate}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Rent Due:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.rent_due_day || '1st'} of each month</td></tr>
-          </table>
-          <p><strong>Payment Methods:</strong></p>
-          <ul>
-            <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: alpacaplayhouse@gmail.com</li>
-          </ul>
-          <p>If you have any questions or need anything, don't hesitate to reach out!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="color:#333;font-size:16px;line-height:1.6;">Hi ${data.first_name},</p>
+            <p style="color:#333;font-size:16px;line-height:1.6;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
+
+            ${accessCodeSection}
+
+            <div style="background:#faf9f6;border-radius:12px;padding:24px;margin:24px 0;">
+              <p style="margin:0 0 16px;font-weight:700;color:#1c1618;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Your Details</p>
+              <table style="border-collapse:collapse;width:100%;font-size:15px;">
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Space</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.space_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.move_in_date}</td>
+                </tr>
+                ${checkInRow}
+                ${checkOutRow}
+                <tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${miRateDisplay}</td>
+                </tr>
+                ${Number(data.monthly_rate) > 0 ? `<tr>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rent Due</td>
+                  <td style="padding:12px 8px;border-bottom:1px solid #e8e4df;color:#1c1618;font-weight:600;font-size:16px;">${data.rent_due_day || '1st'} of each month</td>
+                </tr>` : ''}
+              </table>
+            </div>
+
+            ${Number(data.monthly_rate) > 0 ? `
+            <div style="background:#faf9f6;border-radius:8px;padding:16px 20px;margin:24px 0;">
+              <p style="margin:0 0 8px;font-weight:600;color:#333;font-size:14px;">Payment Methods</p>
+              <table style="border-collapse:collapse;width:100%;font-size:14px;">
+                <tr><td style="padding:6px 0;"><span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span> <strong style="margin-left:8px;">@AlpacaPlayhouse</strong></td></tr>
+                <tr><td style="padding:6px 0;"><span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span> <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong></td></tr>
+              </table>
+            </div>` : ''}
+
+            <div style="background:#f5f0eb;border-radius:8px;padding:16px 20px;margin:24px 0;">
+              <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">Please re-familiarize yourself with our key operational guidelines at this link: <a href="https://alpacaplayhouse.com/visiting" style="color:#d4883a;font-weight:600;">alpacaplayhouse.com/visiting</a> &mdash; which also has a map link to the property.</p>
+            </div>
+
+            <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
+              <p style="margin:0;color:#555;font-size:13px;line-height:1.5;"><strong style="color:#333;">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>
+            </div>
+
+            <p style="color:#555;font-size:15px;line-height:1.6;">If you have any questions or need anything, don't hesitate to reach out!</p>
+          </div>
         `,
         text: `Welcome to Alpaca Playhouse!
 
 Hi ${data.first_name},
 
-Your move-in is confirmed and your lease is now active!
+Your move-in is confirmed! Welcome to the Alpaca Playhouse community.
 
-Your Rental Details:
+${data.access_code ? `Door Access Code: ${data.access_code}\n` : ''}
+Your Details:
 - Space: ${data.space_name}
-- Lease Start: ${data.move_in_date}
-- Monthly Rent: $${data.monthly_rate}
-- Rent Due: ${data.rent_due_day || '1st'} of each month
+- Move-in: ${data.move_in_date}
+${checkInDisplay ? `- Check-in: ${checkInDisplay}` : ''}
+${checkOutDisplay ? `- Check-out: ${checkOutDisplay}` : ''}
+- Rate: ${miRateDisplay}
+${Number(data.monthly_rate) > 0 ? `- Rent Due: ${data.rent_due_day || '1st'} of each month` : ''}
 
-Payment Methods:
+${Number(data.monthly_rate) > 0 ? `Payment Methods:
 - Venmo: @AlpacaPlayhouse
-- Zelle: alpacaplayhouse@gmail.com
+- Zelle: alpacaplayhouse@gmail.com` : ''}
+
+Please re-familiarize yourself with our key operational guidelines: https://alpacaplayhouse.com/visiting — which also has a map link to the property.
+
+Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
 
 If you have any questions or need anything, don't hesitate to reach out!
 
 Best regards,
 Alpaca Playhouse`
       };
+    }
 
     // ===== PAYMENT NOTIFICATIONS =====
     case "payment_reminder":
