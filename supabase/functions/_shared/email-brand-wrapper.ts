@@ -151,8 +151,7 @@ export async function wrapEmailHtml(
     <!-- Footer -->
     <tr>
       <td style="background:${e.footer.background};padding:${e.footer.padding};text-align:center;border-top:${e.footer.border_top};">
-        <p style="margin:0;color:${e.footer.text_color};font-size:12px;font-family:${fontFamily};">${brand.address}</p>
-        <p style="margin:6px 0 0;color:${e.footer.text_color};font-size:11px;font-family:${fontFamily};opacity:0.7;">${brand.platform_name} &bull; ${brand.tagline}</p>
+        <p style="margin:0;color:${e.footer.text_color};font-size:12px;font-family:${fontFamily};">${brand.platform_name} &bull; ${brand.tagline}</p>
       </td>
     </tr>` : '';
 
