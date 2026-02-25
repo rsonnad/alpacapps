@@ -1,12 +1,12 @@
 {
-  "version": "v260225.09 2:27p",
-  "release": 333,
-  "sha": "27aa1b535",
-  "fullSha": "27aa1b535a5f93ebabc0746be62e62ecd8a249a8",
+  "version": "v260225.10 3:12p",
+  "release": 334,
+  "sha": "ad2735def",
+  "fullSha": "ad2735def88c018ed473a40619def886d97d0d4f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-25 20:27:10+00",
-  "commits": [{"sha":"27aa1b535","message":"Fix move-in email: hide Rent Due for short-term stays, add checkout date","author":"Rahul"}]
+  "pushedAt": "2026-02-25 21:12:16+00",
+  "commits": [{"sha":"ad2735def","message":"Redesign move-in email: accounting-style formatting, remove address from footers","author":"Rahul"}]
 }
