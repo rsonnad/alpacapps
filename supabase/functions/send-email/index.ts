@@ -437,53 +437,38 @@ Alpaca Playhouse`
       const showRentDue = isPaid && isMonthly;
       const showPaymentMethods = isPaid;
 
-      // Build detail rows for the accounting-style table
-      const detailRows: string[] = [];
-      detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Space</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.space_name}</td>
-          </tr>`);
-      detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.move_in_date}</td>
-          </tr>`);
-      if (checkInDisplay) {
-        detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-in</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${checkInDisplay}</td>
-          </tr>`);
-      }
-      if (data.lease_end_date) {
-        detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${data.lease_end_date}</td>
-          </tr>`);
-      }
-      if (checkOutDisplay) {
-        detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Check-out Time</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${checkOutDisplay}</td>
-          </tr>`);
-      }
-      detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-weight:600;font-size:15px;">${miRateDisplay}</td>
-          </tr>`);
-      if (showRentDue) {
-        detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Rent Due</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#333;font-size:15px;">${data.rent_due_day || '1st'} of each month</td>
-          </tr>`);
-      }
-      // Access code as a smaller row in the table (after rate)
-      if (data.access_code) {
-        detailRows.push(`<tr>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Door Code</td>
-            <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;color:#2e7d32;font-weight:700;font-size:16px;letter-spacing:1px;">${data.access_code}</td>
-          </tr>`);
-      }
+      // Brand style tokens
+      const B = {
+        bg: '#faf9f6', bgMuted: '#f2f0e8', dark: '#1c1618',
+        text: '#2a1f23', textMuted: '#7d6f74', accent: '#d4883a',
+        border: '#e6e2d9', success: '#54a326',
+      };
 
-      // Payment methods with branded badges (same style as payment_statement)
+      // Space link: link space name to public listing if space_id is provided
+      const spaceLink = data.space_id
+        ? `<a href="https://alpacaplayhouse.com/spaces/?id=${data.space_id}" style="color:${B.accent};font-weight:600;text-decoration:none;">${data.space_name}</a>`
+        : `<strong>${data.space_name}</strong>`;
+
+      // Build detail rows with alternating shading
+      const detailRowData: { label: string; value: string; valueStyle?: string }[] = [];
+      detailRowData.push({ label: 'Space', value: spaceLink, valueStyle: `font-weight:600;` });
+      detailRowData.push({ label: 'Move-in', value: data.move_in_date, valueStyle: `font-weight:600;` });
+      if (checkInDisplay) detailRowData.push({ label: 'Check-in', value: checkInDisplay });
+      if (data.lease_end_date) detailRowData.push({ label: 'Check-out', value: data.lease_end_date, valueStyle: `font-weight:600;` });
+      if (checkOutDisplay) detailRowData.push({ label: 'Check-out Time', value: checkOutDisplay });
+      detailRowData.push({ label: 'Rate', value: miRateDisplay, valueStyle: `font-weight:600;` });
+      if (showRentDue) detailRowData.push({ label: 'Rent Due', value: `${data.rent_due_day || '1st'} of each month` });
+      if (data.access_code) detailRowData.push({ label: 'Door Code', value: data.access_code, valueStyle: `color:${B.success};font-weight:700;font-size:16px;letter-spacing:1px;` });
+
+      const detailRows = detailRowData.map((row, i) => {
+        const rowBg = i % 2 === 0 ? B.bg : B.bgMuted;
+        return `<tr style="background:${rowBg};">
+            <td style="padding:10px 12px;color:${B.textMuted};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;width:120px;vertical-align:top;">${row.label}</td>
+            <td style="padding:10px 12px;color:${B.text};font-size:15px;${row.valueStyle || ''}">${row.value}</td>
+          </tr>`;
+      });
+
+      // Payment methods with branded badges
       const methodBadges: Record<string, { bg: string; label: string }> = {
         venmo: { bg: '#3d95ce', label: 'Venmo' },
         zelle: { bg: '#6c1cd3', label: 'Zelle' },
@@ -497,68 +482,69 @@ Alpaca Playhouse`
         miPaymentMethodsHtml = data._payment_methods_raw.map((m: any) => {
           const badge = methodBadges[m.method_type] || { bg: '#888', label: m.name || 'Other' };
           const id = m.account_identifier ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>` : '';
-          const instr = m.instructions ? `<span style="color:#888;font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
-          return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+          const instr = m.instructions ? `<span style="color:${B.textMuted};font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
+          return `<tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
                 <span style="display:inline-block;background:${badge.bg};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">${badge.label}</span>
                 ${id}${instr}
               </td></tr>`;
         }).join("\n");
       } else if (showPaymentMethods) {
-        // Fallback hardcoded methods
         miPaymentMethodsHtml = `
-          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+          <tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
             <span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span>
             <strong style="margin-left:8px;">@AlpacaPlayhouse</strong>
           </td></tr>
-          <tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+          <tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
             <span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span>
             <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong>
           </td></tr>`;
       }
 
       const miPaymentSection = showPaymentMethods && miPaymentMethodsHtml
-        ? `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
-              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">Payment Methods</p>
+        ? `<div style="background:${B.bgMuted};border:1px solid ${B.border};border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="margin:0 0 8px;font-weight:600;color:${B.text};font-size:14px;">Payment Methods</p>
               <table style="width:100%;border-collapse:collapse;font-size:14px;">${miPaymentMethodsHtml}</table>
-              ${data.pay_url ? `<div style="text-align:center;margin-top:16px;">
-                <a href="${data.pay_url}" style="display:inline-block;background:linear-gradient(135deg,#d4883a 0%,#b8702e 100%);color:white;padding:14px 36px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(212,136,58,0.3);">Pay Online</a>
-                <p style="margin:8px 0 0;font-size:12px;color:#999;">Secure payment via Stripe</p>
+              ${data.pay_url ? `<div style="text-align:center;margin-top:12px;">
+                <a href="${data.pay_url}" style="display:inline-block;background:${B.accent};color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:0.3px;">Pay Online</a>
+                <p style="margin:6px 0 0;font-size:12px;color:${B.textMuted};">Secure payment via Stripe</p>
               </div>` : ''}
             </div>`
         : '';
 
+      // Pass space image as extraImages for the brand wrapper gallery
+      const _extraImages: string[] = [];
+      if (data.space_image_url) _extraImages.push(data.space_image_url);
+
       return {
         subject: "Welcome Home! Move-in Confirmed - Alpaca Playhouse",
+        _extraImages,
         html: `
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-            <p style="color:#333;font-size:16px;line-height:1.6;">Hi ${data.first_name},</p>
-            <p style="color:#555;font-size:15px;line-height:1.6;">At the Alpaca Playhouse our goal is to redefine your idea of what an Alpaca Playhouse can be.</p>
+          <p style="color:${B.text};font-size:15px;line-height:1.5;margin:0 0 8px;">Hi ${data.first_name},</p>
+          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">Welcome to the Alpaca Playhouse — where we redefine your idea of what an Alpaca Playhouse can be.</p>
 
-            <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
-              <thead>
-                <tr>
-                  <th style="padding:14px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#1c1618;font-weight:700;font-size:16px;letter-spacing:0.3px;width:140px;">Reservation Details</th>
-                  <th style="padding:14px 8px;text-align:left;border-bottom:2px solid #e0e0e0;"></th>
-                </tr>
-              </thead>
-              <tbody>
-              ${detailRows.join('\n')}
-              </tbody>
-            </table>
+          <table style="border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px;border:1px solid ${B.border};border-radius:8px;overflow:hidden;">
+            <thead>
+              <tr style="background:${B.dark};">
+                <th colspan="2" style="padding:10px 12px;text-align:left;color:#faf9f6;font-weight:600;font-size:14px;letter-spacing:0.3px;">Reservation Details</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${detailRows.join('\n')}
+            </tbody>
+          </table>
 
-            ${miPaymentSection}
+          ${miPaymentSection}
 
-            <div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:16px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <span style="font-size:14px;color:#7b1fa2;line-height:1.6;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:#7b1fa2;font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>
-            </div>
-
-            <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <p style="margin:0;color:#555;font-size:13px;line-height:1.5;"><strong style="color:#333;">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>
-            </div>
-
-            <p style="color:#555;font-size:15px;line-height:1.6;">If you have any questions or need anything, don't hesitate to reach out!</p>
-            <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+          <div style="background:${B.bgMuted};border-left:3px solid ${B.accent};padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0;">
+            <span style="font-size:13px;color:${B.text};line-height:1.5;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>
           </div>
+
+          <div style="background:#fdf1e0;border-left:3px solid ${B.accent};padding:10px 16px;margin:0 0 14px;border-radius:0 8px 8px 0;">
+            <p style="margin:0;color:${B.textMuted};font-size:12px;line-height:1.5;"><strong style="color:${B.text};">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>
+          </div>
+
+          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
+          <p style="color:${B.textMuted};font-size:14px;margin:0;">Best regards,<br><strong style="color:${B.text};">Alpaca Playhouse</strong></p>
         `,
         text: `Welcome to Alpaca Playhouse!
 
@@ -2158,6 +2144,7 @@ serve(async (req) => {
       try {
         finalHtml = await wrapEmailHtml(rendered.html, {
           preheader: rendered.subject,
+          extraImages: (rendered as any)._extraImages,
         });
       } catch (wrapErr) {
         console.warn("Brand wrapper failed, sending unwrapped:", wrapErr);
