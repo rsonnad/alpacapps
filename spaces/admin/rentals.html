@@ -497,9 +497,19 @@
           </div>
           <div class="section-body">
             <form id="createApplicationForm" class="add-space-form">
-              <div class="form-group">
-                <label for="newAppPersonId">Person</label>
-                <select id="newAppPersonId" required><option value="">Select a person...</option></select>
+              <div class="flex gap-4 flex-wrap">
+                <div class="form-group" style="flex:1; min-width:140px;">
+                  <label for="newAppFirstName">First Name</label>
+                  <input type="text" id="newAppFirstName" required placeholder="First name">
+                </div>
+                <div class="form-group" style="flex:1; min-width:140px;">
+                  <label for="newAppLastName">Last Name</label>
+                  <input type="text" id="newAppLastName" placeholder="Last name">
+                </div>
+                <div class="form-group" style="flex:1.5; min-width:200px;">
+                  <label for="newAppEmail">Email</label>
+                  <input type="email" id="newAppEmail" required placeholder="email@example.com">
+                </div>
               </div>
               <div class="form-group">
                 <label for="newAppSpaceId">Desired Space</label>
