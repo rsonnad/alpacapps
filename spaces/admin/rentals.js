@@ -1067,13 +1067,13 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
 
   // ===== TERMS TAB =====
   document.getElementById('termSpace').value = app.approved_space_id || app.desired_space_id || '';
-  document.getElementById('termRate').value = app.approved_rate || approvedSpace?.monthly_rate || desiredSpace?.monthly_rate || '';
+  document.getElementById('termRate').value = app.approved_rate ?? approvedSpace?.monthly_rate ?? desiredSpace?.monthly_rate ?? '';
   document.getElementById('termRateTerm').value = app.approved_rate_term || 'monthly';
   document.getElementById('termMoveIn').value = app.approved_move_in || app.desired_move_in || '';
   document.getElementById('termLeaseEnd').value = app.approved_lease_end || '';
   document.getElementById('termNoticePeriod').value = app.notice_period || '30_days';
   document.getElementById('termSecurityDeposit').value = app.security_deposit_amount || 0;
-  const defaultReservationDeposit = app.approved_rate || approvedSpace?.monthly_rate || desiredSpace?.monthly_rate || 0;
+  const defaultReservationDeposit = app.approved_rate ?? approvedSpace?.monthly_rate ?? desiredSpace?.monthly_rate ?? 0;
   document.getElementById('termReservationDeposit').value = app.reservation_deposit_amount ?? defaultReservationDeposit;
   document.getElementById('termAdditionalTerms').value = app.additional_terms || '';
 
@@ -1940,7 +1940,7 @@ window.saveTerms = async function() {
 function getTermsFormData() {
   return {
     spaceId: document.getElementById('termSpace').value || null,
-    rate: parseFloat(document.getElementById('termRate').value) || null,
+    rate: document.getElementById('termRate').value !== '' ? parseFloat(document.getElementById('termRate').value) : null,
     rateTerm: document.getElementById('termRateTerm').value || 'monthly',
     moveInDate: document.getElementById('termMoveIn').value || null,
     leaseEndDate: document.getElementById('termLeaseEnd').value || null,
