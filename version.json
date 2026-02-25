@@ -1,12 +1,12 @@
 {
-  "version": "v260225.12 3:37p",
-  "release": 336,
-  "sha": "3f1ac7d90",
-  "fullSha": "3f1ac7d9073705182dc5b7ac0f1d0d942bc3a123",
+  "version": "v260225.13 3:50p",
+  "release": 337,
+  "sha": "8eef9a73e",
+  "fullSha": "8eef9a73e891269c739fb18c2c8b0d3873f958c2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-25 21:37:59+00",
-  "commits": [{"sha":"d32c9c1b4","message":"Move-in email: door code in table, bigger header, new tagline + intro text","author":"Rahul"},{"sha":"3f1ac7d90","message":"Move-in email: door code in table, bigger header, new tagline","author":"Rahul"}]
+  "pushedAt": "2026-02-25 21:50:41+00",
+  "commits": [{"sha":"8eef9a73e","message":"Add OG tags to EN and TH mistiq pages for LINE/WhatsApp previews","author":"Rahul"}]
 }
