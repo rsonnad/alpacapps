@@ -1,12 +1,12 @@
 {
-  "version": "v260226.03 9:48a",
-  "release": 349,
-  "sha": "5ae592dc7",
-  "fullSha": "5ae592dc7b4165721dba752b179f089a7938b179",
+  "version": "v260226.04 10:44a",
+  "release": 350,
+  "sha": "fe85fc967",
+  "fullSha": "fe85fc9673dba02487dd68938e0886ef9247ea48",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 15:48:20+00",
-  "commits": [{"sha":"0d82a0b99","message":"Add folder structure guidance to getting-started page","author":"Rahul"},{"sha":"5ae592dc7","message":"Merge branch 'vibrant-perlman'","author":"Rahul"}]
+  "pushedAt": "2026-02-26 16:44:25+00",
+  "commits": [{"sha":"fe85fc967","message":"docs: mention version tracking in getting-started guide","author":"Rahul"}]
 }
