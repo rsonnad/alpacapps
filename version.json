@@ -1,12 +1,12 @@
 {
-  "version": "v260225.16 6:18p",
-  "release": 340,
-  "sha": "626fd24e9",
-  "fullSha": "626fd24e92aa8a37a25a9372f14402d915ff9b58",
+  "version": "v260225.17 6:20p",
+  "release": 341,
+  "sha": "3c77c5c77",
+  "fullSha": "3c77c5c7723184eacf7ad8df4b19460dff137139",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 00:18:50+00",
-  "commits": [{"sha":"626fd24e9","message":"Fix reservation email intros and subject: restore originals","author":"Rahul"}]
+  "pushedAt": "2026-02-26 00:20:57+00",
+  "commits": [{"sha":"3c77c5c77","message":"Update email header: reduce padding, use earthy dark brown","author":"Rahul"}]
 }
