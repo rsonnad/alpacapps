@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>OpenClaw - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{display:none!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="rentals.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <link rel="stylesheet" href="../../styles/tailwind.out.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <!-- Access denied (populated by JS) -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260226.09 11:53a</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content settings-page">
+
+      <!-- ===== SERVER STATUS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="18" r="1"/></svg>
+          <h2>Server Status</h2>
+          <span class="settings-badge" id="serverStatusBadge">Loading...</span>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-body">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p class="text-xs text-aap-text-muted">IP Address</p>
+                <p class="font-medium text-sm" id="serverIp">-</p>
+              </div>
+              <div>
+                <p class="text-xs text-aap-text-muted">Domain</p>
+                <p class="font-medium text-sm"><a id="serverDomain" href="#" target="_blank" class="text-aap-amber hover:underline">-</a></p>
+              </div>
+              <div>
+                <p class="text-xs text-aap-text-muted">Gateway Port</p>
+                <p class="font-medium text-sm" id="serverPort">-</p>
+              </div>
+              <div>
+                <p class="text-xs text-aap-text-muted">Last Deployed</p>
+                <p class="font-medium text-sm" id="lastDeployed">Never</p>
+              </div>
+            </div>
+            <div class="mt-3" id="deployDirtyWarning" style="display:none;">
+              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-aap text-xs font-medium bg-amber-100 text-amber-800">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Config changed since last deploy
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== GENERAL SETTINGS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <h2>General Settings</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="agentName" style="font-size:0.8rem;">Agent Name</label>
+                <input type="text" id="agentName" placeholder="Alpaclaw" style="font-size:0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="timezone" style="font-size:0.8rem;">Timezone</label>
+                <select id="timezone" style="font-size:0.85rem;">
+                  <option value="America/Phoenix">America/Phoenix (MST, no DST)</option>
+                  <option value="America/Chicago">America/Chicago (CST/CDT)</option>
+                  <option value="America/New_York">America/New_York (EST/EDT)</option>
+                  <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="gatewayToken" style="font-size:0.8rem;">Gateway Token</label>
+                <input type="password" id="gatewayToken" placeholder="Gateway auth token" style="font-size:0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label style="font-size:0.8rem;">&nbsp;</label>
+                <label class="settings-toggle" style="margin-top:0.25rem;">
+                  <input type="checkbox" id="isActive" checked>
+                  <span class="settings-toggle-label">Active</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-group mt-4" style="margin-bottom:0">
+              <label for="notes" style="font-size:0.8rem;">Notes</label>
+              <textarea id="notes" rows="2" placeholder="Admin notes..." style="font-size:0.85rem;"></textarea>
+            </div>
+            <div class="mt-4">
+              <button class="btn-small btn-primary" id="saveGeneralBtn">Save General Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LLM CONFIGURATION GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <h2>LLM Configuration</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-body">
+            <div class="form-group" style="margin-bottom:1rem;">
+              <label for="geminiApiKey" style="font-size:0.8rem;">Gemini API Key</label>
+              <input type="password" id="geminiApiKey" placeholder="AIzaSy..." style="font-size:0.85rem;">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="primaryModel" style="font-size:0.8rem;">Primary Model</label>
+                <select id="primaryModel" style="font-size:0.85rem;">
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                  <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                  <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+                  <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="fallbackModel" style="font-size:0.8rem;">Fallback Model</label>
+                <select id="fallbackModel" style="font-size:0.85rem;">
+                  <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="reasoningModel" style="font-size:0.8rem;">Reasoning Model</label>
+                <select id="reasoningModel" style="font-size:0.85rem;">
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                  <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-4">
+              <button class="btn-small btn-primary" id="saveLlmBtn">Save LLM Config</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CHANNELS GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h2>Channels</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- WhatsApp -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <h3>WhatsApp</h3>
+                <p>Pre-configured by Hostinger.</p>
+              </div>
+              <span class="settings-badge" id="whatsappStatusBadge">-</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <label for="whatsappNumber" style="font-size:0.8rem;">Phone Number</label>
+                <input type="text" id="whatsappNumber" placeholder="424-234-1750" style="font-size:0.85rem;">
+              </div>
+              <label class="settings-toggle">
+                <input type="checkbox" id="whatsappEnabled">
+                <span class="settings-toggle-label">Enabled</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Discord -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <h3>Discord</h3>
+                <p>Bot token from Discord Developer Portal.</p>
+              </div>
+              <span class="settings-badge" id="discordStatusBadge">-</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <label for="discordBotToken" style="font-size:0.8rem;">Bot Token</label>
+                <input type="password" id="discordBotToken" placeholder="Discord bot token" style="font-size:0.85rem;">
+              </div>
+              <label class="settings-toggle">
+                <input type="checkbox" id="discordEnabled">
+                <span class="settings-toggle-label">Enabled</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Telegram -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <h3>Telegram</h3>
+                <p>Bot token from @BotFather.</p>
+              </div>
+              <span class="settings-badge" id="telegramStatusBadge">-</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <label for="telegramBotToken" style="font-size:0.8rem;">Bot Token</label>
+                <input type="password" id="telegramBotToken" placeholder="Telegram bot token" style="font-size:0.85rem;">
+              </div>
+              <label class="settings-toggle">
+                <input type="checkbox" id="telegramEnabled">
+                <span class="settings-toggle-label">Enabled</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Slack -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <h3>Slack</h3>
+                <p>Bot token from Slack App settings.</p>
+              </div>
+              <span class="settings-badge" id="slackStatusBadge">-</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <label for="slackBotToken" style="font-size:0.8rem;">Bot Token</label>
+                <input type="password" id="slackBotToken" placeholder="xoxb-..." style="font-size:0.85rem;">
+              </div>
+              <label class="settings-toggle">
+                <input type="checkbox" id="slackEnabled">
+                <span class="settings-toggle-label">Enabled</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button class="btn-small btn-primary" id="saveChannelsBtn">Save Channels</button>
+        </div>
+      </div>
+
+      <!-- ===== WORKSPACE FILES GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <h2>Workspace Files</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-body">
+            <div class="flex flex-wrap gap-2 mb-4" id="workspaceFileTabs">
+              <button class="btn-small btn-primary workspace-tab-btn active" data-file="soul_md">SOUL</button>
+              <button class="btn-small workspace-tab-btn" data-file="user_md">USER</button>
+              <button class="btn-small workspace-tab-btn" data-file="identity_md">IDENTITY</button>
+              <button class="btn-small workspace-tab-btn" data-file="agents_md">AGENTS</button>
+              <button class="btn-small workspace-tab-btn" data-file="heartbeat_md">HEARTBEAT</button>
+              <button class="btn-small workspace-tab-btn" data-file="memory_md">MEMORY</button>
+              <button class="btn-small workspace-tab-btn" data-file="tools_md">TOOLS</button>
+              <button class="btn-small workspace-tab-btn" data-file="boot_md">BOOT</button>
+            </div>
+            <textarea id="workspaceFileContent" rows="16" style="font-family:monospace;font-size:0.8rem;width:100%;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:0.75rem;"></textarea>
+            <div class="flex gap-2 mt-3">
+              <button class="btn-small btn-primary" id="saveWorkspaceFileBtn">Save File</button>
+              <span class="text-xs text-aap-text-muted mt-1" id="workspaceFileStatus"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DEPLOY GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          <h2>Deploy</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Generate .env File</h3>
+              <p>Generate the environment file from saved configuration. Copy and apply to the VPS.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <button class="btn-small btn-primary" id="generateEnvBtn">Generate .env</button>
+            <div id="envOutputSection" style="display:none;" class="mt-3">
+              <textarea id="envOutput" rows="12" readonly style="font-family:monospace;font-size:0.8rem;width:100%;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:0.75rem;background:#fafaf8;"></textarea>
+              <div class="flex gap-2 mt-2">
+                <button class="btn-small" id="copyEnvBtn">Copy to Clipboard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Deploy Steps</h3>
+              <p>Apply the generated .env to the VPS and restart OpenClaw.</p>
+            </div>
+          </div>
+          <div class="settings-card-body">
+            <ol class="text-sm space-y-2" style="padding-left:1.25rem;">
+              <li>Generate the <code>.env</code> file above and copy it.</li>
+              <li>SSH into the VPS: <code>ssh root@<span class="server-ip-display">93.188.164.224</span></code></li>
+              <li>Edit the env file: <code>nano /docker/openclaw-vnfd/.env</code></li>
+              <li>Paste the generated content, save, and exit.</li>
+              <li>Restart: <code>cd /docker/openclaw-vnfd && docker compose down && docker compose up -d</code></li>
+              <li>Verify: <code>docker logs openclaw-vnfd-openclaw-1 --tail 20</code></li>
+            </ol>
+            <div class="mt-4">
+              <button class="btn-small btn-primary" id="markDeployedBtn">Mark as Deployed</button>
+              <span class="text-xs text-aap-text-muted ml-2" id="deployStatus"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../../shared/instant-chrome.js"></script>
+
+  <script type="module" src="../../shared/version-info.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="openclaw.js"></script>
+</body>
+</html>
