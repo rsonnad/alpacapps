@@ -261,17 +261,31 @@
 
   <div class="step">
     <h2><span class="step-num">1</span> Clone the template <span class="time-badge">1 min</span></h2>
-    <p>Pick a name for your project (lowercase, hyphens, no spaces). This becomes your GitHub repo name and folder name.</p>
+
+    <p>First, create a folder to keep all your coding projects in one place (skip this if you already have one):</p>
+    <pre><code id="mkdir-cmd">mkdir -p ~/Projects
+cd ~/Projects</code><button class="copy-btn" onclick="copyText('mkdir-cmd')">Copy</button></pre>
+
+    <p>Now pick a name for your project (lowercase, hyphens, no spaces). This becomes your GitHub repo name and folder name.</p>
 
     <div style="display: flex; gap: 0.5rem; align-items: center; margin: 1rem 0; flex-wrap: wrap;">
       <input type="text" id="project-name" placeholder="my-project-name" value="" style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.9rem; padding: 0.6rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; width: 240px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCommands()">
     </div>
 
-    <p>Open a terminal and paste this:</p>
+    <p>Clone the template into your projects folder:</p>
     <pre><code id="clone-cmd">git clone https://github.com/rsonnad/alpacapps-infra.git my-project-name
 cd my-project-name</code><button class="copy-btn" onclick="copyText('clone-cmd')">Copy</button></pre>
 
-    <p>This downloads the starter template to your computer.</p>
+    <div class="callout" style="font-size: 0.85rem;">
+      <strong>Your folder structure should look like this:</strong>
+      <pre style="border: none; background: none; padding: 0.5rem 0 0; margin: 0; font-size: 0.82rem;"><code>~/Projects/
+  my-project-name/     &larr; you are here
+    .claude/
+      skills/          &larr; setup wizard lives here
+    shared/
+    spaces/
+    ...</code></pre>
+    </div>
 
     <div class="callout warning" style="font-size: 0.85rem;">
       <strong>Windows: "git is not recognized"?</strong>
