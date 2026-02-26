@@ -1,12 +1,12 @@
 {
-  "version": "v260226.02 9:46a",
-  "release": 348,
-  "sha": "b1d91d9bd",
-  "fullSha": "b1d91d9bd7d60dc7ccb688dce6115f352d583a4e",
+  "version": "v260226.03 9:48a",
+  "release": 349,
+  "sha": "5ae592dc7",
+  "fullSha": "5ae592dc7b4165721dba752b179f089a7938b179",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 15:46:28+00",
-  "commits": [{"sha":"183ea86e1","message":"Remove Node.js from getting-started prerequisites — Claude Code includes it","author":"Rahul"},{"sha":"b1d91d9bd","message":"Merge branch 'vibrant-perlman'","author":"Rahul"}]
+  "pushedAt": "2026-02-26 15:48:20+00",
+  "commits": [{"sha":"0d82a0b99","message":"Add folder structure guidance to getting-started page","author":"Rahul"},{"sha":"5ae592dc7","message":"Merge branch 'vibrant-perlman'","author":"Rahul"}]
 }
