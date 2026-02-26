@@ -1,12 +1,12 @@
 {
-  "version": "v260226.06 10:50a",
-  "release": 352,
-  "sha": "302220a52",
-  "fullSha": "302220a52d9ea8fb82b63b422c849164756910fa",
+  "version": "v260226.07 11:27a",
+  "release": 353,
+  "sha": "f6653b9f5",
+  "fullSha": "f6653b9f5d377a6b9c5cb3509077970e5d1745bc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 16:50:41+00",
-  "commits": [{"sha":"302220a52","message":"Revert \"docs: add instructions for pulling version system into existing projects\"","author":"Rahul"}]
+  "pushedAt": "2026-02-26 17:27:43+00",
+  "commits": [{"sha":"f6653b9f5","message":"docs: add Hostinger VPS + OpenClaw info to architecture and context docs","author":"Rahul"}]
 }
