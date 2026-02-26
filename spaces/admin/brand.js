@@ -63,14 +63,18 @@ function renderAll() {
   renderColors('primaryColors', brandConfig.colors?.primary, 'primary');
   renderColors('statusColors', brandConfig.colors?.status, 'status');
   renderColors('semanticColors', brandConfig.colors?.semantic, 'semantic');
+  renderContrastPairings();
   renderTypography();
   renderTypeScale();
   renderFontWeights();
+  renderTypeSpecimen();
   renderRadiusDemo();
   renderShadowDemo();
   renderButtonDemo();
   renderEmailPreview();
   renderEmailComponents();
+  renderComponentPlayground();
+  renderEmailAnatomy();
   renderEmailDesignGuide();
   renderRawJson();
 }
@@ -187,6 +191,61 @@ function isLightColor(color) {
 }
 
 // =============================================
+// CONTRAST PAIRINGS
+// =============================================
+
+function getRelativeLuminance(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const srgb = [r, g, b].map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+}
+
+function getContrastRatio(hex1, hex2) {
+  const l1 = getRelativeLuminance(hex1);
+  const l2 = getRelativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return ((lighter + 0.05) / (darker + 0.05)).toFixed(1);
+}
+
+function renderContrastPairings() {
+  const el = document.getElementById('contrastPairings');
+  if (!el) return;
+  const c = brandConfig.colors?.primary || {};
+
+  const pairings = [
+    { text: c.text || '#2a1f23', bg: c.background || '#faf9f6', label: 'Dark text on cream' },
+    { text: c.text_light || '#faf9f6', bg: c.background_dark || '#1c1618', label: 'Light text on dark' },
+    { text: c.text_muted || '#7d6f74', bg: c.background || '#faf9f6', label: 'Muted text on cream' },
+    { text: c.accent || '#d4883a', bg: c.background || '#faf9f6', label: 'Accent on cream' },
+    { text: c.text || '#2a1f23', bg: c.background_muted || '#f2f0e8', label: 'Dark text on muted' },
+    { text: '#ffffff', bg: c.accent || '#d4883a', label: 'White on accent (buttons)' },
+  ];
+
+  el.innerHTML = `<div class="brand-contrast-grid">${pairings.map(p => {
+    const ratio = getContrastRatio(p.text, p.bg);
+    const pass = ratio >= 4.5;
+    const aaa = ratio >= 7;
+    const badge = aaa ? 'AAA' : pass ? 'AA' : 'Fail';
+    const badgeClass = aaa ? 'brand-contrast-badge--aaa' : pass ? 'brand-contrast-badge--aa' : 'brand-contrast-badge--fail';
+
+    return `
+      <div class="brand-contrast-pair">
+        <div class="brand-contrast-preview" style="background:${p.bg};color:${p.text};border:1px solid ${c.border || '#e6e2d9'};">
+          <span style="font-size:1.25rem;font-weight:600;">Aa</span>
+          <span style="font-size:0.875rem;">The quick brown alpaca</span>
+        </div>
+        <div class="brand-contrast-meta">
+          <span class="brand-contrast-label">${p.label}</span>
+          <span class="brand-contrast-badge ${badgeClass}">${badge} ${ratio}:1</span>
+        </div>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+// =============================================
 // TYPOGRAPHY
 // =============================================
 
@@ -242,6 +301,35 @@ function renderFontWeights() {
           <span class="brand-weight-label">${key} (${w})</span>
         </div>
       `).join('')}
+    </div>
+  `;
+}
+
+// =============================================
+// TYPE SPECIMEN
+// =============================================
+
+function renderTypeSpecimen() {
+  const el = document.getElementById('typeSpecimen');
+  if (!el) return;
+  const t = brandConfig.typography || {};
+  const c = brandConfig.colors?.primary || {};
+  const font = t.font_stack || "'DM Sans', sans-serif";
+
+  el.innerHTML = `
+    <div class="brand-specimen" style="font-family:${font};">
+      <div class="brand-specimen-block" style="background:${c.background || '#faf9f6'};color:${c.text || '#2a1f23'};border:1px solid ${c.border || '#e6e2d9'};border-radius:12px;padding:2rem;margin-bottom:1rem;">
+        <h2 style="font-size:1.75rem;font-weight:700;margin:0 0 0.25rem;color:${c.text || '#2a1f23'};">Welcome to Alpaca Playhouse</h2>
+        <p style="font-size:0.875rem;color:${c.text_muted || '#7d6f74'};margin:0 0 1rem;font-weight:400;">Where we redefine your idea of what an Alpaca Playhouse can be.</p>
+        <p style="font-size:1rem;line-height:1.6;margin:0 0 0.75rem;font-weight:400;">Our property features <strong>six unique living spaces</strong>, each designed with a distinct personality. From the minimalist <em>Spartan Suite</em> to the luxurious <em>Garage Mahal</em>, there's a perfect fit for everyone.</p>
+        <p style="font-size:0.875rem;line-height:1.55;color:${c.text_muted || '#7d6f74'};margin:0;">Amenities include high-speed WiFi, smart home controls, a maker space with laser cutter, and our famous alpaca herd on 5 acres of Texas hill country.</p>
+      </div>
+      <div class="brand-specimen-block" style="background:${c.background_dark || '#1c1618'};color:${c.text_light || '#faf9f6'};border-radius:12px;padding:2rem;">
+        <h2 style="font-size:1.75rem;font-weight:700;margin:0 0 0.25rem;">Welcome to Alpaca Playhouse</h2>
+        <p style="font-size:0.875rem;opacity:0.7;margin:0 0 1rem;font-weight:400;">Where we redefine your idea of what an Alpaca Playhouse can be.</p>
+        <p style="font-size:1rem;line-height:1.6;margin:0 0 0.75rem;font-weight:400;">Our property features <strong>six unique living spaces</strong>, each designed with a distinct personality. From the minimalist <em>Spartan Suite</em> to the luxurious <em>Garage Mahal</em>, there's a perfect fit for everyone.</p>
+        <p style="font-size:0.875rem;line-height:1.55;opacity:0.6;margin:0;">Amenities include high-speed WiFi, smart home controls, a maker space with laser cutter, and our famous alpaca herd on 5 acres of Texas hill country.</p>
+      </div>
     </div>
   `;
 }
@@ -410,6 +498,177 @@ function renderEmailComponents() {
       </div>
     `;
   }).join('');
+}
+
+// =============================================
+// COMPONENT PLAYGROUND
+// =============================================
+
+function renderComponentPlayground() {
+  const el = document.getElementById('componentPlayground');
+  if (!el) return;
+  const e = brandConfig.email || {};
+  const c = brandConfig.colors?.primary || {};
+  const btn = e.button || {};
+  const callout = e.callout || {};
+  const font = brandConfig.typography?.font_stack || "'DM Sans', sans-serif";
+
+  el.innerHTML = `
+    <div class="brand-playground">
+      <!-- CTA Buttons -->
+      <div class="brand-playground-section">
+        <h4>CTA Buttons</h4>
+        <p class="brand-hint" style="margin-bottom:12px;">Generated by <code>emailButton(text, url)</code> in the brand wrapper.</p>
+        <div style="background:${c.background || '#faf9f6'};border:1px solid ${c.border || '#e6e2d9'};border-radius:8px;padding:24px;text-align:center;">
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 16px;text-align:center;">
+            <tr>
+              <td style="background:${btn.background || '#d4883a'};border-radius:${btn.border_radius || '8px'};box-shadow:${btn.shadow || 'none'};">
+                <a href="#" onclick="return false" style="display:inline-block;padding:${btn.padding || '14px 36px'};color:${btn.text_color || '#fff'};text-decoration:none;font-weight:${btn.font_weight || '600'};font-size:16px;font-family:${font};letter-spacing:0.02em;">View Your Space</a>
+              </td>
+            </tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto;text-align:center;">
+            <tr>
+              <td style="background:${btn.background || '#d4883a'};border-radius:${btn.border_radius || '8px'};box-shadow:${btn.shadow || 'none'};">
+                <a href="#" onclick="return false" style="display:inline-block;padding:12px 28px;color:${btn.text_color || '#fff'};text-decoration:none;font-weight:${btn.font_weight || '600'};font-size:14px;font-family:${font};letter-spacing:0.02em;">Pay Online</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Callout Boxes -->
+      <div class="brand-playground-section">
+        <h4>Callout Boxes</h4>
+        <p class="brand-hint" style="margin-bottom:12px;">Generated by <code>emailCallout(innerHtml)</code> in the brand wrapper.</p>
+        <div style="background:${c.background || '#faf9f6'};border:1px solid ${c.border || '#e6e2d9'};border-radius:8px;padding:24px;">
+          <div style="background:${callout.background || '#f2f0e8'};border:1px solid ${callout.border_color || '#e6e2d9'};border-radius:${callout.border_radius || '8px'};padding:${callout.padding || '20px 24px'};margin-bottom:12px;font-family:${font};">
+            <p style="margin:0 0 8px;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:${c.text_muted || '#7d6f74'};">Important Information</p>
+            <p style="margin:0;font-size:15px;color:${c.text || '#2a1f23'};line-height:1.5;">Your move-in date is <strong>March 1, 2026</strong>. Please arrive after 3:00 PM. Your door code will be sent separately.</p>
+          </div>
+          <div style="background:#fdf1e0;border-left:3px solid ${c.accent || '#d4883a'};padding:10px 16px;border-radius:0 8px 8px 0;font-family:${font};">
+            <p style="margin:0;color:${c.text_muted || '#7d6f74'};font-size:13px;line-height:1.5;"><strong style="color:${c.text || '#2a1f23'};">Reminder:</strong> Please review the visiting guidelines before sharing the address with guests.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="brand-playground-section">
+        <h4>Info Tables</h4>
+        <p class="brand-hint" style="margin-bottom:12px;">Used in move-in emails, payment receipts, and reservation details.</p>
+        <div style="background:${c.background || '#faf9f6'};border:1px solid ${c.border || '#e6e2d9'};border-radius:8px;padding:24px;">
+          <table style="border-collapse:collapse;width:100%;font-size:14px;border:1px solid ${c.border || '#e6e2d9'};border-radius:8px;overflow:hidden;font-family:${font};">
+            <thead>
+              <tr style="background:${c.background_dark || '#1c1618'};">
+                <th colspan="2" style="padding:10px 12px;text-align:left;color:${c.text_light || '#faf9f6'};font-weight:600;font-size:14px;letter-spacing:0.3px;">Reservation Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:${c.background || '#faf9f6'};">
+                <td style="padding:10px 12px;color:${c.text_muted || '#7d6f74'};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;width:120px;">Space</td>
+                <td style="padding:10px 12px;color:${c.accent || '#d4883a'};font-size:15px;font-weight:600;">Spartan Suite</td>
+              </tr>
+              <tr style="background:${c.background_muted || '#f2f0e8'};">
+                <td style="padding:10px 12px;color:${c.text_muted || '#7d6f74'};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Move-in</td>
+                <td style="padding:10px 12px;color:${c.text || '#2a1f23'};font-size:15px;font-weight:600;">March 1, 2026</td>
+              </tr>
+              <tr style="background:${c.background || '#faf9f6'};">
+                <td style="padding:10px 12px;color:${c.text_muted || '#7d6f74'};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Rate</td>
+                <td style="padding:10px 12px;color:${c.text || '#2a1f23'};font-size:15px;font-weight:600;">$1,200/mo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payment Badges -->
+      <div class="brand-playground-section">
+        <h4>Payment Method Badges</h4>
+        <p class="brand-hint" style="margin-bottom:12px;">Colored badges for different payment methods shown in move-in and receipt emails.</p>
+        <div style="background:${c.background || '#faf9f6'};border:1px solid ${c.border || '#e6e2d9'};border-radius:8px;padding:24px;display:flex;gap:8px;flex-wrap:wrap;font-family:${font};">
+          <span style="display:inline-block;background:#3d95ce;color:white;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">Venmo</span>
+          <span style="display:inline-block;background:#6c1cd3;color:white;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">Zelle</span>
+          <span style="display:inline-block;background:#003087;color:white;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">PayPal</span>
+          <span style="display:inline-block;background:#635bff;color:white;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">Stripe</span>
+          <span style="display:inline-block;background:#2e7d32;color:white;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">Bank</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// EMAIL ANATOMY
+// =============================================
+
+function renderEmailAnatomy() {
+  const el = document.getElementById('emailAnatomy');
+  if (!el) return;
+  const e = brandConfig.email || {};
+  const c = brandConfig.colors?.primary || {};
+
+  el.innerHTML = `
+    <div class="brand-anatomy">
+      <div class="brand-anatomy-diagram">
+        <!-- Max width annotation -->
+        <div class="brand-anatomy-width">
+          <span class="brand-anatomy-arrow">&larr; ${e.max_width || '600px'} max-width &rarr;</span>
+        </div>
+
+        <!-- Container -->
+        <div class="brand-anatomy-container" style="border:2px dashed ${c.accent || '#d4883a'};border-radius:12px;overflow:hidden;max-width:400px;margin:0 auto;">
+
+          <!-- Header -->
+          <div style="background:${c.background_dark || '#1c1618'};padding:20px;text-align:center;position:relative;">
+            <span style="color:${c.text_light || '#faf9f6'};font-size:13px;font-weight:600;">HEADER</span>
+            <span class="brand-anatomy-label" style="right:-80px;">pad: ${e.header?.padding || '32px'}</span>
+          </div>
+
+          <!-- Body -->
+          <div style="background:${c.background || '#faf9f6'};padding:20px;position:relative;min-height:100px;display:flex;align-items:center;justify-content:center;">
+            <span style="color:${c.text || '#2a1f23'};font-size:13px;font-weight:600;">BODY CONTENT</span>
+            <span class="brand-anatomy-label" style="right:-80px;">pad: ${e.body?.padding || '32px'}</span>
+          </div>
+
+          <!-- Gallery -->
+          <div style="background:${c.background || '#faf9f6'};padding:8px 20px;text-align:center;border-top:1px dashed ${c.border || '#e6e2d9'};position:relative;">
+            <span style="color:${c.text_muted || '#7d6f74'};font-size:11px;">IMAGE GALLERY</span>
+          </div>
+
+          <!-- Footer -->
+          <div style="background:${c.background_muted || '#f2f0e8'};padding:14px 20px;text-align:center;border-top:1px solid ${c.border || '#e6e2d9'};position:relative;">
+            <span style="color:${c.text_muted || '#7d6f74'};font-size:13px;font-weight:600;">FOOTER</span>
+            <span class="brand-anatomy-label" style="right:-80px;">pad: ${e.footer?.padding || '20px 32px'}</span>
+          </div>
+        </div>
+
+        <!-- Outer padding annotation -->
+        <div class="brand-anatomy-outer">
+          <span style="font-size:0.75rem;color:${c.text_muted || '#7d6f74'};">Outer background: <code style="font-size:0.7rem;">${c.background_muted || '#f2f0e8'}</code> &middot; Outer padding: <code style="font-size:0.7rem;">24px 16px</code></span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="brand-anatomy-legend">
+        <div class="brand-anatomy-legend-item">
+          <span class="brand-anatomy-swatch" style="background:${c.background_dark || '#1c1618'};"></span>
+          <span>Header: Logo + wordmark on dark bg</span>
+        </div>
+        <div class="brand-anatomy-legend-item">
+          <span class="brand-anatomy-swatch" style="background:${c.background || '#faf9f6'};border:1px solid ${c.border || '#e6e2d9'};"></span>
+          <span>Body: Main content area (cream)</span>
+        </div>
+        <div class="brand-anatomy-legend-item">
+          <span class="brand-anatomy-swatch" style="background:${c.background_muted || '#f2f0e8'};border:1px solid ${c.border || '#e6e2d9'};"></span>
+          <span>Footer + Outer: Muted background</span>
+        </div>
+        <div class="brand-anatomy-legend-item">
+          <span class="brand-anatomy-swatch" style="background:${c.accent || '#d4883a'};"></span>
+          <span>Container outline (12px border-radius)</span>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // =============================================

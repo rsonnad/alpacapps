@@ -1106,6 +1106,128 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   word-break: break-word;
 }
 
+/* Contrast Pairings */
+.brand-contrast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.brand-contrast-pair {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.brand-contrast-preview {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.brand-contrast-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg);
+  font-size: 0.8rem;
+}
+.brand-contrast-label {
+  color: var(--text-muted);
+}
+.brand-contrast-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+.brand-contrast-badge--aaa {
+  background: #d4edda;
+  color: #155724;
+}
+.brand-contrast-badge--aa {
+  background: #cce5ff;
+  color: #004085;
+}
+.brand-contrast-badge--fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Type Specimen */
+.brand-specimen {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Component Playground */
+.brand-playground {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.brand-playground-section h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Email Anatomy */
+.brand-anatomy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.brand-anatomy-diagram {
+  position: relative;
+  padding: 12px 0;
+}
+.brand-anatomy-width {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.brand-anatomy-arrow {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.brand-anatomy-container {
+  position: relative;
+}
+.brand-anatomy-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Menlo', monospace;
+}
+.brand-anatomy-outer {
+  text-align: center;
+  margin-top: 12px;
+}
+.brand-anatomy-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+.brand-anatomy-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.brand-anatomy-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 /* Raw JSON */
 .brand-json {
   background: var(--bg);
@@ -1145,6 +1267,18 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   }
   .brand-type-label {
     width: auto;
+  }
+  .brand-contrast-grid {
+    grid-template-columns: 1fr;
+  }
+  .brand-playground {
+    gap: 16px;
+  }
+  .brand-anatomy {
+    grid-template-columns: 1fr;
+  }
+  .brand-anatomy-label {
+    display: none;
   }
 }
 
