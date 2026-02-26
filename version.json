@@ -1,12 +1,12 @@
 {
-  "version": "v260226.07 11:27a",
-  "release": 353,
-  "sha": "f6653b9f5",
-  "fullSha": "f6653b9f5d377a6b9c5cb3509077970e5d1745bc",
+  "version": "v260226.08 11:44a",
+  "release": 354,
+  "sha": "b3ac11440",
+  "fullSha": "b3ac11440fc34d1ea0b10e91dc8e3ba483dd9b1e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 17:27:43+00",
-  "commits": [{"sha":"f6653b9f5","message":"docs: add Hostinger VPS + OpenClaw info to architecture and context docs","author":"Rahul"}]
+  "pushedAt": "2026-02-26 17:44:41+00",
+  "commits": [{"sha":"b3ac11440","message":"docs: add alpaclaw.cloud domain + Caddy reverse proxy info","author":"Rahul"}]
 }
