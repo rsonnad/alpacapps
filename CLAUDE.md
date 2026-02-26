@@ -52,14 +52,14 @@ AlpacApps is a property management system for AlpacApps Residency. It manages re
 - Mobile: Capacitor 8 (iOS + Android) wrapping mobile-first SPA
 - Backend: Supabase (PostgreSQL + Storage + Auth + Edge Functions)
 - Hosting: GitHub Pages (static site)
-- Bot: OpenClaw Discord bot (separate DigitalOcean droplet)
+- Bot: OpenClaw chatbot gateway (Hostinger VPS, Docker)
 
 ## Architecture
 
 ```
 Browser → GitHub Pages (static HTML/JS) ──→ Supabase (database + storage + edge functions)
                                           ↗
-Discord → OpenClaw Bot (DO Droplet) ────┘
+Discord/WhatsApp/Telegram → OpenClaw (Hostinger VPS) → Supabase
                                           ↗
 Mobile  → Capacitor App (iOS/Android) ──┘
             (same shared/ code as web)
@@ -955,8 +955,20 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - Client service: `shared/sms-service.js` (mirrors email-service.js pattern)
 - Admin UI: Settings tab has test mode toggle, compose SMS, bulk SMS, inbound SMS view
 
-### DigitalOcean Droplet
-- Runs OpenClaw Discord bot and Bug Scout (`bug_scout.js`)
+### Hostinger VPS (OpenClaw Server)
+- **IP:** `93.188.164.224` | **SSH:** `ssh root@93.188.164.224`
+- **OS:** Ubuntu 24.04, KVM 4, 15 GB RAM, 200 GB disk
+- **Docker:** OpenClaw v2026.2.23 chatbot gateway (multi-channel: Discord, WhatsApp, Telegram, Slack)
+- **Docker Compose:** `/docker/openclaw-vnfd/docker-compose.yml` with `.env` file
+- **Container:** `openclaw-vnfd-openclaw-1` from `ghcr.io/hostinger/hvps-openclaw:latest`
+- **Ports:** `43414` (server.mjs proxy) → `18789` (internal gateway)
+- **LLM:** Gemini (free tier) — `gemini-2.5-flash` primary model
+- **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management
+- **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. All config via `.env` file only.
+- **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, full `.env` contents
+
+### DigitalOcean Droplet (DEPRECATED — migrating to Hostinger + Oracle)
+- Runs Bug Scout (`bug_scout.js`) and background workers
 - Bug Scout: polls `bug_reports` for pending bugs → runs Claude Code to fix → commits to `bugfix/` branch → merges to main
 - Feature Builder: `feature-builder/feature_builder.js` — polls PAI feature requests → runs Claude Code to implement
 - Bug fixer repo is a clone of this repo, used for verification screenshots
