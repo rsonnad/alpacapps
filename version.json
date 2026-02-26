@@ -1,12 +1,12 @@
 {
-  "version": "v260225.18 6:34p",
-  "release": 342,
-  "sha": "a293b372a",
-  "fullSha": "a293b372a77c83ecb693136e2007c0cfcbd4ab5f",
+  "version": "v260225.19 6:35p",
+  "release": 343,
+  "sha": "0814e6e95",
+  "fullSha": "0814e6e9589632729490ff09e1e4275ee4bebae0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 00:34:12+00",
-  "commits": [{"sha":"a293b372a","message":"Brand guide: add visual examples (contrast pairings, type specimen, component playground, email anatomy)","author":"Rahul"}]
+  "pushedAt": "2026-02-26 00:35:58+00",
+  "commits": [{"sha":"0814e6e95","message":"Restore 'redefine' tagline to move-in email intro","author":"Rahul"}]
 }
