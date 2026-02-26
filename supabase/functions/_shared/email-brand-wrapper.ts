@@ -52,7 +52,7 @@ const FALLBACK = {
   },
   email: {
     max_width: '600px',
-    header: { background: '#1c1618', text_color: '#faf9f6', padding: '32px', logo_height: '40px', wordmark_height: '20px' },
+    header: { background: '#2d2225', text_color: '#faf9f6', padding: '20px', logo_height: '40px', wordmark_height: '20px' },
     body: { background: '#faf9f6', text_color: '#2a1f23', text_muted: '#7d6f74', padding: '32px', line_height: '1.6' },
     callout: { background: '#f2f0e8', border_color: '#e6e2d9', border_radius: '8px', padding: '20px 24px' },
     button: { background: '#d4883a', text_color: '#ffffff', border_radius: '8px', padding: '14px 36px', font_weight: '600', shadow: '0 2px 8px rgba(212, 136, 58, 0.30)' },
