@@ -1,12 +1,12 @@
 {
-  "version": "v260225.20 6:37p",
-  "release": 344,
-  "sha": "f40e5cf40",
-  "fullSha": "f40e5cf4018fee2e6a26ad9d07ede65bc52656ca",
+  "version": "v260225.22 6:42p",
+  "release": 346,
+  "sha": "6a75c1be2",
+  "fullSha": "6a75c1be28ada5d8a4b0f5f447d0040dc7ce309a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 00:37:39+00",
-  "commits": [{"sha":"48444a8e3","message":"Fix move-in email subject: \"Reservation Confirmed - {space} - {date}\"","author":"Rahul"},{"sha":"f40e5cf40","message":"Merge branch 'festive-bardeen'","author":"Rahul"}]
+  "pushedAt": "2026-02-26 00:42:25+00",
+  "commits": [{"sha":"6a75c1be2","message":"Email Design Guide: replace tables with visual examples","author":"Rahul"}]
 }
