@@ -516,7 +516,7 @@ Alpaca Playhouse`
       if (data.space_image_url) _extraImages.push(data.space_image_url);
 
       return {
-        subject: "Welcome Home! Move-in Confirmed - Alpaca Playhouse",
+        subject: `Reservation Confirmed - ${data.space_name}${data.move_in_date ? ` - ${data.move_in_date}` : ''}`,
         _extraImages,
         html: `
           <p style="color:${B.text};font-size:15px;line-height:1.5;margin:0 0 8px;">Hi ${data.first_name},</p>
