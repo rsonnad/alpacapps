@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Alpaclaw Architecture — Alpaca Playhouse</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    .arch-diagram {
+      background: #1c1618;
+      color: #e8e0d8;
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      white-space: pre;
+      margin: 1.5rem 0;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef9c3; color: #854d0e; }
+    .status-disabled { background: #f3f4f6; color: #6b7280; }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .info-card {
+      background: #fff;
+      border: 1px solid #e8e0d8;
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .info-card h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #8b7e82;
+      margin-bottom: 0.75rem;
+    }
+    .info-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1c1618;
+    }
+    .info-card .detail {
+      font-size: 0.85rem;
+      color: #6b5e62;
+      margin-top: 0.25rem;
+    }
+    table.arch-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    table.arch-table th {
+      background: #f8f7f4;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      border-bottom: 2px solid #e8e0d8;
+    }
+    table.arch-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid #f0efe8;
+      vertical-align: top;
+    }
+    table.arch-table tr:last-child td { border-bottom: none; }
+    table.arch-table code {
+      background: #f0efe8;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+    .section-icon {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      line-height: 2rem;
+      text-align: center;
+      background: #d4883a;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+    .callout {
+      background: #fef9c3;
+      border-left: 4px solid #d4883a;
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .callout strong { color: #854d0e; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="aap-header aap-header--transparent aap-header--light" id="aap-header">
+    <div class="aap-header__inner">
+      <a href="/" class="aap-header__logo">
+        <img width="21" height="30" src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__icon" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
+        <img width="22" height="22" src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse" class="aap-header__wordmark" data-light-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" data-dark-src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png">
+        <span title="Site version" class="aap-header__version" data-site-version></span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
+    <div class="aap-hero__content">
+      <h1 class="aap-hero__title">Alpaclaw Architecture</h1>
+      <p class="aap-hero__subtitle">OpenClaw-powered AI operations agent for AlpacApps Residency</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <div class="aap-content">
+
+    <!-- Overview Cards -->
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Agent Name</h3>
+        <div class="value">Alpaclaw</div>
+        <div class="detail">Operations orchestrator for property management</div>
+      </div>
+      <div class="info-card">
+        <h3>Server</h3>
+        <div class="value">Hostinger KVM 4</div>
+        <div class="detail">4 vCPU &middot; 16 GB RAM &middot; 200 GB NVMe</div>
+      </div>
+      <div class="info-card">
+        <h3>OpenClaw Version</h3>
+        <div class="value">2026.2.23</div>
+        <div class="detail">Gateway on port 43414</div>
+      </div>
+      <div class="info-card">
+        <h3>Primary Model</h3>
+        <div class="value">Gemini 2.5 Flash</div>
+        <div class="detail">With Pro fallback for complex reasoning</div>
+      </div>
+    </div>
+
+    <!-- System Diagram -->
+    <section id="diagram">
+      <h2><span class="section-icon">1</span> System Architecture</h2>
+      <p>Alpaclaw runs as a Docker container on the Hostinger VPS, connected to messaging platforms and the AlpacApps backend.</p>
+      <div class="arch-diagram">                          Hostinger KVM 4 VPS
+                   93.188.164.224 &middot; Ubuntu 24.04 + Docker
+
+  WhatsApp ────┐    ┌──────────────────────────────────────┐
+  Telegram ────┤    │      OpenClaw Gateway (Docker)       │
+  Discord  ────┼───&gt;│         "Alpaclaw" &#x1F999;                │
+  Web Chat ────┘    │  SOUL.md &middot; USER.md &middot; AGENTS.md       │
+                    │  Skills &middot; Memory &middot; Cron &middot; Canvas     │
+                    └──────────┬──────────────┬────────────┘
+                               │              │
+              ┌────────────────┘              └─────────────────┐
+              ▼                                                 ▼
+    ┌─────────────────┐                              ┌──────────────────┐
+    │   Supabase      │                              │  LLM Providers   │
+    │   PostgreSQL    │                              │  Gemini 2.5 Flash│
+    │   Edge Functions│                              │  Gemini 2.5 Pro  │
+    │   Storage       │                              │  nexos.ai (soon) │
+    └─────────────────┘                              └──────────────────┘</div>
+    </section>
+
+    <!-- Infrastructure -->
+    <section id="infrastructure">
+      <h2><span class="section-icon">2</span> Infrastructure</h2>
+      <table class="arch-table">
+        <thead><tr><th>Component</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Host</td><td>Hostinger KVM 4 VPS</td></tr>
+          <tr><td>IP Address</td><td><code>93.188.164.224</code></td></tr>
+          <tr><td>Hostname</td><td><code>srv1433869.hstgr.cloud</code></td></tr>
+          <tr><td>OS</td><td>Ubuntu 24.04 LTS + Docker</td></tr>
+          <tr><td>Resources</td><td>4 vCPU &middot; 16 GB RAM &middot; 200 GB NVMe &middot; 16 TB bandwidth</td></tr>
+          <tr><td>Container Image</td><td><code>ghcr.io/hostinger/hvps-openclaw:latest</code></td></tr>
+          <tr><td>OpenClaw Version</td><td><code>2026.2.23</code></td></tr>
+          <tr><td>Gateway Port</td><td><code>43414</code> (TCP)</td></tr>
+          <tr><td>Data Volume</td><td><code>/docker/openclaw-vnfd/data/</code></td></tr>
+          <tr><td>Cost</td><td>~$9.99/mo (Hostinger KVM 4 intro rate)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Messaging Channels -->
+    <section id="channels">
+      <h2><span class="section-icon">3</span> Messaging Channels</h2>
+      <p>Alpaclaw connects to residents and operators through multiple messaging platforms simultaneously.</p>
+      <table class="arch-table">
+        <thead><tr><th>Channel</th><th>Status</th><th>Configuration</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>WhatsApp</td>
+            <td><span class="status-badge status-active">Active</span></td>
+            <td>Allowlist mode, number: <code>424-234-1750</code></td>
+          </tr>
+          <tr>
+            <td>Telegram</td>
+            <td><span class="status-badge status-pending">Pending</span></td>
+            <td>Pairing DM policy &mdash; awaiting bot token from @BotFather</td>
+          </tr>
+          <tr>
+            <td>Discord</td>
+            <td><span class="status-badge status-pending">Pending</span></td>
+            <td>Will share PAI bot token initially, split later</td>
+          </tr>
+          <tr>
+            <td>Slack</td>
+            <td><span class="status-badge status-disabled">Unconfigured</span></td>
+            <td>Available but not yet connected</td>
+          </tr>
+          <tr>
+            <td>Google Chat</td>
+            <td><span class="status-badge status-disabled">Unconfigured</span></td>
+            <td>Available but not yet connected</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Multi-Agent -->
+    <section id="agents">
+      <h2><span class="section-icon">4</span> Multi-Agent Hierarchy</h2>
+      <p>Alpaclaw delegates complex tasks to specialized sub-agents, each with their own model and scope.</p>
+      <div class="arch-diagram">Alpaclaw (CEO / Orchestrator)
+  │   Model: Gemini 2.5 Flash
+  │   Role: Property management, resident comms, smart home
+  │
+  ├── Research Sub-Agent
+  │     Model: Gemini 2.5 Pro
+  │     Role: Deep analysis, market research, complex reasoning
+  │     Scope: Read-only, no external actions
+  │
+  ├── Automation Sub-Agent
+  │     Model: Gemini 2.5 Flash Lite
+  │     Role: Batch processing, status checks, monitoring
+  │     Scope: Pre-approved automation patterns only
+  │
+  └── [Future] Smart Home Agent
+        Model: Flash
+        Role: Direct IoT device control
+        Scope: Sonos, Govee, Nest, Tesla commands</div>
+    </section>
+
+    <!-- Model Routing -->
+    <section id="models">
+      <h2><span class="section-icon">5</span> Model Routing &amp; Cost Optimization</h2>
+      <p>Tasks are routed to the cheapest capable model, saving 80%+ on token costs.</p>
+      <table class="arch-table">
+        <thead><tr><th>Task Type</th><th>Model</th><th>Cost (per 1M tokens)</th></tr></thead>
+        <tbody>
+          <tr><td>Orchestration (routing, delegation)</td><td>Gemini 2.5 Flash</td><td>$0.15 / $3.50</td></tr>
+          <tr><td>Simple tasks (status, formatting)</td><td>Gemini 2.5 Flash Lite</td><td>Cheapest tier</td></tr>
+          <tr><td>Complex reasoning (analysis, strategy)</td><td>Gemini 2.5 Pro</td><td>$1.25 / $10.00</td></tr>
+          <tr><td>Image generation</td><td>Gemini 2.5 Flash Image</td><td>~$0.039/image</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>Cost Strategy:</strong> Route 80%+ of requests through Flash/Lite. Reserve Pro for explicit complex reasoning. Cache data in workspace memory files. Batch API calls. Use one-topic sessions to avoid context bloat.
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section id="security">
+      <h2><span class="section-icon">6</span> Security</h2>
+      <table class="arch-table">
+        <thead><tr><th>Layer</th><th>Protection</th></tr></thead>
+        <tbody>
+          <tr><td>Hostinger Firewall</td><td>API-managed (ID: <code>221167</code>). Ports 22, 80, 443, 43414 only.</td></tr>
+          <tr><td>UFW</td><td>Default deny incoming, allow outgoing. Same port whitelist.</td></tr>
+          <tr><td>fail2ban</td><td>SSHD jail: 3 max retries, 2-hour ban. Already catching attackers.</td></tr>
+          <tr><td>Gateway Auth</td><td>Token-based (<code>OPENCLAW_GATEWAY_TOKEN</code>)</td></tr>
+          <tr><td>Docker Isolation</td><td>Container runs as <code>node</code> user (uid 1000)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Ecosystem -->
+    <section id="ecosystem">
+      <h2><span class="section-icon">7</span> AlpacApps Ecosystem</h2>
+      <p>Alpaclaw is one of several AI systems in the AlpacApps infrastructure, each with a distinct role.</p>
+      <table class="arch-table">
+        <thead><tr><th>System</th><th>Host</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Alpaclaw</strong></td><td>Hostinger VPS</td><td>Operations orchestrator (messaging, automation, multi-agent)</td></tr>
+          <tr><td>PAI (Edge Function)</td><td>Supabase</td><td>Resident-facing AI assistant (chat, voice, smart home)</td></tr>
+          <tr><td>PAI Discord Bot</td><td>Oracle Cloud</td><td>Discord &harr; PAI bridge</td></tr>
+          <tr><td>Bug Scout</td><td>Oracle Cloud</td><td>Automated bug detection and fixing</td></tr>
+          <tr><td>Feature Builder</td><td>Oracle Cloud</td><td>Automated feature implementation from PAI requests</td></tr>
+          <tr><td>Tesla Poller</td><td>Oracle Cloud</td><td>Vehicle data polling (6 Teslas)</td></tr>
+          <tr><td>LG Poller</td><td>Oracle Cloud</td><td>Washer/dryer status monitoring</td></tr>
+          <tr><td>Image Gen Worker</td><td>Oracle Cloud</td><td>Gemini-powered image generation</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Workspace Files -->
+    <section id="workspace">
+      <h2><span class="section-icon">8</span> Workspace Configuration</h2>
+      <table class="arch-table">
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>SOUL.md</code></td><td>Agent personality, mission, boundaries, operational context, token economy</td></tr>
+          <tr><td><code>USER.md</code></td><td>User profile (Rahulio &mdash; owner, timezone, preferences)</td></tr>
+          <tr><td><code>IDENTITY.md</code></td><td>Agent identity: Alpaclaw, alpaca, warm &amp; proactive</td></tr>
+          <tr><td><code>AGENTS.md</code></td><td>Multi-agent hierarchy definitions and routing</td></tr>
+          <tr><td><code>HEARTBEAT.md</code></td><td>Periodic tasks: 9 AM checks, 6 PM summary, Monday report</td></tr>
+          <tr><td><code>MEMORY.md</code></td><td>Persistent memory across sessions</td></tr>
+          <tr><td><code>TOOLS.md</code></td><td>Available tool documentation and examples</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Admin -->
+    <section id="admin">
+      <h2><span class="section-icon">9</span> Administration</h2>
+      <div class="callout">
+        <strong>Quick Reference:</strong> SSH to <code>root@93.188.164.224</code>. Docker logs: <code>docker logs openclaw-vnfd-openclaw-1 --tail 100 -f</code>. Restart: <code>docker restart openclaw-vnfd-openclaw-1</code>. Config: <code>/docker/openclaw-vnfd/data/.openclaw/openclaw.json</code>.
+      </div>
+    </section>
+
+    <!-- Future -->
+    <section id="future">
+      <h2><span class="section-icon">10</span> Roadmap</h2>
+      <table class="arch-table">
+        <thead><tr><th>Enhancement</th><th>Priority</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>HTTPS / TLS</td><td>High</td><td>Caddy reverse proxy for secure gateway access</td></tr>
+          <tr><td>Tailscale VPN</td><td>High</td><td>Mesh VPN to link Hostinger &harr; Alpaca Mac</td></tr>
+          <tr><td>nexos.ai Credits</td><td>Medium</td><td>Hostinger LLM credits for multi-provider routing</td></tr>
+          <tr><td>Supabase Integration</td><td>Medium</td><td>Direct database access for operational queries</td></tr>
+          <tr><td>Smart Home Skills</td><td>Medium</td><td>Custom ClawHub skills for Sonos, Govee, Nest, Tesla</td></tr>
+          <tr><td>Monitoring Dashboard</td><td>Low</td><td>Token usage, cost tracking, session analytics</td></tr>
+          <tr><td>Automatic Backups</td><td>Low</td><td>Hostinger weekly backup schedule</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Table of Contents (bottom) -->
+    <nav style="background: #f8f7f4; padding: 1.25rem; border-radius: 8px; margin-top: 2rem;">
+      <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.85rem;">Jump To</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <a href="#diagram" style="font-size: 0.85rem;">Architecture</a> &middot;
+        <a href="#infrastructure" style="font-size: 0.85rem;">Infrastructure</a> &middot;
+        <a href="#channels" style="font-size: 0.85rem;">Channels</a> &middot;
+        <a href="#agents" style="font-size: 0.85rem;">Agents</a> &middot;
+        <a href="#models" style="font-size: 0.85rem;">Models</a> &middot;
+        <a href="#security" style="font-size: 0.85rem;">Security</a> &middot;
+        <a href="#ecosystem" style="font-size: 0.85rem;">Ecosystem</a> &middot;
+        <a href="#workspace" style="font-size: 0.85rem;">Workspace</a> &middot;
+        <a href="#admin" style="font-size: 0.85rem;">Admin</a> &middot;
+        <a href="#future" style="font-size: 0.85rem;">Roadmap</a>
+      </div>
+    </nav>
+
+  </div><!-- /aap-content -->
+
+  <!-- Footer -->
+  <footer class="aap-footer">
+    <div class="aap-footer__inner">
+      <p>&copy; 2026 AlpacApps Residency &middot; Cedar Creek, TX</p>
+      <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 0.25rem;">
+        <span data-site-version>v260226.04</span>
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="/shared/version-info.js"></script>
+</body>
+</html>
