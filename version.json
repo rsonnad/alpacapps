@@ -1,12 +1,12 @@
 {
-  "version": "v260225.19 6:35p",
-  "release": 343,
-  "sha": "0814e6e95",
-  "fullSha": "0814e6e9589632729490ff09e1e4275ee4bebae0",
+  "version": "v260225.20 6:37p",
+  "release": 344,
+  "sha": "f40e5cf40",
+  "fullSha": "f40e5cf4018fee2e6a26ad9d07ede65bc52656ca",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 00:35:58+00",
-  "commits": [{"sha":"0814e6e95","message":"Restore 'redefine' tagline to move-in email intro","author":"Rahul"}]
+  "pushedAt": "2026-02-26 00:37:39+00",
+  "commits": [{"sha":"48444a8e3","message":"Fix move-in email subject: \"Reservation Confirmed - {space} - {date}\"","author":"Rahul"},{"sha":"f40e5cf40","message":"Merge branch 'festive-bardeen'","author":"Rahul"}]
 }
