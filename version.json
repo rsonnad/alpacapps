@@ -1,12 +1,12 @@
 {
-  "version": "v260226.04 10:44a",
-  "release": 350,
-  "sha": "fe85fc967",
-  "fullSha": "fe85fc9673dba02487dd68938e0886ef9247ea48",
+  "version": "v260226.06 10:50a",
+  "release": 352,
+  "sha": "302220a52",
+  "fullSha": "302220a52d9ea8fb82b63b422c849164756910fa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 16:44:25+00",
-  "commits": [{"sha":"fe85fc967","message":"docs: mention version tracking in getting-started guide","author":"Rahul"}]
+  "pushedAt": "2026-02-26 16:50:41+00",
+  "commits": [{"sha":"302220a52","message":"Revert \"docs: add instructions for pulling version system into existing projects\"","author":"Rahul"}]
 }
