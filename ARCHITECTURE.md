@@ -57,7 +57,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Photo Storage | Supabase Storage | bucket: `housephotos` |
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
-| OpenClaw Chatbot Gateway | Hostinger VPS | Docker on `93.188.164.224`, port 43414 |
+| OpenClaw Chatbot Gateway | Hostinger VPS | https://alpaclaw.cloud (Caddy → Docker:43414) |
 | OpenClaw Bot (legacy) | DigitalOcean | Droplet (being replaced by Hostinger) |
 | Bug Fixer Worker | DigitalOcean | Same droplet as legacy OpenClaw |
 | E-Signatures | SignWell | API: signwell.com/api |
