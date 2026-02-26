@@ -1,12 +1,12 @@
 {
-  "version": "v260225.22 6:42p",
-  "release": 346,
-  "sha": "6a75c1be2",
-  "fullSha": "6a75c1be28ada5d8a4b0f5f447d0040dc7ce309a",
+  "version": "v260226.01 3:07a",
+  "release": 347,
+  "sha": "0d3a9c063",
+  "fullSha": "0d3a9c063ef0d14b95c306e16ea17ad5a3d3a4d4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 00:42:25+00",
-  "commits": [{"sha":"6a75c1be2","message":"Email Design Guide: replace tables with visual examples","author":"Rahul"}]
+  "pushedAt": "2026-02-26 09:07:14+00",
+  "commits": [{"sha":"0d3a9c063","message":"Add getting-started guide for AlpacApps Infra","author":"Rahul"}]
 }
