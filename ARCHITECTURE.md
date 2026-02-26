@@ -57,8 +57,9 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Photo Storage | Supabase Storage | bucket: `housephotos` |
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
-| OpenClaw Bot | DigitalOcean | Droplet (separate system) |
-| Bug Fixer Worker | DigitalOcean | Same droplet as OpenClaw |
+| OpenClaw Chatbot Gateway | Hostinger VPS | Docker on `93.188.164.224`, port 43414 |
+| OpenClaw Bot (legacy) | DigitalOcean | Droplet (being replaced by Hostinger) |
+| Bug Fixer Worker | DigitalOcean | Same droplet as legacy OpenClaw |
 | E-Signatures | SignWell | API: signwell.com/api |
 | Payments | Square | API: connect.squareup.com |
 | Email (Outbound) | Resend | Domain: alpacaplayhouse.com, API key in Supabase secrets |
@@ -95,6 +96,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Glowforge Laser | Glowforge Cloud API | Undocumented API, config in `glowforge_config` table |
 | Payment Page | GitHub Pages | Self-service tenant payment at `/pay/` |
 | Oracle Cloud (Migration) | Oracle Cloud Always Free | ARM64 4-core 24GB replacing DO ($0/mo) |
+| Hostinger VPS | Hostinger KVM 4 | OpenClaw chatbot gateway, Docker, 15GB RAM, 200GB disk |
 
 ## Repository Structure
 
@@ -1319,7 +1321,9 @@ ORDER BY count DESC;
 |---------|---------|
 | GitHub | rsonnad |
 | Supabase | (Rahul's account) |
-| DigitalOcean | (Rahul's account) |
+| Hostinger | alpacaplayhouse@gmail.com |
+| DigitalOcean | (Rahul's account) — DEPRECATED |
+| Oracle Cloud | wingsiebird@gmail.com (alpacapps-ops) |
 
 ## Recent Features
 
@@ -1964,7 +1968,23 @@ All resident-facing edge functions follow the same pattern:
 4. Proxy request to external API
 5. Return response
 
-## DigitalOcean Droplet Workers
+## Hostinger VPS (OpenClaw)
+
+OpenClaw v2026.2.23 runs as a Docker container on the Hostinger VPS (`93.188.164.224`). It is an AI chatbot gateway that connects to multiple channels (Discord, WhatsApp, Telegram, Slack, etc.) using Gemini as the LLM provider.
+
+| Component | Details |
+|-----------|---------|
+| Docker Compose | `/docker/openclaw-vnfd/docker-compose.yml` |
+| Environment | `/docker/openclaw-vnfd/.env` |
+| Container | `openclaw-vnfd-openclaw-1` |
+| Image | `ghcr.io/hostinger/hvps-openclaw:latest` |
+| Ports | `43414` (proxy) → `18789` (gateway) |
+| LLM | Gemini 2.5 Flash (primary), 3 other Gemini models |
+| MCP | `hostinger-api-mcp` in `.mcp.json` for Claude Code management |
+
+**Note:** OpenClaw's `server.mjs` startup script regenerates config files from environment variables on every restart. Config changes MUST go through the `.env` file.
+
+## DigitalOcean Droplet Workers (DEPRECATED — migrating to Hostinger + Oracle)
 
 All background workers run on the DO droplet as systemd services:
 
