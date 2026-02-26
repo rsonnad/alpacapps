@@ -1,12 +1,12 @@
 {
-  "version": "v260226.09 11:53a",
-  "release": 355,
-  "sha": "509a8629f",
-  "fullSha": "509a8629fa40277c8c84705a7bfddad31b87381a",
+  "version": "v260226.10 1:09p",
+  "release": 356,
+  "sha": "ba726d9e9",
+  "fullSha": "ba726d9e9ca673d301f6d5b72c41f195ef64d49c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 17:53:25+00",
-  "commits": [{"sha":"f591b9ed9","message":"docs: add OpenClaw (Alpaclaw) architecture documentation","author":"Rahul"},{"sha":"509a8629f","message":"Merge branch 'epic-mccarthy'","author":"Rahul"}]
+  "pushedAt": "2026-02-26 19:09:34+00",
+  "commits": [{"sha":"ba726d9e9","message":"add Facebook domain verification meta tag","author":"Rahul"}]
 }
