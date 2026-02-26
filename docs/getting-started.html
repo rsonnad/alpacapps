@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started &mdash; AlpacApps Infra</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      background: var(--text);
+      color: #ffffff;
+      padding: 3rem 2rem;
+    }
+    .hero-inner {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      font-size: 1.05rem;
+      color: #b0b0b0;
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .step {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .step h2 {
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    p { margin-bottom: 0.85rem; }
+    strong { font-weight: 600; }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      position: relative;
+    }
+    pre code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      color: var(--text);
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: #b8975a; }
+
+    ol, ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    li::marker { color: var(--accent); font-weight: 600; }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-light);
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .callout.warning {
+      border-color: var(--warning-border);
+      background: var(--warning-bg);
+    }
+    .callout.success {
+      border-color: var(--success);
+      background: var(--success-light);
+    }
+    .callout.claude {
+      border-color: var(--claude-border);
+      background: var(--claude-bg);
+    }
+    .callout strong { display: block; margin-bottom: 0.25rem; }
+
+    a { color: var(--accent); transition: color 0.2s; }
+    a:hover { color: #a08050; }
+
+    .prereqs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .prereq {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+    .prereq .name { font-weight: 600; font-size: 0.9rem; }
+    .prereq .desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .prereq a { font-size: 0.8rem; }
+
+    .time-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--success-light);
+      color: var(--success);
+      margin-left: 0.5rem;
+    }
+
+    .full-guide {
+      text-align: center;
+      padding: 2rem;
+      margin-top: 1rem;
+    }
+    .full-guide a {
+      display: inline-block;
+      background: var(--text);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .full-guide a:hover { background: #333; color: #fff; }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.8rem; }
+      .step { padding: 1.5rem; }
+      .prereqs { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>Getting Started with <span>AlpacApps Infra</span></h1>
+    <p>Clone the template, open Claude Code, and let the setup wizard build your project. Three commands, then the AI takes over.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="step">
+    <h2><span class="step-num">0</span> Prerequisites</h2>
+    <p>You need these installed before starting. Everything else is handled by Claude Code.</p>
+
+    <div class="prereqs">
+      <div class="prereq">
+        <div class="name">Git</div>
+        <div class="desc">Version control</div>
+        <a href="https://git-scm.com/downloads" target="_blank">Install Git &rarr;</a>
+      </div>
+      <div class="prereq">
+        <div class="name">Node.js</div>
+        <div class="desc">JavaScript runtime</div>
+        <a href="https://nodejs.org/" target="_blank">Install Node.js &rarr;</a>
+      </div>
+      <div class="prereq">
+        <div class="name">Claude Code</div>
+        <div class="desc">AI developer CLI</div>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Install Claude Code &rarr;</a>
+      </div>
+      <div class="prereq">
+        <div class="name">GitHub Account</div>
+        <div class="desc">Free, for hosting</div>
+        <a href="https://github.com/signup" target="_blank">Sign up &rarr;</a>
+      </div>
+    </div>
+
+    <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm); font-size: 0.85rem;">
+      <strong>Quick check &mdash; paste into your terminal:</strong>
+      <code>git --version && node --version && claude --version</code><br>
+      If all three print version numbers, you're good. If not, install whatever's missing above.
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">1</span> Clone the template <span class="time-badge">1 min</span></h2>
+    <p>Pick a name for your project (lowercase, hyphens, no spaces). This becomes your GitHub repo name and folder name.</p>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center; margin: 1rem 0; flex-wrap: wrap;">
+      <input type="text" id="project-name" placeholder="my-project-name" value="" style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.9rem; padding: 0.6rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; width: 240px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateCommands()">
+    </div>
+
+    <p>Open a terminal and paste this:</p>
+    <pre><code id="clone-cmd">git clone https://github.com/rsonnad/alpacapps-infra.git my-project-name
+cd my-project-name</code><button class="copy-btn" onclick="copyText('clone-cmd')">Copy</button></pre>
+
+    <p>This downloads the starter template to your computer.</p>
+
+    <div class="callout warning" style="font-size: 0.85rem;">
+      <strong>Windows: "git is not recognized"?</strong>
+      Download Git from <a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a>, install with defaults, close and reopen your terminal, then try again.
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">2</span> Open Claude Code <span class="time-badge">30 sec</span></h2>
+    <p>Make sure you're inside the project folder, then launch Claude Code:</p>
+
+    <pre><code id="claude-cmd">claude</code><button class="copy-btn" onclick="copyText('claude-cmd')">Copy</button></pre>
+
+    <div class="callout claude" style="font-size: 0.85rem;">
+      <strong>Important: you must be inside the cloned folder.</strong>
+      The setup skill lives inside the project at <code>.claude/skills/</code>. If you run <code>claude</code> from a different directory, it won't find the skill. If you see "skill not found," run <code>pwd</code> to check you're in the right place.
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">3</span> Run the setup wizard <span class="time-badge">15-30 min</span></h2>
+    <p>Once Claude Code is running, type this command:</p>
+
+    <pre><code id="skill-cmd">/setup-alpacapps-infra</code><button class="copy-btn" onclick="copyText('skill-cmd')">Copy</button></pre>
+
+    <p>The wizard will:</p>
+    <ol>
+      <li><strong>Ask what you're building</strong> &mdash; describe your project in one sentence</li>
+      <li><strong>Ask which services you need</strong> &mdash; email, SMS, payments, AI, etc.</li>
+      <li><strong>Create your own GitHub repo</strong> &mdash; disconnects from the template, pushes to your account</li>
+      <li><strong>Set up Supabase</strong> &mdash; database, auth, storage, edge functions</li>
+      <li><strong>Configure each service</strong> &mdash; one at a time, validating credentials as it goes</li>
+      <li><strong>Build your CLAUDE.md</strong> &mdash; so future Claude sessions know your entire stack</li>
+    </ol>
+
+    <p>You'll be asked to create accounts and paste credentials. Claude handles all the terminal work &mdash; you never need to run commands yourself.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">4</span> You're live</h2>
+    <p>When the wizard finishes, you'll have:</p>
+    <ul>
+      <li>A live website at <code>https://&lt;you&gt;.github.io/&lt;project&gt;/</code></li>
+      <li>A Supabase database with your tables, auth, and storage</li>
+      <li>Edge functions deployed for any services you picked</li>
+      <li>A <code>CLAUDE.md</code> with your full architecture documented</li>
+      <li>A <code>CLAUDE.local.md</code> (gitignored) with all your credentials</li>
+    </ul>
+
+    <p>From here, just tell Claude Code what to build. It has all the context it needs.</p>
+
+    <div class="callout success" style="font-size: 0.85rem;">
+      <strong>Pro tip:</strong> After setup, every new Claude Code session automatically reads your <code>CLAUDE.md</code> and knows your entire stack &mdash; database schema, API keys location, deployment flow, everything.
+    </div>
+  </div>
+
+  <div class="step" style="border-left: 3px solid var(--warning-border);">
+    <h2>Troubleshooting</h2>
+
+    <p><strong>"Skill not found" or "setup-alpacapps-infra doesn't exist"</strong></p>
+    <p>You're not inside the cloned project folder. The skill only works when Claude Code is launched from inside the project. Fix:</p>
+    <pre><code id="fix-cmd">cd my-project-name
+claude</code><button class="copy-btn" onclick="copyText('fix-cmd')">Copy</button></pre>
+
+    <p><strong>"Supabase CLI not logged in"</strong></p>
+    <p>Claude will handle this &mdash; it runs <code>supabase login</code> which opens your browser. Just click authorize.</p>
+
+    <p><strong>"psql connection refused"</strong></p>
+    <p>Usually a region mismatch in the connection string. Claude will try alternate regions automatically. If it persists, check that your database password doesn't have un-encoded special characters.</p>
+
+    <p><strong>"Pages not deploying"</strong></p>
+    <p>Make sure GitHub Pages is set to "Deploy from a branch" (not GitHub Actions). Go to repo Settings &rarr; Pages &rarr; select <strong>main</strong> branch, <strong>/ (root)</strong> folder.</p>
+  </div>
+
+  <div class="full-guide">
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Want the full detailed guide with service-by-service instructions?</p>
+    <a href="/docs/alpacappsinfra.html">Read the Full Infrastructure Guide &rarr;</a>
+  </div>
+
+</div>
+
+<script>
+function updateCommands() {
+  const name = document.getElementById('project-name').value.trim() || 'my-project-name';
+  document.getElementById('clone-cmd').textContent =
+    `git clone https://github.com/rsonnad/alpacapps-infra.git ${name}\ncd ${name}`;
+  document.getElementById('fix-cmd').textContent = `cd ${name}\nclaude`;
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent);
+  const btn = el.parentElement.querySelector('.copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+</script>
+
+<span data-site-version style="display:none;">v260225.22 6:42p</span>
+</body>
+</html>
