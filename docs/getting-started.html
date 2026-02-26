@@ -364,6 +364,33 @@ claude</code><button class="copy-btn" onclick="copyText('fix-cmd')">Copy</button
 
     <p><strong>"Pages not deploying"</strong></p>
     <p>Make sure GitHub Pages is set to "Deploy from a branch" (not GitHub Actions). Go to repo Settings &rarr; Pages &rarr; select <strong>main</strong> branch, <strong>/ (root)</strong> folder.</p>
+
+    <p><strong>I cloned before the version system was added</strong></p>
+    <p>If your project doesn't have <code>scripts/bump-version.sh</code>, you can pull in the version system from the template. Run this from your project folder:</p>
+    <pre><code id="version-cmd"># Add the template as a temporary remote
+git remote add template https://github.com/rsonnad/alpacapps-infra.git
+git fetch template main
+
+# Copy the version system files
+git checkout template/main -- scripts/bump-version.sh
+git checkout template/main -- .github/workflows/bump-version-on-push.yml
+git checkout template/main -- version.json
+git checkout template/main -- src/lib/version.ts
+git checkout template/main -- src/components/footer.tsx
+
+# Make the script executable
+chmod +x scripts/bump-version.sh
+
+# Remove the temporary remote
+git remote remove template
+
+# Commit and push — this push will trigger the first version bump
+git add -A
+git commit -m "feat: add automatic version tracking"
+git push origin main</code><button class="copy-btn" onclick="copyText('version-cmd')">Copy</button></pre>
+    <div class="callout" style="font-size: 0.85rem;">
+      <strong>Note:</strong> If you've already customized <code>footer.tsx</code>, skip that line and instead import <code>getVersion()</code> from <code>@/lib/version</code> in your own footer. The key files are the script, the workflow, and <code>version.json</code>.
+    </div>
   </div>
 
   <div class="full-guide">
