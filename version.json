@@ -1,12 +1,12 @@
 {
-  "version": "v260226.01 3:07a",
-  "release": 347,
-  "sha": "0d3a9c063",
-  "fullSha": "0d3a9c063ef0d14b95c306e16ea17ad5a3d3a4d4",
+  "version": "v260226.02 9:46a",
+  "release": 348,
+  "sha": "b1d91d9bd",
+  "fullSha": "b1d91d9bd7d60dc7ccb688dce6115f352d583a4e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-26 09:07:14+00",
-  "commits": [{"sha":"0d3a9c063","message":"Add getting-started guide for AlpacApps Infra","author":"Rahul"}]
+  "pushedAt": "2026-02-26 15:46:28+00",
+  "commits": [{"sha":"183ea86e1","message":"Remove Node.js from getting-started prerequisites — Claude Code includes it","author":"Rahul"},{"sha":"b1d91d9bd","message":"Merge branch 'vibrant-perlman'","author":"Rahul"}]
 }
