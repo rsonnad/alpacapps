@@ -151,11 +151,11 @@ Alpaca Playhouse`
         : '';
 
       return {
-        subject: `Your space at the Alpaca Playhouse Austin is reserved`,
+        subject: `Congratulations! Your Application is Approved - Alpaca Playhouse`,
         html: `
           <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
             <p style="color:#333;font-size:16px;line-height:1.6;">Great news, ${data.first_name}!</p>
-            <p style="color:#333;font-size:16px;line-height:1.6;">The <strong>${data.space_name}</strong> space at the Alpaca Playhouse Austin has been reserved for you. And remember, at the Alpaca Playhouse, our goal is to redefine your idea of what an Alpaca Playhouse can be.</p>
+            <p style="color:#333;font-size:16px;line-height:1.6;">Your rental application for <strong>${data.space_name}</strong> has been <strong style="color:#54a326;">approved</strong>!</p>
 
             ${spaceImageSection}
 
@@ -202,7 +202,7 @@ Alpaca Playhouse`
         `,
         text: `Great news, ${data.first_name}!
 
-The ${data.space_name} space at the Alpaca Playhouse Austin has been reserved for you. And remember, at the Alpaca Playhouse, our goal is to redefine your idea of what an Alpaca Playhouse can be.
+Your rental application for ${data.space_name} has been approved!
 
 Reservation Details:
 - Space: ${data.space_name}
@@ -520,7 +520,7 @@ Alpaca Playhouse`
         _extraImages,
         html: `
           <p style="color:${B.text};font-size:15px;line-height:1.5;margin:0 0 8px;">Hi ${data.first_name},</p>
-          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">Welcome to the Alpaca Playhouse — where we redefine your idea of what an Alpaca Playhouse can be.</p>
+          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
 
           <table style="border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px;border:1px solid ${B.border};border-radius:8px;overflow:hidden;">
             <thead>
