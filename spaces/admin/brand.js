@@ -699,142 +699,297 @@ function guideTable(headers, rows) {
 function renderGuideLayout() {
   const el = document.getElementById('guideLayout');
   if (!el) return;
-  el.innerHTML = guideTable(
-    ['Property', 'Value', 'Why'],
-    [
-      ['Max width', '<code>600px</code>', 'Fits all preview panes without horizontal scrolling; clean retina math (600/2 = 300px mobile)'],
-      ['Outer wrapper', '<code>width:100%</code>', 'Fluid background fills viewport on all screen sizes'],
-      ['Inner container', '<code>max-width:600px; width:100%</code>', 'Centered, capped — scales down on mobile without media queries'],
-      ['Layout method', 'Table-based (<code>&lt;table role="presentation"&gt;</code>)', 'Required for Outlook desktop (Word rendering engine ignores div layout)'],
-      ['Column approach', 'Single-column preferred', '70%+ opens are mobile — multi-column requires complex stacking logic'],
-      ['Table attributes', '<code>cellpadding="0" cellspacing="0" border="0"</code>', 'Reset all default table spacing; set on every table element'],
-      ['Container radius', '<code>border-radius:12px</code>', 'Gracefully degrades to square in Outlook; looks polished elsewhere'],
-      ['Gmail size limit', '<code>&lt; 102KB</code> total HTML', 'Gmail clips emails over 102KB with "Message clipped" link — includes all HTML + inline CSS, excludes images'],
-    ]
-  );
+  const c = brandConfig.colors?.primary || {};
+  const bg = c.background || '#faf9f6';
+  const bgMuted = c.background_muted || '#f2f0e8';
+  const dark = c.dark || '#1c1618';
+  const accent = c.accent || '#d4883a';
+  const border = c.border || '#e6e2d9';
+  el.innerHTML = `
+    <div class="guide-layout-diagram">
+      <div class="guide-layout-outer" style="background:${bgMuted};border:2px dashed ${border};border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-size:11px;color:var(--aap-text-muted);margin-bottom:8px;">width: 100% (fluid outer wrapper)</div>
+        <div class="guide-layout-inner" style="max-width:400px;margin:0 auto;background:${bg};border:2px solid ${border};border-radius:12px;overflow:hidden;">
+          <div style="background:${dark};color:${bg};padding:16px;font-size:13px;font-weight:600;text-align:center;">
+            Header — logo + wordmark
+            <div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px;">padding: 32px</div>
+          </div>
+          <div style="padding:20px;border-bottom:1px solid ${border};">
+            <div style="font-size:13px;font-weight:600;color:${dark};">Body Content</div>
+            <div style="font-size:11px;color:var(--aap-text-muted);margin-top:4px;">padding: 32px all sides (20px on mobile)</div>
+            <div style="margin-top:12px;background:${bgMuted};border-left:4px solid ${accent};padding:10px 12px;border-radius:0 6px 6px 0;font-size:11px;">Callout box — emailCallout()</div>
+            <div style="margin-top:12px;text-align:center;">
+              <span style="display:inline-block;background:${accent};color:#fff;padding:8px 24px;border-radius:8px;font-size:12px;font-weight:600;">CTA Button</span>
+            </div>
+          </div>
+          <div style="background:${bgMuted};padding:12px;text-align:center;font-size:10px;color:var(--aap-text-muted);">
+            Footer — address + tagline
+            <div style="margin-top:2px;">padding: 20px 32px</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--aap-text-muted);margin-top:8px;">max-width: 600px (centered container)</div>
+      </div>
+    </div>
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer;font-weight:500;font-size:14px;color:var(--aap-text-muted);">View full property reference</summary>
+      <div style="margin-top:8px;">
+        ${guideTable(
+          ['Property', 'Value', 'Why'],
+          [
+            ['Max width', '<code>600px</code>', 'Fits all preview panes; clean retina math (600/2 = 300px mobile)'],
+            ['Outer wrapper', '<code>width:100%</code>', 'Fluid background fills viewport on all screen sizes'],
+            ['Inner container', '<code>max-width:600px; width:100%</code>', 'Centered, capped — scales down on mobile without media queries'],
+            ['Layout method', 'Table-based (<code>&lt;table role="presentation"&gt;</code>)', 'Required for Outlook desktop (Word rendering engine ignores div layout)'],
+            ['Column approach', 'Single-column preferred', '70%+ opens are mobile — multi-column requires complex stacking logic'],
+            ['Table attributes', '<code>cellpadding="0" cellspacing="0" border="0"</code>', 'Reset all default table spacing; set on every table element'],
+            ['Container radius', '<code>border-radius:12px</code>', 'Gracefully degrades to square in Outlook; looks polished elsewhere'],
+            ['Gmail size limit', '<code>&lt; 102KB</code> total HTML', 'Gmail clips emails over 102KB — includes all HTML + inline CSS'],
+          ]
+        )}
+      </div>
+    </details>`;
 }
 
 function renderGuideTypography() {
   const el = document.getElementById('guideTypography');
   if (!el) return;
   const c = brandConfig.colors?.primary || {};
+  const text = c.text || '#2a1f23';
+  const muted = c.text_muted || '#7d6f74';
+  const accent = c.accent || '#d4883a';
+  const samples = [
+    { label: 'H1 / Title', size: '28px', weight: 700, lh: '34px', mobile: '24px' },
+    { label: 'H2 / Subtitle', size: '22px', weight: 600, lh: '28px', mobile: '20px' },
+    { label: 'H3 / Section', size: '18px', weight: 600, lh: '24px', mobile: '18px' },
+    { label: 'Body', size: '16px', weight: 400, lh: '26px', mobile: '16px' },
+    { label: 'Small', size: '13px', weight: 400, lh: '20px', mobile: '13px' },
+    { label: 'Footer', size: '12px', weight: 400, lh: '18px', mobile: '12px' },
+  ];
   el.innerHTML = `
-    ${guideTable(
-      ['Element', 'Desktop', 'Mobile (via @media)', 'Line Height'],
-      [
-        ['H1 / Title', '<code>28px</code>, weight 700', '<code>24px</code>', '<code>34px</code> (1.2&times;)'],
-        ['H2 / Subtitle', '<code>22px</code>, weight 600', '<code>20px</code>', '<code>28px</code> (1.27&times;)'],
-        ['H3 / Section head', '<code>18px</code>, weight 600', '<code>18px</code>', '<code>24px</code> (1.33&times;)'],
-        ['Body text', '<code>16px</code>, weight 400', '<code>16px</code>', '<code>26px</code> (1.6&times;)'],
-        ['Small / captions', '<code>13px</code>, weight 400', '<code>13px</code>', '<code>20px</code> (1.5&times;)'],
-        ['Footer / legal', '<code>12px</code>, weight 400', '<code>12px</code>', '<code>18px</code> (1.5&times;)'],
-        ['Button text', '<code>16px</code>, weight 600', '<code>16px</code>', '<code>1</code> (unitless)'],
-      ]
-    )}
-    <div style="margin-top:16px;">
-      ${guideTable(
-        ['Property', 'Value'],
-        [
-          ['Primary font stack', "<code>'DM Sans', Arial, Helvetica, sans-serif</code>"],
-          ['Outlook fallback', '<code>Arial, Helvetica, sans-serif</code> (forced via mso conditional)'],
-          ['Minimum font size', '<code>13px</code> — iOS auto-zooms text below 13px, breaking layout'],
-          ['Letter spacing', 'Avoid except on buttons (<code>0.02em</code>) — Outlook ignores it'],
-          ['Line height units', 'Always use <code>px</code> values, not unitless or % — most consistent across clients'],
-          ['Link color', `<code>${c.accent || '#d4883a'}</code> (accent) with <code>text-decoration:underline</code>`],
-          ['Muted text color', `<code>${c.text_muted || '#7d6f74'}</code> — passes 4.5:1 contrast on cream backgrounds`],
-        ]
-      )}
-    </div>`;
+    <div class="guide-type-samples">
+      ${samples.map(s => `
+        <div class="guide-type-row">
+          <div class="guide-type-meta">
+            <span class="guide-type-label">${s.label}</span>
+            <span class="guide-type-spec">${s.size} / ${s.weight} / ${s.lh}</span>
+          </div>
+          <div class="guide-type-preview" style="font-size:${s.size};font-weight:${s.weight};line-height:${s.lh};color:${text};">
+            The quick brown alpaca jumps over the lazy fence
+          </div>
+        </div>
+      `).join('')}
+      <div class="guide-type-row">
+        <div class="guide-type-meta">
+          <span class="guide-type-label">Link</span>
+          <span class="guide-type-spec">16px / 400 / underline</span>
+        </div>
+        <div class="guide-type-preview" style="font-size:16px;font-weight:400;line-height:26px;">
+          Regular text with a <span style="color:${accent};text-decoration:underline;">branded link</span> inline
+        </div>
+      </div>
+      <div class="guide-type-row">
+        <div class="guide-type-meta">
+          <span class="guide-type-label">Muted</span>
+          <span class="guide-type-spec">13px / 400 / ${muted}</span>
+        </div>
+        <div class="guide-type-preview" style="font-size:13px;font-weight:400;line-height:20px;color:${muted};">
+          Secondary text, captions, and metadata use the muted color
+        </div>
+      </div>
+    </div>
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer;font-weight:500;font-size:14px;color:var(--aap-text-muted);">View font stack details</summary>
+      <div style="margin-top:8px;">
+        ${guideTable(
+          ['Property', 'Value'],
+          [
+            ['Primary font stack', "<code>'DM Sans', Arial, Helvetica, sans-serif</code>"],
+            ['Outlook fallback', '<code>Arial, Helvetica, sans-serif</code> (forced via mso conditional)'],
+            ['Minimum font size', '<code>13px</code> — iOS auto-zooms text below 13px'],
+            ['Line height units', 'Always use <code>px</code> values — most consistent across clients'],
+          ]
+        )}
+      </div>
+    </details>`;
 }
 
 function renderGuideSpacing() {
   const el = document.getElementById('guideSpacing');
   if (!el) return;
-  el.innerHTML = guideTable(
-    ['Area', 'Padding', 'Notes'],
-    [
-      ['Email body content', '<code>32px</code> all sides', 'Gives 536px content area within 600px container. Reduces to 20px on mobile via @media'],
-      ['Header section', '<code>32px</code>', 'Vertically centers logo + wordmark. Reduces to 24px on mobile'],
-      ['Footer section', '<code>20px 32px</code>', 'Top/bottom 20px, sides 32px. Reduces to 16px 20px on mobile'],
-      ['Between paragraphs', '<code>margin:0 0 16px</code>', 'Bottom margin only — top margin collapses unpredictably in email clients'],
-      ['Above headings', '<code>margin:24px 0 8px</code>', '24px above to separate from prior content, 8px below into text'],
-      ['Callout box internal', '<code>20px 24px</code>', 'Comfortable reading space inside highlighted boxes'],
-      ['Callout box external', '<code>margin:16px 0</code>', 'Vertical separation from surrounding content'],
-      ['Above/below CTA button', '<code>margin:24px auto</code>', 'Generous whitespace makes the button a clear visual target'],
-      ['Image to text gap', '<code>16px</code> below image', 'Prevents content from feeling cramped against images'],
-      ['Spacer rows (Outlook)', '<code>&lt;td style="height:24px; font-size:0; line-height:0;"&gt;&amp;nbsp;&lt;/td&gt;</code>', 'Outlook needs height attribute + style + &amp;nbsp; to prevent row collapse'],
-    ]
-  );
+  const c = brandConfig.colors?.primary || {};
+  const bg = c.background || '#faf9f6';
+  const bgMuted = c.background_muted || '#f2f0e8';
+  const dark = c.dark || '#1c1618';
+  const accent = c.accent || '#d4883a';
+  const border = c.border || '#e6e2d9';
+  el.innerHTML = `
+    <div class="guide-spacing-visual">
+      <div style="max-width:420px;margin:0 auto;border:2px solid ${border};border-radius:12px;overflow:hidden;font-family:'DM Sans',sans-serif;background:${bg};">
+        <div style="background:${dark};padding:32px;text-align:center;position:relative;">
+          <div style="color:${bg};font-size:13px;font-weight:600;">Header</div>
+          <div class="guide-spacing-tag" style="right:4px;top:4px;">32px</div>
+        </div>
+        <div style="padding:32px;position:relative;">
+          <div class="guide-spacing-tag" style="left:4px;top:4px;">32px</div>
+          <div style="font-size:20px;font-weight:700;color:${dark};margin:0 0 8px;">Heading</div>
+          <div class="guide-spacing-gap" style="margin:0 0 16px;">
+            <span class="guide-spacing-tag" style="position:static;display:inline-block;">margin 8px</span>
+          </div>
+          <div style="font-size:14px;color:${dark};line-height:22px;margin:0 0 16px;">Body paragraph text with a comfortable 16px bottom margin between paragraphs.</div>
+          <div class="guide-spacing-gap">
+            <span class="guide-spacing-tag" style="position:static;display:inline-block;">16px gap</span>
+          </div>
+          <div style="background:${bgMuted};border-left:4px solid ${accent};padding:20px 24px;border-radius:0 8px 8px 0;margin:16px 0;font-size:12px;color:${dark};position:relative;">
+            Callout box
+            <div class="guide-spacing-tag" style="right:4px;top:4px;">20px 24px</div>
+          </div>
+          <div style="text-align:center;margin:24px auto;position:relative;">
+            <span style="display:inline-block;background:${accent};color:#fff;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;">CTA Button</span>
+            <div class="guide-spacing-tag" style="right:-8px;top:-8px;">24px margin</div>
+          </div>
+        </div>
+        <div style="background:${bgMuted};padding:20px 32px;text-align:center;font-size:11px;color:var(--aap-text-muted);position:relative;">
+          Footer
+          <div class="guide-spacing-tag" style="right:4px;top:4px;">20px 32px</div>
+        </div>
+      </div>
+    </div>
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer;font-weight:500;font-size:14px;color:var(--aap-text-muted);">View all spacing values</summary>
+      <div style="margin-top:8px;">
+        ${guideTable(
+          ['Area', 'Padding', 'Notes'],
+          [
+            ['Body content', '<code>32px</code> all sides', '536px content area. Reduces to 20px on mobile'],
+            ['Header', '<code>32px</code>', 'Reduces to 24px on mobile'],
+            ['Footer', '<code>20px 32px</code>', 'Reduces to 16px 20px on mobile'],
+            ['Between paragraphs', '<code>margin:0 0 16px</code>', 'Bottom margin only'],
+            ['Above headings', '<code>margin:24px 0 8px</code>', '24px above, 8px below'],
+            ['Callout internal', '<code>20px 24px</code>', 'Comfortable reading space'],
+            ['Above/below CTA', '<code>margin:24px auto</code>', 'Generous whitespace'],
+          ]
+        )}
+      </div>
+    </details>`;
 }
 
 function renderGuideButtons() {
   const el = document.getElementById('guideButtons');
   if (!el) return;
   const btn = brandConfig.email?.button || {};
+  const btnBg = btn.background || '#d4883a';
+  const btnText = btn.text_color || '#ffffff';
+  const btnRadius = btn.border_radius || '8px';
+  const btnPad = btn.padding || '14px 36px';
+  const btnShadow = btn.shadow || '0 2px 8px rgba(212,136,58,0.30)';
   el.innerHTML = `
-    ${guideTable(
-      ['Property', 'Value'],
-      [
-        ['Background color', `<code>${btn.background || '#d4883a'}</code> (accent amber)`],
-        ['Text color', `<code>${btn.text_color || '#ffffff'}</code>`],
-        ['Padding', `<code>${btn.padding || '14px 36px'}</code> — gives ~48px height (exceeds 44px WCAG minimum)`],
-        ['Font', '<code>16px</code>, weight <code>600</code>, <code>letter-spacing:0.02em</code>'],
-        ['Border radius', `<code>${btn.border_radius || '8px'}</code> — ignored in Outlook (square corners), works everywhere else`],
-        ['Box shadow', `<code>${btn.shadow || '0 2px 8px rgba(212,136,58,0.30)'}</code>`],
-        ['Min-width', '<code>200px</code> recommended for readability'],
-        ['Structure', 'Table-based: <code>&lt;table&gt;&lt;td&gt;&lt;a&gt;</code> — the <code>&lt;td&gt;</code> carries the background color'],
-        ['Outlook fix', '<code>mso-padding-alt:14px 36px</code> on the <code>&lt;td&gt;</code> for correct padding in Word engine'],
-        ['Dark mode tip', 'Use <code>rgba(212,136,58,1)</code> instead of hex — Office 365 dark mode does not invert rgba values'],
-      ]
-    )}
-    <p style="margin-top:12px;font-size:13px;color:var(--aap-text-muted);">Use the <code>emailButton(text, url)</code> helper from <code>email-brand-wrapper.ts</code> — it handles all of the above automatically.</p>`;
+    <div class="guide-buttons-demo">
+      <div class="guide-buttons-row">
+        <div class="guide-button-example">
+          <div style="text-align:center;">
+            <a href="#" onclick="return false" style="display:inline-block;background:${btnBg};color:${btnText};padding:${btnPad};border-radius:${btnRadius};font-size:16px;font-weight:600;letter-spacing:0.02em;text-decoration:none;box-shadow:${btnShadow};font-family:'DM Sans',sans-serif;">View Your Space</a>
+          </div>
+          <div class="guide-button-label">Primary CTA (default)</div>
+        </div>
+        <div class="guide-button-example">
+          <div style="text-align:center;">
+            <a href="#" onclick="return false" style="display:inline-block;background:${btnBg};color:${btnText};padding:${btnPad};border-radius:0;font-size:16px;font-weight:600;letter-spacing:0.02em;text-decoration:none;font-family:'DM Sans',sans-serif;">Pay Now</a>
+          </div>
+          <div class="guide-button-label">Outlook fallback (no border-radius)</div>
+        </div>
+      </div>
+      <div class="guide-button-specs">
+        <div class="guide-button-spec"><strong>Background:</strong> <code>${btnBg}</code></div>
+        <div class="guide-button-spec"><strong>Text:</strong> <code>${btnText}</code> / 16px / 600</div>
+        <div class="guide-button-spec"><strong>Padding:</strong> <code>${btnPad}</code> (~48px height)</div>
+        <div class="guide-button-spec"><strong>Radius:</strong> <code>${btnRadius}</code></div>
+        <div class="guide-button-spec"><strong>Shadow:</strong> <code>${btnShadow}</code></div>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:13px;color:var(--aap-text-muted);">Use <code>emailButton(text, url)</code> from <code>email-brand-wrapper.ts</code> — it generates the table-based pattern with Outlook compatibility automatically.</p>`;
 }
 
 function renderGuideImages() {
   const el = document.getElementById('guideImages');
   if (!el) return;
-  el.innerHTML = guideTable(
-    ['Property', 'Value', 'Why'],
-    [
-      ['Max display width', '<code>600px</code> (full-width) or <code>536px</code> (with body padding)', 'Never exceeds container width'],
-      ['Upload resolution', '<code>2&times;</code> display size (e.g. 1200px wide for 600px display)', 'Sharp on retina/HiDPI screens'],
-      ['Required attributes', '<code>width="600" style="width:100%; max-width:600px; height:auto; display:block; border:0;"</code>', 'HTML width for Outlook, CSS for responsive, display:block prevents 3-4px gap'],
-      ['File size per image', '<code>&lt; 200KB</code> (aim for 50-100KB)', 'Fast loading on mobile connections'],
-      ['Total images per email', '<code>&lt; 800KB</code> combined', 'Total weight budget including all images'],
-      ['Formats', 'JPEG for photos, PNG-24 for graphics/logos with transparency', 'PNG transparency essential for dark mode logo adaptation'],
-      ['Alt text', 'Always provide meaningful descriptions', 'Shown when images are blocked (common in corporate Outlook). Style with font-size, color, font-family'],
-      ['Background images', 'Avoid — Outlook requires VML, Gmail strips <code>background-image</code> from entire style blocks', 'Use solid color backgrounds as fallbacks instead'],
-    ]
-  );
+  const c = brandConfig.colors?.primary || {};
+  el.innerHTML = `
+    <div class="guide-images-dodont">
+      <div class="guide-dodont-card guide-dodont--do">
+        <div class="guide-dodont-header">Do</div>
+        <div class="guide-dodont-body">
+          <div style="background:#ddd;height:80px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;margin-bottom:8px;">
+            <code>width="600" style="width:100%;max-width:600px;height:auto;display:block"</code>
+          </div>
+          <ul class="guide-dodont-list">
+            <li>Set both HTML <code>width</code> attribute AND CSS styles</li>
+            <li>Upload at 2x resolution (1200px for 600px display)</li>
+            <li>Use PNG with transparency for logos</li>
+            <li>Always include meaningful <code>alt</code> text</li>
+            <li>Keep each image under 200KB</li>
+          </ul>
+        </div>
+      </div>
+      <div class="guide-dodont-card guide-dodont--dont">
+        <div class="guide-dodont-header">Don't</div>
+        <div class="guide-dodont-body">
+          <div style="background:#ddd;height:80px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;margin-bottom:8px;">
+            <code style="text-decoration:line-through;">background-image: url(...)</code>
+          </div>
+          <ul class="guide-dodont-list">
+            <li>Use CSS <code>background-image</code> — Gmail strips entire style block</li>
+            <li>Skip <code>alt</code> text — corporate Outlook blocks images by default</li>
+            <li>Omit HTML <code>width</code> attribute — Outlook ignores CSS width</li>
+            <li>Exceed 800KB total images per email</li>
+            <li>Use 1x resolution images — blurry on retina screens</li>
+          </ul>
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderGuideColors() {
   const el = document.getElementById('guideColors');
   if (!el) return;
   const c = brandConfig.colors?.primary || {};
+  const text = c.text || '#2a1f23';
+  const bg = c.background || '#faf9f6';
+  const bgMuted = c.background_muted || '#f2f0e8';
+  const muted = c.text_muted || '#7d6f74';
+  const accent = c.accent || '#d4883a';
+  const border = c.border || '#e6e2d9';
+  const colorChecks = [
+    { label: 'Body text on cream', fg: text, bg: bg, min: 4.5, type: 'AA' },
+    { label: 'Muted text on cream', fg: muted, bg: bg, min: 4.5, type: 'AA' },
+    { label: 'Button text on accent', fg: '#ffffff', bg: accent, min: 4.5, type: 'AA' },
+    { label: 'Footer text on muted bg', fg: muted, bg: bgMuted, min: 3, type: 'AA Large' },
+    { label: 'Accent link on cream', fg: accent, bg: bg, min: 3, type: 'AA Large' },
+  ];
   el.innerHTML = `
-    <h4 style="margin:0 0 8px;">WCAG 2.2 AA Minimum Contrast Ratios</h4>
-    ${guideTable(
-      ['Text Type', 'Minimum Ratio', 'Our Value', 'Status'],
-      [
-        ['Normal text (&lt;18px)', '4.5:1', `<code>${c.text || '#2a1f23'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
-        ['Large text (&ge;18px bold)', '3:1', `<code>${c.text || '#2a1f23'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
-        ['Muted text', '4.5:1', `<code>${c.text_muted || '#7d6f74'}</code> on <code>${c.background || '#faf9f6'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
-        ['Button text', '4.5:1', '<code>#ffffff</code> on <code>' + (c.accent || '#d4883a') + '</code>', '<span style="color:var(--aap-success);">Passes</span>'],
-        ['Footer text', '3:1 (large text only)', `<code>${c.text_muted || '#7d6f74'}</code> on <code>${c.background_muted || '#f2f0e8'}</code>`, '<span style="color:var(--aap-success);">Passes</span>'],
-      ]
-    )}
-    <h4 style="margin:16px 0 8px;">Color Usage Rules</h4>
-    ${guideTable(
-      ['Rule', 'Detail'],
-      [
-        ['Never use pure black', 'Use <code>' + (c.text || '#2a1f23') + '</code> (brand dark) instead of <code>#000000</code> — reduces eye strain and looks more refined'],
-        ['Never use pure white text', 'Use <code>' + (c.text_light || '#faf9f6') + '</code> (cream white) — slightly warm tone matches brand'],
-        ['Links must be distinguishable', 'Use <code>' + (c.accent || '#d4883a') + '</code> (accent) with underline — must pass 3:1 against surrounding text color'],
-        ['Do not rely on color alone', 'Always pair color with text labels or icons to convey meaning (e.g. "Paid" not just green)'],
-        ['Divider lines', 'Use <code>' + (c.border || '#e6e2d9') + '</code> — subtle warm border that complements the cream palette'],
-      ]
-    )}`;
+    <div class="guide-color-checks">
+      ${colorChecks.map(ch => {
+        const ratio = getContrastRatio(ch.fg, ch.bg);
+        const passes = ratio >= ch.min;
+        return `<div class="guide-color-check">
+          <div class="guide-color-swatch" style="background:${ch.bg};color:${ch.fg};font-size:16px;font-weight:500;padding:16px 20px;border-radius:8px;border:1px solid ${border};">
+            ${ch.label}
+          </div>
+          <div class="guide-color-info">
+            <code>${ch.fg}</code> on <code>${ch.bg}</code>
+            <span class="brand-contrast-badge ${passes ? (ratio >= 7 ? 'brand-contrast-badge--aaa' : 'brand-contrast-badge--aa') : 'brand-contrast-badge--fail'}">
+              ${ratio.toFixed(1)}:1 ${passes ? (ratio >= 7 ? 'AAA' : ch.type) : 'FAIL'}
+            </span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <h4 style="margin:20px 0 8px;">Color Usage Rules</h4>
+    <div class="guide-color-rules">
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-error);">✗</span> Never use pure <code>#000000</code> — use <code>${text}</code> instead</div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-error);">✗</span> Never rely on color alone to convey meaning</div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-success);">✓</span> Links: <code>${accent}</code> with underline</div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-success);">✓</span> Dividers: <code>${border}</code> (subtle warm border)</div>
+    </div>`;
 }
 
 function renderGuideMobile() {
@@ -860,31 +1015,68 @@ function renderGuideMobile() {
 function renderGuideDarkMode() {
   const el = document.getElementById('guideDarkMode');
   if (!el) return;
+  const c = brandConfig.colors?.primary || {};
+  const bg = c.background || '#faf9f6';
+  const bgMuted = c.background_muted || '#f2f0e8';
+  const dark = c.dark || '#1c1618';
+  const text = c.text || '#2a1f23';
+  const accent = c.accent || '#d4883a';
   el.innerHTML = `
-    <h4 style="margin:0 0 8px;">Client Dark Mode Behavior</h4>
-    ${guideTable(
-      ['Client', 'Behavior', 'CSS Control'],
-      [
-        ['Apple Mail (iOS/macOS)', 'Partial inversion; respects <code>prefers-color-scheme</code>', 'Full control via media query'],
-        ['Gmail (iOS/Android app)', 'Aggressive full inversion', 'Very limited; ignores most overrides'],
-        ['Gmail (web)', 'No dark mode inversion', 'N/A'],
-        ['Outlook (iOS)', 'Full inversion', 'Limited support'],
-        ['Outlook (desktop/new)', 'Injects <code>data-ogsc</code>/<code>data-ogsb</code> overrides', 'Target with attribute selectors'],
-        ['Yahoo Mail', 'No inversion in dark mode', 'N/A'],
-      ]
-    )}
-    <h4 style="margin:16px 0 8px;">Defensive Design Rules</h4>
-    ${guideTable(
-      ['Rule', 'Detail'],
-      [
-        ['Use PNG with transparency for logos', 'Adapts to any background color — our logo is white-on-transparent for this reason'],
-        ['Add white stroke around dark logos', '1-2px white outline ensures visibility when background is inverted to dark'],
-        ['Use <code>rgba()</code> for button backgrounds', '<code>rgba(212,136,58,1)</code> instead of <code>#d4883a</code> — Office 365 dark mode does not invert rgba values'],
-        ['Include <code>&lt;meta name="color-scheme" content="light dark"&gt;</code>', 'Tells clients the email supports both modes — our wrapper includes this'],
-        ['Do not rely on background color to convey meaning', 'Dark mode may invert or remove background colors entirely'],
-        ['Test with inverted colors', 'Manually invert your preview — if critical information disappears, redesign that element'],
-      ]
-    )}`;
+    <div class="guide-darkmode-compare">
+      <div class="guide-darkmode-panel">
+        <div class="guide-darkmode-label">Light Mode (original)</div>
+        <div style="background:${bg};border:1px solid #e6e2d9;border-radius:8px;overflow:hidden;font-family:'DM Sans',sans-serif;">
+          <div style="background:${dark};padding:16px;text-align:center;">
+            <span style="color:${bg};font-size:13px;font-weight:600;">Alpaca Playhouse</span>
+          </div>
+          <div style="padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:${text};margin-bottom:6px;">Welcome home!</div>
+            <div style="font-size:12px;color:${text};line-height:18px;margin-bottom:12px;">Your space is ready and waiting.</div>
+            <div style="text-align:center;">
+              <span style="display:inline-block;background:${accent};color:#fff;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;">View Details</span>
+            </div>
+          </div>
+          <div style="background:${bgMuted};padding:10px;text-align:center;font-size:10px;color:#7d6f74;">Footer text</div>
+        </div>
+      </div>
+      <div class="guide-darkmode-panel">
+        <div class="guide-darkmode-label">Dark Mode (inverted by client)</div>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;overflow:hidden;font-family:'DM Sans',sans-serif;">
+          <div style="background:#2a2a2a;padding:16px;text-align:center;">
+            <span style="color:#e0e0e0;font-size:13px;font-weight:600;">Alpaca Playhouse</span>
+          </div>
+          <div style="padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:#e0e0e0;margin-bottom:6px;">Welcome home!</div>
+            <div style="font-size:12px;color:#ccc;line-height:18px;margin-bottom:12px;">Your space is ready and waiting.</div>
+            <div style="text-align:center;">
+              <span style="display:inline-block;background:${accent};color:#fff;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;">View Details</span>
+            </div>
+          </div>
+          <div style="background:#2a2a2a;padding:10px;text-align:center;font-size:10px;color:#888;">Footer text</div>
+        </div>
+      </div>
+    </div>
+    <div class="guide-darkmode-tips">
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-success);">✓</span> Use PNG with transparency for logos — adapts to any bg color</div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-success);">✓</span> Use <code>rgba()</code> for button bg — Office 365 won't invert it</div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-success);">✓</span> Include <code>&lt;meta name="color-scheme" content="light dark"&gt;</code></div>
+      <div class="guide-rule"><span class="guide-rule-icon" style="color:var(--aap-error);">✗</span> Don't rely on background color alone to convey meaning</div>
+    </div>
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer;font-weight:500;font-size:14px;color:var(--aap-text-muted);">View client behavior matrix</summary>
+      <div style="margin-top:8px;">
+        ${guideTable(
+          ['Client', 'Behavior', 'CSS Control'],
+          [
+            ['Apple Mail', 'Partial inversion; respects <code>prefers-color-scheme</code>', 'Full control'],
+            ['Gmail (app)', 'Aggressive full inversion', 'Very limited'],
+            ['Gmail (web)', 'No inversion', 'N/A'],
+            ['Outlook (iOS)', 'Full inversion', 'Limited'],
+            ['Outlook (desktop)', 'Injects <code>data-ogsc/data-ogsb</code>', 'Attribute selectors'],
+          ]
+        )}
+      </div>
+    </details>`;
 }
 
 function renderGuideClientQuirks() {
@@ -951,34 +1143,71 @@ function renderGuideHelpers() {
 function renderGuideChecklist() {
   const el = document.getElementById('guideChecklist');
   if (!el) return;
+  const STORAGE_KEY = 'brand-checklist-state';
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) {}
   const checks = [
-    ['Total HTML under 102KB', 'Gmail clips emails over this limit. Check with: <code>new Blob([html]).size</code>'],
-    ['All images have alt text', 'Meaningful descriptions for when images are blocked (common in corporate Outlook)'],
-    ['All images have explicit width/height', 'Both HTML attributes AND inline CSS — Outlook needs HTML, responsive needs CSS'],
-    ['No font size below 13px', 'iOS auto-zooms small text, breaking layout'],
-    ['All padding on &lt;td&gt; elements only', 'Outlook strips padding from divs, p, and a elements'],
-    ['Tables have cellpadding="0" cellspacing="0" border="0"', 'Reset default browser table spacing'],
-    ['Tables have role="presentation"', 'Accessibility: prevents screen readers from announcing table structure'],
-    ['CTA button uses table-based pattern', 'Use <code>emailButton()</code> helper — div/a-only buttons break in Outlook'],
-    ['Links are underlined with accent color', 'Must be distinguishable from regular text, even without color vision'],
-    ['Preheader text is 70-100 characters', 'Preview text in inbox — too short pulls in body text, too long gets cut off'],
-    ['Tested on mobile viewport (375px)', 'Open the HTML file locally and resize browser to ~375px width'],
-    ['Button/link touch targets &ge; 44px', 'WCAG minimum for comfortable mobile tapping'],
-    ['No background-image in &lt;style&gt; block', 'Gmail strips entire style block if any rule contains background-image:url(...)'],
-    ['Colors pass WCAG AA contrast', 'Normal text: 4.5:1, large text: 3:1, UI components: 3:1'],
-    ['Footer includes address + platform name', 'CAN-SPAM compliance requires physical mailing address'],
+    ['html-size', 'Total HTML under 102KB', 'Gmail clips emails over this limit'],
+    ['alt-text', 'All images have alt text', 'Shown when images are blocked (corporate Outlook)'],
+    ['img-dims', 'All images have explicit width/height', 'HTML attributes for Outlook, CSS for responsive'],
+    ['font-min', 'No font size below 13px', 'iOS auto-zooms small text, breaking layout'],
+    ['td-padding', 'All padding on &lt;td&gt; elements only', 'Outlook strips padding from divs/p/a'],
+    ['table-reset', 'Tables have cellpadding/cellspacing/border reset', 'Prevents default browser spacing'],
+    ['table-role', 'Tables have role="presentation"', 'Screen readers skip table structure'],
+    ['btn-table', 'CTA uses table-based button pattern', 'emailButton() handles Outlook compat'],
+    ['link-style', 'Links underlined with accent color', 'Distinguishable without color vision'],
+    ['preheader', 'Preheader text is 70-100 characters', 'Too short pulls body text into preview'],
+    ['mobile-test', 'Tested on mobile viewport (375px)', 'Resize browser to verify layout'],
+    ['touch-target', 'Touch targets &ge; 44px', 'WCAG minimum for mobile tapping'],
+    ['no-bg-img', 'No background-image in &lt;style&gt; block', 'Gmail strips entire style block'],
+    ['contrast', 'Colors pass WCAG AA contrast', '4.5:1 normal, 3:1 large text'],
+    ['footer', 'Footer has address + platform name', 'CAN-SPAM compliance'],
   ];
-  el.innerHTML = `<div class="brand-checklist">${checks.map(([item, detail]) =>
-    `<div class="brand-checklist-item">
-      <div class="brand-checklist-check">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"/></svg>
+  const total = checks.length;
+  const checkedCount = checks.filter(([id]) => saved[id]).length;
+  el.innerHTML = `
+    <div class="guide-checklist-progress">
+      <div class="guide-checklist-bar">
+        <div class="guide-checklist-bar-fill" style="width:${(checkedCount/total*100).toFixed(0)}%"></div>
       </div>
-      <div>
-        <div style="font-weight:500;">${item}</div>
-        <div style="font-size:12px;color:var(--aap-text-muted);">${detail}</div>
-      </div>
-    </div>`
-  ).join('')}</div>`;
+      <span class="guide-checklist-count">${checkedCount}/${total} checked</span>
+      ${checkedCount > 0 ? '<button class="guide-checklist-reset" data-action="reset-checklist">Reset</button>' : ''}
+    </div>
+    <div class="brand-checklist">${checks.map(([id, item, detail]) => {
+      const checked = saved[id] ? 'checked' : '';
+      return `<label class="brand-checklist-item brand-checklist-item--interactive ${checked ? 'brand-checklist-item--checked' : ''}" data-check-id="${id}">
+        <input type="checkbox" ${checked} style="display:none">
+        <div class="brand-checklist-check">
+          ${checked
+            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--aap-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3" fill="var(--aap-success)" fill-opacity="0.1"/><polyline points="9 11 12 14 22 4" stroke="var(--aap-success)"/></svg>'
+            : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"/></svg>'
+          }
+        </div>
+        <div>
+          <div style="font-weight:500;${checked ? 'text-decoration:line-through;opacity:0.6;' : ''}">${item}</div>
+          <div style="font-size:12px;color:var(--aap-text-muted);">${detail}</div>
+        </div>
+      </label>`;
+    }).join('')}</div>`;
+
+  // Wire up click handlers
+  el.querySelectorAll('.brand-checklist-item--interactive').forEach(label => {
+    label.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = label.dataset.checkId;
+      saved[id] = !saved[id];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      renderGuideChecklist();
+    });
+  });
+  // Wire up reset button
+  const resetBtn = el.querySelector('[data-action="reset-checklist"]');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      renderGuideChecklist();
+    });
+  }
 }
 
 // =============================================

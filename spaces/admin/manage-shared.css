@@ -1106,6 +1106,235 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   word-break: break-word;
 }
 
+/* Interactive Checklist */
+.brand-checklist-item--interactive {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.brand-checklist-item--interactive:hover {
+  background: var(--border);
+}
+.brand-checklist-item--checked {
+  opacity: 0.7;
+}
+.guide-checklist-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.guide-checklist-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.guide-checklist-bar-fill {
+  height: 100%;
+  background: var(--aap-success);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.guide-checklist-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.guide-checklist-reset {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+/* Guide Layout Diagram */
+.guide-layout-diagram {
+  margin-bottom: 16px;
+}
+
+/* Guide Typography Samples */
+.guide-type-samples {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.guide-type-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+.guide-type-row:nth-child(odd) {
+  background: var(--bg);
+}
+.guide-type-meta {
+  flex: 0 0 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.guide-type-label {
+  font-weight: 600;
+  font-size: 13px;
+}
+.guide-type-spec {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+.guide-type-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Guide Spacing Visual */
+.guide-spacing-visual {
+  margin-bottom: 16px;
+}
+.guide-spacing-tag {
+  position: absolute;
+  font-size: 9px;
+  background: rgba(212,136,58,0.15);
+  color: #d4883a;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  white-space: nowrap;
+}
+.guide-spacing-gap {
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* Guide Buttons Demo */
+.guide-buttons-demo {
+  margin-bottom: 8px;
+}
+.guide-buttons-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.guide-button-example {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+}
+.guide-button-label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.guide-button-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 12px;
+}
+.guide-button-spec code {
+  font-size: 11px;
+}
+
+/* Guide Images Do/Don't */
+.guide-images-dodont {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.guide-dodont-card {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.guide-dodont-header {
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.guide-dodont--do .guide-dodont-header {
+  background: rgba(34,139,34,0.1);
+  color: var(--aap-success);
+}
+.guide-dodont--dont .guide-dodont-header {
+  background: rgba(200,50,50,0.1);
+  color: var(--aap-error);
+}
+.guide-dodont-body {
+  padding: 16px;
+}
+.guide-dodont-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Guide Color Checks */
+.guide-color-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.guide-color-check {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.guide-color-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.guide-color-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.guide-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.guide-rule-icon {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Guide Dark Mode Compare */
+.guide-darkmode-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.guide-darkmode-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.guide-darkmode-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.guide-darkmode-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
 /* Contrast Pairings */
 .brand-contrast-grid {
   display: grid;
@@ -1279,6 +1508,28 @@ body.is-demo-mode #appContent a.btn-primary:not([data-demo-allowed]) {
   }
   .brand-anatomy-label {
     display: none;
+  }
+  .guide-type-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .guide-type-meta {
+    flex: none;
+    flex-direction: row;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .guide-images-dodont {
+    grid-template-columns: 1fr;
+  }
+  .guide-darkmode-compare {
+    grid-template-columns: 1fr;
+  }
+  .guide-color-checks {
+    grid-template-columns: 1fr;
+  }
+  .guide-buttons-row {
+    flex-direction: column;
   }
 }
 
