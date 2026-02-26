@@ -520,7 +520,8 @@ Alpaca Playhouse`
         _extraImages,
         html: `
           <p style="color:${B.text};font-size:15px;line-height:1.5;margin:0 0 8px;">Hi ${data.first_name},</p>
-          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
+          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 8px;">Your move-in is confirmed! Welcome to the Alpaca Playhouse community.</p>
+          <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
 
           <table style="border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px;border:1px solid ${B.border};border-radius:8px;overflow:hidden;">
             <thead>
@@ -551,6 +552,8 @@ Alpaca Playhouse`
 Hi ${data.first_name},
 
 Your move-in is confirmed! Welcome to the Alpaca Playhouse community.
+
+Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.
 
 ${data.access_code ? `Door Access Code: ${data.access_code}\n` : ''}
 Your Details:
