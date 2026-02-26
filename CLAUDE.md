@@ -956,12 +956,14 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - Admin UI: Settings tab has test mode toggle, compose SMS, bulk SMS, inbound SMS view
 
 ### Hostinger VPS (OpenClaw Server)
+- **URL:** https://alpaclaw.cloud (domain: `alpaclaw.cloud`, auto-HTTPS via Caddy + Let's Encrypt)
 - **IP:** `93.188.164.224` | **SSH:** `ssh root@93.188.164.224`
 - **OS:** Ubuntu 24.04, KVM 4, 15 GB RAM, 200 GB disk
 - **Docker:** OpenClaw v2026.2.23 chatbot gateway (multi-channel: Discord, WhatsApp, Telegram, Slack)
 - **Docker Compose:** `/docker/openclaw-vnfd/docker-compose.yml` with `.env` file
 - **Container:** `openclaw-vnfd-openclaw-1` from `ghcr.io/hostinger/hvps-openclaw:latest`
 - **Ports:** `43414` (server.mjs proxy) → `18789` (internal gateway)
+- **Reverse Proxy:** Caddy v2.11.1 on port 80/443 → localhost:43414 (Caddyfile: `/etc/caddy/Caddyfile`)
 - **LLM:** Gemini (free tier) — `gemini-2.5-flash` primary model
 - **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management
 - **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. All config via `.env` file only.
