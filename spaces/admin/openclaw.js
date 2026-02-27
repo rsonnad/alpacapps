@@ -1,5 +1,5 @@
 /**
- * OpenClaw Configuration - Admin page for managing OpenClaw chatbot gateway
+ * AlpaClaw Configuration - Admin page for managing AlpaClaw chatbot (OpenClaw gateway)
  */
 
 import { supabase } from '../../shared/supabase.js';
@@ -47,8 +47,8 @@ async function loadConfig() {
     config = data;
     populateFields();
   } catch (err) {
-    console.error('Error loading OpenClaw config:', err);
-    showToast('Failed to load OpenClaw configuration', 'error');
+    console.error('Error loading AlpaClaw config:', err);
+    showToast('Failed to load AlpaClaw configuration', 'error');
   }
 }
 
