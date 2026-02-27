@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { logApiUsage } from "../_shared/api-usage-log.ts";
 
 const SDM_BASE_URL = "https://smartdevicemanagement.googleapis.com/v1";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -65,6 +66,7 @@ serve(async (req) => {
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
+    let userId: string | null = null;
 
     if (!isInternalCall) {
       const {
@@ -76,7 +78,8 @@ serve(async (req) => {
       }
 
       // Check granular permission: control_climate
-      const { hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_climate");
+      const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_climate");
+      userId = appUser?.id ?? null;
       if (!hasPermission) {
         return jsonResponse({ error: "Insufficient permissions" }, 403);
       }
@@ -184,6 +187,15 @@ serve(async (req) => {
         if (!res.ok) {
           return jsonResponse({ error: data.error?.message || "SDM API error" }, res.status);
         }
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "listDevices",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          app_user_id: userId,
+        });
         return jsonResponse(data);
       }
 
@@ -201,6 +213,17 @@ serve(async (req) => {
         if (!res.ok) {
           return jsonResponse({ error: data.error?.message || "SDM API error" }, res.status);
         }
+
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "getDeviceState",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { deviceId: body.deviceId },
+          app_user_id: userId,
+        });
 
         // Cache state in nest_devices
         if (data.traits) {
@@ -362,6 +385,15 @@ serve(async (req) => {
           .filter((s) => s.status === "fulfilled")
           .map((s) => (s as PromiseFulfilledResult<any>).value);
 
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "getAllStates",
+          units: devices.length,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          app_user_id: userId,
+        });
         return jsonResponse({ devices: results });
       }
 
@@ -425,6 +457,16 @@ serve(async (req) => {
             res.status
           );
         }
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "setTemperature",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { deviceId: body.deviceId },
+          app_user_id: userId,
+        });
         return jsonResponse({ success: true });
       }
 
@@ -458,6 +500,16 @@ serve(async (req) => {
             res.status
           );
         }
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "setMode",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { deviceId: body.deviceId, mode: body.mode },
+          app_user_id: userId,
+        });
         return jsonResponse({ success: true });
       }
 
@@ -491,6 +543,16 @@ serve(async (req) => {
             res.status
           );
         }
+        await logApiUsage(supabase, {
+          vendor: "google_sdm",
+          category: "nest_climate_control",
+          endpoint: "setEco",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { deviceId: body.deviceId, ecoMode: body.ecoMode },
+          app_user_id: userId,
+        });
         return jsonResponse({ success: true });
       }
 

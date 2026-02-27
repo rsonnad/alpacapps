@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { logApiUsage } from "../_shared/api-usage-log.ts";
 
 const GOVEE_BASE_URL = "https://openapi.api.govee.com/router/api/v1";
 const SCENE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -49,6 +50,7 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const isInternalCall = token === supabaseServiceKey;
+    let userId: string | null = null;
 
     if (!isInternalCall) {
       const {
@@ -60,7 +62,8 @@ serve(async (req) => {
       }
 
       // Check granular permission: control_lighting
-      const { hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_lighting");
+      const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_lighting");
+      userId = appUser?.id ?? null;
       if (!hasPermission) {
         return jsonResponse({ error: "Insufficient permissions" }, 403);
       }
@@ -190,6 +193,16 @@ serve(async (req) => {
             fetched_at: new Date().toISOString(),
           });
 
+        await logApiUsage(supabase, {
+          vendor: "govee",
+          category: "govee_lighting_control",
+          endpoint: "getScenes",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { sku: body.sku, device: body.device, scenes_count: scenes.length },
+          app_user_id: userId,
+        });
         return jsonResponse({ scenes, cached: false });
       }
 
@@ -211,6 +224,16 @@ serve(async (req) => {
           if (!error) updated++;
         }
 
+        await logApiUsage(supabase, {
+          vendor: "govee",
+          category: "govee_lighting_control",
+          endpoint: "syncCapabilities",
+          units: 1,
+          unit_type: "api_calls",
+          estimated_cost_usd: 0,
+          metadata: { synced: updated, total: devices.length },
+          app_user_id: userId,
+        });
         return jsonResponse({ synced: updated, total: devices.length });
       }
 
@@ -219,6 +242,17 @@ serve(async (req) => {
     }
 
     const result = await goveeResponse.json();
+
+    await logApiUsage(supabase, {
+      vendor: "govee",
+      category: "govee_lighting_control",
+      endpoint: action,
+      units: 1,
+      unit_type: "api_calls",
+      estimated_cost_usd: 0,
+      metadata: { device: body.device, sku: body.sku },
+      app_user_id: userId,
+    });
 
     if (!goveeResponse.ok) {
       console.error(

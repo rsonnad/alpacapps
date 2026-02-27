@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { logApiUsage } from "../_shared/api-usage-log.ts";
 
 interface SonosRequest {
   action:
@@ -185,6 +186,7 @@ serve(async (req) => {
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
+    let userId: string | null = null;
 
     if (!isInternalCall) {
       const {
@@ -196,7 +198,8 @@ serve(async (req) => {
       }
 
       // Check granular permission: control_music
-      const { hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_music");
+      const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_music");
+      userId = appUser?.id ?? null;
       if (!hasPermission) {
         return jsonResponse({ error: "Insufficient permissions" }, 403);
       }
@@ -360,6 +363,20 @@ serve(async (req) => {
         }
 
         const ttsResult = await ttsResponse.json();
+
+        await logApiUsage(supabase, {
+          vendor: "gemini",
+          category: "sonos_music_control",
+          endpoint: "tts/announce",
+          input_tokens: ttsResult.usageMetadata?.promptTokenCount,
+          output_tokens: ttsResult.usageMetadata?.candidatesTokenCount,
+          units: 1,
+          unit_type: "tts_requests",
+          estimated_cost_usd: ((ttsResult.usageMetadata?.promptTokenCount || 0) * 0.15 + (ttsResult.usageMetadata?.candidatesTokenCount || 0) * 3.5) / 1_000_000,
+          metadata: { voice: voiceName, text_length: body.text!.length },
+          app_user_id: userId,
+        });
+
         const audioData = ttsResult.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!audioData) {
           console.error("Gemini TTS: no audio data in response", JSON.stringify(ttsResult).substring(0, 500));
@@ -512,6 +529,16 @@ serve(async (req) => {
               id: ar.id,
             }));
           }
+          await logApiUsage(supabase, {
+            vendor: "spotify",
+            category: "sonos_music_control",
+            endpoint: "search",
+            units: 1,
+            unit_type: "api_calls",
+            estimated_cost_usd: 0,
+            metadata: { query, searchType: spotifyType, results_count: results.length },
+            app_user_id: userId,
+          });
           return jsonResponse({ results, total: results.length });
         } catch (err) {
           console.error("Spotify search error:", err.message);
@@ -612,6 +639,19 @@ serve(async (req) => {
         const { data: previewUrlData } = supabase.storage
           .from(STORAGE_BUCKET)
           .getPublicUrl(previewPath);
+
+        await logApiUsage(supabase, {
+          vendor: "gemini",
+          category: "sonos_music_control",
+          endpoint: "tts/preview",
+          input_tokens: previewResult.usageMetadata?.promptTokenCount,
+          output_tokens: previewResult.usageMetadata?.candidatesTokenCount,
+          units: 1,
+          unit_type: "tts_requests",
+          estimated_cost_usd: ((previewResult.usageMetadata?.promptTokenCount || 0) * 0.15 + (previewResult.usageMetadata?.candidatesTokenCount || 0) * 3.5) / 1_000_000,
+          metadata: { voice: previewVoice, text_length: body.text!.length },
+          app_user_id: userId,
+        });
 
         return jsonResponse({
           status: "success",

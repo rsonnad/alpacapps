@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { logApiUsage } from "../_shared/api-usage-log.ts";
 
 interface LgControlRequest {
   action: "getStatus" | "control" | "watch" | "unwatch" | "registerPushToken";
@@ -165,6 +166,16 @@ serve(async (req) => {
 
       const result = await apiResponse.json();
       console.log(`LG control ${body.command} on ${appliance.name}: OK`);
+      await logApiUsage(supabase, {
+        vendor: "lg_thinq",
+        category: "lg_laundry_control",
+        endpoint: `control/${body.command}`,
+        units: 1,
+        unit_type: "api_calls",
+        estimated_cost_usd: 0,
+        metadata: { command: body.command, appliance: appliance.name, device_type: appliance.device_type },
+        app_user_id: appUser?.id ?? null,
+      });
       return jsonResponse({ success: true, result });
     }
 
