@@ -1669,7 +1669,145 @@ async function matchByName(
     }
   }
 
+  // 5. Gemini Flash AI matching — handles nicknames, legal names, transliterations
+  const geminiMatch = await matchByNameWithGemini(supabase, senderName, people);
+  if (geminiMatch) {
+    // Save mapping so future payments auto-match instantly
+    await supabase.from("payment_sender_mappings").upsert(
+      {
+        sender_name: senderName,
+        sender_name_normalized: normalized,
+        person_id: geminiMatch.person_id,
+        confidence_score: geminiMatch.confidence,
+        match_source: "zelle_email_gemini",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "sender_name_normalized" }
+    );
+    return { person_id: geminiMatch.person_id, name: geminiMatch.name };
+  }
+
   return null;
+}
+
+/**
+ * Use Gemini Flash to match a Zelle sender name to a person.
+ * Handles cases where sender uses legal name vs nickname (e.g., AGNIESZKA KORDEK → Ai Kordek).
+ */
+async function matchByNameWithGemini(
+  supabase: any,
+  senderName: string,
+  people: Array<{ id: string; first_name: string; last_name: string }>
+): Promise<{ person_id: string; name: string; confidence: number } | null> {
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!apiKey) {
+    console.log("Gemini API key not configured, skipping AI name matching");
+    return null;
+  }
+
+  // Build list of active tenants with assignments for context
+  const { data: activeTenants } = await supabase
+    .from("assignments")
+    .select(`
+      id,
+      rate_amount,
+      monthly_rent,
+      person:person_id (id, first_name, last_name, email)
+    `)
+    .in("status", ["active", "pending_contract", "contract_sent"]);
+
+  if (!activeTenants || activeTenants.length === 0) {
+    console.log("No active tenants for Gemini matching");
+    return null;
+  }
+
+  const tenantList = activeTenants.map((t: any, idx: number) => {
+    const p = t.person;
+    return `${idx + 1}. ${p.first_name} ${p.last_name}${p.email ? ` (${p.email})` : ""}`;
+  }).join("\n");
+
+  const prompt = `You are matching a Zelle payment sender name to a property tenant.
+
+SENDER NAME: "${senderName}"
+
+ACTIVE TENANTS:
+${tenantList}
+
+Match the sender to a tenant considering:
+- Legal names vs nicknames (e.g., "AGNIESZKA" could be "Ai", "WILLIAM" could be "Will/Bill", "ROBERT" could be "Bob")
+- Maiden/married name differences (same last name = strong signal)
+- Transliterations and cultural name variations
+- Middle names used instead of first names
+
+Return JSON:
+{
+  "best_match": <tenant number or null>,
+  "confidence": <0.0-1.0>,
+  "reasoning": "<brief explanation>"
+}
+
+Only return confidence >= 0.85 if you are quite sure. If unsure, return null with reasoning.`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 512,
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Gemini name match API error:", response.status);
+      return null;
+    }
+
+    const geminiResponse = await response.json();
+    const content = geminiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) return null;
+
+    const parsed = JSON.parse(content);
+    console.log(`Gemini name match: sender="${senderName}" → match=${parsed.best_match}, confidence=${parsed.confidence}, reasoning="${parsed.reasoning}"`);
+
+    // Log API usage
+    const usageMetadata = geminiResponse.usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount || 0;
+    const outputTokens = usageMetadata?.candidatesTokenCount || 0;
+    await supabase.from("api_usage_log").insert({
+      vendor: "gemini",
+      category: "payment_matching",
+      endpoint: "generateContent",
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      estimated_cost_usd: (inputTokens * 0.10 + outputTokens * 0.40) / 1_000_000,
+      metadata: { model: "gemini-2.0-flash", sender_name: senderName, confidence: parsed.confidence, reasoning: parsed.reasoning },
+    });
+
+    if (parsed.best_match && parsed.confidence >= 0.85) {
+      const matchedTenant = activeTenants[parsed.best_match - 1];
+      if (matchedTenant) {
+        const person = matchedTenant.person;
+        return {
+          person_id: person.id,
+          name: `${person.first_name} ${person.last_name}`,
+          confidence: parsed.confidence,
+        };
+      }
+    }
+
+    return null;
+  } catch (err) {
+    console.error("Gemini name matching error:", err);
+    return null;
+  }
 }
 
 /**
