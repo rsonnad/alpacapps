@@ -1,12 +1,12 @@
 {
-  "version": "v260227.09 3:27p",
-  "release": 366,
-  "sha": "0467c481c",
-  "fullSha": "0467c481c25ca6b58e06ead57ce07bbc8a1a438d",
+  "version": "v260227.10 3:34p",
+  "release": 367,
+  "sha": "a19186d4d",
+  "fullSha": "a19186d4df3698784fa7fe7533acadde5b581a7e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 21:27:55+00",
-  "commits": [{"sha":"0467c481c","message":"docs: add property config centralization implementation brief","author":"Rahul"}]
+  "pushedAt": "2026-02-27 21:34:21+00",
+  "commits": [{"sha":"41adf45d9","message":"docs: add multi-agent Discord routing to CLAUDE.md","author":"Rahul"},{"sha":"a19186d4d","message":"docs: add multi-agent Discord routing to CLAUDE.md","author":"Rahul"}]
 }
