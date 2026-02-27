@@ -970,6 +970,9 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. `.env` sets tokens but does NOT auto-enable Discord — must use `openclaw config set` CLI inside container after recreation.
 - **Channels enabled:** Discord (Alpaclaw bot), Telegram
 - **Discord Bot:** Alpaclaw (ID: `1476649970823335998`) — DM policy: open, allowFrom: `["*"]`
+- **Multi-agent routing:** 2 agents (Alpaclaw 🦙 + PAI 🧠), channel-based bindings route `#alpaclaw` → Alpaclaw, `#pai-in-the-sky` → PAI, DMs → Alpaclaw
+- **Discord Server:** Alpacord (ID: `1471023710755487867`)
+- **Discord Channels:** `#alpaclaw` (ID: `1477048544501174474`), `#pai-in-the-sky` (ID: `1471024050343247894`)
 - **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, bot tokens, full `.env` contents
 
 ### DigitalOcean Droplet (DEPRECATED — migrating to Hostinger + Oracle)
