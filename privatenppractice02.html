@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Private Practice Blueprint — A Planning Guide for Psychiatric NPs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a2e;
+            --ink-light: #4a4a6a;
+            --ink-muted: #8888a8;
+            --paper: #faf9f7;
+            --paper-warm: #f5f0eb;
+            --accent: #5046e5;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(80, 70, 229, 0.15);
+            --rose: #e11d48;
+            --rose-light: #fce7f3;
+            --emerald: #059669;
+            --emerald-light: #d1fae5;
+            --amber: #d97706;
+            --amber-light: #fef3c7;
+            --teal: #0d9488;
+            --blue: #2563eb;
+            --radius: 12px;
+            --radius-lg: 20px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3, .serif { font-family: 'Instrument Serif', Georgia, serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: var(--ink);
+            color: white;
+        }
+        .hero-canvas {
+            position: absolute;
+            inset: 0;
+            opacity: 0.6;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent-light);
+            margin-bottom: 32px;
+        }
+        .hero-eyebrow::before, .hero-eyebrow::after {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+        }
+        .hero h1 {
+            font-size: clamp(2.8rem, 6vw, 5rem);
+            line-height: 1.05;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+        .hero h1 em {
+            font-style: italic;
+            color: var(--accent-light);
+        }
+        .hero-sub {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+            max-width: 540px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+        .hero-tags {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .hero-tag {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+        .hero-scroll {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: breathe 3s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { opacity: 0.3; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 0.7; transform: translateX(-50%) translateY(6px); }
+        }
+
+        /* ===== NAV ===== */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(250, 249, 247, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-inner::-webkit-scrollbar { display: none; }
+        .nav-link {
+            padding: 14px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            text-decoration: none;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-link:hover { color: var(--ink); }
+        .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        /* ===== LAYOUT ===== */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        section { padding: 100px 0; }
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.1;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+        .section-sub {
+            font-size: 1rem;
+            color: var(--ink-muted);
+            max-width: 600px;
+            margin-bottom: 48px;
+        }
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+        }
+
+        /* ===== QUIZ ===== */
+        .quiz-q {
+            margin-bottom: 48px;
+        }
+        .quiz-divider-label {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 56px 0 40px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .quiz-divider-label::before, .quiz-divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+        }
+        .quiz-num {
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+        .quiz-prompt {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+        }
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .quiz-opt {
+            border: 2px solid rgba(0,0,0,0.06);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            cursor: pointer;
+            background: white;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .quiz-opt:hover {
+            border-color: rgba(80, 70, 229, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .quiz-opt.selected {
+            border-color: var(--accent);
+            background: rgba(80, 70, 229, 0.04);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .quiz-opt-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .quiz-opt-desc { font-size: 12px; color: var(--ink-muted); }
+        .quiz-result {
+            display: none;
+            background: white;
+            border: 1px solid rgba(80, 70, 229, 0.15);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-top: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        .quiz-result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #ec4899, var(--amber));
+        }
+        .quiz-result.show { display: block; animation: slideUp 0.5s ease; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .personality-box {
+            margin-top: 24px;
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            background: var(--paper-warm);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .personality-archetype {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.15rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        .personality-desc {
+            font-size: 13px;
+            color: var(--ink-light);
+            line-height: 1.6;
+        }
+        .personality-traits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .personality-trait {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== PATH CARDS ===== */
+        .paths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .path-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .path-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .path-card:hover {
+            border-color: rgba(0,0,0,0.1);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+            transform: translateY(-4px);
+        }
+        .path-card:hover::before { opacity: 1; }
+        .path-card.highlighted {
+            border-color: var(--accent);
+            box-shadow: 0 8px 40px var(--accent-glow);
+        }
+        .path-card.highlighted::before { opacity: 1; }
+        .path-card.dimmed { opacity: 0.35; filter: grayscale(0.4); transform: scale(0.98); }
+        .path-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        .path-title { font-family: 'Instrument Serif', Georgia, serif; font-size: 1.25rem; margin-bottom: 4px; }
+        .path-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 20px; }
+        .metric {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .metric-label { color: var(--ink-muted); }
+        .metric-val { font-weight: 600; font-size: 12px; }
+        .bar-track {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(0,0,0,0.04);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pros-cons { margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.04); padding-top: 12px; }
+        .pros-cons summary {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pros-cons summary::-webkit-details-marker { display: none; }
+        .pros-cons summary .arrow { transition: transform 0.2s; font-size: 10px; }
+        .pros-cons[open] summary .arrow { transform: rotate(90deg); }
+        .pros-cons-list { margin-top: 12px; font-size: 12px; }
+        .pros-cons-list li {
+            list-style: none;
+            padding: 4px 0;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .pc-icon { flex-shrink: 0; font-size: 10px; margin-top: 3px; }
+
+        /* ===== MATRIX ===== */
+        .sliders-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            border: 1px solid rgba(0,0,0,0.06);
+            margin-bottom: 32px;
+        }
+        .sliders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px 32px;
+        }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .slider-val { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 12px; }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(0,0,0,0.06);
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+            transition: transform 0.15s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+        .score-row.top { border-color: var(--accent); background: rgba(80, 70, 229, 0.03); }
+        .score-icon { font-size: 20px; flex-shrink: 0; }
+        .score-info { flex: 1; min-width: 0; }
+        .score-name { font-weight: 600; font-size: 13px; }
+        .score-bar-track { height: 6px; border-radius: 3px; background: rgba(0,0,0,0.04); margin-top: 6px; overflow: hidden; }
+        .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .score-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+
+        /* ===== COMPARISON TABLE ===== */
+        .table-wrap { overflow-x: auto; margin: 0 -24px; padding: 0 24px; }
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .comp-table th {
+            padding: 16px 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-weight: 400;
+            border-bottom: 2px solid rgba(0,0,0,0.08);
+        }
+        .comp-table th:first-child { text-align: left; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-muted); }
+        .comp-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            transition: background 0.15s;
+        }
+        .comp-table td:first-child { text-align: left; font-weight: 500; }
+        .comp-table tr:hover td { background: rgba(80, 70, 229, 0.02); }
+        .chip {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .chip-green { background: var(--emerald-light); color: var(--emerald); }
+        .chip-amber { background: var(--amber-light); color: var(--amber); }
+        .chip-rose { background: var(--rose-light); color: var(--rose); }
+        .yes { color: var(--emerald); }
+        .no { color: var(--ink-muted); font-size: 11px; }
+        .partial { color: var(--amber); font-size: 12px; }
+
+        /* ===== CA REQUIREMENTS ===== */
+        .req-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .req-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .req-card h3 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .req-step {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+        .req-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .rate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .rate-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .rate-code { font-size: 11px; color: var(--ink-muted); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+        .rate-amount { font-family: 'Instrument Serif', Georgia, serif; font-size: 1.5rem; color: var(--emerald); }
+        .rate-desc { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+
+        /* ===== CALCULATOR ===== */
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            border: 1px solid rgba(0,0,0,0.06);
+            margin-bottom: 32px;
+        }
+        .calc-inputs label { font-size: 12px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
+        .calc-inputs input {
+            width: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            font-size: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .calc-inputs input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .calc-hint { font-size: 11px; color: var(--ink-muted); margin-top: 4px; }
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .calc-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+        .calc-card:hover {
+            border-color: rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .calc-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .calc-card-icon { font-size: 18px; }
+        .calc-card-name { font-weight: 600; font-size: 13px; }
+        .calc-card-note { font-size: 11px; color: var(--ink-muted); margin-bottom: 16px; }
+        .calc-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; }
+        .calc-row-label { color: var(--ink-muted); }
+        .calc-row-val { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+        .calc-total {
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin-top: 8px;
+            padding-top: 10px;
+        }
+        .calc-total .calc-row-val { font-size: 20px; font-weight: 600; }
+        .calc-annual {
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 8px;
+        }
+        .calc-annual .calc-row-val { font-size: 16px; font-weight: 600; }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--ink-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .disclaimer {
+            max-width: 700px;
+            margin: 24px auto 0;
+            padding: 20px 24px;
+            background: var(--amber-light);
+            border-radius: var(--radius);
+            font-size: 12px;
+            color: var(--amber);
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            section { padding: 60px 0; }
+            .paths-grid { grid-template-columns: 1fr; }
+            .quiz-options { grid-template-columns: 1fr; }
+            .rate-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-content">
+        <div class="hero-eyebrow">A Comprehensive Planning Guide</div>
+        <h1>The Private Practice <em>Blueprint</em></h1>
+        <p class="hero-sub">
+            You're a psychiatric NP ready to build your own practice. Insurance or cash-pay?
+            Platform or independent? This interactive tool maps your personality, priorities,
+            and goals to the path that actually fits you.
+        </p>
+        <div class="hero-tags">
+            <span class="hero-tag">PMHNP</span>
+            <span class="hero-tag">Personality Match</span>
+            <span class="hero-tag">San Francisco</span>
+            <span class="hero-tag">AB 890</span>
+            <span class="hero-tag">2025-26 Data</span>
+            <span class="hero-tag">Interactive</span>
+        </div>
+    </div>
+    <div class="hero-scroll">Scroll to explore &#8595;</div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav class="sticky-nav">
+    <div class="nav-inner">
+        <a href="#quiz" class="nav-link">Quiz</a>
+        <a href="#paths" class="nav-link">5 Paths</a>
+        <a href="#matrix" class="nav-link">Matrix</a>
+        <a href="#platforms" class="nav-link">Platforms</a>
+        <a href="#california" class="nav-link">CA Rules</a>
+        <a href="#calculator" class="nav-link">Calculator</a>
+    </div>
+</nav>
+
+<main>
+
+<!-- ===== QUIZ ===== -->
+<section id="quiz">
+    <div class="container">
+        <div class="section-label">Start Here</div>
+        <h2 class="section-title">What kind of practice fits you?</h2>
+        <p class="section-sub">Answer ten questions &mdash; five practical, five personal. We'll match you to a path and reveal your practice personality.</p>
+
+        <!-- Q1 -->
+        <div class="quiz-q" data-step="1">
+            <div class="quiz-prompt"><span class="quiz-num">1</span>How important is maximizing per-session income?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="income" data-v="high" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Very important</div>
+                    <div class="quiz-opt-desc">I want $200-350+ per session</div>
+                </button>
+                <button class="quiz-opt" data-q="income" data-v="medium" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Somewhat</div>
+                    <div class="quiz-opt-desc">$100-180 is fine if volume is steady</div>
+                </button>
+                <button class="quiz-opt" data-q="income" data-v="low" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Less important</div>
+                    <div class="quiz-opt-desc">Access and impact matter more</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-q" data-step="2">
+            <div class="quiz-prompt"><span class="quiz-num">2</span>How do you feel about admin work?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="admin" data-v="hate" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Handle it for me</div>
+                    <div class="quiz-opt-desc">Zero billing, zero credentialing</div>
+                </button>
+                <button class="quiz-opt" data-q="admin" data-v="some" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">I can handle some</div>
+                    <div class="quiz-opt-desc">Help with credentialing, I'll do billing</div>
+                </button>
+                <button class="quiz-opt" data-q="admin" data-v="fine" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">I'll DIY it all</div>
+                    <div class="quiz-opt-desc">Full control, keep every dollar</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-q" data-step="3">
+            <div class="quiz-prompt"><span class="quiz-num">3</span>How quickly do you need patients?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="speed" data-v="asap" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Immediately</div>
+                    <div class="quiz-opt-desc">I need income flowing within weeks</div>
+                </button>
+                <button class="quiz-opt" data-q="speed" data-v="months" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">A few months</div>
+                    <div class="quiz-opt-desc">I can plan ahead and build slowly</div>
+                </button>
+                <button class="quiz-opt" data-q="speed" data-v="patient" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">I'm patient</div>
+                    <div class="quiz-opt-desc">Savings or other income to bridge</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-q" data-step="4">
+            <div class="quiz-prompt"><span class="quiz-num">4</span>Who do you want to serve?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="population" data-v="broad" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Broad population</div>
+                    <div class="quiz-opt-desc">Including Medicaid &amp; underserved</div>
+                </button>
+                <button class="quiz-opt" data-q="population" data-v="insured" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Commercially insured</div>
+                    <div class="quiz-opt-desc">PPO/HMO employer plans</div>
+                </button>
+                <button class="quiz-opt" data-q="population" data-v="premium" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Premium self-pay</div>
+                    <div class="quiz-opt-desc">Clients paying out-of-pocket</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-q" data-step="5">
+            <div class="quiz-prompt"><span class="quiz-num">5</span>What's your practice model?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="model" data-v="medmgmt" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Medication Management</div>
+                    <div class="quiz-opt-desc">15-30 min med checks, high volume</div>
+                </button>
+                <button class="quiz-opt" data-q="model" data-v="therapy" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Therapy + Meds</div>
+                    <div class="quiz-opt-desc">45-60 min integrated sessions</div>
+                </button>
+                <button class="quiz-opt" data-q="model" data-v="specialty" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Niche Specialty</div>
+                    <div class="quiz-opt-desc">ADHD, trauma, perinatal, ketamine</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Divider between practical & personality questions -->
+        <div class="quiz-divider-label">Your Practice Personality</div>
+
+        <!-- Q6: Risk Tolerance -->
+        <div class="quiz-q" data-step="6">
+            <div class="quiz-prompt"><span class="quiz-num">6</span>How do you handle financial uncertainty?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="risk" data-v="stability" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">I need predictable income</div>
+                    <div class="quiz-opt-desc">Stability first &mdash; I sleep better with steady checks</div>
+                </button>
+                <button class="quiz-opt" data-q="risk" data-v="moderate" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Calculated risks with a safety net</div>
+                    <div class="quiz-opt-desc">I'll take smart bets, but not bet the farm</div>
+                </button>
+                <button class="quiz-opt" data-q="risk" data-v="bold" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">I thrive in uncertainty</div>
+                    <div class="quiz-opt-desc">High risk, high reward &mdash; that's my comfort zone</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q7: Entrepreneurial Identity -->
+        <div class="quiz-q" data-step="7">
+            <div class="quiz-prompt"><span class="quiz-num">7</span>When you imagine your practice, what excites you most?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="identity" data-v="clinician" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Seeing patients, period</div>
+                    <div class="quiz-opt-desc">Keep the business stuff far away from me</div>
+                </button>
+                <button class="quiz-opt" data-q="identity" data-v="builder" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Building something that's truly mine</div>
+                    <div class="quiz-opt-desc">I want to create a practice from the ground up</div>
+                </button>
+                <button class="quiz-opt" data-q="identity" data-v="architect" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">The freedom to design my own system</div>
+                    <div class="quiz-opt-desc">I want to architect every detail of how it works</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q8: Marketing Comfort -->
+        <div class="quiz-q" data-step="8">
+            <div class="quiz-prompt"><span class="quiz-num">8</span>How would you prefer to fill your caseload?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="marketing" data-v="passive" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Let a system send me patients</div>
+                    <div class="quiz-opt-desc">Directories, algorithms, auto-referrals</div>
+                </button>
+                <button class="quiz-opt" data-q="marketing" data-v="network" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Referral relationships</div>
+                    <div class="quiz-opt-desc">Build a network of referring providers over time</div>
+                </button>
+                <button class="quiz-opt" data-q="marketing" data-v="active" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">My own brand and reputation</div>
+                    <div class="quiz-opt-desc">Content, social media, thought leadership</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q9: Relationship with Authority -->
+        <div class="quiz-q" data-step="9">
+            <div class="quiz-prompt"><span class="quiz-num">9</span>How do you feel about insurance companies influencing your care?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="authority" data-v="compliant" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">It's fine &mdash; I work within systems</div>
+                    <div class="quiz-opt-desc">Prior auths and formularies are part of the job</div>
+                </button>
+                <button class="quiz-opt" data-q="authority" data-v="pragmatic" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Annoying but manageable</div>
+                    <div class="quiz-opt-desc">I can navigate the bureaucracy when I have to</div>
+                </button>
+                <button class="quiz-opt" data-q="authority" data-v="autonomous" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Absolutely not</div>
+                    <div class="quiz-opt-desc">I prescribe what I prescribe &mdash; no interference</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Q10: Long-term Vision -->
+        <div class="quiz-q" data-step="10">
+            <div class="quiz-prompt"><span class="quiz-num">10</span>Where do you see your practice in 5 years?</div>
+            <div class="quiz-options">
+                <button class="quiz-opt" data-q="vision" data-v="steady" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">Stable and balanced</div>
+                    <div class="quiz-opt-desc">Full caseload, good income, work-life balance</div>
+                </button>
+                <button class="quiz-opt" data-q="vision" data-v="empire" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">A group practice I've built</div>
+                    <div class="quiz-opt-desc">Multiple providers, maybe multiple locations</div>
+                </button>
+                <button class="quiz-opt" data-q="vision" data-v="brand" onclick="selectQuiz(this)">
+                    <div class="quiz-opt-title">A recognized name in my niche</div>
+                    <div class="quiz-opt-desc">The go-to specialist in my area of expertise</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Result -->
+        <div class="quiz-result" id="quizResult">
+            <div style="font-size: 24px; margin-bottom: 12px;">&#10024;</div>
+            <h3 class="serif" style="font-size: 1.4rem; margin-bottom: 8px;" id="quizResultTitle"></h3>
+            <p style="font-size: 14px; color: var(--ink-light); line-height: 1.7;" id="quizResultText"></p>
+            <p style="font-size: 12px; color: var(--ink-muted); margin-top: 16px; font-style: italic;" id="quizResultRunner"></p>
+            <div class="personality-box" id="personalityBox">
+                <div class="personality-archetype" id="personalityTitle"></div>
+                <div class="personality-desc" id="personalityDesc"></div>
+                <div class="personality-traits" id="personalityTraits"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 5 PATHS ===== -->
+<section id="paths">
+    <div class="container">
+        <div class="section-label">Compare</div>
+        <h2 class="section-title">The Five Paths</h2>
+        <p class="section-sub">Each path trades off income, autonomy, speed, and complexity differently.</p>
+
+        <div class="paths-grid" id="pathCards">
+            <!-- Path 1 -->
+            <div class="path-card" data-path="platform" style="--card-accent: var(--accent)">
+                <div class="path-icon" style="background: var(--accent-glow); color: var(--accent)">&#9889;</div>
+                <div class="path-title">Credentialing Platform</div>
+                <div class="path-sub">Headway &middot; Alma &middot; Grow Therapy &middot; Rula</div>
+                <div class="metric"><span class="metric-label">Revenue / session</span><span class="metric-val">$90 - $160</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:45%; background: var(--accent)"></div></div>
+                <div class="metric"><span class="metric-label">Admin burden</span><span class="metric-val" style="color:var(--emerald)">Low</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--emerald)"></div></div>
+                <div class="metric"><span class="metric-label">Time to first patient</span><span class="metric-val">2 - 12 wks</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:35%; background: var(--amber)"></div></div>
+                <details class="pros-cons">
+                    <summary><span class="arrow">&#9654;</span> Pros & Cons</summary>
+                    <ul class="pros-cons-list">
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> They handle credentialing, claims, billing</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Built-in patient referrals from their directory</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Free or low monthly cost to join</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Platform takes a cut (hidden margin or fee)</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Limited control over your rates</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> You don't own the insurance panel spot</li>
+                    </ul>
+                </details>
+            </div>
+
+            <!-- Path 2 -->
+            <div class="path-card" data-path="diy" style="--card-accent: var(--blue)">
+                <div class="path-icon" style="background: rgba(37,99,235,0.1); color: var(--blue)">&#128295;</div>
+                <div class="path-title">DIY Self-Credentialing</div>
+                <div class="path-sub">Apply directly to each payer panel</div>
+                <div class="metric"><span class="metric-label">Revenue / session</span><span class="metric-val">$110 - $180</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:55%; background: var(--blue)"></div></div>
+                <div class="metric"><span class="metric-label">Admin burden</span><span class="metric-val" style="color:var(--rose)">High</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:85%; background: var(--rose)"></div></div>
+                <div class="metric"><span class="metric-label">Time to first patient</span><span class="metric-val">3 - 6 months</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:75%; background: var(--rose)"></div></div>
+                <details class="pros-cons">
+                    <summary><span class="arrow">&#9654;</span> Pros & Cons</summary>
+                    <ul class="pros-cons-list">
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Keep 100% of insurance reimbursement</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> You own your panel contracts directly</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Can negotiate rates over time</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> 60-120 day credentialing per payer</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Must manage CAQH, PECOS, NPI yourself</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Claims denials and billing complexity</li>
+                    </ul>
+                </details>
+            </div>
+
+            <!-- Path 3 -->
+            <div class="path-card" data-path="billing" style="--card-accent: var(--teal)">
+                <div class="path-icon" style="background: rgba(13,148,136,0.1); color: var(--teal)">&#128202;</div>
+                <div class="path-title">Credentialing + Billing Service</div>
+                <div class="path-sub">MediBill &middot; Practolytics &middot; denmaar</div>
+                <div class="metric"><span class="metric-label">Revenue / session</span><span class="metric-val">$100 - $170</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:50%; background: var(--teal)"></div></div>
+                <div class="metric"><span class="metric-label">Admin burden</span><span class="metric-val" style="color:var(--amber)">Medium</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:45%; background: var(--amber)"></div></div>
+                <div class="metric"><span class="metric-label">Time to first patient</span><span class="metric-val">2 - 4 months</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:55%; background: var(--amber)"></div></div>
+                <details class="pros-cons">
+                    <summary><span class="arrow">&#9654;</span> Pros & Cons</summary>
+                    <ul class="pros-cons-list">
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> You own your panel contracts</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Expert handles paperwork (98%+ approval)</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Billing service reduces claim denials</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Monthly fees ($200-500) + 5-8% of collections</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Still need to find your own patients</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Quality varies widely between services</li>
+                    </ul>
+                </details>
+            </div>
+
+            <!-- Path 4 -->
+            <div class="path-card" data-path="privatepay" style="--card-accent: var(--amber)">
+                <div class="path-icon" style="background: rgba(217,119,6,0.1); color: var(--amber)">&#9733;</div>
+                <div class="path-title">Private Pay Only</div>
+                <div class="path-sub">Cash-based, no insurance</div>
+                <div class="metric"><span class="metric-label">Revenue / session</span><span class="metric-val">$200 - $400+</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:85%; background: var(--amber)"></div></div>
+                <div class="metric"><span class="metric-label">Admin burden</span><span class="metric-val" style="color:var(--emerald)">Very Low</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:10%; background: var(--emerald)"></div></div>
+                <div class="metric"><span class="metric-label">Time to first patient</span><span class="metric-val">1 - 8 wks</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:30%; background: var(--amber)"></div></div>
+                <details class="pros-cons">
+                    <summary><span class="arrow">&#9654;</span> Pros & Cons</summary>
+                    <ul class="pros-cons-list">
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Highest per-session revenue</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Full autonomy over schedule &amp; rates</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> No insurance paperwork or audits</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Smaller patient pool (OOP only)</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Must build referral network from scratch</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Competitive SF market for cash-pay psych</li>
+                    </ul>
+                </details>
+            </div>
+
+            <!-- Path 5 -->
+            <div class="path-card" data-path="hybrid" style="--card-accent: #ec4899">
+                <div class="path-icon" style="background: rgba(236,72,153,0.1); color: #ec4899">&#9878;&#65039;</div>
+                <div class="path-title">Hybrid Model</div>
+                <div class="path-sub">Insurance via platform + private pay on the side</div>
+                <div class="metric"><span class="metric-label">Revenue / session</span><span class="metric-val">$130 - $300 blended</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:65%; background: #ec4899"></div></div>
+                <div class="metric"><span class="metric-label">Admin burden</span><span class="metric-val" style="color:var(--amber)">Medium</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:40%; background: var(--amber)"></div></div>
+                <div class="metric"><span class="metric-label">Time to first patient</span><span class="metric-val">1 - 4 wks</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:25%; background: var(--emerald)"></div></div>
+                <details class="pros-cons">
+                    <summary><span class="arrow">&#9654;</span> Pros & Cons</summary>
+                    <ul class="pros-cons-list">
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Steady insurance base + premium upside</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Diversified revenue, lower risk</li>
+                        <li><span class="pc-icon" style="color:var(--emerald)">&#9679;</span> Fast startup via platform referrals</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Two billing systems to manage</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> More complex scheduling</li>
+                        <li><span class="pc-icon" style="color:var(--rose)">&#9679;</span> Patients may expect insurance rate for all</li>
+                    </ul>
+                </details>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MATRIX ===== -->
+<section id="matrix">
+    <div class="container">
+        <div class="section-label">Customize</div>
+        <h2 class="section-title">Weighted Decision Matrix</h2>
+        <p class="section-sub">Adjust the sliders to reflect your priorities. Rankings update live.</p>
+
+        <div class="sliders-panel">
+            <div class="sliders-grid">
+                <div class="slider-group">
+                    <label>Revenue per session <span class="slider-val" id="w-revenue-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-revenue" oninput="updateMatrix()">
+                </div>
+                <div class="slider-group">
+                    <label>Low admin burden <span class="slider-val" id="w-admin-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-admin" oninput="updateMatrix()">
+                </div>
+                <div class="slider-group">
+                    <label>Speed to first patient <span class="slider-val" id="w-speed-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-speed" oninput="updateMatrix()">
+                </div>
+                <div class="slider-group">
+                    <label>Autonomy & control <span class="slider-val" id="w-autonomy-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-autonomy" oninput="updateMatrix()">
+                </div>
+                <div class="slider-group">
+                    <label>Patient volume <span class="slider-val" id="w-volume-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-volume" oninput="updateMatrix()">
+                </div>
+                <div class="slider-group">
+                    <label>Low startup cost <span class="slider-val" id="w-cost-val">5</span></label>
+                    <input type="range" min="0" max="10" value="5" id="w-cost" oninput="updateMatrix()">
+                </div>
+            </div>
+        </div>
+
+        <div id="matrixScores"></div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== PLATFORMS ===== -->
+<section id="platforms">
+    <div class="container">
+        <div class="section-label">Deep Dive</div>
+        <h2 class="section-title">Platform Comparison</h2>
+        <p class="section-sub">Side-by-side breakdown of the four major credentialing platforms.</p>
+
+        <div class="table-wrap">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th style="color:var(--accent)">Headway</th>
+                        <th style="color:#ec4899">Alma</th>
+                        <th style="color:var(--emerald)">Grow Therapy</th>
+                        <th style="color:var(--blue)">Rula</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cost to join</td>
+                        <td><span class="chip chip-green">Free</span></td>
+                        <td><span class="chip chip-amber">$95-125/mo</span></td>
+                        <td><span class="chip chip-green">Free</span></td>
+                        <td><span class="chip chip-green">Free</span></td>
+                    </tr>
+                    <tr>
+                        <td>Revenue model</td>
+                        <td>Margin on payer rates</td>
+                        <td>Monthly fee + % claims</td>
+                        <td>% of insurance payouts</td>
+                        <td>Margin on payer rates</td>
+                    </tr>
+                    <tr>
+                        <td>Payout speed</td>
+                        <td>~30 days</td>
+                        <td><strong class="yes">Weekly</strong></td>
+                        <td><strong class="yes">Weekly</strong></td>
+                        <td>~30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Session rates</td>
+                        <td>Market rate</td>
+                        <td><strong class="yes">Highest</strong></td>
+                        <td>$60-160</td>
+                        <td>Market rate</td>
+                    </tr>
+                    <tr>
+                        <td>Medicaid</td>
+                        <td><span class="no">No</span></td>
+                        <td><span class="no">No</span></td>
+                        <td><span class="yes">&#10003; Yes</span></td>
+                        <td><span class="no">No</span></td>
+                    </tr>
+                    <tr>
+                        <td>Medicare</td>
+                        <td><span class="no">No</span></td>
+                        <td><span class="no">No</span></td>
+                        <td><span class="yes">&#10003; Yes</span></td>
+                        <td><span class="no">No</span></td>
+                    </tr>
+                    <tr>
+                        <td>PMHNP friendly</td>
+                        <td><span class="yes">&#10003;</span></td>
+                        <td><span class="partial">Limited</span></td>
+                        <td><span class="yes">&#10003;</span></td>
+                        <td><span class="yes">&#10003;</span></td>
+                    </tr>
+                    <tr>
+                        <td>Med mgmt billing</td>
+                        <td><span class="yes">&#10003;</span></td>
+                        <td><span class="partial">Limited</span></td>
+                        <td><span class="yes">&#10003;</span></td>
+                        <td><span class="yes">&#10003;</span></td>
+                    </tr>
+                    <tr>
+                        <td>EHR included</td>
+                        <td><span class="no">BYO</span></td>
+                        <td><span class="no">BYO</span></td>
+                        <td><span class="yes">&#10003; Yes</span></td>
+                        <td><span class="yes">&#10003; Yes</span></td>
+                    </tr>
+                    <tr>
+                        <td>Best for</td>
+                        <td style="color:var(--accent); font-weight:600; font-size:12px">Flexibility</td>
+                        <td style="color:#ec4899; font-weight:600; font-size:12px">Highest pay</td>
+                        <td style="color:var(--emerald); font-weight:600; font-size:12px">Broadest access</td>
+                        <td style="color:var(--blue); font-weight:600; font-size:12px">Structured care</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CALIFORNIA ===== -->
+<section id="california">
+    <div class="container">
+        <div class="section-label">Regulatory</div>
+        <h2 class="section-title">California PMHNP Requirements</h2>
+        <p class="section-sub">The checklist for opening a psychiatric NP practice in the Bay Area.</p>
+
+        <div class="req-grid">
+            <div class="req-card">
+                <h3>&#127467;&#127480; Licensure & Authority</h3>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--accent-glow); color:var(--accent)">1</span>
+                    <div><strong>RN License</strong> &mdash; Active California RN license via BRN</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--accent-glow); color:var(--accent)">2</span>
+                    <div><strong>NP Certification</strong> &mdash; ANCC or AANP PMHNP board certification</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--accent-glow); color:var(--accent)">3</span>
+                    <div><strong>Furnishing Number</strong> &mdash; Required to prescribe (CA BRN)</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--accent-glow); color:var(--accent)">4</span>
+                    <div><strong>DEA Registration</strong> &mdash; For controlled substances</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--accent-glow); color:var(--accent)">5</span>
+                    <div><strong>AB 890</strong> &mdash; Path to full independent practice. By 2026, ~2/3 of CA NPs expected to qualify.</div>
+                </div>
+            </div>
+
+            <div class="req-card">
+                <h3>&#128203; Insurance Credentialing</h3>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--amber-light); color:var(--amber)">1</span>
+                    <div><strong>NPI Number</strong> &mdash; Apply at NPPES (free, ~10 days)</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--amber-light); color:var(--amber)">2</span>
+                    <div><strong>CAQH Profile</strong> &mdash; Universal credentialing database</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--amber-light); color:var(--amber)">3</span>
+                    <div><strong>PECOS Enrollment</strong> &mdash; Required for Medicare</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--amber-light); color:var(--amber)">4</span>
+                    <div><strong>Malpractice Insurance</strong> &mdash; $1M/$3M coverage (~$800-1,500/yr)</div>
+                </div>
+                <div class="req-step">
+                    <span class="req-num" style="background:var(--amber-light); color:var(--amber)">5</span>
+                    <div><strong>Panel Applications</strong> &mdash; Apply per payer (60-120 days each)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="req-card" style="margin-top: 20px;">
+            <h3>&#128178; Bay Area Reimbursement Snapshot <span style="font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:var(--ink-muted); letter-spacing:1px">(2025-2026)</span></h3>
+            <div class="rate-grid">
+                <div class="rate-card">
+                    <div class="rate-code">99213</div>
+                    <div class="rate-amount">$85-120</div>
+                    <div class="rate-desc">E&M 15 min &middot; Med check</div>
+                </div>
+                <div class="rate-card">
+                    <div class="rate-code">99214</div>
+                    <div class="rate-amount">$120-165</div>
+                    <div class="rate-desc">E&M 25 min &middot; Complex med</div>
+                </div>
+                <div class="rate-card">
+                    <div class="rate-code">90834</div>
+                    <div class="rate-amount">$100-150</div>
+                    <div class="rate-desc">Therapy 45 min</div>
+                </div>
+                <div class="rate-card">
+                    <div class="rate-code">90837</div>
+                    <div class="rate-amount">$140-185</div>
+                    <div class="rate-desc">Therapy 60 min</div>
+                </div>
+                <div class="rate-card">
+                    <div class="rate-code">90833</div>
+                    <div class="rate-amount">$70-100</div>
+                    <div class="rate-desc">Add-on therapy w/ E&M</div>
+                </div>
+            </div>
+            <p style="font-size:11px; color:var(--ink-muted); margin-top:16px; line-height:1.6">SF/Bay Area rates run 7-15% above national average due to geographic cost adjustment. Psychiatric NPs bill at the same rate as psychiatrists for most codes. Add-on 90833 can be stacked with E&M codes for integrated therapy + med management sessions.</p>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CALCULATOR ===== -->
+<section id="calculator">
+    <div class="container">
+        <div class="section-label">Project</div>
+        <h2 class="section-title">Revenue Calculator</h2>
+        <p class="section-sub">Estimate monthly and annual income under each model.</p>
+
+        <div class="calc-inputs">
+            <div>
+                <label>Sessions / Week</label>
+                <input type="number" id="calc-sessions" value="25" min="1" max="50" oninput="updateCalc()">
+            </div>
+            <div>
+                <label>Weeks / Year</label>
+                <input type="number" id="calc-weeks" value="48" min="1" max="52" oninput="updateCalc()">
+            </div>
+            <div>
+                <label>Monthly Overhead</label>
+                <input type="number" id="calc-overhead" value="2000" min="0" max="20000" oninput="updateCalc()">
+                <div class="calc-hint">EHR, rent, malpractice, etc.</div>
+            </div>
+        </div>
+
+        <div class="calc-grid" id="calcResults"></div>
+
+        <div class="disclaimer" style="margin-top:32px">
+            <strong>Disclaimer:</strong> These are rough estimates based on 2025-2026 Bay Area market data. Actual income depends on payer mix, insurance contracts, claim denial rates, no-show rates, and individual negotiation. This is not financial advice.
+        </div>
+    </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+    <p style="font-family:'Instrument Serif',Georgia,serif; font-size:1.1rem; color:var(--ink-light); margin-bottom:8px">Built with care for a PMHNP launching in the Bay.</p>
+    <p>Data sourced from publicly available platform information, CMS fee schedules, and industry reports. Not legal or financial advice.</p>
+</footer>
+
+<script>
+// ===== HERO CANVAS (generative art) =====
+(function() {
+    const c = document.getElementById('heroCanvas');
+    const ctx = c.getContext('2d');
+    let w, h, particles = [], mouse = { x: 0, y: 0 };
+
+    function resize() {
+        w = c.width = c.offsetWidth;
+        h = c.height = c.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * w;
+            this.y = Math.random() * h;
+            this.vx = (Math.random() - 0.5) * 0.3;
+            this.vy = (Math.random() - 0.5) * 0.3;
+            this.r = Math.random() * 2 + 0.5;
+            this.alpha = Math.random() * 0.4 + 0.1;
+            this.hue = 240 + Math.random() * 40;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > w) this.vx *= -1;
+            if (this.y < 0 || this.y > h) this.vy *= -1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${this.hue}, 70%, 70%, ${this.alpha})`;
+            ctx.fill();
+        }
+    }
+
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+    function drawConnections() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(129, 140, 248, ${0.08 * (1 - dist / 150)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => { p.update(); p.draw(); });
+        drawConnections();
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+
+// ===== QUIZ =====
+const quizAnswers = {};
+const TOTAL_QUESTIONS = 10;
+
+function selectQuiz(el) {
+    const q = el.dataset.q;
+    quizAnswers[q] = el.dataset.v;
+    el.parentElement.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    if (Object.keys(quizAnswers).length >= TOTAL_QUESTIONS) showQuizResult();
+}
+
+function showQuizResult() {
+    const scores = { platform: 0, diy: 0, billing: 0, privatepay: 0, hybrid: 0 };
+
+    // --- Practical questions (Q1-Q5) ---
+    if (quizAnswers.income === 'high') { scores.privatepay += 3; scores.hybrid += 2; scores.diy += 1; }
+    if (quizAnswers.income === 'medium') { scores.hybrid += 2; scores.billing += 2; scores.platform += 1; }
+    if (quizAnswers.income === 'low') { scores.platform += 3; scores.billing += 1; }
+    if (quizAnswers.admin === 'hate') { scores.platform += 3; scores.privatepay += 2; }
+    if (quizAnswers.admin === 'some') { scores.billing += 2; scores.hybrid += 2; }
+    if (quizAnswers.admin === 'fine') { scores.diy += 3; scores.billing += 1; }
+    if (quizAnswers.speed === 'asap') { scores.platform += 3; scores.privatepay += 2; scores.hybrid += 2; }
+    if (quizAnswers.speed === 'months') { scores.billing += 2; scores.hybrid += 1; scores.diy += 1; }
+    if (quizAnswers.speed === 'patient') { scores.diy += 3; scores.billing += 2; }
+    if (quizAnswers.population === 'broad') { scores.platform += 2; scores.diy += 1; }
+    if (quizAnswers.population === 'insured') { scores.platform += 2; scores.billing += 2; scores.hybrid += 1; }
+    if (quizAnswers.population === 'premium') { scores.privatepay += 3; scores.hybrid += 2; }
+    if (quizAnswers.model === 'medmgmt') { scores.platform += 2; scores.diy += 2; scores.billing += 2; }
+    if (quizAnswers.model === 'therapy') { scores.hybrid += 2; scores.platform += 1; scores.billing += 1; }
+    if (quizAnswers.model === 'specialty') { scores.privatepay += 3; scores.hybrid += 2; }
+
+    // --- Personality questions (Q6-Q10) — equal weight ---
+    // Q6: Risk tolerance
+    if (quizAnswers.risk === 'stability') { scores.platform += 3; scores.billing += 2; }
+    if (quizAnswers.risk === 'moderate') { scores.hybrid += 3; scores.billing += 1; }
+    if (quizAnswers.risk === 'bold') { scores.privatepay += 3; scores.diy += 2; }
+
+    // Q7: Entrepreneurial identity
+    if (quizAnswers.identity === 'clinician') { scores.platform += 3; }
+    if (quizAnswers.identity === 'builder') { scores.diy += 3; scores.privatepay += 2; }
+    if (quizAnswers.identity === 'architect') { scores.hybrid += 2; scores.privatepay += 2; }
+
+    // Q8: Marketing comfort
+    if (quizAnswers.marketing === 'passive') { scores.platform += 3; }
+    if (quizAnswers.marketing === 'network') { scores.diy += 2; scores.billing += 2; scores.hybrid += 1; }
+    if (quizAnswers.marketing === 'active') { scores.privatepay += 3; scores.hybrid += 2; }
+
+    // Q9: Relationship with authority
+    if (quizAnswers.authority === 'compliant') { scores.platform += 2; scores.billing += 2; }
+    if (quizAnswers.authority === 'pragmatic') { scores.hybrid += 2; scores.diy += 2; }
+    if (quizAnswers.authority === 'autonomous') { scores.privatepay += 3; }
+
+    // Q10: Long-term vision
+    if (quizAnswers.vision === 'steady') { scores.platform += 2; scores.billing += 2; }
+    if (quizAnswers.vision === 'empire') { scores.diy += 3; scores.billing += 2; }
+    if (quizAnswers.vision === 'brand') { scores.privatepay += 3; scores.hybrid += 2; }
+
+    // --- Compute recommendation ---
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    const names = {
+        platform: 'Credentialing Platform',
+        diy: 'DIY Self-Credentialing',
+        billing: 'Credentialing + Billing Service',
+        privatepay: 'Private Pay Only',
+        hybrid: 'Hybrid Model'
+    };
+    const descs = {
+        platform: 'A platform like Headway or Grow Therapy handles credentialing and billing so you can focus entirely on patients. You trade some per-session income for speed and simplicity.',
+        diy: 'You value control and long-term ownership. Credentialing yourself takes longer but you keep 100% of reimbursements and own your panel contracts forever.',
+        billing: 'A credentialing service gives you professional help with paperwork while you own your panel spots. Worth the monthly investment for the peace of mind.',
+        privatepay: 'With a specialty focus and premium positioning, a cash-pay practice lets you set your own rates, session lengths, and serve exactly the patients you want.',
+        hybrid: 'Start with a platform for steady insurance income while building a private-pay caseload on the side. Income security with upside potential.'
+    };
+
+    document.getElementById('quizResultTitle').textContent = `Recommended: ${names[sorted[0][0]]}`;
+    document.getElementById('quizResultText').textContent = descs[sorted[0][0]];
+    document.getElementById('quizResultRunner').textContent = `Runner-up: ${names[sorted[1][0]]}`;
+
+    // --- Compute personality archetype from Q6-Q10 ---
+    const personalityScores = {
+        clinical_purist: 0,
+        independent_builder: 0,
+        strategic_hybrid: 0,
+        niche_specialist: 0,
+        system_navigator: 0
+    };
+
+    // Q6: Risk
+    if (quizAnswers.risk === 'stability') { personalityScores.system_navigator += 3; personalityScores.clinical_purist += 2; }
+    if (quizAnswers.risk === 'moderate') { personalityScores.strategic_hybrid += 3; personalityScores.independent_builder += 1; }
+    if (quizAnswers.risk === 'bold') { personalityScores.niche_specialist += 3; personalityScores.independent_builder += 2; }
+
+    // Q7: Identity
+    if (quizAnswers.identity === 'clinician') { personalityScores.clinical_purist += 3; personalityScores.system_navigator += 1; }
+    if (quizAnswers.identity === 'builder') { personalityScores.independent_builder += 3; }
+    if (quizAnswers.identity === 'architect') { personalityScores.strategic_hybrid += 2; personalityScores.niche_specialist += 2; }
+
+    // Q8: Marketing
+    if (quizAnswers.marketing === 'passive') { personalityScores.clinical_purist += 2; personalityScores.system_navigator += 2; }
+    if (quizAnswers.marketing === 'network') { personalityScores.strategic_hybrid += 2; personalityScores.independent_builder += 1; }
+    if (quizAnswers.marketing === 'active') { personalityScores.niche_specialist += 3; personalityScores.independent_builder += 1; }
+
+    // Q9: Authority
+    if (quizAnswers.authority === 'compliant') { personalityScores.system_navigator += 3; personalityScores.clinical_purist += 1; }
+    if (quizAnswers.authority === 'pragmatic') { personalityScores.strategic_hybrid += 3; }
+    if (quizAnswers.authority === 'autonomous') { personalityScores.niche_specialist += 2; personalityScores.independent_builder += 2; }
+
+    // Q10: Vision
+    if (quizAnswers.vision === 'steady') { personalityScores.clinical_purist += 2; personalityScores.system_navigator += 2; }
+    if (quizAnswers.vision === 'empire') { personalityScores.independent_builder += 3; personalityScores.strategic_hybrid += 1; }
+    if (quizAnswers.vision === 'brand') { personalityScores.niche_specialist += 3; }
+
+    const archetypes = {
+        clinical_purist: {
+            title: 'The Clinical Purist',
+            desc: 'Your north star is patient care. You want the business machinery to fade into the background so you can focus on what you trained for. You\'ll thrive in a setup that minimizes admin and maximizes clinical time.',
+            traits: ['Patient-Focused', 'Low Admin Tolerance', 'Stability-Driven', 'Systems-Friendly']
+        },
+        independent_builder: {
+            title: 'The Independent Builder',
+            desc: 'You\'re wired to create. Building a practice from scratch isn\'t a burden to you \u2014 it\'s the whole point. You want ownership, long-term equity, and the satisfaction of knowing every piece of your business is yours.',
+            traits: ['Entrepreneurial', 'Ownership-Minded', 'Long-term Thinker', 'Risk-Tolerant']
+        },
+        strategic_hybrid: {
+            title: 'The Strategic Hybrid',
+            desc: 'You see the value in multiple approaches and resist putting all your eggs in one basket. You\'re pragmatic about insurance, creative about cash-pay, and always hedging. Diversification is your superpower.',
+            traits: ['Pragmatic', 'Diversified', 'Adaptable', 'Balanced Risk']
+        },
+        niche_specialist: {
+            title: 'The Niche Specialist',
+            desc: 'You want to be known for something specific. Premium positioning, deep expertise, and a personal brand are how you\'ll stand out. You\'re not afraid to charge what you\'re worth because you deliver specialized value.',
+            traits: ['Brand-Oriented', 'High Autonomy', 'Premium Positioning', 'Expert Identity']
+        },
+        system_navigator: {
+            title: 'The System Navigator',
+            desc: 'You\'re comfortable working within institutional structures. Insurance panels, platform rules, credentialing requirements \u2014 you see them as guardrails, not cages. You\'ll leverage existing systems to build a stable, predictable practice.',
+            traits: ['Structure-Friendly', 'Risk-Averse', 'Reliable', 'Process-Oriented']
+        }
+    };
+
+    const pSorted = Object.entries(personalityScores).sort((a, b) => b[1] - a[1]);
+    const topArchetype = archetypes[pSorted[0][0]];
+
+    document.getElementById('personalityTitle').textContent = topArchetype.title;
+    document.getElementById('personalityDesc').textContent = topArchetype.desc;
+    document.getElementById('personalityTraits').innerHTML = topArchetype.traits
+        .map(t => `<span class="personality-trait">${t}</span>`).join('');
+
+    // Show result
+    const r = document.getElementById('quizResult');
+    r.classList.add('show');
+
+    // Highlight path cards
+    document.querySelectorAll('.path-card').forEach(card => {
+        card.classList.remove('highlighted', 'dimmed');
+        if (card.dataset.path === sorted[0][0]) card.classList.add('highlighted');
+        else if (card.dataset.path !== sorted[1][0]) card.classList.add('dimmed');
+    });
+
+    r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ===== MATRIX =====
+const rawScores = {
+    platform:   { revenue: 4, admin: 9, speed: 8, autonomy: 3, volume: 9, cost: 9 },
+    diy:        { revenue: 6, admin: 2, speed: 3, autonomy: 8, volume: 5, cost: 7 },
+    billing:    { revenue: 5, admin: 6, speed: 5, autonomy: 7, volume: 5, cost: 5 },
+    privatepay: { revenue: 9, admin: 10, speed: 7, autonomy: 10, volume: 2, cost: 8 },
+    hybrid:     { revenue: 7, admin: 5, speed: 8, autonomy: 6, volume: 7, cost: 7 },
+};
+const pathMeta = {
+    platform:   { name: 'Credentialing Platform', color: '#5046e5', icon: '&#9889;' },
+    diy:        { name: 'DIY Self-Credentialing', color: '#2563eb', icon: '&#128295;' },
+    billing:    { name: 'Credentialing + Billing Service', color: '#0d9488', icon: '&#128202;' },
+    privatepay: { name: 'Private Pay Only', color: '#d97706', icon: '&#9733;' },
+    hybrid:     { name: 'Hybrid Model', color: '#ec4899', icon: '&#9878;&#65039;' },
+};
+
+function updateMatrix() {
+    const dims = ['revenue', 'admin', 'speed', 'autonomy', 'volume', 'cost'];
+    const weights = {};
+    dims.forEach(d => {
+        weights[d] = parseInt(document.getElementById(`w-${d}`).value);
+        document.getElementById(`w-${d}-val`).textContent = weights[d];
+    });
+    const totalW = Object.values(weights).reduce((a, b) => a + b, 0) || 1;
+    const results = {};
+    let maxS = 0;
+    for (const [path, scores] of Object.entries(rawScores)) {
+        let ws = 0;
+        for (const [d, raw] of Object.entries(scores)) ws += raw * weights[d];
+        results[path] = ws / totalW;
+        if (results[path] > maxS) maxS = results[path];
+    }
+    const sorted = Object.entries(results).sort((a, b) => b[1] - a[1]);
+    document.getElementById('matrixScores').innerHTML = sorted.map(([p, s], i) => {
+        const m = pathMeta[p];
+        const pct = maxS > 0 ? (s / maxS) * 100 : 0;
+        return `<div class="score-row ${i === 0 ? 'top' : ''}">
+            <div class="score-icon">${m.icon}</div>
+            <div class="score-info">
+                <div class="score-name">${i === 0 ? '&#127942; ' : ''}${m.name}</div>
+                <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%; background:${m.color}"></div></div>
+            </div>
+            <div class="score-val mono" style="color:${m.color}">${s.toFixed(1)}</div>
+        </div>`;
+    }).join('');
+}
+
+// ===== CALCULATOR =====
+function updateCalc() {
+    const sessions = parseInt(document.getElementById('calc-sessions').value) || 25;
+    const weeks = parseInt(document.getElementById('calc-weeks').value) || 48;
+    const overhead = parseInt(document.getElementById('calc-overhead').value) || 2000;
+    const models = [
+        { name: 'Platform', rate: 125, color: '#5046e5', icon: '&#9889;', note: 'Avg platform reimbursement' },
+        { name: 'DIY Insurance', rate: 145, color: '#2563eb', icon: '&#128295;', note: 'Direct panel, higher rate' },
+        { name: 'Billing Svc', rate: 135, color: '#0d9488', icon: '&#128202;', note: 'After 6% billing fee' },
+        { name: 'Private Pay', rate: 275, color: '#d97706', icon: '&#9733;', note: 'SF Bay cash rate' },
+        { name: 'Hybrid 60/40', rate: 185, color: '#ec4899', icon: '&#9878;&#65039;', note: '60% ins + 40% private' },
+    ];
+    document.getElementById('calcResults').innerHTML = models.map(m => {
+        const mg = (sessions * m.rate * weeks) / 12;
+        const mn = mg - overhead;
+        const an = mn * 12;
+        return `<div class="calc-card">
+            <div class="calc-card-head"><span class="calc-card-icon">${m.icon}</span><span class="calc-card-name">${m.name}</span></div>
+            <div class="calc-card-note">${m.note} &middot; ~$${m.rate}/session</div>
+            <div class="calc-row"><span class="calc-row-label">Monthly gross</span><span class="calc-row-val">$${mg.toLocaleString('en-US',{maximumFractionDigits:0})}</span></div>
+            <div class="calc-row"><span class="calc-row-label">- Overhead</span><span class="calc-row-val" style="color:var(--rose)">-$${overhead.toLocaleString()}</span></div>
+            <div class="calc-total"><div class="calc-row"><span class="calc-row-label" style="font-weight:600">Monthly net</span><span class="calc-row-val" style="color:${m.color}">$${mn.toLocaleString('en-US',{maximumFractionDigits:0})}</span></div></div>
+            <div class="calc-annual"><div class="calc-row"><span class="calc-row-label" style="font-weight:600">Annual net</span><span class="calc-row-val" style="color:${m.color}">$${an.toLocaleString('en-US',{maximumFractionDigits:0})}</span></div></div>
+        </div>`;
+    }).join('');
+}
+
+// ===== NAV HIGHLIGHT =====
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+    let cur = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
+    navLinks.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === `#${cur}`);
+    });
+});
+
+// Smooth scroll
+document.querySelectorAll('.nav-link').forEach(l => {
+    l.addEventListener('click', e => {
+        e.preventDefault();
+        const t = document.querySelector(l.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Init
+updateMatrix();
+updateCalc();
+</script>
+</body>
+</html>
