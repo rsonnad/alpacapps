@@ -284,6 +284,66 @@ export async function initAssociatePage({ activeTab, onReady }) {
   let authState = getAuthState();
   let pageContentShown = false;
   let onReadyCalled = false;
+  const rootEl = document.documentElement;
+  const loadingOverlayEl = document.getElementById('loadingOverlay');
+  const unauthorizedOverlayEl = document.getElementById('unauthorizedOverlay');
+  const appContentEl = document.getElementById('appContent');
+  const hasCachedAuthHint = rootEl.hasAttribute('data-cached-auth');
+  const CACHED_OVERLAY_DELAY_MS = 160;
+  let bootState = 'init';
+  let delayedOverlayTimer = null;
+
+  function clearDelayedOverlayTimer() {
+    if (!delayedOverlayTimer) return;
+    window.clearTimeout(delayedOverlayTimer);
+    delayedOverlayTimer = null;
+  }
+
+  function transitionBootState(nextState) {
+    if (bootState === nextState) return;
+    bootState = nextState;
+
+    if (nextState !== 'booting') {
+      rootEl.removeAttribute('data-cached-auth');
+      clearDelayedOverlayTimer();
+    }
+
+    if (nextState === 'booting') {
+      unauthorizedOverlayEl?.classList.add('hidden');
+      if (hasCachedAuthHint) {
+        loadingOverlayEl?.classList.add('hidden');
+        clearDelayedOverlayTimer();
+        delayedOverlayTimer = window.setTimeout(() => {
+          if (bootState === 'booting') {
+            loadingOverlayEl?.classList.remove('hidden');
+          }
+        }, CACHED_OVERLAY_DELAY_MS);
+      } else {
+        loadingOverlayEl?.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (nextState === 'authorized') {
+      loadingOverlayEl?.classList.add('hidden');
+      unauthorizedOverlayEl?.classList.add('hidden');
+      appContentEl?.classList.remove('hidden');
+      return;
+    }
+
+    if (nextState === 'unauthorized') {
+      loadingOverlayEl?.classList.add('hidden');
+      appContentEl?.classList.add('hidden');
+      unauthorizedOverlayEl?.classList.remove('hidden');
+      return;
+    }
+
+    if (nextState === 'redirecting') {
+      loadingOverlayEl?.classList.add('hidden');
+    }
+  }
+
+  transitionBootState('booting');
 
   async function handleAuthState(state) {
     authState = state;
@@ -303,9 +363,8 @@ export async function initAssociatePage({ activeTab, onReady }) {
     const meetsRequirement = allowedRoles.includes(userRole);
 
     if (state.appUser && meetsRequirement) {
+      transitionBootState('authorized');
       injectSiteNav();
-      document.getElementById('loadingOverlay').classList.add('hidden');
-      document.getElementById('appContent').classList.remove('hidden');
 
       // Render user info into site nav auth container (replaces Sign In link)
       const siteAuthEl = document.getElementById('aapHeaderAuth');
@@ -360,16 +419,17 @@ export async function initAssociatePage({ activeTab, onReady }) {
         if (!sessionData?.session) {
           console.warn('[associate-shell] No active session despite cached auth — redirecting to login');
           try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
+          transitionBootState('redirecting');
           window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
         onReady(state);
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
-      document.getElementById('loadingOverlay').classList.add('hidden');
+      transitionBootState('unauthorized');
       renderAccessDenied(state, activeTab);
-      document.getElementById('unauthorizedOverlay')?.classList.remove('hidden');
     } else if (!state.isAuthenticated && !pageContentShown) {
+      transitionBootState('redirecting');
       window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
     }
   }
