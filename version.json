@@ -1,12 +1,12 @@
 {
-  "version": "v260227.16 5:38p",
-  "release": 373,
-  "sha": "2249b53cb",
-  "fullSha": "2249b53cb043610507407989e50e2f5f85703d7f",
+  "version": "v260227.17 5:54p",
+  "release": 374,
+  "sha": "83ce679b1",
+  "fullSha": "83ce679b1f7a72c16871257e908420ad09d71561",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 23:38:44+00",
-  "commits": [{"sha":"2249b53cb","message":"feat: add OpenClaw security partitioning controls","author":"Rahul"}]
+  "pushedAt": "2026-02-27 23:54:00+00",
+  "commits": [{"sha":"83ce679b1","message":"fix loader flash for cached auth sessions","author":"Rahul"}]
 }
