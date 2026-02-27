@@ -1,12 +1,12 @@
 {
-  "version": "v260227.04 3:06a",
-  "release": 361,
-  "sha": "39586fe12",
-  "fullSha": "39586fe1295f6ad55d79adea0263a27b8e0000ae",
+  "version": "v260227.05 4:46a",
+  "release": 362,
+  "sha": "7b74e3195",
+  "fullSha": "7b74e319504e1aea376c93b449ad4f2836a648ad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 09:06:13+00",
-  "commits": [{"sha":"be81ffafd","message":"feat: rename AlpaClaw page, bigger logo, pincher color, config link","author":"Rahul"},{"sha":"39586fe12","message":"Merge branch 'thirsty-ellis'","author":"Rahul"}]
+  "pushedAt": "2026-02-27 10:46:20+00",
+  "commits": [{"sha":"7b74e3195","message":"docs: add Discord/Telegram bot info and SSH workaround to Hostinger VPS section","author":"Rahul"}]
 }
