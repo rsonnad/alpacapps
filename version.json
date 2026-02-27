@@ -1,12 +1,12 @@
 {
-  "version": "v260227.01 2:44a",
-  "release": 358,
-  "sha": "dd3e5f64d",
-  "fullSha": "dd3e5f64ddc91fa1679f8fe5e1f49d88c6308a37",
+  "version": "v260227.02 2:47a",
+  "release": 359,
+  "sha": "1d42bc503",
+  "fullSha": "1d42bc503bdd5b349406276508f480abea924ff7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 08:44:47+00",
-  "commits": [{"sha":"dd3e5f64d","message":"feat: add Gemini Flash AI fallback for Zelle payment name matching","author":"Rahul"}]
+  "pushedAt": "2026-02-27 08:47:05+00",
+  "commits": [{"sha":"d39378044","message":"chore: rename agent from OpenClaw to AlpaClaw in UI","author":"Rahul"},{"sha":"1d42bc503","message":"Merge branch 'thirsty-ellis'","author":"Rahul"}]
 }
