@@ -13,6 +13,8 @@ import { initAuth, getAuthState, signOut } from './auth.js';
 
 // Image URLs - transparent PNGs from Supabase storage
 const LOGO_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos';
+const ALPACA_ICON_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 30"><rect width="21" height="30" rx="4" fill="none"/><path d="M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z" fill="#1f1720"/><ellipse cx="10.5" cy="18.6" rx="3.1" ry="4.7" fill="#f6f5f0"/></svg>');
+const ALPACA_WORDMARK_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 28"><rect width="120" height="28" fill="none"/><text x="0" y="20" font-size="16" font-family="Arial,sans-serif" fill="#1f1720">Alpaca</text></svg>');
 const IMAGES = {
   // Alpaca head icon (transparent PNGs)
   icon: `${LOGO_BASE}/alpaca-head-black-transparent.png`,        // black on transparent - for light backgrounds
@@ -80,8 +82,8 @@ function renderHeader(options = {}) {
     <header class="aap-header ${headerClass} ${colorClass}" id="aap-header">
       <div class="aap-header__inner">
         <a href="${BASE_PATH}/" class="aap-header__logo">
-          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" width="21" height="30" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}">
-          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" width="22" height="22" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}">
+          <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" width="21" height="30" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}" onerror="this.onerror=null;this.src='${ALPACA_ICON_FALLBACK}'">
+          <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" width="22" height="22" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}" onerror="this.onerror=null;this.src='${ALPACA_WORDMARK_FALLBACK}'">
           ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
         </a>
         <nav class="aap-nav" id="aap-nav">
