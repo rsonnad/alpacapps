@@ -360,45 +360,44 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
   errorLogger.setupGlobalHandlers();
   supabaseHealth.injectBanner();
 
-  await initAuth();
-  let authState = getAuthState();
-  let pageContentShown = false;
-  let onReadyCalled = false;
   const rootEl = document.documentElement;
   const loadingOverlayEl = document.getElementById('loadingOverlay');
   const unauthorizedOverlayEl = document.getElementById('unauthorizedOverlay');
   const appContentEl = document.getElementById('appContent');
-  const hasCachedAuthHint = rootEl.hasAttribute('data-cached-auth');
-  const CACHED_OVERLAY_DELAY_MS = 160;
-  let bootState = 'init';
-  let delayedOverlayTimer = null;
-
-  function clearDelayedOverlayTimer() {
-    if (!delayedOverlayTimer) return;
-    window.clearTimeout(delayedOverlayTimer);
-    delayedOverlayTimer = null;
+  let hasCachedAuthHint = rootEl.hasAttribute('data-cached-auth');
+  if (!hasCachedAuthHint) {
+    try {
+      const raw = localStorage.getItem('genalpaca-cached-auth');
+      if (raw) {
+        const cached = JSON.parse(raw);
+        const ageMs = Date.now() - (cached?.timestamp || 0);
+        const likelyValid = ageMs >= 0 && ageMs <= 90 * 24 * 60 * 60 * 1000;
+        const hasIdentity = !!(cached?.appUser || cached?.userId || cached?.email);
+        if (likelyValid && hasIdentity) {
+          hasCachedAuthHint = true;
+          rootEl.setAttribute('data-cached-auth', '1');
+        }
+      }
+    } catch (e) {
+      // Ignore parse/storage errors and continue normal boot.
+    }
   }
+  let authState = getAuthState();
+  let pageContentShown = false;
+  let onReadyCalled = false;
+  let bootState = 'init';
 
   function transitionBootState(nextState) {
     if (bootState === nextState) return;
     bootState = nextState;
 
-    if (nextState !== 'booting') {
-      rootEl.removeAttribute('data-cached-auth');
-      clearDelayedOverlayTimer();
-    }
+    if (nextState !== 'booting') rootEl.removeAttribute('data-cached-auth');
 
     if (nextState === 'booting') {
       unauthorizedOverlayEl?.classList.add('hidden');
       if (hasCachedAuthHint) {
-        // Let cached sessions render instantly and only show overlay if auth is slow.
+        // Keep cached sessions loaderless to avoid white flash.
         loadingOverlayEl?.classList.add('hidden');
-        clearDelayedOverlayTimer();
-        delayedOverlayTimer = window.setTimeout(() => {
-          if (bootState === 'booting') {
-            loadingOverlayEl?.classList.remove('hidden');
-          }
-        }, CACHED_OVERLAY_DELAY_MS);
       } else {
         loadingOverlayEl?.classList.remove('hidden');
       }
@@ -425,6 +424,8 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
   }
 
   transitionBootState('booting');
+  await initAuth();
+  authState = getAuthState();
 
   async function handleAuthState(state) {
     authState = state;
