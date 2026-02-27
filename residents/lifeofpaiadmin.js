@@ -24,6 +24,7 @@ async function initPaiAdmin() {
   await loadWhisperPool(1);
   await loadDeliveryLog();
 
+  document.getElementById('saveSoulBtn').addEventListener('click', saveSoul);
   document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
   document.getElementById('savePromptsBtn').addEventListener('click', savePrompts);
   document.getElementById('testWhisperBtn').addEventListener('click', sendTestWhisper);
@@ -135,6 +136,10 @@ async function loadConfig() {
     document.getElementById('cfgActiveLabel').textContent = e.target.checked ? 'On' : 'Off';
   });
 
+  // Populate soul content
+  const soulEl = document.getElementById('soulContent');
+  if (soulEl) soulEl.value = data.soul_md || '';
+
   // Populate AI prompts
   document.getElementById('promptSystemPrompt').value = data.story_system_prompt || '';
   document.getElementById('promptGenPrompt').value = data.whisper_gen_prompt || '';
@@ -203,6 +208,28 @@ function updateStoryArcHighlight(currentChapter) {
     const el = document.getElementById('storyChapter' + i);
     if (!el) continue;
     el.classList.toggle('locked', i > currentChapter);
+  }
+}
+
+async function saveSoul() {
+  const textarea = document.getElementById('soulContent');
+  const statusEl = document.getElementById('soulStatus');
+  if (!textarea) return;
+
+  try {
+    const { error } = await supabase
+      .from('spirit_whisper_config')
+      .update({ soul_md: textarea.value })
+      .eq('id', 1);
+
+    if (error) throw error;
+    config.soul_md = textarea.value;
+    if (statusEl) statusEl.textContent = 'Saved!';
+    showToast('Soul saved', 'success');
+  } catch (err) {
+    console.error('Error saving soul:', err);
+    if (statusEl) statusEl.textContent = 'Error saving';
+    showToast('Failed to save soul', 'error');
   }
 }
 
