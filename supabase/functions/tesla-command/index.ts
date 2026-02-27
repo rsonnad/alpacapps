@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { logApiUsage } from "../_shared/api-usage-log.ts";
 
 const TESLA_TOKEN_URL =
   "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token";
@@ -128,6 +129,15 @@ serve(async (req) => {
       }
 
       console.log(`Tesla OAuth tokens saved for account ${body.account_id}`);
+      await logApiUsage(supabase, {
+        vendor: "tesla",
+        category: "tesla_vehicle_command",
+        endpoint: "oauth/token_exchange",
+        units: 1,
+        unit_type: "api_calls",
+        estimated_cost_usd: 0,
+        metadata: { account_id: body.account_id },
+      });
       return jsonResponse({ success: true, account_id: body.account_id });
     }
 
@@ -308,6 +318,17 @@ serve(async (req) => {
       `Command ${command} result for ${vehicle.name}:`,
       JSON.stringify(cmdData)
     );
+
+    await logApiUsage(supabase, {
+      vendor: "tesla",
+      category: "tesla_vehicle_command",
+      endpoint: `command/${command}`,
+      units: 1,
+      unit_type: "api_calls",
+      estimated_cost_usd: 0,
+      metadata: { command, vehicle_name: vehicle.name, vehicle_id: vehicle.id },
+      app_user_id: appUser?.id ?? null,
+    });
 
     // 8. Update lock state in DB if it was a lock/unlock command
     if (command === "door_lock" || command === "door_unlock") {
