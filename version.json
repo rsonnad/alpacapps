@@ -1,12 +1,12 @@
 {
-  "version": "v260227.12 3:43p",
-  "release": 369,
-  "sha": "eafddb91e",
-  "fullSha": "eafddb91e556daef0b23da7c47d9d57aa0c2a523",
+  "version": "v260227.13 4:27p",
+  "release": 370,
+  "sha": "cd802ddb6",
+  "fullSha": "cd802ddb65c4c52104c413e8bcc9f966e39a1724",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 21:43:07+00",
-  "commits": [{"sha":"eafddb91e","message":"fix: constrain AlpaClaw profile image to 96x96px with inline styles","author":"Rahul"}]
+  "pushedAt": "2026-02-27 22:27:34+00",
+  "commits": [{"sha":"cd802ddb6","message":"feat: add soul backstory docs for PAI (Pakucha) and Alpaclaw (Kuntur)","author":"Rahul"}]
 }
