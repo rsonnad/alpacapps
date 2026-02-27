@@ -1,12 +1,12 @@
 {
-  "version": "v260227.03 2:50a",
-  "release": 360,
-  "sha": "0b226af54",
-  "fullSha": "0b226af543d26c9baf51995542daeec314576bb5",
+  "version": "v260227.04 3:06a",
+  "release": 361,
+  "sha": "39586fe12",
+  "fullSha": "39586fe1295f6ad55d79adea0263a27b8e0000ae",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 08:50:21+00",
-  "commits": [{"sha":"4e52a1a64","message":"feat: add AlpaClaw logo to admin config page","author":"Rahul"},{"sha":"0b226af54","message":"Merge branch 'thirsty-ellis'","author":"Rahul"}]
+  "pushedAt": "2026-02-27 09:06:13+00",
+  "commits": [{"sha":"be81ffafd","message":"feat: rename AlpaClaw page, bigger logo, pincher color, config link","author":"Rahul"},{"sha":"39586fe12","message":"Merge branch 'thirsty-ellis'","author":"Rahul"}]
 }
