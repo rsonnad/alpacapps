@@ -1,12 +1,12 @@
 {
-  "version": "v260227.14 4:39p",
-  "release": 371,
-  "sha": "3a21db0dd",
-  "fullSha": "3a21db0ddfc325ea28ee927ef9649191af0ee1b2",
+  "version": "v260227.16 5:38p",
+  "release": 373,
+  "sha": "2249b53cb",
+  "fullSha": "2249b53cb043610507407989e50e2f5f85703d7f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 22:39:52+00",
-  "commits": [{"sha":"3a21db0dd","message":"feat: add OpenClaw workspace SOUL configs for AlpaClaw and PAI","author":"Rahul"}]
+  "pushedAt": "2026-02-27 23:38:44+00",
+  "commits": [{"sha":"2249b53cb","message":"feat: add OpenClaw security partitioning controls","author":"Rahul"}]
 }
