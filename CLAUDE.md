@@ -965,9 +965,15 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Ports:** `43414` (server.mjs proxy) → `18789` (internal gateway)
 - **Reverse Proxy:** Caddy v2.11.1 on port 80/443 → localhost:43414 (Caddyfile: `/etc/caddy/Caddyfile`)
 - **LLM:** Gemini (free tier) — `gemini-2.5-flash` primary model
-- **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management
-- **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. All config via `.env` file only.
-- **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, full `.env` contents
+- **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management (VM ID: `1433869`)
+- **Config file:** `/data/.openclaw/openclaw.json` inside container (NOT `/data/openclaw.json`)
+- **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. `.env` sets tokens but does NOT auto-enable Discord — must use `openclaw config set` CLI inside container after recreation.
+- **Channels enabled:** Discord (Alpaclaw bot), Telegram
+- **Discord Bot:** Alpaclaw (ID: `1476649970823335998`) — DM policy: open, allowFrom: `["*"]`
+- **Multi-agent routing:** 2 agents (Alpaclaw 🦙 + PAI 🧠), channel-based bindings route `#alpaclaw` → Alpaclaw, `#pai-in-the-sky` → PAI, DMs → Alpaclaw
+- **Discord Server:** Alpacord (ID: `1471023710755487867`)
+- **Discord Channels:** `#alpaclaw` (ID: `1477048544501174474`), `#pai-in-the-sky` (ID: `1471024050343247894`)
+- **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, bot tokens, full `.env` contents
 
 ### DigitalOcean Droplet (DEPRECATED — migrating to Hostinger + Oracle)
 - Runs Bug Scout (`bug_scout.js`) and background workers
