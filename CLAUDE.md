@@ -957,7 +957,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 
 ### Hostinger VPS (OpenClaw Server)
 - **URL:** https://alpaclaw.cloud (domain: `alpaclaw.cloud`, auto-HTTPS via Caddy + Let's Encrypt)
-- **IP:** `93.188.164.224` | **SSH:** `ssh root@93.188.164.224`
+- **IP:** `93.188.164.224` | **SSH:** `sshpass -p 'PASSWORD' ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224` (key auth broken on Hostinger)
 - **OS:** Ubuntu 24.04, KVM 4, 15 GB RAM, 200 GB disk
 - **Docker:** OpenClaw v2026.2.23 chatbot gateway (multi-channel: Discord, WhatsApp, Telegram, Slack)
 - **Docker Compose:** `/docker/openclaw-vnfd/docker-compose.yml` with `.env` file
@@ -965,9 +965,12 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Ports:** `43414` (server.mjs proxy) → `18789` (internal gateway)
 - **Reverse Proxy:** Caddy v2.11.1 on port 80/443 → localhost:43414 (Caddyfile: `/etc/caddy/Caddyfile`)
 - **LLM:** Gemini (free tier) — `gemini-2.5-flash` primary model
-- **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management
-- **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. All config via `.env` file only.
-- **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, full `.env` contents
+- **MCP:** `hostinger-api-mcp` configured in `.mcp.json` for Claude Code management (VM ID: `1433869`)
+- **Config file:** `/data/.openclaw/openclaw.json` inside container (NOT `/data/openclaw.json`)
+- **IMPORTANT:** OpenClaw's `server.mjs` overwrites config on restart. `.env` sets tokens but does NOT auto-enable Discord — must use `openclaw config set` CLI inside container after recreation.
+- **Channels enabled:** Discord (Alpaclaw bot), Telegram
+- **Discord Bot:** Alpaclaw (ID: `1476649970823335998`) — DM policy: open, allowFrom: `["*"]`
+- **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, bot tokens, full `.env` contents
 
 ### DigitalOcean Droplet (DEPRECATED — migrating to Hostinger + Oracle)
 - Runs Bug Scout (`bug_scout.js`) and background workers
