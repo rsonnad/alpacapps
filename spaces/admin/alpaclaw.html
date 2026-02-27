@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="../../favicon.png">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
-  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{display:none!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
   <link rel="stylesheet" href="../styles.css?v=5">
   <link rel="stylesheet" href="styles.css?v=5">
   <link rel="stylesheet" href="manage-shared.css?v=5">
@@ -22,8 +22,8 @@
   <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-overlay__logo">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
     </div>
     <div class="spinner spinner--sm"></div>
   </div>
@@ -291,6 +291,91 @@
 
         <div class="mt-4">
           <button class="btn-small btn-primary" id="saveChannelsBtn">Save Channels</button>
+        </div>
+      </div>
+
+      <!-- ===== SECURITY + PARTITIONING GROUP ===== -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h2>Security &amp; Partitioning</h2>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-body">
+            <p class="text-xs text-aap-text-muted mb-3">
+              Partition Discord into staff vs resident contexts and keep risky operations staff-only.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="discordStaffGuildIds" style="font-size:0.8rem;">Staff Guild IDs (comma-separated)</label>
+                <input type="text" id="discordStaffGuildIds" placeholder="1471023710755487867" style="font-size:0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="discordStaffChannelIds" style="font-size:0.8rem;">Staff Channel IDs (comma-separated)</label>
+                <input type="text" id="discordStaffChannelIds" placeholder="1477048544501174474" style="font-size:0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="discordResidentGuildIds" style="font-size:0.8rem;">Resident Guild IDs (optional)</label>
+                <input type="text" id="discordResidentGuildIds" placeholder="Separate residents guild IDs" style="font-size:0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="discordResidentChannelIds" style="font-size:0.8rem;">Resident Channel IDs (optional)</label>
+                <input type="text" id="discordResidentChannelIds" placeholder="Dedicated resident channels" style="font-size:0.85rem;">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="discordDmPolicy" style="font-size:0.8rem;">Discord DM Policy</label>
+                <select id="discordDmPolicy" style="font-size:0.85rem;">
+                  <option value="open">open</option>
+                  <option value="pairing">pairing</option>
+                  <option value="closed">closed</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="telegramDmPolicy" style="font-size:0.8rem;">Telegram DM Policy</label>
+                <select id="telegramDmPolicy" style="font-size:0.85rem;">
+                  <option value="open">open</option>
+                  <option value="pairing">pairing</option>
+                  <option value="closed">closed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <label class="settings-toggle">
+                <input type="checkbox" id="residentModeEnabled">
+                <span class="settings-toggle-label">Enable resident mode routes</span>
+              </label>
+              <label class="settings-toggle">
+                <input type="checkbox" id="recordPaymentStaffOnly" checked>
+                <span class="settings-toggle-label">Keep record-payment staff-only</span>
+              </label>
+              <label class="settings-toggle">
+                <input type="checkbox" id="allowInsecureAuth">
+                <span class="settings-toggle-label">Allow insecure auth fallback (not recommended)</span>
+              </label>
+              <label class="settings-toggle">
+                <input type="checkbox" id="allowHostHeaderOriginFallback">
+                <span class="settings-toggle-label">Allow host-header origin fallback (not recommended)</span>
+              </label>
+              <label class="settings-toggle">
+                <input type="checkbox" id="disableDeviceAuth">
+                <span class="settings-toggle-label">Disable device auth (not recommended)</span>
+              </label>
+            </div>
+
+            <div class="form-group mt-4" style="margin-bottom:0">
+              <label for="residentAllowedCommands" style="font-size:0.8rem;">Resident Allowed Commands (comma-separated)</label>
+              <input type="text" id="residentAllowedCommands" placeholder="availability, faq, who-is-in-space" style="font-size:0.85rem;">
+            </div>
+
+            <div class="mt-4">
+              <button class="btn-small btn-primary" id="saveHardeningBtn">Save Security Settings</button>
+            </div>
+          </div>
         </div>
       </div>
 

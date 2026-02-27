@@ -116,6 +116,20 @@ function populateFields() {
   setChecked('slackEnabled', config.slack_enabled);
   setBadge('slackStatusBadge', config.slack_enabled);
 
+  // Security + partitioning
+  setVal('discordStaffGuildIds', config.discord_staff_guild_ids);
+  setVal('discordStaffChannelIds', config.discord_staff_channel_ids);
+  setVal('discordResidentGuildIds', config.discord_resident_guild_ids);
+  setVal('discordResidentChannelIds', config.discord_resident_channel_ids);
+  setVal('discordDmPolicy', config.discord_dm_policy || 'open');
+  setVal('telegramDmPolicy', config.telegram_dm_policy || 'open');
+  setChecked('residentModeEnabled', config.resident_mode_enabled);
+  setVal('residentAllowedCommands', config.resident_allowed_commands);
+  setChecked('allowInsecureAuth', config.allow_insecure_auth);
+  setChecked('allowHostHeaderOriginFallback', config.allow_host_header_origin_fallback);
+  setChecked('disableDeviceAuth', config.disable_device_auth);
+  setChecked('recordPaymentStaffOnly', config.record_payment_staff_only ?? true);
+
   // Workspace files - load active tab
   loadWorkspaceFile(activeWorkspaceFile);
 
@@ -241,6 +255,37 @@ async function saveChannels() {
   }
 }
 
+async function saveHardening() {
+  try {
+    const updates = {
+      discord_staff_guild_ids: getVal('discordStaffGuildIds'),
+      discord_staff_channel_ids: getVal('discordStaffChannelIds'),
+      discord_resident_guild_ids: getVal('discordResidentGuildIds'),
+      discord_resident_channel_ids: getVal('discordResidentChannelIds'),
+      discord_dm_policy: getVal('discordDmPolicy') || 'open',
+      telegram_dm_policy: getVal('telegramDmPolicy') || 'open',
+      resident_mode_enabled: getChecked('residentModeEnabled'),
+      resident_allowed_commands: getVal('residentAllowedCommands'),
+      allow_insecure_auth: getChecked('allowInsecureAuth'),
+      allow_host_header_origin_fallback: getChecked('allowHostHeaderOriginFallback'),
+      disable_device_auth: getChecked('disableDeviceAuth'),
+      record_payment_staff_only: getChecked('recordPaymentStaffOnly'),
+    };
+
+    const { error } = await supabase
+      .from('openclaw_config')
+      .update(updates)
+      .eq('id', 1);
+
+    if (error) throw error;
+    Object.assign(config, updates);
+    showToast('Security settings saved', 'success');
+  } catch (err) {
+    console.error('Error saving security settings:', err);
+    showToast('Failed to save security settings', 'error');
+  }
+}
+
 // =============================================
 // WORKSPACE FILES
 // =============================================
@@ -302,14 +347,27 @@ function generateEnvFile() {
   if (config.gemini_api_key) lines.push(`GEMINI_API_KEY=${config.gemini_api_key}`);
   if (config.telegram_bot_token && config.telegram_enabled) {
     lines.push(`TELEGRAM_BOT_TOKEN=${config.telegram_bot_token}`);
-    lines.push(`TELEGRAM_DM_POLICY=open`);
+    lines.push(`TELEGRAM_DM_POLICY=${config.telegram_dm_policy || 'open'}`);
   }
   if (config.discord_bot_token && config.discord_enabled) {
     lines.push(`DISCORD_BOT_TOKEN=${config.discord_bot_token}`);
+    lines.push(`DISCORD_DM_POLICY=${config.discord_dm_policy || 'open'}`);
   }
   if (config.slack_bot_token && config.slack_enabled) {
     lines.push(`SLACK_BOT_TOKEN=${config.slack_bot_token}`);
   }
+
+  // Hardening + partitioning policy values.
+  lines.push(`OPENCLAW_ALLOW_INSECURE_AUTH=${config.allow_insecure_auth ? 'true' : 'false'}`);
+  lines.push(`OPENCLAW_ALLOW_HOST_HEADER_ORIGIN_FALLBACK=${config.allow_host_header_origin_fallback ? 'true' : 'false'}`);
+  lines.push(`OPENCLAW_DISABLE_DEVICE_AUTH=${config.disable_device_auth ? 'true' : 'false'}`);
+  lines.push(`OPENCLAW_RECORD_PAYMENT_STAFF_ONLY=${config.record_payment_staff_only === false ? 'false' : 'true'}`);
+  if (config.discord_staff_guild_ids) lines.push(`OPENCLAW_STAFF_GUILD_IDS=${config.discord_staff_guild_ids}`);
+  if (config.discord_staff_channel_ids) lines.push(`OPENCLAW_STAFF_CHANNEL_IDS=${config.discord_staff_channel_ids}`);
+  if (config.discord_resident_guild_ids) lines.push(`OPENCLAW_RESIDENT_GUILD_IDS=${config.discord_resident_guild_ids}`);
+  if (config.discord_resident_channel_ids) lines.push(`OPENCLAW_RESIDENT_CHANNEL_IDS=${config.discord_resident_channel_ids}`);
+  if (config.resident_mode_enabled) lines.push(`OPENCLAW_RESIDENT_MODE_ENABLED=true`);
+  if (config.resident_allowed_commands) lines.push(`OPENCLAW_RESIDENT_ALLOWED_COMMANDS=${config.resident_allowed_commands}`);
 
   const envContent = lines.join('\n');
 
@@ -380,6 +438,7 @@ function setupEventListeners() {
 
   // Channels
   document.getElementById('saveChannelsBtn')?.addEventListener('click', saveChannels);
+  document.getElementById('saveHardeningBtn')?.addEventListener('click', saveHardening);
 
   // Workspace file tabs
   document.getElementById('workspaceFileTabs')?.addEventListener('click', (e) => {
