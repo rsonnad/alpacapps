@@ -74,7 +74,7 @@ const ALL_ADMIN_TABS = [
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
   { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
-  { id: 'openclaw', label: 'OpenClaw', href: 'openclaw.html', permission: 'view_openclaw', section: 'admin' },
+  { id: 'openclaw', label: 'AlpaClaw', href: 'openclaw.html', permission: 'view_openclaw', section: 'admin' },
 ];
 
 // =============================================
