@@ -584,6 +584,23 @@
         </div>
       </div>
 
+      <!-- Soul (admin only) -->
+      <section class="section admin-only">
+        <div class="section-header">
+          <h2>Pakucha's Soul</h2>
+          <div class="section-header-actions">
+            <span class="text-muted" id="soulStatus" style="font-size:0.75rem;"></span>
+            <button class="btn-small" id="saveSoulBtn">Save Soul</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="font-size:0.82rem; margin-bottom:0.75rem;">
+            PAI's core identity document &mdash; her backstory, character, voice direction, and relationship with Kuntur (Alpaclaw). This defines <em>who she is</em> at the deepest level. The file version lives at <code>pai/SOUL.md</code> in the repo; this editable copy is stored in the database for runtime access.
+          </p>
+          <textarea id="soulContent" rows="20" style="width:100%; font-family:monospace; font-size:0.8rem; line-height:1.5; padding:0.75rem; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-card); resize:vertical;"></textarea>
+        </div>
+      </section>
+
       <!-- Configuration (admin only) -->
       <section class="section admin-only">
         <div class="section-header">
