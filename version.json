@@ -1,12 +1,12 @@
 {
-  "version": "v260227.26 7:24p",
-  "release": 383,
-  "sha": "38cecf51e",
-  "fullSha": "38cecf51e462e206e7c5b1fe2fbf2f3b273228fa",
+  "version": "v260227.27 7:41p",
+  "release": 384,
+  "sha": "3bee4d39a",
+  "fullSha": "3bee4d39adffd08f442a17e58dc783912359c9ed",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 01:24:23+00",
-  "commits": [{"sha":"38cecf51e","message":"redesign alpaclaw.cloud landing page: light theme, compact layout, Discord connected","author":"Rahul"}]
+  "pushedAt": "2026-02-28 01:41:15+00",
+  "commits": [{"sha":"91866c5c2","message":"alpaclaw landing: add identity tidbits, activity log, remove WhatsApp","author":"Rahul"},{"sha":"3bee4d39a","message":"Merge branch 'flamboyant-dirac'","author":"Rahul"}]
 }
