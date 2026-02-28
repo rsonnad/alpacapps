@@ -487,6 +487,16 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
   errorLogger.setupGlobalHandlers();
   supabaseHealth.injectBanner();
 
+  function removeStrayBootLogos() {
+    const topLevelLogoSelectors = [
+      '#loadingOverlay .loading-overlay__logo',
+      '#appContent > .loading-overlay__logo',
+      '#appContent > img[src*="/housephotos/logos/alpaca-head-black-transparent.png"]',
+    ];
+    document.querySelectorAll(topLevelLogoSelectors.join(',')).forEach((el) => el.remove());
+  }
+
+  removeStrayBootLogos();
   const rootEl = document.documentElement;
   const loadingOverlayEl = document.getElementById('loadingOverlay');
   loadingOverlayEl?.querySelector('.loading-overlay__logo')?.classList.add('hidden');
@@ -552,6 +562,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
   }
 
   transitionBootState('booting');
+  removeStrayBootLogos();
   await initAuth();
   authState = getAuthState();
 

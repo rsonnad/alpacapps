@@ -360,6 +360,16 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
   errorLogger.setupGlobalHandlers();
   supabaseHealth.injectBanner();
 
+  function removeStrayBootLogos() {
+    const topLevelLogoSelectors = [
+      '#loadingOverlay .loading-overlay__logo',
+      '#appContent > .loading-overlay__logo',
+      '#appContent > img[src*="/housephotos/logos/alpaca-head-black-transparent.png"]',
+    ];
+    document.querySelectorAll(topLevelLogoSelectors.join(',')).forEach((el) => el.remove());
+  }
+
+  removeStrayBootLogos();
   const rootEl = document.documentElement;
   const loadingOverlayEl = document.getElementById('loadingOverlay');
   loadingOverlayEl?.querySelector('.loading-overlay__logo')?.classList.add('hidden');
@@ -425,6 +435,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
   }
 
   transitionBootState('booting');
+  removeStrayBootLogos();
   await initAuth();
   authState = getAuthState();
 
