@@ -22,12 +22,15 @@ import {
 } from "../_shared/api-permissions.ts";
 import {
   type ApiRequest,
+  type ResolvedAuth,
   corsHeaders,
   jsonResponse,
   success,
   error,
   resolveAuth,
   checkPermission,
+  checkApiKeyRestrictions,
+  stripExcludedColumns,
   fuzzyPersonLookup,
   fuzzySpaceLookup,
   resolveAssignee,
@@ -74,6 +77,12 @@ serve(async (req) => {
       return error("Invalid or expired authentication token", 401);
     }
 
+    // Check API key resource/action restrictions (before permission check)
+    const apiKeyError = checkApiKeyRestrictions(auth, resource, action);
+    if (apiKeyError) {
+      return error(apiKeyError, 403);
+    }
+
     // Check permission
     const { allowed, permission } = checkPermission(resource, action, auth.userLevel);
     if (!allowed) {
@@ -87,6 +96,21 @@ serve(async (req) => {
     }
 
     const result = await handler(supabase, body, auth, permission!);
+
+    // Strip excluded columns for API key callers
+    if (auth.authMethod === "api_key" && auth.excludedColumns && result.ok) {
+      try {
+        const originalBody = await result.clone().json();
+        if (originalBody?.data) {
+          originalBody.data = stripExcludedColumns(
+            originalBody.data, resource, auth.excludedColumns
+          );
+          return jsonResponse(originalBody, result.status);
+        }
+      } catch (_) {
+        // If response parsing fails, return original
+      }
+    }
 
     // Log usage (fire-and-forget)
     logApiUsage(supabase, resource, action, auth.appUser);

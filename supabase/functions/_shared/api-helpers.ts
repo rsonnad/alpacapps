@@ -25,6 +25,12 @@ export interface ResolvedAuth {
   appUser: any | null;
   userLevel: number;
   authMethod: "jwt" | "service_key" | "api_key" | "none";
+  /** API-key-only: whitelist of allowed resources (null = all) */
+  allowedResources?: string[] | null;
+  /** API-key-only: whitelist of allowed actions (null = all) */
+  allowedActions?: string[] | null;
+  /** API-key-only: per-resource columns to strip from response */
+  excludedColumns?: Record<string, string[]>;
 }
 
 // ─── CORS ───────────────────────────────────────────────────────────
@@ -80,11 +86,30 @@ export async function resolveAuth(
     };
   }
 
-  // 2. Future: X-API-Key header → look up api_keys table
+  // 2. X-API-Key header → look up api_keys table (hashed)
   if (apiKeyHeader) {
-    // Placeholder for Phase 3: API key auth
-    // For now, reject API key attempts
-    return { appUser: null, userLevel: -1, authMethod: "api_key" };
+    const keyHash = await sha256(apiKeyHeader);
+    const { data: apiKey } = await supabase
+      .from("api_keys")
+      .select("id, name, permission_level, allowed_resources, allowed_actions, excluded_columns, is_active")
+      .eq("key_hash", keyHash)
+      .maybeSingle();
+
+    if (!apiKey || !apiKey.is_active) {
+      return { appUser: null, userLevel: -1, authMethod: "api_key" };
+    }
+
+    // Update last_used_at (non-blocking)
+    supabase.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", apiKey.id).then();
+
+    return {
+      appUser: { id: `__apikey_${apiKey.id}__`, role: "api_key", display_name: apiKey.name },
+      userLevel: apiKey.permission_level,
+      authMethod: "api_key",
+      allowedResources: apiKey.allowed_resources || null,
+      allowedActions: apiKey.allowed_actions || null,
+      excludedColumns: apiKey.excluded_columns || {},
+    };
   }
 
   // 3. Bearer JWT → resolve user
@@ -288,4 +313,65 @@ export async function logApiUsage(
   } catch (_e) {
     // Non-critical — don't fail the request
   }
+}
+
+// ─── Crypto helpers ─────────────────────────────────────────────────
+
+async function sha256(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// ─── Column filtering for API key restrictions ──────────────────────
+
+/**
+ * Strip excluded columns from API response data.
+ * Used to enforce API key column-level restrictions.
+ */
+export function stripExcludedColumns(
+  data: any,
+  resource: string,
+  excludedColumns?: Record<string, string[]>
+): any {
+  if (!excludedColumns || !excludedColumns[resource]?.length) return data;
+
+  const cols = excludedColumns[resource];
+
+  const stripRow = (row: any) => {
+    if (!row || typeof row !== "object") return row;
+    const filtered = { ...row };
+    for (const col of cols) {
+      delete filtered[col];
+    }
+    return filtered;
+  };
+
+  if (Array.isArray(data)) return data.map(stripRow);
+  return stripRow(data);
+}
+
+/**
+ * Check if the API key is allowed to access the given resource/action.
+ * Returns an error message if blocked, or null if allowed.
+ */
+export function checkApiKeyRestrictions(
+  auth: ResolvedAuth,
+  resource: string,
+  action: string
+): string | null {
+  if (auth.authMethod !== "api_key") return null;
+
+  if (auth.allowedResources && !auth.allowedResources.includes(resource)) {
+    return `API key "${auth.appUser?.display_name}" does not have access to resource "${resource}"`;
+  }
+
+  if (auth.allowedActions && !auth.allowedActions.includes(action)) {
+    return `API key "${auth.appUser?.display_name}" does not have permission for action "${action}"`;
+  }
+
+  return null;
 }
