@@ -1,12 +1,12 @@
 {
-  "version": "v260227.17 5:54p",
-  "release": 374,
-  "sha": "83ce679b1",
-  "fullSha": "83ce679b1f7a72c16871257e908420ad09d71561",
+  "version": "v260227.18 6:06p",
+  "release": 375,
+  "sha": "90636206f",
+  "fullSha": "90636206f6c8b0cddd369314e5c8627e2f2a3746",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-27 23:54:00+00",
-  "commits": [{"sha":"83ce679b1","message":"fix loader flash for cached auth sessions","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:06:05+00",
+  "commits": [{"sha":"90636206f","message":"fix remove loader icon from auth boot flow","author":"Rahul"}]
 }
