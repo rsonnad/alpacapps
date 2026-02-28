@@ -23,6 +23,10 @@
     var content = document.getElementById('appContent');
     var overlayLogo = overlay && overlay.querySelector('.loading-overlay__logo');
     if (overlayLogo) overlayLogo.remove();
+    if (content) {
+      var strayLogo = content.querySelector(':scope > img[src*="/housephotos/logos/alpaca-head-black-transparent.png"]');
+      if (strayLogo) strayLogo.remove();
+    }
     if (overlay) overlay.style.display = 'none';
     if (content) content.classList.remove('hidden');
 
