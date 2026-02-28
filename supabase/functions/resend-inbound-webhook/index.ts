@@ -21,6 +21,7 @@ const SPECIAL_PREFIXES: Record<string, string> = {
   "payments": "payments",
   "pai": "pai",
   "claudero": "claudero",
+  "alpaclaw": "alpaclaw",
 };
 
 /**
@@ -220,6 +221,8 @@ async function handleSpecialLogic(
     await handlePaiEmail(emailRecord, supabase, resendApiKey);
   } else if (type === "claudero") {
     await handleClauderoEmail(emailRecord, supabase, resendApiKey);
+  } else if (type === "alpaclaw") {
+    await handleAlpaclawEmail(emailRecord, supabase, resendApiKey);
   }
 
   // herd@ - not yet implemented
@@ -671,6 +674,165 @@ This is an automated reply from PAI at Alpaca Playhouse.`;
     console.log(`PAI reply sent to ${to}`);
   }
   return { ok: res.ok, status: res.status };
+}
+
+/**
+ * Send a reply email from AlpaClaw.
+ */
+async function sendAlpaclawReply(
+  resendApiKey: string,
+  to: string,
+  replyBody: string,
+  originalSubject: string,
+  originalBody: string
+): Promise<{ ok: boolean; status: number }> {
+  const bodySnippet = originalBody.substring(0, 500);
+  const subject = `Re: ${originalSubject || "Your message to AlpaClaw"}`;
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #1c1618; padding: 20px; border-radius: 12px 12px 0 0;">
+        <h2 style="color: #d4883a; margin: 0;">AlpaClaw</h2>
+        <p style="color: #aaa; margin: 4px 0 0 0; font-size: 13px;">Alpaca Playhouse AI</p>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
+        <div style="white-space: pre-wrap; line-height: 1.6;">${(replyBody || "").replace(/</g, "&lt;")}</div>
+        ${bodySnippet ? `
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 16px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Your original message:</p>
+        <div style="color: #999; font-size: 13px; border-left: 3px solid #ddd; padding-left: 12px;">${bodySnippet.replace(/</g, "&lt;")}</div>
+        ` : ""}
+      </div>
+      <p style="color: #999; font-size: 11px; text-align: center; margin-top: 12px;">
+        This is an automated reply from AlpaClaw at Alpaca Playhouse. Reply to this email to continue the conversation.
+      </p>
+    </div>`;
+  const text = `AlpaClaw - Alpaca Playhouse AI
+
+${replyBody || ""}
+
+${bodySnippet ? `---\nYour original message:\n${bodySnippet}` : ""}
+
+This is an automated reply from AlpaClaw at Alpaca Playhouse.`;
+
+  const res = await fetch(`${RESEND_API_URL}/emails`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "AlpaClaw <alpaclaw@alpacaplayhouse.com>",
+      to: [to],
+      reply_to: "alpaclaw@alpacaplayhouse.com",
+      subject,
+      html,
+      text,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error(`Failed to send AlpaClaw reply: ${res.status} ${errText}`);
+  } else {
+    console.log(`AlpaClaw reply sent to ${to}`);
+  }
+  return { ok: res.ok, status: res.status };
+}
+
+// =============================================
+// ALPACLAW EMAIL HANDLER
+// =============================================
+
+/**
+ * Handle inbound email to alpaclaw@alpacaplayhouse.com.
+ *
+ * Routes to PAI edge function with context.source = "alpaclaw-email"
+ * so that the alpaclaw_addendum (AlpaClaw personality) is injected.
+ * Sends reply back via email from alpaclaw@.
+ */
+async function handleAlpaclawEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+
+  const senderName = (from.match(/^([^<]+)/)?.[1] || "").trim() || from.split("@")[0];
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+  const message = bodyText || bodyHtml || subject;
+
+  console.log(`AlpaClaw email from ${senderEmail}: subject="${subject}"`);
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+    const paiRes = await fetch(`${supabaseUrl}/functions/v1/alpaca-pai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        message: `[Email from ${senderName}] ${message.substring(0, 2000)}`,
+        serviceKey: supabaseServiceKey,
+        context: { source: "alpaclaw-email", sender: senderEmail, subject },
+      }),
+    });
+
+    let replyText = "";
+
+    if (paiRes.ok) {
+      const paiData = await paiRes.json();
+      replyText = paiData.reply || paiData.response || paiData.text || "";
+    }
+
+    if (!replyText) {
+      replyText = `Thank you for your email! I've received your message and I'll do my best to help.\n\nFor faster responses, you can also chat with me on Discord at the Alpacord server, or visit https://alpacaplayhouse.com/residents/ (requires resident login).`;
+    }
+
+    const sendResult = await sendAlpaclawReply(resendApiKey, senderEmail, replyText, subject, bodyText || bodyHtml || "");
+    await supabase.from("api_usage_log").insert({
+      vendor: "supabase",
+      category: "alpaclaw_email_reply_attempt",
+      metadata: {
+        success: sendResult.ok,
+        status: sendResult.status,
+        to: senderEmail,
+        inbound_email_id: emailRecord.id,
+        pai_status: paiRes?.status,
+        pai_ok: paiRes?.ok,
+      },
+    });
+    if (sendResult.ok) {
+      await supabase.from("api_usage_log").insert({
+        vendor: "resend",
+        category: "email_alpaclaw_email_reply",
+        endpoint: "POST /emails",
+        units: 1,
+        unit_type: "emails",
+        estimated_cost_usd: 0.00028,
+        metadata: { to: senderEmail, inbound_email_id: emailRecord.id },
+      });
+    }
+  } catch (err) {
+    console.error(`AlpaClaw response error: ${err.message}`);
+    const sendResult = await sendAlpaclawReply(
+      resendApiKey,
+      senderEmail,
+      "Thank you for your email! I've received your message and the team will review it shortly.\n\nFor immediate assistance, you can reach us on Discord or at https://alpacaplayhouse.com/residents/.",
+      subject,
+      bodyText || bodyHtml || ""
+    );
+    await supabase.from("api_usage_log").insert({
+      vendor: "supabase",
+      category: "alpaclaw_email_reply_attempt",
+      metadata: { success: sendResult.ok, status: sendResult.status, to: senderEmail, inbound_email_id: emailRecord.id, error: String(err?.message || err) },
+    });
+  }
 }
 
 /**
@@ -2888,7 +3050,7 @@ serve(async (req) => {
     if (fromAddr.endsWith("@alpacaplayhouse.com")) {
       const toAutoOrNoreply = toList.some(t => {
         const p = extractPrefix(t);
-        return p === "auto" || p === "noreply" || p === "pai";
+        return p === "auto" || p === "noreply" || p === "pai" || p === "alpaclaw";
       });
       if (toAutoOrNoreply) {
         console.log(`LOOP GUARD: Blocking self-sent email from ${fromAddr} to ${toList.join(",")}, subject: ${subject}`);
