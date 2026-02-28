@@ -1,12 +1,12 @@
 {
-  "version": "v260227.24 6:46p",
-  "release": 381,
-  "sha": "ba2ba3a65",
-  "fullSha": "ba2ba3a650f3c17ee675cc217d85b44c63daa4f7",
+  "version": "v260227.25 6:53p",
+  "release": 382,
+  "sha": "1bddced99",
+  "fullSha": "1bddced99d61a26c64ff037406f18fe74576cd5b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:46:42+00",
-  "commits": [{"sha":"c017b33c4","message":"update PAI audition phrases from SOUL.md + enhance Spirit of PAI visual explainer","author":"Rahul"},{"sha":"ba2ba3a65","message":"Merge branch 'hopeful-meitner'","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:53:03+00",
+  "commits": [{"sha":"1bddced99","message":"style camera clock: smaller grey bold font with Austin label","author":"Rahul"}]
 }
