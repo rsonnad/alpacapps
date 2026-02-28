@@ -1,12 +1,12 @@
 {
-  "version": "v260227.22 6:26p",
-  "release": 379,
-  "sha": "25bf70d52",
-  "fullSha": "25bf70d5217e2efc30830cd45c1d5e6400c05564",
+  "version": "v260227.23 6:34p",
+  "release": 380,
+  "sha": "3f0cbd1b1",
+  "fullSha": "3f0cbd1b101be6c2ed54637053538700b6a9fa4c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:26:41+00",
-  "commits": [{"sha":"25bf70d52","message":"add live local time clock next to cameras header","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:34:13+00",
+  "commits": [{"sha":"158dd2df6","message":"fix: add IDENTITY.md files for OpenClaw personality injection","author":"Rahul"},{"sha":"3f0cbd1b1","message":"Merge: OpenClaw IDENTITY.md personality files for AlpaClaw and PAI","author":"Rahul"}]
 }
