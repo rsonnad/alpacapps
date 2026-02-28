@@ -1,12 +1,12 @@
 {
-  "version": "v260227.27 7:41p",
-  "release": 384,
-  "sha": "3bee4d39a",
-  "fullSha": "3bee4d39adffd08f442a17e58dc783912359c9ed",
+  "version": "v260227.28 7:55p",
+  "release": 385,
+  "sha": "8dc8b5dea",
+  "fullSha": "8dc8b5dea0834a7b4ae903f73f3b8cc7cf9e3672",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 01:41:15+00",
-  "commits": [{"sha":"91866c5c2","message":"alpaclaw landing: add identity tidbits, activity log, remove WhatsApp","author":"Rahul"},{"sha":"3bee4d39a","message":"Merge branch 'flamboyant-dirac'","author":"Rahul"}]
+  "pushedAt": "2026-02-28 01:55:02+00",
+  "commits": [{"sha":"8dc8b5dea","message":"feat: add API key auth with resource-level access control for AlpaClaw","author":"Rahul"}]
 }
