@@ -1,12 +1,12 @@
 {
-  "version": "v260227.20 6:16p",
-  "release": 377,
-  "sha": "789fe38e8",
-  "fullSha": "789fe38e8ac992a43323b366470f49cccc293eea",
+  "version": "v260227.21 6:21p",
+  "release": 378,
+  "sha": "e6cdd342a",
+  "fullSha": "e6cdd342ac43edad12943f73506a655597b271dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:16:40+00",
-  "commits": [{"sha":"93b89f851","message":"feat: add Spirit of PAI concept page and voice audition samples","author":"Rahul"},{"sha":"789fe38e8","message":"Merge branch 'interesting-hypatia'","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:21:21+00",
+  "commits": [{"sha":"e6cdd342a","message":"fix hide supabase health banner when css is unavailable","author":"Rahul"}]
 }
