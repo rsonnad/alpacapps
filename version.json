@@ -1,12 +1,12 @@
 {
-  "version": "v260227.18 6:06p",
-  "release": 375,
-  "sha": "90636206f",
-  "fullSha": "90636206f6c8b0cddd369314e5c8627e2f2a3746",
+  "version": "v260227.19 6:15p",
+  "release": 376,
+  "sha": "818f08a6d",
+  "fullSha": "818f08a6d68a3aa48406a441597c1251026ef49d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:06:05+00",
-  "commits": [{"sha":"90636206f","message":"fix remove loader icon from auth boot flow","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:15:41+00",
+  "commits": [{"sha":"818f08a6d","message":"fix remove stray alpaca logo artifacts during boot","author":"Rahul"}]
 }
