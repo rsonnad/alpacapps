@@ -375,7 +375,7 @@ async function viewCall(id) {
 async function loadPaiConfig() {
   const { data, error } = await supabase
     .from('pai_config')
-    .select('identity, property_info, amenities, chat_addendum, email_addendum')
+    .select('identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum, api_addendum, alpaclaw_addendum')
     .eq('id', 1)
     .single();
 
@@ -389,6 +389,9 @@ async function loadPaiConfig() {
   document.getElementById('paiAmenities').value = data.amenities || '';
   document.getElementById('paiChatAddendum').value = data.chat_addendum || '';
   document.getElementById('paiEmailAddendum').value = data.email_addendum || '';
+  document.getElementById('paiDiscordAddendum').value = data.discord_addendum || '';
+  document.getElementById('paiApiAddendum').value = data.api_addendum || '';
+  document.getElementById('paiAlpaclawAddendum').value = data.alpaclaw_addendum || '';
 }
 
 async function savePaiConfig() {
@@ -398,6 +401,9 @@ async function savePaiConfig() {
     amenities: document.getElementById('paiAmenities').value.trim(),
     chat_addendum: document.getElementById('paiChatAddendum').value.trim(),
     email_addendum: document.getElementById('paiEmailAddendum').value.trim(),
+    discord_addendum: document.getElementById('paiDiscordAddendum').value.trim(),
+    api_addendum: document.getElementById('paiApiAddendum').value.trim(),
+    alpaclaw_addendum: document.getElementById('paiAlpaclawAddendum').value.trim(),
   };
 
   const { error } = await supabase
