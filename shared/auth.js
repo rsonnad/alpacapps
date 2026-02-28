@@ -368,20 +368,31 @@ async function handleAuthChange(session) {
       authLog.info('Found pending invitation, creating app_user', { role: invitation.role });
       const displayName = session.user.user_metadata?.full_name || userEmail.split('@')[0];
 
+      // Try to find an existing person record to link
+      let personId = null;
+      try {
+        const { data: existingPerson } = await supabase
+          .from('people').select('id').eq('email', userEmail).maybeSingle();
+        if (existingPerson) personId = existingPerson.id;
+      } catch (e) { /* non-critical */ }
+
       let newAppUser = null;
       let createError = null;
       try {
+        const insertData = {
+          auth_user_id: session.user.id,
+          email: userEmail,
+          display_name: displayName,
+          ...splitDisplayName(displayName),
+          role: invitation.role,
+          invited_by: invitation.invited_by,
+        };
+        if (personId) insertData.person_id = personId;
+
         const result = await withTimeout(
           supabase
             .from('app_users')
-            .insert({
-              auth_user_id: session.user.id,
-              email: userEmail,
-              display_name: displayName,
-              ...splitDisplayName(displayName),
-              role: invitation.role,
-              invited_by: invitation.invited_by,
-            })
+            .insert(insertData)
             .select()
             .single(),
           AUTH_TIMEOUT_MS,

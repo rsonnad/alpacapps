@@ -313,26 +313,38 @@ async function inviteUser(email, role, personInfo = {}) {
       if (lastName) personData.last_name = lastName;
       if (phone) personData.phone = phone;
 
-      if (effectiveEmail) {
-        // Check if person already exists with this email
-        const { data: existingPerson } = await supabase
-          .from('people')
-          .select('id')
-          .eq('email', effectiveEmail)
-          .maybeSingle();
+      // Check if person already exists — match by email, phone, or full name
+      let existingPerson = null;
 
-        if (existingPerson) {
-          const updates = {};
-          if (firstName) updates.first_name = firstName;
-          if (lastName) updates.last_name = lastName;
-          if (phone) updates.phone = phone;
-          await supabase.from('people').update(updates).eq('id', existingPerson.id);
-        } else {
-          personData.first_name = firstName || 'Unknown';
-          await supabase.from('people').insert(personData);
-        }
+      if (effectiveEmail) {
+        const { data } = await supabase
+          .from('people').select('id').eq('email', effectiveEmail).maybeSingle();
+        existingPerson = data;
+      }
+
+      if (!existingPerson && phone) {
+        const { data } = await supabase
+          .from('people').select('id').eq('phone', phone).maybeSingle();
+        existingPerson = data;
+      }
+
+      if (!existingPerson && firstName && lastName) {
+        const { data } = await supabase
+          .from('people').select('id')
+          .ilike('first_name', firstName)
+          .ilike('last_name', lastName)
+          .maybeSingle();
+        existingPerson = data;
+      }
+
+      if (existingPerson) {
+        const updates = {};
+        if (firstName) updates.first_name = firstName;
+        if (lastName) updates.last_name = lastName;
+        if (phone) updates.phone = phone;
+        if (effectiveEmail) updates.email = effectiveEmail;
+        await supabase.from('people').update(updates).eq('id', existingPerson.id);
       } else {
-        // No email — create person record with name only
         personData.first_name = firstName || 'Unknown';
         await supabase.from('people').insert(personData);
       }
