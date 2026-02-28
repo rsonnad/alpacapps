@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await loadSensors();
       renderSensors();
       startSensorPolling();
+      startLocalClock();
     },
   });
 });
@@ -1098,6 +1099,19 @@ function startSensorPolling() {
       refreshSensorStates().then(renderSensors);
     }
   });
+}
+
+function startLocalClock() {
+  const el = document.getElementById('localTime');
+  if (!el) return;
+  const update = () => {
+    el.textContent = new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', second: '2-digit',
+      timeZone: 'America/Chicago'
+    });
+  };
+  update();
+  setInterval(update, 1000);
 }
 
 function updateSensorPollStatus() {
