@@ -1,12 +1,12 @@
 {
-  "version": "v260227.28 7:55p",
-  "release": 385,
-  "sha": "8dc8b5dea",
-  "fullSha": "8dc8b5dea0834a7b4ae903f73f3b8cc7cf9e3672",
+  "version": "v260227.29 8:25p",
+  "release": 386,
+  "sha": "5654940da",
+  "fullSha": "5654940dae4ab636a83e7d6dee5f42df8f954f8a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 01:55:02+00",
-  "commits": [{"sha":"8dc8b5dea","message":"feat: add API key auth with resource-level access control for AlpaClaw","author":"Rahul"}]
+  "pushedAt": "2026-02-28 02:25:26+00",
+  "commits": [{"sha":"5654940da","message":"fix: prevent PAI from hallucinating URLs","author":"Rahul"}]
 }
