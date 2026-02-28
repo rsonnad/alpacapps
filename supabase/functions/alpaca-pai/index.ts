@@ -342,6 +342,7 @@ interface PaiConfig {
   email_addendum: string;
   discord_addendum: string;
   api_addendum: string;
+  alpaclaw_addendum: string;
   house_rules: string;
 }
 
@@ -374,6 +375,7 @@ You are warm, friendly, and helpful — like a knowledgeable neighbor who genuin
   email_addendum: "",
   discord_addendum: "",
   api_addendum: "",
+  alpaclaw_addendum: "",
   house_rules: "",
 };
 
@@ -383,7 +385,7 @@ async function loadPaiConfig(supabase: any): Promise<PaiConfig> {
     const [configResult, faqResult] = await Promise.all([
       supabase
         .from("pai_config")
-        .select("identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum, api_addendum")
+        .select("identity, property_info, amenities, chat_addendum, email_addendum, discord_addendum, api_addendum, alpaclaw_addendum")
         .eq("id", 1)
         .single(),
       supabase
@@ -2931,6 +2933,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   const isEmailChannel = context.source === "email";
   const isDiscordChannel = context.source === "discord";
   const isApiChannel = context.source === "api";
+  const isAlpaclawEmailChannel = context.source === "alpaclaw-email";
   if (!message?.trim()) {
     return jsonResponse({ error: "Message is required" }, 400);
   }
@@ -2947,8 +2950,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   let appUser: any;
   let userLevel: number;
 
-  // Email/API channel: internal services call with service role key (no user JWT)
-  if ((isEmailChannel || isApiChannel) && isServiceKey) {
+  // Email/API/AlpaClaw channel: internal services call with service role key (no user JWT)
+  if ((isEmailChannel || isApiChannel || isAlpaclawEmailChannel) && isServiceKey) {
     const senderEmail = (context.sender || "").trim().toLowerCase();
     if (senderEmail) {
       const { data: appUserRow } = await supabase
@@ -3074,7 +3077,9 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
 
   // 4. Build system prompt (shared base + channel-specific addendum)
   let systemPrompt = buildSystemPrompt(scope, paiConfig);
-  if (isEmailChannel && paiConfig.email_addendum?.trim()) {
+  if (isAlpaclawEmailChannel && paiConfig.alpaclaw_addendum?.trim()) {
+    systemPrompt += "\n\n" + paiConfig.alpaclaw_addendum.trim();
+  } else if (isEmailChannel && paiConfig.email_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.email_addendum.trim();
   } else if (isDiscordChannel && paiConfig.discord_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.discord_addendum.trim();
@@ -3086,7 +3091,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     if (context.api_addendum?.trim()) {
       systemPrompt += "\n\n" + context.api_addendum.trim();
     }
-  } else if (!isEmailChannel && !isDiscordChannel && !isApiChannel && paiConfig.chat_addendum?.trim()) {
+  } else if (!isEmailChannel && !isDiscordChannel && !isApiChannel && !isAlpaclawEmailChannel && paiConfig.chat_addendum?.trim()) {
     systemPrompt += "\n\n" + paiConfig.chat_addendum.trim();
   }
 
