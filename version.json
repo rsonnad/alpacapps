@@ -1,12 +1,12 @@
 {
-  "version": "v260227.21 6:21p",
-  "release": 378,
-  "sha": "e6cdd342a",
-  "fullSha": "e6cdd342ac43edad12943f73506a655597b271dd",
+  "version": "v260227.22 6:26p",
+  "release": 379,
+  "sha": "25bf70d52",
+  "fullSha": "25bf70d5217e2efc30830cd45c1d5e6400c05564",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:21:21+00",
-  "commits": [{"sha":"e6cdd342a","message":"fix hide supabase health banner when css is unavailable","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:26:41+00",
+  "commits": [{"sha":"25bf70d52","message":"add live local time clock next to cameras header","author":"Rahul"}]
 }
