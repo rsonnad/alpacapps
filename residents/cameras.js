@@ -1105,7 +1105,7 @@ function startLocalClock() {
   const el = document.getElementById('localTime');
   if (!el) return;
   const update = () => {
-    el.textContent = new Date().toLocaleTimeString('en-US', {
+    el.textContent = 'Time in Austin, Texas: ' + new Date().toLocaleTimeString('en-US', {
       hour: 'numeric', minute: '2-digit', second: '2-digit',
       timeZone: 'America/Chicago'
     });
