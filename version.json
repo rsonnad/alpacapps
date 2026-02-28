@@ -1,12 +1,12 @@
 {
-  "version": "v260227.23 6:34p",
-  "release": 380,
-  "sha": "3f0cbd1b1",
-  "fullSha": "3f0cbd1b101be6c2ed54637053538700b6a9fa4c",
+  "version": "v260227.24 6:46p",
+  "release": 381,
+  "sha": "ba2ba3a65",
+  "fullSha": "ba2ba3a650f3c17ee675cc217d85b44c63daa4f7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 00:34:13+00",
-  "commits": [{"sha":"158dd2df6","message":"fix: add IDENTITY.md files for OpenClaw personality injection","author":"Rahul"},{"sha":"3f0cbd1b1","message":"Merge: OpenClaw IDENTITY.md personality files for AlpaClaw and PAI","author":"Rahul"}]
+  "pushedAt": "2026-02-28 00:46:42+00",
+  "commits": [{"sha":"c017b33c4","message":"update PAI audition phrases from SOUL.md + enhance Spirit of PAI visual explainer","author":"Rahul"},{"sha":"ba2ba3a65","message":"Merge branch 'hopeful-meitner'","author":"Rahul"}]
 }
