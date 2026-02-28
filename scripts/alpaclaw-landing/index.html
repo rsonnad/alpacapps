@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpaClaw</title>
+  <link rel="icon" type="image/png" href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaclaw-profile.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #faf9f6;
+      --warm-bg: #f4f2ee;
+      --amber: #d4883a;
+      --amber-light: #e9a75c;
+      --dark: #1c1618;
+      --text: #3a3236;
+      --text-muted: #8a7f85;
+      --border: #e5e0db;
+      --card-bg: #ffffff;
+      --green: #2d8a4e;
+      --green-bg: #e8f5ed;
+      --discord-blue: #5865F2;
+      --telegram-blue: #26A5E4;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--warm-bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    /* ---- Hero ---- */
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .hero-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .hero-text h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.2;
+    }
+    .hero-text p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ---- Status pill ---- */
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .pill--live {
+      background: var(--green-bg);
+      border-color: #c4e4cf;
+      color: var(--green);
+    }
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* ---- Section headings ---- */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ---- Channel cards ---- */
+    .channels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.625rem;
+      margin-bottom: 1.5rem;
+    }
+    .channel-card {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .channel-card:hover {
+      border-color: #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .channel-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .channel-icon--discord { background: #5865F2; }
+    .channel-icon--telegram { background: #26A5E4; }
+    .channel-icon--whatsapp { background: #25D366; }
+    .channel-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .channel-info { min-width: 0; }
+    .channel-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .channel-status {
+      font-size: 0.65rem;
+      color: var(--green);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .channel-status .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* ---- Capabilities ---- */
+    .capabilities {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.625rem;
+      margin-bottom: 1.5rem;
+    }
+    .cap-card {
+      padding: 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .cap-icon {
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+    .cap-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 2px;
+    }
+    .cap-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ---- Info section ---- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .info-item label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .info-item p {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    .info-item a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    .info-item a:hover { text-decoration: underline; }
+
+    /* ---- Footer ---- */
+    .footer {
+      text-align: center;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .footer p {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+    .footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 420px) {
+      .page { padding: 1.5rem 1rem 2.5rem; }
+      .channels { grid-template-columns: 1fr; }
+      .capabilities { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaclaw-profile.png" alt="AlpaClaw" class="hero-avatar">
+      <div class="hero-text">
+        <h1>AlpaClaw</h1>
+        <p>AI chatbot for Alpaca Playhouse residents &amp; guests</p>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-row">
+      <span class="pill pill--live"><span class="pill-dot"></span> Online</span>
+      <span class="pill">Gemini 2.5 Flash</span>
+      <span class="pill">Multi-Agent</span>
+    </div>
+
+    <!-- Channels -->
+    <div class="section-label">Connected Channels</div>
+    <div class="channels">
+      <a href="https://discord.gg/alpacord" target="_blank" class="channel-card">
+        <div class="channel-icon channel-icon--discord">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+        </div>
+        <div class="channel-info">
+          <div class="channel-name">Discord</div>
+          <div class="channel-status"><span class="dot"></span> Connected</div>
+        </div>
+      </a>
+      <a href="https://t.me/AlpaClawBot" target="_blank" class="channel-card">
+        <div class="channel-icon channel-icon--telegram">
+          <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </div>
+        <div class="channel-info">
+          <div class="channel-name">Telegram</div>
+          <div class="channel-status"><span class="dot"></span> Connected</div>
+        </div>
+      </a>
+      <a href="https://wa.me/14242341750" target="_blank" class="channel-card">
+        <div class="channel-icon channel-icon--whatsapp">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="channel-info">
+          <div class="channel-name">WhatsApp</div>
+          <div class="channel-status"><span class="dot"></span> Connected</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Capabilities -->
+    <div class="section-label">Capabilities</div>
+    <div class="capabilities">
+      <div class="cap-card">
+        <div class="cap-icon">&#127968;</div>
+        <div class="cap-title">Smart Home</div>
+        <div class="cap-desc">Lights, music, climate, cameras, laundry, oven</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">&#128205;</div>
+        <div class="cap-title">Property Info</div>
+        <div class="cap-desc">Spaces, availability, amenities, access codes</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">&#128663;</div>
+        <div class="cap-title">Vehicles</div>
+        <div class="cap-desc">Tesla fleet status, lock/unlock, battery</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">&#128172;</div>
+        <div class="cap-title">Multi-Agent</div>
+        <div class="cap-desc">AlpaClaw + PAI agents with channel routing</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">&#128187;</div>
+        <div class="cap-title">Web Search</div>
+        <div class="cap-desc">Real-time answers via Brave Search</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">&#128179;</div>
+        <div class="cap-title">Payments</div>
+        <div class="cap-desc">Payment links, balance inquiries, records</div>
+      </div>
+    </div>
+
+    <!-- Server Info -->
+    <div class="section-label">Server</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Platform</label>
+        <p>OpenClaw on Hostinger VPS</p>
+      </div>
+      <div class="info-item">
+        <label>LLM</label>
+        <p>Gemini 2.5 Flash</p>
+      </div>
+      <div class="info-item">
+        <label>Domain</label>
+        <p><a href="https://alpaclaw.cloud" target="_blank">alpaclaw.cloud</a></p>
+      </div>
+      <div class="info-item">
+        <label>Admin</label>
+        <p><a href="https://alpacaplayhouse.com/spaces/admin/alpaclaw.html" target="_blank">Dashboard</a></p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p><a href="https://alpacaplayhouse.com">Alpaca Playhouse</a> &middot; Powered by <a href="https://openclaw.ai" target="_blank">OpenClaw</a></p>
+    </div>
+
+  </div>
+</body>
+</html>
