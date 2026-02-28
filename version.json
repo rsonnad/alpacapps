@@ -1,12 +1,12 @@
 {
-  "version": "v260227.29 8:25p",
-  "release": 386,
-  "sha": "5654940da",
-  "fullSha": "5654940dae4ab636a83e7d6dee5f42df8f954f8a",
+  "version": "v260227.30 8:44p",
+  "release": 387,
+  "sha": "ac244e104",
+  "fullSha": "ac244e104a24d728d263c7e9f2c7a83376e7752e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 02:25:26+00",
-  "commits": [{"sha":"5654940da","message":"fix: prevent PAI from hallucinating URLs","author":"Rahul"}]
+  "pushedAt": "2026-02-28 02:44:06+00",
+  "commits": [{"sha":"ac244e104","message":"fix: prevent duplicate people records during invitation flow","author":"Rahul"}]
 }
