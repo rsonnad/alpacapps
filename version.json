@@ -1,12 +1,12 @@
 {
-  "version": "v260227.31 8:58p",
-  "release": 388,
-  "sha": "f403bf623",
-  "fullSha": "f403bf6233f97bfaf572f86908a353eaa0af6d23",
+  "version": "v260227.32 11:27p",
+  "release": 389,
+  "sha": "a11cc34bf",
+  "fullSha": "a11cc34bfc28da650ad8d66a5d75c321c6f4c59a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 02:58:13+00",
-  "commits": [{"sha":"e11fdbfb2","message":"feat: add AlpaClaw email channel + show all PAI addendums in config","author":"Rahul"},{"sha":"f403bf623","message":"Merge branch 'crazy-mestorf'","author":"Rahul"}]
+  "pushedAt": "2026-02-28 05:27:08+00",
+  "commits": [{"sha":"a11cc34bf","message":"fix: filter read-only polling from AlpaClaw activity feed","author":"Rahul"}]
 }
