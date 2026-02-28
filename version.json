@@ -1,12 +1,12 @@
 {
-  "version": "v260227.32 11:27p",
-  "release": 389,
-  "sha": "a11cc34bf",
-  "fullSha": "a11cc34bfc28da650ad8d66a5d75c321c6f4c59a",
+  "version": "v260228.01 2:33a",
+  "release": 390,
+  "sha": "784d55ee6",
+  "fullSha": "784d55ee629000980f520c5e5ccf19add2395d18",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 05:27:08+00",
-  "commits": [{"sha":"a11cc34bf","message":"fix: filter read-only polling from AlpaClaw activity feed","author":"Rahul"}]
+  "pushedAt": "2026-02-28 08:33:00+00",
+  "commits": [{"sha":"784d55ee6","message":"Refine AlpacApps Infra hero: AAP styleguide, elegant shadows, tech aesthetic","author":"Rahul"}]
 }
