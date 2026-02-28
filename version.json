@@ -1,12 +1,12 @@
 {
-  "version": "v260227.30 8:44p",
-  "release": 387,
-  "sha": "ac244e104",
-  "fullSha": "ac244e104a24d728d263c7e9f2c7a83376e7752e",
+  "version": "v260227.31 8:58p",
+  "release": 388,
+  "sha": "f403bf623",
+  "fullSha": "f403bf6233f97bfaf572f86908a353eaa0af6d23",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 02:44:06+00",
-  "commits": [{"sha":"ac244e104","message":"fix: prevent duplicate people records during invitation flow","author":"Rahul"}]
+  "pushedAt": "2026-02-28 02:58:13+00",
+  "commits": [{"sha":"e11fdbfb2","message":"feat: add AlpaClaw email channel + show all PAI addendums in config","author":"Rahul"},{"sha":"f403bf623","message":"Merge branch 'crazy-mestorf'","author":"Rahul"}]
 }
