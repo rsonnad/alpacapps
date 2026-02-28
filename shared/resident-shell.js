@@ -489,6 +489,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
 
   const rootEl = document.documentElement;
   const loadingOverlayEl = document.getElementById('loadingOverlay');
+  loadingOverlayEl?.querySelector('.loading-overlay__logo')?.classList.add('hidden');
   const unauthorizedOverlayEl = document.getElementById('unauthorizedOverlay');
   const appContentEl = document.getElementById('appContent');
   let hasCachedAuthHint = rootEl.hasAttribute('data-cached-auth');
