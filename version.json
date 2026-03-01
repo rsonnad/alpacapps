@@ -1,12 +1,12 @@
 {
-  "version": "v260301.04 2:37a",
-  "release": 397,
-  "sha": "89ed52d11",
-  "fullSha": "89ed52d11c480e5648ecaa732af4518a848b46e6",
+  "version": "v260301.05 2:47a",
+  "release": 398,
+  "sha": "0b3b40246",
+  "fullSha": "0b3b40246f7caf6ca0c8a979c67e9add37d91fc2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-01 08:37:54+00",
-  "commits": [{"sha":"89ed52d11","message":"style: polish sonic hero and hide legacy duplicate zones panel","author":"Rahul"}]
+  "pushedAt": "2026-03-01 08:47:20+00",
+  "commits": [{"sha":"0b3b40246","message":"style: modernize sonic soundscape aesthetics","author":"Rahul"}]
 }
