@@ -1,12 +1,12 @@
 {
-  "version": "v260228.04 11:45p",
-  "release": 393,
-  "sha": "44689c0a8",
-  "fullSha": "44689c0a805761ad756454caa7582f870fab62a5",
+  "version": "v260301.01 1:41a",
+  "release": 394,
+  "sha": "2b1aaf1ad",
+  "fullSha": "2b1aaf1ad8d8f7d767c9ab97fff35c6afa4b02dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-01 05:45:24+00",
-  "commits": [{"sha":"44689c0a8","message":"feat: add Resend email notification to oracle provisioning script on success","author":"Rahul"}]
+  "pushedAt": "2026-03-01 07:41:15+00",
+  "commits": [{"sha":"b08b761ab","message":"feat: complete Music Assistant integration and launch resident ambient UX","author":"Rahul"},{"sha":"2b1aaf1ad","message":"fix: remove accidentally tracked local worktree gitlinks","author":"Rahul"}]
 }
