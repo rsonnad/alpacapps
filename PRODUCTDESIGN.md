@@ -75,6 +75,16 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 **Tradeoff accepted:** A resident could theoretically abuse controls (crank the heat, lock someone's car). This is a social problem solved by social norms in a co-living house, not a technical access control problem.
 
+### 3.3 Music Assistant as Sonos Controller
+
+**Decision:** Use Music Assistant on Alpaca Mac as the primary control plane for Sonos playback/grouping/library actions, while keeping the Sonos HTTP API path for announcements and EQ fallback.
+
+**Why:**
+- **Single music control layer.** MA gives one API for transport, grouping, and library operations, reducing custom Sonos- and Spotify-specific edge logic over time.
+- **Future-proofing.** MA can support additional player/provider types without rewriting resident/mobile/PAI music UX contracts.
+- **Operational safety.** We keep Sonos proxy fallback for announce and any unsupported MA command so migration can be gradual and non-breaking.
+- **Infra simplification.** Hostinger acts as the HTTPS proxy (`/sonos`, `/ma-api`) while Alpaca Mac stays the LAN bridge where Sonos and MA run.
+
 ---
 
 ## 4. Payment System Design

@@ -996,8 +996,10 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 ### Home Automation (Sonos, UniFi, Cameras)
 - Full documentation in `HOMEAUTOMATION.md`
 - Credentials and IPs in `HOMEAUTOMATION.local.md`
-- Alpaca Mac (home server) bridges DO droplet to local LAN via Tailscale
-- Sonos HTTP API on port 5005: play, pause, volume, favorites, TTS
+- Alpaca Mac (home server) bridges Hostinger/Oracle nodes to local LAN via Tailscale
+- Sonos HTTP API on port 5005 remains for announce + EQ fallback path
+- Music Assistant on Alpaca Mac port 8095 is the primary Sonos control plane
+- Edge adapter mapping: `docs/music-assistant-api-mapping.md`
 - UniFi Network API on UDM Pro port 443: firewall, DHCP, WiFi management
 - 12 Sonos zones controllable via `http://<alpaca-tailscale-ip>:5005/{room}/{action}`
 
@@ -1539,6 +1541,13 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
    - **Theme tokens**: `bg-aap-cream`, `text-aap-amber`, `border-aap-border`, `shadow-aap`, `rounded-aap`, etc.
    - **No framework**: Still vanilla HTML/CSS/JS — Tailwind is CSS-only, no React required
    - **Package.json**: Root `package.json` added for Tailwind CLI (`npm run css:build`)
+
+48. **Music Assistant as Sonos Control Plane** - MA-first routing with Sonos fallback
+ - `supabase/functions/sonos-control/index.ts` now routes core playback/grouping/library actions to Music Assistant first (`MUSIC_ASSISTANT_URL`, `MUSIC_ASSISTANT_TOKEN`, `USE_MUSIC_ASSISTANT`)
+ - Maintains Sonos fallback for compatibility and for actions MA does not cover
+ - `announce`, `bass`, `treble`, `loudness`, `balance`, and `tts_preview` remain Sonos-proxy-first
+ - Hostinger Caddy is the expected external proxy (`/sonos` and `/ma-api`) to Alpaca Mac over Tailscale
+ - Mapping + response-contract notes live in `docs/music-assistant-api-mapping.md`
 
 ## Testing Changes
 
