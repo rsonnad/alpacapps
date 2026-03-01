@@ -153,6 +153,477 @@ function formatDuration(ms: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+const MA_PLAYER_CACHE_MS = 8_000;
+let maPlayersCache: { fetchedAt: number; players: any[] } = { fetchedAt: 0, players: [] };
+
+function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
+  if (!value) return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  return defaultValue;
+}
+
+function makeMessageId(): string {
+  return `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+}
+
+function normalizeMaEnvelope(payload: any) {
+  if (payload == null) return payload;
+  if (typeof payload !== "object") return payload;
+  if ("result" in payload) return payload.result;
+  if ("data" in payload) return payload.data;
+  if ("items" in payload) return payload.items;
+  if ("payload" in payload) return payload.payload;
+  return payload;
+}
+
+function asArray(value: any): any[] {
+  if (Array.isArray(value)) return value;
+  if (value && Array.isArray(value.items)) return value.items;
+  if (value && Array.isArray(value.results)) return value.results;
+  if (value && Array.isArray(value.players)) return value.players;
+  if (value && Array.isArray(value.data)) return value.data;
+  return [];
+}
+
+async function maRequest(
+  maUrl: string,
+  maToken: string | null,
+  command: string,
+  args: Record<string, unknown> = {},
+) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (maToken) {
+    headers.Authorization = `Bearer ${maToken}`;
+  }
+  const response = await fetch(maUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      message_id: makeMessageId(),
+      command,
+      args,
+    }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`MA command ${command} failed (${response.status}): ${errorText.slice(0, 240)}`);
+  }
+  const json = await response.json().catch(() => ({}));
+  return normalizeMaEnvelope(json);
+}
+
+async function maRequestWithFallbackCommands(
+  maUrl: string,
+  maToken: string | null,
+  commandAttempts: Array<{ command: string; args?: Record<string, unknown> }>,
+) {
+  let lastErr: Error | null = null;
+  for (const attempt of commandAttempts) {
+    try {
+      return await maRequest(maUrl, maToken, attempt.command, attempt.args || {});
+    } catch (err) {
+      lastErr = err as Error;
+    }
+  }
+  throw lastErr || new Error("Music Assistant request failed");
+}
+
+function normalizePlaybackState(raw: string | undefined): "PLAYING" | "PAUSED_PLAYBACK" | "STOPPED" | "TRANSITIONING" {
+  const state = (raw || "").toUpperCase();
+  if (state.includes("PLAY")) return "PLAYING";
+  if (state.includes("PAUSE")) return "PAUSED_PLAYBACK";
+  if (state.includes("TRANS")) return "TRANSITIONING";
+  return "STOPPED";
+}
+
+function parseTrackDuration(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    if (value > 10_000) return Math.round(value / 1000);
+    return Math.round(value);
+  }
+  if (typeof value === "string" && value.includes(":")) {
+    const parts = value.split(":").map((p) => Number(p));
+    if (parts.some((p) => Number.isNaN(p))) return 0;
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+  }
+  return 0;
+}
+
+function normalizeMaPlayer(player: any) {
+  const id = String(player.player_id || player.id || player.uuid || "");
+  const roomName = String(
+    player.display_name ||
+      player.name ||
+      player.room_name ||
+      player.roomName ||
+      id,
+  );
+  const stateSource = player.state || player;
+  const playbackState = normalizePlaybackState(
+    stateSource.state ||
+      stateSource.playback_state ||
+      stateSource.player_state ||
+      stateSource.status,
+  );
+  const elapsed = Number(
+    stateSource.elapsed_time ||
+      stateSource.elapsed ||
+      stateSource.position ||
+      0,
+  );
+  const media = stateSource.current_media || stateSource.media_item || stateSource.current_item || {};
+  const groupId = player.group_childs?.length
+    ? String(player.player_id || player.id || roomName)
+    : String(player.group_id || player.sync_group || player.group || player.synced_to || id);
+  return {
+    id,
+    roomName,
+    groupId,
+    isCoordinator: !!(player.can_sync || player.group_childs?.length || player.is_group_leader || !player.synced_to),
+    volume: Number(
+      stateSource.volume_level ??
+        stateSource.volume ??
+        player.volume_level ??
+        player.volume ??
+        0,
+    ),
+    mute: !!(
+      stateSource.volume_muted ??
+      stateSource.muted ??
+      player.volume_muted ??
+      player.muted
+    ),
+    playbackState,
+    elapsedTime: Number.isFinite(elapsed) ? Math.max(0, Math.round(elapsed)) : 0,
+    currentTrack: {
+      title: media.name || media.title || stateSource.title || "",
+      artist: media.artist || media.artists?.[0]?.name || stateSource.artist || "",
+      album: media.album || media.album_name || "",
+      duration: parseTrackDuration(media.duration || media.duration_seconds || stateSource.duration),
+      absoluteAlbumArtUri:
+        media.image?.url ||
+        media.image_url ||
+        media.album_art ||
+        media.artwork_url ||
+        stateSource.image_url ||
+        "",
+      type: media.media_type || media.type || "",
+      stationName: media.station || "",
+    },
+    equalizer: {
+      bass: Number(stateSource.bass ?? 0),
+      treble: Number(stateSource.treble ?? 0),
+    },
+  };
+}
+
+function buildSonosLikeZonesFromMa(playersRaw: any[]): any[] {
+  const players = playersRaw.map(normalizeMaPlayer).filter((p) => p.id);
+  const groups = new Map<string, any[]>();
+  for (const player of players) {
+    const key = player.groupId || player.id;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(player);
+  }
+  const zoneGroups: any[] = [];
+  for (const memberList of groups.values()) {
+    const coordinator = memberList.find((m) => m.isCoordinator) || memberList[0];
+    const groupVolume = Math.round(
+      memberList.reduce((sum, item) => sum + (Number.isFinite(item.volume) ? item.volume : 0), 0) / Math.max(memberList.length, 1),
+    );
+    const groupMute = memberList.some((m) => m.mute);
+    zoneGroups.push({
+      coordinator: {
+        roomName: coordinator.roomName,
+        state: {
+          playbackState: coordinator.playbackState,
+          elapsedTime: coordinator.elapsedTime,
+          elapsedTimeFormatted: formatDuration(coordinator.elapsedTime),
+          currentTrack: coordinator.currentTrack,
+          equalizer: coordinator.equalizer,
+        },
+        groupState: {
+          volume: groupVolume,
+          mute: groupMute,
+        },
+      },
+      members: memberList.map((member) => ({
+        roomName: member.roomName,
+        state: {
+          volume: member.volume,
+          mute: member.mute,
+          equalizer: member.equalizer,
+        },
+      })),
+    });
+  }
+  return zoneGroups;
+}
+
+async function getMaPlayers(maUrl: string, maToken: string | null, force = false) {
+  if (!force && Date.now() - maPlayersCache.fetchedAt < MA_PLAYER_CACHE_MS && maPlayersCache.players.length) {
+    return maPlayersCache.players;
+  }
+  const result = await maRequestWithFallbackCommands(maUrl, maToken, [
+    { command: "players/all" },
+    { command: "players/list" },
+    { command: "config/players/get" },
+  ]);
+  const players = asArray(result);
+  maPlayersCache = { fetchedAt: Date.now(), players };
+  return players;
+}
+
+async function resolveMaPlayerByRoom(maUrl: string, maToken: string | null, room: string) {
+  const players = await getMaPlayers(maUrl, maToken);
+  const target = room.trim().toLowerCase();
+  const byName = players.find((p) =>
+    String(p.display_name || p.name || p.room_name || p.roomName || "").trim().toLowerCase() === target
+  );
+  if (byName) return byName;
+  const byIncludes = players.find((p) =>
+    String(p.display_name || p.name || p.room_name || p.roomName || "").toLowerCase().includes(target)
+  );
+  if (byIncludes) return byIncludes;
+  return null;
+}
+
+function normalizeLibraryItems(result: any): Array<{ name: string; uri: string }> {
+  const items = asArray(result);
+  return items.map((item: any) => ({
+    name: String(item.name || item.title || item.label || "").trim(),
+    uri: String(item.uri || item.item_id || item.id || "").trim(),
+  })).filter((item) => item.name);
+}
+
+async function maPlayUri(
+  maUrl: string,
+  maToken: string | null,
+  playerId: string,
+  uri: string,
+  enqueue = false,
+) {
+  const attempts: Array<{ command: string; args: Record<string, unknown> }> = [
+    { command: "player_queues/play_media", args: { player_id: playerId, uri, enqueue } },
+    { command: "player_queues/play_media", args: { queue_id: playerId, media_uri: uri, enqueue } },
+    { command: "player_queues/play_media", args: { player_id: playerId, media: [{ uri }], enqueue } },
+    { command: "players/cmd/play_media", args: { player_id: playerId, uri, enqueue } },
+    { command: "players/play_media", args: { player_id: playerId, uri, enqueue } },
+    { command: "music/play_uri", args: { player_id: playerId, uri, enqueue } },
+  ];
+  return maRequestWithFallbackCommands(maUrl, maToken, attempts);
+}
+
+async function tryMusicAssistantAction(
+  body: SonosRequest,
+  maUrl: string,
+  maToken: string | null,
+) {
+  const room = body.room?.trim();
+  const action = body.action;
+
+  if (action === "getZones") {
+    const players = await getMaPlayers(maUrl, maToken, true);
+    return buildSonosLikeZonesFromMa(players);
+  }
+
+  if (action === "getState") {
+    if (!room) throw new Error("Missing room");
+    const player = await resolveMaPlayerByRoom(maUrl, maToken, room);
+    if (!player) throw new Error(`Room not found in MA: ${room}`);
+    const stateResult = await maRequestWithFallbackCommands(maUrl, maToken, [
+      { command: "players/get", args: { player_id: player.player_id || player.id } },
+      { command: "player/get", args: { player_id: player.player_id || player.id } },
+      { command: "config/players/get", args: { player_id: player.player_id || player.id } },
+    ]).catch(() => player);
+    const normalized = normalizeMaPlayer(stateResult);
+    return {
+      playbackState: normalized.playbackState,
+      elapsedTime: normalized.elapsedTime,
+      elapsedTimeFormatted: formatDuration(normalized.elapsedTime),
+      currentTrack: normalized.currentTrack,
+      equalizer: normalized.equalizer,
+      volume: normalized.volume,
+      mute: normalized.mute,
+    };
+  }
+
+  if (action === "pauseall" || action === "resumeall") {
+    const players = await getMaPlayers(maUrl, maToken, true);
+    const command = action === "pauseall" ? "pause" : "play";
+    const controlAttempts = command === "pause"
+      ? ["player_queues/pause", "players/cmd/pause", "players/pause"]
+      : ["player_queues/play", "players/cmd/play", "players/play"];
+    const run = players.map((player: any) =>
+      maRequestWithFallbackCommands(
+        maUrl,
+        maToken,
+        controlAttempts.map((cmd) => ({
+          command: cmd,
+          args: { player_id: player.player_id || player.id, queue_id: player.player_id || player.id },
+        })),
+      ),
+    );
+    const results = await Promise.allSettled(run);
+    const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    return { status: "success", action, total: players.length, succeeded };
+  }
+
+  if (
+    [
+      "play",
+      "pause",
+      "playpause",
+      "next",
+      "previous",
+      "volume",
+      "mute",
+      "unmute",
+      "join",
+      "leave",
+      "spotify-play",
+      "playlist",
+      "favorite",
+      "playlists",
+      "favorites",
+    ].includes(action)
+  ) {
+    if ((action !== "playlists" && action !== "favorites") && !room) {
+      throw new Error("Missing room");
+    }
+  }
+
+  if (action === "playlists" || action === "favorites") {
+    const result = await maRequestWithFallbackCommands(maUrl, maToken, action === "playlists"
+      ? [
+        { command: "music/playlists" },
+        { command: "music/library/playlists" },
+        { command: "playlists/list" },
+      ]
+      : [
+        { command: "music/favorites" },
+        { command: "music/library/favorites" },
+        { command: "favorites/list" },
+      ]);
+    return normalizeLibraryItems(result).map((item) => item.name);
+  }
+
+  if (action === "playlist" || action === "favorite") {
+    if (!body.name) throw new Error("Missing name");
+    if (!room) throw new Error("Missing room");
+    const player = await resolveMaPlayerByRoom(maUrl, maToken, room);
+    if (!player) throw new Error(`Room not found in MA: ${room}`);
+    const libraryResult = await maRequestWithFallbackCommands(
+      maUrl,
+      maToken,
+      action === "playlist"
+        ? [{ command: "music/playlists" }, { command: "music/library/playlists" }]
+        : [{ command: "music/favorites" }, { command: "music/library/favorites" }],
+    );
+    const items = normalizeLibraryItems(libraryResult);
+    const targetName = body.name.trim().toLowerCase();
+    const match = items.find((item) => item.name.trim().toLowerCase() === targetName);
+    const uri = match?.uri || body.name;
+    await maPlayUri(maUrl, maToken, String(player.player_id || player.id), uri, false);
+    return { status: "ok", played: body.name, room };
+  }
+
+  if (action === "spotify-play") {
+    if (!room) throw new Error("Missing room");
+    if (!body.uri) throw new Error("Missing uri");
+    const player = await resolveMaPlayerByRoom(maUrl, maToken, room);
+    if (!player) throw new Error(`Room not found in MA: ${room}`);
+    await maPlayUri(
+      maUrl,
+      maToken,
+      String(player.player_id || player.id),
+      body.uri,
+      !!body.enqueue,
+    );
+    return { status: "ok", room, uri: body.uri, enqueue: !!body.enqueue };
+  }
+
+  const player = room ? await resolveMaPlayerByRoom(maUrl, maToken, room) : null;
+  const playerId = player ? String(player.player_id || player.id) : "";
+  if (room && !playerId) {
+    throw new Error(`Room not found in MA: ${room}`);
+  }
+
+  switch (action) {
+    case "play":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/play", args: { player_id: playerId, queue_id: playerId } },
+        { command: "players/cmd/play", args: { player_id: playerId } },
+        { command: "players/play", args: { player_id: playerId } },
+      ]);
+    case "pause":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/pause", args: { player_id: playerId, queue_id: playerId } },
+        { command: "players/cmd/pause", args: { player_id: playerId } },
+        { command: "players/pause", args: { player_id: playerId } },
+      ]);
+    case "playpause":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/play_pause", args: { player_id: playerId, queue_id: playerId } },
+        { command: "players/cmd/play_pause", args: { player_id: playerId } },
+        { command: "players/play_pause", args: { player_id: playerId } },
+      ]);
+    case "next":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/next", args: { player_id: playerId, queue_id: playerId } },
+        { command: "players/cmd/next", args: { player_id: playerId } },
+        { command: "players/next", args: { player_id: playerId } },
+      ]);
+    case "previous":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/previous", args: { player_id: playerId, queue_id: playerId } },
+        { command: "players/cmd/previous", args: { player_id: playerId } },
+        { command: "players/previous", args: { player_id: playerId } },
+      ]);
+    case "volume": {
+      if (body.value === undefined || body.value === null) throw new Error("Missing value");
+      const value = Number(body.value);
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "players/cmd/volume_set", args: { player_id: playerId, volume_level: value } },
+        { command: "players/set_volume", args: { player_id: playerId, volume: value } },
+        { command: "player_queues/set_volume", args: { player_id: playerId, volume_level: value } },
+      ]);
+    }
+    case "mute":
+    case "unmute": {
+      const muteVal = action === "mute";
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "players/cmd/mute", args: { player_id: playerId, muted: muteVal } },
+        { command: "players/set_mute", args: { player_id: playerId, mute: muteVal } },
+      ]);
+    }
+    case "join": {
+      if (!body.other) throw new Error("Missing other");
+      const target = await resolveMaPlayerByRoom(maUrl, maToken, body.other);
+      if (!target) throw new Error(`Target room not found in MA: ${body.other}`);
+      const targetPlayerId = String(target.player_id || target.id);
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "players/cmd/sync", args: { player_id: playerId, target_player: targetPlayerId } },
+        { command: "players/cmd/join", args: { player_id: playerId, target_player: targetPlayerId } },
+        { command: "players/join", args: { player_id: playerId, target_player: targetPlayerId } },
+      ]);
+    }
+    case "leave":
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "players/cmd/unsync", args: { player_id: playerId } },
+        { command: "players/cmd/leave", args: { player_id: playerId } },
+        { command: "players/leave", args: { player_id: playerId } },
+      ]);
+    default:
+      throw new Error(`Action not implemented in MA adapter: ${action}`);
+  }
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -205,15 +676,49 @@ serve(async (req) => {
       }
     }
 
-    // Get proxy config from env
+    // Proxy config (Sonos fallback + announce/EQ path)
     const proxyUrl = Deno.env.get("SONOS_PROXY_URL");
     const proxySecret = Deno.env.get("SONOS_PROXY_SECRET");
-    if (!proxyUrl || !proxySecret) {
-      return jsonResponse({ error: "Sonos proxy not configured" }, 500);
-    }
+    const maUrl = Deno.env.get("MUSIC_ASSISTANT_URL");
+    const maToken = Deno.env.get("MUSIC_ASSISTANT_TOKEN");
+    const useMa = parseBooleanEnv(Deno.env.get("USE_MUSIC_ASSISTANT"), true);
 
     const body: SonosRequest = await req.json();
     const { action } = body;
+    const maActions = new Set([
+      "getZones",
+      "getState",
+      "play",
+      "pause",
+      "playpause",
+      "next",
+      "previous",
+      "volume",
+      "mute",
+      "unmute",
+      "favorite",
+      "favorites",
+      "playlists",
+      "playlist",
+      "pauseall",
+      "resumeall",
+      "join",
+      "leave",
+      "spotify-play",
+    ]);
+
+    if (useMa && maUrl && maActions.has(action)) {
+      try {
+        const maResult = await tryMusicAssistantAction(body, maUrl, maToken);
+        return jsonResponse(maResult, 200);
+      } catch (maError) {
+        console.warn(`MA routing failed for ${action}, falling back to Sonos:`, (maError as Error).message);
+      }
+    }
+
+    if (!proxyUrl || !proxySecret) {
+      return jsonResponse({ error: "Sonos proxy not configured" }, 500);
+    }
 
     // Build Sonos HTTP API path
     let path = "";

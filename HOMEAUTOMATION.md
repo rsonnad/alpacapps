@@ -383,7 +383,37 @@ GET /{room}/balance/50     # Right-biased (LF=50%, RF=100%)
 
 **Note:** Sonos does NOT report balance state in its `/state` API response. The frontend persists balance values in `localStorage` and re-applies them when needed. When adjusting balance, the slider shows the locally cached value, not a Sonos-reported value.
 
-### Sonos Proxy Chain (Browser → Supabase → DO Droplet → Alpaca Mac)
+### Hostinger VPS Proxies (Sonos + Music Assistant)
+
+Music traffic now routes through Hostinger VPS (`alpaclaw.cloud`) as the public proxy layer to Alpaca Mac over Tailscale.
+
+```
+Browser / Mobile / PAI
+  -> Supabase Edge Function (sonos-control)
+    -> Hostinger Caddy proxy (HTTPS)
+      -> Alpaca Mac via Tailscale
+         - Sonos HTTP API :5005
+         - Music Assistant :8095
+```
+
+#### Recommended Caddy paths
+
+- `https://alpaclaw.cloud/sonos/*` -> `http://<alpaca-mac-tailscale-ip>:5005/*`
+- `https://alpaclaw.cloud/ma-api` -> `http://<alpaca-mac-tailscale-ip>:8095/api`
+
+#### Secrets used by edge function
+
+| Secret | Purpose |
+|---|---|
+| `SONOS_PROXY_URL` | Sonos proxy URL (Hostinger path) |
+| `SONOS_PROXY_SECRET` | Shared secret header for Sonos proxy (`X-Sonos-Secret`) |
+| `MUSIC_ASSISTANT_URL` | MA proxy URL on Hostinger |
+| `MUSIC_ASSISTANT_TOKEN` | MA Bearer token (optional if Caddy injects) |
+| `USE_MUSIC_ASSISTANT` | Feature flag (`true`/`false`) |
+
+`sonos-control` routes playback and grouping actions to MA first, with Sonos fallback. Announce and EQ actions remain Sonos-proxy-based.
+
+### Legacy Sonos Proxy Chain (Browser → Supabase → DO Droplet → Alpaca Mac)
 
 The browser doesn't access the Sonos HTTP API directly. Instead, requests flow through a proxy chain:
 
@@ -669,18 +699,18 @@ Libraries: `unifi-protect` (npm), `pyunifiprotect` (pip)
 
 ## Scheduling & Alarms
 
-Use cron on the DO droplet to trigger Sonos actions via Tailscale:
+Use cron on Hostinger VPS to trigger Sonos or MA actions via Hostinger proxy:
 
 ```bash
 # Example: Wake-up alarm weekdays at 7am CT
-0 7 * * 1-5 curl -s http://<alpaca-tailscale-ip>:5005/MasterBlaster/favorite/Morning%20Playlist
-0 7 * * 1-5 curl -s http://<alpaca-tailscale-ip>:5005/MasterBlaster/volume/25
+0 7 * * 1-5 curl -s -H "X-Sonos-Secret: $SONOS_PROXY_SECRET" "https://alpaclaw.cloud/sonos/MasterBlaster/favorite/Morning%20Playlist"
+0 7 * * 1-5 curl -s -H "X-Sonos-Secret: $SONOS_PROXY_SECRET" "https://alpaclaw.cloud/sonos/MasterBlaster/volume/25"
 
 # Example: Nightly announcement at 10pm
-0 22 * * * curl -s "http://<alpaca-tailscale-ip>:5005/sayall/Quiet%20hours%20start%20now"
+0 22 * * * curl -s -H "X-Sonos-Secret: $SONOS_PROXY_SECRET" "https://alpaclaw.cloud/sonos/sayall/Quiet%20hours%20start%20now"
 
 # Example: Pause all music at midnight
-0 0 * * * curl -s http://<alpaca-tailscale-ip>:5005/pauseall
+0 0 * * * curl -s -H "X-Sonos-Secret: $SONOS_PROXY_SECRET" "https://alpaclaw.cloud/sonos/pauseall"
 ```
 
 ## Common Commands (Quick Reference)

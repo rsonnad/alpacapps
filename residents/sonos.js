@@ -38,6 +38,7 @@ let groupingSelected = []; // room names selected for grouping
 let scenes = [];           // Array of scene objects from DB (with nested actions)
 let activatingScene = null; // ID of scene currently being activated
 let deviceScope = null;
+let uxActiveTab = 'now';
 
 // =============================================
 // INITIALIZATION
@@ -53,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.classList.add('is-staff');
       }
       loadBalanceState();
+      loadUxTabPreference();
       setupEventListeners();
       setupSpotifySearch();
       await loadZones();
@@ -62,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderSchedules();
       renderScenesSection();
       renderSceneBar();
+      renderNowAmbient();
       startPolling();
       // Refresh when PAI takes music actions
       window.addEventListener('pai-actions', (e) => {
@@ -259,6 +262,184 @@ function getAllRoomNames() {
   return [...new Set(rooms)].sort();
 }
 
+function loadUxTabPreference() {
+  try {
+    const saved = localStorage.getItem('sonos_ux_tab');
+    if (saved === 'now' || saved === 'ambient') uxActiveTab = saved;
+  } catch {}
+}
+
+function saveUxTabPreference() {
+  try {
+    localStorage.setItem('sonos_ux_tab', uxActiveTab);
+  } catch {}
+}
+
+function getAmbientPlaylists() {
+  const ambientOnly = playlists.filter(name => /ambient/i.test(name));
+  if (ambientOnly.length > 0) return [...new Set(ambientOnly)].sort();
+  return [];
+}
+
+function getTargetRooms() {
+  return zoneGroups.map(g => g.coordinatorName).sort((a, b) => a.localeCompare(b));
+}
+
+function getSelectedAmbientTargetRoom() {
+  const selected = document.getElementById('uxAmbientTarget')?.value;
+  if (selected) return selected;
+  return getTargetRooms()[0] || null;
+}
+
+function renderNowAmbient() {
+  const nowBtn = document.getElementById('uxNowTabBtn');
+  const ambientBtn = document.getElementById('uxAmbientTabBtn');
+  const nowPanel = document.getElementById('uxNowPanel');
+  const ambientPanel = document.getElementById('uxAmbientPanel');
+  if (!nowPanel || !ambientPanel) return;
+
+  renderNowPanel();
+  renderAmbientPanel();
+
+  const showNow = uxActiveTab !== 'ambient';
+  nowPanel.classList.toggle('hidden', !showNow);
+  ambientPanel.classList.toggle('hidden', showNow);
+
+  if (nowBtn && ambientBtn) {
+    nowBtn.className = showNow
+      ? 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20'
+      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted';
+    ambientBtn.className = !showNow
+      ? 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20'
+      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted';
+  }
+
+  saveUxTabPreference();
+}
+
+function renderNowPanel() {
+  const panel = document.getElementById('uxNowPanel');
+  if (!panel) return;
+
+  if (!zoneGroups.length) {
+    panel.innerHTML = '<p class="rounded-aap border border-aap-border bg-white p-3 text-sm text-aap-text-muted">No available zones right now.</p>';
+    return;
+  }
+
+  const cards = zoneGroups.map(group => {
+    const state = group.coordinatorState || {};
+    const track = state.currentTrack || {};
+    const isPlaying = state.playbackState === 'PLAYING';
+    const displayState = isPlaying ? 'Playing' : (state.playbackState === 'PAUSED_PLAYBACK' ? 'Paused' : 'Stopped');
+    const title = track.title || 'No track';
+    const subtitle = track.artist || track.album || 'Tap play to start music';
+    const room = escapeHtml(group.coordinatorName);
+    const mainVolume = group.members.length === 1
+      ? (group.members[0]?.volume ?? 0)
+      : (group.groupState?.volume ?? 0);
+
+    return `
+      <article class="rounded-aap border border-aap-border bg-white p-3 shadow-aap-sm">
+        <div class="mb-2 flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-medium text-aap-dark">${room}</h3>
+            <p class="text-xs text-aap-text-muted">${displayState}${group.members.length > 1 ? ` · ${group.members.length} grouped` : ''}</p>
+          </div>
+          <span class="rounded-full bg-aap-cream px-2 py-1 text-xs text-aap-text-muted">${mainVolume}%</span>
+        </div>
+        <p class="truncate text-sm font-medium text-aap-dark">${escapeHtml(title)}</p>
+        <p class="mb-3 truncate text-xs text-aap-text-muted">${escapeHtml(subtitle)}</p>
+        <div class="mb-2 flex items-center gap-2">
+          <button type="button" class="rounded-aap border border-aap-border px-2 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-action="uxPrevious" data-room="${room}">Prev</button>
+          <button type="button" class="rounded-aap bg-aap-dark px-3 py-1 text-xs font-semibold text-white hover:opacity-90" data-action="uxPlayPause" data-room="${room}">${isPlaying ? 'Pause' : 'Play'}</button>
+          <button type="button" class="rounded-aap border border-aap-border px-2 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-action="uxNext" data-room="${room}">Next</button>
+        </div>
+        <input type="range" min="0" max="100" value="${mainVolume}" class="w-full accent-aap-amber" data-action="uxVolume" data-room="${room}">
+      </article>
+    `;
+  }).join('');
+
+  panel.innerHTML = `<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">${cards}</div>`;
+}
+
+function renderAmbientPanel() {
+  const panel = document.getElementById('uxAmbientPanel');
+  if (!panel) return;
+
+  const ambientPlaylists = getAmbientPlaylists();
+  const rooms = getTargetRooms();
+  const currentRoom = document.getElementById('uxAmbientTarget')?.value || '';
+  const currentPlaylist = document.getElementById('uxAmbientSource')?.value || '';
+  const noAccessNote = deviceScope && !deviceScope.fullAccess
+    ? '<p class="mb-3 rounded-aap border border-aap-border bg-white p-2 text-xs text-aap-text-muted">You only see and control zones you are allowed to access.</p>'
+    : '';
+
+  const roomOptions = rooms.length
+    ? rooms.map(room => `<option value="${escapeHtml(room)}" ${currentRoom === room ? 'selected' : ''}>${escapeHtml(room)}</option>`).join('')
+    : '<option value="">No zones</option>';
+
+  const playlistOptions = ambientPlaylists.length
+    ? ambientPlaylists.map(name => `<option value="${escapeHtml(name)}" ${currentPlaylist === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')
+    : '<option value="">No ambient playlists found</option>';
+
+  const chips = ambientPlaylists.slice(0, 8).map(name => (
+    `<button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-ambient-playlist="${escapeHtml(name)}">${escapeHtml(name)}</button>`
+  )).join('');
+
+  panel.innerHTML = `
+    ${noAccessNote}
+    <div class="grid gap-3 rounded-aap border border-aap-border bg-white p-3 md:grid-cols-2">
+      <label class="text-sm text-aap-text-muted">
+        Target zone
+        <select id="uxAmbientTarget" class="mt-1 w-full rounded-aap border border-aap-border bg-aap-cream px-2 py-2 text-sm text-aap-dark">${roomOptions}</select>
+      </label>
+      <label class="text-sm text-aap-text-muted">
+        Ambient source
+        <select id="uxAmbientSource" class="mt-1 w-full rounded-aap border border-aap-border bg-aap-cream px-2 py-2 text-sm text-aap-dark">${playlistOptions}</select>
+      </label>
+      <div class="flex flex-wrap items-center gap-2 md:col-span-2">
+        <button type="button" id="uxAmbientStartBtn" class="rounded-aap bg-aap-dark px-3 py-2 text-sm font-semibold text-white hover:opacity-90">Start Ambient</button>
+        <button type="button" id="uxAmbientShuffleBtn" class="rounded-aap border border-aap-border px-3 py-2 text-sm text-aap-text-muted hover:bg-aap-cream">Shuffle Ambient</button>
+        <button type="button" id="uxAmbientPauseAllBtn" class="rounded-aap border border-aap-border px-3 py-2 text-sm text-aap-text-muted hover:bg-aap-cream">Pause All</button>
+      </div>
+    </div>
+    ${chips ? `<div class="mt-3 flex flex-wrap gap-2">${chips}</div>` : '<p class="mt-3 text-xs text-aap-text-muted">Create playlists with "ambient" in the name to enable quick rotation controls.</p>'}
+  `;
+}
+
+async function startAmbientPlayback({ shuffle = false, forcedPlaylist = null } = {}) {
+  const room = getSelectedAmbientTargetRoom();
+  if (!room) {
+    showToast('No target zone selected', 'error');
+    return;
+  }
+
+  const ambientPlaylists = getAmbientPlaylists();
+  const sourceSelect = document.getElementById('uxAmbientSource');
+  let playlistName = forcedPlaylist || sourceSelect?.value || '';
+  if (shuffle) {
+    if (!ambientPlaylists.length) {
+      showToast('No ambient playlists available', 'warning');
+      return;
+    }
+    playlistName = ambientPlaylists[Math.floor(Math.random() * ambientPlaylists.length)];
+    if (sourceSelect) sourceSelect.value = playlistName;
+  }
+
+  if (!playlistName) {
+    showToast('Select an ambient playlist', 'error');
+    return;
+  }
+
+  try {
+    await sonosApi('playlist', { room, name: playlistName });
+    showToast(`${shuffle ? 'Shuffled' : 'Started'} ambient on ${room}`, 'success', 2200);
+    setTimeout(() => refreshAllZones(), 1500);
+  } catch (err) {
+    showToast(`Ambient playback failed: ${err.message}`, 'error');
+  }
+}
+
 // =============================================
 // SVG ICONS
 // =============================================
@@ -298,6 +479,7 @@ function renderZones() {
 
   if (!zoneGroups.length) {
     container.innerHTML = '<p class="text-muted" style="padding:2rem;text-align:center">No Sonos zones found. Is the Sonos system online?</p>';
+    renderNowAmbient();
     return;
   }
 
@@ -490,6 +672,7 @@ function renderZones() {
       </div>
     `;
   }).join('');
+  renderNowAmbient();
 }
 
 // =============================================
@@ -521,6 +704,7 @@ function renderMusicLibrary() {
   html += renderLibrarySectionHtml(`Favorites (${favorites.length})`, 'favoritesList', favorites, 'favorite', STAR_SVG, false);
 
   libraryBody.innerHTML = html;
+  renderNowAmbient();
 }
 
 function renderLibrarySectionHtml(label, listId, items, type, iconSvg, defaultOpen = true, showStars = false) {
@@ -589,6 +773,7 @@ function renderSchedules() {
 
   if (!schedules.length) {
     container.innerHTML = '<p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">No scheduled alarms yet.</p>';
+    renderNowAmbient();
     return;
   }
 
@@ -621,6 +806,7 @@ function renderSchedules() {
       </div>
     `;
   }).join('');
+  renderNowAmbient();
 }
 
 function formatTime12h(timeStr) {
@@ -1315,6 +1501,54 @@ function populateSpotifyZones() {
 // =============================================
 function setupEventListeners() {
   const zonesContainer = document.getElementById('sonosZones');
+  const uxContainer = document.getElementById('uxNowAmbient');
+
+  // New Now/Ambient surface interactions
+  uxContainer?.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('[data-ux-tab]');
+    if (tabBtn) {
+      uxActiveTab = tabBtn.dataset.uxTab === 'ambient' ? 'ambient' : 'now';
+      renderNowAmbient();
+      return;
+    }
+
+    const ambientChip = e.target.closest('[data-ambient-playlist]');
+    if (ambientChip) {
+      startAmbientPlayback({ forcedPlaylist: ambientChip.dataset.ambientPlaylist });
+      return;
+    }
+
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn) {
+      const room = actionBtn.dataset.room;
+      switch (actionBtn.dataset.action) {
+        case 'uxPlayPause': controlWithFeedback(room, 'playpause'); break;
+        case 'uxNext': controlWithFeedback(room, 'next'); break;
+        case 'uxPrevious': controlWithFeedback(room, 'previous'); break;
+      }
+      return;
+    }
+
+    if (e.target.id === 'uxAmbientStartBtn') {
+      startAmbientPlayback();
+      return;
+    }
+    if (e.target.id === 'uxAmbientShuffleBtn') {
+      startAmbientPlayback({ shuffle: true });
+      return;
+    }
+    if (e.target.id === 'uxAmbientPauseAllBtn') {
+      pauseAll();
+    }
+  });
+
+  uxContainer?.addEventListener('input', (e) => {
+    if (e.target.dataset.action === 'uxVolume') {
+      const room = e.target.dataset.room;
+      clearTimeout(volumeTimers[`ux_${room}`]);
+      volumeTimers[`ux_${room}`] = setTimeout(() => setVolume(room, e.target.value), 300);
+    }
+  });
 
   // Transport controls + grouping checkbox + ungroup
   zonesContainer.addEventListener('click', (e) => {
