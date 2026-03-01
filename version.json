@@ -1,12 +1,12 @@
 {
-  "version": "v260301.03 1:56a",
-  "release": 396,
-  "sha": "398e8d675",
-  "fullSha": "398e8d675f4b3916b40b8455221ad3e5964c5b10",
+  "version": "v260301.04 2:37a",
+  "release": 397,
+  "sha": "89ed52d11",
+  "fullSha": "89ed52d11c480e5648ecaa732af4518a848b46e6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-01 07:56:07+00",
-  "commits": [{"sha":"398e8d675","message":"style: rename and restyle sonic control header","author":"Rahul"}]
+  "pushedAt": "2026-03-01 08:37:54+00",
+  "commits": [{"sha":"89ed52d11","message":"style: polish sonic hero and hide legacy duplicate zones panel","author":"Rahul"}]
 }
