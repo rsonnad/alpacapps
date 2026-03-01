@@ -1,12 +1,12 @@
 {
-  "version": "v260228.01 2:33a",
-  "release": 390,
-  "sha": "784d55ee6",
-  "fullSha": "784d55ee629000980f520c5e5ccf19add2395d18",
+  "version": "v260228.02 11:09p",
+  "release": 391,
+  "sha": "9f856978a",
+  "fullSha": "9f856978aea4b83de6d279e4dbcfb96297f4dce4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-02-28 08:33:00+00",
-  "commits": [{"sha":"784d55ee6","message":"Refine AlpacApps Infra hero: AAP styleguide, elegant shadows, tech aesthetic","author":"Rahul"}]
+  "pushedAt": "2026-03-01 05:09:33+00",
+  "commits": [{"sha":"9f856978a","message":"fix: touch ~/.oracle-provisioned on success for launchd auto-restart control","author":"Rahul"}]
 }
