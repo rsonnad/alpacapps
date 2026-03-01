@@ -1,12 +1,12 @@
 {
-  "version": "v260301.01 1:41a",
-  "release": 394,
-  "sha": "2b1aaf1ad",
-  "fullSha": "2b1aaf1ad8d8f7d767c9ab97fff35c6afa4b02dd",
+  "version": "v260301.02 1:42a",
+  "release": 395,
+  "sha": "1deb19de8",
+  "fullSha": "1deb19de8aed9c72eb99933ca7e55eefc2f17e24",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-01 07:41:15+00",
-  "commits": [{"sha":"b08b761ab","message":"feat: complete Music Assistant integration and launch resident ambient UX","author":"Rahul"},{"sha":"2b1aaf1ad","message":"fix: remove accidentally tracked local worktree gitlinks","author":"Rahul"}]
+  "pushedAt": "2026-03-01 07:42:41+00",
+  "commits": [{"sha":"1deb19de8","message":"chore: ignore local claude worktrees directory","author":"Rahul"}]
 }
