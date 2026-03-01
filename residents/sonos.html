@@ -124,11 +124,12 @@
 
         <!-- RIGHT: Zone Groups -->
         <div class="sonos-main">
-          <section class="mb-4 rounded-aap border border-aap-border bg-aap-cream p-4 shadow-aap-sm" id="uxNowAmbient">
+          <section class="mb-4 overflow-hidden rounded-aap-lg border border-aap-border bg-gradient-to-r from-aap-dark via-[#2a1f22] to-aap-dark p-5 shadow-aap-lg" id="uxNowAmbient">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 class="text-xl font-bold tracking-wide text-aap-amber md:text-2xl">Sonic Soundscape Center</h2>
-                <p class="text-sm text-aap-text-muted">Quick control for what is playing now and ambient rotations.</p>
+                <p class="mb-1 inline-flex rounded-full border border-aap-amber/30 bg-aap-amber/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-aap-amber">Resident Audio Hub</p>
+                <h2 class="text-2xl font-extrabold tracking-wide text-aap-cream md:text-3xl">Sonic Soundscape Center</h2>
+                <p class="text-sm text-aap-cream/75">Quick control for what is playing now and ambient rotations.</p>
               </div>
               <div class="inline-flex rounded-aap border border-aap-border bg-white p-1">
                 <button type="button" id="uxNowTabBtn" class="rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20" data-ux-tab="now">Now</button>
@@ -139,7 +140,7 @@
             <div id="uxAmbientPanel" class="hidden"></div>
           </section>
 
-          <section class="section" id="zonesSection">
+          <section class="section hidden" id="zonesSection">
             <div class="section-header">
               <h2>Zones</h2>
               <div class="section-header-actions">
