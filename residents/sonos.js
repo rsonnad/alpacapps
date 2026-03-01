@@ -307,11 +307,11 @@ function renderNowAmbient() {
 
   if (nowBtn && ambientBtn) {
     nowBtn.className = showNow
-      ? 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20'
-      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted';
+      ? 'rounded-aap px-3 py-1.5 text-sm font-semibold text-aap-dark bg-aap-amber shadow-aap-sm'
+      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10';
     ambientBtn.className = !showNow
-      ? 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20'
-      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted';
+      ? 'rounded-aap px-3 py-1.5 text-sm font-semibold text-aap-dark bg-aap-amber shadow-aap-sm'
+      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10';
   }
 
   saveUxTabPreference();
@@ -322,7 +322,7 @@ function renderNowPanel() {
   if (!panel) return;
 
   if (!zoneGroups.length) {
-    panel.innerHTML = '<p class="rounded-aap border border-aap-border bg-white p-3 text-sm text-aap-text-muted">No available zones right now.</p>';
+    panel.innerHTML = '<p class="rounded-aap-lg border border-white/30 bg-white/90 p-4 text-sm text-aap-text-muted">No available zones right now.</p>';
     return;
   }
 
@@ -334,32 +334,38 @@ function renderNowPanel() {
     const title = track.title || 'No track';
     const subtitle = track.artist || track.album || 'Tap play to start music';
     const room = escapeHtml(group.coordinatorName);
+    const stateToneClass = isPlaying
+      ? 'bg-emerald-100 text-emerald-700'
+      : (displayState === 'Paused' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600');
     const mainVolume = group.members.length === 1
       ? (group.members[0]?.volume ?? 0)
       : (group.groupState?.volume ?? 0);
 
     return `
-      <article class="rounded-aap border border-aap-border bg-white p-3 shadow-aap-sm">
-        <div class="mb-2 flex items-start justify-between gap-2">
+      <article class="rounded-aap-lg border border-white/60 bg-white/95 p-4 shadow-aap transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-aap-lg">
+        <div class="mb-3 flex items-start justify-between gap-2">
           <div>
-            <h3 class="font-medium text-aap-dark">${room}</h3>
-            <p class="text-xs text-aap-text-muted">${displayState}${group.members.length > 1 ? ` · ${group.members.length} grouped` : ''}</p>
+            <h3 class="text-base font-semibold text-aap-dark">${room}</h3>
+            <p class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${stateToneClass}">${displayState}${group.members.length > 1 ? ` · ${group.members.length} grouped` : ''}</p>
           </div>
-          <span class="rounded-full bg-aap-cream px-2 py-1 text-xs text-aap-text-muted">${mainVolume}%</span>
+          <span class="rounded-full bg-aap-cream px-2.5 py-1 text-xs font-semibold text-aap-dark">${mainVolume}%</span>
         </div>
-        <p class="truncate text-sm font-medium text-aap-dark">${escapeHtml(title)}</p>
-        <p class="mb-3 truncate text-xs text-aap-text-muted">${escapeHtml(subtitle)}</p>
-        <div class="mb-2 flex items-center gap-2">
-          <button type="button" class="rounded-aap border border-aap-border px-2 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-action="uxPrevious" data-room="${room}">Prev</button>
-          <button type="button" class="rounded-aap bg-aap-dark px-3 py-1 text-xs font-semibold text-white hover:opacity-90" data-action="uxPlayPause" data-room="${room}">${isPlaying ? 'Pause' : 'Play'}</button>
-          <button type="button" class="rounded-aap border border-aap-border px-2 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-action="uxNext" data-room="${room}">Next</button>
+        <p class="truncate text-sm font-semibold text-aap-dark">${escapeHtml(title)}</p>
+        <p class="mb-4 truncate text-xs text-aap-text-muted">${escapeHtml(subtitle)}</p>
+        <div class="mb-3 flex items-center gap-2">
+          <button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1.5 text-xs font-medium text-aap-text-muted hover:bg-aap-cream" data-action="uxPrevious" data-room="${room}">Prev</button>
+          <button type="button" class="rounded-full bg-aap-dark px-4 py-1.5 text-xs font-semibold text-white hover:opacity-90" data-action="uxPlayPause" data-room="${room}">${isPlaying ? 'Pause' : 'Play'}</button>
+          <button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1.5 text-xs font-medium text-aap-text-muted hover:bg-aap-cream" data-action="uxNext" data-room="${room}">Next</button>
         </div>
-        <input type="range" min="0" max="100" value="${mainVolume}" class="w-full accent-aap-amber" data-action="uxVolume" data-room="${room}">
+        <div class="flex items-center gap-3">
+          <span class="text-[11px] font-semibold uppercase tracking-wide text-aap-text-muted">Volume</span>
+          <input type="range" min="0" max="100" value="${mainVolume}" class="w-full accent-aap-amber" data-action="uxVolume" data-room="${room}">
+        </div>
       </article>
     `;
   }).join('');
 
-  panel.innerHTML = `<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">${cards}</div>`;
+  panel.innerHTML = `<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">${cards}</div>`;
 }
 
 function renderAmbientPanel() {
@@ -388,22 +394,22 @@ function renderAmbientPanel() {
 
   panel.innerHTML = `
     ${noAccessNote}
-    <div class="grid gap-3 rounded-aap border border-aap-border bg-white p-3 md:grid-cols-2">
-      <label class="text-sm text-aap-text-muted">
+    <div class="grid gap-3 rounded-aap-lg border border-white/30 bg-white/95 p-4 shadow-aap-sm md:grid-cols-2">
+      <label class="text-sm font-medium text-aap-text-muted">
         Target zone
-        <select id="uxAmbientTarget" class="mt-1 w-full rounded-aap border border-aap-border bg-aap-cream px-2 py-2 text-sm text-aap-dark">${roomOptions}</select>
+        <select id="uxAmbientTarget" class="mt-1.5 w-full rounded-aap border border-aap-border bg-aap-cream px-2.5 py-2 text-sm text-aap-dark">${roomOptions}</select>
       </label>
-      <label class="text-sm text-aap-text-muted">
+      <label class="text-sm font-medium text-aap-text-muted">
         Ambient source
-        <select id="uxAmbientSource" class="mt-1 w-full rounded-aap border border-aap-border bg-aap-cream px-2 py-2 text-sm text-aap-dark">${playlistOptions}</select>
+        <select id="uxAmbientSource" class="mt-1.5 w-full rounded-aap border border-aap-border bg-aap-cream px-2.5 py-2 text-sm text-aap-dark">${playlistOptions}</select>
       </label>
       <div class="flex flex-wrap items-center gap-2 md:col-span-2">
-        <button type="button" id="uxAmbientStartBtn" class="rounded-aap bg-aap-dark px-3 py-2 text-sm font-semibold text-white hover:opacity-90">Start Ambient</button>
-        <button type="button" id="uxAmbientShuffleBtn" class="rounded-aap border border-aap-border px-3 py-2 text-sm text-aap-text-muted hover:bg-aap-cream">Shuffle Ambient</button>
-        <button type="button" id="uxAmbientPauseAllBtn" class="rounded-aap border border-aap-border px-3 py-2 text-sm text-aap-text-muted hover:bg-aap-cream">Pause All</button>
+        <button type="button" id="uxAmbientStartBtn" class="rounded-full bg-aap-dark px-4 py-2 text-sm font-semibold text-white hover:opacity-90">Start Ambient</button>
+        <button type="button" id="uxAmbientShuffleBtn" class="rounded-full border border-aap-border bg-white px-4 py-2 text-sm font-medium text-aap-text-muted hover:bg-aap-cream">Shuffle Ambient</button>
+        <button type="button" id="uxAmbientPauseAllBtn" class="rounded-full border border-aap-border bg-white px-4 py-2 text-sm font-medium text-aap-text-muted hover:bg-aap-cream">Pause All</button>
       </div>
     </div>
-    ${chips ? `<div class="mt-3 flex flex-wrap gap-2">${chips}</div>` : '<p class="mt-3 text-xs text-aap-text-muted">Create playlists with "ambient" in the name to enable quick rotation controls.</p>'}
+    ${chips ? `<div class="mt-3 flex flex-wrap gap-2">${chips}</div>` : '<p class="mt-3 text-xs text-aap-cream/85">Create playlists with "ambient" in the name to enable quick rotation controls.</p>'}
   `;
 }
 

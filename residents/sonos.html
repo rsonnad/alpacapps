@@ -124,20 +124,22 @@
 
         <!-- RIGHT: Zone Groups -->
         <div class="sonos-main">
-          <section class="mb-4 overflow-hidden rounded-aap-lg border border-aap-border bg-gradient-to-r from-aap-dark via-[#2a1f22] to-aap-dark p-5 shadow-aap-lg" id="uxNowAmbient">
+          <section class="mb-4 overflow-hidden rounded-aap-lg border border-aap-border bg-gradient-to-br from-[#1e1619] via-[#241a1e] to-[#2e2025] p-5 shadow-aap-xl" id="uxNowAmbient">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p class="mb-1 inline-flex rounded-full border border-aap-amber/30 bg-aap-amber/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-aap-amber">Resident Audio Hub</p>
-                <h2 class="text-2xl font-extrabold tracking-wide text-aap-cream md:text-3xl">Sonic Soundscape Center</h2>
-                <p class="text-sm text-aap-cream/75">Quick control for what is playing now and ambient rotations.</p>
+                <p class="mb-1 inline-flex rounded-full border border-aap-amber/30 bg-aap-amber/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-aap-amber">Resident Audio Hub</p>
+                <h2 class="text-2xl font-extrabold tracking-[0.01em] text-aap-cream drop-shadow-sm md:text-3xl">Sonic Soundscape Center</h2>
+                <p class="text-sm text-aap-cream/80">Quick control for what is playing now and ambient rotations.</p>
               </div>
-              <div class="inline-flex rounded-aap border border-aap-border bg-white p-1">
+              <div class="inline-flex rounded-aap-lg border border-white/20 bg-white/10 p-1 backdrop-blur-sm">
                 <button type="button" id="uxNowTabBtn" class="rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20" data-ux-tab="now">Now</button>
                 <button type="button" id="uxAmbientTabBtn" class="rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted" data-ux-tab="ambient">Ambient</button>
               </div>
             </div>
-            <div id="uxNowPanel"></div>
-            <div id="uxAmbientPanel" class="hidden"></div>
+            <div class="rounded-aap-lg border border-white/15 bg-white/10 p-3 backdrop-blur-sm md:p-4">
+              <div id="uxNowPanel"></div>
+              <div id="uxAmbientPanel" class="hidden"></div>
+            </div>
           </section>
 
           <section class="section hidden" id="zonesSection">
