@@ -67,6 +67,16 @@ while true; do
     # Persistent success flag — launchd watches this file to stop restarting
     touch "$HOME/.oracle-provisioned"
     osascript -e "display notification \"IP: $public_ip\" with title \"Oracle ARM Instance Created!\" sound name \"Glass\"" 2>/dev/null || true
+    # Send email notification via Resend
+    if [ -n "${RESEND_API_KEY:-}" ]; then
+      curl -s -X POST "https://api.resend.com/emails" \
+        -H "Authorization: Bearer $RESEND_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "{\"from\":\"noreply@alpacaplayhouse.com\",\"to\":[\"rahulioson@gmail.com\"],\"subject\":\"Oracle ARM Instance Provisioned!\",\"html\":\"<h2>Oracle ARM Instance Created!</h2><p><strong>IP:</strong> ${public_ip}</p><p><strong>SSH:</strong> <code>ssh -i ~/.ssh/oracle_key ubuntu@${public_ip}</code></p>\",\"text\":\"Oracle ARM Instance Created!\\nIP: ${public_ip}\\nSSH: ssh -i ~/.ssh/oracle_key ubuntu@${public_ip}\"}" \
+        > /dev/null 2>&1 && log "  📧 Email sent to rahulioson@gmail.com" || log "  ⚠️  Email send failed"
+    else
+      log "  ⚠️  RESEND_API_KEY not set — skipping email"
+    fi
     rm -f /tmp/oracle-provision.pid
     exit 0
   else
