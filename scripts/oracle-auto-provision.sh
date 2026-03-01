@@ -64,6 +64,8 @@ while true; do
     log "=========================================="
     echo "IP=$public_ip" > /tmp/oracle-instance-details.txt
     echo "SSH=ssh -i ~/.ssh/oracle_key ubuntu@$public_ip" >> /tmp/oracle-instance-details.txt
+    # Persistent success flag — launchd watches this file to stop restarting
+    touch "$HOME/.oracle-provisioned"
     osascript -e "display notification \"IP: $public_ip\" with title \"Oracle ARM Instance Created!\" sound name \"Glass\"" 2>/dev/null || true
     rm -f /tmp/oracle-provision.pid
     exit 0
