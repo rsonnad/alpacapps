@@ -1,0 +1,17 @@
+{
+  "rooms": [
+    {
+      "space_id": "4122fc36-e00c-4550-8abb-5a0560e74a6e",
+      "name": "Master Pasture Suite",
+      "code": "4546"
+    },
+    {
+      "space_id": "c5bae4f1-b181-4404-93b7-8e7f6a32aeda",
+      "name": "Pequeno Largo Suite",
+      "code": "1138"
+    }
+  ],
+  "recipients": [
+    "fbatres37@gmail.com"
+  ]
+}
