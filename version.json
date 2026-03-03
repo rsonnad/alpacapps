@@ -1,12 +1,12 @@
 {
-  "version": "v260303.10 12:26p",
-  "release": 408,
-  "sha": "6bd97884f",
-  "fullSha": "6bd97884fa79990801e11a84492b4b9d97a5e9ee",
+  "version": "v260303.11 12:27p",
+  "release": 409,
+  "sha": "baeb94990",
+  "fullSha": "baeb949901385e1c4abd41505ba891b8dab5ea57",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 18:26:10+00",
-  "commits": [{"sha":"6bd97884f","message":"fix(infra doc): size service icons in headers, use character chevron for arrows","author":"Rahul"}]
+  "pushedAt": "2026-03-03 18:27:16+00",
+  "commits": [{"sha":"baeb94990","message":"fix(infra doc): force 24px service icons; override site.css max-width:100%","author":"Rahul"}]
 }
