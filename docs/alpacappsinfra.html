@@ -185,7 +185,8 @@
       line-height: 1.3;
     }
     .section h2 .cost-badge { margin-left: 0.75rem; vertical-align: middle; }
-    .section h2 .service-icon {
+    .section h2 .service-icon,
+    .infra-section__title .service-icon {
       width: 24px;
       height: 24px;
       vertical-align: middle;
@@ -193,6 +194,7 @@
       position: relative;
       top: -2px;
       border-radius: 4px;
+      flex-shrink: 0;
     }
     .section h3 {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
@@ -224,15 +226,18 @@
       list-style: none;
     }
     .infra-section__header::-webkit-details-marker { display: none; }
+    .infra-section__header::marker { content: ''; }
     .infra-section__chevron {
-      width: 0;
-      height: 0;
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      border-top: 5px solid currentColor;
-      flex-shrink: 0;
+      display: inline-block;
+      width: 0.6em;
+      text-align: center;
+      font-size: 0.75rem;
       color: var(--text-muted);
       transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .infra-section__chevron::before {
+      content: '\25BC';
     }
     .infra-section:not([open]) .infra-section__chevron {
       transform: rotate(-90deg);
