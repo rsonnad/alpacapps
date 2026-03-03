@@ -1,12 +1,12 @@
 {
-  "version": "v260303.07 3:07a",
-  "release": 405,
-  "sha": "7a44751e3",
-  "fullSha": "7a44751e33a4d807b88aa664f4105763b807e9c9",
+  "version": "v260303.08 11:22a",
+  "release": 406,
+  "sha": "501968bc0",
+  "fullSha": "501968bc03da092d47445bb33fd56c0e859eb4fd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 09:07:42+00",
-  "commits": [{"sha":"7a44751e3","message":"fix: show Alexa devices when router proxy is down","author":"Rahul"}]
+  "pushedAt": "2026-03-03 17:22:32+00",
+  "commits": [{"sha":"501968bc0","message":"docs(infra): expandable steps + GitHub branch note on alpacappsinfra","author":"Rahul"}]
 }
