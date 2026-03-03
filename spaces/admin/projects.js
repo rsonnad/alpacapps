@@ -431,11 +431,19 @@ async function handleAdminPhotoUpload(e) {
 
   for (const file of files) {
     try {
-      const media = await mediaService.uploadMedia(file, { category: 'task' });
-      await projectService.addTaskPhoto(taskId, media.id);
+      const result = await mediaService.uploadMedia(file, { category: 'task' });
+      if (result.isDuplicate && result.existingMedia) {
+        // Photo already exists in media library — link existing media to this task
+        await projectService.addTaskPhoto(taskId, result.existingMedia.id);
+      } else if (result.success === false) {
+        showToast(`Photo upload failed: ${result.error}`, 'error');
+        continue;
+      } else {
+        await projectService.addTaskPhoto(taskId, result.id);
+      }
     } catch (err) {
       console.error('Photo upload failed:', err);
-      showToast('Photo upload failed', 'error');
+      showToast('Photo upload failed: ' + (err.message || ''), 'error');
     }
   }
   e.target.value = '';
