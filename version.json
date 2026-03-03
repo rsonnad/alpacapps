@@ -1,12 +1,12 @@
 {
-  "version": "v260303.11 12:27p",
-  "release": 409,
-  "sha": "baeb94990",
-  "fullSha": "baeb949901385e1c4abd41505ba891b8dab5ea57",
+  "version": "v260303.12 12:46p",
+  "release": 410,
+  "sha": "406fc5520",
+  "fullSha": "406fc5520c2f195d18ddb3a21fdd111bec40b5a7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 18:27:16+00",
-  "commits": [{"sha":"baeb94990","message":"fix(infra doc): force 24px service icons; override site.css max-width:100%","author":"Rahul"}]
+  "pushedAt": "2026-03-03 18:46:52+00",
+  "commits": [{"sha":"61cd94f9c","message":"feat: add alpaca-themed screensaver setup script for Alpaca Mac","author":"Rahul"},{"sha":"a6197014f","message":"fix: update Alpaca Mac Tailscale IP from 100.102.122.65 to 100.94.221.98","author":"Rahul"},{"sha":"406fc5520","message":"Merge branch 'sad-dewdney'","author":"Rahul"}]
 }
