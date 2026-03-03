@@ -301,6 +301,100 @@
     .photo-gallery-add .add-label { font-size: 0.65rem; color: var(--text-muted, #6b7280); margin-top: 0.1rem; }
     .photo-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
 
+    /* Media Library Modal */
+    .media-library-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .media-library-modal {
+      background: var(--bg-card, #fff);
+      border-radius: 16px 16px 0 0;
+      max-height: 80vh;
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+    }
+    .media-library-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border, #e5e5e5);
+    }
+    .media-library-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 0.5rem;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 200px;
+    }
+    .media-library-item {
+      position: relative;
+      aspect-ratio: 1;
+      cursor: pointer;
+      border: 3px solid transparent;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .media-library-item.selected {
+      border-color: var(--accent, #d4883a);
+    }
+    .media-library-item.already-added {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .media-library-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media-library-item .check {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent, #d4883a);
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .media-library-item.selected .check {
+      display: flex;
+    }
+    .media-library-item .already-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+    .media-library-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border, #e5e5e5);
+    }
+
     /* Upload progress */
     .upload-progress {
       height: 4px;
@@ -369,18 +463,25 @@
     <div class="app-container">
       <!-- Upload Section -->
       <div id="uploadSection">
-        <div id="uploadButtons" class="photo-upload-actions">
-          <label class="photo-action-btn" for="cameraInput">
-            <input type="file" id="cameraInput" accept="image/*" capture="environment">
-            <span class="photo-action-icon">📷</span>
-            <span class="photo-action-label">Take Photo</span>
-          </label>
-          <label class="photo-action-btn" for="fileInput">
-            <input type="file" id="fileInput" accept="image/*" multiple>
-            <span class="photo-action-icon">🖼️</span>
-            <span class="photo-action-label">Upload Photos</span>
-            <span class="photo-action-hint">From gallery or files</span>
-          </label>
+        <div id="uploadButtons">
+          <div class="photo-upload-actions">
+            <label class="photo-action-btn" for="cameraInput">
+              <input type="file" id="cameraInput" accept="image/*" capture="environment">
+              <span class="photo-action-icon">📷</span>
+              <span class="photo-action-label">Take Photo</span>
+            </label>
+            <label class="photo-action-btn" for="fileInput">
+              <input type="file" id="fileInput" accept="image/*" multiple>
+              <span class="photo-action-icon">🖼️</span>
+              <span class="photo-action-label">Upload Photos</span>
+              <span class="photo-action-hint">From gallery or files</span>
+            </label>
+          </div>
+          <button class="photo-action-btn" id="btnBrowseLibrary" style="width:100%;margin-top:0.5rem" type="button">
+            <span class="photo-action-icon">📚</span>
+            <span class="photo-action-label">Choose from Library</span>
+            <span class="photo-action-hint">Photos already uploaded</span>
+          </button>
         </div>
 
         <div id="photoGallery" class="photo-gallery" style="display:none"></div>
@@ -455,6 +556,26 @@
         <div id="historyList" style="display:flex;flex-direction:column;gap:0.5rem">
           <p id="historyEmpty" style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:1rem">No inquiries yet. Upload a photo to get started.</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Library Modal -->
+  <div id="mediaLibraryOverlay" class="media-library-overlay" style="display:none">
+    <div class="media-library-modal">
+      <div class="media-library-header">
+        <h3 style="margin:0;font-size:1rem;font-weight:700">Choose Photos</h3>
+        <button class="btn-icon" id="btnCloseLibrary" type="button">&times;</button>
+      </div>
+      <div style="padding:0.5rem 1rem">
+        <input type="text" id="librarySearch" placeholder="Search by caption..." style="width:100%;box-sizing:border-box;padding:0.4rem 0.6rem;border:1px solid var(--border,#d1d5db);border-radius:8px;font-size:0.85rem;font-family:inherit">
+      </div>
+      <div id="mediaLibraryGrid" class="media-library-grid"></div>
+      <div class="media-library-footer">
+        <span id="librarySelectionCount" style="font-size:0.85rem;color:var(--text-muted)">Tap photos to select</span>
+        <button class="btn-action" id="libraryAddBtn" disabled type="button" style="width:auto;padding:0.5rem 1.5rem;font-size:0.9rem">
+          Add Selected
+        </button>
       </div>
     </div>
   </div>
