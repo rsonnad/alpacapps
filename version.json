@@ -1,12 +1,12 @@
 {
-  "version": "v260303.14 2:14p",
-  "release": 412,
-  "sha": "b70a65503",
-  "fullSha": "b70a65503a6d7d6c24f92e931dcc02812bd756f6",
+  "version": "v260303.15 2:35p",
+  "release": 413,
+  "sha": "53b0088db",
+  "fullSha": "53b0088dbd498018bbc3f2f626adfc363036cdc1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 20:14:52+00",
-  "commits": [{"sha":"0d6ed6a07","message":"feat: Please let it allow me to add photos, even if they’re added to different\\n\\nAutomated feature from PAI request #4c51f775-d8af-4eca-bbfc-09e573da8b99.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"b70a65503","message":"Merge feature/20260303-4c51f775 into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-03-03 20:35:51+00",
+  "commits": [{"sha":"654655d4e","message":"feat: I can’t upload multiple photos for a project inquiry and it’s not allowi\\n\\nAutomated feature from PAI request #b3ff6d55-f4f6-4bc3-b2d9-3e444f735059.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"53b0088db","message":"Merge feature/20260303-b3ff6d55 into main","author":"Feature Builder Bot"}]
 }
