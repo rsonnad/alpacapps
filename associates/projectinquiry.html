@@ -26,7 +26,7 @@
     }
     .photo-action-btn:hover { border-color: var(--accent); background: #f8fafc; }
     .photo-action-btn:active { background: #f1f5f9; transform: scale(0.98); }
-    .photo-action-btn input[type="file"] { display: none; }
+    .photo-action-btn input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     .photo-action-icon { font-size: 1.5rem; margin-bottom: 0.2rem; }
     .photo-action-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
     .photo-action-hint { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
@@ -296,7 +296,7 @@
       font-family: inherit;
     }
     .photo-gallery-add:hover { border-color: var(--accent); }
-    .photo-gallery-add input[type="file"] { display: none; }
+    .photo-gallery-add input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     .photo-gallery-add .add-icon { font-size: 1.2rem; color: var(--text-muted, #6b7280); }
     .photo-gallery-add .add-label { font-size: 0.65rem; color: var(--text-muted, #6b7280); margin-top: 0.1rem; }
     .photo-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
@@ -465,12 +465,12 @@
       <div id="uploadSection">
         <div id="uploadButtons">
           <div class="photo-upload-actions">
-            <label class="photo-action-btn" for="cameraInput">
+            <label class="photo-action-btn">
               <input type="file" id="cameraInput" accept="image/*" capture="environment">
               <span class="photo-action-icon">📷</span>
               <span class="photo-action-label">Take Photo</span>
             </label>
-            <label class="photo-action-btn" for="fileInput">
+            <label class="photo-action-btn">
               <input type="file" id="fileInput" accept="image/*" multiple>
               <span class="photo-action-icon">🖼️</span>
               <span class="photo-action-label">Upload Photos</span>
