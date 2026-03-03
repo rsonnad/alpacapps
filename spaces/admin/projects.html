@@ -128,6 +128,14 @@
     .modal-box {
       background: var(--bg-card); border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 500px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 768px) {
+      .modal-overlay { align-items: flex-start; padding: 1rem 0; overflow-y: auto; }
+      .modal-box {
+        max-height: none; margin: 0 auto;
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      }
     }
     .modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; }
     .modal-box label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-muted); }
