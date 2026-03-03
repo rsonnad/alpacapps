@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps → E-2 Business | E-2 Visa Investment Guide</title>
+  <meta property="og:title" content="AlpacApps → E-2 Business">
+  <meta property="og:description" content="Can open-source property management infrastructure become a treaty investor qualifying business? A deep analysis of the AlpacApps stack as an E-2 visa investment vehicle.">
+  <meta property="og:type" content="article">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --surface2: #f5f1ec;
+      --surface3: #ebe6df;
+      --border: #e0d8cf;
+      --border-light: #ede8e2;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --red: #dc143c;
+      --red-soft: rgba(220, 20, 60, 0.06);
+      --red-border: rgba(220, 20, 60, 0.2);
+      --red-dark: #a0102d;
+      --blue: #003d8f;
+      --blue-soft: rgba(0, 61, 143, 0.06);
+      --blue-border: rgba(0, 61, 143, 0.18);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --green-border: rgba(22, 163, 74, 0.22);
+      --amber: #d97706;
+      --amber-soft: rgba(217, 119, 6, 0.07);
+      --amber-border: rgba(217, 119, 6, 0.22);
+      --purple: #7c3aed;
+      --purple-soft: rgba(124, 58, 237, 0.06);
+      --purple-border: rgba(124, 58, 237, 0.18);
+      --teal: #0d9488;
+      --teal-soft: rgba(13, 148, 136, 0.06);
+      --teal-border: rgba(13, 148, 136, 0.18);
+      --sky: #0284c7;
+      --sky-soft: rgba(2, 132, 199, 0.06);
+      --sky-border: rgba(2, 132, 199, 0.18);
+      --rose: #e11d48;
+      --rose-soft: rgba(225, 29, 72, 0.06);
+      --gold: #ca8a04;
+      --gold-soft: rgba(202, 138, 4, 0.06);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-md: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 5rem 1.5rem 3.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f0f5ff 0%, #eef2ff 20%, #faf8f5 60%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,61,143,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 1.2rem;
+      padding: 0.4rem 1rem;
+      background: var(--blue-soft);
+      border: 1px solid var(--blue-border);
+      border-radius: 100px;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .hero-flag:hover { background: rgba(0,61,143,0.1); }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    .hero h1 span { color: var(--red); }
+    .hero h1 .arrow { color: var(--text-muted); font-weight: 400; }
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      max-width: 640px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 130px;
+    }
+    .hero-stat .num {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--red);
+      line-height: 1.2;
+    }
+    .hero-stat .num.blue { color: var(--blue); }
+    .hero-stat .num.green { color: var(--green); }
+    .hero-stat .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Sections ── */
+    section {
+      padding: 3rem 0;
+    }
+    section + section {
+      border-top: 1px solid var(--border-light);
+    }
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border-radius: 100px;
+      margin-bottom: 0.75rem;
+    }
+    .badge-red { color: var(--red); background: var(--red-soft); border: 1px solid var(--red-border); }
+    .badge-blue { color: var(--blue); background: var(--blue-soft); border: 1px solid var(--blue-border); }
+    .badge-green { color: var(--green); background: var(--green-soft); border: 1px solid var(--green-border); }
+    .badge-amber { color: var(--amber); background: var(--amber-soft); border: 1px solid var(--amber-border); }
+    .badge-purple { color: var(--purple); background: var(--purple-soft); border: 1px solid var(--purple-border); }
+    .badge-teal { color: var(--teal); background: var(--teal-soft); border: 1px solid var(--teal-border); }
+    .badge-sky { color: var(--sky); background: var(--sky-soft); border: 1px solid var(--sky-border); }
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      line-height: 1.25;
+    }
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.4rem;
+    }
+    .section-intro {
+      color: var(--text-dim);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      max-width: 700px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .card-grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card-grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    /* ── Stack Diagram ── */
+    .stack-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 1.5rem 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .stack-layer {
+      padding: 1rem 1.5rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      position: relative;
+    }
+    .stack-layer:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .stack-layer:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+    .stack-layer .stack-sub {
+      font-size: 0.7rem;
+      font-weight: 500;
+      opacity: 0.8;
+      margin-top: 0.1rem;
+    }
+    .stack-arrow {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--text-muted);
+      padding: 0.15rem 0;
+    }
+    .stack-l1 { background: var(--sky-soft); border: 1px solid var(--sky-border); color: var(--sky); }
+    .stack-l2 { background: var(--green-soft); border: 1px solid var(--green-border); color: var(--green); border-top: none; }
+    .stack-l3 { background: var(--purple-soft); border: 1px solid var(--purple-border); color: var(--purple); border-top: none; }
+    .stack-l4 { background: var(--amber-soft); border: 1px solid var(--amber-border); color: var(--amber); border-top: none; }
+
+    /* ── Capability pills ── */
+    .cap-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .cap-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-soft);
+      box-shadow: var(--shadow);
+    }
+    .cap-pill .cap-icon { font-size: 0.9rem; }
+
+    /* ── Business Model Cards ── */
+    .biz-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .biz-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .biz-card.recommended {
+      border: 2px solid var(--green);
+      position: relative;
+    }
+    .biz-card.recommended::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.75rem;
+      border-radius: 0 0 0 var(--radius);
+    }
+    .biz-header {
+      padding: 1.5rem 1.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .biz-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      flex-shrink: 0;
+    }
+    .biz-header-text h3 { margin-bottom: 0.1rem; font-size: 1.1rem; }
+    .biz-header-text .biz-sub { font-size: 0.82rem; color: var(--text-dim); }
+    .biz-body { padding: 0 1.5rem 1.25rem; }
+    .biz-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1rem; }
+
+    /* ── Rating meters ── */
+    .meter-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .meter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .meter-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .meter-val {
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: 30px;
+      text-align: right;
+    }
+
+    /* ── Data rows ── */
+    .data-rows {
+      border-top: 1px solid var(--border-light);
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+    }
+    .data-row + .data-row { border-top: 1px dashed var(--border-light); }
+    .data-key { color: var(--text-dim); }
+    .data-val { font-weight: 700; }
+
+    /* ── Proportionality visual ── */
+    .prop-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 1.5rem 0;
+    }
+    .prop-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 70px;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .prop-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: right;
+      color: var(--text-soft);
+    }
+    .prop-bar-bg {
+      height: 28px;
+      background: var(--surface2);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .prop-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 0.8s ease;
+    }
+    .prop-pct {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    /* ── Cost breakdown tables ── */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .cost-table th {
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .cost-table td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .cost-table tr:last-child td { border-bottom: none; }
+    .cost-table .total-row td {
+      font-weight: 800;
+      border-top: 2px solid var(--border);
+      background: var(--surface2);
+      font-size: 0.92rem;
+    }
+    .cost-table .cat-label {
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+    .cost-table .amount {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    .cost-table .note {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Timeline ── */
+    .timeline {
+      position: relative;
+      padding-left: 2.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--red), var(--blue), var(--green));
+      border-radius: 2px;
+    }
+    .tl-item {
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-dot {
+      position: absolute;
+      left: -2.5rem;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--red);
+    }
+    .tl-item:last-child .tl-dot { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+    .tl-time {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--red);
+      margin-bottom: 0.2rem;
+    }
+    .tl-item:last-child .tl-time { color: var(--green); }
+    .tl-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.15rem; }
+    .tl-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.55; }
+
+    /* ── Revenue timeline (horizontal) ── */
+    .rev-timeline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .rev-year {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+    .rev-year.highlight {
+      border-color: var(--green-border);
+      background: var(--green-soft);
+    }
+    .rev-yr-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .rev-yr-total {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .rev-yr-mo {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+    .rev-yr-breakdown {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .rev-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .rev-item-label { color: var(--text-dim); }
+    .rev-item-val { font-weight: 700; color: var(--text-soft); }
+
+    /* ── Comparison matrix ── */
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 1.5rem 0;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .matrix th {
+      background: var(--surface2);
+      text-align: center;
+      padding: 0.75rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    .matrix th:first-child { text-align: left; }
+    .matrix td {
+      padding: 0.65rem 0.6rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .matrix td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+    .matrix tr:last-child td { border-bottom: none; }
+    .matrix .score-best {
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 800;
+      border-radius: 6px;
+    }
+    .matrix .score-good {
+      color: var(--green);
+      font-weight: 700;
+    }
+    .matrix .score-mid {
+      color: var(--amber);
+      font-weight: 600;
+    }
+    .matrix .score-low {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* ── Pros / Cons ── */
+    .proscons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .proscons-col {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .proscons-col h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+    .proscons-col.pros h4 { color: var(--green); }
+    .proscons-col.cons h4 { color: var(--red); }
+    .proscons-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .proscons-col li {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.5;
+    }
+    .proscons-col.pros li::before { content: '+'; color: var(--green); font-weight: 800; position: absolute; left: 0; }
+    .proscons-col.cons li::before { content: '\2212'; color: var(--red); font-weight: 800; position: absolute; left: 0; }
+
+    /* ── Verdict ribbon ── */
+    .verdict {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0f9ff 100%);
+      border: 2px solid var(--green-border);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      text-align: center;
+      margin: 2rem 0;
+    }
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      padding: 0.4rem 1rem;
+      background: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+    .verdict h2 { color: var(--green); margin-bottom: 0.5rem; font-size: 1.6rem; }
+    .verdict p { color: var(--text-dim); max-width: 600px; margin: 0 auto; font-size: 0.95rem; line-height: 1.7; }
+
+    /* ── Info boxes ── */
+    .infobox {
+      padding: 1.25rem 1.5rem;
+      border-radius: var(--radius);
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .infobox-red { background: var(--red-soft); border-left: 4px solid var(--red); }
+    .infobox-green { background: var(--green-soft); border-left: 4px solid var(--green); }
+    .infobox-amber { background: var(--amber-soft); border-left: 4px solid var(--amber); }
+    .infobox-blue { background: var(--blue-soft); border-left: 4px solid var(--blue); }
+    .infobox-purple { background: var(--purple-soft); border-left: 4px solid var(--purple); }
+    .infobox strong { display: block; margin-bottom: 0.2rem; }
+
+    /* ── Donut charts ── */
+    .donut-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin: 1.5rem 0;
+    }
+    .donut-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .donut-svg { width: 100px; height: 100px; transform: rotate(-90deg); }
+    .donut-bg { fill: none; stroke: var(--surface3); stroke-width: 8; }
+    .donut-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+    .donut-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dim); text-align: center; }
+    .donut-pct { font-size: 1.1rem; font-weight: 800; }
+
+    /* ── Sticky nav ── */
+    .sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250, 248, 245, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .sticky-nav::-webkit-scrollbar { display: none; }
+    .nav-link {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: var(--red-soft); color: var(--red); }
+
+    /* ── Launch plan steps ── */
+    .launch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .launch-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .launch-week {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 100px;
+      margin-bottom: 0.75rem;
+    }
+    .launch-card h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .launch-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .launch-card li {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      padding-left: 1rem;
+      position: relative;
+      line-height: 1.5;
+    }
+    .launch-card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5em;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    /* ── Success factors ── */
+    .factors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .factor-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .factor-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .factor-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .factor-card p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+
+    /* ── Austin advantages ── */
+    .adv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .adv-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .adv-card .adv-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .adv-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .adv-card p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border-light);
+    }
+    footer a { color: var(--red); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero { padding: 3rem 1rem 2rem; }
+      .hero h1 { font-size: 1.8rem; }
+      .hero-stats { gap: 0.75rem; }
+      .hero-stat { min-width: 100px; padding: 0.5rem 0.75rem; }
+      .hero-stat .num { font-size: 1.2rem; }
+      section { padding: 2rem 0; }
+      .container { padding: 0 1rem; }
+      .prop-row { grid-template-columns: 100px 1fr 55px; }
+      .proscons { grid-template-columns: 1fr; }
+      .biz-card { margin-bottom: 0.5rem; }
+      h2 { font-size: 1.4rem; }
+      .matrix { font-size: 0.72rem; }
+      .matrix th, .matrix td { padding: 0.5rem 0.3rem; }
+      .rev-timeline { grid-template-columns: 1fr; }
+      .launch-grid { grid-template-columns: 1fr; }
+      .donut-row { gap: 1rem; }
+      .stack-diagram { max-width: 100%; }
+      .meter-label { width: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ Sticky Nav ═══ -->
+<nav class="sticky-nav" id="stickyNav">
+  <a href="#infra" class="nav-link">Infrastructure</a>
+  <a href="#models" class="nav-link">Models</a>
+  <a href="#qualification" class="nav-link">E-2 Fit</a>
+  <a href="#revenue" class="nav-link">Revenue</a>
+  <a href="#why-you" class="nav-link">Why You</a>
+  <a href="#austin" class="nav-link">Austin</a>
+  <a href="#competitors" class="nav-link">Competitors</a>
+  <a href="#launch" class="nav-link">Launch</a>
+  <a href="#verdict" class="nav-link">Verdict</a>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<header class="hero">
+  <a href="index.html" class="hero-flag">
+    <span>&#8592;</span> Back to E-2 Visa Playbook
+  </a>
+  <h1>AlpacApps <span class="arrow">&#8594;</span> <span>E-2 Business</span></h1>
+  <p class="subtitle">Can open-source property management infrastructure become a treaty investor qualifying business? A deep analysis.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="num blue">$0/mo</span>
+      <span class="label">Infra Cost</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num">$100K</span>
+      <span class="label">Investment</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num green">5+</span>
+      <span class="label">Jobs Target</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ═══ Section 1: The Infrastructure ═══ -->
+  <section id="infra">
+    <div class="section-badge badge-sky">&#9881;&#65039; The Infrastructure</div>
+    <h2>A Complete Business Stack at $0/Month</h2>
+    <p class="section-intro">AlpacApps is not a product -- it is a fully operational, open-source business management stack. Everything a property management company (or any service business) needs to run, built and battle-tested in production.</p>
+
+    <div class="stack-diagram">
+      <div class="stack-layer stack-l1">
+        &#127760; GitHub Pages <span class="stack-sub">Static hosting, globally distributed CDN, free forever</span>
+      </div>
+      <div class="stack-layer stack-l2">
+        &#9889; Supabase <span class="stack-sub">PostgreSQL + Auth + Storage + Edge Functions + Realtime</span>
+      </div>
+      <div class="stack-layer stack-l3">
+        &#129302; Claude Code <span class="stack-sub">AI developer -- writes all code, deploys, debugs autonomously</span>
+      </div>
+      <div class="stack-layer stack-l4">
+        &#128241; Capacitor <span class="stack-sub">iOS + Android native apps from the same web codebase</span>
+      </div>
+    </div>
+
+    <h3>Built-In Capabilities</h3>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:0.75rem;">Every one of these works today, in production, managing a real property:</p>
+    <div class="cap-grid">
+      <span class="cap-pill"><span class="cap-icon">&#128274;</span> Login & Auth</span>
+      <span class="cap-pill"><span class="cap-icon">&#128231;</span> Email (Resend)</span>
+      <span class="cap-pill"><span class="cap-icon">&#128172;</span> SMS (Telnyx)</span>
+      <span class="cap-pill"><span class="cap-icon">&#128179;</span> Payments (Stripe)</span>
+      <span class="cap-pill"><span class="cap-icon">&#128179;</span> Payments (Square)</span>
+      <span class="cap-pill"><span class="cap-icon">&#9997;&#65039;</span> E-Signatures (SignWell)</span>
+      <span class="cap-pill"><span class="cap-icon">&#129302;</span> AI Chat (Gemini)</span>
+      <span class="cap-pill"><span class="cap-icon">&#128222;</span> AI Voice (Vapi)</span>
+      <span class="cap-pill"><span class="cap-icon">&#128247;</span> Media Library</span>
+      <span class="cap-pill"><span class="cap-icon">&#128452;</span> Object Storage (R2)</span>
+      <span class="cap-pill"><span class="cap-icon">&#127968;</span> Smart Home Control</span>
+      <span class="cap-pill"><span class="cap-icon">&#128241;</span> Mobile Apps</span>
+      <span class="cap-pill"><span class="cap-icon">&#128200;</span> Accounting/Ledger</span>
+      <span class="cap-pill"><span class="cap-icon">&#128101;</span> User Management</span>
+      <span class="cap-pill"><span class="cap-icon">&#128196;</span> PDF Generation</span>
+      <span class="cap-pill"><span class="cap-icon">&#128225;</span> Discord/Telegram Bot</span>
+    </div>
+
+    <div class="infobox infobox-green" style="margin-top:1.5rem;">
+      <strong>&#128161; The Zero-Cost Starting Point</strong>
+      Free tier covers: hosting + database + auth + storage + email (100/day) + AI (1000 req/day) + object storage (10 GB). You only pay for what you actually use: SMS (~$0.004/msg), payments (2.6-2.9% + $0.30), and optionally a background worker VM ($12-32/mo). The entire AlpacApps stack runs at effectively $0/month until you start processing real volume.
+    </div>
+  </section>
+
+  <!-- ═══ Section 2: Business Model Options ═══ -->
+  <section id="models">
+    <div class="section-badge badge-purple">&#128640; Business Models</div>
+    <h2>Four Paths to E-2 Revenue</h2>
+    <p class="section-intro">The AlpacApps infrastructure enables multiple business models. Each has different strengths for E-2 qualification. Here is how they compare.</p>
+
+    <div class="card-grid" style="gap:1.25rem;">
+
+      <!-- Model A -->
+      <div class="biz-card">
+        <div class="biz-header">
+          <div class="biz-icon" style="background:var(--sky-soft);">&#9729;&#65039;</div>
+          <div class="biz-header-text">
+            <h3>Model A: Managed Property Tech</h3>
+            <div class="biz-sub">SaaS-like managed service for property managers</div>
+          </div>
+        </div>
+        <div class="biz-body">
+          <p class="biz-desc">Offer the full AlpacApps stack as a managed service for small/mid property managers (10-100 units). You handle setup, customization, hosting, and support. Clients get a white-labeled platform without hiring developers.</p>
+          <div class="meter-row"><span class="meter-label">E-2 Fit</span><div class="meter-track"><div class="meter-fill" style="width:80%; background:var(--sky);"></div></div><span class="meter-val" style="color:var(--sky);">8/10</span></div>
+          <div class="meter-row"><span class="meter-label">Revenue Potential</span><div class="meter-track"><div class="meter-fill" style="width:70%; background:var(--green);"></div></div><span class="meter-val" style="color:var(--green);">7/10</span></div>
+          <div class="meter-row"><span class="meter-label">Scalability</span><div class="meter-track"><div class="meter-fill" style="width:80%; background:var(--purple);"></div></div><span class="meter-val" style="color:var(--purple);">8/10</span></div>
+          <div class="meter-row"><span class="meter-label">Time to Revenue</span><div class="meter-track"><div class="meter-fill" style="width:70%; background:var(--amber);"></div></div><span class="meter-val" style="color:var(--amber);">7/10</span></div>
+          <div class="data-rows">
+            <div class="data-row"><span class="data-key">Subscription</span><span class="data-val">$200-500/client/mo</span></div>
+            <div class="data-row"><span class="data-key">Target Market</span><span class="data-val">Small PM firms (10-100 units)</span></div>
+            <div class="data-row"><span class="data-key">Revenue Model</span><span class="data-val">Recurring MRR</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model B -->
+      <div class="biz-card">
+        <div class="biz-header">
+          <div class="biz-icon" style="background:var(--amber-soft);">&#127968;</div>
+          <div class="biz-header-text">
+            <h3>Model B: AI Property Management</h3>
+            <div class="biz-sub">Manage properties with AlpacApps as your tool</div>
+          </div>
+        </div>
+        <div class="biz-body">
+          <p class="biz-desc">Actually manage rental properties using AlpacApps as your internal platform. Differentiate with AI-powered automation: automated tenant communications, smart home controls for tenants, AI assistant for property Q&A, intelligent maintenance scheduling.</p>
+          <div class="meter-row"><span class="meter-label">E-2 Fit</span><div class="meter-track"><div class="meter-fill" style="width:90%; background:var(--sky);"></div></div><span class="meter-val" style="color:var(--sky);">9/10</span></div>
+          <div class="meter-row"><span class="meter-label">Revenue Potential</span><div class="meter-track"><div class="meter-fill" style="width:80%; background:var(--green);"></div></div><span class="meter-val" style="color:var(--green);">8/10</span></div>
+          <div class="meter-row"><span class="meter-label">Scalability</span><div class="meter-track"><div class="meter-fill" style="width:60%; background:var(--purple);"></div></div><span class="meter-val" style="color:var(--purple);">6/10</span></div>
+          <div class="meter-row"><span class="meter-label">Time to Revenue</span><div class="meter-track"><div class="meter-fill" style="width:60%; background:var(--amber);"></div></div><span class="meter-val" style="color:var(--amber);">6/10</span></div>
+          <div class="data-rows">
+            <div class="data-row"><span class="data-key">Fee Structure</span><span class="data-val">8-12% of rent collected</span></div>
+            <div class="data-row"><span class="data-key">Physical Presence</span><span class="data-val">Strong (on-site work)</span></div>
+            <div class="data-row"><span class="data-key">Job Creation</span><span class="data-val">Clear path (coordinators)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model C -->
+      <div class="biz-card">
+        <div class="biz-header">
+          <div class="biz-icon" style="background:var(--purple-soft);">&#128187;</div>
+          <div class="biz-header-text">
+            <h3>Model C: Dev Agency</h3>
+            <div class="biz-sub">Build custom apps on AlpacApps infra for clients</div>
+          </div>
+        </div>
+        <div class="biz-body">
+          <p class="biz-desc">Consulting firm that builds custom web/mobile apps on the AlpacApps infrastructure for small businesses in Austin. Target businesses that need apps but cannot afford traditional development shops charging $100K+ per project.</p>
+          <div class="meter-row"><span class="meter-label">E-2 Fit</span><div class="meter-track"><div class="meter-fill" style="width:70%; background:var(--sky);"></div></div><span class="meter-val" style="color:var(--sky);">7/10</span></div>
+          <div class="meter-row"><span class="meter-label">Revenue Potential</span><div class="meter-track"><div class="meter-fill" style="width:80%; background:var(--green);"></div></div><span class="meter-val" style="color:var(--green);">8/10</span></div>
+          <div class="meter-row"><span class="meter-label">Scalability</span><div class="meter-track"><div class="meter-fill" style="width:50%; background:var(--purple);"></div></div><span class="meter-val" style="color:var(--purple);">5/10</span></div>
+          <div class="meter-row"><span class="meter-label">Time to Revenue</span><div class="meter-track"><div class="meter-fill" style="width:80%; background:var(--amber);"></div></div><span class="meter-val" style="color:var(--amber);">8/10</span></div>
+          <div class="data-rows">
+            <div class="data-row"><span class="data-key">Project Fees</span><span class="data-val">$5K-50K per project</span></div>
+            <div class="data-row"><span class="data-key">Retainers</span><span class="data-val">$500-2K/mo maintenance</span></div>
+            <div class="data-row"><span class="data-key">Risk</span><span class="data-val">Service biz harder for E-2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model D (Recommended) -->
+      <div class="biz-card recommended">
+        <div class="biz-header">
+          <div class="biz-icon" style="background:var(--green-soft);">&#11088;</div>
+          <div class="biz-header-text">
+            <h3>Model D: Hybrid -- Manage + License</h3>
+            <div class="biz-sub">Best of both worlds: operations + platform</div>
+          </div>
+        </div>
+        <div class="biz-body">
+          <p class="biz-desc">Manage 5-10 properties yourself (proves the product works, generates base revenue, satisfies E-2 physical presence requirements). Simultaneously license the platform to other property managers (SaaS revenue that scales). The management arm validates the tech; the tech arm scales the business.</p>
+          <div class="meter-row"><span class="meter-label">E-2 Fit</span><div class="meter-track"><div class="meter-fill" style="width:90%; background:var(--sky);"></div></div><span class="meter-val" style="color:var(--sky);">9/10</span></div>
+          <div class="meter-row"><span class="meter-label">Revenue Potential</span><div class="meter-track"><div class="meter-fill" style="width:90%; background:var(--green);"></div></div><span class="meter-val" style="color:var(--green);">9/10</span></div>
+          <div class="meter-row"><span class="meter-label">Scalability</span><div class="meter-track"><div class="meter-fill" style="width:90%; background:var(--purple);"></div></div><span class="meter-val" style="color:var(--purple);">9/10</span></div>
+          <div class="meter-row"><span class="meter-label">Time to Revenue</span><div class="meter-track"><div class="meter-fill" style="width:70%; background:var(--amber);"></div></div><span class="meter-val" style="color:var(--amber);">7/10</span></div>
+          <div class="data-rows">
+            <div class="data-row"><span class="data-key">Mgmt Revenue</span><span class="data-val">8-12% of rent (base layer)</span></div>
+            <div class="data-row"><span class="data-key">SaaS Revenue</span><span class="data-val">$200-500/client/mo (scale layer)</span></div>
+            <div class="data-row"><span class="data-key">Job Creation</span><span class="data-val">Coordinators + tech support</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ Section 3: E-2 Qualification Analysis ═══ -->
+  <section id="qualification">
+    <div class="section-badge badge-red">&#127891; E-2 Qualification</div>
+    <h2>Proportionality &amp; Investment Analysis</h2>
+    <p class="section-intro">The hybrid model (Model D) is analyzed below. The $100K investment is structured to satisfy the E-2 "substantial investment" and "non-marginal enterprise" tests.</p>
+
+    <h3>Investment Allocation ($100K)</h3>
+    <div class="prop-scale">
+      <div class="prop-row">
+        <span class="prop-label">Office & Equipment</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:30%; background: var(--blue);">$30K</div></div>
+        <span class="prop-pct">30%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-label">Tech Development</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:20%; background: var(--purple);">$20K</div></div>
+        <span class="prop-pct">20%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-label">Marketing</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:15%; background: var(--amber);">$15K</div></div>
+        <span class="prop-pct">15%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-label">First 2 Hires</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:15%; background: var(--green);">$15K</div></div>
+        <span class="prop-pct">15%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-label">Legal & Immigration</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:10%; background: var(--red);">$10K</div></div>
+        <span class="prop-pct">10%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-label">Operating Reserve</span>
+        <div class="prop-bar-bg"><div class="prop-bar-fill" style="width:10%; background: var(--teal);">$10K</div></div>
+        <span class="prop-pct">10%</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h3>Investment Breakdown Detail</h3>
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cat-label">Office & Equipment</td>
+            <td class="amount">$30,000</td>
+            <td class="note">Co-working Year 1 ($600/mo), own office Year 2, laptops, monitors, furniture</td>
+          </tr>
+          <tr>
+            <td class="cat-label">Tech Development</td>
+            <td class="amount">$20,000</td>
+            <td class="note">Custom features, mobile app polish, marketing site, SaaS onboarding</td>
+          </tr>
+          <tr>
+            <td class="cat-label">Marketing & Sales</td>
+            <td class="amount">$15,000</td>
+            <td class="note">Google Ads, PM networking events, trade shows, landing pages, content</td>
+          </tr>
+          <tr>
+            <td class="cat-label">First 2 Hires</td>
+            <td class="amount">$15,000</td>
+            <td class="note">Part-time property coordinator + part-time tech support (3-month runway)</td>
+          </tr>
+          <tr>
+            <td class="cat-label">Legal & Immigration</td>
+            <td class="amount">$10,000</td>
+            <td class="note">E-2 attorney ($5-8K), LLC formation, business insurance, licenses</td>
+          </tr>
+          <tr>
+            <td class="cat-label">Operating Reserve</td>
+            <td class="amount">$10,000</td>
+            <td class="note">6-month buffer for unexpected expenses, cash flow gaps</td>
+          </tr>
+          <tr class="total-row">
+            <td>Total Investment</td>
+            <td class="amount">$100,000</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:2rem;">E-2 Test Scorecard</h3>
+    <div class="donut-row">
+      <div class="donut-item">
+        <svg class="donut-svg" viewBox="0 0 42 42">
+          <circle class="donut-bg" cx="21" cy="21" r="16"/>
+          <circle class="donut-fill" cx="21" cy="21" r="16" stroke="var(--green)" stroke-dasharray="90 100.53" stroke-dashoffset="0"/>
+        </svg>
+        <div class="donut-pct" style="color:var(--green);">90%</div>
+        <div class="donut-label">Substantial<br>Investment</div>
+      </div>
+      <div class="donut-item">
+        <svg class="donut-svg" viewBox="0 0 42 42">
+          <circle class="donut-bg" cx="21" cy="21" r="16"/>
+          <circle class="donut-fill" cx="21" cy="21" r="16" stroke="var(--blue)" stroke-dasharray="85 100.53" stroke-dashoffset="0"/>
+        </svg>
+        <div class="donut-pct" style="color:var(--blue);">85%</div>
+        <div class="donut-label">Non-Marginal<br>Enterprise</div>
+      </div>
+      <div class="donut-item">
+        <svg class="donut-svg" viewBox="0 0 42 42">
+          <circle class="donut-bg" cx="21" cy="21" r="16"/>
+          <circle class="donut-fill" cx="21" cy="21" r="16" stroke="var(--red)" stroke-dasharray="88 100.53" stroke-dashoffset="0"/>
+        </svg>
+        <div class="donut-pct" style="color:var(--red);">88%</div>
+        <div class="donut-label">Directing &<br>Developing</div>
+      </div>
+      <div class="donut-item">
+        <svg class="donut-svg" viewBox="0 0 42 42">
+          <circle class="donut-bg" cx="21" cy="21" r="16"/>
+          <circle class="donut-fill" cx="21" cy="21" r="16" stroke="var(--purple)" stroke-dasharray="80 100.53" stroke-dashoffset="0"/>
+        </svg>
+        <div class="donut-pct" style="color:var(--purple);">80%</div>
+        <div class="donut-label">Job Creation<br>Potential</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.5rem;">Job Creation Timeline</h3>
+    <div class="timeline" style="margin-top:1rem;">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">Month 1-3</div>
+        <div class="tl-title">Founder + 2 Part-Time</div>
+        <div class="tl-desc">Part-time property coordinator handles scheduling, tenant check-ins. Part-time tech support answers client questions, onboards SaaS users.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--blue); box-shadow:0 0 0 2px var(--blue);"></div>
+        <div class="tl-time" style="color:var(--blue);">Month 6-12</div>
+        <div class="tl-title">3 Full-Time Employees</div>
+        <div class="tl-desc">Convert coordinator to full-time. Hire a sales/account manager. Hire maintenance coordinator as property portfolio grows.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--purple); box-shadow:0 0 0 2px var(--purple);"></div>
+        <div class="tl-time" style="color:var(--purple);">Year 2</div>
+        <div class="tl-title">5 Full-Time Employees</div>
+        <div class="tl-desc">Add second property coordinator. Add client success manager for SaaS arm. Team of 5 FTEs solidifies E-2 job creation.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">Year 3+</div>
+        <div class="tl-title">7+ Employees, Second Market</div>
+        <div class="tl-desc">Add bookkeeper, junior developer, marketing specialist. Begin exploring Dallas/San Antonio expansion. Strong foundation for E-2 renewal.</div>
+      </div>
+    </div>
+
+    <div class="infobox infobox-amber" style="margin-top:1.5rem;">
+      <strong>&#9888;&#65039; Non-Marginal Enterprise Test</strong>
+      The E-2 visa requires your business to generate enough revenue to be more than a "marginal" enterprise (one that only supports you and your family). Target: $150K+ annual revenue by Year 2. The hybrid model projects $187K by Year 2, comfortably clearing this threshold.
+    </div>
+  </section>
+
+  <!-- ═══ Section 4: Revenue Projections ═══ -->
+  <section id="revenue">
+    <div class="section-badge badge-green">&#128200; Revenue Projections</div>
+    <h2>Three-Year Growth Path</h2>
+    <p class="section-intro">Conservative revenue projections for the hybrid model. Management fees provide stable base income while SaaS subscriptions create scalable recurring revenue.</p>
+
+    <div class="rev-timeline">
+      <div class="rev-year">
+        <div class="rev-yr-label">Year 1</div>
+        <div class="rev-yr-total">$61K</div>
+        <div class="rev-yr-mo">~$5.1K/mo</div>
+        <div class="rev-yr-breakdown">
+          <div class="rev-item"><span class="rev-item-label">3 properties</span><span class="rev-item-val">$3,600/mo</span></div>
+          <div class="rev-item"><span class="rev-item-label">5 SaaS clients</span><span class="rev-item-val">$1,500/mo</span></div>
+        </div>
+      </div>
+      <div class="rev-year">
+        <div class="rev-yr-label">Year 2</div>
+        <div class="rev-yr-total">$187K</div>
+        <div class="rev-yr-mo">~$15.6K/mo</div>
+        <div class="rev-yr-breakdown">
+          <div class="rev-item"><span class="rev-item-label">8 properties</span><span class="rev-item-val">$9,600/mo</span></div>
+          <div class="rev-item"><span class="rev-item-label">15 SaaS clients</span><span class="rev-item-val">$6,000/mo</span></div>
+        </div>
+      </div>
+      <div class="rev-year highlight">
+        <div class="rev-yr-label">Year 3</div>
+        <div class="rev-yr-total" style="color:var(--green);">$396K</div>
+        <div class="rev-yr-mo">~$33K/mo</div>
+        <div class="rev-yr-breakdown">
+          <div class="rev-item"><span class="rev-item-label">15 properties</span><span class="rev-item-val">$18,000/mo</span></div>
+          <div class="rev-item"><span class="rev-item-label">30 SaaS clients</span><span class="rev-item-val">$15,000/mo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="infobox infobox-green">
+      <strong>&#128161; Revenue Assumptions</strong>
+      Property management: average rent $1,500/unit, 8 units/property, 10% management fee = $1,200/property/mo. SaaS clients: $300/mo average (mix of $200 basic and $500 premium tiers). Year 3 SaaS ARPU rises to $500/mo as clients upgrade and feature set matures.
+    </div>
+
+    <h3 style="margin-top:1.5rem;">Revenue Stream Comparison</h3>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Metric</th>
+          <th>Management</th>
+          <th>SaaS</th>
+          <th>Combined</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Year 1 Revenue</td>
+          <td>$43,200</td>
+          <td>$18,000</td>
+          <td class="score-good">$61,200</td>
+        </tr>
+        <tr>
+          <td>Year 2 Revenue</td>
+          <td>$115,200</td>
+          <td>$72,000</td>
+          <td class="score-good">$187,200</td>
+        </tr>
+        <tr>
+          <td>Year 3 Revenue</td>
+          <td>$216,000</td>
+          <td>$180,000</td>
+          <td class="score-best">$396,000</td>
+        </tr>
+        <tr>
+          <td>Gross Margin</td>
+          <td class="score-mid">35-45%</td>
+          <td class="score-best">85-90%</td>
+          <td class="score-good">55-65%</td>
+        </tr>
+        <tr>
+          <td>Scalability</td>
+          <td class="score-mid">Linear</td>
+          <td class="score-best">Exponential</td>
+          <td class="score-good">High</td>
+        </tr>
+        <tr>
+          <td>E-2 Strength</td>
+          <td class="score-best">Physical ops</td>
+          <td class="score-mid">Digital only</td>
+          <td class="score-best">Both</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══ Section 5: Why This Works For You ═══ -->
+  <section id="why-you">
+    <div class="section-badge badge-teal">&#127919; Why You</div>
+    <h2>Personal Fit Analysis</h2>
+    <p class="section-intro">Your unique background creates a strong case for this specific E-2 business. Here is the honest assessment -- strengths and risks.</p>
+
+    <div class="proscons">
+      <div class="proscons-col pros">
+        <h4>&#9989; Strengths</h4>
+        <ul>
+          <li>You built AlpacApps -- genuine domain expertise, not a purchased business</li>
+          <li>Polish aviation background is a unique differentiator (stand out from competition)</li>
+          <li>Austin is the ideal market (tech-friendly landlords, growing rental demand)</li>
+          <li>Near-zero marginal cost per additional client (infrastructure already built)</li>
+          <li>AI leverage gives 10x developer productivity (Claude Code does the coding)</li>
+          <li>Bilingual Polish/English opens future EU market expansion path</li>
+          <li>Crypto and language school experience shows entrepreneurial pattern</li>
+          <li>Physical property management satisfies E-2 "presence" requirements</li>
+        </ul>
+      </div>
+      <div class="proscons-col cons">
+        <h4>&#10060; Risks & Challenges</h4>
+        <ul>
+          <li>Property management is competitive in Austin (established players)</li>
+          <li>SaaS sales require sustained effort and relationship building</li>
+          <li>E-2 adjudicators may not fully understand tech businesses</li>
+          <li>Must demonstrate "directing and developing" the enterprise (not just coding)</li>
+          <li>First year revenue may not cover living expenses without runway</li>
+          <li>Managing properties requires local licensing and insurance</li>
+          <li>Scaling from solo to team is a management learning curve</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="infobox infobox-red" style="margin-top:1.5rem;">
+      <strong>&#128680; Key Risk: E-2 Adjudicator Comprehension</strong>
+      The biggest risk is that USCIS officers may not understand how a near-zero-infrastructure-cost tech business represents a "substantial" investment. Mitigation: emphasize the $30K in physical assets (office, equipment), $15K in hiring, and the management arm (clearly physical work). The business plan must frame technology as the competitive advantage, not the entire business.
+    </div>
+
+    <div class="infobox infobox-blue" style="margin-top:0.5rem;">
+      <strong>&#128218; Mitigation Strategy</strong>
+      Structure the E-2 application to lead with the property management arm (8-12% management fees, physical on-site work, employee oversight). Present the technology platform as the proprietary tool that enables competitive advantage. This reframes the narrative from "tech company with no infrastructure costs" to "property management company with proprietary AI technology."
+    </div>
+  </section>
+
+  <!-- ═══ Section 6: The Austin Advantage ═══ -->
+  <section id="austin">
+    <div class="section-badge badge-amber">&#127966;&#65039; Austin Advantage</div>
+    <h2>Why Austin Is the Right Market</h2>
+    <p class="section-intro">Austin's unique combination of tech culture, rental growth, and business-friendly environment makes it the ideal launchpad for an AI-powered property management company.</p>
+
+    <div class="adv-grid">
+      <div class="adv-card">
+        <div class="adv-icon">&#128187;</div>
+        <h4>Tech-Forward Landlords</h4>
+        <p>Austin property owners are early adopters. They understand AI, smart home tech, and digital tools. Easier to sell an AI-first management platform here than in any other Texas metro.</p>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">&#127968;</div>
+        <h4>Growing Rental Market</h4>
+        <p>200K+ rental units in the Austin metro. Net migration remains positive. Remote workers continue moving for quality of life, creating sustained rental demand.</p>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">&#128176;</div>
+        <h4>No State Income Tax</h4>
+        <p>Texas has no state income tax. 100% of business profits stay in the company (or your pocket). Compared to California (13.3%) or New York (10.9%), this is a significant advantage.</p>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">&#127793;</div>
+        <h4>Startup Ecosystem</h4>
+        <p>Capital Factory, Austin Tech Alliance, and hundreds of meetups. Easy to network with potential SaaS clients (other startups and small businesses needing apps).</p>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">&#128202;</div>
+        <h4>Affordable (Relative)</h4>
+        <p>Office space is 40-60% cheaper than SF/NYC. Employee salaries are competitive but not inflated. Your $100K investment goes further in Austin.</p>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">&#9992;&#65039;</div>
+        <h4>Aviation Connection</h4>
+        <p>Austin-Bergstrom International is growing. Your pilot background resonates with Austin's aerospace community (SpaceX, Joby Aviation, Archer). Potential niche: housing for aerospace professionals.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Section 7: Competitive Landscape ═══ -->
+  <section id="competitors">
+    <div class="section-badge badge-blue">&#128640; Competitive Landscape</div>
+    <h2>How AlpacApps Compares</h2>
+    <p class="section-intro">The property management software market is crowded, but AlpacApps occupies a unique position: AI-first, open source, near-zero infrastructure cost, and built by someone who actually manages properties.</p>
+
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Feature</th>
+          <th>Buildium</th>
+          <th>AppFolio</th>
+          <th>TenantCloud</th>
+          <th style="background:var(--green-soft); color:var(--green);">AlpacApps</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Monthly Cost</td>
+          <td>$50-460</td>
+          <td>$1.40/unit</td>
+          <td>Free-$35</td>
+          <td class="score-best">$0*</td>
+        </tr>
+        <tr>
+          <td>AI Assistant</td>
+          <td class="score-low">None</td>
+          <td class="score-mid">Basic</td>
+          <td class="score-low">None</td>
+          <td class="score-best">Full AI (PAI)</td>
+        </tr>
+        <tr>
+          <td>Smart Home</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-best">12+ devices</td>
+        </tr>
+        <tr>
+          <td>Mobile App</td>
+          <td class="score-good">Yes</td>
+          <td class="score-good">Yes</td>
+          <td class="score-mid">Basic</td>
+          <td class="score-best">iOS + Android</td>
+        </tr>
+        <tr>
+          <td>Open Source</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-best">Yes</td>
+        </tr>
+        <tr>
+          <td>E-Signatures</td>
+          <td class="score-good">Built-in</td>
+          <td class="score-good">Built-in</td>
+          <td class="score-mid">$$ Add-on</td>
+          <td class="score-good">SignWell</td>
+        </tr>
+        <tr>
+          <td>Payment Processing</td>
+          <td class="score-good">ACH/Card</td>
+          <td class="score-good">ACH/Card</td>
+          <td class="score-mid">Stripe only</td>
+          <td class="score-best">Stripe+Square+Manual</td>
+        </tr>
+        <tr>
+          <td>Target Segment</td>
+          <td>50-5000 units</td>
+          <td>50-10000 units</td>
+          <td>1-75 units</td>
+          <td class="score-best">10-100 units</td>
+        </tr>
+        <tr>
+          <td>Voice Assistant</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-best">Vapi phone AI</td>
+        </tr>
+        <tr>
+          <td>Camera/Security</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-low">No</td>
+          <td class="score-best">Live HLS + talkback</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:-0.5rem;">* $0 infrastructure cost for the operator. SaaS clients would pay $200-500/mo for the managed service.</p>
+
+    <div class="infobox infobox-purple" style="margin-top:1rem;">
+      <strong>&#128142; The Unique Moat</strong>
+      No competitor offers AI chat assistant + voice phone AI + smart home control + camera feeds + laundry monitoring in a single property management platform. AlpacApps is not competing on spreadsheets and invoicing -- it is competing on tenant experience. This differentiation is nearly impossible to replicate because it requires deep IoT integration expertise.
+    </div>
+  </section>
+
+  <!-- ═══ Section 8: 30-Day Launch Plan ═══ -->
+  <section id="launch">
+    <div class="section-badge badge-green">&#128197; 30-Day Launch</div>
+    <h2>From Zero to Operating in 30 Days</h2>
+    <p class="section-intro">Once the E-2 visa is approved and you arrive in Austin, here is the sprint to get the business running. Every week has clear deliverables.</p>
+
+    <div class="launch-grid">
+      <div class="launch-card">
+        <div class="launch-week" style="background:var(--red-soft); color:var(--red);">&#128293; Week 1</div>
+        <h4>Foundation</h4>
+        <ul>
+          <li>Form LLC in Texas (online, same day)</li>
+          <li>Open business bank account (Mercury or Chase)</li>
+          <li>E-2 attorney kickoff meeting</li>
+          <li>Secure co-working desk (Capital Factory or WeWork)</li>
+          <li>Get Texas business license + insurance quotes</li>
+        </ul>
+      </div>
+      <div class="launch-card">
+        <div class="launch-week" style="background:var(--blue-soft); color:var(--blue);">&#128736;&#65039; Week 2</div>
+        <h4>Setup & First Hire</h4>
+        <ul>
+          <li>Post part-time coordinator role (Indeed, LinkedIn)</li>
+          <li>Interview and hire coordinator</li>
+          <li>Marketing website live (AlpacApps.com)</li>
+          <li>Set up CRM for property owner outreach</li>
+          <li>Begin networking at Austin PM meetups</li>
+        </ul>
+      </div>
+      <div class="launch-card">
+        <div class="launch-week" style="background:var(--purple-soft); color:var(--purple);">&#128188; Week 3</div>
+        <h4>First Clients</h4>
+        <ul>
+          <li>Sign first 2 property management contracts</li>
+          <li>Launch SaaS landing page + waitlist</li>
+          <li>Begin Google Ads campaign ($50/day)</li>
+          <li>Attend Austin Real Estate Investors meetup</li>
+          <li>Start Craigslist/Zillow/Facebook outreach</li>
+        </ul>
+      </div>
+      <div class="launch-card">
+        <div class="launch-week" style="background:var(--green-soft); color:var(--green);">&#127881; Week 4</div>
+        <h4>Operations Live</h4>
+        <ul>
+          <li>Onboard first properties onto AlpacApps platform</li>
+          <li>Configure tenant logins, payment collection, AI assistant</li>
+          <li>Start SaaS outreach campaign (email + cold calls)</li>
+          <li>Hire part-time tech support person</li>
+          <li>Submit first month operational report to attorney</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="infobox infobox-green" style="margin-top:1rem;">
+      <strong>&#9889; Speed Advantage: AI Development</strong>
+      Traditional SaaS companies spend 6-12 months building their product before generating any revenue. With AlpacApps, the product already exists and works in production. Your "build phase" is measured in days of customization, not months of development. Claude Code handles all code changes autonomously -- you focus on sales and operations.
+    </div>
+  </section>
+
+  <!-- ═══ Section 9: The Verdict ═══ -->
+  <section id="verdict">
+    <div class="verdict">
+      <div class="verdict-badge">&#10003; Assessment Complete</div>
+      <h2>Strong E-2 Candidate</h2>
+      <p>The AlpacApps hybrid model (property management + SaaS licensing) scores high on every E-2 criterion: substantial investment, physical presence, job creation, and non-marginal revenue. The combination of proven technology, a growing market, and your direct expertise creates a compelling visa application.</p>
+    </div>
+
+    <h3>Key Success Factors</h3>
+    <div class="factors-grid">
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--green-soft);">&#127919;</div>
+        <div>
+          <h4>Lead with Management</h4>
+          <p>Frame the E-2 application around property management (physical, tangible) with technology as the competitive advantage -- not the other way around.</p>
+        </div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--blue-soft);">&#128101;</div>
+        <div>
+          <h4>Hire Early</h4>
+          <p>Start with 2 part-time employees in Month 1. Job creation is a critical E-2 factor. Even part-time W-2 employees demonstrate commitment.</p>
+        </div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--amber-soft);">&#128176;</div>
+        <div>
+          <h4>Spend Irrevocably</h4>
+          <p>The investment must be "at risk." Sign the office lease, buy equipment, pay employees. Do not keep $80K in the bank as a "reserve."</p>
+        </div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--purple-soft);">&#128200;</div>
+        <div>
+          <h4>Document Everything</h4>
+          <p>Business plan, financial projections, receipts, contracts, payroll records. E-2 applications are document-heavy. Over-prepare.</p>
+        </div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--red-soft);">&#128640;</div>
+        <div>
+          <h4>Revenue Before Filing</h4>
+          <p>If possible, start generating revenue before the E-2 application. Even $2K/mo in management fees shows the business is real, not speculative.</p>
+        </div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-icon" style="background:var(--teal-soft);">&#127758;</div>
+        <div>
+          <h4>Plan for Renewal</h4>
+          <p>E-2 visas renew every 2-5 years. Year 2 revenue ($187K) and 5 employees provide a strong renewal case. Build toward these milestones deliberately.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:2rem; text-align:center; padding:2rem;">
+      <p style="font-size:0.95rem; color:var(--text-dim); margin-bottom:1rem;">Continue your E-2 research:</p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="index.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.25rem; background:var(--red); color:#fff; border-radius:100px; text-decoration:none; font-size:0.85rem; font-weight:700; transition:opacity 0.15s;">&#8592; E-2 Visa Playbook</a>
+        <a href="e2v2.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.25rem; background:var(--surface); border:1px solid var(--border); color:var(--text-soft); border-radius:100px; text-decoration:none; font-size:0.85rem; font-weight:600; transition:all 0.15s;">&#128722; Business Marketplace</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ Footer ═══ -->
+<footer>
+  <p>AlpacApps E-2 Business Analysis &middot; Part of the <a href="index.html">E-2 Visa Investment Guide</a></p>
+  <p style="margin-top:0.5rem;"><span data-site-version>v260303.04</span></p>
+</footer>
+
+<!-- ═══ JavaScript ═══ -->
+<script>
+(function() {
+  // Smooth scroll for nav links
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        const navHeight = document.querySelector('.sticky-nav').offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 12;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Active nav highlighting on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  function updateActiveNav() {
+    const scrollY = window.scrollY;
+    const navHeight = document.querySelector('.sticky-nav').offsetHeight;
+
+    let currentSection = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - navHeight - 40;
+      const bottom = top + section.offsetHeight;
+      if (scrollY >= top && scrollY < bottom) {
+        currentSection = section.id;
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + currentSection);
+    });
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        updateActiveNav();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  updateActiveNav();
+})();
+</script>
+
+</body>
+</html>
