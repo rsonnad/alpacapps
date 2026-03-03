@@ -9,6 +9,21 @@ import { supabase } from '../shared/supabase.js';
 import { loadZones } from '../shared/services/sonos-data.js';
 
 const COLLAPSE_KEY = 'devices-collapsed';
+const ALEXA_FALLBACK_CAPTURED_AT = '2026-03-03T03:00:00-06:00';
+const ALEXA_FALLBACK_DEVICES = [
+  { hostname: 'amazon-67f77a339', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'amazon-7c33ec9c38900cc0', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'amazon-14ea528bd', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'amazon-20cb70679', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'amazon-080d0e2f9', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'echoshow-3bf32cb7f1ef46a6', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'echoshow-9f2eb6d9d752aab3', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'AmazonPlug13A2', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: 'Blink-Device', name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: null, name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: null, name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+  { hostname: null, name: null, oui: 'Amazon Technologies Inc.', is_wired: false },
+];
 
 const CATEGORIES = [
   { id: 'cameras',  label: 'Cameras',      href: 'cameras.html',  linkLabel: 'Camera Feeds' },
@@ -251,10 +266,13 @@ async function fetchJsonWithTimeout(url, timeoutMs = 10000) {
 async function fetchAlexaClients() {
   const endpoint = 'https://cam.alpacaplayhouse.com/clients';
   const searches = ['alexa', 'echo', 'amazon'];
+  let hadProxySuccess = false;
 
   const results = await Promise.all(searches.map(async (term) => {
     try {
-      return await fetchJsonWithTimeout(`${endpoint}?search=${encodeURIComponent(term)}`);
+      const rows = await fetchJsonWithTimeout(`${endpoint}?search=${encodeURIComponent(term)}`);
+      hadProxySuccess = true;
+      return rows;
     } catch (e) {
       console.warn(`Alexa client fetch failed for "${term}":`, e);
       return [];
@@ -279,13 +297,30 @@ async function fetchAlexaClients() {
     return oui.includes('amazon');
   };
 
-  return deduped
+  const filtered = deduped
     .filter(isLikelyAlexa)
     .sort((a, b) => {
       const aLabel = (a.name || a.hostname || '').toLowerCase();
       const bLabel = (b.name || b.hostname || '').toLowerCase();
       return aLabel.localeCompare(bLabel);
     });
+
+  if (filtered.length > 0) return filtered;
+
+  if (!hadProxySuccess) {
+    // Temporary fallback while cam proxy cannot reach UDM subnet route.
+    return ALEXA_FALLBACK_DEVICES.map((d, idx) => ({
+      ...d,
+      ip: null,
+      mac: null,
+      last_seen: null,
+      _fallback: true,
+      _fallbackLabel: `Last known snapshot (${ALEXA_FALLBACK_CAPTURED_AT})`,
+      _idx: idx,
+    }));
+  }
+
+  return filtered;
 }
 
 /* ── Row Renderers ── */
@@ -419,9 +454,11 @@ function renderLaundryRows(appliances) {
 function renderAlexaRows(devices) {
   if (!devices.length) return emptyRow(6, 'No Alexa/Amazon clients detected');
   return devices.map(d => {
-    const label = d.name || d.hostname || 'Unnamed device';
+    const label = d.name || d.hostname || (d._fallback ? 'Amazon device (name unavailable)' : 'Unnamed device');
     const conn = d.is_wired ? 'Wired' : 'WiFi';
-    const lastSeen = d.last_seen ? timeAgo(new Date(d.last_seen * 1000).toISOString()) : '—';
+    const lastSeen = d._fallback
+      ? 'Snapshot'
+      : (d.last_seen ? timeAgo(new Date(d.last_seen * 1000).toISOString()) : '—');
     return `
       <tr>
         <td class="dt-name">${esc(label)}</td>
@@ -429,7 +466,7 @@ function renderAlexaRows(devices) {
         <td>${esc(d.ip || '—')}</td>
         <td class="dt-secondary">${esc(d.oui || '—')}</td>
         <td>${esc(conn)}</td>
-        <td class="dt-secondary">${esc(lastSeen)}</td>
+        <td class="dt-secondary" title="${esc(d._fallbackLabel || '')}">${esc(lastSeen)}</td>
       </tr>
     `;
   }).join('');
