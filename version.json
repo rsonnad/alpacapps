@@ -1,12 +1,12 @@
 {
-  "version": "v260303.06 2:54a",
-  "release": 404,
-  "sha": "80b018766",
-  "fullSha": "80b018766d46c456ed8aa0ee32828072d63e6f98",
+  "version": "v260303.07 3:07a",
+  "release": 405,
+  "sha": "7a44751e3",
+  "fullSha": "7a44751e33a4d807b88aa664f4105763b807e9c9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 08:54:14+00",
-  "commits": [{"sha":"80b018766","message":"feat: add Alexa devices section to residents inventory","author":"Rahul"}]
+  "pushedAt": "2026-03-03 09:07:42+00",
+  "commits": [{"sha":"7a44751e3","message":"fix: show Alexa devices when router proxy is down","author":"Rahul"}]
 }
