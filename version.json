@@ -1,12 +1,12 @@
 {
-  "version": "v260303.09 12:21p",
-  "release": 407,
-  "sha": "081b4bac0",
-  "fullSha": "081b4bac0d6d3fab81e643cd737a1b8116a04572",
+  "version": "v260303.10 12:26p",
+  "release": 408,
+  "sha": "6bd97884f",
+  "fullSha": "6bd97884fa79990801e11a84492b4b9d97a5e9ee",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 18:21:39+00",
-  "commits": [{"sha":"081b4bac0","message":"feat: add Vehicle Rental template type + vehicle info in registration email","author":"Rahul"}]
+  "pushedAt": "2026-03-03 18:26:10+00",
+  "commits": [{"sha":"6bd97884f","message":"fix(infra doc): size service icons in headers, use character chevron for arrows","author":"Rahul"}]
 }
