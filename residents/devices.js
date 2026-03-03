@@ -17,6 +17,7 @@ const CATEGORIES = [
   { id: 'climate',  label: 'Climate',        href: 'climate.html',  linkLabel: 'Climate Controls' },
   { id: 'cars',     label: 'Vehicles',       href: 'cars.html',     linkLabel: 'Vehicle Controls' },
   { id: 'laundry',  label: 'Appliances',      href: 'appliances.html',  linkLabel: 'Appliance Status' },
+  { id: 'alexa',    label: 'Alexa',          href: 'https://cam.alpacaplayhouse.com/clients?search=amazon', linkLabel: 'Router Clients' },
 ];
 
 /* ── Helpers ── */
@@ -235,6 +236,58 @@ async function fetchLaundry() {
   } catch (e) { console.warn('Laundry fetch failed:', e); return []; }
 }
 
+async function fetchJsonWithTimeout(url, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchAlexaClients() {
+  const endpoint = 'https://cam.alpacaplayhouse.com/clients';
+  const searches = ['alexa', 'echo', 'amazon'];
+
+  const results = await Promise.all(searches.map(async (term) => {
+    try {
+      return await fetchJsonWithTimeout(`${endpoint}?search=${encodeURIComponent(term)}`);
+    } catch (e) {
+      console.warn(`Alexa client fetch failed for "${term}":`, e);
+      return [];
+    }
+  }));
+
+  const flat = results.flat().filter(Boolean);
+  const seen = new Set();
+  const deduped = [];
+  for (const item of flat) {
+    const key = (item.mac || `${item.ip || ''}-${item.hostname || ''}`).toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  // Keep likely Alexa/Echo devices first, then other Amazon-identified clients.
+  const isLikelyAlexa = (d) => {
+    const hay = `${d.hostname || ''} ${d.name || ''}`.toLowerCase();
+    if (hay.includes('alexa') || hay.includes('echo')) return true;
+    const oui = String(d.oui || '').toLowerCase();
+    return oui.includes('amazon');
+  };
+
+  return deduped
+    .filter(isLikelyAlexa)
+    .sort((a, b) => {
+      const aLabel = (a.name || a.hostname || '').toLowerCase();
+      const bLabel = (b.name || b.hostname || '').toLowerCase();
+      return aLabel.localeCompare(bLabel);
+    });
+}
+
 /* ── Row Renderers ── */
 
 function renderCameraRows(cameras) {
@@ -363,6 +416,25 @@ function renderLaundryRows(appliances) {
   }).join('');
 }
 
+function renderAlexaRows(devices) {
+  if (!devices.length) return emptyRow(6, 'No Alexa/Amazon clients detected');
+  return devices.map(d => {
+    const label = d.name || d.hostname || 'Unnamed device';
+    const conn = d.is_wired ? 'Wired' : 'WiFi';
+    const lastSeen = d.last_seen ? timeAgo(new Date(d.last_seen * 1000).toISOString()) : '—';
+    return `
+      <tr>
+        <td class="dt-name">${esc(label)}</td>
+        <td class="dt-secondary">${esc(d.hostname || '—')}</td>
+        <td>${esc(d.ip || '—')}</td>
+        <td class="dt-secondary">${esc(d.oui || '—')}</td>
+        <td>${esc(conn)}</td>
+        <td class="dt-secondary">${esc(lastSeen)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
 function emptyRow(cols, msg = 'No devices') {
   return `<tr><td colspan="${cols}" class="dt-empty">${msg}</td></tr>`;
 }
@@ -436,15 +508,16 @@ async function renderInventory() {
   if (!container) return;
   container.innerHTML = '<p class="text-muted" style="padding:1rem">Loading devices...</p>';
 
-  let cameras, lighting, sonos, climate, vehicles, laundry;
+  let cameras, lighting, sonos, climate, vehicles, laundry, alexa;
   try {
-    [cameras, lighting, sonos, climate, vehicles, laundry] = await Promise.all([
+    [cameras, lighting, sonos, climate, vehicles, laundry, alexa] = await Promise.all([
       fetchCameras(),
       fetchLighting(),
       fetchSonos(),
       fetchClimate(),
       fetchVehicles(),
       fetchLaundry(),
+      fetchAlexaClients(),
       fetchPropertyGps(),
     ]);
   } catch (e) {
@@ -458,7 +531,8 @@ async function renderInventory() {
     + sonos.length
     + climate.length
     + vehicles.length
-    + laundry.length;
+    + laundry.length
+    + alexa.length;
 
   // Populate inline meta count in section header
   const metaEl = document.getElementById('devicesMeta');
@@ -504,6 +578,12 @@ async function renderInventory() {
   html += buildSection(laundryCat, laundry.length,
     th('Name') + th('Type') + th('State') + th('Remaining'),
     renderLaundryRows(laundry));
+
+  // Alexa / Amazon clients discovered from UDM Pro client list
+  const alexaCat = CATEGORIES.find(c => c.id === 'alexa');
+  html += buildSection(alexaCat, alexa.length,
+    th('Device') + th('Hostname') + th('IP') + th('Vendor') + th('Connection') + th('Last Seen'),
+    renderAlexaRows(alexa));
 
   container.innerHTML = html;
   initCollapseListeners(container);
