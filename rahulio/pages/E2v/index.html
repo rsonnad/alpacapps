@@ -953,6 +953,154 @@
     .mp-mult-lbl { color: var(--text-dim); }
     .mp-mult-val { font-weight: 700; color: var(--text-soft); }
 
+    /* ═══ Startup Section ═══ */
+    .su-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .su-filter-group { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .su-filter-btn {
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--surface);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .su-filter-btn:hover { border-color: var(--green); color: var(--green); }
+    .su-filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+    .su-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+    }
+    .su-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .su-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .su-card-header { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .su-card-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .su-card-title { font-size: 0.95rem; font-weight: 800; color: var(--text); line-height: 1.3; }
+    .su-card-tagline { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.15rem; font-style: italic; }
+    .su-card-tier {
+      position: absolute; top: 1rem; right: 1rem;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 0.15rem 0.5rem; border-radius: 100px;
+    }
+    .su-card { position: relative; }
+    .su-tier-1 { background: var(--green-soft); color: var(--green); }
+    .su-tier-2 { background: var(--amber-soft); color: var(--amber); }
+    .su-tier-3 { background: var(--blue-soft); color: var(--blue); }
+
+    .su-card-desc { font-size: 0.8rem; color: var(--text-soft); line-height: 1.6; margin-bottom: 1rem; }
+
+    .su-why { margin-bottom: 1rem; }
+    .su-why-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--green); margin-bottom: 0.35rem; }
+    .su-why-list {
+      list-style: none; padding: 0; margin: 0; font-size: 0.78rem; color: var(--text-soft);
+    }
+    .su-why-list li { padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .su-why-list li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+
+    .su-budget {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .su-budget-title {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+      font-weight: 700; color: var(--text-dim); margin-bottom: 0.4rem;
+    }
+    .su-budget-row {
+      display: flex; justify-content: space-between; font-size: 0.75rem;
+      padding: 0.2rem 0; border-bottom: 1px dashed var(--border-light);
+    }
+    .su-budget-row:last-child { border-bottom: none; font-weight: 700; color: var(--text); padding-top: 0.35rem; }
+    .su-budget-item { color: var(--text-soft); }
+    .su-budget-amt { font-weight: 600; color: var(--text); }
+
+    .su-meters { margin-bottom: 0.75rem; }
+    .su-meter-row {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;
+    }
+    .su-meter-label { width: 100px; font-size: 0.68rem; color: var(--text-dim); flex-shrink: 0; }
+    .su-meter-track {
+      flex: 1; height: 6px; background: var(--surface2);
+      border-radius: 3px; overflow: hidden;
+    }
+    .su-meter-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .su-meter-val { width: 24px; font-size: 0.65rem; font-weight: 700; color: var(--text-dim); text-align: right; }
+
+    .su-risk {
+      font-size: 0.72rem; color: var(--amber);
+      background: var(--amber-soft); border: 1px solid var(--amber-border);
+      border-radius: var(--radius); padding: 0.5rem 0.7rem;
+      margin-bottom: 0.75rem;
+    }
+    .su-risk strong { color: var(--amber); }
+
+    .su-card-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .su-tag {
+      font-size: 0.6rem; font-weight: 600; padding: 0.15rem 0.5rem;
+      border-radius: 100px; background: var(--surface2); color: var(--text-dim);
+    }
+    .su-tag-aviation { background: var(--sky-soft); color: var(--sky); }
+    .su-tag-tech { background: var(--purple-soft); color: var(--purple); }
+    .su-tag-education { background: var(--teal-soft); color: var(--teal); }
+    .su-tag-service { background: var(--amber-soft); color: var(--amber); }
+    .su-tag-scalable { background: var(--green-soft); color: var(--green); }
+    .su-tag-physical { background: var(--rose-soft); color: var(--rose); }
+    .su-tag-digital { background: var(--blue-soft); color: var(--blue); }
+    .su-tag-hybrid { background: var(--gold-soft); color: var(--gold); }
+
+    /* Startup playbook box */
+    .su-playbook {
+      background: linear-gradient(135deg, var(--green-soft), #f0fdf4);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .su-playbook h3 { color: var(--green); margin-bottom: 0.75rem; }
+    .su-playbook-phases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .su-phase {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      border-left: 3px solid var(--green);
+    }
+    .su-phase-num { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--green); }
+    .su-phase-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin: 0.25rem 0; }
+    .su-phase-cost { font-size: 0.78rem; font-weight: 700; color: var(--green); }
+    .su-phase-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+    /* Responsive for startups */
+    @media (max-width: 768px) {
+      .su-cards { grid-template-columns: 1fr; }
+      .su-controls { flex-direction: column; align-items: stretch; }
+      .su-playbook-phases { grid-template-columns: 1fr; }
+    }
+
     /* Responsive for marketplace */
     @media (max-width: 768px) {
       .mp-cards { grid-template-columns: 1fr; }
@@ -983,6 +1131,7 @@
   <a href="#timeline" class="nav-link">Timeline</a>
   <a href="#strategy" class="nav-link">Strategy</a>
   <a href="#marketplace" class="nav-link">Marketplace</a>
+  <a href="#startups" class="nav-link">Startups</a>
   <a href="#questions" class="nav-link">Questions</a>
 </nav>
 
@@ -2508,6 +2657,546 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════════ -->
+<!--  STARTUP IDEAS — $100K from Scratch                -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="startups">
+  <div class="container">
+    <span class="section-badge badge-green">&#128640; Startup Ideas</span>
+    <h2>Build from Scratch with ~$100K</h2>
+    <p class="section-intro">These startup concepts are tailored to your background as a Polish pilot with experience in property management, crypto, multilingual skills (Polish/English), and AI/software fluency&mdash;all optimized for E-2 visa approval likelihood in Austin, TX.</p>
+
+    <!-- Controls: Category Filters -->
+    <div class="su-controls" id="suCategoryFilters">
+      <button class="su-filter-btn active" data-filter="all">All</button>
+      <button class="su-filter-btn" data-filter="aviation">&#9992; Aviation</button>
+      <button class="su-filter-btn" data-filter="tech">&#129302; Tech / AI</button>
+      <button class="su-filter-btn" data-filter="education">&#127891; Education</button>
+      <button class="su-filter-btn" data-filter="service">&#128736; Service</button>
+    </div>
+
+    <!-- ═══ Tier 1 — Best E-2 Fit ═══ -->
+    <h3 style="margin:2.5rem 0 1rem;color:var(--green);font-size:1.1rem;text-transform:uppercase;letter-spacing:2px;">&#9733; Tier 1 &mdash; Best E-2 Fit</h3>
+    <div class="su-grid">
+
+      <!-- Card 1: Drone Flight School -->
+      <div class="su-card su-tier-1" data-cat="aviation tech">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#128681;</span>
+          <div>
+            <div class="su-card-title">Drone Flight School + Training Academy</div>
+            <div class="su-card-tagline">Combine pilot expertise with the booming drone industry</div>
+          </div>
+        </div>
+        <p class="su-card-desc">FAA Part 107 certification training, commercial drone operations (mapping, inspection, agriculture), and pilot refresher courses. Physical classroom + outdoor flying range in the Austin metro. Leverage your pilot credentials as a unique differentiator.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Pilot background gives instant credibility and marketing edge</li>
+            <li>Part 107 demand growing 20%+ annually in TX construction &amp; agriculture</li>
+            <li>Creates 3-5 instructor jobs within year one (strong E-2 signal)</li>
+            <li>AI integration: automated flight-log grading, AI scheduling, student CRM</li>
+            <li>Low inventory costs &mdash; students supply their own drones or rent yours</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Facility lease + buildout</span><span>$25,000</span></div>
+          <div class="su-budget-row"><span>Drone fleet (8 training units)</span><span>$20,000</span></div>
+          <div class="su-budget-row"><span>FAA certifications &amp; insurance</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; branding</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Software platform &amp; AI tools</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Working capital (6 months)</span><span>$18,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:95%;background:var(--green)"></div></div><span class="su-meter-val">95%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:80%;background:var(--blue)"></div></div><span class="su-meter-val">80%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:70%;background:var(--amber)"></div></div><span class="su-meter-val">3-4 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:65%;background:var(--purple)"></div></div><span class="su-meter-val">Medium</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> FAA regulatory changes; seasonal enrollment dips; outdoor range permitting can be slow in Travis/Williamson County.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-aviation">Aviation</span>
+          <span class="su-tag su-tag-education">Education</span>
+          <span class="su-tag su-tag-physical">Physical Location</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+      <!-- Card 2: AI-Powered Property Management -->
+      <div class="su-card su-tier-1" data-cat="tech service">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#127968;</span>
+          <div>
+            <div class="su-card-title">AI-Powered Property Management Platform</div>
+            <div class="su-card-tagline">SaaS + service hybrid leveraging your PM experience</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Boutique property management for short-term and long-term rentals in Austin, powered by an AI operations platform you build: automated guest comms, dynamic pricing, maintenance dispatch, and owner reporting. Start managing 20-40 units while licensing the software to other PMs.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Direct property management experience is your core strength</li>
+            <li>Austin STR market is massive &mdash; 12,000+ active listings</li>
+            <li>SaaS + service = two revenue streams, strong for E-2 &ldquo;non-marginal&rdquo; test</li>
+            <li>Hire property managers, cleaners, maintenance &mdash; clear job creation</li>
+            <li>AI is the product: automated pricing, guest AI chatbot, predictive maintenance</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Software development (MVP)</span><span>$30,000</span></div>
+          <div class="su-budget-row"><span>Small office / co-work space</span><span>$8,000</span></div>
+          <div class="su-budget-row"><span>Onboarding first 20 units</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; sales</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Cleaning supplies &amp; equipment</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Working capital (6 months)</span><span>$25,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:92%;background:var(--green)"></div></div><span class="su-meter-val">92%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:90%;background:var(--blue)"></div></div><span class="su-meter-val">90%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:80%;background:var(--amber)"></div></div><span class="su-meter-val">2-3 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:95%;background:var(--purple)"></div></div><span class="su-meter-val">Very High</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Austin STR regulations tightening (Type 2 permits); competitive market; client acquisition takes hustle in months 1-3.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-tech">Tech / AI</span>
+          <span class="su-tag su-tag-service">Service</span>
+          <span class="su-tag su-tag-hybrid">Hybrid</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Aviation English Language School -->
+      <div class="su-card su-tier-1" data-cat="aviation education">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#128483;</span>
+          <div>
+            <div class="su-card-title">Aviation English Language School</div>
+            <div class="su-card-tagline">ICAO English proficiency training for international pilots</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Niche language school training international pilots and ATC candidates for ICAO English Proficiency Level 4-6 certification. Hybrid model: in-person intensive courses in Austin + online modules for global students. You uniquely understand both aviation and the language barrier.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>You lived the &ldquo;non-native pilot learning aviation English&rdquo; journey</li>
+            <li>ICAO Level 4 is mandatory globally &mdash; recurring demand, captive market</li>
+            <li>Can operate from small classroom or co-working space</li>
+            <li>Online component = global reach without proportional cost increase</li>
+            <li>Hire 2-3 instructors quickly &mdash; excellent E-2 job creation narrative</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Classroom lease (6 months)</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Online platform (LMS) development</span><span>$20,000</span></div>
+          <div class="su-budget-row"><span>Curriculum &amp; course materials</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Instructor hiring (2 initial)</span><span>$18,000</span></div>
+          <div class="su-budget-row"><span>Marketing (aviation channels, AOPA)</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$20,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:90%;background:var(--green)"></div></div><span class="su-meter-val">90%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:70%;background:var(--blue)"></div></div><span class="su-meter-val">70%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:60%;background:var(--amber)"></div></div><span class="su-meter-val">4-5 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:75%;background:var(--purple)"></div></div><span class="su-meter-val">High</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Niche market takes longer to build pipeline; ICAO testing accreditation may require partnerships; competing with established UK-based schools.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-aviation">Aviation</span>
+          <span class="su-tag su-tag-education">Education</span>
+          <span class="su-tag su-tag-hybrid">Hybrid</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+    </div><!-- /su-grid Tier 1 -->
+
+    <!-- ═══ Tier 2 — Strong Candidates ═══ -->
+    <h3 style="margin:2.5rem 0 1rem;color:var(--amber);font-size:1.1rem;text-transform:uppercase;letter-spacing:2px;">&#9733; Tier 2 &mdash; Strong Candidates</h3>
+    <div class="su-grid">
+
+      <!-- Card 4: Multilingual AI Tutoring Center -->
+      <div class="su-card su-tier-2" data-cat="education tech">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#127760;</span>
+          <div>
+            <div class="su-card-title">Multilingual AI Tutoring Center</div>
+            <div class="su-card-tagline">Physical center + AI-powered language learning platform</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Brick-and-mortar language center in Austin offering Polish, European languages, and ESL &mdash; enhanced by a proprietary AI tutoring platform. The AI provides personalized practice sessions, pronunciation coaching, and adaptive curriculum. Franchise-ready model for expansion.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Native Polish + fluent English = built-in teaching capability</li>
+            <li>Austin has large immigrant and tech-worker population needing ESL</li>
+            <li>Physical location + employees = strong E-2 visa story</li>
+            <li>AI differentiation: chatbot tutor, adaptive quiz engine, speech scoring</li>
+            <li>Franchise potential shows &ldquo;non-marginal enterprise&rdquo; growth trajectory</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Retail space lease + buildout</span><span>$28,000</span></div>
+          <div class="su-budget-row"><span>AI platform development</span><span>$22,000</span></div>
+          <div class="su-budget-row"><span>Furniture, tech &amp; AV equipment</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; local outreach</span><span>$13,000</span></div>
+          <div class="su-budget-row"><span>Instructor hiring (2)</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$15,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:82%;background:var(--green)"></div></div><span class="su-meter-val">82%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:72%;background:var(--blue)"></div></div><span class="su-meter-val">72%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:65%;background:var(--amber)"></div></div><span class="su-meter-val">3-5 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:85%;background:var(--purple)"></div></div><span class="su-meter-val">High</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Competitive ESL market; building student base takes 3-6 months; Polish-specific demand is niche within Austin.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-education">Education</span>
+          <span class="su-tag su-tag-tech">Tech / AI</span>
+          <span class="su-tag su-tag-physical">Physical Location</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+      <!-- Card 5: Smart Home / IoT Installation Service -->
+      <div class="su-card su-tier-2" data-cat="tech service">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#127969;</span>
+          <div>
+            <div class="su-card-title">Smart Home / IoT Installation Service</div>
+            <div class="su-card-tagline">Tech-forward home automation for Austin&rsquo;s booming market</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Residential and small-commercial smart home installation: lighting automation (Lutron, Govee), security cameras, thermostats, whole-home audio, and networking. AI-powered project scoping tool, scheduling, and remote diagnostics. Austin&rsquo;s new-build market is a goldmine.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>You literally built a smart home (Sonos, Govee, cameras, thermostats)</li>
+            <li>Austin has 15,000+ new homes/year &mdash; massive addressable market</li>
+            <li>Hire technicians quickly = strong E-2 job creation</li>
+            <li>AI scheduling, automated quoting, remote troubleshooting via app</li>
+            <li>Recurring revenue: monthly monitoring &amp; support subscriptions</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Service van + wrap</span><span>$22,000</span></div>
+          <div class="su-budget-row"><span>Tools &amp; demo equipment</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>AI quoting &amp; scheduling platform</span><span>$18,000</span></div>
+          <div class="su-budget-row"><span>Marketing (Google Ads, Nextdoor)</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Insurance &amp; licensing</span><span>$8,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$25,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:78%;background:var(--green)"></div></div><span class="su-meter-val">78%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:85%;background:var(--blue)"></div></div><span class="su-meter-val">85%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:85%;background:var(--amber)"></div></div><span class="su-meter-val">1-2 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:70%;background:var(--purple)"></div></div><span class="su-meter-val">Medium+</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Low-voltage licensing requirements in TX; competing with established players like Vivint; scaling requires trained technicians which are hard to find.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-tech">Tech / AI</span>
+          <span class="su-tag su-tag-service">Service</span>
+          <span class="su-tag su-tag-physical">Physical Location</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+      <!-- Card 6: Pilot Supply & Aviation E-Commerce -->
+      <div class="su-card su-tier-2" data-cat="aviation digital">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#128230;</span>
+          <div>
+            <div class="su-card-title">Pilot Supply &amp; Aviation E-Commerce</div>
+            <div class="su-card-tagline">Online retail + pop-up shop for pilot gear &amp; training materials</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Curated online store for pilot supplies, flight training kits, aviation books, headsets, and accessories. AI-powered product recommendations, a flight planning tool, and content marketing through aviation blog/YouTube. Pop-up booths at airshows and flight schools.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Pilot credibility means authentic product curation and reviews</li>
+            <li>Low overhead e-commerce model fits within $100K budget</li>
+            <li>Warehouse + shipping = physical presence for E-2 (hire 1-2 people)</li>
+            <li>AI product recommendation engine and content automation</li>
+            <li>Can combine with drone school or aviation English as a cross-sell channel</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>E-commerce platform (Shopify + custom)</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Initial inventory</span><span>$30,000</span></div>
+          <div class="su-budget-row"><span>Warehouse / storage space</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; content creation</span><span>$18,000</span></div>
+          <div class="su-budget-row"><span>AI recommendation engine</span><span>$8,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$19,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:68%;background:var(--green)"></div></div><span class="su-meter-val">68%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:65%;background:var(--blue)"></div></div><span class="su-meter-val">65%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:75%;background:var(--amber)"></div></div><span class="su-meter-val">2-3 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:60%;background:var(--purple)"></div></div><span class="su-meter-val">Medium</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Competing with Amazon and established aviation retailers (Sporty&rsquo;s, Aircraft Spruce); thin e-commerce margins; E-2 adjudicators may view pure e-commerce as &ldquo;marginal.&rdquo;</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-aviation">Aviation</span>
+          <span class="su-tag su-tag-digital">Digital</span>
+          <span class="su-tag su-tag-scalable">Scalable</span>
+        </div>
+      </div>
+
+    </div><!-- /su-grid Tier 2 -->
+
+    <!-- ═══ Tier 3 — Worth Exploring ═══ -->
+    <h3 style="margin:2.5rem 0 1rem;color:var(--sky);font-size:1.1rem;text-transform:uppercase;letter-spacing:2px;">&#9733; Tier 3 &mdash; Worth Exploring</h3>
+    <div class="su-grid">
+
+      <!-- Card 7: Crypto Tax & Compliance Consultancy -->
+      <div class="su-card su-tier-3" data-cat="tech service">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#8383;</span>
+          <div>
+            <div class="su-card-title">Crypto Tax &amp; Compliance Consultancy</div>
+            <div class="su-card-tagline">Leverage your crypto knowledge in Austin&rsquo;s blockchain hub</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Specialized tax preparation and compliance consultancy for cryptocurrency traders, DeFi users, and NFT creators. Austin is a top-5 US crypto hub. Services include tax-loss harvesting reports, IRS audit defense, and international crypto asset reporting (FBAR/FATCA) for expats.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Your crypto background gives authentic market understanding</li>
+            <li>Austin is home to major crypto companies and active trading community</li>
+            <li>Service business = clear job creation (accountants, analysts)</li>
+            <li>AI can automate transaction categorization and report generation</li>
+            <li>International angle: help Polish/European crypto holders with US compliance</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>CPA partnership / licensing</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>AI tax categorization software</span><span>$25,000</span></div>
+          <div class="su-budget-row"><span>Office space (shared/flexible)</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; partnerships</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Compliance tools &amp; data feeds</span><span>$12,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$23,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:60%;background:var(--green)"></div></div><span class="su-meter-val">60%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:75%;background:var(--blue)"></div></div><span class="su-meter-val">75%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:55%;background:var(--amber)"></div></div><span class="su-meter-val">4-6 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:80%;background:var(--purple)"></div></div><span class="su-meter-val">High</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> Requires CPA partnership (you can&rsquo;t sign returns); crypto market downturns reduce client base; regulatory uncertainty around crypto tax rules.</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-tech">Tech / AI</span>
+          <span class="su-tag su-tag-service">Service</span>
+          <span class="su-tag su-tag-digital">Digital</span>
+        </div>
+      </div>
+
+      <!-- Card 8: Co-Working / Maker Space -->
+      <div class="su-card su-tier-3" data-cat="service">
+        <div class="su-card-header">
+          <span class="su-card-icon">&#127981;</span>
+          <div>
+            <div class="su-card-title">Co-Working / Maker Space</div>
+            <div class="su-card-tagline">Community-driven workspace with clear E-2 metrics</div>
+          </div>
+        </div>
+        <p class="su-card-desc">Creative co-working space in East Austin combining hot desks, private offices, and a maker lab (3D printing, laser cutting, electronics). Memberships, event rentals, and workshops. Strong community angle with networking events for entrepreneurs and remote workers.</p>
+
+        <div class="su-why">
+          <strong>&#10004; Why it works for you</strong>
+          <ul class="su-why-list">
+            <li>Physical commercial space = excellent E-2 investment documentation</li>
+            <li>Multiple revenue streams: memberships, day passes, events, workshops</li>
+            <li>Job creation: front desk, community manager, workshop instructors</li>
+            <li>Your property management skills apply to space operations</li>
+            <li>AI: automated booking, member CRM, utilization analytics dashboard</li>
+          </ul>
+        </div>
+
+        <div class="su-budget">
+          <div class="su-budget-title">$100K Budget Breakdown</div>
+          <div class="su-budget-row"><span>Lease deposit + first 3 months</span><span>$30,000</span></div>
+          <div class="su-budget-row"><span>Buildout &amp; furniture</span><span>$25,000</span></div>
+          <div class="su-budget-row"><span>Maker equipment (3D printers, tools)</span><span>$15,000</span></div>
+          <div class="su-budget-row"><span>Tech (WiFi, access control, screens)</span><span>$10,000</span></div>
+          <div class="su-budget-row"><span>Marketing &amp; launch events</span><span>$8,000</span></div>
+          <div class="su-budget-row"><span>Working capital</span><span>$12,000</span></div>
+        </div>
+
+        <div class="su-meters">
+          <div class="su-meter-row"><span class="su-meter-label">E-2 Fit</span><div class="su-meter-track"><div class="su-meter-fill" style="width:75%;background:var(--green)"></div></div><span class="su-meter-val">75%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Revenue Potential</span><div class="su-meter-track"><div class="su-meter-fill" style="width:60%;background:var(--blue)"></div></div><span class="su-meter-val">60%</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">Time to Revenue</span><div class="su-meter-track"><div class="su-meter-fill" style="width:50%;background:var(--amber)"></div></div><span class="su-meter-val">5-7 mo</span></div>
+          <div class="su-meter-row"><span class="su-meter-label">AI Leverage</span><div class="su-meter-track"><div class="su-meter-fill" style="width:45%;background:var(--purple)"></div></div><span class="su-meter-val">Low-Med</span></div>
+        </div>
+
+        <div class="su-risk">&#9888; <strong>Risk:</strong> $100K is tight for commercial buildout; co-working market is competitive (WeWork, Industrious); long break-even period (12-18 months).</div>
+
+        <div class="su-tags">
+          <span class="su-tag su-tag-service">Service</span>
+          <span class="su-tag su-tag-physical">Physical Location</span>
+        </div>
+      </div>
+
+    </div><!-- /su-grid Tier 3 -->
+
+    <!-- ═══ The $100K Playbook ═══ -->
+    <div class="su-playbook">
+      <h3 style="margin:0 0 0.5rem;font-size:1.2rem;">&#128218; The $100K Playbook &mdash; How to Allocate</h3>
+      <p style="opacity:0.8;margin-bottom:1.5rem;font-size:0.9rem;">Regardless of which idea you choose, this phased approach maximizes your E-2 case while managing burn rate.</p>
+
+      <div class="su-phase">
+        <div class="su-phase-label" style="background:var(--green-soft);color:var(--green);border:1px solid var(--green-border);">Phase 1</div>
+        <div>
+          <strong>Foundation (Month 0-1) &mdash; ~$35K</strong><br>
+          Entity formation (LLC), business plan, lease signed, initial equipment, E-2 attorney retainer, website/brand launch. <em>Goal: demonstrate &ldquo;substantial investment&rdquo; with irrevocable commitments.</em>
+        </div>
+      </div>
+
+      <div class="su-phase">
+        <div class="su-phase-label" style="background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber-border);">Phase 2</div>
+        <div>
+          <strong>Build &amp; Hire (Month 2-3) &mdash; ~$40K</strong><br>
+          First 1-2 employees hired, product/service launched, initial customers acquired, AI tools deployed, marketing running. <em>Goal: prove &ldquo;non-marginal enterprise&rdquo; with real revenue and employees.</em>
+        </div>
+      </div>
+
+      <div class="su-phase">
+        <div class="su-phase-label" style="background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue-border);">Phase 3</div>
+        <div>
+          <strong>Scale &amp; File (Month 4-6) &mdash; ~$25K</strong><br>
+          Growth marketing, additional hires, E-2 petition filed with 5-year business plan, financial projections, and job creation timeline. <em>Goal: file E-2 with demonstrable traction and clear growth path.</em>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Comparison Matrix ═══ -->
+    <h3 style="margin:2.5rem 0 1rem;font-size:1.1rem;">&#128202; Side-by-Side Comparison</h3>
+    <div style="overflow-x:auto;">
+      <table class="mp-matrix" id="suMatrixView">
+        <thead>
+          <tr>
+            <th data-sort="name">Startup Idea</th>
+            <th data-sort="e2" data-type="number">E-2 Fit</th>
+            <th data-sort="revenue" data-type="number">Revenue</th>
+            <th data-sort="time" data-type="number">Time to $</th>
+            <th data-sort="ai" data-type="number">AI Leverage</th>
+            <th data-sort="tier" data-type="number">Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-cat="aviation tech" data-e2="95" data-revenue="80" data-time="70" data-ai="65" data-tier="1">
+            <td class="mp-name-cell">Drone Flight School</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-1">1</span></td>
+          </tr>
+          <tr data-cat="tech service" data-e2="92" data-revenue="90" data-time="80" data-ai="95" data-tier="1">
+            <td class="mp-name-cell">AI Property Mgmt</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span></div></td>
+            <td><span class="mp-tier mp-tier-1">1</span></td>
+          </tr>
+          <tr data-cat="aviation education" data-e2="90" data-revenue="70" data-time="60" data-ai="75" data-tier="1">
+            <td class="mp-name-cell">Aviation English School</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-1">1</span></td>
+          </tr>
+          <tr data-cat="education tech" data-e2="82" data-revenue="72" data-time="65" data-ai="85" data-tier="2">
+            <td class="mp-name-cell">AI Tutoring Center</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-2">2</span></td>
+          </tr>
+          <tr data-cat="tech service" data-e2="78" data-revenue="85" data-time="85" data-ai="70" data-tier="2">
+            <td class="mp-name-cell">Smart Home / IoT</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-2">2</span></td>
+          </tr>
+          <tr data-cat="aviation digital" data-e2="68" data-revenue="65" data-time="75" data-ai="60" data-tier="2">
+            <td class="mp-name-cell">Pilot Supply E-Commerce</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-2">2</span></td>
+          </tr>
+          <tr data-cat="tech service" data-e2="60" data-revenue="75" data-time="55" data-ai="80" data-tier="3">
+            <td class="mp-name-cell">Crypto Tax Consultancy</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-3">3</span></td>
+          </tr>
+          <tr data-cat="service" data-e2="75" data-revenue="60" data-time="50" data-ai="45" data-tier="3">
+            <td class="mp-name-cell">Co-Working / Maker Space</td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot half"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><div class="mp-dots"><span class="mp-dot filled"></span><span class="mp-dot filled"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span><span class="mp-dot empty"></span></div></td>
+            <td><span class="mp-tier mp-tier-3">3</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
 <section id="questions">
   <div class="container">
     <span class="section-badge badge-blue">&#10067; Key Questions</span>
@@ -2662,6 +3351,58 @@
           return ascending ? valA - valB : valB - valA;
         });
 
+        rowArr.forEach(row => tbody.appendChild(row));
+      });
+    });
+  })();
+
+  /* ═══ Startup Section Interactivity ═══ */
+  (function() {
+    const filterBtns = document.querySelectorAll('#suCategoryFilters .su-filter-btn');
+    const cards      = document.querySelectorAll('.su-card');
+    const matrixRows = document.querySelectorAll('#suMatrixView tbody tr');
+
+    /* Category Filtering — cards + matrix rows */
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        cards.forEach(card => {
+          const cats = card.dataset.cat || '';
+          card.style.display = (filter === 'all' || cats.includes(filter)) ? '' : 'none';
+        });
+        matrixRows.forEach(row => {
+          const cats = row.dataset.cat || '';
+          row.style.display = (filter === 'all' || cats.includes(filter)) ? '' : 'none';
+        });
+      });
+    });
+
+    /* Matrix Sorting */
+    const headers = document.querySelectorAll('#suMatrixView th[data-sort]');
+    let currentSort = null;
+    let ascending = true;
+    headers.forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (currentSort === key) { ascending = !ascending; } else { currentSort = key; ascending = true; }
+        headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add(ascending ? 'sort-asc' : 'sort-desc');
+        const tbody = document.querySelector('#suMatrixView tbody');
+        const rowArr = Array.from(tbody.querySelectorAll('tr'));
+        rowArr.sort((a, b) => {
+          let valA, valB;
+          if (key === 'name') {
+            valA = a.querySelector('.mp-name-cell').textContent.trim().toLowerCase();
+            valB = b.querySelector('.mp-name-cell').textContent.trim().toLowerCase();
+            return ascending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+          }
+          valA = parseFloat(a.dataset[key] || 0);
+          valB = parseFloat(b.dataset[key] || 0);
+          return ascending ? valA - valB : valB - valA;
+        });
         rowArr.forEach(row => tbody.appendChild(row));
       });
     });
