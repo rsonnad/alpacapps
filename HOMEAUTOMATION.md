@@ -421,7 +421,7 @@ The browser doesn't access the Sonos HTTP API directly. Instead, requests flow t
 Browser (sonos.js)
   → Supabase Edge Function (sonos-control)
     → Nginx reverse proxy on DO droplet (port 8055)
-      → Alpaca Mac via Tailscale (100.102.122.65:5005)
+      → Alpaca Mac via Tailscale (100.94.221.98:5005)
         → node-sonos-http-api → Sonos speakers
 ```
 
@@ -438,7 +438,7 @@ server {
             return 403;
         }
         rewrite ^/sonos/(.*)$ /$1 break;
-        proxy_pass http://100.102.122.65:5005;
+        proxy_pass http://100.94.221.98:5005;
         proxy_connect_timeout 10s;
         proxy_read_timeout 30s;
         proxy_buffering off;
@@ -591,7 +591,7 @@ Runs on Alpaca Mac as launchd service `com.go2rtc` (v1.9.14).
 | API | `http://localhost:1984/api/streams` | Stream status/consumers |
 | Web UI | `http://localhost:1984/` | Built-in player (LAN only) |
 
-**Via Tailscale** (from DO droplet): Replace `localhost` with `100.102.122.65`
+**Via Tailscale** (from DO droplet): Replace `localhost` with `100.94.221.98`
 
 **Public access** (via Caddy reverse proxy on DO droplet):
 - HLS: `https://cam.alpacaplayhouse.com/api/stream.m3u8?src={stream}&mp4`
@@ -625,7 +625,7 @@ Caddy on the DO droplet reverse-proxies go2rtc's API through HTTPS with auto-pro
 1. Receives HTTPS requests at `cam.alpacaplayhouse.com/api/*`
 2. Strips go2rtc's CORS headers (which are `*`)
 3. Adds origin-specific CORS headers (github.io, alpacaplayhouse.com)
-4. Proxies to go2rtc at `http://100.102.122.65:1984` via Tailscale
+4. Proxies to go2rtc at `http://100.94.221.98:1984` via Tailscale
 5. Blocks all non-`/api/` paths (returns 404)
 
 **Manage Caddy:**
@@ -807,7 +807,7 @@ Debug the proxy chain step by step:
 
 1. **Alpaca Mac → Sonos HTTP API** (from DO droplet via Tailscale):
    ```bash
-   ssh alpaca@100.102.122.65 "curl -s http://localhost:5005/zones | head -c 200"
+   ssh alpaca@100.94.221.98 "curl -s http://localhost:5005/zones | head -c 200"
    ```
 
 2. **DO Droplet → Nginx proxy** (from DO droplet):
@@ -1269,7 +1269,7 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 ### TODO: Camera Streaming
 
 - [x] ~~**Deploy camera streaming**~~ — Deployed 2026-02-07. go2rtc v1.9.14 on Alpaca Mac with 9 streams. Caddy reverse proxy on DO droplet at `cam.alpacaplayhouse.com`. HLS.js frontend at `residents/cameras.html`.
-- [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.102.122.65`. Key expiry disabled.
+- [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.94.221.98`. Key expiry disabled.
 - [x] ~~**MediaMTX → go2rtc migration**~~ — MediaMTX crashed on UniFi Protect's malformed SPS NAL units. Switched to go2rtc which handles them perfectly. MediaMTX binary kept at `~/mediamtx/mediamtx.v1.16.0.bak` but service is unloaded.
 - [x] ~~**Identify Trolink cameras**~~ — These are Wansview/Trolink cameras (Trolink is Wansview's OEM). RTSP on port 554, ONVIF on port 8899, HTTP on port 80 (Boa web server, hi3510 chipset). Each camera has unique RTSP credentials set via Wansview app (Settings > Local Application > Local Account). Wansview 4 (.132) is streaming via go2rtc. Wansview 1 (.18) verified working via ffprobe but unreachable from Alpaca Mac. Wansview 2 (.21) and 3 (.26) accept auth but send no video data (likely physically offline).
 - [ ] **Get physical locations of Wansview cameras** — Currently named "Wansview 1" through "Wansview 4" as placeholders
