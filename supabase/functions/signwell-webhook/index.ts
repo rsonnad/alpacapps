@@ -314,8 +314,33 @@ async function processRentalAgreement(
       paymentMethodsHtml, paymentMethodsText
     );
 
+    // Look up vehicles assigned to this person for the registration email
+    let vehicleInfo = null;
+    try {
+      const { data: driverRecords } = await supabase
+        .from('vehicle_drivers')
+        .select('vehicle:vehicle_id (make, model, year, color, vin, name)')
+        .eq('person_id', person.id);
+
+      if (driverRecords && driverRecords.length > 0) {
+        const v = driverRecords[0].vehicle as any;
+        if (v) {
+          vehicleInfo = {
+            make: v.make || '',
+            model: v.model || '',
+            year: v.year || '',
+            color: v.color || '',
+            vin: v.vin || '',
+            name: v.name || '',
+          };
+        }
+      }
+    } catch (vErr) {
+      console.error('Error looking up vehicle for registration email:', vErr);
+    }
+
     // Send vehicle registration email (separate email so it's not buried)
-    await sendVehicleRegistrationEmail(person);
+    await sendVehicleRegistrationEmail(person, vehicleInfo);
   }
 
   return new Response(
@@ -696,7 +721,8 @@ Alpaca Playhouse`,
 
 // Send vehicle registration email after lease signing
 async function sendVehicleRegistrationEmail(
-  person: { first_name: string; last_name: string; email: string }
+  person: { first_name: string; last_name: string; email: string },
+  vehicleInfo?: { make: string; model: string; year: string; color: string; vin: string; name: string } | null
 ) {
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   if (!RESEND_API_KEY) {
@@ -705,6 +731,33 @@ async function sendVehicleRegistrationEmail(
   }
 
   const profileUrl = 'https://alpacaplayhouse.com/residents/profile.html#vehicles';
+
+  // Build vehicle info section if available
+  const hasVehicle = vehicleInfo && (vehicleInfo.make || vehicleInfo.model);
+  const vehicleLabel = hasVehicle
+    ? `${vehicleInfo.year} ${vehicleInfo.make} ${vehicleInfo.model}`.trim()
+    : '';
+
+  const vehicleHtmlSection = hasVehicle ? `
+          <div style="background: #fdf6ee; border-left: 4px solid #d4883a; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+            <h3 style="margin-top: 0; color: #d4883a;">Your Assigned Vehicle</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              ${vehicleInfo.name ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Name</td><td style="padding: 4px 0; font-weight: 600;">${vehicleInfo.name}</td></tr>` : ''}
+              <tr><td style="padding: 4px 12px 4px 0; color: #666;">Vehicle</td><td style="padding: 4px 0; font-weight: 600;">${vehicleLabel}</td></tr>
+              ${vehicleInfo.color ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Color</td><td style="padding: 4px 0;">${vehicleInfo.color}</td></tr>` : ''}
+              ${vehicleInfo.vin ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">VIN</td><td style="padding: 4px 0; font-family: monospace;">${vehicleInfo.vin}</td></tr>` : ''}
+            </table>
+          </div>` : '';
+
+  const vehicleTextSection = hasVehicle ? `
+YOUR ASSIGNED VEHICLE
+---------------------
+${vehicleInfo.name ? `Name: ${vehicleInfo.name}\n` : ''}Vehicle: ${vehicleLabel}
+${vehicleInfo.color ? `Color: ${vehicleInfo.color}\n` : ''}${vehicleInfo.vin ? `VIN: ${vehicleInfo.vin}\n` : ''}` : '';
+
+  const subject = hasVehicle
+    ? `Your Vehicle: ${vehicleLabel} - Alpaca Playhouse`
+    : 'Register Your Vehicle - Alpaca Playhouse';
 
   try {
     const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -717,17 +770,25 @@ async function sendVehicleRegistrationEmail(
         from: 'Alpaca Team <team@alpacaplayhouse.com>',
         to: [person.email],
         reply_to: 'team@alpacaplayhouse.com',
-        subject: 'Register Your Vehicle - Alpaca Playhouse',
+        subject,
         html: `
-          <h2>Register Your Vehicle</h2>
+          <h2>${hasVehicle ? 'Your Vehicle Information' : 'Register Your Vehicle'}</h2>
           <p>Hi ${person.first_name},</p>
-          <p>Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.</p>
+          ${hasVehicle
+            ? `<p>Now that your agreement is signed, here are the details for your assigned vehicle.</p>`
+            : `<p>Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.</p>`
+          }
+
+          ${vehicleHtmlSection}
 
           <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #3d8b7a;">Add Your Vehicle</h3>
-            <p>Visit your profile to add your vehicle details (make, model, color, license plate):</p>
+            <h3 style="margin-top: 0; color: #3d8b7a;">${hasVehicle ? 'Complete Your Vehicle Profile' : 'Add Your Vehicle'}</h3>
+            <p>${hasVehicle
+              ? 'Visit your profile to view your vehicle details and connect any additional features:'
+              : 'Visit your profile to add your vehicle details (make, model, color, license plate):'
+            }</p>
             <p style="text-align: center; margin: 20px 0;">
-              <a href="${profileUrl}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.05em;">Register My Vehicle</a>
+              <a href="${profileUrl}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.05em;">${hasVehicle ? 'View My Vehicle' : 'Register My Vehicle'}</a>
             </p>
           </div>
 
@@ -739,15 +800,21 @@ async function sendVehicleRegistrationEmail(
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
-        text: `Register Your Vehicle
+        text: `${hasVehicle ? 'Your Vehicle Information' : 'Register Your Vehicle'}
 
 Hi ${person.first_name},
 
-Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.
-
-ADD YOUR VEHICLE
+${hasVehicle
+  ? 'Now that your agreement is signed, here are the details for your assigned vehicle.'
+  : 'Now that your lease is signed, please take a moment to register your vehicle so we can manage parking and identify cars on the property.'
+}
+${vehicleTextSection}
+${hasVehicle ? 'COMPLETE YOUR VEHICLE PROFILE' : 'ADD YOUR VEHICLE'}
 ----------------
-Visit your profile to add your vehicle details (make, model, color, license plate):
+${hasVehicle
+  ? 'Visit your profile to view your vehicle details and connect any additional features:'
+  : 'Visit your profile to add your vehicle details (make, model, color, license plate):'
+}
 
 ${profileUrl}
 

@@ -16,7 +16,7 @@ import { formatDateAustin } from '../../shared/timezone.js';
 // =============================================
 
 let authState = null;
-let activeSection = null; // 'lease' | 'event' | 'worktrade' | 'renter_waiver' | 'event_waiver' | email template_key
+let activeSection = null; // 'lease' | 'event' | 'worktrade' | 'renter_waiver' | 'event_waiver' | 'vehicle_rental' | email template_key
 let emailTemplateList = [];
 let currentEmailTemplateKey = null;
 let emailHtmlSource = ''; // source-of-truth for the current email HTML
@@ -36,6 +36,7 @@ const SECTION_IDS = {
   worktrade: 'worktradeTemplateSection',
   renter_waiver: 'renterWaiverTemplateSection',
   event_waiver: 'eventWaiverTemplateSection',
+  vehicle_rental: 'vehicleRentalTemplateSection',
 };
 
 // =============================================
@@ -203,6 +204,35 @@ async function loadTemplatesPanel() {
   }
 
   await loadEventWaiverTemplateHistory();
+
+  // Load vehicle rental placeholder reference
+  const vehicleRentalPlaceholders = leaseTemplateService.getAvailablePlaceholders('vehicle_rental');
+  const vehicleRentalPlaceholderList = document.getElementById('vehicleRentalPlaceholderList');
+  if (vehicleRentalPlaceholderList) {
+    vehicleRentalPlaceholderList.innerHTML = Object.entries(vehicleRentalPlaceholders)
+      .map(([key, desc]) => `
+        <div class="placeholder-item">
+          <code>{{${key}}}</code>
+          <span class="placeholder-desc">${desc}</span>
+        </div>
+      `).join('');
+  }
+
+  // Load active vehicle rental template
+  try {
+    const vehicleRentalTemplate = await leaseTemplateService.getActiveTemplate('vehicle_rental');
+    if (vehicleRentalTemplate) {
+      document.getElementById('vehicleRentalTemplateName').value = vehicleRentalTemplate.name;
+      document.getElementById('vehicleRentalTemplateContent').value = vehicleRentalTemplate.content;
+    } else {
+      document.getElementById('vehicleRentalTemplateContent').value = leaseTemplateService.getDefaultTemplate('vehicle_rental');
+    }
+  } catch (e) {
+    console.error('Error loading vehicle rental template:', e);
+    document.getElementById('vehicleRentalTemplateContent').value = leaseTemplateService.getDefaultTemplate('vehicle_rental');
+  }
+
+  await loadVehicleRentalTemplateHistory();
 }
 
 // =============================================
@@ -305,7 +335,7 @@ function renderWelcomeStats() {
 
   statsEl.innerHTML = `
     <div class="tmpl-welcome-stat">
-      <span class="stat-num">5</span>
+      <span class="stat-num">6</span>
       <span class="stat-label">Documents</span>
     </div>
     <div class="tmpl-welcome-stat">
@@ -327,6 +357,7 @@ function selectTemplate(type, key) {
   document.getElementById('worktradeTemplateSection').style.display = 'none';
   document.getElementById('renterWaiverTemplateSection').style.display = 'none';
   document.getElementById('eventWaiverTemplateSection').style.display = 'none';
+  document.getElementById('vehicleRentalTemplateSection').style.display = 'none';
   document.getElementById('emailEditorView').style.display = 'none';
 
   // Clear all active states in sidebar
@@ -368,7 +399,7 @@ function setupSearch() {
 
 function filterSidebar(query) {
   // Filter document template items
-  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"]').forEach(item => {
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"], .tmpl-nav-item[data-type="vehicle_rental"]').forEach(item => {
     const text = item.querySelector('.tmpl-nav-text').textContent.toLowerCase();
     item.style.display = text.includes(query) || !query ? '' : 'none';
   });
@@ -444,7 +475,7 @@ function closeMobileSidebar() {
 
 function setupEventListeners() {
   // Document template nav items
-  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"]').forEach(btn => {
+  document.querySelectorAll('.tmpl-nav-item[data-type="lease"], .tmpl-nav-item[data-type="event"], .tmpl-nav-item[data-type="worktrade"], .tmpl-nav-item[data-type="renter_waiver"], .tmpl-nav-item[data-type="event_waiver"], .tmpl-nav-item[data-type="vehicle_rental"]').forEach(btn => {
     btn.addEventListener('click', () => {
       selectTemplate(btn.dataset.type, btn.dataset.key);
     });
@@ -470,6 +501,10 @@ function setupEventListeners() {
   // Event/Guest waiver template buttons
   document.getElementById('loadDefaultEventWaiverBtn')?.addEventListener('click', loadDefaultEventWaiver);
   document.getElementById('saveEventWaiverBtn')?.addEventListener('click', saveEventWaiverTemplate);
+
+  // Vehicle rental template buttons
+  document.getElementById('loadDefaultVehicleRentalBtn')?.addEventListener('click', loadDefaultVehicleRental);
+  document.getElementById('saveVehicleRentalBtn')?.addEventListener('click', saveVehicleRentalTemplate);
 
   // Email template buttons
   document.getElementById('emailPreviewBtn')?.addEventListener('click', emailPreviewTemplate);
@@ -1082,6 +1117,116 @@ function loadDefaultEventWaiver() {
   document.getElementById('eventWaiverTemplateContent').value = leaseTemplateService.getDefaultTemplate('event_waiver');
   document.getElementById('eventWaiverTemplateName').value = 'Event/Guest Liability Waiver';
   showToast('Default event/guest waiver loaded', 'info');
+}
+
+// =============================================
+// VEHICLE RENTAL TEMPLATE FUNCTIONS
+// =============================================
+
+async function loadVehicleRentalTemplateHistory() {
+  try {
+    const templates = await leaseTemplateService.getAllTemplates('vehicle_rental');
+    const tbody = document.getElementById('vehicleRentalTemplateHistoryBody');
+    if (!tbody) return;
+
+    if (templates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = templates.map(t => `
+      <tr>
+        <td>${t.name}</td>
+        <td>v${t.version}</td>
+        <td>${formatDateAustin(t.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+        <td>${t.is_active ? '<span class="status-badge active">Active</span>' : ''}</td>
+        <td>
+          <button class="btn-small" data-action="load-vehicle-rental-template" data-id="${t.id}">Load</button>
+          ${!t.is_active ? `<button class="btn-small" data-action="set-active-vehicle-rental-template" data-id="${t.id}">Set Active</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-action="load-vehicle-rental-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const { data } = await supabase.from('lease_templates').select('*').eq('id', btn.dataset.id).single();
+        if (data) {
+          document.getElementById('vehicleRentalTemplateName').value = data.name;
+          document.getElementById('vehicleRentalTemplateContent').value = data.content;
+          showToast('Vehicle rental template loaded', 'success');
+        }
+      });
+    });
+    tbody.querySelectorAll('[data-action="set-active-vehicle-rental-template"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await leaseTemplateService.setActiveTemplate(btn.dataset.id);
+          await loadVehicleRentalTemplateHistory();
+          showToast('Vehicle rental template set as active', 'success');
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Error loading vehicle rental template history:', e);
+  }
+}
+
+async function saveVehicleRentalTemplate() {
+  const name = document.getElementById('vehicleRentalTemplateName').value.trim();
+  const content = document.getElementById('vehicleRentalTemplateContent').value;
+  const makeActive = document.getElementById('vehicleRentalMakeActive').checked;
+
+  if (!name) {
+    showToast('Please enter a template name', 'warning');
+    return;
+  }
+
+  if (!content.trim()) {
+    showToast('Template content cannot be empty', 'warning');
+    return;
+  }
+
+  const validation = leaseTemplateService.validateTemplate(content, 'vehicle_rental');
+  const validationDiv = document.getElementById('vehicleRentalTemplateValidation');
+
+  if (!validation.isValid) {
+    validationDiv.innerHTML = `
+      <div class="validation-error">
+        <strong>Validation Errors:</strong>
+        <ul>${validation.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+    return;
+  }
+
+  if (validation.warnings.length > 0) {
+    validationDiv.innerHTML = `
+      <div class="validation-warning">
+        <strong>Warnings:</strong>
+        <ul>${validation.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+    `;
+    validationDiv.style.display = 'block';
+  } else {
+    validationDiv.style.display = 'none';
+  }
+
+  try {
+    await leaseTemplateService.saveTemplate(content, name, makeActive, 'vehicle_rental');
+    await loadVehicleRentalTemplateHistory();
+    showToast('Vehicle rental template saved!', 'success');
+  } catch (e) {
+    showToast('Error saving template: ' + e.message, 'error');
+  }
+}
+
+function loadDefaultVehicleRental() {
+  document.getElementById('vehicleRentalTemplateContent').value = leaseTemplateService.getDefaultTemplate('vehicle_rental');
+  document.getElementById('vehicleRentalTemplateName').value = 'Vehicle Rental Agreement';
+  showToast('Default vehicle rental template loaded', 'info');
 }
 
 // =============================================

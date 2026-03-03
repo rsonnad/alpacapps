@@ -64,7 +64,7 @@
           <div class="tmpl-nav-group">
             <div class="tmpl-nav-group-label">
               <span>Documents</span>
-              <span class="tmpl-nav-count">5</span>
+              <span class="tmpl-nav-count">6</span>
             </div>
             <button class="tmpl-nav-item" data-type="lease" data-key="lease">
               <span class="tmpl-nav-icon tmpl-icon-doc"></span>
@@ -85,6 +85,10 @@
             <button class="tmpl-nav-item" data-type="event_waiver" data-key="event_waiver">
               <span class="tmpl-nav-icon tmpl-icon-doc"></span>
               <span class="tmpl-nav-text">Event/Guest Waiver</span>
+            </button>
+            <button class="tmpl-nav-item" data-type="vehicle_rental" data-key="vehicle_rental">
+              <span class="tmpl-nav-icon tmpl-icon-doc"></span>
+              <span class="tmpl-nav-text">Vehicle Rental</span>
             </button>
           </div>
 
@@ -459,6 +463,70 @@
                     </tr>
                   </thead>
                   <tbody id="eventWaiverTemplateHistoryBody">
+                    <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle Rental Template Section -->
+          <div id="vehicleRentalTemplateSection" style="display: none;">
+            <div class="section">
+              <div class="section-header">
+                <h2>Vehicle Rental Agreement Template</h2>
+                <div class="header-actions">
+                  <button type="button" id="loadDefaultVehicleRentalBtn" class="btn-small">Load Default</button>
+                  <button type="button" id="saveVehicleRentalBtn" class="btn-small btn-primary">Save Template</button>
+                </div>
+              </div>
+              <div class="section-body">
+                <p class="text-muted" style="margin-bottom: 1rem;">
+                  Edit the vehicle rental agreement template. Use <code>{{placeholder}}</code> syntax for dynamic fields.
+                </p>
+
+                <div class="template-editor-container">
+                  <div class="template-editor">
+                    <label for="vehicleRentalTemplateName">Template Name</label>
+                    <input type="text" id="vehicleRentalTemplateName" value="Standard Vehicle Rental Agreement" style="margin-bottom: 1rem;">
+
+                    <label for="vehicleRentalTemplateContent">Template Content</label>
+                    <textarea id="vehicleRentalTemplateContent" class="template-textarea" rows="20" placeholder="Enter vehicle rental agreement template content..."></textarea>
+                  </div>
+
+                  <div class="placeholder-reference">
+                    <h4>Available Placeholders</h4>
+                    <div id="vehicleRentalPlaceholderList" class="placeholder-list"></div>
+                  </div>
+                </div>
+
+                <div class="template-actions" style="margin-top: 1rem;">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="vehicleRentalMakeActive" checked>
+                    Set as active template
+                  </label>
+                </div>
+
+                <div id="vehicleRentalTemplateValidation" class="template-validation" style="display: none; margin-top: 1rem;"></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">
+                <h2>Template History</h2>
+              </div>
+              <div class="section-body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Version</th>
+                      <th>Created</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vehicleRentalTemplateHistoryBody">
                     <tr><td colspan="5" class="text-muted">No templates saved yet</td></tr>
                   </tbody>
                 </table>

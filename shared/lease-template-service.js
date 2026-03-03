@@ -51,6 +51,39 @@ const EVENT_WAIVER_PLACEHOLDERS = {
   signing_date: 'Current date formatted',
 };
 
+// Placeholders for vehicle rental agreement templates
+const VEHICLE_RENTAL_PLACEHOLDERS = {
+  owner_name: 'Full name of the vehicle owner',
+  owner_address: 'Owner mailing address',
+  owner_phone: 'Owner phone number',
+  owner_email: 'Owner email address',
+  renter_name: 'Full name of the renter',
+  renter_address: 'Renter mailing address',
+  renter_phone: 'Renter phone number',
+  renter_email: 'Renter email address',
+  renter_dl_number: 'Renter driver\'s license number',
+  renter_dl_state: 'Renter driver\'s license state',
+  vehicle_make: 'Vehicle make (e.g., Tesla)',
+  vehicle_model: 'Vehicle model (e.g., Model Y)',
+  vehicle_year: 'Vehicle year (e.g., 2023)',
+  vehicle_color: 'Vehicle color',
+  vehicle_vin: 'Vehicle Identification Number',
+  vehicle_license_plate: 'License plate number',
+  starting_mileage: 'Odometer reading at rental start',
+  monthly_mileage_limit: 'Monthly mileage allowance (e.g., 1,000 miles)',
+  mileage_overage_rate: 'Per-mile charge for overage (e.g., $0.25)',
+  rental_start_date: 'Rental period start date',
+  rental_end_date: 'Rental period end date',
+  monthly_rate: 'Monthly rental rate (e.g., $800)',
+  fsd_rate: 'FSD subscription rate (e.g., $99/month)',
+  security_deposit: 'Security deposit amount',
+  late_return_hourly_rate: 'Late return fee per hour (e.g., $40)',
+  late_return_daily_rate: 'Late return fee per day (e.g., $150)',
+  insurance_requirements: 'Insurance coverage requirements',
+  signing_date: 'Date the agreement is signed',
+  additional_terms: 'Any additional terms or conditions',
+};
+
 /**
  * Get all available placeholders with descriptions
  * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
@@ -58,6 +91,7 @@ const EVENT_WAIVER_PLACEHOLDERS = {
 function getAvailablePlaceholders(type = 'lease') {
   if (type === 'renter_waiver') return WAIVER_PLACEHOLDERS;
   if (type === 'event_waiver') return EVENT_WAIVER_PLACEHOLDERS;
+  if (type === 'vehicle_rental') return VEHICLE_RENTAL_PLACEHOLDERS;
   return PLACEHOLDERS;
 }
 
@@ -203,7 +237,9 @@ function validateTemplate(content, type = 'lease') {
     ? { ...PLACEHOLDERS, ...EVENT_WAIVER_PLACEHOLDERS }
     : type === 'renter_waiver'
       ? { ...PLACEHOLDERS, ...WAIVER_PLACEHOLDERS }
-      : PLACEHOLDERS;
+      : type === 'vehicle_rental'
+        ? { ...PLACEHOLDERS, ...VEHICLE_RENTAL_PLACEHOLDERS }
+        : PLACEHOLDERS;
 
   // Find all placeholders in the template
   const placeholderRegex = /\{\{(\w+)\}\}/g;
@@ -223,6 +259,7 @@ function validateTemplate(content, type = 'lease') {
     lease: ['tenant_name', 'lease_start_date', 'rate_display'],
     renter_waiver: ['tenant_name', 'signing_date'],
     event_waiver: ['client_name', 'signing_date'],
+    vehicle_rental: ['renter_name', 'vehicle_vin', 'monthly_rate'],
   };
   const requiredPlaceholders = requiredMap[type] || requiredMap.lease;
   for (const required of requiredPlaceholders) {
@@ -620,13 +657,173 @@ Name: {{client_name}}
 Date: _________________________
 `;
 
+// ============================================================
+// DEFAULT VEHICLE RENTAL AGREEMENT TEMPLATE
+// ============================================================
+
+const DEFAULT_VEHICLE_RENTAL = `# VEHICLE RENTAL AGREEMENT
+
+**AlpacApps Residency**
+160 Still Forest Drive, Cedar Creek, TX 78612
+
+---
+
+This Vehicle Rental Agreement ("Agreement") is entered into on **{{signing_date}}** between:
+
+**OWNER:** {{owner_name}} ("Owner")
+- Address: {{owner_address}}
+- Phone: {{owner_phone}}
+- Email: {{owner_email}}
+
+**RENTER:** {{renter_name}} ("Renter")
+- Address: {{renter_address}}
+- Phone: {{renter_phone}}
+- Email: {{renter_email}}
+- Driver's License: {{renter_dl_number}} (State: {{renter_dl_state}})
+
+---
+
+## 1. VEHICLE INFORMATION
+
+The Owner agrees to rent the following vehicle to the Renter:
+
+- **Year:** {{vehicle_year}}
+- **Make:** {{vehicle_make}}
+- **Model:** {{vehicle_model}}
+- **Color:** {{vehicle_color}}
+- **VIN:** {{vehicle_vin}}
+- **License Plate:** {{vehicle_license_plate}}
+- **Starting Mileage:** {{starting_mileage}}
+
+## 2. RENTAL PERIOD
+
+- **Start Date:** {{rental_start_date}}
+- **End Date:** {{rental_end_date}}
+
+The vehicle must be returned by 11:59 PM on the end date unless otherwise agreed in writing.
+
+## 3. RENTAL RATE & PAYMENT
+
+- **Monthly Rental Rate:** {{monthly_rate}}
+- **FSD (Full Self-Driving) Subscription:** {{fsd_rate}} (if applicable)
+- **Security Deposit:** {{security_deposit}}
+
+Rent is due on the 1st of each month. Accepted payment methods: Venmo, Zelle, PayPal, or Bank Transfer.
+
+The security deposit will be returned within 30 days of vehicle return, less any deductions for damages, excess mileage, cleaning, or other charges as outlined in this Agreement.
+
+## 4. MILEAGE
+
+- **Monthly Mileage Allowance:** {{monthly_mileage_limit}}
+- **Overage Rate:** {{mileage_overage_rate}} per mile over the monthly allowance
+
+Mileage will be tracked via the vehicle's odometer. Overage charges will be calculated at the end of each rental month and added to the following month's payment.
+
+## 5. INSURANCE
+
+{{insurance_requirements}}
+
+Renter must maintain valid auto insurance coverage for the duration of the rental period. Proof of insurance must be provided before taking possession of the vehicle. Renter's insurance must be primary coverage.
+
+## 6. USE OF VEHICLE
+
+The Renter agrees to:
+- Use the vehicle only for lawful purposes
+- Not allow any unlicensed or unauthorized drivers to operate the vehicle
+- Not use the vehicle for commercial purposes (rideshare, delivery, etc.) without written consent
+- Not smoke or vape in the vehicle
+- Not transport pets without prior written approval
+- Maintain the vehicle in clean condition
+- Not modify the vehicle in any way
+- Follow all traffic laws and regulations
+- Not take the vehicle outside of the State of Texas without prior written consent
+
+## 7. CHARGING (ELECTRIC VEHICLES)
+
+- Renter is responsible for keeping the vehicle charged
+- Home charging costs are included in the rental rate
+- Supercharger and public charging costs are the Renter's responsibility
+- Renter must not let the battery level drop below 10%
+
+## 8. MAINTENANCE & REPAIRS
+
+- Routine maintenance (tire rotations, wiper fluid, etc.) is the Owner's responsibility
+- Renter must promptly report any mechanical issues, warning lights, or damage
+- Renter is responsible for tire damage caused by road hazards, curbing, or negligence
+- Owner will handle all scheduled service appointments
+
+## 9. DAMAGE & LIABILITY
+
+- Renter is responsible for all damage to the vehicle during the rental period, including damage caused by third parties
+- Renter must report any accident or damage within 24 hours
+- Renter is liable for the insurance deductible amount in the event of a claim
+- Owner is not responsible for personal property left in the vehicle
+
+## 10. LATE RETURNS
+
+If the vehicle is not returned by the agreed-upon end date:
+
+- **Hourly late fee:** {{late_return_hourly_rate}} per hour for the first 24 hours
+- **Daily late fee:** {{late_return_daily_rate}} per day after the first 24 hours
+
+If the vehicle is not returned within 72 hours of the end date without prior arrangement, the Owner reserves the right to report the vehicle as stolen and pursue all available legal remedies.
+
+## 11. EARLY TERMINATION
+
+Either party may terminate this Agreement with 30 days written notice. In the event of early termination:
+
+- Renter must return the vehicle in the same condition as received (normal wear and tear excepted)
+- Security deposit will be returned per the terms of Section 3
+- No penalty for early termination with proper notice
+
+## 12. RETURN CONDITION
+
+Upon return, the vehicle must be:
+- Clean (interior and exterior) — a $150 cleaning fee will be charged otherwise
+- Charged to at least 80% battery (electric vehicles)
+- Free of personal belongings
+- In the same mechanical condition as received (normal wear and tear excepted)
+
+## 13. GOVERNING LAW
+
+This Agreement shall be governed by and construed in accordance with the laws of the State of Texas. Any disputes arising under this Agreement shall be subject to the exclusive jurisdiction of the courts of Bastrop County, Texas.
+
+## 14. ADDITIONAL TERMS
+
+{{additional_terms}}
+
+---
+
+## SIGNATURES
+
+By signing below, both parties agree to the terms of this Vehicle Rental Agreement.
+
+**OWNER**
+
+Signature: _________________________
+
+Name: {{owner_name}}
+
+Date: _________________________
+
+
+**RENTER**
+
+Signature: _________________________
+
+Name: {{renter_name}}
+
+Date: _________________________
+`;
+
 /**
  * Get the default template content
- * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
+ * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver', 'vehicle_rental'
  */
 function getDefaultTemplate(type = 'lease') {
   if (type === 'renter_waiver') return DEFAULT_RENTER_WAIVER;
   if (type === 'event_waiver') return DEFAULT_EVENT_WAIVER;
+  if (type === 'vehicle_rental') return DEFAULT_VEHICLE_RENTAL;
   return DEFAULT_TEMPLATE;
 }
 
