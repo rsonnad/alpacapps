@@ -1184,7 +1184,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
           <span class="calc-svc__name">Cloudflare R2</span>
-          <span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span>
+          <span class="calc-svc__desc">Object &amp; video storage (10 GB free, zero egress)</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1791,9 +1791,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
   <!-- 11. Cloudflare R2 -->
   <details class="infra-section" id="cloudflare-r2-setup">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object &amp; Video Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="infra-section__body">
-    <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
+    <p>Optional. S3-compatible object and video storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, video, and other media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -2197,7 +2197,7 @@ function recalcCost() {
     'stripe':      'Stripe (payments)',
     'signwell':    'SignWell (e-sign)',
     'gemini':      'Google Gemini (AI)',
-    'cloudflare-r2': 'Cloudflare R2 (storage)',
+    'cloudflare-r2': 'Cloudflare R2 (object & video)',
     'workers':     'Background Workers (cloud VM)',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
