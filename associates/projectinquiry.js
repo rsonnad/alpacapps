@@ -13,6 +13,8 @@ let appUser = null;
 let uploadedPhotos = []; // Array of { media, previewUrl }
 let activeJobIds = [];
 let pollTimer = null;
+let libraryMedia = [];
+let librarySelected = new Set();
 
 // =============================================
 // Bootstrap
@@ -239,6 +241,21 @@ function setupEventListeners() {
     document.getElementById('uploadSection').style.display = '';
     resetUpload();
   });
+
+  // Media library
+  document.getElementById('btnBrowseLibrary').addEventListener('click', openMediaLibrary);
+  document.getElementById('btnCloseLibrary').addEventListener('click', closeMediaLibrary);
+  document.getElementById('libraryAddBtn').addEventListener('click', addSelectedFromLibrary);
+  document.getElementById('mediaLibraryOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeMediaLibrary();
+  });
+
+  // Library search
+  let searchTimeout = null;
+  document.getElementById('librarySearch').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => renderLibraryGrid(e.target.value.trim()), 200);
+  });
 }
 
 // =============================================
@@ -337,18 +354,28 @@ function renderPhotoGallery() {
     gallery.appendChild(item);
   });
 
-  // "Add more" button inside gallery
+  // "Add more" upload button
   const addMore = document.createElement('label');
   addMore.className = 'photo-gallery-add';
   addMore.innerHTML = `
     <input type="file" accept="image/*" multiple>
     <span class="add-icon">+</span>
-    <span class="add-label">Add more</span>`;
+    <span class="add-label">Upload</span>`;
   addMore.querySelector('input').addEventListener('change', (e) => {
     if (e.target.files.length) handleFilesSelected([...e.target.files]);
     e.target.value = '';
   });
   gallery.appendChild(addMore);
+
+  // "Library" button in gallery
+  const addFromLib = document.createElement('button');
+  addFromLib.className = 'photo-gallery-add';
+  addFromLib.type = 'button';
+  addFromLib.innerHTML = `
+    <span class="add-icon">📚</span>
+    <span class="add-label">Library</span>`;
+  addFromLib.addEventListener('click', openMediaLibrary);
+  gallery.appendChild(addFromLib);
 }
 
 function updateButtonStates() {
@@ -729,6 +756,128 @@ function buildHistoryItem(job, isForMe) {
   }
 
   return el;
+}
+
+// =============================================
+// Media Library Picker
+// =============================================
+const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.gif'];
+
+async function openMediaLibrary() {
+  librarySelected = new Set();
+
+  const overlay = document.getElementById('mediaLibraryOverlay');
+  overlay.style.display = '';
+
+  const grid = document.getElementById('mediaLibraryGrid');
+  grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);grid-column:1/-1;padding:2rem">Loading photos...</p>';
+  document.getElementById('librarySearch').value = '';
+  updateLibraryCount();
+
+  // Load recent media from database
+  const { data, error } = await supabase
+    .from('media')
+    .select('id, url, caption, created_at')
+    .eq('is_archived', false)
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);grid-column:1/-1;padding:2rem">Failed to load photos</p>';
+    return;
+  }
+
+  // Filter to images only (by URL extension)
+  libraryMedia = (data || []).filter(m => {
+    const url = (m.url || '').toLowerCase();
+    return IMAGE_EXTS.some(ext => url.includes(ext));
+  });
+
+  renderLibraryGrid();
+}
+
+function renderLibraryGrid(searchFilter) {
+  const grid = document.getElementById('mediaLibraryGrid');
+  const filter = (searchFilter || '').toLowerCase();
+
+  // Filter media by search term
+  const filtered = filter
+    ? libraryMedia.filter(m => (m.caption || '').toLowerCase().includes(filter))
+    : libraryMedia;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p style="text-align:center;color:var(--text-muted);grid-column:1/-1;padding:2rem">${
+      filter ? 'No photos match your search' : 'No photos found'
+    }</p>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+
+  // IDs of photos already added to this inquiry
+  const alreadyAddedIds = new Set(uploadedPhotos.map(p => p.media.id));
+
+  filtered.forEach(m => {
+    const isAlreadyAdded = alreadyAddedIds.has(m.id);
+    const isSelected = librarySelected.has(m.id);
+
+    const item = document.createElement('div');
+    item.className = 'media-library-item'
+      + (isSelected ? ' selected' : '')
+      + (isAlreadyAdded ? ' already-added' : '');
+    item.innerHTML = `
+      <img src="${escHtml(m.url)}" alt="${escHtml(m.caption || '')}" loading="lazy">
+      <span class="check">✓</span>
+      ${isAlreadyAdded ? '<span class="already-badge">Added</span>' : ''}`;
+
+    if (!isAlreadyAdded) {
+      item.addEventListener('click', () => {
+        if (librarySelected.has(m.id)) {
+          librarySelected.delete(m.id);
+          item.classList.remove('selected');
+        } else {
+          librarySelected.add(m.id);
+          item.classList.add('selected');
+        }
+        updateLibraryCount();
+      });
+    }
+
+    grid.appendChild(item);
+  });
+}
+
+function updateLibraryCount() {
+  const countEl = document.getElementById('librarySelectionCount');
+  const addBtn = document.getElementById('libraryAddBtn');
+  const count = librarySelected.size;
+  countEl.textContent = count > 0 ? `${count} photo${count > 1 ? 's' : ''} selected` : 'Tap photos to select';
+  addBtn.disabled = count === 0;
+}
+
+function addSelectedFromLibrary() {
+  const selectedMedia = libraryMedia.filter(m => librarySelected.has(m.id));
+
+  let added = 0;
+  for (const m of selectedMedia) {
+    if (!uploadedPhotos.some(p => p.media.id === m.id)) {
+      uploadedPhotos.push({ media: m, previewUrl: m.url });
+      added++;
+    }
+  }
+
+  closeMediaLibrary();
+  renderPhotoGallery();
+  updateButtonStates();
+
+  if (added > 0) {
+    showToast(`${added} photo${added > 1 ? 's' : ''} added from library`, 'success');
+  }
+}
+
+function closeMediaLibrary() {
+  document.getElementById('mediaLibraryOverlay').style.display = 'none';
+  librarySelected = new Set();
 }
 
 // =============================================
