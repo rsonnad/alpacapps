@@ -10,8 +10,8 @@ import { mediaService } from '../shared/media-service.js';
 
 let authState = null;
 let appUser = null;
-let uploadedMedia = null;
-let activeJobId = null;
+let uploadedPhotos = []; // Array of { media, previewUrl }
+let activeJobIds = [];
 let pollTimer = null;
 
 // =============================================
@@ -188,9 +188,9 @@ function setupDynamicFields() {
       if (labelSpan) labelSpan.textContent = typeConfig.label;
     }
 
-    // Enable/disable based on photo
-    btnSubmitQuestion.disabled = !uploadedMedia;
-    btnAnalyze.disabled = !uploadedMedia;
+    // Enable/disable based on photos
+    btnSubmitQuestion.disabled = uploadedPhotos.length === 0;
+    btnAnalyze.disabled = uploadedPhotos.length === 0;
   }
 
   questionInput.addEventListener('input', updateFieldVisibility);
@@ -206,7 +206,6 @@ function setupDynamicFields() {
 function setupEventListeners() {
   const cameraInput = document.getElementById('cameraInput');
   const fileInput = document.getElementById('fileInput');
-  const btnRemove = document.getElementById('btnRemove');
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnSubmitQuestion = document.getElementById('btnSubmitQuestion');
   const btnNewAnalysis = document.getElementById('btnNewAnalysis');
@@ -218,18 +217,15 @@ function setupEventListeners() {
 
   // Camera capture (Take Photo)
   cameraInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) handleFileSelected(e.target.files[0]);
+    if (e.target.files[0]) handleFilesSelected([e.target.files[0]]);
     e.target.value = '';
   });
 
-  // File picker (Upload Photo)
+  // File picker (Upload Photos) - supports multiple
   fileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) handleFileSelected(e.target.files[0]);
+    if (e.target.files.length) handleFilesSelected([...e.target.files]);
     e.target.value = '';
   });
-
-  // Remove photo
-  btnRemove.addEventListener('click', resetUpload);
 
   // Analyze (Color Pick)
   btnAnalyze.addEventListener('click', () => handleSubmit('color_pick'));
@@ -246,65 +242,127 @@ function setupEventListeners() {
 }
 
 // =============================================
-// File selection + upload
+// File selection + upload (multi-photo)
 // =============================================
-async function handleFileSelected(file) {
-  if (!file.type.startsWith('image/')) {
-    showToast('Please select an image file', 'error');
+async function handleFilesSelected(files) {
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  if (imageFiles.length === 0) {
+    showToast('Please select image files', 'error');
     return;
   }
 
-  // Show preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    document.getElementById('previewImage').src = e.target.result;
-    document.getElementById('uploadButtons').style.display = 'none';
-    document.getElementById('uploadPreview').style.display = '';
-  };
-  reader.readAsDataURL(file);
-
-  // Show progress bar
   const progressEl = document.getElementById('uploadProgress');
   const barEl = document.getElementById('uploadBar');
-  progressEl.style.display = '';
-  barEl.style.width = '0%';
 
-  // Upload via media service
-  try {
-    const result = await mediaService.upload(file, {
-      category: 'projects',
-      caption: document.getElementById('captionInput').value.trim() || 'Project inquiry',
-      onProgress: (loaded, total) => {
-        const pct = Math.round((loaded / total) * 100);
-        barEl.style.width = pct + '%';
+  for (let i = 0; i < imageFiles.length; i++) {
+    const file = imageFiles[i];
+
+    // Show progress
+    progressEl.style.display = '';
+    barEl.style.width = '0%';
+
+    try {
+      const result = await mediaService.upload(file, {
+        category: 'projects',
+        caption: document.getElementById('captionInput').value.trim() || 'Project inquiry',
+        onProgress: (loaded, total) => {
+          const pct = Math.round((loaded / total) * 100);
+          barEl.style.width = pct + '%';
+        }
+      });
+
+      let media = null;
+
+      if (result.success) {
+        media = result.media;
+      } else if (result.isDuplicate && result.existingMedia) {
+        // Reuse previously uploaded photo instead of blocking
+        media = result.existingMedia;
+        showToast('Using existing photo', 'info');
+      } else {
+        showToast('Upload failed: ' + (result.error || 'Unknown error'), 'error');
+        continue;
       }
-    });
 
-    if (!result.success) {
-      showToast('Upload failed: ' + (result.error || 'Unknown error'), 'error');
-      resetUpload();
-      return;
+      // Check if this media is already in our list (avoid adding same photo twice in one session)
+      if (uploadedPhotos.some(p => p.media.id === media.id)) {
+        showToast('Photo already added', 'info');
+        continue;
+      }
+
+      uploadedPhotos.push({ media, previewUrl: media.url });
+    } catch (err) {
+      console.error('Upload error:', err);
+      showToast('Upload failed for a photo', 'error');
     }
+  }
 
-    uploadedMedia = result.media;
-    progressEl.style.display = 'none';
-    // Enable whichever button is currently visible
-    document.getElementById('btnAnalyze').disabled = false;
-    document.getElementById('btnSubmitQuestion').disabled = false;
-    showToast('Photo uploaded', 'success');
-  } catch (err) {
-    console.error('Upload error:', err);
-    showToast('Upload failed', 'error');
-    resetUpload();
+  progressEl.style.display = 'none';
+  renderPhotoGallery();
+  updateButtonStates();
+
+  if (uploadedPhotos.length > 0) {
+    showToast(`${uploadedPhotos.length} photo${uploadedPhotos.length > 1 ? 's' : ''} ready`, 'success');
   }
 }
 
+function removePhoto(index) {
+  uploadedPhotos.splice(index, 1);
+  renderPhotoGallery();
+  updateButtonStates();
+}
+
+function renderPhotoGallery() {
+  const gallery = document.getElementById('photoGallery');
+  const uploadBtns = document.getElementById('uploadButtons');
+
+  if (uploadedPhotos.length === 0) {
+    gallery.style.display = 'none';
+    uploadBtns.style.display = '';
+    return;
+  }
+
+  gallery.style.display = '';
+  uploadBtns.style.display = 'none';
+
+  gallery.innerHTML = '';
+
+  uploadedPhotos.forEach((photo, i) => {
+    const item = document.createElement('div');
+    item.className = 'photo-gallery-item';
+    item.innerHTML = `
+      <img src="${escHtml(photo.previewUrl)}" alt="Photo ${i + 1}">
+      <button class="remove-btn" title="Remove">&times;</button>`;
+    item.querySelector('.remove-btn').addEventListener('click', () => removePhoto(i));
+    gallery.appendChild(item);
+  });
+
+  // "Add more" button inside gallery
+  const addMore = document.createElement('label');
+  addMore.className = 'photo-gallery-add';
+  addMore.innerHTML = `
+    <input type="file" accept="image/*" multiple>
+    <span class="add-icon">+</span>
+    <span class="add-label">Add more</span>`;
+  addMore.querySelector('input').addEventListener('change', (e) => {
+    if (e.target.files.length) handleFilesSelected([...e.target.files]);
+    e.target.value = '';
+  });
+  gallery.appendChild(addMore);
+}
+
+function updateButtonStates() {
+  const hasPhotos = uploadedPhotos.length > 0;
+  document.getElementById('btnAnalyze').disabled = !hasPhotos;
+  document.getElementById('btnSubmitQuestion').disabled = !hasPhotos;
+}
+
 function resetUpload() {
-  uploadedMedia = null;
+  uploadedPhotos = [];
   document.getElementById('cameraInput').value = '';
   document.getElementById('fileInput').value = '';
   document.getElementById('uploadButtons').style.display = '';
-  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('photoGallery').style.display = 'none';
   document.getElementById('uploadProgress').style.display = 'none';
   document.getElementById('uploadBar').style.width = '0%';
   document.getElementById('btnAnalyze').disabled = true;
@@ -320,7 +378,7 @@ function resetUpload() {
 // Submit inquiry (both types)
 // =============================================
 async function handleSubmit(inquiryType) {
-  if (!uploadedMedia) {
+  if (uploadedPhotos.length === 0) {
     showToast('Upload a photo first', 'error');
     return;
   }
@@ -337,20 +395,16 @@ async function handleSubmit(inquiryType) {
     assignedToName = sel.options[sel.selectedIndex]?.textContent || null;
   }
 
-  // Optionally link media to space
-  if (spaceId && uploadedMedia.id) {
-    try {
-      await mediaService.linkMediaToSpace(uploadedMedia.id, spaceId, 0);
-    } catch { /* ignore link failure */ }
-  }
+  // Create one inquiry per photo
+  const rows = uploadedPhotos.map((photo, i) => {
+    const photoCaption = uploadedPhotos.length > 1
+      ? `${caption || 'Project inquiry'} (${i + 1}/${uploadedPhotos.length})`
+      : caption;
 
-  // Create job
-  const { data: job, error } = await supabase
-    .from('project_inquiries')
-    .insert({
-      media_id: uploadedMedia.id,
-      image_url: uploadedMedia.url,
-      caption,
+    return {
+      media_id: photo.media.id,
+      image_url: photo.media.url,
+      caption: photoCaption,
       space_id: spaceId,
       app_user_id: appUser.id,
       status: 'pending',
@@ -358,9 +412,22 @@ async function handleSubmit(inquiryType) {
       question,
       assigned_to: assignedToId,
       assigned_to_name: assignedToName,
-    })
-    .select()
-    .single();
+    };
+  });
+
+  // Link media to space if selected
+  if (spaceId) {
+    for (const photo of uploadedPhotos) {
+      try {
+        await mediaService.linkMediaToSpace(photo.media.id, spaceId, 0);
+      } catch { /* ignore link failure */ }
+    }
+  }
+
+  const { data: jobs, error } = await supabase
+    .from('project_inquiries')
+    .insert(rows)
+    .select();
 
   if (error) {
     console.error('Job creation error:', error);
@@ -368,7 +435,7 @@ async function handleSubmit(inquiryType) {
     return;
   }
 
-  activeJobId = job.id;
+  activeJobIds = jobs.map(j => j.id);
 
   // Show processing state
   document.getElementById('uploadSection').style.display = 'none';
@@ -377,44 +444,62 @@ async function handleSubmit(inquiryType) {
 
   // Update processing title
   const processingTitle = document.getElementById('processingTitle');
+  const photoCount = uploadedPhotos.length;
   if (inquiryType === 'general') {
-    processingTitle.textContent = 'Answering your question...';
+    processingTitle.textContent = photoCount > 1
+      ? `Answering your question for ${photoCount} photos...`
+      : 'Answering your question...';
   } else {
-    processingTitle.textContent = 'Analyzing colors...';
+    processingTitle.textContent = photoCount > 1
+      ? `Analyzing colors for ${photoCount} photos...`
+      : 'Analyzing colors...';
   }
 
   // Poll for results
-  startPolling(job.id);
+  startPolling(activeJobIds);
 }
 
 // =============================================
-// Polling
+// Polling (supports multiple job IDs)
 // =============================================
-function startPolling(jobId) {
+function startPolling(jobIds) {
   if (pollTimer) clearInterval(pollTimer);
+  const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
 
   pollTimer = setInterval(async () => {
-    const { data: job } = await supabase
+    const { data: jobs } = await supabase
       .from('project_inquiries')
       .select('*')
-      .eq('id', jobId)
-      .single();
+      .in('id', ids);
 
-    if (!job) return;
+    if (!jobs || jobs.length === 0) return;
 
-    if (job.status === 'completed') {
-      clearInterval(pollTimer);
-      pollTimer = null;
-      document.getElementById('processingSection').style.display = 'none';
-      renderResults(job);
-      loadHistory();
-    } else if (job.status === 'failed') {
-      clearInterval(pollTimer);
-      pollTimer = null;
-      document.getElementById('processingSection').style.display = 'none';
-      document.getElementById('uploadSection').style.display = '';
-      showToast('Inquiry failed: ' + (job.error_message || 'Unknown error'), 'error');
+    const allDone = jobs.every(j => j.status === 'completed' || j.status === 'failed');
+    if (!allDone) return;
+
+    clearInterval(pollTimer);
+    pollTimer = null;
+    document.getElementById('processingSection').style.display = 'none';
+
+    const completed = jobs.filter(j => j.status === 'completed');
+    const failed = jobs.filter(j => j.status === 'failed');
+
+    if (completed.length > 0) {
+      // Show first completed result (user can view others from history)
+      renderResults(completed[0]);
+      if (completed.length > 1) {
+        showToast(`${completed.length} inquiries completed — see history for all results`, 'success');
+      }
     }
+
+    if (failed.length > 0) {
+      if (completed.length === 0) {
+        document.getElementById('uploadSection').style.display = '';
+      }
+      showToast(`${failed.length} inquiry(s) failed: ${failed[0].error_message || 'Unknown error'}`, 'error');
+    }
+
+    loadHistory();
   }, 3000);
 }
 
