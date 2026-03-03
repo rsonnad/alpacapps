@@ -1,12 +1,12 @@
 {
-  "version": "v260303.08 11:22a",
-  "release": 406,
-  "sha": "501968bc0",
-  "fullSha": "501968bc03da092d47445bb33fd56c0e859eb4fd",
+  "version": "v260303.09 12:21p",
+  "release": 407,
+  "sha": "081b4bac0",
+  "fullSha": "081b4bac0d6d3fab81e643cd737a1b8116a04572",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 17:22:32+00",
-  "commits": [{"sha":"501968bc0","message":"docs(infra): expandable steps + GitHub branch note on alpacappsinfra","author":"Rahul"}]
+  "pushedAt": "2026-03-03 18:21:39+00",
+  "commits": [{"sha":"081b4bac0","message":"feat: add Vehicle Rental template type + vehicle info in registration email","author":"Rahul"}]
 }
