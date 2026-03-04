@@ -1,12 +1,12 @@
 {
-  "version": "v260304.06 10:02a",
-  "release": 422,
-  "sha": "d71ff41a4",
-  "fullSha": "d71ff41a45f04c1cddc4dc23bff349955b83e62b",
+  "version": "v260304.07 10:09a",
+  "release": 423,
+  "sha": "162cbe6b1",
+  "fullSha": "162cbe6b103389d81e9a98fdbe04ce4dd44e3e71",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 16:02:26+00",
-  "commits": [{"sha":"d71ff41a4","message":"fix: project filter by person now matches all tasks regardless of stored name","author":"Rahul"}]
+  "machine": "runnervmnay03",
+  "pushedAt": "2026-03-04 16:09:21+00",
+  "commits": [{"sha":"2d463038d","message":"ux: replace Edit button with pencil icon on task cards","author":"Rahul"},{"sha":"162cbe6b1","message":"Merge branch 'heuristic-hugle'","author":"Rahul"}]
 }
