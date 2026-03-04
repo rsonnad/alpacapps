@@ -1,12 +1,12 @@
 {
-  "version": "v260304.08 10:16a",
-  "release": 424,
-  "sha": "bc6312a1e",
-  "fullSha": "bc6312a1e1a0efa282272af2d16b8b02cfda98e1",
+  "version": "v260304.09 11:22a",
+  "release": 425,
+  "sha": "389ce71ec",
+  "fullSha": "389ce71ecd51ae36a17e3c1e0ec3ed00cf9c6bf7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 16:16:37+00",
-  "commits": [{"sha":"c328ac42c","message":"feat: Please show Rahul the projects inquiries and include the pictures so he \\n\\nAutomated feature from PAI request #6cbd158f-a9ff-4b35-91b6-3cd7f5e89ac2.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"bc6312a1e","message":"Merge feature/20260304-6cbd158f into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-03-04 17:22:38+00",
+  "commits": [{"sha":"b5190036f","message":"fix: extract actual Tesla API error from edge function non-2xx responses","author":"Rahul"},{"sha":"389ce71ec","message":"fix: extract actual Tesla API error from non-2xx responses","author":"Rahul"}]
 }
