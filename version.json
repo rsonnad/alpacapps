@@ -1,12 +1,12 @@
 {
-  "version": "v260303.18 9:38p",
-  "release": 416,
-  "sha": "d6f91236f",
-  "fullSha": "d6f91236f8871e1cd9f9e233b41ac4d880f324fa",
+  "version": "v260304.01 9:09a",
+  "release": 417,
+  "sha": "d79fbc036",
+  "fullSha": "d79fbc036da096d1a9c7e01a89a47f8b241a05fb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-04 03:38:02+00",
-  "commits": [{"sha":"d6f91236f","message":"fix: show Nest re-authorize button when OAuth token is expired","author":"Rahul"}]
+  "pushedAt": "2026-03-04 15:09:40+00",
+  "commits": [{"sha":"d79fbc036","message":"fix: Nest OAuth redirect_uri + climate target display for Off/HEATCOOL","author":"Rahul"}]
 }
