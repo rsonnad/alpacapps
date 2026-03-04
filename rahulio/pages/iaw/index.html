@@ -13,6 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
     :root {
       --amber: #d4883a;
@@ -77,7 +79,7 @@
     /* ========== PAGE HEADER ========== */
     .page-header {
       text-align: center;
-      padding: 1.75rem 2rem 0.75rem;
+      padding: 5rem 2rem 0.75rem;
     }
     .page-header__eyebrow {
       font-family: 'DM Sans', sans-serif;
@@ -371,7 +373,7 @@
 
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
-      .page-header { padding: 1.25rem 1.25rem 0.5rem; }
+      .page-header { padding: 4.5rem 1.25rem 0.5rem; }
       section { padding: 1rem 0; }
       .container { padding: 0 1.25rem; }
       .rule-card { padding: 0.85rem 1rem; }
@@ -381,6 +383,7 @@
 </head>
 <body>
   <span data-site-version style="display:none;">v000000.00</span>
+  <div id="siteHeader"></div>
 
   <!-- ============ PAGE HEADER ============ -->
   <header class="page-header">
@@ -607,6 +610,13 @@
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="/shared/version-info.js"></script>
+  <script type="module">
+    import { initPublicPage } from '/shared/public-shell.js';
+    initPublicPage({ transparent: false, light: true, activePage: '/visiting/' });
   </script>
 </body>
 </html>
