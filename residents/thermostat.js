@@ -15,6 +15,7 @@ import { supabaseHealth } from '../shared/supabase-health.js';
 // =============================================
 const NEST_CONTROL_URL = `${SUPABASE_URL}/functions/v1/nest-control`;
 const POLL_INTERVAL_MS = 30000;
+const NEST_OAUTH_REDIRECT_URI = 'https://alpacaplayhouse.com/residents/climate.html';
 
 // =============================================
 // STATE
@@ -502,7 +503,7 @@ async function startOAuthFlow() {
       return;
     }
 
-    const redirectUri = window.location.origin + window.location.pathname;
+    const redirectUri = NEST_OAUTH_REDIRECT_URI;
     const authUrl = `https://nestservices.google.com/partnerconnections/${config.sdm_project_id}/auth?` +
       `redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&access_type=offline` +
@@ -520,7 +521,7 @@ async function startOAuthFlow() {
 async function handleOAuthCallback(code) {
   try {
     showToast('Completing Google authorization...', 'info', 5000);
-    const redirectUri = window.location.origin + window.location.pathname;
+    const redirectUri = NEST_OAUTH_REDIRECT_URI;
     await nestApi('oauthCallback', { code, redirectUri });
     showToast('Google Nest authorized successfully!', 'success');
   } catch (err) {
