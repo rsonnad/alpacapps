@@ -65,9 +65,9 @@ const DEVICE_SUBTABS = [
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
   { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
   { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry' },
-  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer' },
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
   { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras' },
+  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer' },
 ];
 
 const RESIDENT_CORE_TABS = [
