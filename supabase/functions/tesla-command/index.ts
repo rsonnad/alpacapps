@@ -181,16 +181,40 @@ serve(async (req) => {
       return jsonResponse({ error: `Unknown command: ${command}` }, 400);
     }
 
-    // 4. Load vehicle + account
+    // 4. Load vehicle + account + drivers
     const { data: vehicle, error: vehicleError } = await supabase
       .from("vehicles")
-      .select("*, tesla_accounts(*)")
+      .select("*, tesla_accounts(*), vehicle_drivers(person_id)")
       .eq("id", vehicle_id)
       .eq("is_active", true)
       .single();
 
     if (vehicleError || !vehicle) {
       return jsonResponse({ error: "Vehicle not found" }, 404);
+    }
+
+    // 5. Non-owner/non-driver restriction: only allow commands when battery >50% AND plugged in
+    if (!isInternalCall && appUser) {
+      const isOwner = (appUser.person_id && vehicle.owner_id === appUser.person_id) ||
+        (account && account.app_user_id === appUser.id);
+      const isDriver = appUser.person_id &&
+        (vehicle.vehicle_drivers || []).some((d: any) => d.person_id === appUser.person_id);
+
+      if (!isOwner && !isDriver) {
+        const state = vehicle.last_state || {};
+        const batteryOk = typeof state.battery_level === "number" && state.battery_level > 50;
+        const pluggedIn = state.charging_state && state.charging_state !== "Disconnected";
+
+        if (!batteryOk || !pluggedIn) {
+          const reasons = [];
+          if (!pluggedIn) reasons.push("not plugged in");
+          if (!batteryOk) reasons.push(`battery is ${state.battery_level ?? "unknown"}%`);
+          return jsonResponse(
+            { error: `Only assigned drivers can control this vehicle (${reasons.join(", ")})` },
+            403
+          );
+        }
+      }
     }
 
     const account = vehicle.tesla_accounts;
