@@ -108,6 +108,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `laundry-data.js` - LG washer/dryer state + control via `lg-control` edge function
 - `oven-data.js` - Anova oven state + control via `anova-control` edge function
 - `glowforge-data.js` - Glowforge laser cutter status via `glowforge-control` edge function
+- `printer-data.js` - FlashForge 3D printer state + control via `printer-control` edge function
 
 ### Mobile App (`/mobile/`)
 - `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)
@@ -187,6 +188,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `lg-control/` - LG ThinQ laundry control (status, start/stop, watch/unwatch notifications, push token registration) (resident+ auth)
 - `anova-control/` - Anova Precision Oven control via WebSocket API (getStatus, startCook, stopCook) (resident+ auth)
 - `glowforge-control/` - Glowforge laser cutter status via cookie-based web API (getStatus) (resident+ auth)
+- `printer-control/` - FlashForge 3D printer control via TCP proxy (getStatus, startPrint, pausePrint, resumePrint, cancelPrint, setTemperature, toggleLight, homeAxes, listFiles) (resident+ auth)
 - `verify-identity/` - Driver's license photo → Gemini Vision → auto-verify applicants/associates
 - `paypal-payout/` - Sends PayPal payouts to associates
 - `paypal-webhook/` - Receives PayPal payout status updates
@@ -226,6 +228,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `lg-control` | `supabase functions deploy lg-control --no-verify-jwt` |
 | `anova-control` | `supabase functions deploy anova-control --no-verify-jwt` |
 | `glowforge-control` | `supabase functions deploy glowforge-control --no-verify-jwt` |
+| `printer-control` | `supabase functions deploy printer-control --no-verify-jwt` |
 | `alpaca-pai` | `supabase functions deploy alpaca-pai --no-verify-jwt` |
 | `verify-identity` | `supabase functions deploy verify-identity --no-verify-jwt` |
 | `vapi-server` | `supabase functions deploy vapi-server --no-verify-jwt` |
@@ -374,6 +377,17 @@ glowforge_machines  - Glowforge machines with cached state
                       (machine_id [unique], name, machine_type,
                        space_id [FK→spaces], display_order,
                        is_active, last_state [jsonb], last_synced_at, lan_ip, notes)
+```
+
+### FlashForge 3D Printer System
+```
+printer_config      - FlashForge printer proxy configuration (single row, id=1)
+                      (proxy_url, proxy_secret, is_active, test_mode,
+                       last_error, last_synced_at)
+printer_devices     - 3D printer devices with cached state
+                      (serial_number [unique], name, machine_type, firmware_version,
+                       lan_ip, camera_port, tcp_port, space_id [FK→spaces],
+                       display_order, is_active, last_state [jsonb], last_synced_at, notes)
 ```
 
 ### Cloudflare R2 & Document Storage
@@ -786,6 +800,7 @@ Use these exact vendor strings:
 | `lg_thinq` | LG ThinQ API |
 | `anova` | Anova Precision Oven Developer API |
 | `glowforge` | Glowforge Cloud API (undocumented) |
+| `flashforge` | FlashForge 3D printer TCP API (via proxy) |
 | `govee` | Govee Cloud API |
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
@@ -821,6 +836,8 @@ Use descriptive, granular categories that identify the specific feature. Example
 | `anova_oven_control` | Anova oven commands (start, stop) |
 | `anova_oven_poll` | Anova oven status polling |
 | `glowforge_status_poll` | Glowforge machine status polling |
+| `printer_status_poll` | FlashForge 3D printer status polling |
+| `printer_control` | FlashForge 3D printer commands (start, pause, cancel, temp, light) |
 | `govee_lighting_control` | Govee light commands |
 | `sonos_music_control` | Sonos playback commands |
 | `square_payment_processing` | Square payment transactions |
@@ -1548,6 +1565,23 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
  - `announce`, `bass`, `treble`, `loudness`, `balance`, and `tts_preview` remain Sonos-proxy-first
  - Hostinger Caddy is the expected external proxy (`/sonos` and `/ma-api`) to Alpaca Mac over Tailscale
  - Mapping + response-contract notes live in `docs/music-assistant-api-mapping.md`
+
+49. **FlashForge 3D Printer Integration** - Live status + control for FlashForge Adventurer 5M Pro
+   - **API**: FlashForge TCP G-code protocol (port 8899, no auth needed)
+   - **Printer**: "Alpaca Foundry" — Adventurer 5M Pro, SN SNMSQE9C09604, FW v3.2.7
+   - **Architecture**: Per-request via printer proxy on Alpaca Mac (HTTP→TCP bridge)
+   - **Proxy chain**: Browser → Supabase edge function → Caddy on Hostinger → Alpaca Mac printer-proxy.js → TCP to printer LAN IP
+   - **Proxy**: `scripts/printer-proxy/printer-proxy.js` on Alpaca Mac (port 8903, health check 8904)
+   - **LaunchAgent**: `scripts/printer-proxy/com.printer-proxy.plist`
+   - **Edge function**: `printer-control` (getStatus, startPrint, pausePrint, resumePrint, cancelPrint, setTemperature, toggleLight, homeAxes, listFiles)
+   - **Data service**: `shared/services/printer-data.js` (display helpers, API wrapper)
+   - **DB**: `printer_config` (proxy URL/secret/config), `printer_devices` (cached state in `last_state` JSONB)
+   - **Permissions**: `view_printer` (all residents), `control_printer` (all residents), `admin_printer_settings` (admin/oracle)
+   - **UI**: Appliances page "3D Printing" section — status badge, nozzle/bed temps, print progress bar, LED toggle, pause/resume/cancel controls
+   - **Admin settings**: Proxy URL, proxy secret, test mode, active toggle, test connection, discovered printers
+   - **Camera**: MJPEG stream at port 8080 (proxied via Caddy/Tailscale)
+   - **Network**: LAN IP 192.168.1.106, TCP 8899 (G-code), 8080 (MJPEG camera)
+   - **Cost**: $0 (direct TCP, no cloud API)
 
 ## Testing Changes
 
