@@ -72,5 +72,30 @@ async function pingSupabase() {
   }
 }
 
+// Proactively refresh the session when the page returns from background.
+// Mobile browsers suspend tabs when backgrounded — the auto-refresh timer
+// doesn't fire, so the JWT can expire. This handler ensures the refresh
+// token is exchanged for a new JWT as soon as the user comes back.
+if (typeof document !== 'undefined') {
+  let lastVisibleAt = Date.now();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const elapsed = Date.now() - lastVisibleAt;
+      // Only bother refreshing if backgrounded for > 5 minutes
+      if (elapsed > 5 * 60 * 1000) {
+        supabase.auth.getSession().then(({ data }) => {
+          if (!data?.session) {
+            // No session — try an explicit refresh using the stored refresh token
+            supabase.auth.refreshSession();
+          }
+        });
+      }
+      lastVisibleAt = Date.now();
+    } else {
+      lastVisibleAt = Date.now();
+    }
+  });
+}
+
 // Export for use in other modules
 export { supabase, SUPABASE_URL, SUPABASE_ANON_KEY, pingSupabase };

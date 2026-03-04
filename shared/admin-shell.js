@@ -568,10 +568,16 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
         // Ensure Supabase has a real session before onReady queries RLS-protected tables.
         // Cached auth resolves initAuth() before the JWT is ready, so getSession() forces
         // the client to establish the actual session first.
-        const { data: sessionData } = await supabase.auth.getSession();
+        let { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData?.session) {
-          // Session expired — cached auth kept the UI alive but we have no JWT.
-          console.warn('[admin-shell] No active session despite cached auth — redirecting to login');
+          // JWT expired (common on mobile after backgrounding) — try refreshing
+          console.warn('[admin-shell] No active session — attempting token refresh');
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          sessionData = refreshData;
+        }
+        if (!sessionData?.session) {
+          // Refresh also failed — force re-login
+          console.warn('[admin-shell] Token refresh failed — redirecting to login');
           try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
           transitionBootState('redirecting');
           window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
