@@ -512,7 +512,12 @@ async function startOAuthFlow() {
       `&response_type=code` +
       `&scope=${encodeURIComponent('https://www.googleapis.com/auth/sdm.service')}`;
 
-    window.location.href = authUrl;
+    // Open OAuth in a new tab so climate settings page stays open.
+    const oauthWindow = window.open(authUrl, '_blank', 'noopener,noreferrer');
+    if (!oauthWindow) {
+      // Popup blocked: degrade gracefully to same-tab redirect.
+      window.location.href = authUrl;
+    }
   } catch (err) {
     showToast(`OAuth setup failed: ${err.message}`, 'error');
   }
