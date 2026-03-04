@@ -1091,32 +1091,28 @@ For each Govee device, in the Govee Home app:
 
 Once enabled, devices respond to multicast discovery on `239.255.255.250:4001` and accept commands on UDP port 4003.
 
-### Matter Devices (13 discovered)
+### Matter Devices (many; including Govee Matter + Linkind)
 
-Found via mDNS `_matter._tcp` browsing. Two distinct fabric IDs suggest two different Matter controllers:
+The property has **many Matter devices**, including **Govee Matter** bulbs and **many Linkind Matter** bulbs (e.g. BR30 RGBTW, 650lm; kitchen has WiZ + 2 Linkind, and Linkind is used elsewhere too). Matter is the target for unified lighting control so no proprietary apps (WiZ app, Linkind app, etc.) are required.
 
-**Fabric 74593773AA15087D** (10 devices — likely Alexa/Echo):
+**Previously discovered via mDNS** `_matter._tcp` — two fabrics:
+
+**Fabric 74593773AA15087D** (10 devices — likely Alexa/Echo bridge; may include Govee Matter):
 | Instance | Port |
 |----------|------|
 | 74593773AA15087D-05E73316C9F48CB1 | 5541 (at F7E8EADE257E.local.) |
-| 74593773AA15087D-016F6A8E1A442571 | — |
-| 74593773AA15087D-024300462FDF9C51 | — |
-| 74593773AA15087D-05E7A8B34EDB3ED1 | — |
-| 74593773AA15087D-0189460B60EF8841 | — |
-| 74593773AA15087D-0178C9DDA6C5E591 | — |
-| 74593773AA15087D-01690F9729249281 | — |
-| 74593773AA15087D-0166EC3EC8260591 | — |
-| 74593773AA15087D-0242FD532D42EDE1 | — |
-| 74593773AA15087D-018000081D063A71 | — |
+| (9 more) | — |
 
-**Fabric 2E3FA401322CBB40** (3 devices — likely Google/Nest):
+**Fabric 2E3FA401322CBB40** (3 devices — Google/Nest):
 | Instance | Host | Port |
 |----------|------|------|
 | 2E3FA401322CBB40-00000000BAF5E0E7 | 14C14E7A940D.local. | 5540 |
 | 2E3FA401322CBB40-0000000068A6F13E | 14C14E2DAE0D.local. | 5540 |
 | 2E3FA401322CBB40-0000000025D77772 | 14C14EB58EEB.local. | 5540 |
 
-The `14C14E*` hostnames correspond to Google/Nest devices (Nest thermostats at .111, .139, .249 in ARP table). These 3 Matter devices are the **Nest thermostats** themselves advertising Matter support.
+The `14C14E*` hostnames are Nest thermostats (.111, .139, .249). The 10 on the first fabric are likely Govee (or other) lights exposed via Alexa's Matter bridge.
+
+**Control from our app (goal):** Run a **Matter controller we own** (e.g. matter-server, or Home Assistant with Matter) on the LAN with all Matter lights commissioned into our fabric (Govee Matter + many Linkind + any others). Expose an **HTTP proxy** (like wiz-proxy) that the edge function calls to send on/off, brightness, color. Then the resident lighting page and PAI can drive all Matter devices without opening Alexa/Google/Linkind apps. WiZ stays on wiz-proxy (UDP); non-Matter Govee stays on Govee Cloud API until migrated.
 
 ### TP-Link Kasa Devices (2 discovered)
 
@@ -1336,3 +1332,63 @@ wansview-4-low:
 - [ ] **Identify 3 Tuya devices** — Check Tuya/Smart Life app for .69, .208, .254
 - [ ] **Identify 4 unknown Amazon devices** — .91, .209, .228, .232 (plugs? Fire sticks?)
 - [ ] **Identify Matter devices** — The 10 Alexa-fabric Matter devices are likely Govee bulbs re-exposed via Alexa's Matter bridge
+
+---
+
+## Unified lighting implementation plan (no proprietary apps)
+
+**Goal:** Control all lighting (Govee, WiZ, Matter including Govee Matter + Linkind) from the resident lighting page and PAI. No WiZ app, Linkind app, or vendor apps.
+
+**Best approach: phased, WiZ-first.** Ship one backend at a time so each phase is testable and deployable without blocking on the next.
+
+### Phase 1: WiZ in the app (fastest win)
+
+WiZ is already controllable via local UDP; we have `scripts/wiz-proxy/server.js` that accepts HTTP and sends UDP (or SSH to Alpaca Mac).
+
+| Step | What |
+|------|------|
+| 1. Run wiz-proxy | Deploy proxy on a host that can reach bulbs: either on Alpaca Mac (direct UDP) or on DO/Oracle with `WIZ_SSH_TARGET` set to Alpaca Mac. Set `WIZ_PROXY_TOKEN`. Expose via Caddy (e.g. `lights.alpacaplayhouse.com/wiz` or path on existing domain). |
+| 2. DB | Add `wiz_devices` (ip, name, room_id, display_order) and `wiz_rooms` (room_id, name, display_order) — or a single `wiz_groups` (name, list of ips as JSON/text). Seed from HOMEAUTOMATION.md (room 4352002 = 6 IPs for kitchen; 4528222, 4937866 for others). |
+| 3. Edge function | Add `wiz-control` (or extend a generic `lighting-control`): auth, read group/device from body, call wiz-proxy URL with Bearer token for power/brightness/color. Store proxy URL and token in Supabase secrets. |
+| 4. Lighting page | Load WiZ groups from DB; render a "WiZ" or per-room section (e.g. Kitchen, Living Room) with on/off, brightness, color. Call edge function. |
+| 5. PAI | Add tool or route for "control WiZ group" so PAI can turn Kitchen (WiZ) on/off from voice/chat. |
+
+**Deliverable:** Residents can control WiZ bulbs (including kitchen WiZ) from the app and PAI. No WiZ app.
+
+### Phase 2: Matter controller + proxy
+
+Get a Matter controller we own on the LAN and an HTTP API our backend can call.
+
+| Step | What |
+|------|------|
+| 1. Choose controller | Options: **matter-server** (Node, has REST/API), **Home Assistant** (Matter integration + REST/API), or **chip-tool** (CLI, would need a thin wrapper). matter-server or HA is typical for "our fabric, our API." |
+| 2. Run on LAN | Install on Alpaca Mac (or a Pi on the same network). Matter requires LAN for commissioning and control. |
+| 3. Commission devices | One-time: add each Matter bulb (Govee Matter, Linkind, etc.) to this controller's fabric. May require re-commissioning if they're currently on Alexa/Google. |
+| 4. HTTP proxy | Either use the controller's built-in API (e.g. matter-server HTTP) or build a thin proxy that translates "group X on/off, brightness, color" into Matter cluster commands. Proxy must be callable from our edge function (so expose via Caddy/Tailscale like wiz-proxy). |
+| 5. DB | Add `matter_devices` and `matter_groups` (or a unified schema) so we know which node IDs belong to "Kitchen (Matter)" etc. |
+| 6. Edge function | Add `matter-control`: auth, call Matter proxy with group/device and action. |
+| 7. Lighting page + PAI | Show Matter groups/rooms; PAI can control them. |
+
+**Deliverable:** All Matter lights (Govee Matter + Linkind) controllable from app and PAI. No Linkind/Alexa/Google app for control.
+
+### Phase 3: Unified groups (optional but nice)
+
+Let one logical group (e.g. "Kitchen") span backends: some bulbs WiZ, some Matter.
+
+| Step | What |
+|------|------|
+| 1. Logical groups | Add `light_groups` (id, name, area, display_order) and `light_group_members` (group_id, backend: wiz|matter|govee, backend_group_id or list of device ids). |
+| 2. Backend fan-out | When user or PAI says "Kitchen on", edge function or a small orchestrator looks up Kitchen's members: e.g. wiz IPs + matter node ids. Call wiz-control for WiZ, matter-control for Matter (and govee-control for any Govee Cloud in that group). |
+| 3. UI | Single "Kitchen" card that drives all members. |
+
+**Deliverable:** One "Kitchen" control that turns on/off both WiZ and Linkind (and any Govee in that room) together.
+
+### Summary
+
+| Phase | Scope | Dependency |
+|-------|--------|------------|
+| 1. WiZ | wiz-proxy already exists; add DB, edge fn, UI, PAI | Proxy URL + token; SSH to Alpaca Mac if proxy runs on droplet |
+| 2. Matter | Matter controller + HTTP API + DB + edge fn + UI + PAI | Controller choice; commissioning time |
+| 3. Unified | Logical groups that fan out to WiZ + Matter (+ Govee) | Phases 1 and 2 done |
+
+**Recommendation:** Start with Phase 1. It’s small, uses code you already have, and removes the WiZ app for kitchen (and other WiZ rooms). Phase 2 can proceed in parallel once you pick and install a Matter controller; Phase 3 is a UX improvement once both backends exist.

@@ -29,6 +29,12 @@ interface UserScope {
     spaceId: string | null;
     isCommon: boolean;
   }>;
+  lightingGroups: Array<{
+    key: string;
+    name: string;
+    area: string | null;
+    backends: string[];
+  }>;
   nestDevices: Array<{
     roomName: string;
     sdmDeviceId: string;
@@ -199,7 +205,7 @@ async function buildUserScope(
   }
 
   // 3. Load Govee, Nest, vehicles, camera_streams, and laundry in parallel
-  const [goveeResult, nestResult, vehiclesResult, cameraResult, laundryResult, anovaResult] = await Promise.all([
+  const [goveeResult, nestResult, vehiclesResult, cameraResult, laundryResult, anovaResult, lightingGroupsResult] = await Promise.all([
     supabase
       .from("govee_devices")
       .select("device_id, name, area, space_id, sku")
@@ -230,6 +236,11 @@ async function buildUserScope(
       .select("id, name, cooker_id, oven_type, last_state, last_synced_at")
       .eq("is_active", true)
       .order("display_order"),
+    supabase
+      .from("lighting_groups")
+      .select("key, name, area, is_active, lighting_group_targets(backend, target_id, is_active)")
+      .eq("is_active", true)
+      .order("display_order"),
   ]);
 
   const goveeGroups = goveeResult?.data || [];
@@ -238,6 +249,7 @@ async function buildUserScope(
   const cameraStreams = cameraResult?.data || [];
   const laundryAppliances = laundryResult?.data || [];
   const anovaOvensData = anovaResult?.data || [];
+  const lightingGroups = lightingGroupsResult?.data || [];
 
   const accessibleGovee = goveeGroups.filter(
     (g: any) => {
@@ -254,6 +266,12 @@ async function buildUserScope(
     if (!d.space_id) return true;
     if (!dwellingMap[d.space_id]) return true;
     return allAccessibleSpaceIds.includes(d.space_id);
+  });
+
+  const accessibleLightingGroups = (lightingGroups || []).filter((g: any) => {
+    if (userLevel >= 2) return true;
+    // Room-level lighting groups are generally shared/common; keep resident access broad.
+    return g?.is_active !== false;
   });
 
   // Deduplicate (multiple quality rows per camera) and sort by model type then name
@@ -292,6 +310,14 @@ async function buildUserScope(
       area: g.area,
       spaceId: g.space_id,
       isCommon: !g.space_id || !dwellingMap[g.space_id],
+    })),
+    lightingGroups: accessibleLightingGroups.map((g: any) => ({
+      key: g.key,
+      name: g.name,
+      area: g.area || null,
+      backends: (g.lighting_group_targets || [])
+        .filter((t: any) => t.is_active !== false)
+        .map((t: any) => t.backend),
     })),
     nestDevices: accessibleNest.map((d: any) => ({
       roomName: d.room_name,
@@ -467,8 +493,14 @@ This applies to ALL questions about: monitors, TVs, speakers, audio, Sonos, came
 9. When providing technical answers, give the practical steps the person actually needs — not a generic list of all possible approaches. Tailor the answer to their specific situation.`);
 
   // Lighting
-  if (scope.goveeGroups.length) {
-    parts.push(`\nLIGHTING GROUPS YOU CAN CONTROL:`);
+  if (scope.lightingGroups.length) {
+    parts.push(`\nUNIFIED LIGHTING GROUPS YOU CAN CONTROL (Home Assistant primary):`);
+    for (const g of scope.lightingGroups) {
+      parts.push(`- "${g.name}" (key: ${g.key}, area: ${g.area || "Unknown"}, backends: ${g.backends.join(", ") || "home_assistant"})`);
+    }
+    parts.push(`Use control_room_lights for room/group control (on/off, brightness 1-100, color).`);
+  } else if (scope.goveeGroups.length) {
+    parts.push(`\nLIGHTING GROUPS YOU CAN CONTROL (legacy Govee):`);
     for (const g of scope.goveeGroups) {
       parts.push(`- "${g.name}" (area: ${g.area}, id: ${g.deviceId}, sku: ${g.sku})`);
     }
@@ -700,6 +732,35 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["device_id", "sku", "group_name", "action"],
+    },
+  },
+  {
+    name: "control_room_lights",
+    description:
+      "Control a unified room lighting group (Home Assistant primary with fallback targets)",
+    parameters: {
+      type: "object",
+      properties: {
+        group_key: {
+          type: "string",
+          description: "Lighting group key from the available unified lighting list (e.g. kitchen)",
+        },
+        group_name: {
+          type: "string",
+          description: "Human-friendly room/group name for confirmations",
+        },
+        action: {
+          type: "string",
+          enum: ["on", "off", "brightness", "color"],
+          description: "Room lighting action",
+        },
+        value: {
+          type: "string",
+          description:
+            "For brightness: 1-100. For color: common color name (red, warm white) or hex (#FF0000).",
+        },
+      },
+      required: ["group_key", "group_name", "action"],
     },
   },
   {
@@ -1283,6 +1344,47 @@ async function executeToolCall(
 
   try {
     switch (name) {
+      case "control_room_lights": {
+        const allowedGroup = scope.lightingGroups.find((g) => g.key === args.group_key);
+        if (!allowedGroup) {
+          return `Permission denied: you don't have access to "${args.group_name || args.group_key}"`;
+        }
+
+        const payload: any = { group_key: args.group_key };
+        if (args.action === "on" || args.action === "off") {
+          payload.action = "set_power";
+          payload.on = args.action === "on";
+        } else if (args.action === "brightness") {
+          payload.action = "set_brightness";
+          payload.brightness = Math.max(1, Math.min(100, parseInt(args.value) || 50));
+        } else if (args.action === "color") {
+          const parsed = parseColor(args.value || "");
+          if (!parsed) return `Could not parse color "${args.value}"`;
+          payload.action = "set_color";
+          if (parsed.type === "rgb") {
+            payload.hex_color = `#${parsed.value.toString(16).padStart(6, "0")}`;
+          } else {
+            // Approximate color temperature requests to warm/cool white.
+            payload.hex_color = parsed.value <= 3600 ? "#FFD4A3" : "#E8F0FF";
+          }
+        } else {
+          return `Unknown room light action: ${args.action}`;
+        }
+
+        console.log("PAI → home-assistant-control payload:", JSON.stringify(payload));
+        const resp = await fetch(
+          `${supabaseUrl}/functions/v1/home-assistant-control`,
+          { method: "POST", headers: edgeFnHeaders, body: JSON.stringify(payload) },
+        );
+        const result = await resp.json().catch(() => ({}));
+        console.log("PAI ← home-assistant-control response:", resp.status, JSON.stringify(result));
+        if (!resp.ok || result.error) {
+          const errMsg = result.error || result.message || result.msg || `HTTP ${resp.status}`;
+          return `Error controlling ${args.group_name || args.group_key}: ${errMsg}`;
+        }
+        return `OK: ${args.group_name || args.group_key} ${args.action}${args.value ? " " + args.value : ""}`;
+      }
+
       case "control_lights": {
         // Permission check
         const allowed = scope.goveeGroups.find(
@@ -2639,6 +2741,7 @@ function findTool(name: string): any {
 
 function buildVapiToolsList(scope: UserScope): any[] {
   const tools: any[] = [];
+  if (scope.lightingGroups.length) tools.push(vapiToolWrapper(findTool("control_room_lights")));
   if (scope.goveeGroups.length) tools.push(vapiToolWrapper(findTool("control_lights")));
   if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("control_sonos")));
   if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("announce")));
@@ -2731,6 +2834,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       assignedSpaceIds: [],
       allAccessibleSpaceIds: [],
       goveeGroups: [],
+      lightingGroups: [],
       nestDevices: [],
       teslaVehicles: [],
       cameras: [],
@@ -2824,6 +2928,7 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
     assignedSpaceIds: [],
     allAccessibleSpaceIds: [],
     goveeGroups: [],
+    lightingGroups: [],
     nestDevices: [],
     teslaVehicles: [],
     cameras: [],
