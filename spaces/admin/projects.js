@@ -49,25 +49,27 @@ async function loadSpaces() {
 async function loadAssignees() {
   assigneeNames = await projectService.getAssigneeNames();
 
-  // Populate filter + bulk + modal dropdowns
-  [document.getElementById('filterAssignee'), document.getElementById('bulkAssignee')].forEach(sel => {
-    assigneeNames.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      sel.appendChild(opt);
-    });
-  });
-
-  // Also load app_users for the modal assignee dropdown (links to real accounts)
+  // Load app_users for all dropdowns
   const { data: users } = await supabase
     .from('app_users')
     .select('id, display_name, role')
     .in('role', ['associate', 'staff', 'admin', 'oracle'])
     .order('display_name');
 
+  // Populate filter + bulk dropdowns with user IDs (matches assigned_to, not assigned_name)
+  [document.getElementById('filterAssignee'), document.getElementById('bulkAssignee')].forEach(sel => {
+    if (users && users.length) {
+      users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.display_name;
+        sel.appendChild(opt);
+      });
+    }
+  });
+
   const modalSel = document.getElementById('inputAssignee');
-  // Add a "name only" group
+  // Add a "name only" group (for tasks not linked to a user account)
   const optGroupName = document.createElement('optgroup');
   optGroupName.label = 'Name Only';
   assigneeNames.forEach(name => {
@@ -118,7 +120,7 @@ function getFilters() {
   if (priority) f.priority = parseInt(priority);
 
   const assignee = document.getElementById('filterAssignee').value;
-  if (assignee) f.assignedName = assignee;
+  if (assignee) f.assignedTo = assignee;
 
   const search = document.getElementById('searchInput').value.trim();
   if (search) f.search = search;
