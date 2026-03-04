@@ -1,12 +1,12 @@
 {
-  "version": "v260304.28 2:26p",
-  "release": 444,
-  "sha": "3b47f8f80",
-  "fullSha": "3b47f8f80ff22094971afa2f329eee656014e359",
+  "version": "v260304.29 2:35p",
+  "release": 445,
+  "sha": "346b44195",
+  "fullSha": "346b44195cbe9fed2cb42580aaa11a6dba1e09c6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 20:26:23+00",
-  "commits": [{"sha":"ffe773de5","message":"docs: add FlashForge 3D printer to CLAUDE.md External Systems + PRODUCTDESIGN.md","author":"Rahul"},{"sha":"3b47f8f80","message":"Merge branch 'sweet-shtern'","author":"Rahul"}]
+  "pushedAt": "2026-03-04 20:35:45+00",
+  "commits": [{"sha":"4dc8e9183","message":"fix: correct FlashForge 5M Pro file path format and M661 parser","author":"Rahul"},{"sha":"346b44195","message":"Merge branch 'sweet-shtern'","author":"Rahul"}]
 }
