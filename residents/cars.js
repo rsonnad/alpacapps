@@ -715,17 +715,26 @@ window._sendCommand = async function(vehicleId, command) {
       body: { vehicle_id: vehicleId, command },
     });
 
-    if (data?.error) {
-      const detail = data.details ? ` (${data.details})` : '';
+    // On non-2xx responses, supabase.functions.invoke sets data=null and error=FunctionsHttpError.
+    // The actual error details are in the response body — extract them from error.context.
+    let errData = data;
+    if (error && !data) {
+      try {
+        errData = await error.context?.json();
+      } catch (_) { /* couldn't parse response body */ }
+    }
+
+    if (errData?.error) {
+      const detail = errData.details ? ` (${errData.details})` : '';
       // If the account needs re-authorization, show a prominent message
-      if (data.needs_reauth) {
+      if (errData.needs_reauth) {
         showToast('Tesla session expired. Please go to Settings and click Reconnect.', 'error');
         // Refresh accounts to show the re-auth state in settings
         await loadAccounts();
         renderSettings();
         return;
       }
-      showToast(`${command.replace(/_/g, ' ')}: ${data.error}${detail}`, 'error');
+      showToast(`${command.replace(/_/g, ' ')}: ${errData.error}${detail}`, 'error');
       return;
     }
 
