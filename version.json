@@ -1,12 +1,12 @@
 {
-  "version": "v260304.26 2:12p",
-  "release": 442,
-  "sha": "38f2f5e68",
-  "fullSha": "38f2f5e685dbb58933e7d368ba987ab525d0cb62",
+  "version": "v260304.27 2:20p",
+  "release": 443,
+  "sha": "51319124a",
+  "fullSha": "51319124aa4fbd15a50736c81e25f1d4ef0dbe84",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 20:12:13+00",
-  "commits": [{"sha":"38f2f5e68","message":"Clarify brainstorm slider directions and bias.","author":"Rahul"}]
+  "pushedAt": "2026-03-04 20:20:14+00",
+  "commits": [{"sha":"566dd7b57","message":"fix: improve FlashForge TCP response parser accuracy","author":"Rahul"},{"sha":"51319124a","message":"Merge branch 'sweet-shtern'","author":"Rahul"}]
 }
