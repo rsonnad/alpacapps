@@ -12,6 +12,8 @@ let assigneeNames = [];
 let selectedIds = new Set();
 let initialized = false;
 let debounceTimer = null;
+let currentView = 'tasks';
+let allInquiries = [];
 
 // ---- Init ----
 initAdminPage({
@@ -295,6 +297,38 @@ function bindEvents() {
       showToast('Status update failed', 'error');
     }
   });
+
+  // View toggle (Tasks / Inquiries)
+  document.getElementById('viewToggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-view]');
+    if (!btn) return;
+    const view = btn.dataset.view;
+    if (view === currentView) return;
+    currentView = view;
+    document.querySelectorAll('#viewToggle button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    document.getElementById('tasksView').style.display = view === 'tasks' ? '' : 'none';
+    document.getElementById('inquiriesView').style.display = view === 'inquiries' ? '' : 'none';
+    if (view === 'inquiries') loadInquiries();
+  });
+
+  // Inquiry filters
+  ['inquiryFilterStatus', 'inquiryFilterType'].forEach(id => {
+    document.getElementById(id).addEventListener('change', loadInquiries);
+  });
+
+  // Inquiry grid click (expand/collapse results + image lightbox)
+  document.getElementById('inquiryGrid').addEventListener('click', (e) => {
+    const thumb = e.target.closest('.inquiry-thumb');
+    if (thumb) {
+      const url = thumb.querySelector('img')?.src;
+      if (url) window.open(url, '_blank');
+      return;
+    }
+    const card = e.target.closest('.inquiry-card');
+    if (!card) return;
+    const detail = card.querySelector('.inquiry-detail');
+    if (detail) detail.style.display = detail.style.display === 'none' ? '' : 'none';
+  });
 }
 
 // ---- Modal ----
@@ -451,6 +485,112 @@ async function handleAdminPhotoUpload(e) {
   e.target.value = '';
   await loadAdminTaskPhotos(taskId);
   showToast(`${files.length} photo(s) added`, 'success');
+}
+
+// ---- Inquiries ----
+async function loadInquiries() {
+  const grid = document.getElementById('inquiryGrid');
+  grid.innerHTML = '<div class="empty-state">Loading inquiries...</div>';
+
+  let query = supabase
+    .from('project_inquiries')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  const statusFilter = document.getElementById('inquiryFilterStatus').value;
+  if (statusFilter) query = query.eq('status', statusFilter);
+
+  const typeFilter = document.getElementById('inquiryFilterType').value;
+  if (typeFilter) query = query.eq('inquiry_type', typeFilter);
+
+  const { data, error } = await query;
+  if (error) {
+    grid.innerHTML = '<div class="empty-state">Failed to load inquiries.</div>';
+    return;
+  }
+
+  allInquiries = data || [];
+  renderInquiries();
+}
+
+function renderInquiries() {
+  const grid = document.getElementById('inquiryGrid');
+
+  if (!allInquiries.length) {
+    grid.innerHTML = '<div class="empty-state">No inquiries found.</div>';
+    return;
+  }
+
+  grid.innerHTML = allInquiries.map(inq => {
+    const date = new Date(inq.created_at).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+
+    const titleText = inq.inquiry_type === 'general' && inq.question
+      ? inq.question.substring(0, 100) + (inq.question.length > 100 ? '...' : '')
+      : inq.caption || 'Untitled inquiry';
+
+    // Color swatches for color_pick results
+    const colors = inq.analysis_result?.colors || [];
+    const swatchesHtml = colors.slice(0, 6).map(c =>
+      `<span class="inquiry-swatch" style="background:${esc(c.hex)}" title="${esc(c.name || c.hex)}"></span>`
+    ).join('');
+
+    // Detail section (initially hidden) for completed inquiries
+    let detailHtml = '';
+    if (inq.status === 'completed') {
+      if (inq.inquiry_type === 'general' && inq.answer) {
+        detailHtml = `<div class="inquiry-detail" style="display:none">
+          <div class="inquiry-answer">${esc(inq.answer)}</div>
+        </div>`;
+      } else if (inq.inquiry_type === 'color_pick' && colors.length) {
+        const colorDetails = colors.map(c => {
+          const searches = inq.search_results?.colors || [];
+          const matchIdx = colors.indexOf(c);
+          const matches = searches[matchIdx]?.matches || [];
+          const matchHtml = matches.slice(0, 3).map(m =>
+            `<div style="font-size:0.75rem;margin-top:0.15rem">${esc(m.brand || '')} — ${esc(m.product_name || m.title || '')}${m.url ? ` <a href="${esc(m.url)}" target="_blank" rel="noopener" style="color:var(--accent)">View</a>` : ''}</div>`
+          ).join('');
+          return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0;border-bottom:1px solid #f3f4f6">
+            <span class="inquiry-swatch" style="background:${esc(c.hex)};flex-shrink:0"></span>
+            <div style="min-width:0">
+              <div style="font-size:0.8rem;font-weight:600">${esc(c.name || c.hex)}</div>
+              ${c.surface_type ? `<div style="font-size:0.7rem;color:var(--text-muted)">${esc(c.surface_type)}</div>` : ''}
+              ${matchHtml}
+            </div>
+          </div>`;
+        }).join('');
+
+        const surfaceNote = inq.analysis_result?.surface_analysis
+          ? `<div style="font-size:0.8rem;margin-bottom:0.5rem;color:#15803d;background:#f0fdf4;padding:0.4rem;border-radius:6px">${esc(inq.analysis_result.surface_analysis)}</div>`
+          : '';
+
+        detailHtml = `<div class="inquiry-detail" style="display:none">
+          ${surfaceNote}${colorDetails}
+        </div>`;
+      }
+    } else if (inq.status === 'failed' && inq.error_message) {
+      detailHtml = `<div class="inquiry-detail" style="display:none">
+        <div class="inquiry-answer" style="color:#991b1b;background:#fef2f2">${esc(inq.error_message)}</div>
+      </div>`;
+    }
+
+    return `<div class="inquiry-card" data-id="${inq.id}" style="cursor:pointer">
+      ${inq.image_url ? `<div class="inquiry-thumb"><img src="${esc(inq.image_url)}" alt="Inquiry photo" loading="lazy"></div>` : ''}
+      <div class="inquiry-body">
+        <div class="inquiry-title">${esc(titleText)}</div>
+        <div class="inquiry-meta">
+          <span class="inquiry-type-badge ${inq.inquiry_type}">${inq.inquiry_type === 'general' ? 'General' : 'Color Pick'}</span>
+          <span class="inquiry-status ${inq.status}">${inq.status}</span>
+          ${inq.assigned_to_name ? `<span>For: ${esc(inq.assigned_to_name)}</span>` : ''}
+          <span>${date}</span>
+        </div>
+        ${swatchesHtml ? `<div class="inquiry-colors">${swatchesHtml}</div>` : ''}
+        ${detailHtml}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function esc(str) {
