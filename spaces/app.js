@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPublicHeaderAuth({ authContainerId: 'publicHeaderAuth', signInLinkId: 'publicSignInLink' });
   }
   // Check for URL parameters
+  const directSpaceSlug = urlParams.get('space');
   const directSpaceId = urlParams.get('id');
   const viewParam = urlParams.get('view');
 
@@ -119,8 +120,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   render();
 
-  // If direct ID provided, show that space's detail modal
-  if (directSpaceId) {
+  // If slug or ID provided, show that space's detail modal
+  if (directSpaceSlug) {
+    const space = spaces.find(s => s.slug === directSpaceSlug);
+    if (space) showSpaceDetail(space.id);
+  } else if (directSpaceId) {
     showSpaceDetail(directSpaceId);
   }
 });
@@ -134,12 +138,12 @@ async function loadData(retryCount = 0) {
     const { data: spacesData, error: spacesError } = await supabase
       .from('spaces')
       .select(`
-        id, name, description, location, monthly_rate,
+        id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
         min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
         parent_id,
-        parent:parent_id(name),
+        parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))
       `)
@@ -317,9 +321,9 @@ function setupEventListeners() {
   document.getElementById('closeDetailModal').addEventListener('click', () => {
     spaceDetailModal.classList.add('hidden');
     document.body.style.overflow = '';
-    // Remove ID from URL when closing modal
     const url = new URL(window.location);
     url.searchParams.delete('id');
+    url.searchParams.delete('space');
     window.history.replaceState({}, '', url);
   });
 
@@ -345,6 +349,7 @@ function setupEventListeners() {
       document.body.style.overflow = '';
       const url = new URL(window.location);
       url.searchParams.delete('id');
+      url.searchParams.delete('space');
       window.history.replaceState({}, '', url);
     }
   });
@@ -542,7 +547,7 @@ function renderCards(spacesToRender) {
         <div class="card-body">
           <div class="card-header">
             <div>
-              <div class="card-title">${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="card-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}${space.name}</div>
+              <div class="card-title">${space.parent?.name ? `<a href="?${getParentUrlParam(space.parent)}" class="card-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}${space.name}</div>
               ${space.description ? `<div class="card-description">${space.description}</div>` : ''}
             </div>
           </div>
@@ -601,7 +606,7 @@ function renderTable(spacesToRender) {
     return `
       <tr onclick="showSpaceDetail('${space.id}')" style="cursor:pointer;">
         <td class="td-thumbnail">${thumbnail}</td>
-        <td>${space.parent?.name ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong></td>
+        <td>${space.parent?.name ? `<a href="?${getParentUrlParam(space.parent)}" class="table-parent-link" onclick="event.stopPropagation();">${space.parent.name} /</a> ` : ''}<strong>${space.name}</strong></td>
         <td class="td-description">${description}</td>
         <td>${space.monthly_rate ? `$${space.monthly_rate}/mo` : '-'}</td>
         <td class="td-hide-mobile">${space.sq_footage || '-'}</td>
@@ -619,6 +624,16 @@ function renderTable(spacesToRender) {
 function getParentSpaceId(parentName) {
   const parentSpace = spaces.find(s => s.name === parentName);
   return parentSpace?.id || '';
+}
+
+function getSpaceUrlParam(space) {
+  return space.slug ? `space=${encodeURIComponent(space.slug)}` : `id=${space.id}`;
+}
+
+function getParentUrlParam(parentObj) {
+  if (parentObj?.slug) return `space=${encodeURIComponent(parentObj.slug)}`;
+  const parentSpace = spaces.find(s => s.name === parentObj?.name);
+  return parentSpace?.slug ? `space=${encodeURIComponent(parentSpace.slug)}` : `id=${parentSpace?.id || ''}`;
 }
 
 function getBedSummary(space) {
@@ -648,11 +663,11 @@ async function fetchAndShowSpace(spaceId) {
     const { data: space, error } = await supabase
       .from('spaces')
       .select(`
-        id, name, description, location, monthly_rate,
+        id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
         min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
-        parent:parent_id(name),
+        parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))
       `)
@@ -687,13 +702,18 @@ async function fetchAndShowSpace(spaceId) {
 function displaySpaceDetail(space) {
   // Update header with parent link if exists
   const headerHtml = space.parent?.name
-    ? `<a href="?id=${getParentSpaceId(space.parent.name)}" class="detail-parent-link">${space.parent.name} /</a> ${space.name}`
+    ? `<a href="?${getParentUrlParam(space.parent)}" class="detail-parent-link">${space.parent.name} /</a> ${space.name}`
     : space.name;
   document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
-  // Update URL with space ID for shareable links
+  // Update URL with slug for shareable links (fallback to id if no slug)
   const url = new URL(window.location);
-  url.searchParams.set('id', space.id);
+  if (space.slug) {
+    url.searchParams.delete('id');
+    url.searchParams.set('space', space.slug);
+  } else {
+    url.searchParams.set('id', space.id);
+  }
   window.history.replaceState({}, '', url);
 
   // Walk up the parent chain to collect all ancestor photos
