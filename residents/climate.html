@@ -100,10 +100,10 @@
             <span class="settings-toggle-hint">Log commands without calling Nest API</span>
           </label>
 
-          <!-- OAuth Setup (shown only if refresh_token is missing) -->
+          <!-- OAuth Setup (shown if refresh_token is missing or expired) -->
           <div id="oauthSetupSection" class="oauth-setup hidden">
             <h3>Google Nest Authorization</h3>
-            <p>Connect your Google account to control Nest thermostats. You will be redirected to Google to grant access.</p>
+            <p>Connect your Google account to control Nest thermostats. You will be redirected to Google to grant access. If your token has expired, re-authorize to restore live thermostat data.</p>
             <button class="btn-small" id="startOAuthBtn">Authorize Google Account</button>
           </div>
 
