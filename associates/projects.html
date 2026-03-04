@@ -133,11 +133,17 @@
 
     .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 
-    /* Edit button on cards */
-    .task-actions .btn-edit {
-      border-color: var(--accent, #d4883a); color: var(--accent, #d4883a);
+    /* Edit icon (top-right of card) */
+    .task-card { position: relative; }
+    .task-edit-icon {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      background: transparent; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      color: var(--text-muted); opacity: 0.4; transition: opacity 0.15s, background 0.15s;
     }
-    .task-actions .btn-edit:hover { background: rgba(212,136,58,0.08); }
+    .task-edit-icon:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .task-edit-icon svg { width: 15px; height: 15px; }
 
     /* Task description on cards */
     .task-description {

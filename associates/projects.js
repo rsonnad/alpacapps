@@ -154,19 +154,21 @@ function renderTaskCard(task, rowNum) {
   const location = task.space?.name || task.location_label || '';
   const doneClass = task.status === 'done' ? 'done' : (task.status === 'on_hold' ? 'on-hold' : '');
 
-  let actions = `<button class="btn-edit" data-id="${task.id}" data-action="edit">Edit</button>`;
+  const editIcon = `<button class="task-edit-icon" data-id="${task.id}" data-action="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>`;
+
+  let actions = '';
   if (task.status === 'open') {
-    actions += `<button class="btn-start" data-id="${task.id}" data-action="start">Start Working</button>
+    actions = `<button class="btn-start" data-id="${task.id}" data-action="start">Start Working</button>
                <button class="btn-hold" data-id="${task.id}" data-action="hold">Hold</button>
                <button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>`;
   } else if (task.status === 'in_progress') {
-    actions += `<button class="btn-hold" data-id="${task.id}" data-action="hold">Hold</button>
+    actions = `<button class="btn-hold" data-id="${task.id}" data-action="hold">Hold</button>
                <button class="btn-done" data-id="${task.id}" data-action="done">Mark Done</button>`;
   } else if (task.status === 'on_hold') {
-    actions += `<button class="btn-start" data-id="${task.id}" data-action="start">Resume</button>
+    actions = `<button class="btn-start" data-id="${task.id}" data-action="start">Resume</button>
                <button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   } else {
-    actions += `<button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
+    actions = `<button class="btn-reopen" data-id="${task.id}" data-action="reopen">Reopen</button>`;
   }
 
   let statusBadge = '';
@@ -188,6 +190,7 @@ function renderTaskCard(task, rowNum) {
   const canonId = task.canonical_id || '';
 
   return `<div class="task-card ${doneClass}">
+    ${editIcon}
     <div class="task-card-top">
       <div class="task-row-num">${rowNum}</div>
       <span class="task-priority ${pClass}">${pLabel}</span>
