@@ -1341,6 +1341,20 @@ wansview-4-low:
 
 **Best approach: phased, WiZ-first.** Ship one backend at a time so each phase is testable and deployable without blocking on the next.
 
+### Current implementation status (Mar 4, 2026)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| DB model (`lighting_groups`, `lighting_group_targets`, `home_assistant_entities`, `home_assistant_config`) | ✅ Implemented | Migration `20260304_home_assistant_unified_lighting.sql` applied to Supabase |
+| Edge function `home-assistant-control` | ✅ Implemented + deployed | Supports list/sync entities, group state, power/brightness/color, scene activate |
+| Resident lighting page unified room UI | ✅ Implemented | `residents/lighting.html` + `residents/lighting.js` now have Unified Room Lighting section |
+| PAI unified room lighting tool | ✅ Implemented | `control_room_lights` added in `alpaca-pai` |
+| Sonos control via Music Assistant | ✅ Already implemented | `sonos-control` remains MA-first with Sonos fallback |
+| Home Assistant credentials in Supabase secrets (`HA_BASE_URL`, `HA_TOKEN`) | ❌ Missing | Required before HA entities can be discovered/synced |
+| Kitchen HA entity mapping (6 WiZ + 2 Linkind) | ❌ Not done yet | Blocked until HA credentials are configured and entities synced |
+
+**Important:** Unified room control backend is in place, but HA is not fully active yet because HA secrets are not configured in Supabase. Current kitchen commands still primarily use WiZ fallback, so Linkind bulbs are not fully included yet.
+
 ### Phase 1: WiZ in the app (fastest win)
 
 WiZ is already controllable via local UDP; we have `scripts/wiz-proxy/server.js` that accepts HTTP and sends UDP (or SSH to Alpaca Mac).
@@ -1392,3 +1406,16 @@ Let one logical group (e.g. "Kitchen") span backends: some bulbs WiZ, some Matte
 | 3. Unified | Logical groups that fan out to WiZ + Matter (+ Govee) | Phases 1 and 2 done |
 
 **Recommendation:** Start with Phase 1. It’s small, uses code you already have, and removes the WiZ app for kitchen (and other WiZ rooms). Phase 2 can proceed in parallel once you pick and install a Matter controller; Phase 3 is a UX improvement once both backends exist.
+
+### Activation checklist for Kitchen HA mapping
+
+1. Set Supabase secrets:
+   - `HA_BASE_URL`
+   - `HA_TOKEN`
+2. Run entity sync:
+   - Call `home-assistant-control` with action `sync_entities`
+3. Query Kitchen entities from `home_assistant_entities` and map them into `lighting_group_targets` (`backend='home_assistant'`, `group_key='kitchen'`).
+4. Validate:
+   - `get_group_state` for `kitchen` returns HA-backed entities
+   - `set_color` for `kitchen` sets all 8 bulbs (6 WiZ + 2 Linkind)
+5. After stable HA coverage, remove stale fallback targets from kitchen (`wiz_proxy`/`govee_cloud`) as needed.
