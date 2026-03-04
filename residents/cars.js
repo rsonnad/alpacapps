@@ -457,18 +457,31 @@ function renderFleet() {
     // Tesla-specific controls (lock/unlock, flash) — only when API connected
     let controlsHtml = '';
     if (isTesla && hasApiConnection) {
+      // Check if user is owner or assigned driver
+      const isOwner = (currentPersonId && car.owner_id === currentPersonId) || car.account?.app_user_id === currentUserId;
+      const isDriver = currentPersonId && (car.drivers || []).some(d => d.person?.id === currentPersonId);
+      const isOwnCar = isOwner || isDriver;
+
+      // Non-owners can only control if battery >50% AND plugged in
+      const batteryLevel = car.last_state?.battery_level;
+      const chargingState = car.last_state?.charging_state;
+      const pluggedIn = chargingState && chargingState !== 'Disconnected';
+      const batteryOk = typeof batteryLevel === 'number' && batteryLevel > 50;
+      const canControl = isOwnCar || (batteryOk && pluggedIn);
+
       const isLocked = car.last_state?.locked;
       const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
       const nextCmd = isLocked === false ? 'door_lock' : 'door_unlock';
       const nextLabel = isLocked === false ? 'Lock' : 'Unlock';
-      const isCharging = car.last_state?.charging_state === 'Charging' || car.last_state?.charging_state === 'Complete';
+      const isCharging = chargingState === 'Charging' || chargingState === 'Complete';
       const showChargerHint = isCharging && isLocked !== false;
       const lockBtnClass = showChargerHint
         ? 'car-cmd-btn car-cmd-btn--charger-unlock'
         : 'car-cmd-btn';
       const lockBtnLabel = showChargerHint ? 'Unlock to Move Off Charger' : nextLabel;
 
-      controlsHtml = `
+      if (canControl) {
+        controlsHtml = `
           <div class="car-card__controls">
             <button class="${lockBtnClass}" id="lockBtn_${car.id}"
                     onclick="window._sendCommand(${car.id}, '${nextCmd}')"
@@ -482,6 +495,16 @@ function renderFleet() {
               <span class="car-cmd-btn__label">Flash</span>
             </button>
           </div>`;
+      } else if (!isOwnCar) {
+        // Show why controls are disabled for non-owners
+        const reasons = [];
+        if (!pluggedIn) reasons.push('not plugged in');
+        if (!batteryOk) reasons.push(`${batteryLevel ?? '?'}% charged`);
+        controlsHtml = `
+          <div class="car-card__controls-disabled" style="font-size:0.8rem;color:var(--text-muted);padding:0.5rem 0;text-align:center;">
+            Controls locked — ${reasons.join(', ')}
+          </div>`;
+      }
     }
 
     const syncTimeHtml = hasApiConnection
