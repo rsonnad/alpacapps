@@ -1,12 +1,12 @@
 {
-  "version": "v260304.37 5:09p",
-  "release": 453,
-  "sha": "1e2ea320f",
-  "fullSha": "1e2ea320fccfe3ab29c551e8388689994e6483d1",
+  "version": "v260304.38 5:39p",
+  "release": 454,
+  "sha": "f35d2e7aa",
+  "fullSha": "f35d2e7aa68667771600ee647d4d4c584bc165a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 23:09:06+00",
-  "commits": [{"sha":"a31b13275","message":"rename page to Welcome to the Alpachuasca Playhouse","author":"Rahul"},{"sha":"1e2ea320f","message":"Merge branch 'silly-kepler'","author":"Rahul"}]
+  "pushedAt": "2026-03-04 23:39:48+00",
+  "commits": [{"sha":"f35d2e7aa","message":"swap Resend and Google Auth order on infra page (4↔5)","author":"Rahul"}]
 }
