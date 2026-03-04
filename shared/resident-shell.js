@@ -29,6 +29,7 @@ const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', '
 
 const DEVICE_PAGE_PATHS = new Set([
   'devices.html', 'devices',
+  '3dprinter.html', '3dprinter',
   'lighting.html', 'lighting',
   'sonos.html', 'sonos',
   'cameras.html', 'cameras',
@@ -50,6 +51,7 @@ const TAB_ICONS = {
   appliances: _i('<rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/>'),
   cars:       _i('<path d="M5 17h14v-3l2-4H3l2 4v3z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 10l1.5-4h11L19 10"/>'),
   sensors:    _i('<path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10"/><path d="M7 12a5 5 0 015-5"/><circle cx="12" cy="12" r="1"/>'),
+  printer3d:  _i('<rect x="4" y="3" width="16" height="4" rx="1"/><path d="M7 7v7a5 5 0 0010 0V7"/><rect x="9" y="14" width="6" height="7" rx="1"/>'),
   profile:    _i('<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
   bookkeeping:_i('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'),
   media:      _i('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
@@ -58,6 +60,7 @@ const TAB_ICONS = {
 
 const DEVICE_SUBTABS = [
   { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
+  { id: 'printer3d', label: '3DPrinter', href: '3dprinter.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
@@ -185,6 +188,8 @@ function renderDeviceSubTabNav(activeTab, authState) {
   const devicePageToTab = {
     'devices.html': 'list',
     devices: 'list',
+    '3dprinter.html': 'printer3d',
+    '3dprinter': 'printer3d',
     'lighting.html': 'homeauto',
     lighting: 'homeauto',
     'sonos.html': 'music',
