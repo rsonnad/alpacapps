@@ -185,28 +185,39 @@ function parseStatusResponse(raw) {
     };
   }
 
-  // M27 also returns printing status
-  if (raw.includes('Not SD printing')) {
-    status.printing = false;
-  } else if (progressMatch) {
-    status.printing = true;
-  }
-
   // Machine status from M119 or general status
   const statusMatch = raw.match(/MachineStatus:\s*(\w+)/);
   if (statusMatch) status.machineStatus = statusMatch[1];
+
+  // M27 also returns printing status — use MachineStatus to disambiguate
+  // "SD printing byte 0/100" with MachineStatus READY means idle (not printing)
+  if (raw.includes('Not SD printing')) {
+    status.printing = false;
+  } else if (progressMatch) {
+    const machineReady = status.machineStatus === 'READY';
+    const noProgress = parseInt(progressMatch[1]) === 0;
+    status.printing = !(machineReady && noProgress);
+  }
 
   // Move mode
   const moveMatch = raw.match(/MoveMode:\s*(\w+)/);
   if (moveMatch) status.moveMode = moveMatch[1];
 
-  // LED state
-  const ledMatch = raw.match(/LED:\s*(\w+)/);
-  if (ledMatch) status.ledOn = ledMatch[1].toLowerCase() === 'on';
+  // LED state — FlashForge returns "LED: 0" or "LED: 1" (numeric) or "on"/"off"
+  const ledMatch = raw.match(/LED:\s*(\S+)/);
+  if (ledMatch) {
+    const val = ledMatch[1].toLowerCase();
+    status.ledOn = val === 'on' || val === '1';
+  }
 
-  // Current file
+  // Current file — filter out "ok" which appears when no file is loaded
   const fileMatch = raw.match(/CurrentFile:\s*(.+)/);
-  if (fileMatch && fileMatch[1].trim()) status.currentFile = fileMatch[1].trim();
+  if (fileMatch) {
+    const fname = fileMatch[1].trim();
+    if (fname && fname !== 'ok' && !fname.startsWith('ok')) {
+      status.currentFile = fname;
+    }
+  }
 
   return status;
 }
