@@ -459,6 +459,22 @@ function renderDiscover() {
 }
 
 function renderBrainstorm() {
+  const strengthBias = appState.preferences.strengthVsSpeed < 40
+    ? 'Speed-first'
+    : appState.preferences.strengthVsSpeed > 60
+      ? 'Strength-first'
+      : 'Balanced';
+  const styleBias = appState.preferences.aestheticsVsUtility < 40
+    ? 'Utility-first'
+    : appState.preferences.aestheticsVsUtility > 60
+      ? 'Aesthetic-first'
+      : 'Balanced';
+  const materialBias = appState.preferences.materialVsDurability < 40
+    ? 'Low-material'
+    : appState.preferences.materialVsDurability > 60
+      ? 'Durability-first'
+      : 'Balanced';
+
   return `
     <div class="space-y-4">
       <div class="rounded-aap border border-aap-border p-3 bg-white">
@@ -466,9 +482,30 @@ function renderBrainstorm() {
         <label class="text-sm block mb-1">Idea seed</label>
         <textarea id="brainstormSeed" rows="2" class="w-full rounded-aap border border-aap-border p-2 text-sm">${esc(appState.brainstormSeed)}</textarea>
         <div class="grid md:grid-cols-3 gap-3 mt-3 text-sm">
-          <label>Strength vs Speed <input id="prefStrength" type="range" min="0" max="100" value="${appState.preferences.strengthVsSpeed}" class="w-full"></label>
-          <label>Aesthetics vs Utility <input id="prefStyle" type="range" min="0" max="100" value="${appState.preferences.aestheticsVsUtility}" class="w-full"></label>
-          <label>Low Material vs Durability <input id="prefMaterial" type="range" min="0" max="100" value="${appState.preferences.materialVsDurability}" class="w-full"></label>
+          <label>
+            <span class="font-semibold">Speed <span class="text-aap-text-muted">vs</span> Strength</span>
+            <input id="prefStrength" type="range" min="0" max="100" value="${appState.preferences.strengthVsSpeed}" class="w-full mt-1">
+            <div class="flex justify-between text-xs text-aap-text-muted mt-1">
+              <span>More Speed</span><span>More Strength</span>
+            </div>
+            <div class="text-xs mt-1">Current: ${strengthBias}</div>
+          </label>
+          <label>
+            <span class="font-semibold">Utility <span class="text-aap-text-muted">vs</span> Aesthetics</span>
+            <input id="prefStyle" type="range" min="0" max="100" value="${appState.preferences.aestheticsVsUtility}" class="w-full mt-1">
+            <div class="flex justify-between text-xs text-aap-text-muted mt-1">
+              <span>More Utility</span><span>More Aesthetics</span>
+            </div>
+            <div class="text-xs mt-1">Current: ${styleBias}</div>
+          </label>
+          <label>
+            <span class="font-semibold">Low Material <span class="text-aap-text-muted">vs</span> Durability</span>
+            <input id="prefMaterial" type="range" min="0" max="100" value="${appState.preferences.materialVsDurability}" class="w-full mt-1">
+            <div class="flex justify-between text-xs text-aap-text-muted mt-1">
+              <span>Use Less Material</span><span>More Durable</span>
+            </div>
+            <div class="text-xs mt-1">Current: ${materialBias}</div>
+          </label>
         </div>
         <button data-action="generate-concepts" class="mt-3 px-3 py-1.5 rounded-aap bg-aap-dark text-white text-sm">Generate 3 concept directions</button>
       </div>
