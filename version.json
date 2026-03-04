@@ -1,12 +1,12 @@
 {
-  "version": "v260304.01 9:09a",
-  "release": 417,
-  "sha": "d79fbc036",
-  "fullSha": "d79fbc036da096d1a9c7e01a89a47f8b241a05fb",
+  "version": "v260304.02 9:15a",
+  "release": 418,
+  "sha": "fd8f637ee",
+  "fullSha": "fd8f637eea5d3dcc87fe1ed84f6a83f9914a0fdd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-04 15:09:40+00",
-  "commits": [{"sha":"d79fbc036","message":"fix: Nest OAuth redirect_uri + climate target display for Off/HEATCOOL","author":"Rahul"}]
+  "pushedAt": "2026-03-04 15:15:23+00",
+  "commits": [{"sha":"fd8f637ee","message":"fix: hardcode Nest OAuth redirect URI on climate page","author":"Rahul"}]
 }
