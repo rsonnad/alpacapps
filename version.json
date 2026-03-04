@@ -1,12 +1,12 @@
 {
-  "version": "v260304.05 9:55a",
-  "release": 421,
-  "sha": "4ff2c6834",
-  "fullSha": "4ff2c6834712b4940bf63cf47b326a571b0ffaf7",
+  "version": "v260304.06 10:02a",
+  "release": 422,
+  "sha": "d71ff41a4",
+  "fullSha": "d71ff41a45f04c1cddc4dc23bff349955b83e62b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmnay03",
-  "pushedAt": "2026-03-04 15:55:24+00",
-  "commits": [{"sha":"4ff2c6834","message":"ux: open Nest OAuth in new tab from climate page","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-04 16:02:26+00",
+  "commits": [{"sha":"d71ff41a4","message":"fix: project filter by person now matches all tasks regardless of stored name","author":"Rahul"}]
 }
