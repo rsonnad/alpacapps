@@ -1,8 +1,9 @@
 /**
- * Appliances Page - LG washer/dryer monitoring + Anova Precision Oven control + Glowforge status.
+ * Appliances Page - LG washer/dryer monitoring + Anova Precision Oven control + Glowforge status + 3D Printer.
  * Laundry: live status from lg_appliances table (poller on DO droplet writes state; this page reads every 15s).
  * Cooking: live Anova Precision Oven status + controls via anova-control edge function.
  * Maker Tools: Glowforge laser cutter status via glowforge-control edge function.
+ * 3D Printing: FlashForge printer status + controls via printer-control edge function.
  */
 
 import { supabase } from '../shared/supabase.js';
@@ -23,6 +24,12 @@ import {
   getMachineStateDisplay, getLastActivity, getMachineModel,
   formatSyncTime as formatGlowforgeSyncTime,
 } from '../shared/services/glowforge-data.js';
+import {
+  loadPrinters, refreshPrinterStatus,
+  getPrinterStateDisplay, getNozzleTemp, getBedTemp, getPrintProgress,
+  isLedOn, toggleLight, pausePrint, resumePrint, cancelPrint,
+  formatSyncTime as formatPrinterSyncTime,
+} from '../shared/services/printer-data.js';
 
 // =============================================
 // CONFIGURATION
@@ -45,6 +52,9 @@ let loadFailed = false;
 let canControlOven = false;
 let refreshingOven = new Set();
 let refreshingGlowforge = false;
+let printerDevices = [];
+let refreshingPrinter = new Set();
+let canControlPrinter = false;
 
 // =============================================
 // SVG ICONS
@@ -88,6 +98,15 @@ const GLOWFORGE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColo
   <path d="M8 14 L16 14" stroke-dasharray="2 1.5" stroke-width="1.2"/>
   <path d="M12 11 L12 17" stroke-dasharray="2 1.5" stroke-width="1.2"/>
   <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none" opacity="0.6"/>
+</svg>`;
+
+const PRINTER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="2"/>
+  <rect x="6" y="14" width="12" height="4" rx="0.5" stroke-dasharray="2 1.5"/>
+  <line x1="6" y1="8" x2="18" y2="8"/>
+  <circle cx="7" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+  <circle cx="10" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+  <path d="M14 10 L14 13 M12 11.5 L16 11.5" stroke-width="1.2"/>
 </svg>`;
 
 // =============================================
@@ -213,6 +232,14 @@ async function loadGlowforge() {
     glowforgeMachines = await loadGlowforgeMachines();
   } catch (err) {
     console.warn('Failed to load glowforge machines:', err.message);
+  }
+}
+
+async function loadPrinterDevices() {
+  try {
+    printerDevices = await loadPrinters();
+  } catch (err) {
+    console.warn('Failed to load 3D printers:', err.message);
   }
 }
 
@@ -452,6 +479,96 @@ function renderGlowforgeCard(machine) {
 }
 
 // =============================================
+// RENDERING — 3D PRINTER
+// =============================================
+function renderPrinterCard(printer) {
+  const state = getPrinterStateDisplay(printer);
+  const nozzle = getNozzleTemp(printer);
+  const bed = getBedTemp(printer);
+  const progress = getPrintProgress(printer);
+  const ledOn = isLedOn(printer);
+  const isRefreshing = refreshingPrinter.has(printer.id);
+  const stateClass = state.isPrinting ? 'running' : '';
+
+  return `
+    <div class="laundry-card ${stateClass}" data-printer-id="${printer.id}">
+      <div class="laundry-card__header">
+        <div class="laundry-card__icon">${PRINTER_ICON}</div>
+        <div class="laundry-card__name">${printer.name}</div>
+        <span class="laundry-card__status-dot" style="background:${state.color}"></span>
+      </div>
+
+      <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
+
+      ${progress ? `
+        <div class="laundry-card__progress">
+          <div class="laundry-card__progress-bar" style="width:${progress.percent}%"></div>
+        </div>
+        <div class="laundry-card__time">${progress.percent}%${progress.filename ? ` — ${progress.filename}` : ''}</div>
+      ` : ''}
+
+      <div class="laundry-card__data-grid">
+        ${nozzle ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Nozzle</span>
+          <span class="laundry-data-value">${Math.round(nozzle.current)}°C${nozzle.target > 0 ? ` / ${Math.round(nozzle.target)}°C` : ''}</span>
+        </div>
+        ` : ''}
+        ${bed ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Bed</span>
+          <span class="laundry-data-value">${Math.round(bed.current)}°C${bed.target > 0 ? ` / ${Math.round(bed.target)}°C` : ''}</span>
+        </div>
+        ` : ''}
+        ${printer.machine_type ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">Model</span>
+          <span class="laundry-data-value">${printer.machine_type}</span>
+        </div>
+        ` : ''}
+        ${ledOn != null ? `
+        <div class="laundry-data-row">
+          <span class="laundry-data-label">LED</span>
+          <span class="laundry-data-value">${ledOn ? 'On' : 'Off'}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="laundry-card__controls" style="gap:0.5rem;">
+        <button class="laundry-watch-btn" onclick="window._refreshPrinter('${printer.id}')" title="Fetch live status"
+                ${isRefreshing ? 'disabled' : ''} style="flex:1;">
+          ${REFRESH_ICON}
+          <span>${isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+        </button>
+        ${canControlPrinter && ledOn != null ? `
+          <button class="laundry-watch-btn" onclick="window._togglePrinterLight('${printer.id}')" title="Toggle LED light" style="flex:0 0 auto;min-width:50px;">
+            <span>${ledOn ? '💡' : '🔲'}</span>
+          </button>
+        ` : ''}
+      </div>
+      ${canControlPrinter && state.isPrinting ? `
+      <div class="laundry-card__controls" style="gap:0.5rem;margin-top:0.25rem;">
+        ${state.text === 'Paused' ? `
+          <button class="laundry-watch-btn" onclick="window._resumePrint('${printer.id}')" style="flex:1;background:var(--available);color:white;border-color:var(--available);">
+            <span>Resume</span>
+          </button>
+        ` : `
+          <button class="laundry-watch-btn" onclick="window._pausePrint('${printer.id}')" style="flex:1;background:#f59e0b;color:white;border-color:#f59e0b;">
+            <span>Pause</span>
+          </button>
+        `}
+        <button class="laundry-watch-btn" onclick="window._cancelPrint('${printer.id}')" style="flex:1;background:var(--occupied);color:white;border-color:var(--occupied);">
+          <span>Cancel</span>
+        </button>
+      </div>
+      ` : ''}
+
+      <div class="laundry-card__sync-time">${formatPrinterSyncTime(printer.last_synced_at)}</div>
+    </div>
+  `;
+}
+
+// =============================================
 // RENDERING — SECTIONS
 // =============================================
 function renderSections() {
@@ -495,6 +612,17 @@ function renderSections() {
     </p>`;
   }
 
+  // 3D Printing section
+  const printingOpen = getSectionOpenState('printing');
+  let printerCardsHtml;
+  if (printerDevices.length > 0) {
+    printerCardsHtml = `<div class="laundry-grid">${printerDevices.map(renderPrinterCard).join('')}</div>`;
+  } else {
+    printerCardsHtml = `<p style="text-align:center;color:var(--text-muted);padding:2rem;">
+      No 3D printers discovered yet. Admin: configure the printer proxy URL in Settings below.
+    </p>`;
+  }
+
   container.innerHTML = `
     <details class="appliance-section" ${laundryOpen ? 'open' : ''} data-section="laundry">
       <summary class="appliance-section__header">
@@ -515,6 +643,17 @@ function renderSections() {
       </summary>
       <div class="appliance-section__body">
         ${cookingCardsHtml}
+      </div>
+    </details>
+
+    <details class="appliance-section" ${printingOpen ? 'open' : ''} data-section="printing">
+      <summary class="appliance-section__header">
+        <span class="appliance-section__chevron"></span>
+        <h3>3D Printing</h3>
+        <span class="appliance-section__count">${printerDevices.length} printer${printerDevices.length !== 1 ? 's' : ''}</span>
+      </summary>
+      <div class="appliance-section__body">
+        ${printerCardsHtml}
       </div>
     </details>
 
@@ -666,6 +805,74 @@ window._stopCook = async function(ovenId) {
 };
 
 // =============================================
+// PRINTER CONTROLS
+// =============================================
+window._refreshPrinter = async function(printerId) {
+  if (refreshingPrinter.has(printerId)) return;
+  refreshingPrinter.add(printerId);
+  renderSections();
+
+  try {
+    const result = await refreshPrinterStatus(printerId);
+    if (result.error) throw new Error(result.error);
+    showToast('Printer status updated', 'success');
+    await loadPrinterDevices();
+  } catch (err) {
+    showToast(`Refresh failed: ${err.message}`, 'error');
+  } finally {
+    refreshingPrinter.delete(printerId);
+    renderSections();
+  }
+};
+
+window._togglePrinterLight = async function(printerId) {
+  const printer = printerDevices.find(p => p.id === printerId);
+  const currentlyOn = isLedOn(printer);
+  try {
+    const result = await toggleLight(printerId, !currentlyOn);
+    if (result.error) throw new Error(result.error);
+    showToast(`LED ${!currentlyOn ? 'on' : 'off'}`, 'success');
+    setTimeout(() => window._refreshPrinter(printerId), 1500);
+  } catch (err) {
+    showToast(`Toggle failed: ${err.message}`, 'error');
+  }
+};
+
+window._pausePrint = async function(printerId) {
+  try {
+    const result = await pausePrint(printerId);
+    if (result.error) throw new Error(result.error);
+    showToast('Print paused', 'success');
+    setTimeout(() => window._refreshPrinter(printerId), 2000);
+  } catch (err) {
+    showToast(`Pause failed: ${err.message}`, 'error');
+  }
+};
+
+window._resumePrint = async function(printerId) {
+  try {
+    const result = await resumePrint(printerId);
+    if (result.error) throw new Error(result.error);
+    showToast('Print resumed', 'success');
+    setTimeout(() => window._refreshPrinter(printerId), 2000);
+  } catch (err) {
+    showToast(`Resume failed: ${err.message}`, 'error');
+  }
+};
+
+window._cancelPrint = async function(printerId) {
+  if (!confirm('Cancel the current print?')) return;
+  try {
+    const result = await cancelPrint(printerId);
+    if (result.error) throw new Error(result.error);
+    showToast('Print cancelled', 'success');
+    setTimeout(() => window._refreshPrinter(printerId), 2000);
+  } catch (err) {
+    showToast(`Cancel failed: ${err.message}`, 'error');
+  }
+};
+
+// =============================================
 // WATCH / UNWATCH (laundry)
 // =============================================
 window._toggleWatch = async function(applianceId) {
@@ -750,7 +957,7 @@ function stopCountdown() {
 // POLLING
 // =============================================
 async function refreshFromDB() {
-  await Promise.all([loadAppliances(), loadAnovaOvens(), loadGlowforge()]);
+  await Promise.all([loadAppliances(), loadAnovaOvens(), loadGlowforge(), loadPrinterDevices()]);
   await loadWatcherStatus();
   renderSections();
 }
@@ -984,6 +1191,111 @@ async function renderGlowforgeSettings() {
 }
 
 // =============================================
+// ADMIN SETTINGS — 3D PRINTER
+// =============================================
+async function renderPrinterSettings() {
+  const container = document.getElementById('printerSettingsContent');
+  if (!container) return;
+
+  const { data: config } = await supabase
+    .from('printer_config')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  const c = config || {};
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:600px;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Proxy URL</label>
+        <input type="text" id="printerProxyUrl" value="${c.proxy_url || ''}" placeholder="https://alpaclaw.cloud/printer-proxy" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;">
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0.25rem 0 0;">URL to the printer proxy on Alpaca Mac (via Caddy/Tailscale).</p>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Proxy Secret</label>
+        <input type="password" id="printerProxySecret" value="${c.proxy_secret || ''}" placeholder="shared secret" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;">
+      </div>
+      <div style="display:flex;gap:1rem;align-items:center;">
+        <label><input type="checkbox" id="printerTestMode" ${c.test_mode ? 'checked' : ''}> Test Mode</label>
+        <label><input type="checkbox" id="printerIsActive" ${c.is_active !== false ? 'checked' : ''}> Active</label>
+      </div>
+      ${c.last_error ? `
+        <div style="background:var(--occupied-bg);border:1px solid var(--occupied);border-radius:var(--radius);padding:0.75rem;font-size:0.85rem;">
+          <strong>Last Error:</strong> ${c.last_error}
+        </div>
+      ` : ''}
+      <div style="display:flex;gap:0.5rem;">
+        <button id="printerSaveBtn" class="btn-secondary" style="padding:0.5rem 1.5rem;">Save</button>
+        <button id="printerTestBtn" class="btn-secondary" style="padding:0.5rem 1.5rem;">Test Connection</button>
+      </div>
+      <div id="printerDeviceList"></div>
+    </div>
+  `;
+
+  document.getElementById('printerSaveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('printerSaveBtn');
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.from('printer_config').upsert({
+        id: 1,
+        proxy_url: document.getElementById('printerProxyUrl').value.trim(),
+        proxy_secret: document.getElementById('printerProxySecret').value.trim(),
+        test_mode: document.getElementById('printerTestMode').checked,
+        is_active: document.getElementById('printerIsActive').checked,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      showToast('Printer settings saved', 'success');
+    } catch (err) {
+      showToast(`Save failed: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('printerTestBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('printerTestBtn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    try {
+      const printer = printerDevices[0];
+      if (!printer) throw new Error('No printer devices configured');
+      const result = await refreshPrinterStatus(printer.id);
+      if (result.error) throw new Error(result.error);
+      showToast('Connected! Printer status refreshed.', 'success');
+      await loadPrinterDevices();
+      renderSections();
+      renderPrinterSettings();
+    } catch (err) {
+      showToast(`Connection failed: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Connection';
+    }
+  });
+
+  // Show discovered printers
+  if (printerDevices.length > 0) {
+    const deviceList = document.getElementById('printerDeviceList');
+    if (deviceList) {
+      deviceList.innerHTML = `
+        <div style="margin-top:0.5rem;">
+          <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Configured Printers</label>
+          ${printerDevices.map(p => `
+            <div style="padding:0.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.5rem;">
+              <div style="font-weight:600;">${p.name}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">
+                SN: ${p.serial_number || '?'} | Type: ${p.machine_type || '?'}${p.firmware_version ? ` | FW: ${p.firmware_version}` : ''} | IP: ${p.lan_ip || '?'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+}
+
+// =============================================
 // INIT
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -995,6 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentAppUserId = authState.appUser?.id;
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
       canControlOven = hasPermission('control_oven');
+      canControlPrinter = hasPermission('control_printer');
 
       // Initial load + polling
       await refreshFromDB();
@@ -1003,11 +1316,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const showLgAdmin = hasPermission('admin_laundry_settings');
       const showOvenAdmin = hasPermission('admin_oven_settings');
       const showGfAdmin = hasPermission('admin_glowforge_settings');
-      if (showLgAdmin || showOvenAdmin || showGfAdmin) {
+      const showPrinterAdmin = hasPermission('admin_printer_settings');
+      if (showLgAdmin || showOvenAdmin || showGfAdmin || showPrinterAdmin) {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         if (showLgAdmin) await renderLgSettings();
         if (showOvenAdmin) await renderAnovaSettings();
         if (showGfAdmin) await renderGlowforgeSettings();
+        if (showPrinterAdmin) await renderPrinterSettings();
       }
 
       poll = new PollManager(refreshFromDB, POLL_INTERVAL_MS);
