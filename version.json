@@ -1,12 +1,12 @@
 {
-  "version": "v260303.17 2:58p",
-  "release": 415,
-  "sha": "033d7b740",
-  "fullSha": "033d7b7401b36562a3781e370e03d6a6d485e8ea",
+  "version": "v260303.18 9:38p",
+  "release": 416,
+  "sha": "d6f91236f",
+  "fullSha": "d6f91236f8871e1cd9f9e233b41ac4d880f324fa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-03 20:58:08+00",
-  "commits": [{"sha":"d7148edc7","message":"feat: It’s not allowing me to access photo library on project inquiries please\\n\\nAutomated feature from PAI request #9ccac7ff-c8f7-4d49-9f9e-457f1efa0259.\\n\\nCo-Authored-By: Claude Code <noreply@anthropic.com>","author":"Feature Builder Bot"},{"sha":"033d7b740","message":"Merge feature/20260303-9ccac7ff into main","author":"Feature Builder Bot"}]
+  "pushedAt": "2026-03-04 03:38:02+00",
+  "commits": [{"sha":"d6f91236f","message":"fix: show Nest re-authorize button when OAuth token is expired","author":"Rahul"}]
 }
