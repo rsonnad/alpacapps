@@ -429,9 +429,16 @@ export async function initAssociatePage({ activeTab, onReady }) {
       if (onReady && !onReadyCalled) {
         onReadyCalled = true;
         // Ensure Supabase has a real session before onReady queries RLS-protected tables.
-        const { data: sessionData } = await supabase.auth.getSession();
+        let { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData?.session) {
-          console.warn('[associate-shell] No active session despite cached auth — redirecting to login');
+          // JWT expired (common on mobile after backgrounding) — try refreshing
+          console.warn('[associate-shell] No active session — attempting token refresh');
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          sessionData = refreshData;
+        }
+        if (!sessionData?.session) {
+          // Refresh also failed — force re-login
+          console.warn('[associate-shell] Token refresh failed — redirecting to login');
           try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
           transitionBootState('redirecting');
           window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
