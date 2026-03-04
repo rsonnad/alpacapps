@@ -242,7 +242,7 @@ serve(async (req) => {
       const result = await callPrinterProxy(proxyUrl, proxySecret, "control", {
         ip: printerIp,
         port: printerPort,
-        commands: [`~M23 0:/user/${body.filename}`, "~M24"],
+        commands: [`~M23 /data/${body.filename}`, "~M24"],
       });
 
       logUsage(supabase, "printer_control", "startPrint", printer, appUser);
@@ -353,29 +353,35 @@ serve(async (req) => {
 
 /**
  * Parse M661 file list response into structured array.
- * FlashForge returns lines like: "Begin file list\n/user/file.3mf\n..."
+ * Adventurer 5M Pro returns binary response with paths like /data/file.gcode
+ * separated by :: and binary bytes. Older models return text "Begin file list".
  */
 function parseFileList(raw: string): string[] {
   if (!raw) return [];
-  const lines = raw.split("\n");
-  const files: string[] = [];
-  let inList = false;
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed === "Begin file list") {
-      inList = true;
-      continue;
+  // Try text format first (older FlashForge models)
+  if (raw.includes("Begin file list")) {
+    const lines = raw.split("\n");
+    const files: string[] = [];
+    let inList = false;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed === "Begin file list") { inList = true; continue; }
+      if (trimmed === "End file list" || trimmed.startsWith("ok")) break;
+      if (inList && trimmed) {
+        files.push(trimmed.replace(/^\/data\//, ""));
+      }
     }
-    if (trimmed === "End file list" || trimmed.startsWith("ok")) {
-      break;
-    }
-    if (inList && trimmed) {
-      // Strip /user/ prefix for display
-      files.push(trimmed.replace(/^\/user\//, ""));
-    }
+    return files;
   }
-  return files;
+
+  // Binary format (Adventurer 5M Pro): extract /data/*.gcode paths
+  const matches = raw.match(/\/data\/[^\x00-\x1f:]+\.(?:gcode|3mf|gx)/gi);
+  if (matches) {
+    return matches.map((f) => f.replace(/^\/data\//, ""));
+  }
+
+  return [];
 }
 
 /**
