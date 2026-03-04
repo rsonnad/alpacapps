@@ -85,6 +85,18 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 - **Operational safety.** We keep Sonos proxy fallback for announce and any unsupported MA command so migration can be gradual and non-breaking.
 - **Infra simplification.** Hostinger acts as the HTTPS proxy (`/sonos`, `/ma-api`) while Alpaca Mac stays the LAN bridge where Sonos and MA run.
 
+### 3.4 FlashForge: TCP G-code Over HTTP API
+
+**Decision:** Control the FlashForge Adventurer 5M Pro via its raw TCP G-code protocol (port 8899) rather than the HTTP REST API (port 8898).
+
+**Why:**
+- **No authentication needed.** TCP port 8899 accepts G-code commands without any auth token or checkCode, while the HTTP API requires a checkCode handshake that changes per session.
+- **Full functionality.** TCP exposes every printer capability: temperatures, print control, LED, file listing, progress, endstops, homing — the HTTP API has a smaller surface area.
+- **Same proxy pattern.** The printer is LAN-only, so we need an Alpaca Mac bridge regardless. A lightweight HTTP→TCP proxy (`printer-proxy.js`) fits the same Caddy/Tailscale pattern used for Sonos and cameras.
+- **Community-proven.** FlashForge TCP protocol is well-documented by the community (OctoPrint plugin, FlashPrint source analysis). The HTTP API is less documented and less stable across firmware versions.
+
+**Tradeoff accepted:** TCP requires a custom proxy to bridge HTTP→TCP, adding one more LaunchAgent on Alpaca Mac. This is acceptable since the same machine already runs go2rtc, talkback-relay, and sonos-http-api.
+
 ---
 
 ## 4. Payment System Design

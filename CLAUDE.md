@@ -1138,6 +1138,24 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Permissions**: `view_glowforge` (all residents), `admin_glowforge_settings` (admin/oracle)
 - **Cost**: $0 (undocumented API, no rate limits documented)
 
+### FlashForge (3D Printer)
+- **API**: FlashForge TCP G-code protocol (port 8899, no auth needed on LAN)
+- **Printer**: "Alpaca Foundry" — Adventurer 5M Pro, SN SNMSQE9C09604, FW v3.2.7
+- **Architecture**: Per-request via printer proxy on Alpaca Mac (HTTP→TCP bridge, same pattern as Sonos/cameras)
+- **Proxy chain**: Browser → Supabase edge function → Caddy on Hostinger → Alpaca Mac printer-proxy.js (port 8903) → TCP to printer at 192.168.1.106:8899
+- **Proxy**: `scripts/printer-proxy/printer-proxy.js` on Alpaca Mac, health check on port 8904
+- **LaunchAgent**: `scripts/printer-proxy/com.printer-proxy.plist`
+- **Control flow**: M601 S1 (request control) → command → M602 (release control) — proxy handles this automatically
+- **Commands**: M115 (info), M105 (temps), M27 (progress), M119 (endstops), M23/M24/M25/M26 (print control), M104/M140 (set temps), M146 (LED), G28 (home), M661 (list files)
+- **DB**: `printer_config` (proxy URL, proxy secret, config), `printer_devices` (cached state in `last_state` JSONB)
+- **Edge function**: `printer-control` — deployed with `--no-verify-jwt`
+- **Data service**: `shared/services/printer-data.js`
+- **Client**: `residents/appliances.js` renders printer cards in "3D Printing" section
+- **Permissions**: `view_printer` (all residents), `control_printer` (all residents), `admin_printer_settings` (admin/oracle)
+- **Camera**: MJPEG stream at `http://192.168.1.106:8080/?action=stream` (proxied via Caddy/Tailscale)
+- **Network**: LAN IP 192.168.1.106, build volume 220×220×220mm
+- **Cost**: $0 (direct TCP, no cloud API, no rate limits)
+
 ### Vapi (AI Voice Calling)
 - **API**: Vapi.ai (voice AI platform)
 - **Pattern**: Server URL — Vapi calls `vapi-server` edge function on each incoming call to get assistant config dynamically
