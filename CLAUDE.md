@@ -1013,7 +1013,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Traits used**: Temperature, Humidity, ThermostatMode, ThermostatHvac, ThermostatEco, ThermostatTemperatureSetpoint, Connectivity
 - **Temperature**: SDM API uses Celsius, UI shows Fahrenheit, edge function converts
 - **Rate limit**: 5 QPS per SDM project (polling at 0.1 QPS is well within limit)
-- **OAuth setup**: One-time admin flow via Climate tab Settings → "Authorize Google Account"
+- **OAuth setup**: One-time admin flow via Climate tab Settings → "Authorize Google Account". If you get Error 400 redirect_uri_mismatch, add `https://alpacaplayhouse.com/residents/climate.html` to the OAuth client's Authorized redirect URIs in Google Cloud Console (APIs & Services → Credentials).
 
 ### OpenWeatherMap (Weather)
 - **API**: One Call API 3.0 (with 2.5 free tier fallback)

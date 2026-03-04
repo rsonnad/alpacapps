@@ -210,14 +210,19 @@ function renderCard(t) {
   const isCooling = s.hvacStatus === 'COOLING';
   const isEco = s.ecoMode === 'MANUAL_ECO';
 
-  // Target temp display
+  // Target temp display (include OFF so we show stored setpoints when available)
   let targetDisplay = '--';
   if (s.mode === 'HEAT' && s.heatSetpointF != null) {
     targetDisplay = `${s.heatSetpointF}`;
   } else if (s.mode === 'COOL' && s.coolSetpointF != null) {
     targetDisplay = `${s.coolSetpointF}`;
-  } else if (s.mode === 'HEATCOOL' && s.heatSetpointF != null && s.coolSetpointF != null) {
-    targetDisplay = `${s.heatSetpointF} - ${s.coolSetpointF}`;
+  } else if (s.mode === 'HEATCOOL' || (s.mode === 'OFF' && (s.heatSetpointF != null || s.coolSetpointF != null))) {
+    const heat = s.heatSetpointF != null ? `${s.heatSetpointF}` : '--';
+    const cool = s.coolSetpointF != null ? `${s.coolSetpointF}` : '--';
+    targetDisplay = heat === cool ? heat : `${heat} - ${cool}`;
+    if (s.mode === 'OFF') targetDisplay += ' (Off)';
+  } else if (s.mode === 'OFF') {
+    targetDisplay = 'Off';
   }
 
   // HVAC badge
@@ -257,7 +262,7 @@ function renderCard(t) {
         <span class="thermostat-card__target-label">Target</span>
         <div class="thermostat-card__target-controls">
           <button class="thermostat-btn" data-action="tempDown" data-device="${deviceAttr}" ${s.mode === 'OFF' ? 'disabled' : ''}>&#8722;</button>
-          <span class="thermostat-card__target-value">${targetDisplay}&deg;F</span>
+          <span class="thermostat-card__target-value">${targetDisplay === 'Off' ? targetDisplay : `${targetDisplay}&deg;F`}</span>
           <button class="thermostat-btn" data-action="tempUp" data-device="${deviceAttr}" ${s.mode === 'OFF' ? 'disabled' : ''}>+</button>
         </div>
       </div>
