@@ -6218,6 +6218,111 @@ span.sonos-library-item__star.starred {
   color: var(--text, #1a1a1a);
 }
 
+/* =============================================
+   3D PRINTER STUDIO (residents/3dprinter.html)
+   Scoped utility fallback + spacing polish
+============================================= */
+#printerApp {
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+#printerApp .space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+#printerApp .flex { display: flex; }
+#printerApp .grid { display: grid; }
+#printerApp .flex-wrap { flex-wrap: wrap; }
+#printerApp .items-center { align-items: center; }
+#printerApp .justify-between { justify-content: space-between; }
+#printerApp .gap-2 { gap: 0.5rem; }
+#printerApp .gap-3 { gap: 0.75rem; }
+#printerApp .mb-1 { margin-bottom: 0.25rem; }
+#printerApp .mb-2 { margin-bottom: 0.5rem; }
+#printerApp .mb-4 { margin-bottom: 1rem; }
+#printerApp .mt-1 { margin-top: 0.25rem; }
+#printerApp .mt-2 { margin-top: 0.5rem; }
+#printerApp .mt-3 { margin-top: 0.75rem; }
+#printerApp .block { display: block; }
+#printerApp .w-full { width: 100%; }
+#printerApp .overflow-auto { overflow: auto; }
+#printerApp .cursor-not-allowed { cursor: not-allowed; }
+
+#printerApp .rounded-aap { border-radius: var(--radius-lg, 12px); }
+#printerApp .rounded-full { border-radius: 9999px; }
+#printerApp .border { border: 1px solid var(--border, #d6d6d6); }
+#printerApp .border-aap-border { border-color: var(--border, #d6d6d6); }
+#printerApp .border-aap-dark { border-color: var(--text, #1c1618); }
+#printerApp .border-red-200 { border-color: #fecaca; }
+#printerApp .border-red-300 { border-color: #fca5a5; }
+#printerApp .border-amber-200 { border-color: #fde68a; }
+
+#printerApp .p-2 { padding: 0.55rem 0.65rem; }
+#printerApp .p-3 { padding: 0.9rem 1rem; }
+#printerApp .px-2\.5 { padding-left: 0.65rem; padding-right: 0.65rem; }
+#printerApp .px-3 { padding-left: 0.8rem; padding-right: 0.8rem; }
+#printerApp .py-1 { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+#printerApp .py-1\.5 { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+
+#printerApp .text-xs { font-size: 0.78rem; }
+#printerApp .text-sm { font-size: 0.9rem; }
+#printerApp .font-semibold { font-weight: 700; }
+#printerApp .uppercase { text-transform: uppercase; letter-spacing: 0.03em; }
+
+#printerApp .bg-white { background: #fff; }
+#printerApp .bg-aap-cream { background: var(--surface-alt, #f8f5ef); }
+#printerApp .bg-aap-dark { background: var(--text, #1c1618); }
+#printerApp .bg-aap-amber { background: var(--accent, #d4883a); }
+#printerApp .bg-red-50 { background: #fef2f2; }
+#printerApp .bg-amber-50 { background: #fffbeb; }
+#printerApp .bg-green-100 { background: #dcfce7; }
+#printerApp .bg-gray-200 { background: #e5e7eb; }
+
+#printerApp .text-white { color: #fff; }
+#printerApp .text-aap-dark { color: var(--text, #1c1618); }
+#printerApp .text-aap-text-muted { color: var(--text-muted, #6b7280); }
+#printerApp .text-green-700 { color: #15803d; }
+#printerApp .text-gray-500 { color: #6b7280; }
+#printerApp .text-red-600 { color: #dc2626; }
+
+#printerApp button,
+#printerApp select,
+#printerApp input,
+#printerApp textarea {
+  font: inherit;
+}
+
+#printerApp button {
+  min-height: 34px;
+  border-radius: 10px;
+}
+
+#printerApp textarea,
+#printerApp input,
+#printerApp select {
+  border: 1px solid var(--border, #d6d6d6);
+  border-radius: 10px;
+  background: #fff;
+}
+
+#printerApp pre {
+  max-height: 320px;
+  line-height: 1.35;
+}
+
+#printerApp .hover\:bg-aap-cream:hover {
+  background: var(--surface-alt, #f8f5ef);
+}
+
+@media (min-width: 768px) {
+  #printerApp .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #printerApp .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 .device-card__desc {
   font-size: 0.78rem;
   color: var(--text-muted, #888);
