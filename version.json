@@ -1,12 +1,12 @@
 {
-  "version": "v260304.35 5:02p",
-  "release": 451,
-  "sha": "ed55cb6a6",
-  "fullSha": "ed55cb6a6261412a3865c4fa81482a271be709a1",
+  "version": "v260304.36 5:07p",
+  "release": 452,
+  "sha": "63707e74e",
+  "fullSha": "63707e74e28487a7d11c317c619677bfae3fc931",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 23:02:31+00",
-  "commits": [{"sha":"3d7261570","message":"revert to custom text header instead of stock hero image","author":"Rahul"},{"sha":"ed55cb6a6","message":"Merge branch 'silly-kepler'","author":"Rahul"}]
+  "pushedAt": "2026-03-04 23:07:03+00",
+  "commits": [{"sha":"0a50232d2","message":"add hero image to IAW page header + improve OG tags","author":"Rahul"},{"sha":"63707e74e","message":"Merge branch 'silly-kepler'","author":"Rahul"}]
 }
