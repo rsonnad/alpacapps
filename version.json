@@ -1,12 +1,12 @@
 {
-  "version": "v260304.36 5:07p",
-  "release": 452,
-  "sha": "63707e74e",
-  "fullSha": "63707e74e28487a7d11c317c619677bfae3fc931",
+  "version": "v260304.37 5:09p",
+  "release": 453,
+  "sha": "1e2ea320f",
+  "fullSha": "1e2ea320fccfe3ab29c551e8388689994e6483d1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 23:07:03+00",
-  "commits": [{"sha":"0a50232d2","message":"add hero image to IAW page header + improve OG tags","author":"Rahul"},{"sha":"63707e74e","message":"Merge branch 'silly-kepler'","author":"Rahul"}]
+  "pushedAt": "2026-03-04 23:09:06+00",
+  "commits": [{"sha":"a31b13275","message":"rename page to Welcome to the Alpachuasca Playhouse","author":"Rahul"},{"sha":"1e2ea320f","message":"Merge branch 'silly-kepler'","author":"Rahul"}]
 }
