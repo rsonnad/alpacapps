@@ -156,6 +156,70 @@
 
     .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
 
+    /* View toggle */
+    .view-toggle {
+      display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .view-toggle button {
+      padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 600; border: none;
+      background: var(--bg-card); color: var(--text-muted); cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .view-toggle button + button { border-left: 1px solid var(--border); }
+    .view-toggle button.active { background: var(--accent); color: #fff; }
+
+    /* Inquiry cards */
+    .inquiry-grid {
+      display: grid; grid-template-columns: 1fr; gap: 0.75rem;
+    }
+    .inquiry-card {
+      display: flex; gap: 0.75rem; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.75rem; transition: box-shadow 0.15s;
+    }
+    .inquiry-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .inquiry-thumb {
+      width: 80px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+      background: #f3f4f6; cursor: pointer;
+    }
+    .inquiry-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .inquiry-body { flex: 1; min-width: 0; }
+    .inquiry-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem; }
+    .inquiry-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .inquiry-type-badge {
+      display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    }
+    .inquiry-type-badge.general { background: #eff6ff; color: #2563eb; }
+    .inquiry-type-badge.color_pick { background: #fef3c7; color: #92400e; }
+    .inquiry-status {
+      display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 700;
+    }
+    .inquiry-status.pending { background: #fef3c7; color: #92400e; }
+    .inquiry-status.processing { background: #dbeafe; color: #1e40af; }
+    .inquiry-status.completed { background: #d1fae5; color: #065f46; }
+    .inquiry-status.failed { background: #fef2f2; color: #991b1b; }
+    .inquiry-answer {
+      margin-top: 0.5rem; font-size: 0.8rem; color: var(--text);
+      background: #f9fafb; border-radius: 6px; padding: 0.5rem; line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .inquiry-colors { display: flex; gap: 4px; margin-top: 0.4rem; }
+    .inquiry-swatch {
+      width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    /* Inquiry toolbar */
+    .inquiry-toolbar {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .inquiry-toolbar select {
+      padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.85rem; background: var(--bg-card);
+    }
+
     /* Photo thumbs in modal */
     .admin-photo-thumb {
       position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden;
@@ -208,6 +272,14 @@
 
     <!-- Main Content -->
     <main class="manage-content projects-page">
+      <!-- View Toggle -->
+      <div class="view-toggle" id="viewToggle">
+        <button class="active" data-view="tasks">Tasks</button>
+        <button data-view="inquiries">Inquiries</button>
+      </div>
+
+      <!-- ===== TASKS VIEW ===== -->
+      <div id="tasksView">
       <!-- Summary -->
       <div class="summary-cards" id="summaryCards">
         <div class="summary-card"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
@@ -273,6 +345,28 @@
             <tr><td colspan="8" class="empty-state">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+      </div><!-- /tasksView -->
+
+      <!-- ===== INQUIRIES VIEW ===== -->
+      <div id="inquiriesView" style="display:none">
+        <div class="inquiry-toolbar">
+          <select id="inquiryFilterStatus">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+          <select id="inquiryFilterType">
+            <option value="">All Types</option>
+            <option value="color_pick">Color Pick</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="inquiry-grid" id="inquiryGrid">
+          <div class="empty-state">Loading inquiries...</div>
+        </div>
       </div>
     </main>
   </div>
