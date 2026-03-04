@@ -1,12 +1,12 @@
 {
-  "version": "v260304.03 9:20a",
-  "release": 419,
-  "sha": "65e3df691",
-  "fullSha": "65e3df691380e9872c4a9e41b1d116c9f18e1ae4",
+  "version": "v260304.04 9:43a",
+  "release": 420,
+  "sha": "1855b869e",
+  "fullSha": "1855b869e322f4c2f9ee60b52f57b9cc9a312ee3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnay03",
-  "pushedAt": "2026-03-04 15:20:22+00",
-  "commits": [{"sha":"65e3df691","message":"fix: bust climate thermostat.js cache after OAuth hotfix","author":"Rahul"}]
+  "pushedAt": "2026-03-04 15:43:57+00",
+  "commits": [{"sha":"1855b869e","message":"fix: prevent repeated re-authentication on mobile web","author":"Rahul"}]
 }
