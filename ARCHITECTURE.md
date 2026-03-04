@@ -578,6 +578,18 @@ Acknowledgments (boolean flags for each policy):
 - `space_id` (FK → spaces), `display_order`, `is_active`
 - `last_state` (jsonb), `last_synced_at`, `lan_ip`, `notes`
 
+### FlashForge 3D Printer System
+
+**printer_config** - FlashForge printer proxy configuration (single row, id=1)
+- `proxy_url`, `proxy_secret`, `is_active`, `test_mode`
+- `last_error`, `last_synced_at`
+
+**printer_devices** - 3D printer devices with cached state
+- `serial_number` (unique), `name`, `machine_type`, `firmware_version`
+- `lan_ip`, `camera_port` (default 8080), `tcp_port` (default 8899)
+- `space_id` (FK → spaces), `display_order`, `is_active`
+- `last_state` (jsonb), `last_synced_at`, `notes`
+
 ### Telnyx SMS System
 
 **telnyx_config** - Telnyx API configuration (single row)
@@ -1084,6 +1096,22 @@ Rich receipt with payment history, outstanding balance calculation, and "Pay Now
 - Session caching: Cookies cached in `glowforge_config.session_cookies` with 7-day expiry
 - DB: `glowforge_config` (session/config), `glowforge_machines` (cached state in `last_state` JSONB)
 - Cost: $0 (undocumented API)
+
+### FlashForge 3D Printer
+- API: FlashForge TCP G-code protocol on port 8899 (no authentication required)
+- HTTP REST API on port 8898 (requires checkCode — not used)
+- MJPEG camera stream on port 8080
+- Architecture: Browser → `printer-control` edge function → Hostinger Caddy → Alpaca Mac (Tailscale) → `printer-proxy.js` (port 8903) → TCP to printer LAN IP
+- Proxy: `scripts/printer-proxy/printer-proxy.js` — HTTP→TCP bridge on Alpaca Mac, auto-wraps control commands in M601 S1/M602 (request/release control)
+- Edge function: `printer-control` — getStatus, startPrint, pausePrint, resumePrint, cancelPrint, setTemperature, toggleLight, homeAxes, listFiles
+- Data service: `shared/services/printer-data.js` — display helpers, temp formatting, print progress
+- DB: `printer_config` (proxy URL/secret), `printer_devices` (cached state in `last_state` JSONB)
+- Permissions: `view_printer` (all residents), `control_printer` (all residents), `admin_printer_settings` (admin/oracle)
+- Device: FlashForge Adventurer 5M Pro "Alpaca Foundry", SN SNMSQE9C09604, FW v3.2.7, 220×220×220mm build volume
+- Network: LAN IP 192.168.1.106
+- UI: `residents/appliances.js` — "3D Printing" section with status, temps, print progress, camera feed, controls
+- Cost: $0 (direct TCP, no cloud API)
+- Cost tracking: `api_usage_log` with vendor `flashforge`, categories `printer_status_poll`, `printer_control`
 
 ### PAI Discord Bot
 - Architecture: Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
