@@ -1,12 +1,12 @@
 {
-  "version": "v260304.14 1:13p",
-  "release": 430,
-  "sha": "f50dc58db",
-  "fullSha": "f50dc58dbdc23241c5fd1c14e64bfed8759b5b5d",
+  "version": "v260304.15 1:23p",
+  "release": 431,
+  "sha": "a8e30a2d2",
+  "fullSha": "a8e30a2d21cbd94b3bf976f9b7e9cf0220416e29",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 19:13:50+00",
-  "commits": [{"sha":"e1aeacdd0","message":"docs: add share-space edge function to CLAUDE.md","author":"Rahul"},{"sha":"f50dc58db","message":"Merge branch 'modest-black' - doc update for share-space","author":"Rahul"}]
+  "pushedAt": "2026-03-04 19:23:36+00",
+  "commits": [{"sha":"a8e30a2d2","message":"Implement Home Assistant-first unified lighting across app and PAI.","author":"Rahul"}]
 }
