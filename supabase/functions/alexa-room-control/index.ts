@@ -151,6 +151,49 @@ async function callWizProxy(
     const details = await resp.text().catch(() => "");
     throw new Error(`wiz-proxy failed (${resp.status}): ${details}`);
   }
+  const result = await resp.json().catch(() => ({}));
+  const rows = Array.isArray(result?.results) ? result.results : [];
+  const failedIps = rows
+    .filter((r: any) => !r?.ok && r?.ip)
+    .map((r: any) => String(r.ip));
+
+  // Retry failed bulbs once — UDP can be lossy.
+  if (failedIps.length > 0) {
+    const retryResp = await fetch(`${wizProxyUrl.replace(/\/+$/, "")}/group/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${wizProxyToken}`,
+      },
+      body: JSON.stringify({
+        ips: failedIps,
+        ...(color
+          ? { r: color.r, g: color.g, b: color.b, dimming: 70 }
+          : power == null
+            ? { brightness }
+            : { on: power }),
+      }),
+    });
+    if (retryResp.ok) {
+      const retryResult = await retryResp.json().catch(() => ({}));
+      const retryRows = Array.isArray(retryResult?.results) ? retryResult.results : [];
+      const retryByIp = new Map(retryRows.map((r: any) => [String(r.ip), r]));
+      for (let i = 0; i < rows.length; i++) {
+        const ip = String(rows[i]?.ip || "");
+        if (!ip || rows[i]?.ok) continue;
+        const rr = retryByIp.get(ip);
+        if (rr?.ok) rows[i] = rr;
+      }
+    }
+  }
+
+  const okCount = rows.filter((r: any) => r?.ok).length;
+  return {
+    total: rows.length || ips.length,
+    okCount,
+    failedCount: Math.max(0, (rows.length || ips.length) - okCount),
+    results: rows,
+  };
 }
 
 function parseNamedColorToRgbInt(value: string): number | null {
@@ -304,8 +347,8 @@ serve(async (req) => {
 
     if (intentName === "TurnLightsOnIntent") {
       if (wizIps.length > 0) {
-        await callWizProxy(wizIps, true);
-        return alexaResponse(`${roomName} lights are on.`);
+        const wizResult = await callWizProxy(wizIps, true);
+        return alexaResponse(`${roomName} lights are on (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
@@ -319,8 +362,8 @@ serve(async (req) => {
 
     if (intentName === "TurnLightsOffIntent") {
       if (wizIps.length > 0) {
-        await callWizProxy(wizIps, false);
-        return alexaResponse(`${roomName} lights are off.`);
+        const wizResult = await callWizProxy(wizIps, false);
+        return alexaResponse(`${roomName} lights are off (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
@@ -339,8 +382,8 @@ serve(async (req) => {
         return alexaResponse("Please give a brightness between 1 and 100.");
       }
       if (wizIps.length > 0) {
-        await callWizProxy(wizIps, undefined, parsed);
-        return alexaResponse(`Set ${roomName} lights to ${parsed} percent.`);
+        const wizResult = await callWizProxy(wizIps, undefined, parsed);
+        return alexaResponse(`Set ${roomName} lights to ${parsed} percent (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
@@ -366,7 +409,10 @@ serve(async (req) => {
       }
       const rgb = rgbIntToParts(rgbInt);
       if (wizIps.length > 0) {
-        await callWizProxy(wizIps, undefined, undefined, rgb);
+        const wizResult = await callWizProxy(wizIps, undefined, undefined, rgb);
+        if (groupIds.length === 0) {
+          return alexaResponse(`Set ${roomName} lights to ${rawColor} (${wizResult.okCount}/${wizResult.total}).`);
+        }
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
