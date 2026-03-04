@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>It's a Wonderful Life at the Alpaca Playhouse</title>
+  <title>Visiting the Alpaca Playhouse</title>
   <meta name="description" content="Your guide to visiting the Austin Alpaca Playhouse. What to bring, how to get here, and how to be an amazing guest.">
-  <meta property="og:title" content="It's a Wonderful Life at the Alpaca Playhouse">
+  <meta property="og:title" content="Visiting the Alpaca Playhouse">
   <meta property="og:description" content="Your guide to visiting the Austin Alpaca Playhouse. Spirit meets science in Cedar Creek, TX.">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -16,30 +16,29 @@
   <style>
     :root {
       --amber: #d4883a;
-      --amber-glow: #e8a050;
+      --amber-glow: #c07a30;
       --amber-deep: #b86e2a;
       --amber-pale: #f5e6d0;
       --cedar: #5a3e28;
       --cedar-light: #7a5e48;
-      --night: #0a0a12;
-      --night-blue: #0f1028;
-      --night-surface: #141428;
-      --night-card: #1a1a30;
-      --night-border: #2a2a44;
       --cream: #faf9f6;
       --cream-warm: #f5efe2;
-      --text-light: #e8e4dc;
-      --text-muted: #9a96a0;
-      --text-dim: #6a6678;
+      --warm-white: #fefdfb;
+      --surface: #ffffff;
+      --surface-raised: #faf8f5;
+      --border: #e8e2d8;
+      --border-light: #f0ebe3;
+      --text-dark: #2a2420;
+      --text-body: #4a4440;
+      --text-muted: #7a7470;
+      --text-dim: #9a9490;
       --spirit-violet: #6a4fa0;
-      --spirit-blue: #4a6fa5;
       --sage: #7a9e7e;
-      --sage-glow: #8fb893;
-      --radius: 16px;
-      --radius-lg: 24px;
-      --shadow: 0 8px 32px rgba(0,0,0,0.3);
-      --shadow-glow: 0 0 40px rgba(212, 136, 58, 0.15);
-      --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      --radius: 14px;
+      --radius-lg: 20px;
+      --shadow: 0 2px 12px rgba(90, 62, 40, 0.06);
+      --shadow-hover: 0 4px 20px rgba(90, 62, 40, 0.1);
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,8 +46,8 @@
 
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--night);
-      color: var(--text-light);
+      background: var(--cream);
+      color: var(--text-body);
       line-height: 1.7;
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
@@ -59,6 +58,7 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-weight: 400;
       line-height: 1.2;
+      color: var(--text-dark);
     }
 
     a { color: var(--amber); text-decoration: none; transition: color var(--transition); }
@@ -67,145 +67,74 @@
     /* Scroll animations */
     .reveal {
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
     }
     .reveal.visible { opacity: 1; transform: translateY(0); }
-    .reveal-delay-1 { transition-delay: 0.15s; }
-    .reveal-delay-2 { transition-delay: 0.3s; }
-    .reveal-delay-3 { transition-delay: 0.45s; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
 
-    /* ========== HERO ========== */
-    .hero {
-      position: relative;
-      min-height: 70vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    /* ========== PAGE HEADER ========== */
+    .page-header {
       text-align: center;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--night) 0%, var(--night-blue) 40%, #1a1035 70%, var(--night) 100%);
+      padding: 3rem 2rem 1.5rem;
     }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(106, 79, 160, 0.15) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 30% 60%, rgba(212, 136, 58, 0.1) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 50% at 70% 30%, rgba(74, 111, 165, 0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .hero__image {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-    }
-    .hero__image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.35;
-    }
-    .hero__content {
-      position: relative;
-      z-index: 1;
-      max-width: 800px;
-      padding: 4rem 2rem;
-    }
-    .hero__eyebrow {
+    .page-header__eyebrow {
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 0.25em;
       text-transform: uppercase;
       color: var(--amber);
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      animation: fadeDown 1s ease 0.3s forwards;
+      margin-bottom: 0.75rem;
     }
-    .hero__title {
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
+    .page-header__title {
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 300;
-      color: var(--cream);
-      margin-bottom: 1rem;
-      opacity: 0;
-      animation: fadeUp 1s ease 0.5s forwards;
+      color: var(--text-dark);
+      margin-bottom: 0.4rem;
     }
-    .hero__title em {
-      font-style: italic;
-      color: var(--amber);
-    }
-    .hero__subtitle {
+    .page-header__subtitle {
       font-family: 'DM Sans', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: var(--text-muted);
-      max-width: 500px;
-      margin: 0 auto;
-      opacity: 0;
-      animation: fadeUp 1s ease 0.7s forwards;
-    }
-    .hero__scroll-hint {
-      margin-top: 3rem;
-      opacity: 0;
-      animation: fadeUp 1s ease 1s forwards;
-    }
-    .hero__scroll-hint svg {
-      width: 24px;
-      height: 24px;
-      color: var(--text-dim);
-      animation: bob 2s ease-in-out infinite;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes bob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(6px); }
     }
 
     /* ========== LAYOUT ========== */
     .container {
-      max-width: 780px;
+      max-width: 740px;
       margin: 0 auto;
-      padding: 0 2rem;
+      padding: 0 1.75rem;
     }
 
     section {
-      padding: 5rem 0;
+      padding: 2.5rem 0;
     }
     section + section {
-      border-top: 1px solid var(--night-border);
+      border-top: 1px solid var(--border-light);
     }
 
     /* ========== SECTION HEADERS ========== */
     .section-icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
+      font-size: 1.5rem;
+      margin-bottom: 0.4rem;
       display: block;
     }
     .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.5rem);
-      color: var(--cream);
-      margin-bottom: 0.5rem;
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      margin-bottom: 0.3rem;
     }
     .section-subtitle {
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.75rem;
     }
 
     /* ========== CARDS ========== */
     .card-grid {
       display: grid;
-      gap: 1.25rem;
+      gap: 1rem;
     }
     .card-grid--2 {
       grid-template-columns: 1fr 1fr;
@@ -215,102 +144,81 @@
     }
 
     .card {
-      background: var(--night-card);
-      border: 1px solid var(--night-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.75rem;
-      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+      padding: 1.5rem;
+      transition: transform var(--transition), box-shadow var(--transition);
     }
     .card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(212, 136, 58, 0.3);
-      box-shadow: var(--shadow-glow);
-    }
-    .card__icon {
-      font-size: 1.75rem;
-      margin-bottom: 0.75rem;
-      display: block;
-    }
-    .card__title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.3rem;
-      color: var(--cream);
-      margin-bottom: 0.5rem;
-    }
-    .card__text {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-    }
-    .card__text strong {
-      color: var(--text-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-hover);
     }
 
     /* ========== RULE CARDS ========== */
     .rule-card {
-      background: var(--night-surface);
-      border: 1px solid var(--night-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 2rem;
-      margin-bottom: 1.25rem;
-      transition: border-color var(--transition), box-shadow var(--transition);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: box-shadow var(--transition);
     }
     .rule-card:hover {
-      border-color: rgba(212, 136, 58, 0.25);
-      box-shadow: 0 0 20px rgba(212, 136, 58, 0.08);
+      box-shadow: var(--shadow-hover);
     }
     .rule-card__number {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
       color: var(--amber);
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
     }
     .rule-card__title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
-      color: var(--cream);
-      margin-bottom: 0.75rem;
+      font-size: 1.25rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
     }
     .rule-card__body {
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
-      line-height: 1.8;
+      line-height: 1.75;
     }
     .rule-card__body ul {
-      margin-top: 0.75rem;
+      margin-top: 0.5rem;
       padding-left: 1.25rem;
     }
     .rule-card__body li {
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
     }
     .rule-card__body li::marker {
       color: var(--amber-deep);
     }
     .rule-card__body strong {
-      color: var(--text-light);
+      color: var(--text-dark);
     }
 
     /* ========== HIGHLIGHT BANNER ========== */
     .highlight-banner {
-      background: linear-gradient(135deg, rgba(212, 136, 58, 0.12) 0%, rgba(106, 79, 160, 0.08) 100%);
+      background: var(--amber-pale);
       border: 1px solid rgba(212, 136, 58, 0.2);
       border-radius: var(--radius-lg);
-      padding: 2.5rem;
+      padding: 1.75rem;
       text-align: center;
-      margin: 3rem 0;
+      margin-bottom: 1.5rem;
     }
     .highlight-banner__text {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-style: italic;
-      color: var(--amber-pale);
-      line-height: 1.6;
+      color: var(--cedar);
+      line-height: 1.5;
     }
     .highlight-banner__text strong {
-      color: var(--amber);
+      color: var(--amber-deep);
       font-style: normal;
     }
 
@@ -318,51 +226,51 @@
     .bring-item {
       display: flex;
       align-items: flex-start;
-      gap: 1rem;
-      padding: 1.25rem 0;
-      border-bottom: 1px solid var(--night-border);
+      gap: 0.85rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border-light);
     }
     .bring-item:last-child { border-bottom: none; }
     .bring-item__num {
       flex-shrink: 0;
-      width: 36px;
-      height: 36px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--amber-deep), var(--amber));
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: var(--night);
+      color: white;
     }
     .bring-item__text {
-      font-size: 1.05rem;
-      color: var(--text-light);
-      padding-top: 0.35rem;
+      font-size: 0.95rem;
+      color: var(--text-body);
+      padding-top: 0.2rem;
     }
 
     /* ========== LOCATION ========== */
     .location-block {
-      background: var(--night-card);
-      border: 1px solid var(--night-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 2.5rem;
+      padding: 2rem;
       text-align: center;
     }
     .location-block__address {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.5rem;
-      color: var(--cream);
-      margin-bottom: 0.75rem;
+      font-size: 1.35rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
     }
     .location-block__note {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-dim);
       font-style: italic;
-      margin-top: 1rem;
-      max-width: 400px;
+      margin-top: 0.75rem;
+      max-width: 380px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -370,76 +278,76 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 1.25rem;
-      padding: 0.75rem 1.75rem;
+      margin-top: 1rem;
+      padding: 0.65rem 1.5rem;
       background: linear-gradient(135deg, var(--amber-deep), var(--amber));
-      color: var(--night);
+      color: white;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 50px;
       transition: transform var(--transition), box-shadow var(--transition);
     }
     .location-block__link:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(212, 136, 58, 0.4);
-      color: var(--night);
+      box-shadow: 0 4px 16px rgba(212, 136, 58, 0.3);
+      color: white;
     }
 
     /* ========== TRANSPORT CARDS ========== */
     .transport-card {
-      background: var(--night-surface);
-      border: 1px solid var(--night-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.75rem;
+      padding: 1.25rem;
       display: flex;
-      gap: 1.25rem;
+      gap: 1rem;
       align-items: flex-start;
     }
     .transport-card__icon {
-      font-size: 2rem;
+      font-size: 1.5rem;
       flex-shrink: 0;
       line-height: 1;
     }
     .transport-card__title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem;
-      color: var(--cream);
-      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.25rem;
     }
     .transport-card__body {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      line-height: 1.7;
+      line-height: 1.6;
     }
     .transport-card__body .cost {
       display: inline-block;
-      background: rgba(212, 136, 58, 0.15);
-      color: var(--amber);
-      padding: 0.15rem 0.6rem;
+      background: var(--amber-pale);
+      color: var(--amber-deep);
+      padding: 0.1rem 0.5rem;
       border-radius: 4px;
       font-weight: 600;
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
     }
 
     /* ========== LINKS SECTION ========== */
     .link-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.75rem;
       justify-content: center;
-      margin-top: 2rem;
+      margin-top: 1.25rem;
     }
     .link-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.65rem 1.5rem;
-      background: var(--night-card);
-      border: 1px solid var(--night-border);
+      gap: 0.4rem;
+      padding: 0.55rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 50px;
-      color: var(--text-light);
-      font-size: 0.9rem;
+      color: var(--text-body);
+      font-size: 0.85rem;
       font-weight: 500;
       transition: all var(--transition);
     }
@@ -449,32 +357,32 @@
       transform: translateY(-1px);
     }
     .link-pill__icon {
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
 
     /* ========== FOOTER ========== */
     .footer {
-      padding: 3rem 0;
+      padding: 2rem 0;
       text-align: center;
-      border-top: 1px solid var(--night-border);
+      border-top: 1px solid var(--border-light);
     }
     .footer__brand {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
-    .footer__brand img { height: 24px; opacity: 0.7; }
+    .footer__brand img { height: 22px; opacity: 0.5; }
     .footer__text {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
     }
     .footer__social {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       justify-content: center;
-      margin-top: 1rem;
+      margin-top: 0.75rem;
     }
     .footer__social a {
       color: var(--text-dim);
@@ -482,114 +390,25 @@
     }
     .footer__social a:hover { color: var(--amber); }
 
-    /* ========== DIVIDER ========== */
-    .section-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      padding: 2rem 0;
-      color: var(--text-dim);
-      font-size: 0.85rem;
-    }
-    .section-divider::before,
-    .section-divider::after {
-      content: '';
-      height: 1px;
-      width: 60px;
-      background: var(--night-border);
-    }
-
-    /* ========== IMAGE PLACEHOLDER ========== */
-    .hero-image-placeholder {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg,
-        var(--night) 0%,
-        #1a1035 30%,
-        #0f1028 50%,
-        #1a0f28 70%,
-        var(--night) 100%);
-    }
-    .hero-image-placeholder::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 120% 80% at 50% 45%, rgba(106, 79, 160, 0.2) 0%, transparent 60%),
-        radial-gradient(ellipse 80% 60% at 25% 70%, rgba(212, 136, 58, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 60% at 75% 25%, rgba(74, 111, 165, 0.1) 0%, transparent 50%);
-    }
-
-    /* Floating orbs in hero */
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      animation: float 8s ease-in-out infinite;
-    }
-    .orb--amber {
-      width: 300px; height: 300px;
-      background: rgba(212, 136, 58, 0.08);
-      top: 20%; left: 10%;
-      animation-delay: 0s;
-    }
-    .orb--violet {
-      width: 250px; height: 250px;
-      background: rgba(106, 79, 160, 0.1);
-      top: 30%; right: 15%;
-      animation-delay: 2s;
-    }
-    .orb--blue {
-      width: 200px; height: 200px;
-      background: rgba(74, 111, 165, 0.06);
-      bottom: 20%; left: 30%;
-      animation-delay: 4s;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50% { transform: translateY(-20px) scale(1.05); }
-    }
-
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
-      .hero { min-height: 60vh; }
-      .hero__content { padding: 3rem 1.5rem; }
-      section { padding: 3.5rem 0; }
+      .page-header { padding: 2.5rem 1.5rem 1rem; }
+      section { padding: 2rem 0; }
       .container { padding: 0 1.25rem; }
-      .highlight-banner { padding: 1.75rem; }
-      .rule-card { padding: 1.5rem; }
-      .location-block { padding: 1.75rem; }
-      .card-grid--2 { grid-template-columns: 1fr; }
+      .highlight-banner { padding: 1.25rem; }
+      .rule-card { padding: 1.25rem; }
+      .location-block { padding: 1.5rem; }
     }
   </style>
 </head>
 <body>
   <span data-site-version style="display:none;">v000000.00</span>
 
-  <!-- ============ HERO ============ -->
-  <header class="hero">
-    <div class="hero-image-placeholder">
-      <!-- Will be replaced with AI-generated "spirit meets science with an alpaca shaman" image -->
-      <div class="orb orb--amber"></div>
-      <div class="orb orb--violet"></div>
-      <div class="orb orb--blue"></div>
-    </div>
-    <div class="hero__content">
-      <div class="hero__eyebrow">By Invitation Only</div>
-      <h1 class="hero__title">It's a <em>Wonderful</em> Life</h1>
-      <p class="hero__subtitle">at the Austin Alpaca Playhouse</p>
-      <div class="hero__scroll-hint">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
-        </svg>
-      </div>
-    </div>
+  <!-- ============ PAGE HEADER ============ -->
+  <header class="page-header">
+    <div class="page-header__eyebrow">By Invitation Only</div>
+    <h1 class="page-header__title">Visiting the Alpaca Playhouse</h1>
+    <p class="page-header__subtitle">Your guide to being an amazing guest</p>
   </header>
 
   <!-- ============ INTRO ============ -->
@@ -602,7 +421,7 @@
         </p>
       </div>
 
-      <p class="reveal" style="text-align: center; color: var(--text-muted); max-width: 560px; margin: 0 auto; font-size: 1.05rem;">
+      <p class="reveal" style="text-align: center; color: var(--text-muted); max-width: 520px; margin: 0 auto; font-size: 0.95rem;">
         At the Austin Alpaca Playhouse, our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be.
       </p>
     </div>
@@ -708,14 +527,6 @@
 
       <div class="rule-card reveal">
         <div class="rule-card__number">Rule 04</div>
-        <div class="rule-card__title">Figure Things Out On Your Own</div>
-        <div class="rule-card__body">
-          Read the labels. Read the website. Try to guess where things are before asking someone. We believe in self-reliance at the Playhouse.
-        </div>
-      </div>
-
-      <div class="rule-card reveal">
-        <div class="rule-card__number">Rule 05</div>
         <div class="rule-card__title">Dogs &amp; Pets</div>
         <div class="rule-card__body">
           Don't let your dog enter the Alpaca domain in the back, even though he/she is surely the most divine creature on Earth. You can tie them in the front. Don't leave pets unattended anywhere on the property if they are not tied. Don't bring animals into the house.
@@ -723,7 +534,7 @@
       </div>
 
       <div class="rule-card reveal">
-        <div class="rule-card__number">Rule 06</div>
+        <div class="rule-card__number">Rule 05</div>
         <div class="rule-card__title">Bring a Reusable Water Bottle</div>
         <div class="rule-card__body">
           There are 3 filtered water dispensers onsite. Don't bring full plastic water bottles. There are lots of bottles to borrow above the oven if you need one.
@@ -731,7 +542,7 @@
       </div>
 
       <div class="rule-card reveal">
-        <div class="rule-card__number">Rule 07</div>
+        <div class="rule-card__number">Rule 06</div>
         <div class="rule-card__title">Do NOT Call the Alpaca "Llamas"</div>
         <div class="rule-card__body">
           They look sweet, but if they hear you say "Llama," they will likely pull a knife and take you out &mdash; quick, silent, and drag you behind the barn. You've been warned.
@@ -745,12 +556,11 @@
     <div class="container" style="text-align: center;">
       <span class="section-icon reveal">📖</span>
       <h2 class="section-title reveal">More Info</h2>
-      <p class="reveal" style="color: var(--text-muted); margin-bottom: 1.5rem;">
-        Read the <a href="/orientation/">Orientation Guide</a> when you arrive for hot tips on living your Best Playhouse Life&trade; or using any Spa amenities. If you are staying the night, please also read the <a href="/overnight/">Overnighters Guide</a>.
+      <p class="reveal" style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+        Read the <a href="/orientation/">Orientation Guide</a> when you arrive for hot tips on living your Best Playhouse Life&trade; or using any Spa amenities.
       </p>
       <div class="link-row reveal">
         <a href="/orientation/" class="link-pill"><span class="link-pill__icon">🧭</span> Orientation Guide</a>
-        <a href="/overnight/" class="link-pill"><span class="link-pill__icon">🌙</span> Overnight Guide</a>
         <a href="/spaces/" class="link-pill"><span class="link-pill__icon">🏠</span> Room Listings</a>
         <a href="/contact/" class="link-pill"><span class="link-pill__icon">📬</span> Contact / Events</a>
       </div>
@@ -767,7 +577,7 @@
       <div class="location-block reveal">
         <div class="location-block__address">160 Still Forest Drive<br>Cedar Creek, TX 78612</div>
         <a href="https://maps.google.com/?q=160+Still+Forest+Drive,+Cedar+Creek,+TX+78612" target="_blank" rel="noopener" class="location-block__link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           Open in Google Maps
         </a>
         <p class="location-block__note">Please don't share this address directly. Send the link to this page instead &mdash; do it for the Alpaca.</p>
@@ -780,13 +590,13 @@
     <div class="container" style="text-align: center;">
       <span class="section-icon reveal">💌</span>
       <h2 class="section-title reveal">Get in Touch</h2>
-      <p class="reveal" style="color: var(--text-muted); margin-bottom: 0.5rem;">
+      <p class="reveal" style="color: var(--text-muted); margin-bottom: 0.4rem; font-size: 0.9rem;">
         Furnished rooms available for short or long term occupancy.
       </p>
-      <p class="reveal" style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      <p class="reveal" style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
         Want to host an event or a sauna &amp; cold plunge evening? Fill out the <a href="/contact/">contact form</a> and text us.
       </p>
-      <div class="card-grid card-grid--2 reveal" style="max-width: 480px; margin: 0 auto;">
+      <div class="card-grid card-grid--2 reveal" style="max-width: 440px; margin: 0 auto;">
         <a href="mailto:pai@alpacaplayhouse.com" class="link-pill" style="justify-content: center;">
           <span class="link-pill__icon">📧</span> pai@alpacaplayhouse.com
         </a>
@@ -801,15 +611,15 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__brand">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse" height="24">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse" height="18">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-dark-transparent.png" alt="Alpaca Playhouse" height="22">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-dark-transparent.png" alt="Alpaca Playhouse" height="16">
       </div>
       <div class="footer__social">
         <a href="https://www.facebook.com/alpacaplayhouse" target="_blank" rel="noopener" aria-label="Facebook">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </a>
         <a href="https://instagram.com/alpacaplayhouseatx" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor"/></svg>
         </a>
       </div>
       <p class="footer__text">&copy; 2025 Austin Alpaca Playhouse. All rights reserved.</p>
@@ -824,7 +634,7 @@
           entry.target.classList.add('visible');
         }
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
 </body>
