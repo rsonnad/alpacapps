@@ -25,7 +25,7 @@ const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'admin_pai_settings',
 ];
 
-const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars', 'view_oven', 'view_glowforge'];
+const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars', 'view_oven', 'view_glowforge', 'view_printer'];
 
 const DEVICE_PAGE_PATHS = new Set([
   'devices.html', 'devices',
@@ -60,12 +60,12 @@ const TAB_ICONS = {
 
 const DEVICE_SUBTABS = [
   { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
-  { id: 'printer3d', label: '3DPrinter', href: '3dprinter.html', permissionsAny: DEVICE_PERMISSION_KEYS },
   { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
   { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
   { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
   { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
   { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry' },
+  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer' },
   { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
   { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras' },
 ];
