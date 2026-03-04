@@ -209,6 +209,7 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `contact-form/` - Public contact form submission handler
 - `event-payment-reminder/` - Daily cron: 10-day payment reminders for events
 - `ask-question/` - PAI Q&A backend
+- `share-space/` - Serves OG meta tags for space share links (dynamic title, image, description) + redirects to real page
 - `api/` - **Centralized Internal REST API** — single permissioned endpoint for all entity CRUD (spaces, people, tasks, assignments, vehicles, media, payments, bug_reports, time_entries, events, documents, sms, faq, invitations, password_vault, feature_requests, pai_config, tesla_accounts). Role-based access control (0=public → 4=oracle). Smart behaviors: fuzzy name/space resolution, auto-timestamps, row-level scoping. See `API.md` for full reference.
 
 **Edge Function Deployment Flags:**
@@ -235,6 +236,7 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `api` | `supabase functions deploy api --no-verify-jwt` |
 | `square-webhook` | `supabase functions deploy square-webhook --no-verify-jwt` |
 | `stripe-webhook` | `supabase functions deploy stripe-webhook --no-verify-jwt` |
+| `share-space` | `supabase functions deploy share-space --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
 
 ## Database Schema (Supabase)
