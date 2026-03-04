@@ -323,6 +323,22 @@ function setupEventListeners() {
     window.history.replaceState({}, '', url);
   });
 
+  // Share button
+  document.getElementById('detailShareBtn').addEventListener('click', async () => {
+    const shareUrl = window.location.href;
+    const btn = document.getElementById('detailShareBtn');
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: document.getElementById('detailSpaceName').textContent, url: shareUrl });
+      } catch (e) { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      btn.classList.add('copied');
+      btn.title = 'Link copied!';
+      setTimeout(() => { btn.classList.remove('copied'); btn.title = 'Share this space'; }, 2000);
+    }
+  });
+
   spaceDetailModal.addEventListener('click', (e) => {
     if (e.target === spaceDetailModal) {
       spaceDetailModal.classList.add('hidden');
