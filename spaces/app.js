@@ -327,13 +327,20 @@ function setupEventListeners() {
     window.history.replaceState({}, '', url);
   });
 
-  // Share button
+  // Share button — uses edge function URL for OG-tagged link previews
   document.getElementById('detailShareBtn').addEventListener('click', async () => {
-    const shareUrl = window.location.href;
+    const urlParams = new URLSearchParams(window.location.search);
+    const spaceSlug = urlParams.get('space');
+    const spaceId = urlParams.get('id');
+    // Build share URL: edge function for slug-based (OG tags), direct URL for id-based
+    const shareUrl = spaceSlug
+      ? `${SUPABASE_URL}/functions/v1/share-space?space=${encodeURIComponent(spaceSlug)}`
+      : window.location.href;
+    const title = document.getElementById('detailSpaceName').textContent;
     const btn = document.getElementById('detailShareBtn');
     if (navigator.share) {
       try {
-        await navigator.share({ title: document.getElementById('detailSpaceName').textContent, url: shareUrl });
+        await navigator.share({ title, url: shareUrl });
       } catch (e) { /* user cancelled */ }
     } else {
       await navigator.clipboard.writeText(shareUrl);
