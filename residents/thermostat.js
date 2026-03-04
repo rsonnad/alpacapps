@@ -453,7 +453,7 @@ async function loadNestSettings() {
   try {
     const { data: config } = await supabase
       .from('nest_config')
-      .select('test_mode, refresh_token, google_client_id, sdm_project_id')
+      .select('test_mode, refresh_token, token_expires_at, google_client_id, sdm_project_id')
       .single();
 
     if (!config) return;
@@ -465,10 +465,12 @@ async function loadNestSettings() {
     const badge = document.getElementById('nestModeBadge');
     if (badge) badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
 
-    // Show OAuth setup if not authorized
+    // Show OAuth setup if not authorized or token expired
     const oauthSection = document.getElementById('oauthSetupSection');
     const deviceSection = document.getElementById('deviceManagementSection');
-    if (!config.refresh_token) {
+    const tokenExpired = config.token_expires_at && new Date(config.token_expires_at) < new Date();
+    const needsAuth = !config.refresh_token || tokenExpired;
+    if (needsAuth) {
       oauthSection?.classList.remove('hidden');
       deviceSection?.classList.add('hidden');
     } else {
