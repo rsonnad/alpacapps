@@ -1,12 +1,12 @@
 {
-  "version": "v260304.15 1:23p",
-  "release": 431,
-  "sha": "a8e30a2d2",
-  "fullSha": "a8e30a2d21cbd94b3bf976f9b7e9cf0220416e29",
+  "version": "v260304.16 1:45p",
+  "release": 432,
+  "sha": "6cf18996d",
+  "fullSha": "6cf18996da1d9b43d99d3846838c991a9069eef5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 19:23:36+00",
-  "commits": [{"sha":"a8e30a2d2","message":"Implement Home Assistant-first unified lighting across app and PAI.","author":"Rahul"}]
+  "pushedAt": "2026-03-04 19:45:12+00",
+  "commits": [{"sha":"6cf18996d","message":"Add color intent support to Alexa room lighting control.","author":"Rahul"}]
 }
