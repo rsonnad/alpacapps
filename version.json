@@ -1,12 +1,12 @@
 {
-  "version": "v260304.09 11:22a",
-  "release": 425,
-  "sha": "389ce71ec",
-  "fullSha": "389ce71ecd51ae36a17e3c1e0ec3ed00cf9c6bf7",
+  "version": "v260304.10 11:29a",
+  "release": 426,
+  "sha": "112231cc4",
+  "fullSha": "112231cc4990748a4b2399f6624712096184ff71",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 17:22:38+00",
-  "commits": [{"sha":"b5190036f","message":"fix: extract actual Tesla API error from edge function non-2xx responses","author":"Rahul"},{"sha":"389ce71ec","message":"fix: extract actual Tesla API error from non-2xx responses","author":"Rahul"}]
+  "pushedAt": "2026-03-04 17:29:08+00",
+  "commits": [{"sha":"2d729ebef","message":"feat: restrict non-owner car commands to >50% battery + plugged in","author":"Rahul"},{"sha":"112231cc4","message":"Merge branch 'nostalgic-chatterjee'","author":"Rahul"}]
 }
