@@ -30,14 +30,14 @@ initAssociatePage({
 // ---- Load Assignees for Filter ----
 async function loadAssignees() {
   try {
-    const names = await projectService.getAssigneeNames();
+    const users = await projectService.getUsers();
     const sel = document.getElementById('filterAssignee');
     const currentVal = sel.value;
     while (sel.options.length > 1) sel.remove(1);
-    names.forEach(name => {
+    users.forEach(u => {
       const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
+      opt.value = u.id;
+      opt.textContent = u.display_name;
       sel.appendChild(opt);
     });
     sel.value = currentVal;
@@ -88,7 +88,7 @@ function getFilters() {
     filters.assignedTo = currentUser.id;
   } else {
     const assignee = document.getElementById('filterAssignee').value;
-    if (assignee) filters.assignedName = assignee;
+    if (assignee) filters.assignedTo = assignee;
   }
 
   const search = document.getElementById('searchInput').value.trim();
