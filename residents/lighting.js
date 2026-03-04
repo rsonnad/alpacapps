@@ -16,6 +16,7 @@ import { supabaseHealth } from '../shared/supabase-health.js';
 // =============================================
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const GOVEE_CONTROL_URL = `${SUPABASE_URL}/functions/v1/govee-control`;
+const HOME_ASSISTANT_CONTROL_URL = `${SUPABASE_URL}/functions/v1/home-assistant-control`;
 const POLL_INTERVAL_MS = 30000; // 30 seconds
 
 // Color presets for quick selection
@@ -70,6 +71,8 @@ function getSegmentZones(sku, segmentCount) {
 // =============================================
 let goveeGroups = []; // Flat list for backward compat (allOff, refresh)
 let lightingSections = []; // { name, sectionId, groups[] } — grouped by area
+let unifiedGroups = []; // Logical room groups (HA primary + fallback targets)
+let unifiedGroupStates = {}; // { groupKey: { on, brightness, disconnected } }
 let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
 let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
 let poll = null;
@@ -92,17 +95,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'resident',
     onReady: async (authState) => {
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
+      await loadUnifiedGroups();
       await loadGroupsFromDB();
       if (hasPermission('admin_lighting_settings')) {
         await loadGoveeSettings();
       }
+      renderUnifiedLightingGroups();
       renderLightingAreas();
       setupEventListeners();
+      await refreshUnifiedStates();
       await refreshAllStates();
       startPolling();
       // Sync UI when PAI takes light actions
       window.addEventListener('pai-actions', (e) => {
-        const lightActions = (e.detail?.actions || []).filter(a => a.type === 'control_lights');
+        const actions = (e.detail?.actions || []);
+        const lightActions = actions.filter(a => a.type === 'control_lights');
+        const unifiedActions = actions.filter(a => a.type === 'control_room_lights');
         for (const action of lightActions) {
           if (!action.result?.startsWith('OK:')) continue;
           // Find group by name match
@@ -139,6 +147,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Also do a background Govee state refresh for accuracy
         if (lightActions.length) {
           setTimeout(() => refreshAllStates(), 2000);
+        }
+        if (unifiedActions.length) {
+          setTimeout(() => refreshUnifiedStates(), 1500);
         }
       });
       // Load child device states in background (staggered to respect rate limits)
@@ -266,6 +277,117 @@ function canAccessScopedDevice(record) {
 }
 
 // =============================================
+// UNIFIED LIGHTING GROUPS (HA PRIMARY)
+// =============================================
+async function loadUnifiedGroups() {
+  try {
+    const result = await homeAssistantApi('list_groups');
+    const groups = result.groups || [];
+    unifiedGroups = (groups || []).filter(g => {
+      if (!deviceScope || deviceScope.fullAccess) return true;
+      return deviceScope.canAccessSpaceName(g?.area) || deviceScope.canAccessSpaceName(g?.name);
+    });
+  } catch (err) {
+    console.warn('Failed to load unified lighting groups:', err.message);
+    unifiedGroups = [];
+  }
+}
+
+function renderUnifiedLightingGroups() {
+  const container = document.getElementById('unifiedLightingGroups');
+  if (!container) return;
+  if (!unifiedGroups.length) {
+    container.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No unified room groups configured yet.</p>';
+    return;
+  }
+  container.innerHTML = unifiedGroups.map(group => {
+    const state = unifiedGroupStates[group.key] || {};
+    return `
+      <div class="lighting-group-card" data-unified-group-key="${group.key}">
+        <div class="lighting-group-card__header">
+          <div class="lighting-group-card__title">
+            <div class="lighting-group-card__name-row">
+              <span class="status-dot ${getStatusDotClass(state)}" title="${getStatusDotTitle(state)}"></span>
+              <span class="lighting-group-card__name">${group.name}</span>
+            </div>
+            <span class="lighting-group-card__devices">${group.area || 'Room'} · ${(group.lighting_group_targets || []).length} target${(group.lighting_group_targets || []).length !== 1 ? 's' : ''}</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" data-action="unified-toggle" data-group-key="${group.key}" ${state.on ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="brightness-control">
+          <div class="brightness-control__label">
+            <span>Brightness</span>
+            <span class="brightness-value">${typeof state.brightness === 'number' ? `${state.brightness}%` : '—'}</span>
+          </div>
+          <input type="range" min="1" max="100" value="${typeof state.brightness === 'number' ? state.brightness : 60}"
+            data-action="unified-brightness" data-group-key="${group.key}">
+        </div>
+        <div class="color-control">
+          <span class="color-control__label">Color</span>
+          <input type="color" value="${state.color || '#FFD4A3'}"
+            data-action="unified-color" data-group-key="${group.key}">
+          <div class="color-presets">
+            ${COLOR_PRESETS.map(p => `
+              <button class="color-preset" title="${p.name}" style="background:${p.hex}"
+                data-action="unified-preset" data-group-key="${group.key}" data-hex="${p.hex}"></button>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function refreshUnifiedStates() {
+  if (!unifiedGroups.length) return;
+  await Promise.allSettled(unifiedGroups.map(async (group) => {
+    const result = await homeAssistantApi('get_group_state', { group_key: group.key });
+    unifiedGroupStates[group.key] = {
+      on: !!result?.state?.on,
+      brightness: typeof result?.state?.brightness === 'number' ? result.state.brightness : undefined,
+      disconnected: false,
+    };
+  }));
+  renderUnifiedLightingGroups();
+}
+
+async function controlUnifiedGroup(groupKey, action, payload = {}) {
+  await homeAssistantApi(action, { group_key: groupKey, ...payload });
+  if (action === 'set_power') {
+    unifiedGroupStates[groupKey] = { ...unifiedGroupStates[groupKey], on: !!payload.on, disconnected: false };
+  } else if (action === 'set_brightness') {
+    unifiedGroupStates[groupKey] = { ...unifiedGroupStates[groupKey], brightness: parseInt(payload.brightness), on: true, disconnected: false };
+  } else if (action === 'set_color') {
+    unifiedGroupStates[groupKey] = { ...unifiedGroupStates[groupKey], color: payload.hex_color, on: true, disconnected: false };
+  }
+  renderUnifiedLightingGroups();
+}
+
+async function allUnifiedOff() {
+  const btn = document.getElementById('allUnifiedOffBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Turning off...';
+  }
+  try {
+    for (const g of unifiedGroups) {
+      await controlUnifiedGroup(g.key, 'set_power', { on: false });
+    }
+    showToast(`Unified rooms off (${unifiedGroups.length})`, 'success');
+  } catch (err) {
+    showToast(`Unified room off failed: ${err.message}`, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'All Rooms Off';
+    }
+  }
+}
+
+// =============================================
 // GOVEE SETTINGS (moved from admin settings.js)
 // =============================================
 async function loadGoveeSettings() {
@@ -331,6 +453,28 @@ async function loadGoveeSettings() {
 async function goveeApi(action, params = {}) {
   // Get session — getSession() may return a stale/expired JWT from cache,
   // so check expiry and force refresh if needed
+  const token = await getAuthToken();
+  const response = await fetch(GOVEE_CONTROL_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action, ...params }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    const msg = err.error || err.message || err.msg || `API error ${response.status}`;
+    console.error('goveeApi error:', { action, status: response.status, body: err, params });
+    throw new Error(msg);
+  }
+
+  return response.json();
+}
+
+async function getAuthToken() {
   let { data: { session } } = await supabase.auth.getSession();
   if (session) {
     const expiresAt = session.expires_at; // Unix timestamp in seconds
@@ -349,8 +493,12 @@ async function goveeApi(action, params = {}) {
     showToast('Session expired. Please sign in again.', 'error');
     throw new Error('No auth token');
   }
+  return token;
+}
 
-  const response = await fetch(GOVEE_CONTROL_URL, {
+async function homeAssistantApi(action, params = {}) {
+  const token = await getAuthToken();
+  const response = await fetch(HOME_ASSISTANT_CONTROL_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -359,14 +507,12 @@ async function goveeApi(action, params = {}) {
     },
     body: JSON.stringify({ action, ...params }),
   });
-
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     const msg = err.error || err.message || err.msg || `API error ${response.status}`;
-    console.error('goveeApi error:', { action, status: response.status, body: err, params });
+    console.error('homeAssistantApi error:', { action, status: response.status, body: err, params });
     throw new Error(msg);
   }
-
   return response.json();
 }
 
@@ -790,6 +936,8 @@ function updateDeviceUI(deviceId) {
 // STATE POLLING
 // =============================================
 async function refreshAllStates() {
+  await refreshUnifiedStates();
+
   const results = await Promise.allSettled(
     goveeGroups.map(g => refreshGroupState(g.groupId))
   );
@@ -1343,11 +1491,53 @@ function updateGroupStatus(groupId) {
 // EVENT HANDLERS
 // =============================================
 function setupEventListeners() {
+  const unifiedContainer = document.getElementById('unifiedLightingGroups');
   const container = document.getElementById('lightingGroups');
-  if (!container) return;
+  if (!container && !unifiedContainer) return;
+
+  if (unifiedContainer) {
+    unifiedContainer.addEventListener('change', (e) => {
+      const target = e.target;
+      const { action, groupKey } = target.dataset || {};
+      if (action === 'unified-toggle' && groupKey) {
+        controlUnifiedGroup(groupKey, 'set_power', { on: !!target.checked })
+          .catch(err => showToast(`Room control failed: ${err.message}`, 'error'));
+      }
+    });
+
+    unifiedContainer.addEventListener('input', (e) => {
+      const target = e.target;
+      const { action, groupKey } = target.dataset || {};
+      if (action === 'unified-brightness' && groupKey) {
+        clearTimeout(brightnessTimers[`unified_${groupKey}`]);
+        brightnessTimers[`unified_${groupKey}`] = setTimeout(() => {
+          controlUnifiedGroup(groupKey, 'set_brightness', { brightness: parseInt(target.value, 10) })
+            .catch(err => showToast(`Room brightness failed: ${err.message}`, 'error'));
+        }, 400);
+      }
+      if (action === 'unified-color' && groupKey) {
+        clearTimeout(colorTimers[`unified_${groupKey}`]);
+        colorTimers[`unified_${groupKey}`] = setTimeout(() => {
+          controlUnifiedGroup(groupKey, 'set_color', { hex_color: target.value })
+            .catch(err => showToast(`Room color failed: ${err.message}`, 'error'));
+        }, 400);
+      }
+    });
+
+    unifiedContainer.addEventListener('click', (e) => {
+      const preset = e.target.closest('[data-action="unified-preset"]');
+      if (!preset) return;
+      const { groupKey, hex } = preset.dataset;
+      if (!groupKey || !hex) return;
+      const input = unifiedContainer.querySelector(`input[data-action="unified-color"][data-group-key="${groupKey}"]`);
+      if (input) input.value = hex;
+      controlUnifiedGroup(groupKey, 'set_color', { hex_color: hex })
+        .catch(err => showToast(`Room color failed: ${err.message}`, 'error'));
+    });
+  }
 
   // Event delegation for all controls
-  container.addEventListener('change', (e) => {
+  container?.addEventListener('change', (e) => {
     const { action, group, device, sku } = e.target.dataset;
 
     if (action === 'toggle' && group) {
@@ -1361,7 +1551,7 @@ function setupEventListeners() {
   });
 
   // Debounced brightness/color on input
-  container.addEventListener('input', (e) => {
+  container?.addEventListener('input', (e) => {
     const { action, group, device, sku } = e.target.dataset;
 
     // Group brightness
@@ -1415,7 +1605,7 @@ function setupEventListeners() {
   });
 
   // Click handlers
-  container.addEventListener('click', (e) => {
+  container?.addEventListener('click', (e) => {
     // Group color presets
     const presetBtn = e.target.closest('[data-action="preset"]');
     if (presetBtn) {
@@ -1560,6 +1750,12 @@ function setupEventListeners() {
     }
   });
 
+  document.getElementById('allUnifiedOffBtn')?.addEventListener('click', () => {
+    if (confirm('Turn off all unified room groups?')) {
+      allUnifiedOff();
+    }
+  });
+
   // Refresh button
   document.getElementById('refreshBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('refreshBtn');
@@ -1569,6 +1765,16 @@ function setupEventListeners() {
     btn.disabled = false;
     btn.textContent = 'Refresh';
     showToast('States refreshed', 'info', 1500);
+  });
+
+  document.getElementById('refreshUnifiedBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('refreshUnifiedBtn');
+    btn.disabled = true;
+    btn.textContent = 'Refreshing...';
+    await refreshUnifiedStates();
+    btn.disabled = false;
+    btn.textContent = 'Refresh Rooms';
+    showToast('Unified room states refreshed', 'info', 1500);
   });
 
   // Govee test mode toggle (admin-only)

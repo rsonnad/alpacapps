@@ -85,6 +85,18 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 - **Operational safety.** We keep Sonos proxy fallback for announce and any unsupported MA command so migration can be gradual and non-breaking.
 - **Infra simplification.** Hostinger acts as the HTTPS proxy (`/sonos`, `/ma-api`) while Alpaca Mac stays the LAN bridge where Sonos and MA run.
 
+### 3.4 Unified Lighting Without Proprietary Apps
+
+**Decision:** Control all property lighting (Govee, WiZ, Matter) from the resident lighting page and PAI, with **Home Assistant as the primary lighting control plane** — no WiZ app, Linkind app, or other vendor apps required.
+
+**Why:**
+- **Single place to control.** Residents use one UI (and one voice path via PAI) for every light. No switching between Govee Home, WiZ, or manufacturer apps.
+- **Single automation backbone.** Home Assistant gives one entity/service model across WiZ, Matter, and many Govee paths, so the app and PAI call one backend shape instead of vendor-specific APIs.
+- **Open/local where possible.** WiZ remains local UDP, Matter remains local fabric control, and Home Assistant unifies those protocols behind one control surface. Vendor cloud APIs stay as temporary fallback paths where HA coverage is incomplete.
+- **Kitchen example.** Kitchen has WiZ bulbs plus Linkind Matter bulbs. Both appear in one "Kitchen" group and are controlled through the same app/PAI action path (resolved to HA entities, with fallback adapters during migration).
+
+**Tradeoff accepted:** We maintain a local HA runtime and supporting proxies on a host with LAN access (Alpaca Mac or similar). Same pattern as Sonos/cameras. Matter devices require one-time commissioning into the property-owned fabric.
+
 ---
 
 ## 4. Payment System Design
