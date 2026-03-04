@@ -77,10 +77,6 @@
     .reveal-delay-2 { transition-delay: 0.2s; }
 
     /* ========== PAGE HEADER ========== */
-    .page-header {
-      text-align: center;
-      padding: 5rem 2rem 0.75rem;
-    }
     .page-header__eyebrow {
       font-family: 'DM Sans', sans-serif;
       font-size: 0.7rem;
@@ -373,7 +369,6 @@
 
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
-      .page-header { padding: 4.5rem 1.25rem 0.5rem; }
       section { padding: 1rem 0; }
       .container { padding: 0 1.25rem; }
       .rule-card { padding: 0.85rem 1rem; }
@@ -385,12 +380,13 @@
   <span data-site-version style="display:none;">v000000.00</span>
   <div id="siteHeader"></div>
 
-  <!-- ============ PAGE HEADER ============ -->
-  <header class="page-header">
-    <div class="page-header__eyebrow">By Invitation Only</div>
-    <h1 class="page-header__title">Visiting the Alpaca Playhouse</h1>
-    <p class="page-header__subtitle">Your guide to being an amazing guest</p>
-  </header>
+  <!-- Hero Section -->
+  <section class="aap-hero aap-hero--short" style="background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg')">
+    <div class="aap-hero__content">
+      <h1 class="aap-hero__title">Visiting the Alpaca Playhouse</h1>
+      <p class="aap-hero__subtitle">Your guide to being an amazing guest</p>
+    </div>
+  </section>
 
   <!-- ============ INTRO ============ -->
   <section>
@@ -616,7 +612,7 @@
   <script type="module" src="/shared/version-info.js"></script>
   <script type="module">
     import { initPublicPage } from '/shared/public-shell.js';
-    initPublicPage({ transparent: false, light: true, activePage: '/visiting/' });
+    initPublicPage({ transparent: true, light: true, activePage: '/visiting/' });
   </script>
 </body>
 </html>
