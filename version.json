@@ -1,12 +1,12 @@
 {
-  "version": "v260304.22 2:03p",
-  "release": 438,
-  "sha": "53f849115",
-  "fullSha": "53f8491152b16ebb166103f4d4cd613ee41102a3",
+  "version": "v260304.23 2:05p",
+  "release": 439,
+  "sha": "a6bd1758c",
+  "fullSha": "a6bd1758c91f8c5b30828112a32fe6ac176dbb30",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 20:03:57+00",
-  "commits": [{"sha":"2a641e9d7","message":"Clean up 3D Printer device subtab.","author":"Rahul"},{"sha":"53f849115","message":"Merge branch 'vibrant-cray'","author":"Rahul"}]
+  "pushedAt": "2026-03-04 20:05:07+00",
+  "commits": [{"sha":"a6bd1758c","message":"Improve WiZ reliability with retry and per-room success counts.","author":"Rahul"}]
 }
