@@ -1,12 +1,12 @@
 {
-  "version": "v260304.11 12:38p",
-  "release": 427,
-  "sha": "8a2b46931",
-  "fullSha": "8a2b46931c5659cac67569de0c7d215461b332bc",
+  "version": "v260304.12 12:50p",
+  "release": 428,
+  "sha": "6322330b5",
+  "fullSha": "6322330b5ac18880ffc3c7e5eefbdbaf3db260a2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 18:38:27+00",
-  "commits": [{"sha":"8a2b46931","message":"feat: add share button to space detail modal","author":"Rahul"}]
+  "pushedAt": "2026-03-04 18:50:53+00",
+  "commits": [{"sha":"19971d653","message":"feat: use friendly slugs in space share URLs","author":"Rahul"},{"sha":"6322330b5","message":"Merge branch 'modest-black'","author":"Rahul"}]
 }
