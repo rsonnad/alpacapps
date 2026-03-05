@@ -76,6 +76,7 @@ function renderAll() {
   renderComponentPlayground();
   renderEmailAnatomy();
   renderEmailDesignGuide();
+  renderUIComponents();
   renderRawJson();
 }
 
@@ -1207,6 +1208,171 @@ function renderGuideChecklist() {
       localStorage.removeItem(STORAGE_KEY);
       renderGuideChecklist();
     });
+  }
+}
+
+// =============================================
+// UI COMPONENTS (Slack-inspired patterns)
+// =============================================
+
+function renderUIComponents() {
+  const accent = brandConfig.colors?.primary?.accent || '#d4883a';
+  const dark   = brandConfig.colors?.primary?.dark   || '#1c1618';
+  const cream  = brandConfig.colors?.primary?.cream  || '#faf9f6';
+  const border = brandConfig.colors?.primary?.border || '#e6e2d9';
+  const muted  = brandConfig.colors?.primary?.['text-muted'] || '#7d6f74';
+
+  // ── Settings Cards ──────────────────────────────────────────────
+  const elSettings = document.getElementById('settingsCardDemo');
+  if (elSettings) {
+    const items = [
+      { color: '#3b82f6', icon: '<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>', label: 'Account settings', desc: 'Email, password, and two-factor authentication' },
+      { color: accent, icon: '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>', label: 'Notifications', desc: 'Configure how and when you receive alerts' },
+      { color: '#14b8a6', icon: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>', label: 'Billing & plan', desc: 'Manage your subscription and payment methods' },
+      { color: '#8b5cf6', icon: '<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>', label: 'Team members', desc: 'Invite people and manage roles' },
+    ];
+    elSettings.innerHTML = `<div style="display:flex;flex-direction:column;gap:2px;border-radius:12px;overflow:hidden;border:1px solid ${border};">
+      ${items.map((item, i) => `
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;cursor:pointer;transition:background 0.15s;"
+             onmouseover="this.style.background='${cream}'" onmouseout="this.style.background='#fff'">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:9px;background:${item.color};display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;color:${dark};">${item.label}</div>
+            <div style="font-size:12px;color:${muted};margin-top:1px;">${item.desc}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${muted}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        ${i < items.length - 1 ? `<div style="height:1px;background:${border};margin-left:66px;"></div>` : ''}
+      `).join('')}
+    </div>
+    <p style="font-size:12px;color:${muted};margin-top:10px;">36px icon tile · 9px radius · 14px label bold · 12px desc muted · full-row chevron hit-target</p>`;
+  }
+
+  // ── Icon Tiles ──────────────────────────────────────────────────
+  const elTiles = document.getElementById('iconTileDemo');
+  if (elTiles) {
+    const tiles = [
+      { color: '#3b82f6', label: 'Settings',     icon: '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>' },
+      { color: '#14b8a6', label: 'Residents',    icon: '<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>' },
+      { color: '#22c55e', label: 'Payments',     icon: '<rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>' },
+      { color: dark,      label: 'Analytics',    icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
+      { color: accent,    label: 'Notifications',icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>' },
+      { color: '#8b5cf6', label: 'Media',        icon: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>' },
+      { color: '#ef4444', label: 'Alerts',       icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' },
+      { color: '#f59e0b', label: 'Schedule',     icon: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>' },
+    ];
+    elTiles.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:16px;">
+      ${tiles.map(t => `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:64px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:${t.color};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 0.15s;"
+               onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+          </div>
+          <span style="font-size:11px;color:${muted};text-align:center;line-height:1.3;">${t.label}</span>
+        </div>
+      `).join('')}
+    </div>
+    <p style="font-size:12px;color:${muted};margin-top:14px;">48px tile · 12px radius · 22px icon · one color per functional area</p>`;
+  }
+
+  // ── Section Headers ─────────────────────────────────────────────
+  const elHeaders = document.getElementById('sectionHeaderDemo');
+  if (elHeaders) {
+    const headers = [
+      { emoji: '🏠', title: 'Property Overview', desc: 'Current occupancy, availability, and space status across all units.' },
+      { emoji: '💳', title: 'Payments & Billing', desc: 'Recent transactions, outstanding balances, and payment history.' },
+      { emoji: '⚡', title: 'Integrations', desc: 'Connected services and third-party apps syncing with your workspace.' },
+    ];
+    elHeaders.innerHTML = `<div style="display:flex;flex-direction:column;gap:24px;">
+      ${headers.map(h => `
+        <div style="padding-bottom:20px;border-bottom:1px solid ${border};">
+          <h3 style="font-size:18px;font-weight:700;color:${dark};margin:0 0 4px;display:flex;align-items:center;gap:8px;">
+            <span>${h.emoji}</span>${h.title}
+          </h3>
+          <p style="font-size:14px;color:${muted};margin:0;">${h.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+    <p style="font-size:12px;color:${muted};margin-top:14px;">18px bold title · optional emoji prefix · 14px muted description · bottom border divider</p>`;
+  }
+
+  // ── Navigation List ─────────────────────────────────────────────
+  const elNav = document.getElementById('navListDemo');
+  if (elNav) {
+    const navItems = [
+      { icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', label: 'Overview',   badge: null,  active: false },
+      { icon: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', label: 'Spaces', badge: null,  active: false },
+      { icon: '<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>', label: 'Residents',   badge: '3',   active: true  },
+      { icon: '<rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>',                 label: 'Payments',    badge: null,  active: false },
+      { icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',                                  label: 'Reports',     badge: null,  active: false },
+    ];
+    elNav.innerHTML = `<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+      <div style="width:220px;background:${cream};border-radius:12px;padding:8px;border:1px solid ${border};">
+        ${navItems.map(item => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 10px 10px ${item.active ? '7px' : '10px'};border-radius:8px;cursor:pointer;transition:background 0.15s;
+               border-left:${item.active ? `3px solid ${accent}` : '3px solid transparent'};
+               background:${item.active ? '#fff' : 'transparent'};"
+               onmouseover="this.style.background='${item.active ? '#fff' : '#f0ede7'}'" onmouseout="this.style.background='${item.active ? '#fff' : 'transparent'}'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${item.active ? accent : muted}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+            <span style="flex:1;font-size:14px;font-weight:${item.active ? '600' : '400'};color:${item.active ? dark : muted};">${item.label}</span>
+            ${item.badge ? `<span style="background:${accent};color:#fff;font-size:11px;font-weight:700;padding:1px 6px;border-radius:10px;">${item.badge}</span>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      <div style="flex:1;min-width:200px;padding:12px 0;">
+        <p style="font-size:13px;color:${muted};line-height:1.6;margin:0;">
+          Active item: <strong>3px accent left border</strong>, white background, bold label, colored icon.<br>
+          Inactive items: transparent bg, muted icon + label.<br>
+          Badge: amber pill, white text, 11px bold.
+        </p>
+      </div>
+    </div>`;
+  }
+
+  // ── App / Integration Tiles ──────────────────────────────────────
+  const elApps = document.getElementById('appTileDemo');
+  if (elApps) {
+    const apps = [
+      { name: 'Slack',    bg: '#611f69', letter: 'S' },
+      { name: 'Stripe',   bg: '#635bff', letter: 'St' },
+      { name: 'Resend',   bg: '#000',    letter: 'R' },
+      { name: 'Square',   bg: '#3e4348', letter: 'Sq' },
+      { name: 'Govee',    bg: '#ff6c00', letter: 'G' },
+      { name: 'Tesla',    bg: '#cc0000', letter: 'T' },
+      { name: 'Nest',     bg: '#1fa866', letter: 'N' },
+      { name: 'Vapi',     bg: '#7c3aed', letter: 'V' },
+    ];
+    elApps.innerHTML = `<div style="display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <p style="font-size:12px;font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.06em;margin:0 0 10px;">Connected Integrations</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${apps.map(app => `
+            <div title="${app.name}" style="width:40px;height:40px;border-radius:50%;background:${app.bg};display:flex;align-items:center;justify-content:center;
+                 border:2px solid #fff;outline:1px solid ${border};cursor:pointer;transition:transform 0.15s;flex-shrink:0;"
+                 onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <span style="color:#fff;font-size:12px;font-weight:700;">${app.letter}</span>
+            </div>
+          `).join('')}
+          <div style="width:40px;height:40px;border-radius:50%;border:2px dashed ${border};display:flex;align-items:center;justify-content:center;cursor:pointer;color:${muted};font-size:20px;font-weight:300;line-height:1;"
+               onmouseover="this.style.borderColor='${accent}';this.style.color='${accent}'" onmouseout="this.style.borderColor='${border}';this.style.color='${muted}'">+</div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.06em;margin:0 0 10px;">Rounded Square Variant</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${apps.slice(0,4).map(app => `
+            <div title="${app.name}" style="width:40px;height:40px;border-radius:10px;background:${app.bg};display:flex;align-items:center;justify-content:center;
+                 border:1px solid rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.15s;flex-shrink:0;"
+                 onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <span style="color:#fff;font-size:12px;font-weight:700;">${app.letter}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:${muted};margin-top:14px;">40px icons · circular or 10px-radius square · 8px gap · hover scale(1.1) · "+" add button with dashed border</p>`;
   }
 }
 
