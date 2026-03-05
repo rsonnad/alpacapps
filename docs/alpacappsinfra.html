@@ -1059,11 +1059,11 @@
       <a href="#supabase"><span class="num">3</span> Supabase</a>
       <a href="#resend"><span class="num">4</span> Resend (Email)</a>
       <a href="#google-auth"><span class="num">5</span> Google Sign-In</a>
-      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">7</span> Square (Payments)</a>
-      <a href="#stripe"><span class="num">8</span> Stripe (Payments)</a>
-      <a href="#signwell"><span class="num">9</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">10</span> Google Gemini (AI)</a>
+      <a href="#gemini"><span class="num">6</span> Google Gemini (AI)</a>
+      <a href="#telnyx"><span class="num">7</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">8</span> Square (Payments)</a>
+      <a href="#stripe"><span class="num">9</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">10</span> SignWell (E-Signatures)</a>
       <a href="#workers"><span class="num">11</span> Background Workers</a>
       <a href="#domain"><span class="num">12</span> Custom Domain</a>
       <a href="#template"><span class="num">13</span> CLAUDE.md Templates</a>
@@ -1539,7 +1539,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 10 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 6 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
@@ -1604,9 +1604,37 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </details>
 
-  <!-- 6. Telnyx -->
+  <!-- 6. Gemini -->
+  <details class="infra-section" id="gemini">
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">6. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="infra-section__body">
+    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
+
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 5</a>. Use the same project &mdash; just grab a Gemini API key below.
+    </div>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
+- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Store my Gemini API key as a Supabase secret."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
+    </div>
+    </div>
+  </details>
+
+  <!-- 7. Telnyx -->
   <details class="infra-section" id="telnyx">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">7. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="infra-section__body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1647,9 +1675,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </details>
 
-  <!-- 7. Square -->
+  <!-- 8. Square -->
   <details class="infra-section" id="square">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">8. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="infra-section__body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1685,9 +1713,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </details>
 
-  <!-- 8. Stripe -->
+  <!-- 9. Stripe -->
   <details class="infra-section" id="stripe">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">9. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="infra-section__body">
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
@@ -1729,9 +1757,9 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </div>
   </details>
 
-  <!-- 9. SignWell -->
+  <!-- 10. SignWell -->
   <details class="infra-section" id="signwell">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">10. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="infra-section__body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1757,34 +1785,6 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <strong>"Set up SignWell for e-signatures. Create the config table, a webhook edge function, and client-side signwell-service.js and pdf-service.js modules."</strong>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.</span>
-    </div>
-    </div>
-  </details>
-
-  <!-- 10. Gemini -->
-  <details class="infra-section" id="gemini">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
-    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
-
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 5</a>. Use the same project &mdash; just grab a Gemini API key below.
-    </div>
-
-    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
-    <ol>
-      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
-    </ol>
-
-    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
-- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
-
-    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude" style="position: relative;">
-      <strong>"Store my Gemini API key as a Supabase secret."</strong>
-      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
-      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
     </div>
     </div>
   </details>
