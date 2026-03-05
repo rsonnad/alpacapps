@@ -546,6 +546,14 @@ function renderResults(job) {
   surfaceEl.innerHTML = '';
   cardsEl.innerHTML = '';
 
+  // Show the inquiry photo at the top of results
+  const photoContainer = document.getElementById('resultsPhoto');
+  if (photoContainer) {
+    photoContainer.innerHTML = job.image_url
+      ? `<img src="${escHtml(job.image_url)}" alt="Inquiry photo" class="results-photo">`
+      : '';
+  }
+
   if (job.inquiry_type === 'general') {
     // General question results
     resultsTitle.textContent = 'Answer';
@@ -711,18 +719,23 @@ function buildHistoryItem(job, isForMe) {
     : (job.assigned_to_name ? `<div class="history-from">For: ${escHtml(job.assigned_to_name)}</div>` : '');
 
   el.innerHTML = `
-    <div class="history-meta">
-      <div>
-        <div class="history-caption">${statusIcon} ${typeBadge} ${escHtml(titleText)}</div>
-        <div class="history-date">${date}</div>
-        ${fromLine}
+    <div style="display:flex;gap:0.75rem;align-items:flex-start">
+      ${job.image_url ? `<img src="${escHtml(job.image_url)}" alt="" class="history-thumb">` : ''}
+      <div style="flex:1;min-width:0">
+        <div class="history-meta">
+          <div>
+            <div class="history-caption">${statusIcon} ${typeBadge} ${escHtml(titleText)}</div>
+            <div class="history-date">${date}</div>
+            ${fromLine}
+          </div>
+          <div class="history-actions">
+            ${job.status === 'completed' ? `<button class="btn-icon" data-view="${job.id}" title="View results">👁️</button>` : ''}
+            ${job.app_user_id === appUser.id ? `<button class="btn-icon danger" data-delete="${job.id}" title="Delete">🗑️</button>` : ''}
+          </div>
+        </div>
+        ${swatches ? `<div class="history-colors">${swatches}</div>` : ''}
       </div>
-      <div class="history-actions">
-        ${job.status === 'completed' ? `<button class="btn-icon" data-view="${job.id}" title="View results">👁️</button>` : ''}
-        ${job.app_user_id === appUser.id ? `<button class="btn-icon danger" data-delete="${job.id}" title="Delete">🗑️</button>` : ''}
-      </div>
-    </div>
-    ${swatches ? `<div class="history-colors">${swatches}</div>` : ''}`;
+    </div>`;
 
   // View handler
   const viewBtn = el.querySelector('[data-view]');
