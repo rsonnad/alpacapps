@@ -1,12 +1,12 @@
 {
-  "version": "v260304.40 9:53p",
-  "release": 456,
-  "sha": "628df54ac",
-  "fullSha": "628df54acaae3075176f52dab97336048e6de6f9",
+  "version": "v260304.41 10:59p",
+  "release": 458,
+  "sha": "4e51d8d2e",
+  "fullSha": "4e51d8d2e517f667c384eec621f0abb0adc19e83",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-05 03:53:46+00",
-  "commits": [{"sha":"6e16d5497","message":"move Google Gemini to #6 after Google Auth on infra page","author":"Rahul"},{"sha":"628df54ac","message":"Merge branch 'frosty-booth'","author":"Rahul"}]
+  "pushedAt": "2026-03-05 04:59:47+00",
+  "commits": [{"sha":"4e51d8d2e","message":"redesign infra page header as card matching content width, update pricing","author":"Rahul"}]
 }
