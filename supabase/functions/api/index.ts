@@ -295,9 +295,45 @@ async function handlePeople(supabase: any, req: ApiRequest, auth: any, _perm: an
       if (!req.data?.first_name && !req.data?.last_name) {
         return error("Validation: first_name or last_name is required", 400);
       }
+
+      // Duplicate prevention: check by email, then by exact name match
+      if (req.data.email) {
+        const { data: emailMatch } = await supabase
+          .from("people")
+          .select("id, first_name, last_name, email, type")
+          .ilike("email", req.data.email)
+          .limit(1)
+          .maybeSingle();
+        if (emailMatch) {
+          return error(
+            `Duplicate: a person with email "${req.data.email}" already exists (${emailMatch.first_name} ${emailMatch.last_name}, type=${emailMatch.type}, id=${emailMatch.id}). Use action "update" with this id instead.`,
+            409
+          );
+        }
+      }
+      if (req.data.first_name && req.data.last_name && !req.data.skip_dedup) {
+        const { data: nameMatch } = await supabase
+          .from("people")
+          .select("id, first_name, last_name, email, type")
+          .ilike("first_name", req.data.first_name)
+          .ilike("last_name", req.data.last_name)
+          .limit(1)
+          .maybeSingle();
+        if (nameMatch) {
+          return error(
+            `Possible duplicate: a person named "${nameMatch.first_name} ${nameMatch.last_name}" already exists (type=${nameMatch.type}, id=${nameMatch.id}). If this is a different person, pass "skip_dedup": true in data. Otherwise use action "update" with this id.`,
+            409
+          );
+        }
+      }
+
+      // Allow explicit bypass for intentional same-name people
+      const insertData = { ...req.data };
+      delete insertData.skip_dedup;
+
       const { data, error: err } = await supabase
         .from("people")
-        .insert(req.data)
+        .insert(insertData)
         .select()
         .single();
       if (err) return error(`Create failed: ${err.message}`, 400);
