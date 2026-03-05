@@ -1,12 +1,12 @@
 {
-  "version": "v260304.43 11:19p",
-  "release": 460,
-  "sha": "3655276a7",
-  "fullSha": "3655276a767e800b523619fd8663ad5b57bbda50",
+  "version": "v260305.01 11:14a",
+  "release": 461,
+  "sha": "08ec4ec48",
+  "fullSha": "08ec4ec48f0aee3cb247ba7d65b11568663df3bc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-05 05:19:23+00",
-  "commits": [{"sha":"60a6c6262","message":"add file upload support to printer proxy and edge function","author":"Rahul"},{"sha":"3655276a7","message":"merge printer upload support from nice-bartik","author":"Rahul"}]
+  "pushedAt": "2026-03-05 17:14:19+00",
+  "commits": [{"sha":"a1429de44","message":"fix: prevent Access Denied overlay on transient auth failures","author":"Rahul"},{"sha":"08ec4ec48","message":"Merge branch 'charming-shirley'","author":"Rahul"}]
 }
