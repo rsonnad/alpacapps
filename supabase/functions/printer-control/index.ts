@@ -12,12 +12,16 @@ interface PrinterControlRequest {
     | "setTemperature"
     | "toggleLight"
     | "homeAxes"
-    | "listFiles";
+    | "listFiles"
+    | "uploadFile"
+    | "uploadLocalFile";
   printerId?: string;
   filename?: string;
   target?: "nozzle" | "bed";
   tempC?: number;
   on?: boolean;
+  gcode?: string; // base64-encoded gcode for uploadFile
+  localPath?: string; // local filesystem path for uploadLocalFile
 }
 
 const corsHeaders = {
@@ -350,6 +354,49 @@ serve(async (req) => {
 
       logUsage(supabase, "printer_status_poll", "listFiles", printer, appUser);
       return jsonResponse({ files: parseFileList(result.response), raw: result });
+    }
+
+    // ---- UPLOAD FILE (base64 gcode from client) ----
+    if (body.action === "uploadFile") {
+      if (!(await checkPermission("control_printer"))) {
+        return jsonResponse({ error: "Insufficient permissions to upload files" }, 403);
+      }
+
+      if (!body.filename || !body.gcode) {
+        return jsonResponse({ error: "Missing filename or gcode (base64)" }, 400);
+      }
+
+      const result = await callPrinterProxy(proxyUrl, proxySecret, "upload", {
+        ip: printerIp,
+        filename: body.filename,
+        gcode: body.gcode,
+        serialNumber: printer.serial_number || "",
+        checkCode: config.check_code || "",
+      });
+
+      logUsage(supabase, "printer_control", "uploadFile", printer, appUser);
+      return jsonResponse({ success: true, result });
+    }
+
+    // ---- UPLOAD LOCAL FILE (file already on Alpaca Mac) ----
+    if (body.action === "uploadLocalFile") {
+      if (!(await checkPermission("control_printer"))) {
+        return jsonResponse({ error: "Insufficient permissions to upload files" }, 403);
+      }
+
+      if (!body.localPath) {
+        return jsonResponse({ error: "Missing localPath" }, 400);
+      }
+
+      const result = await callPrinterProxy(proxyUrl, proxySecret, "upload-local", {
+        ip: printerIp,
+        localPath: body.localPath,
+        serialNumber: printer.serial_number || "",
+        checkCode: config.check_code || "",
+      });
+
+      logUsage(supabase, "printer_control", "uploadLocalFile", printer, appUser);
+      return jsonResponse({ success: true, result });
     }
 
     return jsonResponse({ error: `Unknown action: ${body.action}` }, 400);
