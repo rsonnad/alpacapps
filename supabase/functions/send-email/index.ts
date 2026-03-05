@@ -63,6 +63,8 @@ type EmailType =
   | "payment_statement"
   // Waiver
   | "waiver_confirmation"
+  // Work photo reminder
+  | "work_photo_reminder"
   // Custom (raw HTML passthrough)
   | "custom";
 
@@ -1972,6 +1974,44 @@ Date: ${sigDate}
 ${data.confirmation_ref ? `Reference: ${data.confirmation_ref}` : ''}
 
 Thank you for signing. If you have any questions, contact us at (737) 747-4737.`
+      };
+    }
+
+    case "work_photo_reminder": {
+      const phase = data.phase || 'clock_in'; // 'clock_in' or 'clock_out'
+      const isClockIn = phase === 'clock_in';
+      const photoType = isClockIn ? '"Before"' : '"After"';
+      const suggestion = isClockIn
+        ? 'a quick "before" photo of the space before you start working'
+        : 'an "after" photo showing your completed work';
+      const workPageUrl = 'https://alpacaplayhouse.com/associates/worktracking.html';
+      return {
+        subject: `Reminder: Upload ${isClockIn ? 'Before' : 'After'} Photos for Your Work Session`,
+        html: `
+          <h2>Work Photo Reminder</h2>
+          <p>Hi ${data.first_name},</p>
+          <p>You recently ${isClockIn ? 'clocked in' : 'clocked out'}${data.space_name ? ` at <strong>${data.space_name}</strong>` : ''} but we noticed you haven't uploaded any ${photoType} photos yet.</p>
+          <p>If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.</p>
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${workPageUrl}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Upload Photos</a>
+          </div>
+          <p style="color: #666; font-size: 0.9em;">This is just a friendly nudge — no photos are required if they aren't relevant to the task.</p>
+          <p>Thanks,<br>Alpaca Playhouse</p>
+        `,
+        text: `Work Photo Reminder
+
+Hi ${data.first_name},
+
+You recently ${isClockIn ? 'clocked in' : 'clocked out'}${data.space_name ? ` at ${data.space_name}` : ''} but we noticed you haven't uploaded any ${photoType} photos yet.
+
+If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.
+
+Upload photos: ${workPageUrl}
+
+This is just a friendly nudge — no photos are required if they aren't relevant to the task.
+
+Thanks,
+Alpaca Playhouse`
       };
     }
 
