@@ -685,6 +685,12 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
         onReady(state);
       }
     } else if (state.appUser || (state.isAuthenticated && state.isUnauthorized)) {
+      // If the page was already authorized and working, don't disrupt it with a
+      // transient auth failure (e.g. app_users query timeout during token refresh).
+      if (onReadyCalled) {
+        console.warn('[resident-shell] Transient auth state change after page authorized — keeping current state');
+        return;
+      }
       transitionBootState('unauthorized');
       renderAccessDenied(state, activeTab);
     } else if (!state.isAuthenticated && !pageContentShown) {
