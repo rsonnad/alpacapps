@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sloop — Tesla Model Y 2026</title>
+  <meta property="og:title" content="Sloop — Tesla Model Y 2026">
+  <meta property="og:description" content="Meet Sloop, our 2026 Tesla Model Y.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/sloop/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf8f6;
+      --surface: #ffffff;
+      --surface2: #f4f1ee;
+      --border: #e2ddd8;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.08);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 4rem 1.5rem 3rem;
+      text-align: center;
+      background: linear-gradient(180deg, #e8f0fe 0%, #f0eff6 40%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.35rem 1rem;
+      background: var(--green-soft);
+      color: var(--green);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .spec-item {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .spec-item .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .spec-item .value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .spec-item .unit {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .note {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.25rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 480px) {
+      .spec-grid { grid-template-columns: 1fr 1fr; }
+      .card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1>Sloop</h1>
+    <p class="subtitle">2026 Tesla Model Y</p>
+    <span class="badge">Test Page</span>
+  </section>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>Vehicle Specs</h2>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="label">Make</div>
+          <div class="value">Tesla</div>
+        </div>
+        <div class="spec-item">
+          <div class="label">Model</div>
+          <div class="value">Model Y</div>
+        </div>
+        <div class="spec-item">
+          <div class="label">Year</div>
+          <div class="value">2026</div>
+        </div>
+        <div class="spec-item">
+          <div class="label">Type</div>
+          <div class="value">SUV</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>About</h2>
+      <p style="color: var(--text-soft); line-height: 1.7;">
+        Sloop is one of the fleet vehicles at Alpaca Playhouse. This is a test page for development and preview purposes.
+      </p>
+    </div>
+
+    <div class="note">
+      This is a test page. Content is for development purposes only.
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span data-site-version>v000000.00</span>
+  </footer>
+
+</body>
+</html>
