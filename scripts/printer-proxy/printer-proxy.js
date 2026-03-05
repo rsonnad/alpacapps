@@ -10,14 +10,18 @@
  */
 
 const http = require('http');
+const https = require('https');
 const net = require('net');
+const path = require('path');
 
 const PORT = parseInt(process.env.PRINTER_PROXY_PORT || '8903', 10);
 const HEALTH_PORT = parseInt(process.env.PRINTER_HEALTH_PORT || '8904', 10);
 const PROXY_SECRET = process.env.PROXY_SECRET || '';
 const DEFAULT_PRINTER_IP = process.env.DEFAULT_PRINTER_IP || '192.168.1.106';
 const DEFAULT_TCP_PORT = parseInt(process.env.DEFAULT_TCP_PORT || '8899', 10);
+const DEFAULT_HTTP_PORT = parseInt(process.env.DEFAULT_HTTP_PORT || '8898', 10);
 const TCP_TIMEOUT = parseInt(process.env.TCP_TIMEOUT || '8000', 10);
+const UPLOAD_TIMEOUT = parseInt(process.env.UPLOAD_TIMEOUT || '60000', 10);
 
 /**
  * Send a raw TCP command to the printer and collect the response.
@@ -222,6 +226,78 @@ function parseStatusResponse(raw) {
   return status;
 }
 
+/**
+ * Upload a G-code file to the printer via its HTTP API (port 8898).
+ * The Adventurer 5M Pro uses HTTP multipart upload instead of TCP M28/M29.
+ * Requires the printer to be in LAN mode with a valid checkCode.
+ */
+function uploadGcode(ip, httpPort, filename, gcodeBuffer, serialNumber, checkCode, timeout = UPLOAD_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    const boundary = '----FormBoundary' + Date.now().toString(36);
+    const safeName = path.basename(filename);
+
+    // Build multipart body
+    const header = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="file"; filename="${safeName}"\r\n` +
+      `Content-Type: application/octet-stream\r\n\r\n`
+    );
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([header, gcodeBuffer, footer]);
+
+    const options = {
+      hostname: ip,
+      port: httpPort,
+      path: '/uploadGcode',
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length,
+      },
+      timeout,
+    };
+
+    // Add auth headers if provided
+    if (serialNumber) options.headers['serialNumber'] = serialNumber;
+    if (checkCode) options.headers['checkCode'] = checkCode;
+
+    const req = http.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve({ statusCode: res.statusCode, body: JSON.parse(data) });
+        } catch {
+          resolve({ statusCode: res.statusCode, body: data });
+        }
+      });
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Upload timed out'));
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Upload a G-code file from the local filesystem to the printer.
+ * Used when the proxy has direct access to sliced files.
+ */
+async function uploadLocalFile(ip, httpPort, localPath, serialNumber, checkCode, timeout = UPLOAD_TIMEOUT) {
+  const fs = require('fs');
+  const filename = path.basename(localPath);
+  const gcodeBuffer = fs.readFileSync(localPath);
+  return uploadGcode(ip, httpPort, filename, gcodeBuffer, serialNumber, checkCode, timeout);
+}
+
 // Main HTTP server
 const server = http.createServer(async (req, res) => {
   // CORS
@@ -327,8 +403,58 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Route: /upload — upload G-code to printer via HTTP API (port 8898)
+    // Body: { filename, gcode (base64), serialNumber, checkCode }
+    if (req.url === '/upload' || payload.action === 'upload') {
+      const { filename, gcode, serialNumber, checkCode } = payload;
+      if (!filename || !gcode) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing filename or gcode (base64)' }));
+        return;
+      }
+
+      const gcodeBuffer = Buffer.from(gcode, 'base64');
+      console.log(`Uploading ${filename} (${gcodeBuffer.length} bytes) to ${ip}:${DEFAULT_HTTP_PORT}`);
+
+      const result = await uploadGcode(ip, DEFAULT_HTTP_PORT, filename, gcodeBuffer, serialNumber, checkCode, UPLOAD_TIMEOUT);
+      console.log(`Upload result: ${JSON.stringify(result)}`);
+
+      res.writeHead(result.statusCode === 200 ? 200 : 502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ...result, timestamp: new Date().toISOString() }));
+      return;
+    }
+
+    // Route: /upload-local — upload a file already on Alpaca Mac's filesystem
+    // Body: { localPath, serialNumber, checkCode }
+    if (req.url === '/upload-local' || payload.action === 'upload-local') {
+      const { localPath, serialNumber, checkCode } = payload;
+      if (!localPath) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing localPath' }));
+        return;
+      }
+
+      const fs = require('fs');
+      if (!fs.existsSync(localPath)) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `File not found: ${localPath}` }));
+        return;
+      }
+
+      const filename = path.basename(localPath);
+      const gcodeBuffer = fs.readFileSync(localPath);
+      console.log(`Uploading local file ${localPath} (${gcodeBuffer.length} bytes) to ${ip}:${DEFAULT_HTTP_PORT}`);
+
+      const result = await uploadGcode(ip, DEFAULT_HTTP_PORT, filename, gcodeBuffer, serialNumber, checkCode, UPLOAD_TIMEOUT);
+      console.log(`Upload result: ${JSON.stringify(result)}`);
+
+      res.writeHead(result.statusCode === 200 ? 200 : 502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ...result, timestamp: new Date().toISOString() }));
+      return;
+    }
+
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Unknown action. Use /status, /command, /control, or /sequence' }));
+    res.end(JSON.stringify({ error: 'Unknown action. Use /status, /command, /control, /sequence, /upload, or /upload-local' }));
   } catch (err) {
     console.error('Printer proxy error:', err.message);
     res.writeHead(502, { 'Content-Type': 'application/json' });
