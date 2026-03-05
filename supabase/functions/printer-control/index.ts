@@ -80,7 +80,15 @@ serve(async (req) => {
     let appUser: any = null;
     let checkPermission: (key: string) => Promise<boolean>;
 
-    if (token === supabaseServiceKey) {
+    // Check for service role key - try both env var AND JWT role check
+    const isServiceRole = token === supabaseServiceKey || (() => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.role === 'service_role';
+      } catch { return false; }
+    })();
+
+    if (isServiceRole) {
       appUser = { id: "service", role: "oracle" };
       checkPermission = async () => true;
     } else {
