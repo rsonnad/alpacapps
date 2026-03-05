@@ -1,12 +1,12 @@
 {
-  "version": "v260304.38 5:39p",
-  "release": 454,
-  "sha": "f35d2e7aa",
-  "fullSha": "f35d2e7aa68667771600ee647d4d4c584bc165a0",
+  "version": "v260304.39 6:15p",
+  "release": 455,
+  "sha": "68368b67b",
+  "fullSha": "68368b67b499684730eb8fbe7d7675116613d4a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-04 23:39:48+00",
-  "commits": [{"sha":"f35d2e7aa","message":"swap Resend and Google Auth order on infra page (4↔5)","author":"Rahul"}]
+  "pushedAt": "2026-03-05 00:15:00+00",
+  "commits": [{"sha":"68368b67b","message":"Fix printer-control service role key auth","author":"Rahul"}]
 }
