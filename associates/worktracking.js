@@ -949,7 +949,7 @@ async function handleSelfVerify() {
   const btn = document.getElementById('btnVerifyId');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating link...'; }
   try {
-    const { uploadUrl } = await identityService.requestAssociateVerification(authState.appUser.id, 'self');
+    const { uploadUrl } = await identityService.requestAssociateVerification(authState.appUser.id, 'self', authState.appUser.person_id);
     window.location.href = uploadUrl;
   } catch (err) {
     showToast('Failed to start verification: ' + err.message, 'error');
