@@ -1,12 +1,12 @@
 {
-  "version": "v260306.16 2:03p",
-  "release": 484,
-  "sha": "e6a12ce7f",
-  "fullSha": "e6a12ce7f2a8d7fc52aa7c430dec1350c05c9d6c",
+  "version": "v260306.17 3:06p",
+  "release": 485,
+  "sha": "757b3484d",
+  "fullSha": "757b3484de7c3c902f02dea6c3f8e5d5275f58ec",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 20:03:01+00",
-  "commits": [{"sha":"4023822d0","message":"Fix Supabase anon key in permitting plan page","author":"Jacqueline Giroux"},{"sha":"e6a12ce7f","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-06 21:06:34+00",
+  "commits": [{"sha":"f2d9bd6ba","message":"Add preliminary site plan with setback violation analysis","author":"Jacqueline Giroux"},{"sha":"757b3484d","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
