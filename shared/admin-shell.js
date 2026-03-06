@@ -48,7 +48,6 @@ const TAB_ICONS = {
   testdev:    _i('<path d="M9 3h6v4H9z"/><path d="M10 7v5l-4 8h12l-4-8V7"/>'),
   lifeofpai:  _i('<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>'),
   openclaw:   _i('<path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/>'),
-  permitting: _i('<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/>'),
 };
 
 const ALL_ADMIN_TABS = [
@@ -76,7 +75,6 @@ const ALL_ADMIN_TABS = [
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
   { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
   { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin' },
-  { id: 'permitting', label: 'Permitting', href: 'permitting.html', permission: 'view_settings', section: 'admin' },
 ];
 
 // =============================================
