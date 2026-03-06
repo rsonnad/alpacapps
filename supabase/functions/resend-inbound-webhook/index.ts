@@ -1831,7 +1831,35 @@ async function matchByName(
     }
   }
 
-  // 5. Gemini Flash AI matching — handles nicknames, legal names, transliterations
+  // 5. Last-name-only match — if exactly one person has that last name, it's a strong signal
+  //    Handles cases like "AGNIESZKA KORDEK" where "kordek" uniquely identifies Ai Kordek
+  if (parts.length >= 2) {
+    const lastNameCandidates: Array<{ id: string; first_name: string; last_name: string }> = [];
+    for (const person of people) {
+      const lastParts = (person.last_name || "").toLowerCase().trim().split(/\s+/).filter(Boolean);
+      if (lastParts.some((lp: string) => parts.includes(lp))) {
+        lastNameCandidates.push(person);
+      }
+    }
+    if (lastNameCandidates.length === 1) {
+      const person = lastNameCandidates[0];
+      console.log(`Last-name-only match: "${senderName}" → ${person.first_name} ${person.last_name} (unique last name)`);
+      await supabase.from("payment_sender_mappings").upsert(
+        {
+          sender_name: senderName,
+          sender_name_normalized: normalized,
+          person_id: person.id,
+          confidence_score: 0.75,
+          match_source: "zelle_email_lastname",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "sender_name_normalized" }
+      );
+      return { person_id: person.id, name: `${person.first_name} ${person.last_name}` };
+    }
+  }
+
+  // 6. Gemini Flash AI matching — handles nicknames, legal names, transliterations
   const geminiMatch = await matchByNameWithGemini(supabase, senderName, people);
   if (geminiMatch) {
     // Save mapping so future payments auto-match instantly
@@ -1908,7 +1936,7 @@ Return JSON:
   "reasoning": "<brief explanation>"
 }
 
-Only return confidence >= 0.85 if you are quite sure. If unsure, return null with reasoning.`;
+When last names match exactly, return confidence >= 0.80 even if the first name appears to be a nickname or legal name variant (e.g., "AGNIESZKA" → "Ai", "WILLIAM" → "Bill", "ROBERT" → "Bob"). Only return null if there is genuine ambiguity between multiple tenants.`;
 
   try {
     const response = await fetch(
@@ -1953,7 +1981,7 @@ Only return confidence >= 0.85 if you are quite sure. If unsure, return null wit
       metadata: { model: "gemini-2.0-flash", sender_name: senderName, confidence: parsed.confidence, reasoning: parsed.reasoning },
     });
 
-    if (parsed.best_match && parsed.confidence >= 0.85) {
+    if (parsed.best_match && parsed.confidence >= 0.75) {
       const matchedTenant = activeTenants[parsed.best_match - 1];
       if (matchedTenant) {
         const person = matchedTenant.person;
