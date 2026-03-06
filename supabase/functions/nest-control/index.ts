@@ -67,6 +67,7 @@ serve(async (req) => {
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
     let userId: string | null = null;
+    let appUser: Record<string, unknown> | null = null;
 
     if (!isInternalCall) {
       const {
@@ -78,9 +79,10 @@ serve(async (req) => {
       }
 
       // Check granular permission: control_climate
-      const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_climate");
-      userId = appUser?.id ?? null;
-      if (!hasPermission) {
+      const permResult = await getAppUserWithPermission(supabase, user.id, "control_climate");
+      appUser = permResult.appUser;
+      userId = appUser?.id as string ?? null;
+      if (!permResult.hasPermission) {
         return jsonResponse({ error: "Insufficient permissions" }, 403);
       }
     }
