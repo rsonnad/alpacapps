@@ -1,12 +1,12 @@
 {
-  "version": "v260306.15 1:57p",
-  "release": 483,
-  "sha": "c561aa386",
-  "fullSha": "c561aa386c629c92456a93e1031cafbcc29832a8",
+  "version": "v260306.16 2:03p",
+  "release": 484,
+  "sha": "e6a12ce7f",
+  "fullSha": "e6a12ce7f2a8d7fc52aa7c430dec1350c05c9d6c",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 19:57:53+00",
-  "commits": [{"sha":"2ec1e4141","message":"Move permitting tracker to /jackie/pages/permittingplan/ with restricted access","author":"Jacqueline Giroux"},{"sha":"c561aa386","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-06 20:03:01+00",
+  "commits": [{"sha":"4023822d0","message":"Fix Supabase anon key in permitting plan page","author":"Jacqueline Giroux"},{"sha":"e6a12ce7f","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
