@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Permitting Plan - 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+      --available: #22c55e; --occupied: #ef4444;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Auth overlay */
+    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .auth-overlay.hidden { display: none; }
+    .auth-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; max-width: 360px; width: 90%; text-align: center; }
+    .auth-form h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .auth-form p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+    .auth-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; margin-bottom: 0.75rem; }
+    .auth-form button { width: 100%; padding: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .auth-form button:hover { opacity: 0.9; }
+    .auth-error { color: var(--occupied); font-size: 0.8rem; margin-bottom: 0.5rem; display: none; }
+
+    /* Page header */
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .page-header .user-info { font-size: 0.75rem; color: var(--text-muted); }
+    .page-header .logout-btn { font-size: 0.75rem; color: var(--accent); cursor: pointer; border: none; background: none; font-family: inherit; margin-left: 0.5rem; }
+
+    /* Content */
+    .page-content { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; animation: toastIn 0.2s ease-out; }
+    .toast.success { background: #d1fae5; color: #065f46; }
+    .toast.error { background: #fee2e2; color: #991b1b; }
+    @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Permit styles */
+    .permit-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .permit-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; text-align: center; }
+    .permit-stat .label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+    .permit-stat .value { font-size: 1.4rem; font-weight: 800; margin-top: 0.15rem; }
+    .permit-stat .value.done { color: var(--available); }
+    .permit-stat .value.pending { color: var(--accent); }
+    .permit-stat .value.blocked { color: var(--occupied); }
+
+    .permit-warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .permit-warning svg { flex-shrink: 0; color: #b45309; margin-top: 0.1rem; }
+    .permit-warning .warn-text { font-size: 0.85rem; color: #78350f; }
+    .permit-warning .warn-text strong { font-weight: 700; }
+
+    .phase-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; }
+    .phase-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .phase-header:hover { background: #f0efea; }
+    .phase-header h3 { font-size: 0.95rem; font-weight: 700; margin: 0; flex: 1; }
+    .phase-progress { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+    .phase-chevron { transition: transform 0.2s; }
+    .phase-section.collapsed .phase-chevron { transform: rotate(-90deg); }
+    .phase-section.collapsed .phase-body { display: none; }
+
+    .task-row { display: grid; grid-template-columns: 28px 1fr 100px 80px; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { background: #fafaf8; }
+
+    .task-check { width: 18px; height: 18px; border: 2px solid #d1d5db; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .task-check.done { background: var(--available); border-color: var(--available); }
+    .task-check.done svg { display: block; }
+    .task-check svg { display: none; color: #fff; width: 12px; height: 12px; }
+
+    .task-info { min-width: 0; }
+    .task-name { font-weight: 600; }
+    .task-name .task-code { color: var(--text-muted); font-weight: 500; margin-right: 0.3rem; }
+    .task-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .task-status { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 10px; text-align: center; white-space: nowrap; }
+    .task-status.completed { background: #d1fae5; color: #065f46; }
+    .task-status.pending { background: #e0e7ff; color: #3730a3; }
+    .task-status.in_progress { background: #fef3c7; color: #92400e; }
+    .task-status.blocked { background: #fee2e2; color: #991b1b; }
+    .task-status.skipped { background: #f3f4f6; color: #6b7280; }
+    .task-status.not_needed { background: #f3f4f6; color: #9ca3af; }
+
+    .task-assignee { font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+
+    .cost-summary { display: flex; justify-content: flex-end; gap: 1.5rem; padding: 0.75rem 1rem; font-size: 0.85rem; background: #f8f7f4; border-top: 2px solid var(--border); }
+    .cost-summary .cost-item { display: flex; gap: 0.3rem; }
+    .cost-summary .cost-label { color: var(--text-muted); }
+    .cost-summary .cost-value { font-weight: 700; }
+
+    .task-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .task-modal { background: #fff; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .task-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .task-modal-header h3 { font-size: 1rem; margin: 0; }
+    .task-modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); padding: 0.25rem; }
+    .task-modal-body { padding: 1.25rem; }
+    .task-modal-body .field { margin-bottom: 1rem; }
+    .task-modal-body .field label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .task-modal-body select, .task-modal-body input, .task-modal-body textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; font-family: inherit; }
+    .task-modal-body textarea { min-height: 60px; resize: vertical; }
+    .task-modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); }
+    .task-modal-footer button { padding: 0.4rem 1rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; }
+    .task-modal-footer .btn-cancel { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
+    .task-modal-footer .btn-save { background: var(--accent); color: #fff; }
+
+    .doc-links { margin-top: 0.5rem; }
+    .doc-links a { display: inline-block; font-size: 0.75rem; color: var(--accent); margin-right: 0.75rem; text-decoration: none; }
+    .doc-links a:hover { text-decoration: underline; }
+
+    .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; margin-top: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .task-row { grid-template-columns: 28px 1fr 80px; }
+      .task-assignee { display: none; }
+      .permit-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Auth overlay -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-form">
+      <h2>Permitting Plan</h2>
+      <p>160 Still Forest Dr — Restricted Access</p>
+      <div id="authError" class="auth-error"></div>
+      <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
+      <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+      <button id="authSubmit" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="authSpinner" class="spinner" style="display:none"></div>
+  </div>
+
+  <!-- Page content (hidden until auth) -->
+  <div id="appContent" style="display:none">
+    <div class="page-header">
+      <h1>Permitting Plan — 160 Still Forest Dr</h1>
+      <div>
+        <span class="user-info" id="userDisplay"></span>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="permit-warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="warn-text">
+          <strong>Construction already started.</strong> The bathroom building (1st floor with 2 toilets + shower) is under construction without an approved IDP. Per county rules this is a Class B misdemeanor. Disclose proactively at the pre-development meeting.
+        </div>
+      </div>
+
+      <div class="permit-summary" id="summaryStats"></div>
+      <div id="phasesContainer"></div>
+      <div id="costSummary" class="phase-section" style="margin-top:1rem;"></div>
+    </div>
+  </div>
+
+  <div id="taskModalContainer"></div>
+
+  <span data-site-version style="display:none">v260306.14</span>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const supabase = createClient(
+      'https://aphrrfprbixmhissnjfn.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.2MywODvnBClZZUhMgnXfBPONGjtzIRBVRwz7PLHiYJA'
+    );
+
+    const ALLOWED_USERS = [
+      'jackie61899280@gmail.com',
+      'sheppardsustainable@gmail.com',
+      'rahulioson@gmail.com',
+      'dpmoden8888@gmail.com',
+    ];
+
+    const PHASE_LABELS = { A: 'Phase A: Pre-Development Meeting', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Physical Infrastructure' };
+    const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
+    const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
+
+    let tasks = [];
+    let currentUser = null;
+
+    // ── Auth ──
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && ALLOWED_USERS.includes(session.user.email)) {
+        currentUser = session.user;
+        showApp();
+        return;
+      }
+      if (session) await supabase.auth.signOut();
+      document.getElementById('authOverlay').classList.remove('hidden');
+    }
+
+    window.doLogin = async function() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'none';
+
+      if (!email || !password) { errEl.textContent = 'Enter email and password.'; errEl.style.display = 'block'; return; }
+
+      document.getElementById('authSubmit').disabled = true;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById('authSubmit').disabled = false;
+
+      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+      if (!ALLOWED_USERS.includes(data.user.email)) {
+        errEl.textContent = 'You do not have access to this page.';
+        errEl.style.display = 'block';
+        await supabase.auth.signOut();
+        return;
+      }
+
+      currentUser = data.user;
+      showApp();
+    };
+
+    window.doLogout = async function() {
+      await supabase.auth.signOut();
+      document.getElementById('appContent').style.display = 'none';
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('authPassword').value = '';
+    };
+
+    async function showApp() {
+      document.getElementById('authOverlay').classList.add('hidden');
+      document.getElementById('appContent').style.display = 'block';
+      document.getElementById('userDisplay').textContent = currentUser.email;
+      await loadTasks();
+      renderSummary();
+      renderPhases();
+      renderCostSummary();
+    }
+
+    // Allow Enter key to submit login
+    document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+    document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
+
+    // ── Data ──
+    async function loadTasks() {
+      const { data, error } = await supabase.from('permit_tasks').select('*').order('sort_order', { ascending: true });
+      if (error) { showToast('Failed to load: ' + error.message, 'error'); return; }
+      tasks = data || [];
+    }
+
+    // ── Rendering ──
+    function renderSummary() {
+      const el = document.getElementById('summaryStats');
+      const total = tasks.length;
+      const done = tasks.filter(t => t.status === 'completed').length;
+      const pending = tasks.filter(t => t.status === 'pending').length;
+      const inProg = tasks.filter(t => t.status === 'in_progress').length;
+      const blocked = tasks.filter(t => t.status === 'blocked').length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
+      el.innerHTML = `
+        <div class="permit-stat"><div class="label">Progress</div><div class="value">${pct}%</div></div>
+        <div class="permit-stat"><div class="label">Completed</div><div class="value done">${done}</div></div>
+        <div class="permit-stat"><div class="label">Pending</div><div class="value pending">${pending}</div></div>
+        <div class="permit-stat"><div class="label">In Progress</div><div class="value" style="color:#b45309">${inProg}</div></div>
+        <div class="permit-stat"><div class="label">Blocked</div><div class="value blocked">${blocked}</div></div>
+        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value">$${est.toLocaleString()}</div></div>`;
+    }
+
+    function renderPhases() {
+      const el = document.getElementById('phasesContainer');
+      const phases = [...new Set(tasks.map(t => t.phase))];
+      el.innerHTML = phases.map(phase => {
+        const pt = tasks.filter(t => t.phase === phase);
+        const done = pt.filter(t => t.status === 'completed').length;
+        const collapsed = localStorage.getItem(`permit-phase-${phase}`) === 'collapsed';
+        return `<div class="phase-section${collapsed ? ' collapsed' : ''}" data-phase="${phase}">
+          <div class="phase-header" onclick="togglePhase('${phase}')">
+            <svg class="phase-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            <h3>${PHASE_LABELS[phase] || 'Phase ' + phase}</h3>
+            <span class="phase-progress">${done}/${pt.length}</span>
+          </div>
+          <div class="phase-body">${pt.map(t => renderTask(t)).join('')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderTask(t) {
+      const isDone = t.status === 'completed';
+      return `<div class="task-row" data-task-id="${t.id}" onclick="openTaskModal('${t.id}')">
+        <div class="task-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); toggleTask('${t.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
+          ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths) : ''}
+        </div>
+        <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
+        <span class="task-assignee">${t.assignee || ''}</span>
+      </div>`;
+    }
+
+    function renderDocLinks(paths) {
+      return `<div class="doc-links">${paths.map(p => {
+        const name = p.split('/').pop();
+        return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
+      }).join('')}</div>`;
+    }
+
+    function renderCostSummary() {
+      const el = document.getElementById('costSummary');
+      const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
+      const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
+      el.innerHTML = `<div class="cost-summary">
+        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value">$${est.toLocaleString()}</span></div>
+        <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
+      </div>`;
+    }
+
+    // ── Interactions ──
+    window.togglePhase = function(phase) {
+      const s = document.querySelector(`.phase-section[data-phase="${phase}"]`);
+      if (!s) return;
+      s.classList.toggle('collapsed');
+      localStorage.setItem(`permit-phase-${phase}`, s.classList.contains('collapsed') ? 'collapsed' : 'open');
+    };
+
+    window.toggleTask = async function(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+      const newStatus = t.status === 'completed' ? 'pending' : 'completed';
+      const updates = { status: newStatus, updated_at: new Date().toISOString() };
+      if (newStatus === 'completed') updates.completed_at = new Date().toISOString();
+      else updates.completed_at = null;
+      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      if (error) { showToast('Failed: ' + error.message, 'error'); return; }
+      t.status = newStatus; t.completed_at = updates.completed_at;
+      renderSummary(); renderPhases(); renderCostSummary();
+      showToast(`${t.task_code} marked ${STATUS_LABELS[newStatus].toLowerCase()}`, 'success');
+    };
+
+    window.openTaskModal = function(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+      document.getElementById('taskModalContainer').innerHTML = `
+        <div class="task-modal-overlay" onclick="if(event.target===this)closeTaskModal()">
+          <div class="task-modal">
+            <div class="task-modal-header">
+              <h3>${t.task_code}: ${esc(t.task_name)}</h3>
+              <button class="task-modal-close" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <div class="task-modal-body">
+              <div class="field"><label>Status</label>
+                <select id="modalStatus">${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${t.status===k?'selected':''}>${v}</option>`).join('')}</select>
+              </div>
+              <div class="field"><label>Assignee</label><input id="modalAssignee" value="${esc(t.assignee||'')}" placeholder="us, engineer, septic designer..."></div>
+              <div class="field"><label>Estimated Cost ($)</label><input id="modalCostEstimate" type="number" step="0.01" value="${t.cost_estimate||''}"></div>
+              <div class="field"><label>Actual Cost ($)</label><input id="modalActualCost" type="number" step="0.01" value="${t.actual_cost||''}"></div>
+              <div class="field"><label>Due Date</label><input id="modalDueDate" type="date" value="${t.due_date||''}"></div>
+              <div class="field"><label>Notes</label><textarea id="modalNotes" rows="3">${esc(t.notes||'')}</textarea></div>
+              <div class="field"><label>Description</label><textarea id="modalDescription" rows="3">${esc(t.description||'')}</textarea></div>
+              ${t.storage_paths?.length ? `<div class="field"><label>Stored Documents</label><div class="doc-links">${t.storage_paths.map(p => `<a href="${STORAGE_URL}/${p}" target="_blank">${p.split('/').pop()}</a>`).join('')}</div></div>` : ''}
+            </div>
+            <div class="task-modal-footer">
+              <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
+              <button class="btn-save" onclick="saveTaskModal('${taskId}')">Save</button>
+            </div>
+          </div>
+        </div>`;
+    };
+
+    window.closeTaskModal = function() { document.getElementById('taskModalContainer').innerHTML = ''; };
+
+    window.saveTaskModal = async function(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+      const newStatus = document.getElementById('modalStatus').value;
+      const updates = {
+        status: newStatus,
+        assignee: document.getElementById('modalAssignee').value || null,
+        cost_estimate: parseFloat(document.getElementById('modalCostEstimate').value) || null,
+        actual_cost: parseFloat(document.getElementById('modalActualCost').value) || null,
+        due_date: document.getElementById('modalDueDate').value || null,
+        notes: document.getElementById('modalNotes').value || null,
+        description: document.getElementById('modalDescription').value || null,
+        updated_at: new Date().toISOString(),
+      };
+      if (newStatus === 'completed' && t.status !== 'completed') updates.completed_at = new Date().toISOString();
+      else if (newStatus !== 'completed') updates.completed_at = null;
+      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      if (error) { showToast('Failed: ' + error.message, 'error'); return; }
+      Object.assign(t, updates);
+      closeTaskModal(); renderSummary(); renderPhases(); renderCostSummary();
+      showToast(`${t.task_code} updated`, 'success');
+    };
+
+    // ── Helpers ──
+    function esc(str) { return str ? str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+    function showToast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    // ── Boot ──
+    checkSession();
+  </script>
+</body>
+</html>
