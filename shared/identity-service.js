@@ -149,12 +149,24 @@ export const identityService = {
    * @returns {Promise<{token: string, uploadUrl: string}>}
    */
   async requestAssociateVerification(appUserId, createdBy = null) {
+    // Resolve person_id from app_users (required by upload_tokens)
+    const { data: appUser } = await supabase
+      .from('app_users')
+      .select('person_id')
+      .eq('id', appUserId)
+      .single();
+
+    if (!appUser?.person_id) {
+      throw new Error('No person record linked to this user. Please contact an admin.');
+    }
+
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const { data: token, error } = await supabase
       .from('upload_tokens')
       .insert({
+        person_id: appUser.person_id,
         app_user_id: appUserId,
         token_type: 'identity_verification',
         expires_at: expiresAt.toISOString(),
