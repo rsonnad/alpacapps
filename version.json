@@ -1,12 +1,12 @@
 {
-  "version": "v260306.09 10:53a",
-  "release": 477,
-  "sha": "71d41114d",
-  "fullSha": "71d41114d0b4ddb02b092ac28747fde5c226fa8d",
+  "version": "v260306.10 10:55a",
+  "release": 478,
+  "sha": "1a5ba9181",
+  "fullSha": "1a5ba91812b22178c5f976c52bb93ac7540aa482",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 16:53:04+00",
-  "commits": [{"sha":"10e045fc5","message":"Update visiting page self-service guidance text","author":"Rahul"},{"sha":"71d41114d","message":"Merge branch 'musing-kirch'","author":"Rahul"}]
+  "pushedAt": "2026-03-06 16:55:59+00",
+  "commits": [{"sha":"d482365cd","message":"Update visiting page: add self-reliant, contact page link, bold pai email","author":"Rahul"},{"sha":"1a5ba9181","message":"Merge branch 'musing-kirch'","author":"Rahul"}]
 }
