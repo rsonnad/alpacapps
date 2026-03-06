@@ -312,7 +312,10 @@ serve(async (req) => {
               }
             );
             const data = await res.json();
-            if (!res.ok) return { deviceId: device.sdm_device_id, error: true };
+            if (!res.ok) {
+              console.error(`SDM API error for ${device.room_name}: ${res.status}`, JSON.stringify(data));
+              return { deviceId: device.sdm_device_id, roomName: device.room_name, error: true, status: res.status, message: data?.error?.message || JSON.stringify(data) };
+            }
 
             const state = {
               currentTempC:
@@ -383,20 +386,110 @@ serve(async (req) => {
           })
         );
 
-        const results = states
+        let results = states
           .filter((s) => s.status === "fulfilled")
           .map((s) => (s as PromiseFulfilledResult<any>).value);
+        const rejected = states
+          .filter((s) => s.status === "rejected")
+          .map((s) => ({ error: true, reason: (s as PromiseRejectedResult).reason?.message || String((s as PromiseRejectedResult).reason) }));
+
+        // Auto-sync: if any device returned 404, device IDs may have changed
+        const notFoundDevices = results.filter((r) => r.error && r.status === 404);
+        let synced = false;
+        if (notFoundDevices.length > 0) {
+          console.log(`[nest-control] ${notFoundDevices.length} device(s) returned 404 — attempting auto-sync`);
+          try {
+            const listRes = await fetch(
+              `${SDM_BASE_URL}/enterprises/${config.sdm_project_id}/devices`,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            if (listRes.ok) {
+              const listData = await listRes.json();
+              const sdmDevices = (listData.devices || []).filter(
+                (d: any) => d.type === "sdm.devices.types.THERMOSTAT"
+              );
+
+              // Build room name → new device ID map
+              const roomToNewId: Record<string, string> = {};
+              for (const d of sdmDevices) {
+                const roomName = d.parentRelations?.[0]?.displayName;
+                if (roomName) {
+                  roomToNewId[roomName] = d.name; // d.name is the full SDM device path
+                }
+              }
+
+              // Update DB for each 404 device that has a matching room name
+              for (const failed of notFoundDevices) {
+                const newId = roomToNewId[failed.roomName];
+                if (newId && newId !== failed.deviceId) {
+                  console.log(`[nest-control] Syncing ${failed.roomName}: ${failed.deviceId} → ${newId}`);
+                  await supabase
+                    .from("nest_devices")
+                    .update({ sdm_device_id: newId })
+                    .eq("sdm_device_id", failed.deviceId);
+                  synced = true;
+
+                  // Retry fetch with new ID
+                  try {
+                    const retryRes = await fetch(
+                      `${SDM_BASE_URL}/${newId}`,
+                      { headers: { Authorization: `Bearer ${accessToken}` } }
+                    );
+                    if (retryRes.ok) {
+                      const retryData = await retryRes.json();
+                      const state = {
+                        currentTempC: retryData.traits?.["sdm.devices.traits.Temperature"]?.ambientTemperatureCelsius,
+                        currentTempF: retryData.traits?.["sdm.devices.traits.Temperature"]?.ambientTemperatureCelsius != null
+                          ? cToF(retryData.traits["sdm.devices.traits.Temperature"].ambientTemperatureCelsius) : null,
+                        humidity: retryData.traits?.["sdm.devices.traits.Humidity"]?.ambientHumidityPercent,
+                        mode: retryData.traits?.["sdm.devices.traits.ThermostatMode"]?.mode,
+                        hvacStatus: retryData.traits?.["sdm.devices.traits.ThermostatHvac"]?.status,
+                        ecoMode: retryData.traits?.["sdm.devices.traits.ThermostatEco"]?.mode,
+                        heatSetpointC: retryData.traits?.["sdm.devices.traits.ThermostatTemperatureSetpoint"]?.heatCelsius,
+                        coolSetpointC: retryData.traits?.["sdm.devices.traits.ThermostatTemperatureSetpoint"]?.coolCelsius,
+                        heatSetpointF: retryData.traits?.["sdm.devices.traits.ThermostatTemperatureSetpoint"]?.heatCelsius != null
+                          ? cToF(retryData.traits["sdm.devices.traits.ThermostatTemperatureSetpoint"].heatCelsius) : null,
+                        coolSetpointF: retryData.traits?.["sdm.devices.traits.ThermostatTemperatureSetpoint"]?.coolCelsius != null
+                          ? cToF(retryData.traits["sdm.devices.traits.ThermostatTemperatureSetpoint"].coolCelsius) : null,
+                        connectivity: retryData.traits?.["sdm.devices.traits.Connectivity"]?.status,
+                        updatedAt: new Date().toISOString(),
+                      };
+                      await supabase
+                        .from("nest_devices")
+                        .update({ last_state: state, updated_at: new Date().toISOString() })
+                        .eq("sdm_device_id", newId);
+                      // Replace error result with successful one
+                      results = results.map((r) =>
+                        r.deviceId === failed.deviceId
+                          ? { deviceId: newId, roomName: failed.roomName, state }
+                          : r
+                      );
+                    }
+                  } catch (retryErr) {
+                    console.error(`[nest-control] Retry failed for ${failed.roomName}:`, retryErr);
+                  }
+                }
+              }
+            }
+          } catch (syncErr) {
+            console.error("[nest-control] Auto-sync failed:", syncErr);
+          }
+        }
 
         await logApiUsage(supabase, {
           vendor: "google_sdm",
           category: "nest_climate_control",
           endpoint: "getAllStates",
-          units: devices.length,
+          units: devices.length + (synced ? 1 : 0), // +1 for list call if sync happened
           unit_type: "api_calls",
           estimated_cost_usd: 0,
           app_user_id: userId,
         });
-        return jsonResponse({ devices: results });
+        return jsonResponse({
+          devices: results.filter((r) => !r.error),
+          ...(synced ? { synced: true } : {}),
+          ...(rejected.length > 0 ? { errors: rejected } : {}),
+        });
       }
 
       case "setTemperature": {
