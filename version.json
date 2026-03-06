@@ -1,12 +1,12 @@
 {
-  "version": "v260306.04 1:44a",
-  "release": 472,
-  "sha": "066957cdb",
-  "fullSha": "066957cdb90934b9676813b5385607dc91019374",
+  "version": "v260306.05 1:45a",
+  "release": 473,
+  "sha": "376d239ce",
+  "fullSha": "376d239ce7b236d0d72a78c5f3621b9d457e6f20",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 07:44:04+00",
-  "commits": [{"sha":"f7a4711c2","message":"Update thaivisa title and add site header to pages index","author":"Rahul"},{"sha":"066957cdb","message":"Merge: update thaivisa title and add site header to pages index","author":"Rahul"}]
+  "pushedAt": "2026-03-06 07:45:46+00",
+  "commits": [{"sha":"6f89abb08","message":"Add OG tags with hero image to thaivisa page","author":"Rahul"},{"sha":"376d239ce","message":"Merge branch 'intelligent-chatelet'","author":"Rahul"}]
 }
