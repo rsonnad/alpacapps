@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Plan — 160 Still Forest Dr</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #1c1618;
+    color: #faf9f6;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #d4883a;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #a09080;
+    margin-bottom: 16px;
+  }
+
+  .plan-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #faf9f6;
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Legend */
+  .legend {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .legend-card {
+    background: #2a2224;
+    border-radius: 8px;
+    padding: 12px 14px;
+    border-left: 4px solid #d4883a;
+  }
+
+  .legend-card h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #d4883a;
+    margin-bottom: 6px;
+  }
+
+  .legend-card p {
+    font-size: 0.78rem;
+    color: #c0b0a0;
+    line-height: 1.4;
+  }
+
+  .legend-card.violation {
+    border-left-color: #e53e3e;
+  }
+
+  .legend-card.violation h3 {
+    color: #e53e3e;
+  }
+
+  .legend-card.ok {
+    border-left-color: #38a169;
+  }
+
+  .legend-card.ok h3 {
+    color: #38a169;
+  }
+
+  .legend-card.utility {
+    border-left-color: #4299e1;
+  }
+
+  .legend-card.utility h3 {
+    color: #4299e1;
+  }
+
+  .setback-summary {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    background: #2a2224;
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+
+  .setback-summary h2 {
+    font-size: 1rem;
+    color: #d4883a;
+    margin-bottom: 10px;
+  }
+
+  .setback-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .setback-table th {
+    text-align: left;
+    color: #a09080;
+    font-weight: 500;
+    padding: 6px 8px;
+    border-bottom: 1px solid #3a2a2e;
+  }
+
+  .setback-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #2e2226;
+    color: #d0c0b0;
+  }
+
+  .setback-table .violation-row td {
+    color: #fc8181;
+  }
+
+  .setback-table .ok-row td {
+    color: #68d391;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .badge-violation {
+    background: #e53e3e22;
+    color: #fc8181;
+    border: 1px solid #e53e3e44;
+  }
+
+  .badge-ok {
+    background: #38a16922;
+    color: #68d391;
+    border: 1px solid #38a16944;
+  }
+
+  .notes {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    background: #2a2224;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 0.82rem;
+    color: #a09080;
+    line-height: 1.5;
+  }
+
+  .notes h2 {
+    font-size: 1rem;
+    color: #d4883a;
+    margin-bottom: 8px;
+  }
+
+  .notes ul { padding-left: 20px; }
+  .notes li { margin-bottom: 4px; }
+
+  @media print {
+    body { background: white; color: black; padding: 10px; }
+    .legend-card { background: #f5f5f5; border: 1px solid #ccc; }
+    .legend-card h3, .legend-card p { color: #333; }
+    .setback-summary, .notes { background: #f5f5f5; color: #333; }
+    .setback-summary h2, .notes h2 { color: #333; }
+    .setback-table th, .setback-table td { color: #333; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Preliminary Site Plan — 160 Still Forest Dr</h1>
+<p class="subtitle">Cedar Creek, TX 78612 &bull; PID 44401 &bull; Lot 14-B, Block 6 &bull; 1.7348 Acres (75,133 SF) &bull; NOT TO SCALE &bull; March 2026</p>
+
+<div class="plan-container">
+<svg viewBox="0 0 800 620" width="800" height="620" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+  <defs>
+    <!-- Setback dash pattern -->
+    <pattern id="setbackHatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#e53e3e" stroke-width="1" opacity="0.15"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="620" fill="#f7f4ef"/>
+
+  <!-- ===== PROPERTY BOUNDARY ===== -->
+  <!-- Approximate: 200ft wide x 375ft deep → Scale: 1px = ~0.5ft -->
+  <!-- Using viewbox coords: property from (80,60) to (720,560) = 640 x 500 px -->
+  <!-- Scale: 640px / 200ft = 3.2 px/ft horizontal, 500px / 375ft = 1.33 px/ft vertical -->
+  <!-- Normalize to ~2 px/ft for readability -->
+
+  <!-- Property outline -->
+  <rect x="80" y="60" width="640" height="500" fill="none" stroke="#2d5016" stroke-width="3" stroke-dasharray="12,4"/>
+
+  <!-- Road (Still Forest Dr / CR 329) at bottom -->
+  <rect x="30" y="560" width="740" height="55" fill="#d4c8b0" opacity="0.4"/>
+  <text x="400" y="593" text-anchor="middle" font-size="13" fill="#5a4a30" font-weight="600">STILL FOREST DRIVE (County Road 329) — 60' ROW</text>
+  <line x1="30" y1="560" x2="770" y2="560" stroke="#8a7a60" stroke-width="2"/>
+
+  <!-- ===== SETBACK LINES ===== -->
+  <!-- Front setback: 25ft from road ROW = ~50px from bottom property line -->
+  <rect x="80" y="510" width="640" height="50" fill="url(#setbackHatch)" opacity="0.5"/>
+  <line x1="80" y1="510" x2="720" y2="510" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="85" y="540" font-size="9" fill="#e53e3e" font-weight="500">25' FRONT SETBACK</text>
+
+  <!-- Side setback left: 15ft = ~30px -->
+  <rect x="80" y="60" width="30" height="500" fill="url(#setbackHatch)" opacity="0.5"/>
+  <line x1="110" y1="60" x2="110" y2="560" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="83" y="300" font-size="9" fill="#e53e3e" font-weight="500" transform="rotate(-90, 83, 300)">15' SIDE SETBACK</text>
+
+  <!-- Side setback right: 15ft = ~30px -->
+  <rect x="690" y="60" width="30" height="500" fill="url(#setbackHatch)" opacity="0.5"/>
+  <line x1="690" y1="60" x2="690" y2="560" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="717" y="300" font-size="9" fill="#e53e3e" font-weight="500" transform="rotate(90, 717, 300)">15' SIDE SETBACK</text>
+
+  <!-- Rear setback: 15ft = ~30px from top -->
+  <rect x="80" y="60" width="640" height="30" fill="url(#setbackHatch)" opacity="0.5"/>
+  <line x1="80" y1="90" x2="720" y2="90" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="400" y="78" text-anchor="middle" font-size="9" fill="#e53e3e" font-weight="500">15' REAR SETBACK</text>
+
+  <!-- ===== DRIVEWAY ===== -->
+  <path d="M 360,560 L 350,480 Q 345,440 360,400 L 380,340 Q 395,310 400,280" stroke="#b8a888" stroke-width="24" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M 360,560 L 350,480 Q 345,440 360,400 L 380,340 Q 395,310 400,280" stroke="#8a7860" stroke-width="2" fill="none" stroke-dasharray="4,6"/>
+  <text x="325" y="470" font-size="8" fill="#6a5a40" transform="rotate(-80, 325, 470)">GRAVEL DRIVE</text>
+
+  <!-- ===== GATE ===== -->
+  <rect x="345" y="554" width="40" height="8" fill="#8a7050" rx="2"/>
+  <text x="365" y="552" text-anchor="middle" font-size="7" fill="#5a4a30" font-weight="500">GATE</text>
+  <!-- Stone pillars -->
+  <rect x="338" y="552" width="8" height="12" fill="#a09070" rx="1"/>
+  <rect x="384" y="552" width="8" height="12" fill="#a09070" rx="1"/>
+
+  <!-- ===== STRUCTURES ===== -->
+
+  <!-- 1. MAIN HOUSE (2-story stone/frame) ~40x50ft — center of property -->
+  <rect x="340" y="200" width="120" height="100" fill="#c4a87a" stroke="#8a7050" stroke-width="2" rx="3"/>
+  <text x="400" y="240" text-anchor="middle" font-size="11" fill="#3a2a10" font-weight="700">MAIN HOUSE</text>
+  <text x="400" y="255" text-anchor="middle" font-size="8" fill="#5a4a30">2-Story Stone/Frame</text>
+  <text x="400" y="267" text-anchor="middle" font-size="8" fill="#5a4a30">~40' × 50'</text>
+  <text x="400" y="290" text-anchor="middle" font-size="7" fill="#4a6a3a">✓ Compliant</text>
+
+  <!-- 2. BIG TRAILER (10'x42') — 1'3" from LEFT side property line — CRITICAL VIOLATION -->
+  <rect x="82" y="300" width="84" height="22" fill="#e53e3e" stroke="#b71c1c" stroke-width="2" rx="2" opacity="0.8"/>
+  <text x="124" y="314" text-anchor="middle" font-size="8" fill="#fff" font-weight="600">BIG TRAILER 10'×42'</text>
+  <!-- Violation callout -->
+  <line x1="82" y1="311" x2="80" y2="311" stroke="#e53e3e" stroke-width="1"/>
+  <text x="75" y="308" text-anchor="end" font-size="7" fill="#e53e3e" font-weight="700">1'3"</text>
+  <text x="75" y="318" text-anchor="end" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+
+  <!-- 3. SMALL TRAILER (7'5"x20'5") — 6'9" from LEFT side — VIOLATION -->
+  <rect x="93" y="370" width="42" height="16" fill="#e57340" stroke="#c44a20" stroke-width="1.5" rx="2" opacity="0.8"/>
+  <text x="114" y="381" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">SM TRAILER</text>
+  <text x="114" y="392" text-anchor="middle" font-size="6" fill="#c44a20">7'5"×20'5"</text>
+  <!-- Violation callout -->
+  <line x1="93" y1="378" x2="80" y2="378" stroke="#e53e3e" stroke-width="1"/>
+  <text x="75" y="375" text-anchor="end" font-size="7" fill="#e53e3e" font-weight="700">6'9"</text>
+  <text x="75" y="385" text-anchor="end" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+
+  <!-- 4. RED CONTAINER ("Alpaca Playhouse") 40'x8' — 13'6" from RIGHT side — VIOLATION -->
+  <rect x="582" y="460" width="108" height="18" fill="#c62828" stroke="#8b0000" stroke-width="2" rx="2"/>
+  <text x="636" y="472" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">RED CONTAINER 40'×8'</text>
+  <text x="636" y="483" text-anchor="middle" font-size="6" fill="#c62828">"Alpaca Playhouse"</text>
+  <!-- Violation callout -->
+  <line x1="690" y1="469" x2="720" y2="469" stroke="#e53e3e" stroke-width="1"/>
+  <text x="722" y="467" font-size="7" fill="#e53e3e" font-weight="700">13'6"</text>
+  <text x="722" y="477" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+
+  <!-- 5. BEIGE CONTAINER (~20'x8') — 7'1" from FRONT gate area — VIOLATION -->
+  <rect x="510" y="520" width="50" height="18" fill="#c8b48a" stroke="#8a7050" stroke-width="1.5" rx="2"/>
+  <text x="535" y="532" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="600">BEIGE 20'×8'</text>
+  <!-- Violation callout -->
+  <line x1="535" y1="538" x2="535" y2="555" stroke="#e53e3e" stroke-width="1"/>
+  <text x="535" y="550" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="700">7'1" from front</text>
+  <text x="535" y="558" text-anchor="middle" font-size="6" fill="#e53e3e">⚠ NEEDS 25'</text>
+
+  <!-- 6. CONTAINER NEAR HOUSE (40'x8') — 4'10" from LEFT property line — VIOLATION -->
+  <rect x="90" y="210" width="80" height="18" fill="#8B4513" stroke="#5a2d0a" stroke-width="1.5" rx="2" opacity="0.85"/>
+  <text x="130" y="222" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">CONTAINER 40'×8'</text>
+  <!-- Violation callout -->
+  <line x1="90" y1="219" x2="80" y2="219" stroke="#e53e3e" stroke-width="1"/>
+  <text x="75" y="216" text-anchor="end" font-size="7" fill="#e53e3e" font-weight="700">4'10"</text>
+  <text x="75" y="226" text-anchor="end" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+
+  <!-- 7. BATHROOM BUILDING (under construction) — 10' from RIGHT side — VIOLATION -->
+  <rect x="630" y="300" width="50" height="40" fill="#FFB74D" stroke="#E65100" stroke-width="2" rx="3" stroke-dasharray="6,3"/>
+  <text x="655" y="316" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="700">BATHROOM</text>
+  <text x="655" y="326" text-anchor="middle" font-size="6" fill="#E65100">UNDER CONST.</text>
+  <text x="655" y="336" text-anchor="middle" font-size="6" fill="#5a4a30">2 toilets + shower</text>
+  <!-- Violation callout -->
+  <line x1="680" y1="320" x2="720" y2="320" stroke="#e53e3e" stroke-width="1"/>
+  <text x="722" y="318" font-size="7" fill="#e53e3e" font-weight="700">10'</text>
+  <text x="722" y="328" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+  <!-- Construction warning -->
+  <text x="655" y="350" text-anchor="middle" font-size="6" fill="#E65100" font-weight="700">⚠ NO PERMIT</text>
+
+  <!-- 8. DECK — 13'10" from LEFT side — VIOLATION (close) -->
+  <rect x="108" y="140" width="60" height="40" fill="#d4a55a" stroke="#8a6a30" stroke-width="1.5" rx="2" opacity="0.6"/>
+  <path d="M 108,140 L 168,140 L 168,180 L 108,180 Z" fill="none" stroke="#8a6a30" stroke-width="1"/>
+  <!-- Deck planking lines -->
+  <line x1="115" y1="140" x2="115" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <line x1="125" y1="140" x2="125" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <line x1="135" y1="140" x2="135" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <line x1="145" y1="140" x2="145" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <line x1="155" y1="140" x2="155" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <line x1="165" y1="140" x2="165" y2="180" stroke="#8a6a30" stroke-width="0.5" opacity="0.4"/>
+  <text x="138" y="163" text-anchor="middle" font-size="8" fill="#3a2a10" font-weight="600">DECK</text>
+  <!-- Violation callout -->
+  <line x1="108" y1="160" x2="80" y2="160" stroke="#e53e3e" stroke-width="1"/>
+  <text x="75" y="157" text-anchor="end" font-size="7" fill="#e53e3e" font-weight="700">13'10"</text>
+  <text x="75" y="167" text-anchor="end" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+
+  <!-- 9. SAUNA — 30' from LEFT side — OK -->
+  <rect x="140" y="105" width="35" height="30" fill="#8B6914" stroke="#5a4a10" stroke-width="1.5" rx="3"/>
+  <text x="157" y="122" text-anchor="middle" font-size="8" fill="#fff" font-weight="600">SAUNA</text>
+  <!-- OK callout -->
+  <line x1="140" y1="120" x2="110" y2="120" stroke="#38a169" stroke-width="1"/>
+  <text x="108" y="118" text-anchor="end" font-size="7" fill="#38a169" font-weight="600">30' ✓</text>
+
+  <!-- 10. AUXILIARY BUILDING (1-story wood) — 30.5' from REAR — OK -->
+  <rect x="300" y="95" width="80" height="40" fill="#7B5B3A" stroke="#4a3a20" stroke-width="1.5" rx="3"/>
+  <text x="340" y="112" text-anchor="middle" font-size="8" fill="#fff" font-weight="600">AUXILIARY BLDG</text>
+  <text x="340" y="124" text-anchor="middle" font-size="7" fill="#d4c0a0">1-Story Wood</text>
+  <!-- OK callout -->
+  <line x1="340" y1="95" x2="340" y2="60" stroke="#38a169" stroke-width="1"/>
+  <text x="340" y="56" text-anchor="middle" font-size="7" fill="#38a169" font-weight="600">30.5' from rear ✓</text>
+
+  <!-- ===== UTILITIES ===== -->
+
+  <!-- Septic tank lids (near main house, left side back) -->
+  <circle cx="290" y="180" r="8" fill="none" stroke="#4299e1" stroke-width="2"/>
+  <circle cx="310" y="180" r="8" fill="none" stroke="#4299e1" stroke-width="2"/>
+  <text x="300" y="197" text-anchor="middle" font-size="7" fill="#4299e1" font-weight="500">SEPTIC TANKS</text>
+  <text x="300" y="206" text-anchor="middle" font-size="6" fill="#4299e1">Aerobic (JET INC)</text>
+
+  <!-- Septic control panel (on main house wall) -->
+  <rect x="338" y="198" width="8" height="6" fill="#4299e1" rx="1"/>
+  <text x="335" y="196" text-anchor="end" font-size="6" fill="#4299e1">Septic Panel</text>
+
+  <!-- Water meter (near front, right side) -->
+  <rect x="460" y="540" width="10" height="8" fill="#4299e1" rx="2"/>
+  <text x="475" y="546" font-size="7" fill="#4299e1" font-weight="500">WATER METER</text>
+
+  <!-- Electric meter (near bathroom building area) -->
+  <rect x="620" y="355" width="8" height="10" fill="#f6ad55" rx="1"/>
+  <text x="615" y="372" text-anchor="end" font-size="6" fill="#f6ad55">ELEC METER</text>
+
+  <!-- Power pole -->
+  <circle cx="630" y="545" r="5" fill="#8a7050" stroke="#5a4a30" stroke-width="1.5"/>
+  <text x="645" y="548" font-size="7" fill="#5a4a30" font-weight="500">POWER POLE</text>
+
+  <!-- Electrical panels on main house -->
+  <rect x="460" y="248" width="6" height="8" fill="#f6ad55" rx="1"/>
+  <text x="470" y="253" font-size="6" fill="#f6ad55">PANELS (FRONT/MID PP)</text>
+
+  <!-- ===== PROPERTY LABELS ===== -->
+
+  <!-- North arrow -->
+  <g transform="translate(750, 35)">
+    <polygon points="0,-20 -6,0 0,-5 6,0" fill="#5a4a30"/>
+    <text x="0" y="12" text-anchor="middle" font-size="10" fill="#5a4a30" font-weight="700">N</text>
+  </g>
+
+  <!-- Property line labels -->
+  <text x="80" y="55" font-size="8" fill="#2d5016" font-weight="500">REAR PROPERTY LINE</text>
+  <text x="400" y="578" text-anchor="middle" font-size="8" fill="#2d5016" font-weight="500">FRONT PROPERTY LINE (ROAD ROW)</text>
+  <text x="78" y="320" font-size="8" fill="#2d5016" font-weight="500" transform="rotate(-90, 78, 320)">LEFT (SIDE) PROPERTY LINE</text>
+  <text x="722" y="320" font-size="8" fill="#2d5016" font-weight="500" transform="rotate(90, 722, 320)">RIGHT (SIDE) PROPERTY LINE</text>
+
+  <!-- Scale note -->
+  <text x="80" y="615" font-size="8" fill="#8a7a60">⚠ PRELIMINARY — NOT TO SCALE — For planning purposes only. PE-stamped site plan required for IDP submission.</text>
+
+  <!-- Trees (decorative, scattered) -->
+  <circle cx="200" cy="420" r="12" fill="#4a7a2a" opacity="0.3"/>
+  <circle cx="250" cy="350" r="10" fill="#4a7a2a" opacity="0.25"/>
+  <circle cx="500" cy="150" r="14" fill="#4a7a2a" opacity="0.3"/>
+  <circle cx="580" cy="200" r="11" fill="#4a7a2a" opacity="0.25"/>
+  <circle cx="450" cy="380" r="13" fill="#4a7a2a" opacity="0.3"/>
+  <circle cx="220" cy="500" r="10" fill="#4a7a2a" opacity="0.25"/>
+  <circle cx="600" cy="420" r="12" fill="#4a7a2a" opacity="0.3"/>
+  <circle cx="180" cy="260" r="9" fill="#4a7a2a" opacity="0.25"/>
+  <circle cx="530" cy="300" r="11" fill="#4a7a2a" opacity="0.3"/>
+
+  <!-- Fence segments (from photos - metal fence along sides, wood fence at rear) -->
+  <line x1="80" y1="60" x2="720" y2="60" stroke="#7a6a50" stroke-width="2" opacity="0.4"/>
+  <text x="400" y="68" text-anchor="middle" font-size="6" fill="#7a6a50">WOOD FENCE</text>
+  <line x1="80" y1="60" x2="80" y2="560" stroke="#555" stroke-width="1.5" opacity="0.3"/>
+  <text x="100" y="425" font-size="6" fill="#555" transform="rotate(-90, 100, 425)">METAL FENCE</text>
+  <line x1="720" y1="60" x2="720" y2="560" stroke="#555" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- Title block -->
+  <rect x="470" y="90" width="210" height="65" fill="#faf9f6" stroke="#c0b0a0" stroke-width="1" rx="4"/>
+  <text x="575" y="107" text-anchor="middle" font-size="9" fill="#3a2a10" font-weight="700">160 STILL FOREST DR</text>
+  <text x="575" y="118" text-anchor="middle" font-size="7" fill="#5a4a30">Cedar Creek, TX 78612 • PID 44401</text>
+  <text x="575" y="129" text-anchor="middle" font-size="7" fill="#5a4a30">Lot 14-B, Block 6, Blue Bonnet Acres</text>
+  <text x="575" y="140" text-anchor="middle" font-size="7" fill="#5a4a30">1.7348 Acres (75,133 SF)</text>
+  <text x="575" y="150" text-anchor="middle" font-size="6" fill="#8a7a60">Flood Zone X (Unshaded) — NOT in Floodplain</text>
+
+</svg>
+</div>
+
+<!-- SETBACK VIOLATIONS TABLE -->
+<div class="setback-summary">
+  <h2>Setback Compliance Summary</h2>
+  <table class="setback-table">
+    <thead>
+      <tr>
+        <th>Structure</th>
+        <th>Distance from Line</th>
+        <th>Required</th>
+        <th>Deficit</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="violation-row">
+        <td><strong>Big Trailer</strong> (10'×42')</td>
+        <td>1'3" from left side</td>
+        <td>15' (side)</td>
+        <td>13'9" short</td>
+        <td><span class="badge badge-violation">CRITICAL</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Container near House</strong> (40'×8')</td>
+        <td>4'10" from left side</td>
+        <td>15' (side)</td>
+        <td>10'2" short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Small Trailer</strong> (7'5"×20'5")</td>
+        <td>6'9" from left side</td>
+        <td>15' (side)</td>
+        <td>8'3" short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Beige Container</strong> (~20'×8')</td>
+        <td>7'1" from front</td>
+        <td>25' (front/ROW)</td>
+        <td>17'11" short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Bathroom Bldg</strong> (under const.)</td>
+        <td>10' from right side</td>
+        <td>15' (side)</td>
+        <td>5' short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Red Container</strong> (40'×8')</td>
+        <td>13'6" from right side</td>
+        <td>15' (side)</td>
+        <td>1'6" short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="violation-row">
+        <td><strong>Deck</strong></td>
+        <td>13'10" from left side</td>
+        <td>15' (side)</td>
+        <td>1'2" short</td>
+        <td><span class="badge badge-violation">VIOLATION</span></td>
+      </tr>
+      <tr class="ok-row">
+        <td><strong>Sauna</strong></td>
+        <td>30' from left side</td>
+        <td>15' (side)</td>
+        <td>—</td>
+        <td><span class="badge badge-ok">OK</span></td>
+      </tr>
+      <tr class="ok-row">
+        <td><strong>Auxiliary Building</strong></td>
+        <td>30.5' from rear</td>
+        <td>15' (rear)</td>
+        <td>—</td>
+        <td><span class="badge badge-ok">OK</span></td>
+      </tr>
+      <tr class="ok-row">
+        <td><strong>Main House</strong></td>
+        <td>Center of property</td>
+        <td>All setbacks</td>
+        <td>—</td>
+        <td><span class="badge badge-ok">OK</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-card violation">
+    <h3>⚠ 7 Setback Violations</h3>
+    <p>7 of 10 structures are inside required setback zones. The Big Trailer (1'3" from side) is the most critical — must be relocated or obtain a variance. Bastrop County requires 25' from public ROW, 15' from property lines, and 20' between rental units.</p>
+  </div>
+  <div class="legend-card utility">
+    <h3>🔧 Existing Utilities</h3>
+    <p><strong>Septic:</strong> Aerobic system (JET INC), serviced by Larry's Septic Tank Service (512-695-6570). Two tank lids visible.<br>
+    <strong>Water:</strong> Active water meter at front.<br>
+    <strong>Electric:</strong> Digital meter + sub-panels (FRONT PP, MIDDLE PP).<br>
+    <strong>Gas:</strong> Not observed — confirm if applicable.</p>
+  </div>
+  <div class="legend-card">
+    <h3>📋 Required County Setbacks</h3>
+    <p><strong>25'</strong> from public road ROW (Still Forest Dr)<br>
+    <strong>15'</strong> from all property lines (side + rear)<br>
+    <strong>10'</strong> from internal roads<br>
+    <strong>20'</strong> between each lodging unit (w/ slide-outs)</p>
+  </div>
+  <div class="legend-card ok">
+    <h3>✓ Compliant Structures</h3>
+    <p><strong>Main House</strong> — center of property, well within all setbacks.<br>
+    <strong>Sauna</strong> — 30' from side (15' over requirement).<br>
+    <strong>Auxiliary Building</strong> — 30.5' from rear (15.5' over requirement).</p>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="notes">
+  <h2>Notes & Next Steps</h2>
+  <ul>
+    <li><strong>Bathroom Building:</strong> Construction already started WITHOUT a permit — this is a Class B misdemeanor per Bastrop County Lodging/RV Infrastructure Requirements Section III. Must disclose proactively at pre-development meeting.</li>
+    <li><strong>Septic System:</strong> Existing aerobic system (JET INC) with Larry's Septic Tank Service maintaining it. Need OSSF permit application — contact licensed septic designer for evaluation. Existing soil evaluation report from 2000 may need updating.</li>
+    <li><strong>Structure Relocations Needed:</strong> Big Trailer must move at least 13'9" further from left side property line. Small Trailer needs to move ~8'3". Container near house needs to move ~10'2". These are the minimum moves to achieve compliance.</li>
+    <li><strong>This plan is preliminary</strong> — a PE (Professional Engineer) must create the official stamped site plan for the IDP submission. This draft helps identify issues before hiring the engineer.</li>
+    <li><strong>Photos taken:</strong> March 6, 2026 — 30 photos documenting all structures, measurements, and utility infrastructure.</li>
+    <li><strong>Survey reference:</strong> 2/4/2021, 4Ward Land Surveying, Jason Ward R.P.L.S. #5811</li>
+  </ul>
+</div>
+
+</body>
+</html>
