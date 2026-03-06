@@ -1,12 +1,12 @@
 {
-  "version": "v260306.12 11:20a",
-  "release": 480,
-  "sha": "b982d22a7",
-  "fullSha": "b982d22a7f4cd760b4dd978eab2986c30d077806",
+  "version": "v260306.13 11:44a",
+  "release": 481,
+  "sha": "28133edf9",
+  "fullSha": "28133edf9e66d09d9fd8a400c8cc6ed7cb7ac7ea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 17:20:52+00",
-  "commits": [{"sha":"b982d22a7","message":"Port missing content from original Squarespace site to resident guides","author":"Rahul"}]
+  "pushedAt": "2026-03-06 17:44:34+00",
+  "commits": [{"sha":"28133edf9","message":"Fix pingSupabase() to use specific table endpoint instead of bare /rest/v1/","author":"Rahul"}]
 }
