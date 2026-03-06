@@ -1,12 +1,12 @@
 {
-  "version": "v260306.06 1:48a",
-  "release": 474,
-  "sha": "f907d2c11",
-  "fullSha": "f907d2c1114c30cbacfb2e0eeba33346cd49ed8c",
+  "version": "v260306.07 2:18a",
+  "release": 475,
+  "sha": "a0b6d8110",
+  "fullSha": "a0b6d8110eee7620da25d5bb9652f6cd5996bb79",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 07:48:00+00",
-  "commits": [{"sha":"d25835d85","message":"Add greetings image at bottom of thaivisa page","author":"Rahul"},{"sha":"f907d2c11","message":"Merge: add greetings image to thaivisa page","author":"Rahul"}]
+  "pushedAt": "2026-03-06 08:18:03+00",
+  "commits": [{"sha":"1bb5aa252","message":"Add Thai translation of US Visa Playbook + language switcher","author":"Rahul"},{"sha":"a0b6d8110","message":"Merge branch 'intelligent-chatelet'","author":"Rahul"}]
 }
