@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thai Visa Strategy Guide</title>
+  <meta name="description" content="A practical guide for Thai nationals to build a strong B-1/B-2 US visa application using a small bootstrapped business.">
+  <meta property="og:title" content="Thai Visa Strategy Guide">
+  <meta property="og:description" content="How to build a strong US visa application with a $300 bootstrapped business.">
+  <meta property="og:type" content="article">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --surface-alt: #f0eeeb;
+      --text: #1a1a1a;
+      --text-secondary: #5f6368;
+      --text-muted: #8c8c8c;
+      --accent: #4a6cf7;
+      --accent-light: #e8edff;
+      --green: #0d9f6e;
+      --green-light: #def7ec;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --teal: #0891b2;
+      --teal-light: #e0f7fa;
+      --border: #e5e5e5;
+      --border-light: #f0f0f0;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+      color: white;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+    .header-content { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+    .header-flag { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      font-weight: 400;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .header-badges {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.25rem;
+    }
+    .header-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 1.5rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .section-header p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.1rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Pill / Tag ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .pill-blue { background: var(--accent-light); color: var(--accent); }
+    .pill-green { background: var(--green-light); color: var(--green); }
+    .pill-amber { background: var(--amber-light); color: var(--amber); }
+    .pill-red { background: var(--red-light); color: var(--red); }
+    .pill-purple { background: var(--purple-light); color: var(--purple); }
+    .pill-teal { background: var(--teal-light); color: var(--teal); }
+
+    /* ── Table ── */
+    .info-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .info-table th, .info-table td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .info-table th {
+      background: var(--surface-alt);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table td:first-child { font-weight: 500; }
+
+    /* ── List ── */
+    .check-list { list-style: none; padding: 0; }
+    .check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .check-list li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .bullet-list { list-style: none; padding: 0; }
+    .bullet-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.35rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .bullet-list li .icon {
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      margin-top: 0.05rem;
+    }
+
+    /* ── Step Indicator ── */
+    .steps { counter-reset: step; }
+    .step {
+      display: flex;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .step-content h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .step-content p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .step-detail {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 1.25rem;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -2rem;
+      top: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: white;
+      z-index: 1;
+    }
+    .timeline-item h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .timeline-item p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* ── Callout ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .callout-green { background: var(--green-light); border: 1px solid #bbf7d0; }
+    .callout-amber { background: var(--amber-light); border: 1px solid #fde68a; }
+    .callout-red { background: var(--red-light); border: 1px solid #fecaca; }
+    .callout-blue { background: var(--accent-light); border: 1px solid #bfdbfe; }
+    .callout strong { font-weight: 600; }
+
+    /* ── Grid ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 520px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Stat card ── */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.1rem;
+    }
+    .stat-card .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 500;
+    }
+
+    /* ── Interview Q&A ── */
+    .qa {
+      border-bottom: 1px solid var(--border-light);
+      padding: 0.85rem 0;
+    }
+    .qa:last-child { border-bottom: none; }
+    .qa-q {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .qa-a {
+      font-size: 0.85rem;
+      color: var(--text);
+      background: var(--surface-alt);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      line-height: 1.55;
+      border-left: 3px solid var(--green);
+    }
+
+    /* ── Do / Don't ── */
+    .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 520px) { .do-dont { grid-template-columns: 1fr; } }
+    .do-col, .dont-col {
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-size: 0.8rem;
+    }
+    .do-col { background: var(--green-light); border: 1px solid #bbf7d0; }
+    .dont-col { background: var(--red-light); border: 1px solid #fecaca; }
+    .do-col h4, .dont-col h4 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .do-col li, .dont-col li {
+      padding: 0.2rem 0;
+      color: var(--text);
+    }
+    .do-col ul, .dont-col ul {
+      list-style: none;
+      padding: 0;
+    }
+    .do-col li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+    .dont-col li::before { content: '✗ '; color: var(--red); font-weight: 700; }
+
+    /* ── Nav ── */
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      padding: 1rem 0;
+    }
+    .toc a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .toc a:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 520px) {
+      .header { padding: 2rem 1rem 1.75rem; }
+      .header h1 { font-size: 1.4rem; }
+      .container { padding: 1rem; }
+      .card { padding: 1rem; }
+    }
+
+    /* ── Script card ── */
+    .script-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+    .script-block .role {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+    .script-block .role-officer { color: #93c5fd; }
+    .script-block .role-you { color: #86efac; }
+    .script-block .answer {
+      padding-left: 0.75rem;
+      border-left: 2px solid #475569;
+      margin-bottom: 0.75rem;
+    }
+    .script-block .answer:last-child { margin-bottom: 0; }
+
+    /* ── Number badge ── */
+    .num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-flag">🇹🇭 → 🇺🇸</div>
+      <h1>US Visa Strategy Guide</h1>
+      <p>A practical plan for a Thai national to build a strong B-1/B-2 visa application with a small bootstrapped business</p>
+      <div class="header-badges">
+        <span class="header-badge">💰 ~$300 startup</span>
+        <span class="header-badge">📋 Sole proprietorship</span>
+        <span class="header-badge">🎯 Credibility-focused</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TABLE OF CONTENTS ═══════════ -->
+  <div class="container">
+    <div class="toc">
+      <a href="#overview">🛂 Visa Overview</a>
+      <a href="#criteria">🔍 What They Look For</a>
+      <a href="#why-business">💡 Why a Business Helps</a>
+      <a href="#business-model">🛍️ Business Model</a>
+      <a href="#registration">📝 Registration</a>
+      <a href="#budget">💵 Budget</a>
+      <a href="#tools">🤖 AI Tools</a>
+      <a href="#documents">📂 Documents</a>
+      <a href="#interview">🎤 Interview</a>
+      <a href="#timeline">📅 Timeline</a>
+      <a href="#script">💬 Interview Script</a>
+    </div>
+
+    <!-- ═══════════ 1. VISA OVERVIEW ═══════════ -->
+    <div class="section" id="overview">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--accent-light); color: var(--accent);">🛂</div>
+        <div>
+          <h2>B-1/B-2 Visa Overview</h2>
+          <p>Temporary visitor visa for business and tourism</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="info-table">
+          <tr><th style="width:40%">Feature</th><th>Details</th></tr>
+          <tr><td>Visa Type</td><td><span class="pill pill-blue">Non-immigrant</span></td></tr>
+          <tr><td>Typical Validity</td><td>10 years (multiple entry)</td></tr>
+          <tr><td>Maximum Stay</td><td>Up to 6 months per entry</td></tr>
+          <tr><td>Application</td><td>DS-160 + Embassy Interview</td></tr>
+          <tr><td>Fee</td><td>$185 USD</td></tr>
+          <tr><td>Embassy</td><td>US Embassy Bangkok</td></tr>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3><span class="pill pill-blue">B-1</span> Business Activities</h3>
+          <ul class="bullet-list">
+            <li><span class="icon">🤝</span> Business meetings</li>
+            <li><span class="icon">🔍</span> Market research</li>
+            <li><span class="icon">🤝</span> Exploring partnerships</li>
+            <li><span class="icon">🎪</span> Trade shows</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="pill pill-green">B-2</span> Tourism Activities</h3>
+          <ul class="bullet-list">
+            <li><span class="icon">✈️</span> Tourism</li>
+            <li><span class="icon">👥</span> Visiting friends</li>
+            <li><span class="icon">🎭</span> Cultural experiences</li>
+            <li><span class="icon">🏥</span> Medical visits</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout-blue">
+        <span class="callout-icon">ℹ️</span>
+        <div>Most Thai applicants receive a <strong>combined B-1/B-2 visa</strong>, covering both business and tourism purposes.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 2. WHAT THEY LOOK FOR ═══════════ -->
+    <div class="section" id="criteria">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--purple-light); color: var(--purple);">🔍</div>
+        <div>
+          <h2>What Immigration Looks For</h2>
+          <p>Under INA Section 214(b), you must prove you will return to Thailand</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>💼 Economic Ties</h3>
+          <ul class="check-list">
+            <li>A business you operate</li>
+            <li>Employment or clients</li>
+            <li>Ongoing income sources</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>👨‍👩‍👧 Social Ties</h3>
+          <ul class="check-list">
+            <li>Family in Thailand</li>
+            <li>Community connections</li>
+            <li>Responsibilities at home</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🏦 Financial Stability</h3>
+          <ul class="check-list">
+            <li>Bank statements</li>
+            <li>Business records</li>
+            <li>Ability to fund travel</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🎯 Clear Trip Purpose</h3>
+          <ul class="check-list">
+            <li>Tourism itinerary</li>
+            <li>Business meetings</li>
+            <li>Market exploration</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">💡</span>
+        <div>They don't require <strong>extreme wealth</strong> &mdash; just evidence that you have a life, income, and reasons to return to Thailand.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 3. WHY A BUSINESS HELPS ═══════════ -->
+    <div class="section" id="why-business">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--green-light); color: var(--green);">💡</div>
+        <div>
+          <h2>Why a Small Business Helps</h2>
+          <p>Demonstrates ongoing obligations in Thailand</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom: 0.75rem;">For a young applicant without property, a business helps demonstrate ties even without large capital.</p>
+        <ul class="check-list">
+          <li>Shows an active income source in Thailand</li>
+          <li>Shows a compelling reason to return</li>
+          <li>Shows initiative, credibility, and documentation</li>
+          <li>Provides concrete evidence for the interview</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">✅</span>
+        <div>US consulates <strong>do not require large capital</strong>. Many small online businesses globally start with $200&ndash;$500. Even a very small business can demonstrate ties if it is legitimate and active.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 4. BUSINESS MODEL ═══════════ -->
+    <div class="section" id="business-model">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--amber-light); color: var(--amber);">🛍️</div>
+        <div>
+          <h2>Business Model (Bootstrapped)</h2>
+          <p>Two options that fit your background and budget</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>🌿 Option 1: Thai Massage Products E-commerce</h3>
+          <p style="margin-bottom: 0.5rem;">A small online shop selling authentic Thai wellness items:</p>
+          <ul class="bullet-list">
+            <li><span class="icon">🧴</span> Thai herbal balms</li>
+            <li><span class="icon">🫧</span> Massage oils</li>
+            <li><span class="icon">🌾</span> Herbal compress balls</li>
+            <li><span class="icon">📦</span> Massage kits</li>
+          </ul>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
+            <span class="pill pill-purple">Etsy</span>
+            <span class="pill pill-teal">Shopify</span>
+            <span class="pill pill-amber">Instagram</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🎁 Option 2: Thai Wellness Gift Kits</h3>
+          <p style="margin-bottom: 0.5rem;">Curated product bundles for targeted customers:</p>
+          <ul class="bullet-list">
+            <li><span class="icon">🧖</span> Thai spa gift set</li>
+            <li><span class="icon">🍃</span> Herbal relaxation kit</li>
+            <li><span class="icon">💆</span> Massage starter kit</li>
+          </ul>
+          <p style="margin-top: 0.75rem; font-size: 0.8rem;"><strong>Target:</strong> Wellness enthusiasts, yoga studios, spa clients</p>
+        </div>
+      </div>
+
+      <div class="callout callout-blue">
+        <span class="callout-icon">🎯</span>
+        <div><strong>Why this works:</strong> Very low startup cost, authentic Thai product category, easy to export, and directly supports a B-1 narrative (market research in US).</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 5. REGISTRATION ═══════════ -->
+    <div class="section" id="registration">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--teal-light); color: var(--teal);">📝</div>
+        <div>
+          <h2>Sole Proprietorship Registration</h2>
+          <p>กิจการเจ้าของคนเดียว &mdash; the simplest business structure in Thailand</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h4>Choose a Business Name</h4>
+              <p>Example: "Chiang Mai Thai Wellness Shop"</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h4>Register with DBD</h4>
+              <p>Department of Business Development &mdash; DBD Biz Regist Online System</p>
+              <div class="step-detail">Documents: Thai ID card, address, business description &bull; Time: 1&ndash;3 days &bull; Fee: THB 20&ndash;50 (~$1&ndash;2)</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h4>Tax ID Registration</h4>
+              <p>Register with Thai Revenue Department</p>
+              <div class="step-detail">Revenue under THB 1.8M/year = No VAT registration required</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h4>Open a Bank Account (Optional)</h4>
+              <p>Shows business activity and revenue flow</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">📋</span>
+        <div><strong>Minimum capital requirement:</strong> None. A sole proprietorship requires very little capital and minimal paperwork.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 6. BUDGET ═══════════ -->
+    <div class="section" id="budget">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--amber-light); color: var(--amber);">💵</div>
+        <div>
+          <h2>Startup Budget</h2>
+          <p>~$300 total investment to get started</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="info-table">
+          <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
+          <tr><td>Business registration</td><td style="text-align:right">$2</td></tr>
+          <tr><td>📦 Inventory (products)</td><td style="text-align:right">$150</td></tr>
+          <tr><td>🎨 Packaging</td><td style="text-align:right">$30</td></tr>
+          <tr><td>📫 Shipping materials</td><td style="text-align:right">$20</td></tr>
+          <tr><td>🌐 Website / Etsy setup</td><td style="text-align:right">$0</td></tr>
+          <tr><td>🤖 AI tools (1 month)</td><td style="text-align:right">$20</td></tr>
+          <tr><td>🔧 Miscellaneous</td><td style="text-align:right">$50</td></tr>
+          <tr style="font-weight: 700; background: var(--surface-alt);">
+            <td>Total Startup</td><td style="text-align:right">~$272</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--green);">~$300</div>
+          <div class="stat-label">Total Investment</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--accent);">~$2,400</div>
+          <div class="stat-label">Year 1 Revenue Target</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 0.75rem;">
+        <h3>📊 Example First-Year Revenue</h3>
+        <table class="info-table" style="margin-top: 0.5rem;">
+          <tr><td>Products sold</td><td style="text-align:right">~120</td></tr>
+          <tr><td>Average price</td><td style="text-align:right">$20</td></tr>
+          <tr style="font-weight: 700;"><td>Projected revenue</td><td style="text-align:right">~$2,400</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════ 7. AI TOOLS ═══════════ -->
+    <div class="section" id="tools">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--purple-light); color: var(--purple);">🤖</div>
+        <div>
+          <h2>AI Tools to Run the Business</h2>
+          <p>Replace expensive services with affordable AI</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="info-table">
+          <tr><th>Tool</th><th>Cost</th><th>Purpose</th></tr>
+          <tr><td>🧠 ChatGPT</td><td>$20/mo</td><td>Descriptions, emails, strategy</td></tr>
+          <tr><td>🎨 Canva</td><td>$15/mo</td><td>Product images, branding</td></tr>
+          <tr><td>🛒 Etsy</td><td>Free</td><td>Sales platform</td></tr>
+          <tr><td>🌐 Shopify</td><td>$29/mo</td><td>Website (optional)</td></tr>
+        </table>
+      </div>
+
+      <div class="callout callout-blue">
+        <span class="callout-icon">⚡</span>
+        <div>AI replaces the need for expensive <strong>designers, copywriters, and marketing consultants</strong> &mdash; letting you run the entire business on a small budget.</div>
+      </div>
+
+      <div class="card">
+        <h3>👤 Optional: Part-Time Helper</h3>
+        <p>Even a very small helper role strengthens the business narrative.</p>
+        <table class="info-table" style="margin-top: 0.5rem;">
+          <tr><td>Tasks</td><td>Packing, shipping, inventory</td></tr>
+          <tr><td>Hours</td><td>~2 hours/week</td></tr>
+          <tr><td>Cost</td><td>~THB 360/month (~$11)</td></tr>
+        </table>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">Demonstrates business operations and management responsibility.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════ 8. DOCUMENTS ═══════════ -->
+    <div class="section" id="documents">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--green-light); color: var(--green);">📂</div>
+        <div>
+          <h2>Documents for Visa Interview</h2>
+          <p>Bring these even if they don't ask &mdash; it shows preparation</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>💼 Business Documents</h3>
+          <ul class="check-list">
+            <li>Registration certificate</li>
+            <li>Product photos</li>
+            <li>Etsy / shop screenshots</li>
+            <li>Receipts &amp; invoices</li>
+            <li>Shipping records</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🏦 Financial Evidence</h3>
+          <ul class="check-list">
+            <li>Bank statements (3&ndash;6 months)</li>
+            <li>Business transaction records</li>
+            <li>Income documentation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>✈️ Travel Plan</h3>
+          <ul class="check-list">
+            <li>Flight itinerary</li>
+            <li>Hotel reservations</li>
+            <li>Tourism activities list</li>
+            <li>Return ticket plan</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🏠 Ties to Thailand</h3>
+          <ul class="check-list">
+            <li>Proof of address</li>
+            <li>Family connections</li>
+            <li>Lease / property docs</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 9. INTERVIEW ═══════════ -->
+    <div class="section" id="interview">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--accent-light); color: var(--accent);">🎤</div>
+        <div>
+          <h2>Visa Interview Guide</h2>
+          <p>The interview typically lasts 1&ndash;3 minutes. Keep answers short.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💬 Example Questions &amp; Answers</h3>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ Why do you want to go to the United States?</div>
+          <div class="qa-a">I would like to visit for about two weeks for tourism. I also run a small Thai wellness products shop in Chiang Mai, so I'm interested in seeing spa and wellness stores while visiting a friend in Texas.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ What do you do for work?</div>
+          <div class="qa-a">I run a small online business in Chiang Mai selling Thai massage oils and herbal wellness kits. I started it earlier this year and sell mostly through Etsy and social media.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ How long will you stay?</div>
+          <div class="qa-a">About two weeks.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ Where will you stay?</div>
+          <div class="qa-a">I will stay with a friend in Austin, Texas for part of the trip and explore the area.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ Who will pay for the trip?</div>
+          <div class="qa-a">I will pay for most of the trip myself from my savings and business income.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ What will happen to your business while you travel?</div>
+          <div class="qa-a">My business is online so I can manage orders remotely, and a friend helps with shipping while I'm away.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ Do you plan to work in the US?</div>
+          <div class="qa-a">No. I will only visit for tourism and to learn about the wellness market.</div>
+        </div>
+
+        <div class="qa">
+          <div class="qa-q">🎙️ When will you return to Thailand?</div>
+          <div class="qa-a">After about two weeks. I need to return to continue running my business.</div>
+        </div>
+      </div>
+
+      <!-- Do / Don't -->
+      <div class="do-dont" style="margin-top: 0.75rem;">
+        <div class="do-col">
+          <h4>✅ Do</h4>
+          <ul>
+            <li>Answer in 1&ndash;2 sentences</li>
+            <li>Be calm and friendly</li>
+            <li>Be confident and brief</li>
+            <li>Stop talking after answering</li>
+          </ul>
+        </div>
+        <div class="dont-col">
+          <h4>🚫 Don't Say</h4>
+          <ul>
+            <li>"I want to work in the US"</li>
+            <li>"I might stay longer"</li>
+            <li>"I don't know how long"</li>
+            <li>Over-explain or ramble</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 10. TIMELINE ═══════════ -->
+    <div class="section" id="timeline">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--teal-light); color: var(--teal);">📅</div>
+        <div>
+          <h2>Timeline for October Trip</h2>
+          <p>Starting from March 2026</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--accent);">M</div>
+            <h4>March &mdash; Setup</h4>
+            <p>Register business, create Etsy shop, buy initial inventory</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--green);">A</div>
+            <h4>April &ndash; June &mdash; Operate</h4>
+            <p>Make sales, ship products, collect records and bank statements</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--amber);">J</div>
+            <h4>July &mdash; Apply</h4>
+            <p>Submit DS-160, pay $185 fee, schedule embassy interview</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--purple);">A</div>
+            <h4>August / September &mdash; Interview</h4>
+            <p>Attend embassy interview in Bangkok. Processing: a few days to 2 weeks.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--red);">O</div>
+            <h4>October 1 &mdash; Travel! ✈️</h4>
+            <p>Depart for the United States</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 11. INTERVIEW SCRIPT ═══════════ -->
+    <div class="section" id="script">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--green-light); color: var(--green);">💬</div>
+        <div>
+          <h2>90-Second Interview Script</h2>
+          <p>Natural conversation flow that covers all four key areas</p>
+        </div>
+      </div>
+
+      <div class="script-block">
+        <div class="answer">
+          <div class="role role-officer">🎙️ Officer</div>
+          Why do you want to go to the United States?
+        </div>
+        <div class="answer">
+          <div class="role role-you">🙋‍♀️ You</div>
+          I would like to visit for about two weeks for tourism. I also run a small online shop in Chiang Mai selling Thai wellness products, so I'm interested in seeing spa and wellness stores while I visit.
+        </div>
+        <div class="answer">
+          <div class="role role-officer">🎙️ Officer</div>
+          What do you do for work?
+        </div>
+        <div class="answer">
+          <div class="role role-you">🙋‍♀️ You</div>
+          I run a small online business selling Thai wellness products. I sell mostly through Etsy and social media.
+        </div>
+        <div class="answer">
+          <div class="role role-officer">🎙️ Officer</div>
+          How long / Where will you stay?
+        </div>
+        <div class="answer">
+          <div class="role role-you">🙋‍♀️ You</div>
+          About two weeks. I will stay with a friend in Austin, Texas.
+        </div>
+        <div class="answer">
+          <div class="role role-officer">🎙️ Officer</div>
+          What happens to your business while you travel?
+        </div>
+        <div class="answer">
+          <div class="role role-you">🙋‍♀️ You</div>
+          My business is online so I can manage it remotely, and a friend helps me with shipping.
+        </div>
+        <div class="answer">
+          <div class="role role-officer">🎙️ Officer</div>
+          When will you return?
+        </div>
+        <div class="answer">
+          <div class="role role-you">🙋‍♀️ You</div>
+          After about two weeks. I need to return to continue running my business.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 Why This Script Works</h3>
+        <p style="margin-bottom: 0.5rem;">It naturally covers the four things officers evaluate:</p>
+        <div class="grid-2">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="num-badge" style="background: var(--accent-light); color: var(--accent);">1</span>
+            <span style="font-size: 0.85rem; font-weight: 500;">Clear trip purpose</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="num-badge" style="background: var(--green-light); color: var(--green);">2</span>
+            <span style="font-size: 0.85rem; font-weight: 500;">Legitimate occupation</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="num-badge" style="background: var(--amber-light); color: var(--amber);">3</span>
+            <span style="font-size: 0.85rem; font-weight: 500;">Short stay planned</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="num-badge" style="background: var(--purple-light); color: var(--purple);">4</span>
+            <span style="font-size: 0.85rem; font-weight: 500;">Strong reason to return</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">💪</span>
+        <div>
+          <strong>One powerful sentence if the officer seems unsure:</strong><br>
+          "I plan to continue growing my wellness products business in Thailand after I return."
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ KEY PRINCIPLE ═══════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--green-light); color: var(--green);">⭐</div>
+        <div>
+          <h2>Key Principle</h2>
+        </div>
+      </div>
+
+      <div class="callout callout-green" style="flex-direction: column; text-align: center; padding: 1.5rem;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏆</div>
+        <div style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem;">The visa decision is not about wealth.<br>It is about credibility and ties.</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">A small but legitimate business often works better than an artificial or rushed large company.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--green);">70&ndash;80%</div>
+          <div class="stat-label">Thai B-1/B-2 Approval Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--accent);">1&ndash;3 min</div>
+          <div class="stat-label">Typical Interview Length</div>
+        </div>
+      </div>
+
+      <div class="callout callout-amber" style="margin-top: 0.75rem;">
+        <span class="callout-icon">✅</span>
+        <div>A <strong>$300 bootstrapped sole proprietorship</strong> can be perfectly reasonable. What matters is that it looks real, active, and tied to Thailand.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════ EXAMPLE NARRATIVE ═══════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background: var(--accent-light); color: var(--accent);">📝</div>
+        <div>
+          <h2>Example Visa Narrative</h2>
+          <p>Your story in one paragraph</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-left: 4px solid var(--accent); background: var(--surface-alt);">
+        <p style="font-style: italic; font-size: 0.9rem; line-height: 1.7; color: var(--text);">
+          "I run a small Thai wellness products shop in Chiang Mai. I plan to visit the United States to explore the wellness market and visit a friend in Texas. I will stay for two weeks and then return to Thailand to continue operating my business."
+        </p>
+        <div style="margin-top: 0.75rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
+          <span class="pill pill-blue">B-1: Market Research</span>
+          <span class="pill pill-green">B-2: Tourism</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>This guide is for informational purposes only and does not constitute legal advice.<br>
+    Consult an immigration attorney for your specific situation.</p>
+  </div>
+
+</body>
+</html>
