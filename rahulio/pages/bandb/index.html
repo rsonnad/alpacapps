@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Animist Apothecary — Bodywork + Botanicals</title>
+  <meta property="og:title" content="The Animist Apothecary — Bodywork + Botanicals">
+  <meta property="og:description" content="An Ecosystem of Holistic Health and Gaian Medicine. Massage, Divinations, Guidance, and Transformational Immersions.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Josefin+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #1a1612;
+      --black-hsl: 25, 20%, 8%;
+      --cream: #faf6f0;
+      --cream-dark: #f0ebe3;
+      --accent: #8b6f4e;
+      --accent-hsl: 30, 28%, 42%;
+      --light-accent: #c4a882;
+      --light-accent-hsl: 32, 33%, 64%;
+      --warm-white: #fdf9f3;
+      --text: #2c2420;
+      --text-soft: #4a3f36;
+      --text-muted: #7a6e63;
+      --border: #e0d6ca;
+      --overlay-dark: hsla(25, 20%, 8%, 0.47);
+      --overlay-light: hsla(30, 28%, 42%, 0.23);
+      --box-bg: hsla(32, 33%, 64%, 0.18);
+      --box-bg-alt: hsla(32, 33%, 64%, 0.27);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lora', Georgia, 'Times New Roman', serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: hsla(35, 40%, 96%, 0.85);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    nav { display: flex; align-items: center; gap: 2rem; }
+
+    nav a {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: var(--accent); }
+
+    .nav-ig {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* ─── HERO / NEWSLETTER ─── */
+    .hero {
+      position: relative;
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/c6deae3a-e1aa-4077-9c46-e84fd73966af/6.jpg') center/cover no-repeat;
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--overlay-dark);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      padding: 3rem 2rem;
+    }
+
+    .hero-content h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+      color: #fff;
+    }
+
+    .hero-content p {
+      font-size: 0.95rem;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 2rem;
+    }
+
+    .newsletter-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .form-row { display: flex; gap: 0.75rem; }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      border-radius: 3px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .newsletter-form input::placeholder { color: rgba(255,255,255,0.5); }
+    .newsletter-form input:focus { border-color: rgba(255,255,255,0.6); }
+
+    .btn-subscribe {
+      padding: 0.85rem 2rem;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.3s;
+    }
+    .btn-subscribe:hover {
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.55);
+    }
+
+    .form-note {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.45);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    /* ─── WELCOME / AWAKENING ─── */
+    .welcome {
+      background: var(--overlay-light);
+      padding: 6rem 2rem;
+    }
+
+    .welcome-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .welcome-inner .label {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-inner h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 2rem;
+    }
+
+    .welcome-inner .poem {
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 2;
+      color: var(--text-soft);
+      margin-bottom: 2.5rem;
+    }
+
+    .welcome-inner .body-text {
+      font-size: 0.95rem;
+      line-height: 2;
+      color: var(--text-soft);
+      text-align: left;
+    }
+
+    .welcome-inner .body-text p { margin-bottom: 1.5rem; }
+
+    /* ─── SERVICES ─── */
+    .services {
+      padding: 6rem 2rem;
+      background: var(--cream);
+    }
+
+    .services-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+
+    .service-card {
+      text-align: center;
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .service-card:hover { transform: translateY(-4px); opacity: 0.9; }
+
+    .service-card .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 1.2rem;
+    }
+
+    .service-card h3 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    /* ─── THOSE WHOM I SERVE ─── */
+    .serve {
+      padding: 6rem 2rem;
+      background: var(--cream-dark);
+    }
+
+    .serve-header {
+      max-width: 800px;
+      margin: 0 auto 4rem;
+      text-align: center;
+    }
+
+    .serve-header h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .serve-header p {
+      font-size: 0.95rem;
+      line-height: 2;
+      color: var(--text-soft);
+    }
+
+    .serve-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .serve-box {
+      background: var(--box-bg);
+      border-radius: 30px;
+      padding: 2rem 2rem;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .serve-box:hover {
+      background: var(--box-bg-alt);
+      transform: translateY(-2px);
+    }
+
+    .serve-box h4 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .serve-box p {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--text-soft);
+    }
+
+    /* ─── BIO ─── */
+    .bio {
+      padding: 6rem 2rem;
+      background: var(--cream);
+    }
+
+    .bio-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .bio-image {
+      width: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+      aspect-ratio: 3/4;
+    }
+
+    .bio-text h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .bio-text .titles {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2rem;
+    }
+
+    .bio-text p {
+      font-size: 0.92rem;
+      line-height: 2;
+      color: var(--text-soft);
+      margin-bottom: 1.3rem;
+    }
+
+    .bio-text em { color: var(--text); }
+
+    /* ─── SECOND IMAGE ─── */
+    .full-image-section {
+      width: 100%;
+      height: 50vh;
+      min-height: 350px;
+      overflow: hidden;
+    }
+    .full-image-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--black);
+      color: rgba(255,255,255,0.7);
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .footer-col h4 {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 1rem;
+    }
+
+    .footer-col p,
+    .footer-col a {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-col a:hover { color: rgba(255,255,255,0.95); }
+
+    .footer-logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-hours { list-style: none; }
+    .footer-hours li {
+      font-size: 0.85rem;
+      line-height: 2;
+      display: flex;
+      justify-content: space-between;
+      max-width: 260px;
+    }
+    .footer-hours .closed { color: rgba(255,255,255,0.35); }
+
+    .footer-bottom {
+      max-width: 1000px;
+      margin: 3rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .serve-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 0.75rem 1.25rem; }
+      .logo { font-size: 1.15rem; }
+      nav { display: none; }
+      .hamburger { display: flex; }
+
+      .hero { min-height: 90vh; }
+      .hero-content { padding: 2rem 1.25rem; }
+      .form-row { flex-direction: column; }
+
+      .welcome { padding: 4rem 1.5rem; }
+      .services { padding: 4rem 1.5rem; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+      .serve { padding: 4rem 1.5rem; }
+      .serve-grid { grid-template-columns: 1fr; }
+
+      .bio { padding: 4rem 1.5rem; }
+      .bio-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .bio-image { max-height: 500px; }
+
+      .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .services-grid { grid-template-columns: 1fr; max-width: 320px; margin: 0 auto; }
+      .service-card .card-img { aspect-ratio: 4/3; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <header>
+    <a href="#" class="logo">The Animist Apothecary</a>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#services">Offerings</a>
+      <a href="#bio">About</a>
+      <a href="https://www.instagram.com/ahtheemaree" target="_blank" rel="noopener" class="nav-ig">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+    </nav>
+    <button class="hamburger" onclick="document.querySelector('nav').style.display=document.querySelector('nav').style.display==='flex'?'none':'flex'" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- ─── HERO / NEWSLETTER ─── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h2>Water, Milk, and Honey<br><span style="font-size:0.85em;">Gleanings from my Harvests</span></h2>
+      <p>Receive updates and invitations to workshops, gatherings, and surprise offerings, along with community resources. I will occasionally send creative writing, stories, sacred songs, letters, spoken word and poetry.</p>
+      <form class="newsletter-form" onsubmit="event.preventDefault(); this.innerHTML='<p style=\'color:#fff;font-style:italic;padding:2rem 0;\'>Welcome! Thank you for joining. Your information is respected and never shared.</p>';">
+        <div class="form-row">
+          <input type="text" placeholder="First Name" required>
+          <input type="text" placeholder="Last Name" required>
+        </div>
+        <input type="email" placeholder="Email Address" required>
+        <button type="submit" class="btn-subscribe">Subscribe</button>
+      </form>
+      <p class="form-note">Your information is respected and never shared.</p>
+    </div>
+  </section>
+
+  <!-- ─── WELCOME ─── -->
+  <section class="welcome">
+    <div class="welcome-inner">
+      <div class="label">Welcome Awakening</div>
+      <h2>Something within you is stirring</h2>
+      <p class="poem">
+        A longing for deeper breath, for freedom from the knots that bind,<br>
+        for the sweet release of remembrance:<br>
+        <em>You are scintillating poetry; woven of waters, earth, and sky.</em>
+      </p>
+      <div class="body-text">
+        <p>This is a sanctuary that honors the journey of being human, in all its beautiful complexity &mdash; the ache and the ecstasy, the mundane and the mystical. Here, the corporeal body is regarded as a sacred vessel of Spirit, deserving of reverence and care.</p>
+        <p>Whether you arrive in need of relief, revelation, or simply a place to be held, you are met exactly where you are. Through the ancient arts of touch, divination, plant medicine, and deep listening, we tend to the places within you that have been neglected, forgotten, or exiled.</p>
+        <p>This is not about fixing what is broken. It is about remembering what is whole.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SERVICES ─── -->
+  <section class="services" id="services">
+    <div class="services-grid">
+      <a href="#" class="service-card">
+        <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/f5c8b5f4-a47f-4185-a07b-8a1de9395741/Untitled+design.jpg" alt="Massage and bodywork therapy" class="card-img" loading="lazy">
+        <h3>Massage &amp; Bodywork</h3>
+      </a>
+      <a href="#" class="service-card">
+        <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/1747756072128-TIDJJZQ0HULP1Q3X92ND/unsplash-image-x5hyhMBjR3M.jpg" alt="Dagara stick divinations" class="card-img" loading="lazy">
+        <h3>Dagara Stick Divinations</h3>
+      </a>
+      <a href="#" class="service-card">
+        <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/16f3e3c8-b7a1-454b-8595-aff9e7d51517/Untitled+design+%281%29.jpg" alt="Guidance and counseling" class="card-img" loading="lazy">
+        <h3>Guidance &amp; Counseling</h3>
+      </a>
+      <a href="#" class="service-card">
+        <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/58c05477-c671-4131-b74d-a88bb4198d57/Untitled+design+%282%29.jpg" alt="Transformational immersions" class="card-img" loading="lazy">
+        <h3>Transformational Immersions</h3>
+      </a>
+    </div>
+  </section>
+
+  <!-- ─── THOSE WHOM I SERVE ─── -->
+  <section class="serve" id="whom">
+    <div class="serve-header">
+      <h2>Those Whom I Serve</h2>
+      <p>My practice is a refuge for the sensitive, the seeking, and the sovereign. If you see yourself reflected below, you are welcome here.</p>
+    </div>
+    <div class="serve-grid">
+      <div class="serve-box">
+        <h4>Artists, Performers, Muses &amp; Creatives</h4>
+        <p>Those whose bodies are instruments of expression, often carrying the weight of emotional labor, performance anxiety, and creative depletion.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Spiritual Seekers, Mystics &amp; Practitioners</h4>
+        <p>Those walking devotional paths who desire somatic support, energetic attunement, and grounded spiritual companionship.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Caregivers, Healthcare &amp; Wellness Workers</h4>
+        <p>Those who hold space for others and rarely receive the depth of care they give. Healers who need healing.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Survivors of Trauma, Negligence &amp; Abuse</h4>
+        <p>Those seeking a safe, consent-centered, trauma-informed environment to begin reclaiming the body as home.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Individuals in High-Pressure Careers</h4>
+        <p>Executives, attorneys, physicians, and leaders carrying the somatic burden of chronic stress and decision fatigue.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Chronic Pain &amp; Complex Medical Conditions</h4>
+        <p>Those navigating autoimmune conditions, fibromyalgia, chronic fatigue, and other persistent challenges in the body.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Grief Carriers &amp; Earth Mourners</h4>
+        <p>Those tending to loss &mdash; of loved ones, of homelands, of ecosystems &mdash; who need space to grieve fully and be witnessed.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Reclaiming Embodied Sensual Expression</h4>
+        <p>Those healing from shame, disconnection, or trauma around the body's innate capacity for pleasure and aliveness.</p>
+      </div>
+      <div class="serve-box">
+        <h4>LGBTQIA+ &amp; Gender Identity Exploration</h4>
+        <p>Those exploring gender, sexuality, and embodiment who desire affirming, nonjudgmental somatic care.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Activists, Organizers &amp; Changemakers</h4>
+        <p>Those on the front lines of social and ecological justice who carry collective grief and burnout in their bodies.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Invisible Illnesses &amp; Disabilities</h4>
+        <p>Those whose conditions are unseen or dismissed, who seek a practitioner willing to listen to the body's quiet truths.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Academics, Philosophers &amp; Deep Thinkers</h4>
+        <p>Those who live richly in the mind and long for integration with the body, sensation, and the felt experience of being alive.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Recovery, Sobriety &amp; New Beginnings</h4>
+        <p>Those navigating the tender terrain of early recovery and rebuilding a loving relationship with the body.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Neurodivergent Individuals</h4>
+        <p>Those with ADHD, autism, sensory processing differences, and other neurodivergences who benefit from adaptive, attuned bodywork.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Multicultural Diaspora, Immigrants &amp; Refugees</h4>
+        <p>Those carrying the weight of displacement, cultural grief, and the complex longing for belonging and ancestral reconnection.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Healing from Medical or Surgical Trauma</h4>
+        <p>Those whose bodies carry the imprint of institutional or medical interventions and seek gentle, restorative somatic care.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Ceremony &amp; Interdimensional Integration</h4>
+        <p>Those who have undergone plant medicine ceremonies or deep spiritual experiences and need support integrating the journey.</p>
+      </div>
+      <div class="serve-box">
+        <h4>Rites of Passage &amp; Life Transitions</h4>
+        <p>Those navigating initiations, births, deaths, divorces, career shifts, and the great thresholds of personal evolution.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BIO ─── -->
+  <section class="bio" id="bio">
+    <div class="bio-inner">
+      <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/5fa4f526-b382-49e2-8d48-dd9a489599e2/processed_PXL_20240825_004145961%282%29%281%29.jpg" alt="Practitioner portrait" class="bio-image" loading="lazy">
+      <div class="bio-text">
+        <h2>An Ecosystem of Holistic Health and Gaian Medicine</h2>
+        <div class="titles">Oracular Poet · Diviner · Touch Therapist · Medicine Woman · Spiritual Midwife</div>
+        <p>For over fourteen years, I have devoted my life to the sacred intersection of body, spirit, and earth. As a nationally licensed massage therapist, initiated diviner, and ceremonial facilitator, my practice draws from the deep wells of ancestral wisdom, somatics, bioenergetics, and the living intelligence of the plant world.</p>
+        <p>My lineage is a braided river &mdash; Mesoamerican, Caribbean, Celtic, and Roma &mdash; and it is through this confluence of traditions that I approach the work of healing. I am a Priestess of the Dagara Crocodile Clan, trained in the arts of stick divination, and a student of Generative Trance Hypnosis under the mentorship of Stephen Gilligan.</p>
+        <p>For over fifteen years I have studied folk and clinical ethnopharmacology, tending to the relationship between human bodies and the botanical world. Plants are my first teachers, and the garden is my first temple.</p>
+        <p><em>The corporeal body is a sacred vessel of Spirit</em> &mdash; this is the root of everything I offer. Whether through the alchemy of touch, the oracle of divination, or the counsel of plant allies, I am here to support your remembering.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FULL-WIDTH IMAGE ─── -->
+  <section class="full-image-section">
+    <img src="https://images.squarespace-cdn.com/content/v1/66ecc25140cd7f51277b30b0/1752571346500-V2PYZOYS7RITAILST4JA/unsplash-image-268l9I-wqC4.jpg" alt="Nature landscape" loading="lazy">
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-logo">Bodywork + Botanicals</div>
+        <p>Red Rock Rd<br>CA 90290, United States</p>
+        <p style="margin-top:1rem;">
+          <a href="https://www.instagram.com/ahtheemaree" target="_blank" rel="noopener">@ahtheemaree</a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Hours</h4>
+        <ul class="footer-hours">
+          <li class="closed"><span>Monday</span><span>Closed</span></li>
+          <li class="closed"><span>Tuesday</span><span>Closed</span></li>
+          <li><span>Wednesday</span><span>10am – 6pm</span></li>
+          <li class="closed"><span>Thursday</span><span>Closed</span></li>
+          <li><span>Friday</span><span>10am – 6pm</span></li>
+          <li><span>Saturday</span><span>10am – 6pm</span></li>
+          <li><span>Sunday</span><span>10am – 6pm</span></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <p><a href="#">Home</a></p>
+        <p><a href="#services">Offerings</a></p>
+        <p><a href="#bio">About</a></p>
+        <p><a href="https://www.instagram.com/ahtheemaree" target="_blank" rel="noopener">Instagram</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2025 Bodywork + Botanicals. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>
