@@ -35,7 +35,7 @@
 31. **Vehicle Management Overhaul** - `tesla_vehicles` -> `vehicles`, `vehicle_drivers` junction
 32. **PAI Feature Builder** - Autonomous feature implementation from PAI chat
 33. **Emergency Contacts Page** - `lost.html` with reversed phone numbers
-34. **Space Access Codes** - `access_code` field on spaces table
+34. **Space Access Codes** - Removed (replaced by `password_vault` table)
 35. **UP-SENSE Smart Sensors** - Installation guide at `residents/sensorinstallation.html`
 36. **Mobile App (Capacitor 8)** - iOS/Android, 5 tabs, dark theme, OTA updates via Capgo
 37. **Cloudflare R2 Object Storage** - Replaced Google Drive, S3-compatible, zero egress

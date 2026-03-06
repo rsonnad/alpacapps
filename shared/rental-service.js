@@ -91,7 +91,7 @@ async function getApplications(filters = {}) {
       *,
       person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate),
-      approved_space:approved_space_id(id, name, monthly_rate, access_code),
+      approved_space:approved_space_id(id, name, monthly_rate),
       assignment:assignment_id(id, status)
     `)
     .order('created_at', { ascending: false });
@@ -144,7 +144,7 @@ async function getApplication(applicationId) {
       *,
       person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
       desired_space:desired_space_id(id, name, monthly_rate, location),
-      approved_space:approved_space_id(id, name, monthly_rate, location, access_code),
+      approved_space:approved_space_id(id, name, monthly_rate, location),
       assignment:assignment_id(id, status, start_date, end_date)
     `)
     .eq('id', applicationId)

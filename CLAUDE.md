@@ -1433,8 +1433,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 33. **Emergency Contacts Page** - `lost.html` for lockout scenarios
    - Phone numbers displayed reversed (obfuscation against scraping)
    - Clean card UI with Haydn, Rahulio, Sonia contacts
-34. **Space Access Codes** - `access_code` text field on spaces table
-   - Stores keypad/door codes for each space
+34. **Space Access Codes** - Removed (replaced by `password_vault` table with category='house')
 35. **UP-SENSE Smart Sensors** - UniFi Protect sensor installation guide
    - `residents/sensorinstallation.html` — step-by-step installation instructions
 36. **Mobile App (iOS & Android)** - Native mobile apps via Capacitor 8

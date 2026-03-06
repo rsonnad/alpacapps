@@ -48,7 +48,7 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     create: { minLevel: 3 },
     update: { minLevel: 2, staffFields: [
       "description", "monthly_rate", "weekly_rate", "nightly_rate",
-      "access_code", "airbnb_ical_url", "airbnb_link", "airbnb_rate",
+      "airbnb_ical_url", "airbnb_link", "airbnb_rate",
     ]},
     delete: { minLevel: 3 },
   },

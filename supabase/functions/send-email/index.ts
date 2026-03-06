@@ -460,8 +460,6 @@ Alpaca Playhouse`
       if (checkOutDisplay) detailRowData.push({ label: 'Check-out Time', value: checkOutDisplay });
       detailRowData.push({ label: 'Rate', value: miRateDisplay, valueStyle: `font-weight:600;` });
       if (showRentDue) detailRowData.push({ label: 'Rent Due', value: `${data.rent_due_day || '1st'} of each month` });
-      if (data.access_code) detailRowData.push({ label: 'Door Code', value: data.access_code, valueStyle: `color:${B.success};font-weight:700;font-size:16px;letter-spacing:1px;` });
-
       const detailRows = detailRowData.map((row, i) => {
         const rowBg = i % 2 === 0 ? B.bg : B.bgMuted;
         return `<tr style="background:${rowBg};">
@@ -554,7 +552,6 @@ Hi ${data.first_name},
 
 We're excited that you have chosen to come to the Alpaca Playhouse. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.
 
-${data.access_code ? `Door Access Code: ${data.access_code}\n` : ''}
 Your Details:
 - Space: ${data.space_name}
 - Move-in: ${data.move_in_date}

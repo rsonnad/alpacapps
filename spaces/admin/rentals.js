@@ -2229,14 +2229,12 @@ window.confirmMoveIn = async function() {
     // Send move-in confirmed email
     if (app?.person?.email) {
       const space = allSpaces.find(s => s.id === app.approved_space_id);
-      const accessCode = app.approved_space?.access_code || space?.access_code || null;
       const emailResult = await emailService.sendMoveInConfirmed({
         person: app.person,
         space: { name: space?.name },
         approved_move_in_date: app.approved_move_in,
         approved_lease_end: app.approved_lease_end,
         approved_rate: app.approved_rate,
-        access_code: accessCode,
         check_in_time: app.check_in_time,
         check_out_time: app.check_out_time,
       });
