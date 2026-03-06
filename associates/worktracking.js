@@ -890,7 +890,7 @@ async function handleRequestPayment() {
       body += `<p>Go to <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Admin Hours</a> to review and process payment.</p>`;
     }
 
-    const result = await sendEmail('custom', adminEmail, {}, {
+    const result = await sendEmail('custom', adminEmail, {
       subject,
       html: body,
     });
