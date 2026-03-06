@@ -1,12 +1,12 @@
 {
-  "version": "v260306.10 10:55a",
-  "release": 478,
-  "sha": "1a5ba9181",
-  "fullSha": "1a5ba91812b22178c5f976c52bb93ac7540aa482",
+  "version": "v260306.11 10:58a",
+  "release": 479,
+  "sha": "2c5654d1a",
+  "fullSha": "2c5654d1a9bf1d0b8430f0d4e73703025d7f5a5f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 16:55:59+00",
-  "commits": [{"sha":"d482365cd","message":"Update visiting page: add self-reliant, contact page link, bold pai email","author":"Rahul"},{"sha":"1a5ba9181","message":"Merge branch 'musing-kirch'","author":"Rahul"}]
+  "pushedAt": "2026-03-06 16:58:55+00",
+  "commits": [{"sha":"97e285f06","message":"Update visiting page self-service text: reorder, add label/power lines","author":"Rahul"},{"sha":"2c5654d1a","message":"Merge branch 'musing-kirch'","author":"Rahul"}]
 }
