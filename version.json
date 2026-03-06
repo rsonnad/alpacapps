@@ -1,12 +1,12 @@
 {
-  "version": "v260306.14 1:38p",
-  "release": 482,
-  "sha": "5c1d0dcbf",
-  "fullSha": "5c1d0dcbf6eab46eaf6bc8e0688eb66194739f0c",
+  "version": "v260306.15 1:57p",
+  "release": 483,
+  "sha": "c561aa386",
+  "fullSha": "c561aa386c629c92456a93e1031cafbcc29832a8",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 19:38:05+00",
-  "commits": [{"sha":"5c1d0dcbf","message":"Add permitting tracker page for 160 Still Forest Dr commercial lodging approval","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-06 19:57:53+00",
+  "commits": [{"sha":"2ec1e4141","message":"Move permitting tracker to /jackie/pages/permittingplan/ with restricted access","author":"Jacqueline Giroux"},{"sha":"c561aa386","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
