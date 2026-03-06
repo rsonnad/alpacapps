@@ -1,12 +1,12 @@
 {
-  "version": "v260306.01 12:15a",
-  "release": 469,
-  "sha": "52b1286fb",
-  "fullSha": "52b1286fbdbf333d7e026ac050ffa60b1a16a324",
+  "version": "v260306.02 1:34a",
+  "release": 470,
+  "sha": "7cf16cf2b",
+  "fullSha": "7cf16cf2b3ac60365d377c2a84c8e97d20b103e8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 06:15:39+00",
-  "commits": [{"sha":"52b1286fb","message":"Add index page listing all rahulio/pages","author":"Rahul"}]
+  "pushedAt": "2026-03-06 07:34:43+00",
+  "commits": [{"sha":"7cf16cf2b","message":"Add US visa playbook page for Thai massage therapists","author":"Rahul"}]
 }
