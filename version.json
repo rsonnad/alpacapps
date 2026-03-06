@@ -1,12 +1,12 @@
 {
-  "version": "v260306.17 3:06p",
-  "release": 485,
-  "sha": "757b3484d",
-  "fullSha": "757b3484de7c3c902f02dea6c3f8e5d5275f58ec",
+  "version": "v260306.18 3:18p",
+  "release": 486,
+  "sha": "fb53ebd94",
+  "fullSha": "fb53ebd94fc6f4e783f5e1eae545e63615836085",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 21:06:34+00",
-  "commits": [{"sha":"f2d9bd6ba","message":"Add preliminary site plan with setback violation analysis","author":"Jacqueline Giroux"},{"sha":"757b3484d","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-06 21:18:04+00",
+  "commits": [{"sha":"59b2053b7","message":"Fix identity verification failing for associates due to missing person_id","author":"Jacqueline Giroux"},{"sha":"fb53ebd94","message":"Fix identity verification for associates (missing person_id)","author":"Jacqueline Giroux"}]
 }
