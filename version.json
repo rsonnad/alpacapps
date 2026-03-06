@@ -1,12 +1,12 @@
 {
-  "version": "v260306.22 4:39p",
-  "release": 490,
-  "sha": "698c57745",
-  "fullSha": "698c5774530ba4a808e9e6799b7d79d0a04ce3c0",
+  "version": "v260306.23 5:44p",
+  "release": 491,
+  "sha": "cc98a4a8c",
+  "fullSha": "cc98a4a8c0aea3cbdd7033d307dd3850b5394487",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 22:39:42+00",
-  "commits": [{"sha":"93f5b2528","message":"Add auto-sync for Nest SDM device IDs + diagnostic logging","author":"Rahul"},{"sha":"698c57745","message":"Merge remote-tracking branch 'origin/tender-bhabha'","author":"Rahul"}]
+  "pushedAt": "2026-03-06 23:44:36+00",
+  "commits": [{"sha":"cc98a4a8c","message":"Remove obsolete access_code column from spaces; use password_vault for door codes","author":"Rahul"}]
 }
