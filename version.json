@@ -1,12 +1,12 @@
 {
-  "version": "v260306.13 11:44a",
-  "release": 481,
-  "sha": "28133edf9",
-  "fullSha": "28133edf9e66d09d9fd8a400c8cc6ed7cb7ac7ea",
-  "actor": "rsonnad",
+  "version": "v260306.14 1:38p",
+  "release": 482,
+  "sha": "5c1d0dcbf",
+  "fullSha": "5c1d0dcbf6eab46eaf6bc8e0688eb66194739f0c",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 17:44:34+00",
-  "commits": [{"sha":"28133edf9","message":"Fix pingSupabase() to use specific table endpoint instead of bare /rest/v1/","author":"Rahul"}]
+  "pushedAt": "2026-03-06 19:38:05+00",
+  "commits": [{"sha":"5c1d0dcbf","message":"Add permitting tracker page for 160 Still Forest Dr commercial lodging approval","author":"Jacqueline Giroux"}]
 }
