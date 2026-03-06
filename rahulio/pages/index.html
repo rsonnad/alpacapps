@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rahulio's Pages</title>
-    <link rel="icon" type="image/svg+xml" href="favicon-r.svg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/styles/site.css">
+    <link rel="stylesheet" href="/styles/tailwind.out.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -62,6 +65,9 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <span data-site-version style="display:none;">v260306.01 12:15a</span>
+    <div id="siteHeader"></div>
+
     <div class="container">
         <h1>Rahulio's Pages</h1>
 
@@ -132,5 +138,12 @@
             </a></li>
         </ul>
     </div>
+
+    <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+    <script type="module" src="/shared/version-info.js"></script>
+    <script type="module">
+        import { initPublicPage } from '/shared/public-shell.js';
+        initPublicPage({ transparent: true, light: true });
+    </script>
 </body>
 </html>
