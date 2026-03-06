@@ -237,7 +237,6 @@ export const emailService = {
       monthly_rate: application.approved_rate,
       rent_due_day: '1st',
       is_monthly: isMonthly,
-      access_code: application.access_code || null,
       check_in_time: application.check_in_time || null,
       check_out_time: application.check_out_time || null,
     });

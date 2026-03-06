@@ -18,7 +18,6 @@ assignment_spaces - Junction: which spaces are in which assignments
 - `can_be_event` - Can be used for events
 - `is_micro` - Too small to show in projects/dropdowns/consumer view (e.g., individual beds)
 - `is_archived` - Soft delete (filtered out everywhere)
-- `access_code` - Keypad/door code for each space
 - `airbnb_ical_url` - Inbound iCal feed URL from Airbnb
 - `airbnb_link` - Public Airbnb listing URL
 - `airbnb_rate` - Airbnb listing price

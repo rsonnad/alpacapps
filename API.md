@@ -116,10 +116,10 @@ apikey: <SUPABASE_ANON_KEY>
 | list | 0 | Level 0–1: only `is_listed=true AND is_secret=false`. Level 2+: all non-archived. |
 | get | 0 | Same visibility rules. Includes `media_spaces` join. |
 | create | 3 | Admin only |
-| update | 2 | Staff limited to: description, rates, access_code, airbnb fields. Admin: all fields. |
+| update | 2 | Staff limited to: description, rates, airbnb fields. Admin: all fields. |
 | delete | 3 | Soft delete (sets `is_archived = true`) |
 
-**Key columns:** `id`, `name`, `description`, `parent_id`, `type`, `monthly_rate`, `weekly_rate`, `nightly_rate`, `beds_king`, `beds_queen`, `beds_double`, `beds_twin`, `beds_folding`, `bath_privacy`, `bath_fixture`, `sq_footage`, `can_be_dwelling`, `can_be_event`, `is_listed`, `is_secret`, `is_archived`, `access_code`, `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`
+**Key columns:** `id`, `name`, `description`, `parent_id`, `type`, `monthly_rate`, `weekly_rate`, `nightly_rate`, `beds_king`, `beds_queen`, `beds_double`, `beds_twin`, `beds_folding`, `bath_privacy`, `bath_fixture`, `sq_footage`, `can_be_dwelling`, `can_be_event`, `is_listed`, `is_secret`, `is_archived`, `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`
 
 **Filters:**
 | Filter | Type | Description |

@@ -115,7 +115,7 @@ Some resources restrict which rows a caller can see/modify based on identity:
 | update | 2 | Staff can update operational fields. Admin for visibility/archival. |
 | delete | 3 | Soft delete (`is_archived = true`) |
 
-**Key columns:** `id`, `name`, `description`, `parent_id`, `type`, `monthly_rate`, `weekly_rate`, `nightly_rate`, `beds_king`, `beds_queen`, `beds_double`, `beds_twin`, `beds_folding`, `bath_privacy`, `bath_fixture`, `sq_footage`, `can_be_dwelling`, `can_be_event`, `is_listed`, `is_secret`, `is_archived`, `access_code`, `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`
+**Key columns:** `id`, `name`, `description`, `parent_id`, `type`, `monthly_rate`, `weekly_rate`, `nightly_rate`, `beds_king`, `beds_queen`, `beds_double`, `beds_twin`, `beds_folding`, `bath_privacy`, `bath_fixture`, `sq_footage`, `can_be_dwelling`, `can_be_event`, `is_listed`, `is_secret`, `is_archived`, `airbnb_ical_url`, `airbnb_link`, `airbnb_rate`
 
 **Related tables:** `media_spaces` (photos), `space_amenities` (amenities), `assignment_spaces` (bookings)
 

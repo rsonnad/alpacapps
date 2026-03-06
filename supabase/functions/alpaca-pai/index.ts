@@ -168,7 +168,7 @@ async function buildUserScope(
       : Promise.resolve({ data: null }),
     supabase
       .from("spaces")
-      .select("id, name, parent_id, can_be_dwelling, access_code")
+      .select("id, name, parent_id, can_be_dwelling")
       .eq("is_archived", false),
   ]);
 
@@ -284,15 +284,21 @@ async function buildUserScope(
     (a.camera_model || '').localeCompare(b.camera_model || '') || (a.camera_name || '').localeCompare(b.camera_name || '')
   );
 
-  // Build access code map for spaces the user can access
+  // Build access code map from password_vault (house category)
+  const { data: vaultEntries } = await supabase
+    .from("password_vault")
+    .select("service, password, space_id")
+    .eq("category", "house")
+    .eq("is_active", true);
   const spaceAccessCodes: Record<string, string> = {};
-  for (const s of allSpaces) {
-    if (!s.access_code) continue;
+  for (const v of (vaultEntries || [])) {
+    if (!v.password) continue;
+    const space = allSpaces.find((s: any) => s.id === v.space_id);
+    if (!space) continue;
     if (userLevel >= 2) {
-      // Staff+ see all codes
-      spaceAccessCodes[s.name] = s.access_code;
-    } else if (allAccessibleSpaceIds.includes(s.id)) {
-      spaceAccessCodes[s.name] = s.access_code;
+      spaceAccessCodes[v.service || space.name] = v.password;
+    } else if (allAccessibleSpaceIds.includes(v.space_id)) {
+      spaceAccessCodes[v.service || space.name] = v.password;
     }
   }
 
