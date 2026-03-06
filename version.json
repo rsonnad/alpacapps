@@ -1,12 +1,12 @@
 {
-  "version": "v260306.05 1:45a",
-  "release": 473,
-  "sha": "376d239ce",
-  "fullSha": "376d239ce7b236d0d72a78c5f3621b9d457e6f20",
+  "version": "v260306.06 1:48a",
+  "release": 474,
+  "sha": "f907d2c11",
+  "fullSha": "f907d2c1114c30cbacfb2e0eeba33346cd49ed8c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 07:45:46+00",
-  "commits": [{"sha":"6f89abb08","message":"Add OG tags with hero image to thaivisa page","author":"Rahul"},{"sha":"376d239ce","message":"Merge branch 'intelligent-chatelet'","author":"Rahul"}]
+  "pushedAt": "2026-03-06 07:48:00+00",
+  "commits": [{"sha":"d25835d85","message":"Add greetings image at bottom of thaivisa page","author":"Rahul"},{"sha":"f907d2c11","message":"Merge: add greetings image to thaivisa page","author":"Rahul"}]
 }
