@@ -1,12 +1,12 @@
 {
-  "version": "v260306.20 4:11p",
-  "release": 488,
-  "sha": "5c8b10de0",
-  "fullSha": "5c8b10de05f16e6a47ce10d35e723944da0ab620",
-  "actor": "rsonnad",
+  "version": "v260306.21 4:15p",
+  "release": 489,
+  "sha": "b2301fdc9",
+  "fullSha": "b2301fdc96cc44ce06a686ffc3bc299a3204b81a",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 22:11:58+00",
-  "commits": [{"sha":"625dd1ef9","message":"Fix appUser scoping bug in nest-control OAuth callback","author":"Rahul"},{"sha":"5c8b10de0","message":"Merge fix: nest-control appUser scoping bug in OAuth callback","author":"Rahul"}]
+  "pushedAt": "2026-03-06 22:15:16+00",
+  "commits": [{"sha":"3813de2d9","message":"Fix payment request email: pass subject/html in data param not options","author":"Jacqueline Giroux"},{"sha":"b2301fdc9","message":"Fix payment request email for associates","author":"Jacqueline Giroux"}]
 }
