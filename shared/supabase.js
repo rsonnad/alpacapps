@@ -59,7 +59,7 @@ async function pingSupabase() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/brand_config?select=id&limit=1`, {
       method: 'HEAD',
       headers: { 'apikey': SUPABASE_ANON_KEY },
       signal: controller.signal,
