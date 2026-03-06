@@ -1,12 +1,12 @@
 {
-  "version": "v260306.02 1:34a",
-  "release": 470,
-  "sha": "7cf16cf2b",
-  "fullSha": "7cf16cf2b3ac60365d377c2a84c8e97d20b103e8",
+  "version": "v260306.03 1:39a",
+  "release": 471,
+  "sha": "65d043435",
+  "fullSha": "65d043435352d0a80f19267434414ef4ed4ecc15",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 07:34:43+00",
-  "commits": [{"sha":"7cf16cf2b","message":"Add US visa playbook page for Thai massage therapists","author":"Rahul"}]
+  "pushedAt": "2026-03-06 07:39:53+00",
+  "commits": [{"sha":"d227e9f22","message":"Add site navigation header with version to thaivisa page","author":"Rahul"},{"sha":"65d043435","message":"Add nav header to thaivisa page","author":"Rahul"}]
 }
