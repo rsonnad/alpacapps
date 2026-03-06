@@ -1,12 +1,12 @@
 {
-  "version": "v260306.19 3:23p",
-  "release": 487,
-  "sha": "d86b0a857",
-  "fullSha": "d86b0a857a0d24353b3b57f168e86464ec9bd544",
-  "actor": "jackie61899280",
+  "version": "v260306.20 4:11p",
+  "release": 488,
+  "sha": "5c8b10de0",
+  "fullSha": "5c8b10de05f16e6a47ce10d35e723944da0ab620",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 21:23:11+00",
-  "commits": [{"sha":"e0e2064cd","message":"Fix identity verification: pass person_id directly + make column nullable","author":"Jacqueline Giroux"},{"sha":"d86b0a857","message":"Fix identity verification for associates","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-06 22:11:58+00",
+  "commits": [{"sha":"625dd1ef9","message":"Fix appUser scoping bug in nest-control OAuth callback","author":"Rahul"},{"sha":"5c8b10de0","message":"Merge fix: nest-control appUser scoping bug in OAuth callback","author":"Rahul"}]
 }
