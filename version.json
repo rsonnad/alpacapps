@@ -1,12 +1,12 @@
 {
-  "version": "v260307.24 12:36p",
-  "release": 517,
-  "sha": "9c7faaaa7",
-  "fullSha": "9c7faaaa721e4a04100b282d3219d782d30f646d",
+  "version": "v260307.25 12:50p",
+  "release": 518,
+  "sha": "2264225a4",
+  "fullSha": "2264225a451662711c06b2dcf1643cbadea4e141",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 18:36:42+00",
-  "commits": [{"sha":"1823650a8","message":"Add canonical design tokens file and expand Tailwind v4 @theme","author":"Rahul"},{"sha":"9c7faaaa7","message":"Merge branch 'sad-napier'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 18:50:55+00",
+  "commits": [{"sha":"2264225a4","message":"feat(rahulio/pages): auto-updating index from manifest, CI regeneration","author":"Rahul"}]
 }
