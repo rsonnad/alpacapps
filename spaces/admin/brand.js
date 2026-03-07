@@ -9,6 +9,11 @@
 import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
+/** Read a live CSS custom property value from :root */
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 let authState = null;
 let brandConfig = null;
 
@@ -78,6 +83,14 @@ function renderAll() {
   renderEmailDesignGuide();
   renderUIComponents();
   renderRawJson();
+
+  // Design tokens (read from CSS, independent of brandConfig)
+  renderSpacingScale();
+  renderSpacingAliases();
+  renderTokenTypeScale();
+  renderMotionTokens();
+  renderZIndexTokens();
+  renderLayoutTokens();
 }
 
 // =============================================
@@ -1384,4 +1397,175 @@ function renderRawJson() {
   const el = document.getElementById('rawJson');
   if (!el || !brandConfig) return;
   el.textContent = JSON.stringify(brandConfig, null, 2);
+}
+
+/* ===================================================================
+   DESIGN TOKENS — live CSS custom property demos
+   =================================================================== */
+
+function renderSpacingScale() {
+  const el = document.getElementById('spacingScale');
+  if (!el) return;
+  const stops = [
+    ['--aap-space-0', '0'],
+    ['--aap-space-1', '4 px'],
+    ['--aap-space-2', '8 px'],
+    ['--aap-space-3', '12 px'],
+    ['--aap-space-4', '16 px'],
+    ['--aap-space-5', '20 px'],
+    ['--aap-space-6', '24 px'],
+    ['--aap-space-8', '32 px'],
+    ['--aap-space-10', '40 px'],
+    ['--aap-space-12', '48 px'],
+    ['--aap-space-16', '64 px'],
+    ['--aap-space-20', '80 px'],
+    ['--aap-space-24', '96 px'],
+  ];
+  el.innerHTML = stops.map(([token, label]) => {
+    const val = getCSSVar(token) || '0';
+    return `<div class="flex items-center gap-3 py-1">
+      <code class="text-xs w-36 shrink-0">${token}</code>
+      <span class="text-xs text-aap-text-muted w-12 shrink-0 text-right">${label}</span>
+      <div class="h-3 rounded-sm" style="width:${val};background:var(--aap-accent);min-width:2px"></div>
+    </div>`;
+  }).join('');
+}
+
+function renderSpacingAliases() {
+  const el = document.getElementById('spacingAliases');
+  if (!el) return;
+  const aliases = [
+    ['--aap-space-xs', '--aap-space-2', '8 px'],
+    ['--aap-space-sm', '--aap-space-4', '16 px'],
+    ['--aap-space-md', '--aap-space-6', '24 px'],
+    ['--aap-space-lg', '--aap-space-8', '32 px'],
+    ['--aap-space-xl', '--aap-space-12', '48 px'],
+    ['--aap-space-2xl', '--aap-space-16', '64 px'],
+    ['--aap-space-3xl', '--aap-space-24', '96 px'],
+  ];
+  el.innerHTML = `<div class="grid grid-cols-[auto_auto_auto_1fr] gap-x-4 gap-y-1 items-center">
+    ${aliases.map(([alias, maps, label]) => `
+      <code class="text-xs">${alias}</code>
+      <span class="text-xs text-aap-text-muted">&rarr;</span>
+      <code class="text-xs text-aap-text-muted">${maps}</code>
+      <span class="text-xs text-aap-text-muted">${label}</span>
+    `).join('')}
+  </div>`;
+}
+
+function renderTokenTypeScale() {
+  const el = document.getElementById('tokenTypeScale');
+  if (!el) return;
+  const sizes = [
+    ['--aap-text-xs', '0.75rem', '12 px'],
+    ['--aap-text-sm', '0.875rem', '14 px'],
+    ['--aap-text-base', '1rem', '16 px'],
+    ['--aap-text-lg', '1.125rem', '18 px'],
+    ['--aap-text-xl', '1.25rem', '20 px'],
+    ['--aap-text-2xl', '1.5rem', '24 px'],
+    ['--aap-text-3xl', '2rem', '32 px'],
+  ];
+  el.innerHTML = sizes.map(([token, rem, px]) =>
+    `<div class="flex items-baseline gap-4 py-2 border-b border-aap-border last:border-0">
+      <code class="text-xs w-32 shrink-0">${token}</code>
+      <span class="text-xs text-aap-text-muted w-16 shrink-0">${px}</span>
+      <span style="font-size:var(${token});line-height:1.3">The quick brown alpaca</span>
+    </div>`
+  ).join('');
+}
+
+function renderMotionTokens() {
+  const el = document.getElementById('motionTokens');
+  if (!el) return;
+  const durations = [
+    ['--aap-duration-fast', '150 ms'],
+    ['--aap-duration', '200 ms'],
+    ['--aap-duration-slow', '400 ms'],
+  ];
+  const easings = [
+    ['--aap-ease', 'ease'],
+    ['--aap-ease-out', 'cubic-bezier(0.16, 1, 0.3, 1)'],
+  ];
+  el.innerHTML = `
+    <div class="mb-6">
+      <h4 class="text-sm font-semibold mb-3">Durations</h4>
+      <div class="flex gap-6 flex-wrap">
+        ${durations.map(([token, label]) => `
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-14 h-14 rounded-aap bg-aap-accent-light flex items-center justify-center cursor-pointer motion-demo-box"
+                 style="transition:transform var(${token}) var(--aap-ease),background var(${token}) var(--aap-ease)"
+                 onmouseenter="this.style.transform='scale(1.3)';this.style.background='var(--aap-accent)'"
+                 onmouseleave="this.style.transform='scale(1)';this.style.background='var(--aap-accent-light)'">
+              <span class="text-xs font-semibold" style="pointer-events:none">${label}</span>
+            </div>
+            <code class="text-xs">${token}</code>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold mb-3">Easing Curves</h4>
+      <div class="flex gap-6 flex-wrap">
+        ${easings.map(([token, label]) => `
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-14 h-14 rounded-aap bg-aap-accent-light flex items-center justify-center cursor-pointer"
+                 style="transition:transform var(--aap-duration-slow) ${label},background var(--aap-duration-slow) ${label}"
+                 onmouseenter="this.style.transform='scale(1.3)';this.style.background='var(--aap-accent)'"
+                 onmouseleave="this.style.transform='scale(1)';this.style.background='var(--aap-accent-light)'">
+              <span class="text-xs font-semibold text-center leading-tight" style="pointer-events:none">${token.replace('--aap-','')}</span>
+            </div>
+            <code class="text-xs">${token}</code>
+            <span class="text-xs text-aap-text-muted">${label}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderZIndexTokens() {
+  const el = document.getElementById('zIndexTokens');
+  if (!el) return;
+  const layers = [
+    ['--aap-z-toast', 500, '#c53030'],
+    ['--aap-z-modal', 400, '#d4883a'],
+    ['--aap-z-overlay', 300, '#2d8a4e'],
+    ['--aap-z-sticky', 200, '#3182ce'],
+    ['--aap-z-dropdown', 100, '#7d6f74'],
+  ];
+  el.innerHTML = `<div class="relative h-52 flex items-end gap-1">
+    ${layers.map(([token, val, color], i) => {
+      const h = 30 + (layers.length - i) * 20;
+      const left = i * 28;
+      return `<div class="absolute rounded-aap-sm px-3 py-2 text-white text-xs font-semibold shadow-aap flex flex-col justify-end"
+                   style="background:${color};height:${h}%;left:${left}px;right:${(layers.length - 1 - i) * 28}px;z-index:${i + 1}">
+        <code class="text-white/90">${token}</code>
+        <span class="text-white/70">${val}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderLayoutTokens() {
+  const el = document.getElementById('layoutTokens');
+  if (!el) return;
+  const widths = [
+    ['--aap-max-width', '1200px'],
+    ['--aap-max-width-lg', '1024px'],
+    ['--aap-max-width-md', '768px'],
+    ['--aap-max-width-sm', '640px'],
+    ['--aap-header-height', '44px'],
+  ];
+  const maxVal = 1200;
+  el.innerHTML = widths.map(([token, label]) => {
+    const px = parseInt(label);
+    const pct = token.includes('header') ? null : Math.round((px / maxVal) * 100);
+    return `<div class="flex items-center gap-3 py-2">
+      <code class="text-xs w-40 shrink-0">${token}</code>
+      <span class="text-xs text-aap-text-muted w-16 shrink-0 text-right">${label}</span>
+      ${pct !== null
+        ? `<div class="h-3 rounded-sm bg-aap-info" style="width:${pct}%"></div>`
+        : `<div class="h-6 rounded-sm bg-aap-warning flex items-center px-2" style="width:${px}px"><span class="text-xs text-white font-semibold" style="pointer-events:none">header</span></div>`
+      }
+    </div>`;
+  }).join('');
 }
