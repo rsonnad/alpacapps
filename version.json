@@ -1,12 +1,12 @@
 {
-  "version": "v260307.25 12:50p",
-  "release": 518,
-  "sha": "2264225a4",
-  "fullSha": "2264225a451662711c06b2dcf1643cbadea4e141",
+  "version": "v260307.26 1:27p",
+  "release": 519,
+  "sha": "adb682b05",
+  "fullSha": "adb682b051f9df904d970aca7355e00cc360bd36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 18:50:55+00",
-  "commits": [{"sha":"2264225a4","message":"feat(rahulio/pages): auto-updating index from manifest, CI regeneration","author":"Rahul"}]
+  "pushedAt": "2026-03-07 19:27:58+00",
+  "commits": [{"sha":"adb682b05","message":"Ninja workshop: signups list page, waitlist at 6, get-ninja-rsvp-status edge function","author":"Rahul"}]
 }
