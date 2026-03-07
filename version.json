@@ -1,12 +1,12 @@
 {
-  "version": "v260307.20 11:20a",
-  "release": 513,
-  "sha": "c611cbaf5",
-  "fullSha": "c611cbaf545158f1d7e25eceb3f7607918590ccd",
+  "version": "v260307.21 11:23a",
+  "release": 514,
+  "sha": "39832b075",
+  "fullSha": "39832b075f5f8149772c534984e2551210aadb9d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 17:20:34+00",
-  "commits": [{"sha":"c611cbaf5","message":"Ninja hero: put title to the right of image in a flex row","author":"Rahul"}]
+  "pushedAt": "2026-03-07 17:23:12+00",
+  "commits": [{"sha":"39832b075","message":"Ninja note: remove ROI phrase, move 'for ongoing development' after price","author":"Rahul"}]
 }
