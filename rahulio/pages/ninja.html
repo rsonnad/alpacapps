@@ -123,6 +123,25 @@
       padding-right: 0.5rem;
       box-sizing: border-box;
     }
+    .ninja-hero__row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .ninja-hero__row .ninja-hero__image {
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+    .ninja-hero__row .ninja-hero__title {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 200px;
+    }
+    @media (max-width: 520px) {
+      .ninja-hero__row { flex-direction: column; align-items: flex-start; }
+    }
     .ninja-hero__image {
       width: 100%;
       max-width: 200px;
@@ -992,12 +1011,13 @@
        ════════════════════════════════════════════════════ -->
   <header class="ninja-hero">
     <div class="ninja-hero__content">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770759994873-wqerdo.jpg" alt="AI Software Ninja Workshop" class="ninja-hero__image" width="200" height="200">
-
-      <h1 class="ninja-hero__title">
-        become an <em>AI software ninja</em><br>
-        in 90 minutes for free<span class="free-asterisk">*</span>
-      </h1>
+      <div class="ninja-hero__row">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/1770759994873-wqerdo.jpg" alt="AI Software Ninja Workshop" class="ninja-hero__image" width="200" height="200">
+        <h1 class="ninja-hero__title">
+          become an <em>AI software ninja</em><br>
+          in 90 minutes for free<span class="free-asterisk">*</span>
+        </h1>
+      </div>
 
       <p class="ninja-hero__subtitle">
         A guide to launching into effortless vibe-coding with <code>claude code</code> and rapidly realizing your digital dreams.
