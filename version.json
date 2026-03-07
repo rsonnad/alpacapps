@@ -1,12 +1,12 @@
 {
-  "version": "v260307.09 10:21a",
-  "release": 502,
-  "sha": "a7626e17e",
-  "fullSha": "a7626e17e80deb79da01fdf6c2691e8794dcdc1d",
+  "version": "v260307.10 10:23a",
+  "release": 503,
+  "sha": "fb75146c8",
+  "fullSha": "fb75146c87ab40bdeb0012e4d38b187b146473dc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:21:01+00",
-  "commits": [{"sha":"a7626e17e","message":"ninja: remove box from What you will get, tighten 13 min line spacing","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:23:38+00",
+  "commits": [{"sha":"fb75146c8","message":"Use sshpass -f password file for SSH; avoid shell escaping for ! and special chars","author":"Rahul"}]
 }
