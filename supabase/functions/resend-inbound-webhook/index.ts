@@ -1684,6 +1684,11 @@ function parsePayPalPayment(bodyText: string, fromAddress: string): PayPalPaymen
 
   const normalized = bodyText.replace(/\s+/g, " ");
 
+  // Reject OUTBOUND PayPal payments — we only care about money received, not money sent
+  if (/you sent \$[\d,]+\.\d{2}/i.test(normalized) || /you sent a payment/i.test(normalized)) {
+    return null;
+  }
+
   // Pattern 1: "You've received $X.XX from Name"
   const receivedPattern1 = /(?:You['']ve received|You received|received a payment of) \$([\d,]+\.\d{2})(?: USD)? from (.+?)(?:\s*\.|$|!|\s+for\b)/im;
   const match1 = normalized.match(receivedPattern1);
