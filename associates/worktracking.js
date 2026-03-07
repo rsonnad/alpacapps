@@ -1482,6 +1482,7 @@ function renderSchedule() {
         ? (actualMins >= plannedMins ? 'met' : (actualMins > 0 ? 'partial' : 'none'))
         : 'none';
 
+      const hasVal = startVal || endVal;
       html += `<div class="schedule-row">
         <span class="sr-date${isToday ? ' today' : ''}">${dayLabel}</span>
         <input type="time" data-date="${date}" data-field="start" value="${startVal}">
@@ -1489,6 +1490,7 @@ function renderSchedule() {
         <input type="time" data-date="${date}" data-field="end" value="${endVal}">
         <span class="sr-planned">${plannedLabel}</span>
         <span class="sr-actual ${actualClass}">${actualLabel}</span>
+        <button type="button" class="sr-clear${hasVal ? ' has-value' : ''}" data-date="${date}" title="Clear day">&times;</button>
       </div>`;
     }
 
@@ -1503,6 +1505,18 @@ function renderSchedule() {
   }
 
   gridEl.innerHTML = html;
+
+  // Clear button handlers
+  gridEl.querySelectorAll('.sr-clear').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const date = btn.dataset.date;
+      const startInput = gridEl.querySelector(`input[data-date="${date}"][data-field="start"]`);
+      const endInput = gridEl.querySelector(`input[data-date="${date}"][data-field="end"]`);
+      if (startInput) startInput.value = '';
+      if (endInput) endInput.value = '';
+      btn.classList.remove('has-value');
+    });
+  });
 }
 
 async function saveSchedule() {

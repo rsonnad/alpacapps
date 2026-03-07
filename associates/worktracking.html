@@ -343,7 +343,7 @@
 
     .schedule-grid { display: flex; flex-direction: column; gap: 0.35rem; }
     .schedule-row {
-      display: grid; grid-template-columns: 90px 1fr 12px 1fr 50px 50px;
+      display: grid; grid-template-columns: 90px 1fr 12px 1fr 50px 50px 20px;
       align-items: center; gap: 0.4rem; padding: 0.35rem 0;
       border-bottom: 1px solid #f5f5f5; font-size: 0.82rem;
     }
@@ -362,6 +362,14 @@
     .schedule-row .sr-actual.met { color: #16a34a; }
     .schedule-row .sr-actual.partial { color: #ca8a04; }
     .schedule-row .sr-actual.none { color: #94a3b8; }
+    .schedule-row .sr-clear {
+      display: flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border: none; background: none;
+      color: #cbd5e1; font-size: 1rem; cursor: pointer; padding: 0;
+      border-radius: 50%; line-height: 1;
+    }
+    .schedule-row .sr-clear:hover { color: #ef4444; background: #fef2f2; }
+    .schedule-row .sr-clear.has-value { color: #94a3b8; }
 
     .schedule-week-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -460,7 +468,7 @@
       .app-container { padding: 0.75rem; }
       .clock-btn { width: 150px; height: 150px; font-size: 1.2rem; }
       .timer { font-size: 1.6rem; }
-      .schedule-row { grid-template-columns: 72px 1fr 10px 1fr 40px 40px; gap: 0.25rem; }
+      .schedule-row { grid-template-columns: 72px 1fr 10px 1fr 40px 40px 18px; gap: 0.25rem; }
       .schedule-row .sr-date { font-size: 0.75rem; }
     }
   </style>
