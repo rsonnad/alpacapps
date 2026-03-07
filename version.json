@@ -1,12 +1,12 @@
 {
-  "version": "v260307.13 10:31a",
-  "release": 506,
-  "sha": "091144572",
-  "fullSha": "091144572198710398b04cb37c13a19d1946ce71",
+  "version": "v260307.14 10:41a",
+  "release": 507,
+  "sha": "1c5f9bac4",
+  "fullSha": "1c5f9bac4684b036d2e919b02cf8e691cb6aafd3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:31:06+00",
-  "commits": [{"sha":"091144572","message":"ninja: wider content (920px container, 860px hero), mobile-friendly (safe area, 48px touch targets, 16px inputs)","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:41:23+00",
+  "commits": [{"sha":"1c5f9bac4","message":"ninja: remove Find Us, move Getting Here above Location; 13min spacing, cta-note align, serif body","author":"Rahul"}]
 }
