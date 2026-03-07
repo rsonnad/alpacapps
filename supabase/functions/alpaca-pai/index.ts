@@ -3054,9 +3054,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   // Supabase gateway strips/transforms Authorization headers, so also accept service key in body
   const bodyServiceKey = body.serviceKey ?? "";
   const serviceKeyPlatform = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const serviceKeyJwt = Deno.env.get("SERVICE_ROLE_JWT");
-  const isServiceKey = token === serviceKeyPlatform || token === serviceKeyJwt ||
-    bodyServiceKey === serviceKeyPlatform || bodyServiceKey === serviceKeyJwt;
+  const isServiceKey = token === serviceKeyPlatform ||
+    bodyServiceKey === serviceKeyPlatform;
 
   let appUser: any;
   let userLevel: number;

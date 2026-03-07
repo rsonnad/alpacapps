@@ -373,7 +373,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
 
     // Associates, staff, admin, and oracle can access associate pages
     const userRole = state.appUser?.role;
-    const allowedRoles = ['associate', 'staff', 'admin', 'oracle', 'demon'];
+    const allowedRoles = ['associate', 'staff', 'admin', 'oracle', 'demo'];
     const meetsRequirement = allowedRoles.includes(userRole);
 
     if (state.appUser && meetsRequirement) {

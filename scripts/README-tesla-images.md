@@ -1,7 +1,7 @@
 # Tesla Vehicle Image Updates
 
 ## Issue
-The cars page (`residents/cars.html`) was showing SVG wireframe silhouettes instead of real car photos because the `image_url` field in the `tesla_vehicles` table was empty.
+The cars page (`residents/cars.html`) was showing SVG wireframe silhouettes instead of real car photos because the `image_url` field in the `vehicles` table was empty.
 
 ## Fix Applied
 Updated all 6 vehicles with stock Tesla photos from Unsplash as temporary placeholders:

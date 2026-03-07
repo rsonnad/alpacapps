@@ -100,7 +100,7 @@ async function loadUsers() {
   const { data: users } = await supabase
     .from('app_users')
     .select('id, display_name, first_name, last_name, role, email')
-    .not('role', 'in', '("demon","prospect","public")')
+    .not('role', 'in', '("demo","prospect","public")')
     .order('display_name');
 
   const select = document.getElementById('assignedToSelect');
