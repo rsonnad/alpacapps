@@ -90,7 +90,34 @@ done
 
 - Create project folder structure adapted to user's domain
 - Scaffold `CLAUDE.md` (shareable context) and `CLAUDE.local.md` (private credentials)
-- Add `CLAUDE.local.md` to `.gitignore`
+- **Initial `CLAUDE.local.md` must include** (so all projects inherit it):
+
+  ```markdown
+  # CLAUDE.local.md - Private Configuration & Operator Directives
+
+  This file contains credentials, connection strings, and environment-specific configuration.
+  It is gitignored and should NOT be checked into version control.
+
+  ## Passwords and shell escaping
+
+  **Best practice: never put passwords on the command line.** Shells interpret `!` (history expansion), `$`, quotes, and backslashes, so `sshpass -p 'pass!word'` often fails or is unsafe.
+
+  - **Use a password file + `sshpass -f`** (recommended): Store the password in a file with restricted permissions and use `sshpass -f /path/to/file ssh ...`. The password never appears in argv or history. No escaping needed.
+  - **Optional — base64 in this file**: For credentials that contain `!$'"\`` etc., store them base64-encoded here. Decode once into a password file: `echo BASE64 | base64 -d > ~/.ssh/alpacapps-SERVICE.pass && chmod 600 ~/.ssh/alpacapps-SERVICE.pass`. Then use `sshpass -f ~/.ssh/alpacapps-SERVICE.pass` in commands.
+  - **Changing passwords** to remove special characters weakens entropy; prefer the file-based approach.
+
+  Conventional password file path: `~/.ssh/alpacapps-<service>.pass`. Keep these outside the repo.
+
+  ## Live URLs
+
+  (Add after first deploy)
+
+  ## Operator Directives
+
+  (Add as needed)
+  ```
+
+- Add `CLAUDE.local.md` to `.gitignore`. Also add `.sshpass-*` and `*.pass` so any local SSH password files stay ignored.
 - Add note at top of `CLAUDE.md`: "See `CLAUDE.local.md` for credentials and environment-specific configuration."
 - Commit and push
 

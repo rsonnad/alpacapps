@@ -30,6 +30,7 @@ For running bots, workers, pollers, and background automation.
 4. Append to CLAUDE.md: droplet role (bots, workers), repo clone for automation
 5. Append to CLAUDE.local.md:
    - IP, SSH command, OS/specs, cost
+   - **If SSH uses password auth** (no key): use password file — document `sshpass -f ~/.ssh/alpacapps-<service>.pass ssh ...` and one-time setup: `echo 'BASE64' | base64 -d > ~/.ssh/alpacapps-<service>.pass && chmod 600 ~/.ssh/alpacapps-<service>.pass`. Store the password base64 in CLAUDE.local.md so the password never appears on the command line (see "Passwords and shell escaping" in initial scaffold).
    - Service users and working directories
    - Repo paths with `core.sharedRepository=group` note
    - Troubleshooting: ownership fix for `.git/objects`
@@ -92,7 +93,7 @@ Each service needs:
    ```
 6. Set up Caddy reverse proxy (if needed for camera/media proxying)
 7. Append to CLAUDE.md: Oracle Cloud specs, services, Tailscale mesh
-8. Append to CLAUDE.local.md: login credentials, Cloud Account Name, console URL, IP, SSH command
+8. Append to CLAUDE.local.md: login credentials, Cloud Account Name, console URL, IP, SSH command. **If the instance uses password auth** (e.g. before key is set): use password file and base64 as in "Passwords and shell escaping"; document `sshpass -f ~/.ssh/alpacapps-oracle.pass ssh ...` and one-time file setup.
 
 ### Oracle vs DigitalOcean Comparison
 
