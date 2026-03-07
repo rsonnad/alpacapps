@@ -1,12 +1,12 @@
 {
-  "version": "v260307.18 10:58a",
-  "release": 511,
-  "sha": "aa4176db1",
-  "fullSha": "aa4176db1b5f612620ee93700ded3c3547616fcc",
+  "version": "v260307.19 11:14a",
+  "release": 512,
+  "sha": "f2547c2c2",
+  "fullSha": "f2547c2c24893fab6ffa192705a9a870f7867ab0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:58:50+00",
-  "commits": [{"sha":"ebc49607b","message":"Ninja page: add self-serve line with link to AlpacApps Infra doc","author":"Rahul"},{"sha":"aa4176db1","message":"Ninja: darker subtitle, sauna/hot tub/cold plunge copy","author":"Rahul"}]
+  "pushedAt": "2026-03-07 17:14:18+00",
+  "commits": [{"sha":"f2547c2c2","message":"ninja: add larger bottom image section before footer","author":"Rahul"}]
 }
