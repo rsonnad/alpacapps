@@ -70,77 +70,11 @@
 
     <div class="container">
         <h1>Rahulio's Pages</h1>
-
-        <ul class="pages-list">
-            <li><a href="donate.html">
-                <div class="page-title">Donate — Gaden Shartse Gungru Khangtsen Monastery</div>
-                <div class="page-path">donate.html</div>
-            </a></li>
-            <li><a href="get-a-tesla.html">
-                <div class="page-title">Why You Should Get Annabelle a Tesla</div>
-                <div class="page-path">get-a-tesla.html</div>
-            </a></li>
-            <li><a href="india-business-visa.html">
-                <div class="page-title">Indian Visa via Business: Step-by-Step for EU Citizens</div>
-                <div class="page-path">india-business-visa.html</div>
-            </a></li>
-            <li><a href="no-longer-a-hot-mess.html">
-                <div class="page-title">No longer a hot mess.</div>
-                <div class="page-path">no-longer-a-hot-mess.html</div>
-            </a></li>
-            <li><a href="poland-sauna-business.html">
-                <div class="page-title">Starting a Sauna Business in Poland: Complete Guide for Americans</div>
-                <div class="page-path">poland-sauna-business.html</div>
-            </a></li>
-            <li><a href="thaivisa/index.html">
-                <div class="page-title">US Visa Playbook for Thai Massage Therapists</div>
-                <div class="page-path">thaivisa/index.html</div>
-            </a></li>
-            <li><a href="thaivisa/th/index.html">
-                <div class="page-title">🇹🇭 คู่มือกลยุทธ์วีซ่าสหรัฐฯ (Thai Translation)</div>
-                <div class="page-path">thaivisa/th/index.html</div>
-            </a></li>
-            <li><a href="spiritofpai.html">
-                <div class="page-title">Spirit of PAI — When AI Inhabits a Home</div>
-                <div class="page-path">spiritofpai.html</div>
-            </a></li>
-            <li><a href="withinmigration.html">
-                <div class="page-title">Within Center — Site Migration Proposal</div>
-                <div class="page-path">withinmigration.html</div>
-            </a></li>
-        </ul>
-
-        <div class="section-label">E-2 Visa</div>
-        <ul class="pages-list">
-            <li><a href="E2v/index.html">
-                <div class="page-title">E-2 Visa Playbook: Polish Citizen in Austin, TX</div>
-                <div class="page-path">E2v/index.html</div>
-            </a></li>
-            <li><a href="E2v/e2v2.html">
-                <div class="page-title">E-2 Visa Playbook (v2)</div>
-                <div class="page-path">E2v/e2v2.html</div>
-            </a></li>
-            <li><a href="E2v/ev23.html">
-                <div class="page-title">AlpacApps E-2 Business Investment Guide</div>
-                <div class="page-path">E2v/ev23.html</div>
-            </a></li>
-        </ul>
-
-        <div class="section-label">Projects</div>
-        <ul class="pages-list">
-            <li><a href="bandb/index.html">
-                <div class="page-title">The Animist Apothecary — Bodywork + Botanicals</div>
-                <div class="page-path">bandb/index.html</div>
-            </a></li>
-            <li><a href="iaw/index.html">
-                <div class="page-title">Welcome to the Alpachuasca Playhouse</div>
-                <div class="page-path">iaw/index.html</div>
-            </a></li>
-            <li><a href="sloop/index.html">
-                <div class="page-title">Sloop — Tesla Model Y 2026</div>
-                <div class="page-path">sloop/index.html</div>
-            </a></li>
-        </ul>
+        <p id="pages-meta" class="page-path" style="margin-bottom:1rem;"></p>
+        <div id="pages-root"></div>
+        <noscript>
+            <p>Enable JavaScript to see the full list, or run <code>node scripts/rahulio-pages-manifest.js</code> and refresh.</p>
+        </noscript>
     </div>
 
     <script src="/vendor/supabase-js-2.39.3.min.js"></script>
@@ -148,6 +82,60 @@
     <script type="module">
         import { initPublicPage } from '/shared/public-shell.js';
         initPublicPage({ transparent: true, light: true });
+    </script>
+    <script type="module">
+        (function () {
+            const root = document.getElementById('pages-root');
+            const meta = document.getElementById('pages-meta');
+            const manifestUrl = 'pages-manifest.json';
+
+            function escapeHtml(s) {
+                const div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+
+            function render(manifest) {
+                const entries = manifest.entries || [];
+                const sectionOrder = [null, 'E-2 Visa', 'Projects'];
+                const bySection = {};
+                for (const e of entries) {
+                    const key = e.section != null ? e.section : '';
+                    if (!bySection[key]) bySection[key] = [];
+                    bySection[key].push(e);
+                }
+                let html = '';
+                for (const section of sectionOrder) {
+                    const key = section == null ? '' : section;
+                    const list = bySection[key] || [];
+                    if (list.length === 0) continue;
+                    if (section) html += '<div class="section-label">' + escapeHtml(section) + '</div>';
+                    html += '<ul class="pages-list">';
+                    for (const e of list) {
+                        html += '<li><a href="' + escapeHtml(e.path) + '">' +
+                            '<div class="page-title">' + escapeHtml(e.title) + '</div>' +
+                            '<div class="page-path">' + escapeHtml(e.path) + '</div></a></li>';
+                    }
+                    html += '</ul>';
+                }
+                root.innerHTML = html;
+
+                if (manifest.generatedAt) {
+                    const d = new Date(manifest.generatedAt);
+                    meta.textContent = 'List built ' + d.toLocaleDateString(undefined, { dateStyle: 'medium' }) + '. New pages appear after running \u2018node scripts/rahulio-pages-manifest.js\u2019 and deploying.';
+                }
+            }
+
+            fetch(manifestUrl)
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.statusText)); })
+                .then(function (manifest) {
+                    render(manifest);
+                })
+                .catch(function (err) {
+                    root.innerHTML = '<p class="page-path">Could not load page list. Run <code>node scripts/rahulio-pages-manifest.js</code> in the repo and redeploy, then refresh.</p>';
+                    meta.textContent = '';
+                });
+        })();
     </script>
 </body>
 </html>

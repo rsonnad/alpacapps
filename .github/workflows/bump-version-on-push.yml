@@ -31,6 +31,9 @@ jobs:
       - name: Build Tailwind CSS
         run: npm ci && npm run css:build
 
+      - name: Regenerate Rahulio pages manifest
+        run: npm run rahulio-pages-manifest
+
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
