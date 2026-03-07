@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>AI Software Ninja Workshop — Alpaca Playhouse</title>
   <meta name="description" content="Become an AI software ninja in 90 minutes for free. A guide to launching into effortless vibe-coding with Claude Code. Monday March 9th at 1:00 PM.">
   <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
@@ -54,6 +54,9 @@
       color: var(--text-body);
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     /* ── Hero (light background, dark text — site style guide) ── */
@@ -65,7 +68,7 @@
       align-items: center;
       justify-content: flex-start;
       text-align: center;
-      padding: calc(var(--aap-header-height, 44px) + 1.5rem) 1.5rem 2rem 1.5rem;
+      padding: calc(var(--aap-header-height, 44px) + 1.5rem) 1rem 2rem 1rem;
       background: var(--cream);
       border-bottom: 1px solid var(--border-light);
       overflow: hidden;
@@ -98,7 +101,8 @@
     .ninja-hero__content {
       position: relative;
       z-index: 1;
-      max-width: 680px;
+      max-width: 860px;
+      width: 100%;
     }
 
     .ninja-hero__date {
@@ -203,7 +207,7 @@
 
     .ninja-hero__get {
       margin-top: 1.5rem;
-      max-width: 520px;
+      max-width: 700px;
       width: 100%;
       margin-left: auto;
       margin-right: auto;
@@ -239,9 +243,9 @@
       font-weight: 600;
     }
 
-    /* ── Container ── */
+    /* ── Container (wider for readability) ── */
     .container {
-      max-width: 740px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 0 1.25rem;
     }
@@ -278,7 +282,7 @@
       font-size: 1.05rem;
       color: var(--text-muted);
       margin-bottom: 1rem;
-      max-width: 580px;
+      max-width: 720px;
     }
 
     /* ── Requirements ── */
@@ -382,7 +386,7 @@
     .asterisk-note__text {
       font-size: 0.85rem;
       color: var(--text-muted);
-      max-width: 480px;
+      max-width: 640px;
       margin: 0 auto;
       line-height: 1.7;
     }
@@ -403,7 +407,7 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      max-width: 400px;
+      max-width: 520px;
       margin: 0 auto 1rem;
     }
 
@@ -781,7 +785,7 @@
       color: var(--text-muted);
       margin-top: 0.75rem;
       margin-bottom: 0.5rem;
-      max-width: 520px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
       line-height: 1.6;
@@ -887,6 +891,20 @@
       font-family: 'DM Sans', system-ui, sans-serif;
       font-size: 1rem;
       color: var(--text-muted);
+    }
+
+    /* ── Mobile (latest smartphones: touch targets, safe area, readable) ── */
+    @media (max-width: 600px) {
+      .ninja-hero { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+      .container { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+      .ninja-cta { min-height: 48px; padding: 0.875rem 1.75rem; display: inline-flex; align-items: center; justify-content: center; }
+      .rsvp-form__submit { min-height: 48px; padding: 0.875rem 1.5rem; }
+      .rsvp-form__input, .rsvp-form__textarea { min-height: 48px; padding: 0.75rem 1rem; font-size: 16px; }
+      .ninja-hero__title { font-size: clamp(1.75rem, 8vw, 2.5rem); }
+      .section__title { font-size: clamp(1.35rem, 5vw, 1.75rem); }
+    }
+    @media (min-width: 601px) {
+      .container { padding-left: 1.5rem; padding-right: 1.5rem; }
     }
   </style>
 
