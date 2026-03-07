@@ -6,13 +6,17 @@ import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 const EVENT_ID = 'ai-ninja-workshop-2026-03-09';
 const MAX_SPOTS = 6;
 
+let loaded = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
     activeTab: 'ninjasignups',
     requiredRole: 'staff',
     section: 'staff',
-    onReady: loadSignups,
+    onReady: () => { if (!loaded) { loaded = true; loadSignups(); } },
   });
+  // Fallback: if onReady never fired (async auth race), load anyway
+  if (!loaded) { loaded = true; loadSignups(); }
 });
 
 async function loadSignups() {
