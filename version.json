@@ -1,12 +1,12 @@
 {
-  "version": "v260306.23 5:44p",
-  "release": 491,
-  "sha": "cc98a4a8c",
-  "fullSha": "cc98a4a8c0aea3cbdd7033d307dd3850b5394487",
+  "version": "v260306.24 7:05p",
+  "release": 492,
+  "sha": "96d56e5a7",
+  "fullSha": "96d56e5a7dcbf5c68482227ea9f01b71106a0cdf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-06 23:44:36+00",
-  "commits": [{"sha":"cc98a4a8c","message":"Remove obsolete access_code column from spaces; use password_vault for door codes","author":"Rahul"}]
+  "pushedAt": "2026-03-07 01:05:55+00",
+  "commits": [{"sha":"96d56e5a7","message":"Fix: reject outbound PayPal payment emails from Zelle auto-recording","author":"Rahul"}]
 }
