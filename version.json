@@ -1,12 +1,12 @@
 {
-  "version": "v260307.29 2:10p",
-  "release": 522,
-  "sha": "78e2a2ca1",
-  "fullSha": "78e2a2ca104499a8f689b1067773ddc903d6bd65",
+  "version": "v260307.30 2:53p",
+  "release": 523,
+  "sha": "3b66cc8cf",
+  "fullSha": "3b66cc8cffa02ce3c95d9f1538bbae45eb7be489",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 20:10:17+00",
-  "commits": [{"sha":"a39b7a996","message":"fix: ninja signups page stuck on loading due to async auth race","author":"Rahul"},{"sha":"78e2a2ca1","message":"Merge branch 'adoring-liskov'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 20:53:14+00",
+  "commits": [{"sha":"3b66cc8cf","message":"Slim CLAUDE.md to fix context exhaustion; move schema, integrations, changelog to docs/","author":"Rahul"}]
 }
