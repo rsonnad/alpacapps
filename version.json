@@ -1,12 +1,12 @@
 {
-  "version": "v260306.24 7:05p",
-  "release": 492,
-  "sha": "96d56e5a7",
-  "fullSha": "96d56e5a7dcbf5c68482227ea9f01b71106a0cdf",
+  "version": "v260306.25 9:51p",
+  "release": 493,
+  "sha": "2f8f81e06",
+  "fullSha": "2f8f81e065eddb0dded34b3b730a4e075c920684",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 01:05:55+00",
-  "commits": [{"sha":"96d56e5a7","message":"Fix: reject outbound PayPal payment emails from Zelle auto-recording","author":"Rahul"}]
+  "pushedAt": "2026-03-07 03:51:51+00",
+  "commits": [{"sha":"2f8f81e06","message":"Template architecture rationalization: role cleanup, property config, deprecation removal","author":"Rahul"}]
 }
