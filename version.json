@@ -1,12 +1,12 @@
 {
-  "version": "v260307.02 9:25a",
-  "release": 495,
-  "sha": "9b3885e59",
-  "fullSha": "9b3885e5920006cecfc6a4b6aca8335af34054a9",
+  "version": "v260307.03 9:40a",
+  "release": 496,
+  "sha": "6a504064b",
+  "fullSha": "6a504064b2418469341b599738e9f01522b705d3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 15:25:24+00",
-  "commits": [{"sha":"7cbbce0dd","message":"Add AI Ninja Workshop event page with RSVP signup","author":"Rahul"},{"sha":"9b3885e59","message":"Merge branch 'funny-jang'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 15:40:53+00",
+  "commits": [{"sha":"6a504064b","message":"ninja: tighten spacing, date below subtitle, RSVP note, laptop reqs, towels copy, move transport, remove pillows/blankets","author":"Rahul"}]
 }
