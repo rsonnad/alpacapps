@@ -1,12 +1,12 @@
 {
-  "version": "v260307.05 9:56a",
-  "release": 498,
-  "sha": "3a1d837b9",
-  "fullSha": "3a1d837b97cfedfc99508a7e71944f02f2aaf1eb",
+  "version": "v260307.06 9:59a",
+  "release": 499,
+  "sha": "d4035a0c1",
+  "fullSha": "d4035a0c14fc8b099d18b3e876c7426048b76579",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 15:56:17+00",
-  "commits": [{"sha":"3a1d837b9","message":"docs: add Slack Alpaclaw reinstall and troubleshooting guide","author":"Rahul"}]
+  "pushedAt": "2026-03-07 15:59:43+00",
+  "commits": [{"sha":"d4035a0c1","message":"ninja: add siteHeader for standard Alpaca Playhouse nav","author":"Rahul"}]
 }
