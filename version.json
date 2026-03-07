@@ -1,12 +1,12 @@
 {
-  "version": "v260307.28 1:58p",
-  "release": 521,
-  "sha": "8bcb2d63c",
-  "fullSha": "8bcb2d63c5a4d1878e4d828472ba45811047a8af",
+  "version": "v260307.29 2:10p",
+  "release": 522,
+  "sha": "78e2a2ca1",
+  "fullSha": "78e2a2ca104499a8f689b1067773ddc903d6bd65",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 19:58:49+00",
-  "commits": [{"sha":"aea2ee5c1","message":"Add Design Tokens visual demos to brand page","author":"Rahul"},{"sha":"8bcb2d63c","message":"Merge branch 'sad-napier'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 20:10:17+00",
+  "commits": [{"sha":"a39b7a996","message":"fix: ninja signups page stuck on loading due to async auth race","author":"Rahul"},{"sha":"78e2a2ca1","message":"Merge branch 'adoring-liskov'","author":"Rahul"}]
 }
