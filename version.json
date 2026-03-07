@@ -1,12 +1,12 @@
 {
-  "version": "v260307.07 10:04a",
-  "release": 500,
-  "sha": "b166e0ae2",
-  "fullSha": "b166e0ae2fd39ede4b75de7f2717fdc99aced315",
+  "version": "v260307.08 10:17a",
+  "release": 501,
+  "sha": "4283c79b3",
+  "fullSha": "4283c79b325eef4838a4505b0990a2511a8c1d6f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:04:32+00",
-  "commits": [{"sha":"b166e0ae2","message":"ninja: add top padding to clear fixed site header and prevent overlap","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:17:36+00",
+  "commits": [{"sha":"4283c79b3","message":"ninja: subtitle digital dreams, red asterisk on note, CTA disclaimer line","author":"Rahul"}]
 }
