@@ -1,12 +1,12 @@
 {
-  "version": "v260307.23 12:23p",
-  "release": 516,
-  "sha": "2d423c1c2",
-  "fullSha": "2d423c1c2557608f639101b930cc430c14160daa",
+  "version": "v260307.24 12:36p",
+  "release": 517,
+  "sha": "9c7faaaa7",
+  "fullSha": "9c7faaaa721e4a04100b282d3219d782d30f646d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 18:23:04+00",
-  "commits": [{"sha":"2d423c1c2","message":"Ninja pack list: rename section to 'Other non-tech things to bring'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 18:36:42+00",
+  "commits": [{"sha":"1823650a8","message":"Add canonical design tokens file and expand Tailwind v4 @theme","author":"Rahul"},{"sha":"9c7faaaa7","message":"Merge branch 'sad-napier'","author":"Rahul"}]
 }
