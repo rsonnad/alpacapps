@@ -1,12 +1,12 @@
 {
-  "version": "v260307.19 11:14a",
-  "release": 512,
-  "sha": "f2547c2c2",
-  "fullSha": "f2547c2c24893fab6ffa192705a9a870f7867ab0",
+  "version": "v260307.20 11:20a",
+  "release": 513,
+  "sha": "c611cbaf5",
+  "fullSha": "c611cbaf545158f1d7e25eceb3f7607918590ccd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 17:14:18+00",
-  "commits": [{"sha":"f2547c2c2","message":"ninja: add larger bottom image section before footer","author":"Rahul"}]
+  "pushedAt": "2026-03-07 17:20:34+00",
+  "commits": [{"sha":"c611cbaf5","message":"Ninja hero: put title to the right of image in a flex row","author":"Rahul"}]
 }
