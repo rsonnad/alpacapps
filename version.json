@@ -1,12 +1,12 @@
 {
-  "version": "v260307.08 10:17a",
-  "release": 501,
-  "sha": "4283c79b3",
-  "fullSha": "4283c79b325eef4838a4505b0990a2511a8c1d6f",
+  "version": "v260307.09 10:21a",
+  "release": 502,
+  "sha": "a7626e17e",
+  "fullSha": "a7626e17e80deb79da01fdf6c2691e8794dcdc1d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:17:36+00",
-  "commits": [{"sha":"4283c79b3","message":"ninja: subtitle digital dreams, red asterisk on note, CTA disclaimer line","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:21:01+00",
+  "commits": [{"sha":"a7626e17e","message":"ninja: remove box from What you will get, tighten 13 min line spacing","author":"Rahul"}]
 }
