@@ -1,12 +1,12 @@
 {
-  "version": "v260307.01 9:21a",
-  "release": 494,
-  "sha": "cca7f5f49",
-  "fullSha": "cca7f5f491dbc607313b4810181366ad37321ee6",
+  "version": "v260307.02 9:25a",
+  "release": 495,
+  "sha": "9b3885e59",
+  "fullSha": "9b3885e5920006cecfc6a4b6aca8335af34054a9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 15:21:59+00",
-  "commits": [{"sha":"cca7f5f49","message":"Fix: add clear button to associate schedule rows for deleting scheduled days","author":"Rahul"}]
+  "pushedAt": "2026-03-07 15:25:24+00",
+  "commits": [{"sha":"7cbbce0dd","message":"Add AI Ninja Workshop event page with RSVP signup","author":"Rahul"},{"sha":"9b3885e59","message":"Merge branch 'funny-jang'","author":"Rahul"}]
 }
