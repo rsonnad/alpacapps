@@ -3,6 +3,9 @@ CLAUDE.local.md
 HOMEAUTOMATION.local.md
 .mcp.json
 .machine-name
+# SSH password files (use ~/.ssh/alpacapps-*.pass outside repo; ignore any local pass files)
+.sshpass-*
+*.pass
 
 # Nested repo clone (used by bug-fixer on droplet)
 alpacapps/

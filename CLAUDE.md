@@ -985,7 +985,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 
 ### Hostinger VPS (OpenClaw Server)
 - **URL:** https://alpaclaw.cloud (domain: `alpaclaw.cloud`, auto-HTTPS via Caddy + Let's Encrypt)
-- **IP:** `93.188.164.224` | **SSH:** `sshpass -p 'PASSWORD' ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224` (key auth broken on Hostinger)
+- **IP:** `93.188.164.224` | **SSH:** use password file: `sshpass -f ~/.ssh/alpacapps-hostinger.pass ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224` (key auth broken on Hostinger; see CLAUDE.local.md for setup)
 - **OS:** Ubuntu 24.04, KVM 4, 15 GB RAM, 200 GB disk
 - **Docker:** OpenClaw v2026.2.23 chatbot gateway (multi-channel: Discord, WhatsApp, Telegram, Slack)
 - **Docker Compose:** `/docker/openclaw-vnfd/docker-compose.yml` with `.env` file

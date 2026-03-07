@@ -23,7 +23,7 @@
 
 ### 1.1 Install Tailscale on Hostinger VPS
 
-- [ ] SSH to Hostinger: `ssh root@93.188.164.224` (use password auth if key auth is broken; see CLAUDE.local.md).
+- [ ] SSH to Hostinger: `sshpass -f ~/.ssh/alpacapps-hostinger.pass ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224` (see CLAUDE.local.md for one-time password file setup).
 - [ ] Install Tailscale:
   ```bash
   curl -fsSL https://tailscale.com/install.sh | sh
