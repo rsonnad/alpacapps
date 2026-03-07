@@ -1,12 +1,12 @@
 {
-  "version": "v260307.22 11:26a",
-  "release": 515,
-  "sha": "d530bb254",
-  "fullSha": "d530bb25447bfd31a8109ad5bf1bd3e2f6caefd9",
+  "version": "v260307.23 12:23p",
+  "release": 516,
+  "sha": "2d423c1c2",
+  "fullSha": "2d423c1c2557608f639101b930cc430c14160daa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 17:26:52+00",
-  "commits": [{"sha":"d530bb254","message":"Ninja hero title: line breaks after 'become an' and 'AI software ninja'","author":"Rahul"}]
+  "pushedAt": "2026-03-07 18:23:04+00",
+  "commits": [{"sha":"2d423c1c2","message":"Ninja pack list: rename section to 'Other non-tech things to bring'","author":"Rahul"}]
 }
