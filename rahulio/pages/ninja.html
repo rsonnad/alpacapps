@@ -59,13 +59,13 @@
     /* ── Hero ── */
     .ninja-hero {
       position: relative;
-      min-height: 80vh;
+      min-height: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       text-align: center;
-      padding: 2.5rem 1.5rem 1.5rem;
+      padding: 1rem 1.5rem 2rem;
       background: linear-gradient(135deg, var(--ninja-black) 0%, var(--ninja-indigo) 40%, var(--ninja-accent) 100%);
       overflow: hidden;
     }
@@ -171,15 +171,23 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 1.5rem;
-      margin-bottom: 1rem;
+      margin-top: 1.25rem;
+      margin-bottom: 1.25rem;
     }
 
     .ninja-hero__meta-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .ninja-hero__meta-extra {
       font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.35rem;
+      width: 100%;
     }
 
     .ninja-hero__meta-item svg {
@@ -192,23 +200,44 @@
       stroke-linejoin: round;
     }
 
-    .ninja-hero__scroll {
-      margin-top: 1rem;
-      animation: float 3s ease-in-out infinite;
+    .ninja-hero__get {
+      margin-top: 1.5rem;
+      padding: 1.25rem 1.25rem 1.5rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      text-align: left;
+      max-width: 520px;
+      width: 100%;
     }
 
-    .ninja-hero__scroll svg {
-      width: 24px;
-      height: 24px;
-      stroke: rgba(255, 255, 255, 0.25);
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
+    .ninja-hero__get-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--neon-green);
+      margin-bottom: 0.75rem;
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(8px); }
+    .ninja-hero__get-list {
+      list-style: none;
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.6;
+    }
+
+    .ninja-hero__get-list li {
+      margin-bottom: 0.6rem;
+      padding-left: 0;
+    }
+
+    .ninja-hero__get-list li:last-child { margin-bottom: 0; }
+
+    .ninja-hero__get-list strong {
+      color: #fff;
+      font-weight: 600;
     }
 
     /* ── Container ── */
@@ -886,13 +915,19 @@
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           90 minutes
         </div>
+        <div class="ninja-hero__meta-extra">13 minutes past the Airport east on Hwy 71 towards Bastrop.</div>
       </div>
 
       <a href="#rsvp" class="ninja-cta">Reserve Your Spot &darr;</a>
-      <p class="ninja-hero__note" style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:0.75rem;max-width:420px;margin-left:auto;margin-right:auto;">You can get setup for free, but you'll need an AI subscription to Claude Code ($20–$200/month) for ongoing development. Students can get this for free.</p>
+      <p class="ninja-hero__note" style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:0.75rem;margin-bottom:0.5rem;max-width:520px;margin-left:auto;margin-right:auto;">* You can get setup for free, but you'll need an AI subscription to Claude Code ($20–$200/month — depending on how addicted you become — note: there is serious addiction potential here, but it's better than 95% of other addictions because it has high 'return on time investment') for ongoing development. Students can get this for free.</p>
 
-      <div class="ninja-hero__scroll">
-        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="ninja-hero__get">
+        <div class="ninja-hero__get-title">What you will get</div>
+        <ul class="ninja-hero__get-list">
+          <li><strong>1)</strong> Seemingly magical skills to nearly effortlessly create anything you can imagine in software. For example this page with the signup form, and the email reminders. But that is the tip of the iceberg of Ninja-ness.</li>
+          <li><strong>2)</strong> A solid tech platform (that's probably good for a year, and will be able to upgrade itself to the next shiny AI thing when it makes sense).</li>
+          <li><strong>3)</strong> Alpaca proximity.</li>
+        </ul>
       </div>
 
     </div>
@@ -916,7 +951,7 @@
           <div class="req-card__number">Req 01</div>
           <div class="req-card__title">A Laptop</div>
           <div class="req-card__body">
-            <strong>Core system requirements.</strong> macOS (desktop app): macOS 11 Big Sur or higher per official docs; some users report the latest builds need macOS 12+, so Monterey or newer is safest. Windows (desktop app): Windows 10 or higher. General hardware &amp; network (practical): modern multi‑core CPU, at least 8–16&nbsp;GB RAM, SSD recommended.
+            macOS: macOS 12 Monterey or higher. Windows: Windows 10 or higher. 8–16&nbsp;GB RAM, with 5&nbsp;GB free hard drive space.
           </div>
         </div>
 
