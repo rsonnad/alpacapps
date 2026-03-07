@@ -1,12 +1,12 @@
 {
-  "version": "v260307.17 10:54a",
-  "release": 510,
-  "sha": "8a706e81a",
-  "fullSha": "8a706e81aeb48e0df09ead724d67db7aae9df2ba",
+  "version": "v260307.18 10:58a",
+  "release": 511,
+  "sha": "aa4176db1",
+  "fullSha": "aa4176db1b5f612620ee93700ded3c3547616fcc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:54:56+00",
-  "commits": [{"sha":"8a706e81a","message":"Fix hero subtitle alignment on ninja page","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:58:50+00",
+  "commits": [{"sha":"ebc49607b","message":"Ninja page: add self-serve line with link to AlpacApps Infra doc","author":"Rahul"},{"sha":"aa4176db1","message":"Ninja: darker subtitle, sauna/hot tub/cold plunge copy","author":"Rahul"}]
 }
