@@ -1039,7 +1039,8 @@
       </div>
 
       <div class="ninja-hero__cta-block">
-        <a href="#rsvp" class="ninja-cta">Reserve Your Spot &darr;</a>
+        <a href="#rsvp" class="ninja-cta" id="ninjaHeroCta">Reserve Your Spot &darr;</a>
+        <p class="ninja-hero__cta-note" id="ninjaCtaNoteSoon" style="display: none;">We'll have another one soon.</p>
         <p class="ninja-hero__cta-note">Only if you are 100% sure you can make it.</p>
         <p class="ninja-hero__cta-note">Can't make it? No worries, you can do it all yourself at home by following <a href="https://alpacaplayhouse.com/docs/alpacappsinfra.html">these instructions</a>.</p>
       </div>
@@ -1139,10 +1140,10 @@
   <section id="rsvp" class="section rsvp-section reveal">
     <div class="container">
       <div class="section__eyebrow">// rsvp</div>
-      <h2 class="section__title">Claim Your Seat</h2>
-      <p class="section__lead">Space is limited. Fill out the form below and we'll save you a spot at the dojo.</p>
+      <h2 class="section__title" id="rsvpSectionTitle">Claim Your Seat</h2>
+      <p class="section__lead" id="rsvpSectionLead">Space is limited. Fill out the form below and we'll save you a spot at the dojo.</p>
 
-    <form id="rsvpForm" class="rsvp-form" autocomplete="on">
+    <form id="rsvpForm" class="rsvp-form" autocomplete="on" data-waitlist="false">
       <div class="rsvp-form__group">
         <label class="rsvp-form__label" for="rsvpName">Full Name</label>
         <input class="rsvp-form__input" id="rsvpName" name="name" type="text" placeholder="Satoshi Nakamoto" required>
@@ -1159,13 +1160,13 @@
         <label class="rsvp-form__label" for="rsvpGoals">What do you want to accomplish with your new digital ninja skills?</label>
         <textarea class="rsvp-form__textarea" id="rsvpGoals" name="goals" rows="3" placeholder="World domination, building an app, automating my taxes..."></textarea>
       </div>
-      <button type="submit" class="rsvp-form__submit">I'm In &mdash; Save My Spot</button>
+      <button type="submit" class="rsvp-form__submit" id="rsvpSubmitBtn">I'm In &mdash; Save My Spot</button>
     </form>
 
     <div id="rsvpSuccess" class="rsvp-success">
       <div class="rsvp-success__emoji">&#x1F977;</div>
-      <h3 class="rsvp-success__title">You're on the list, ninja.</h3>
-      <p class="rsvp-success__text">We'll send a confirmation to your email. See you on March 9th!</p>
+      <h3 class="rsvp-success__title" id="rsvpSuccessTitle">You're on the list, ninja.</h3>
+      <p class="rsvp-success__text" id="rsvpSuccessText">We'll send a confirmation to your email. See you on March 9th!</p>
     </div>
     </div>
   </section>
@@ -1394,6 +1395,30 @@
   </script>
 
   <script type="module">
+    // ── RSVP status: fetch and switch to waitlist UI when closed (6 spots) ──
+    const NINJA_STATUS_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/get-ninja-rsvp-status';
+    async function applyNinjaRsvpStatus() {
+      try {
+        const res = await fetch(NINJA_STATUS_URL);
+        const data = await res.json();
+        if (data.closed) {
+          const heroCta = document.getElementById('ninjaHeroCta');
+          const noteSoon = document.getElementById('ninjaCtaNoteSoon');
+          const sectionTitle = document.getElementById('rsvpSectionTitle');
+          const sectionLead = document.getElementById('rsvpSectionLead');
+          const submitBtn = document.getElementById('rsvpSubmitBtn');
+          const form = document.getElementById('rsvpForm');
+          if (heroCta) { heroCta.textContent = 'Join the waitlist \u2193'; }
+          if (noteSoon) { noteSoon.style.display = ''; }
+          if (sectionTitle) { sectionTitle.textContent = 'Join the waitlist'; }
+          if (sectionLead) { sectionLead.textContent = "We're full for this round. Join the waitlist and we'll notify you when we run another one."; }
+          if (submitBtn) { submitBtn.textContent = 'Join the waitlist'; }
+          if (form) { form.dataset.waitlist = 'true'; }
+        }
+      } catch (_) {}
+    }
+    applyNinjaRsvpStatus();
+
     // ── RSVP Form Submission ──
     const form = document.getElementById('rsvpForm');
     const success = document.getElementById('rsvpSuccess');
@@ -1401,6 +1426,7 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = form.querySelector('.rsvp-form__submit');
+        const isWaitlist = form.dataset.waitlist === 'true';
         btn.disabled = true;
         btn.textContent = 'Submitting...';
 
@@ -1410,11 +1436,11 @@
           phone: form.phone.value.trim(),
           goals: form.goals.value.trim(),
           event: 'ai-ninja-workshop-2026-03-09',
+          status: isWaitlist ? 'waitlist' : 'confirmed',
           submitted_at: new Date().toISOString()
         };
 
         try {
-          // Store RSVP in Supabase
           const { createClient } = window.supabase || {};
           if (createClient) {
             const sb = createClient(
@@ -1423,10 +1449,14 @@
             );
             await sb.from('event_rsvps').insert(payload);
           }
-        } catch (_) {
-          // Silent — still show success even if DB insert fails
-        }
+        } catch (_) {}
 
+        if (isWaitlist) {
+          const titleEl = document.getElementById('rsvpSuccessTitle');
+          const textEl = document.getElementById('rsvpSuccessText');
+          if (titleEl) titleEl.textContent = "You're on the waitlist.";
+          if (textEl) textEl.textContent = "We'll email you when we run another workshop.";
+        }
         form.style.display = 'none';
         success.classList.add('visible');
       });
