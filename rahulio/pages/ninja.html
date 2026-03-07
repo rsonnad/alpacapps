@@ -59,13 +59,13 @@
     /* ── Hero ── */
     .ninja-hero {
       position: relative;
-      min-height: 100vh;
+      min-height: 80vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 5rem 1.5rem 3rem;
+      padding: 2.5rem 1.5rem 1.5rem;
       background: linear-gradient(135deg, var(--ninja-black) 0%, var(--ninja-indigo) 40%, var(--ninja-accent) 100%);
       overflow: hidden;
     }
@@ -115,7 +115,8 @@
       border: 1px solid rgba(74, 222, 128, 0.2);
       padding: 0.5rem 1.25rem;
       border-radius: 100px;
-      margin-bottom: 2rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
     }
 
     .ninja-hero__date::before {
@@ -134,7 +135,7 @@
       font-weight: 300;
       line-height: 1.15;
       color: #ffffff;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
 
     .ninja-hero__title em {
@@ -152,7 +153,7 @@
       font-size: clamp(0.95rem, 2.5vw, 1.15rem);
       font-weight: 400;
       color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 2.5rem;
+      margin-bottom: 0.5rem;
       letter-spacing: 0.01em;
     }
 
@@ -170,7 +171,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 1.5rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1rem;
     }
 
     .ninja-hero__meta-item {
@@ -192,7 +193,7 @@
     }
 
     .ninja-hero__scroll {
-      margin-top: 2rem;
+      margin-top: 1rem;
       animation: float 3s ease-in-out infinite;
     }
 
@@ -219,7 +220,7 @@
 
     /* ── Section ── */
     .section {
-      padding: 4rem 0;
+      padding: 1.5rem 0;
     }
 
     .section--alt {
@@ -241,14 +242,14 @@
       font-size: clamp(1.5rem, 4vw, 2rem);
       font-weight: 400;
       color: var(--text-dark);
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
       line-height: 1.25;
     }
 
     .section__lead {
       font-size: 1.05rem;
       color: var(--text-muted);
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       max-width: 580px;
     }
 
@@ -345,7 +346,7 @@
     /* ── Asterisk ── */
     .asterisk-note {
       text-align: center;
-      padding: 2.5rem 1.5rem;
+      padding: 1.25rem 1.5rem;
       background: linear-gradient(to bottom, var(--cream), var(--cream-warm));
       border-top: 1px solid var(--border-light);
     }
@@ -366,7 +367,7 @@
     /* ── Divider ── */
     .event-divider {
       text-align: center;
-      padding: 3rem 1.5rem;
+      padding: 1.5rem 1.5rem;
       background: var(--cream-warm);
     }
 
@@ -645,7 +646,7 @@
     /* ── Footer ── */
     .footer {
       text-align: center;
-      padding: 3rem 1.5rem;
+      padding: 1.5rem 1.5rem;
       border-top: 1px solid var(--border-light);
       background: var(--cream);
     }
@@ -655,7 +656,7 @@
       justify-content: center;
       align-items: center;
       gap: 1.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .footer__logo {
@@ -719,7 +720,7 @@
     /* ── CTA Button ── */
     .ninja-cta {
       display: inline-block;
-      margin-top: 2rem;
+      margin-top: 1rem;
       padding: 1rem 2.5rem;
       background: var(--electric);
       color: #fff;
@@ -745,7 +746,7 @@
     .rsvp-section {
       max-width: 620px;
       margin: 0 auto;
-      padding: 4rem 1.5rem 3rem;
+      padding: 2rem 1.5rem 1.5rem;
     }
     .rsvp-section__title {
       font-family: var(--font-display);
@@ -865,8 +866,6 @@
   <header class="ninja-hero">
     <div class="ninja-hero__content">
 
-      <div class="ninja-hero__date">Monday, March 9 &middot; 1:00 PM</div>
-
       <h1 class="ninja-hero__title">
         become an <em>AI software ninja</em><br>
         in 90 minutes for free<span class="free-asterisk">*</span>
@@ -875,6 +874,8 @@
       <p class="ninja-hero__subtitle">
         A guide to launching into effortless vibe-coding with <code>claude code</code>
       </p>
+
+      <div class="ninja-hero__date">Monday, March 9 &middot; 1:00 PM</div>
 
       <div class="ninja-hero__meta">
         <div class="ninja-hero__meta-item">
@@ -888,6 +889,7 @@
       </div>
 
       <a href="#rsvp" class="ninja-cta">Reserve Your Spot &darr;</a>
+      <p class="ninja-hero__note" style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:0.75rem;max-width:420px;margin-left:auto;margin-right:auto;">You can get setup for free, but you'll need an AI subscription to Claude Code ($20–$200/month) for ongoing development. Students can get this for free.</p>
 
       <div class="ninja-hero__scroll">
         <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -914,8 +916,7 @@
           <div class="req-card__number">Req 01</div>
           <div class="req-card__title">A Laptop</div>
           <div class="req-card__body">
-            macOS 10.15+, Ubuntu 20.04+, or Windows with WSL. At least <code>4 GB RAM</code> and a pulse.
-            If your laptop was manufactured after 2018, you're good.
+            <strong>Core system requirements.</strong> macOS (desktop app): macOS 11 Big Sur or higher per official docs; some users report the latest builds need macOS 12+, so Monterey or newer is safest. Windows (desktop app): Windows 10 or higher. General hardware &amp; network (practical): modern multi‑core CPU, at least 8–16&nbsp;GB RAM, SSD recommended.
           </div>
         </div>
 
@@ -1039,48 +1040,11 @@
       <div class="card reveal">
         <div class="bring-item">
           <span class="bring-item__num">1</span>
-          <div class="bring-item__text"><strong>Towels & swimsuits</strong> — we have a pool, hot tub, and cold plunge. Come prepared to soak.</div>
+          <div class="bring-item__text"><strong>Towels & swimsuits</strong> — we have a pool, hot tub, and cold plunge. Come prepared to soak in the glory of your new AI Ninja powers.</div>
         </div>
         <div class="bring-item">
           <span class="bring-item__num">2</span>
           <div class="bring-item__text"><strong>A water bottle</strong> — Texas heat is no joke. Stay hydrated, stay alive.</div>
-        </div>
-        <div class="bring-item">
-          <span class="bring-item__num">3</span>
-          <div class="bring-item__text"><strong>Pillows & a trifold mattress</strong> — if you're crashing overnight (confirm with your host).</div>
-        </div>
-        <div class="bring-item">
-          <span class="bring-item__num">4</span>
-          <div class="bring-item__text"><strong>Blankets</strong> — evenings can get chilly out here in the cedar trees.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════════════════
-       TRANSPORTATION
-       ════════════════════════════════════════════════════ -->
-  <section class="section section--alt">
-    <div class="container">
-      <div class="reveal">
-        <div class="section__eyebrow">Getting Here</div>
-        <h2 class="section__title">Transportation</h2>
-      </div>
-
-      <div class="card-grid card-grid--2">
-        <div class="transport-card reveal">
-          <span class="transport-card__icon">✈️</span>
-          <div>
-            <div class="transport-card__title">From the Airport</div>
-            <div class="transport-card__body">Austin-Bergstrom (AUS) is ~45 min away. Uber/Lyft runs about $35-45. We can sometimes arrange a pickup — just ask.</div>
-          </div>
-        </div>
-        <div class="transport-card reveal reveal-delay-1">
-          <span class="transport-card__icon">🚗</span>
-          <div>
-            <div class="transport-card__title">From Austin</div>
-            <div class="transport-card__body">20-30 minutes east on 71/290. You'll pass Bastrop — keep going. GPS will get you there.</div>
-          </div>
         </div>
       </div>
     </div>
@@ -1175,6 +1139,35 @@
         <div class="location-block__address">160 Still Forest Drive<br>Cedar Creek, TX 78612</div>
         <a href="https://maps.google.com/?q=160+Still+Forest+Dr+Cedar+Creek+TX+78612" target="_blank" rel="noopener" class="link-pill">📍 Open in Google Maps</a>
         <p class="location-block__note">Please don't share the address publicly — we like our quiet corner of the woods.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════
+       TRANSPORTATION
+       ════════════════════════════════════════════════════ -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="reveal">
+        <div class="section__eyebrow">Getting Here</div>
+        <h2 class="section__title">Transportation</h2>
+      </div>
+
+      <div class="card-grid card-grid--2">
+        <div class="transport-card reveal">
+          <span class="transport-card__icon">✈️</span>
+          <div>
+            <div class="transport-card__title">From the Airport</div>
+            <div class="transport-card__body">Austin-Bergstrom (AUS) is ~45 min away. Uber/Lyft runs about $35-45. We can sometimes arrange a pickup — just ask.</div>
+          </div>
+        </div>
+        <div class="transport-card reveal reveal-delay-1">
+          <span class="transport-card__icon">🚗</span>
+          <div>
+            <div class="transport-card__title">From Austin</div>
+            <div class="transport-card__body">20-30 minutes east on 71/290. You'll pass Bastrop — keep going. GPS will get you there.</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
