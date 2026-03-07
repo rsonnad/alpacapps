@@ -1,12 +1,12 @@
 {
-  "version": "v260307.12 10:25a",
-  "release": 505,
-  "sha": "8b66cf846",
-  "fullSha": "8b66cf846d01620b2361eda5a4357263ca387815",
+  "version": "v260307.13 10:31a",
+  "release": 506,
+  "sha": "091144572",
+  "fullSha": "091144572198710398b04cb37c13a19d1946ce71",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:25:29+00",
-  "commits": [{"sha":"8b66cf846","message":"Add Passwords and shell escaping to alpacapps-infra setup skill scaffold","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:31:06+00",
+  "commits": [{"sha":"091144572","message":"ninja: wider content (920px container, 860px hero), mobile-friendly (safe area, 48px touch targets, 16px inputs)","author":"Rahul"}]
 }
