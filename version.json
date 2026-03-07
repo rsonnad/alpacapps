@@ -1,12 +1,12 @@
 {
-  "version": "v260307.15 10:47a",
-  "release": 508,
-  "sha": "507703a47",
-  "fullSha": "507703a47751c807f8cd1c2ff0209fa58d4f8781",
+  "version": "v260307.16 10:53a",
+  "release": 509,
+  "sha": "5e055fc82",
+  "fullSha": "5e055fc82db9ddd770358be5298a816758c4f6bd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:47:57+00",
-  "commits": [{"sha":"507703a47","message":"ninja: 13min line tight (row-gap 0.15rem), subtitle align center/block, CTA sans-serif","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:53:13+00",
+  "commits": [{"sha":"5e055fc82","message":"ninja: 13min line flush — row-gap 0, meta line-height 1.2, meta-extra margin-top -0.15rem","author":"Rahul"}]
 }
