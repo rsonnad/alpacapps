@@ -1,12 +1,12 @@
 {
-  "version": "v260307.03 9:40a",
-  "release": 496,
-  "sha": "6a504064b",
-  "fullSha": "6a504064b2418469341b599738e9f01522b705d3",
+  "version": "v260307.05 9:56a",
+  "release": 498,
+  "sha": "3a1d837b9",
+  "fullSha": "3a1d837b97cfedfc99508a7e71944f02f2aaf1eb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 15:40:53+00",
-  "commits": [{"sha":"6a504064b","message":"ninja: tighten spacing, date below subtitle, RSVP note, laptop reqs, towels copy, move transport, remove pillows/blankets","author":"Rahul"}]
+  "pushedAt": "2026-03-07 15:56:17+00",
+  "commits": [{"sha":"3a1d837b9","message":"docs: add Slack Alpaclaw reinstall and troubleshooting guide","author":"Rahul"}]
 }
