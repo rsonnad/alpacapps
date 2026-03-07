@@ -1,12 +1,12 @@
 {
-  "version": "v260307.06 9:59a",
-  "release": 499,
-  "sha": "d4035a0c1",
-  "fullSha": "d4035a0c14fc8b099d18b3e876c7426048b76579",
+  "version": "v260307.07 10:04a",
+  "release": 500,
+  "sha": "b166e0ae2",
+  "fullSha": "b166e0ae2fd39ede4b75de7f2717fdc99aced315",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 15:59:43+00",
-  "commits": [{"sha":"d4035a0c1","message":"ninja: add siteHeader for standard Alpaca Playhouse nav","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:04:32+00",
+  "commits": [{"sha":"b166e0ae2","message":"ninja: add top padding to clear fixed site header and prevent overlap","author":"Rahul"}]
 }
