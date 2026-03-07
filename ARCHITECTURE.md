@@ -736,7 +736,7 @@ Acknowledgments (boolean flags for each policy):
 - `owner_name`, `tesla_email`, `refresh_token`, `access_token`
 - `fleet_client_id`, `fleet_client_secret`, `fleet_api_base`
 
-**vehicles** - All vehicles (renamed from tesla_vehicles)
+**vehicles** - All vehicles
 - `account_id` (FK → tesla_accounts), `vehicle_api_id`, `vin`
 - `name`, `make`, `model`, `year`, `color`, `owner_name`
 - `vehicle_state`, `last_state` (jsonb), `last_synced_at`
@@ -775,6 +775,32 @@ Acknowledgments (boolean flags for each policy):
 **govee_config** - Govee Cloud API configuration (single row, id=1)
 **govee_devices** - All Govee/AiDot smart lights (63 devices)
 **govee_models** - SKU → friendly model name lookup
+
+### Unified Lighting + Alexa Voice Mapping
+
+**home_assistant_config** - Home Assistant gateway config (singleton row)
+- `is_active`, `test_mode`, `use_fallbacks`, `last_synced_at`, `last_error`
+
+**lighting_groups** - Logical room light groups (HA primary + fallbacks)
+- `key`, `name`, `area`, `display_order`, `space_id`, `is_active`
+- Includes groups like `master_pasture`, `master_bathroom`, `kitchen`, `living_room`
+
+**lighting_group_targets** - Per-group backend targets
+- `group_id`, `backend` (`home_assistant`, `wiz_proxy`, `govee_cloud`), `target_id`, `metadata`, `is_active`
+- Supports migration mode where HA is primary and WiZ/Govee are fallback adapters
+
+**home_assistant_entities** - HA entity cache from `sync_entities`
+- `entity_id`, `domain`, `friendly_name`, `area_name`, `capabilities`, `last_seen_at`
+
+**home_assistant_entity_space_map** - Optional HA entity -> space links
+- `entity_id`, `space_id`, `is_primary`, `source`, `confidence`, `is_active`
+
+**alexa_room_targets** - Alexa room-level fallback control targets
+- `room_key`, `room_name`, `wiz_ips`, `govee_group_ids`, `is_active`
+
+**alexa_device_room_map** - Alexa device context routing
+- `alexa_device_id`, `room_key`, `is_active`, `notes`
+- Used so room-less intents (for example "turn lights off") can resolve by Echo location
 
 ### AI Image Generation
 
@@ -1885,6 +1911,34 @@ DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
 | UniFi Protect | UDM Pro :7441 | Camera RTSP streams + snapshot API |
 | Uptime Kuma | Alpaca Mac :3001 | Service health monitoring |
 
+### Unified Lighting Control Plane (in progress)
+
+- Resident UI calls `home-assistant-control` for logical room groups.
+- Backend action set: `list_groups`, `list_entities`, `sync_entities`, `get_group_state`, `set_power`, `set_brightness`, `set_color`, `activate_scene`.
+- HA-first design with adapter fallbacks:
+  - `home_assistant` targets for HA entities/groups (target state)
+  - `wiz_proxy` for WiZ UDP bulbs during migration
+  - `govee_cloud` for non-Matter Govee groups during migration
+- Current HA state in this environment: no `light.*` entities discovered yet; groups are operating via `wiz_proxy` fallback where configured.
+
+### Alexa Voice Control (custom skill path)
+
+- Edge function: `alexa-room-control`
+- Invocation model (current): `pai bot` (custom skill)
+- Intents: on/off, brightness, color; optional room slot.
+- Room resolution priority:
+  1. Explicit room slot (`master pasture`, `bathroom`, etc.)
+  2. Mapped `alexa_device_room_map` device context
+  3. Default room fallback (`master_pasture`)
+- Hierarchy-aware routing:
+  - Uses `spaces` parent/child + `lighting_groups.space_id` to resolve nested room phrases (for example bathroom within master pasture context).
+  - If a child room group is missing, falls back to parent room group.
+- Operational note: phrases like "turn lights off" without skill invocation are Alexa native Smart Home and require an Alexa Routine bridge to call the custom skill command.
+- Current pilot data:
+  - Space `Master Bathroom` created as child of `Master Pasture Suite`.
+  - Lighting group `master_bathroom` is active and linked to that child space.
+  - `master_bathroom` currently uses temporary copied WiZ targets from `master_pasture` until bathroom-only bulbs are identified.
+
 ### Sonos Rooms (12 zones)
 
 Outhouse, Living Sound, SkyBalcony Sound, MasterBlaster, Pequeno, Dining Sound, Garage Bridge, Front Outside Sound, DJ, Backyard Sound, Skyloft Sound, garage outdoors
@@ -1975,7 +2029,7 @@ All resident pages live in `/residents/` and share:
 |-----|------|-------------|
 | Cameras | `cameras.html` | Live HLS feeds, PTZ controls, lightbox, two-way talkback |
 | Climate | `climate.html` | Nest thermostat controls, 48-hour weather forecast |
-| Lighting | `lighting.html` | Govee light groups, on/off/brightness/color |
+| Lighting | `lighting.html` | Unified room groups (HA primary, WiZ/Govee fallback), plus existing Govee controls |
 | Music | `sonos.html` | Sonos zone playback, volume, favorites, grouping |
 | Laundry | `laundry.html` | LG washer/dryer status, progress bars, push notifications |
 | Cars | `cars.html` | Tesla vehicle data, lock/unlock, flash, battery status |
@@ -2140,7 +2194,7 @@ The data layer lives in `shared/services/` and is used by both mobile and web:
 | `sonos-data.js` | Sonos zone state + control via `sonos-control` edge function | Music tab |
 | `lighting-data.js` | Govee device groups + control via `govee-control` edge function | Lights tab |
 | `climate-data.js` | Nest thermostat state + control via `nest-control` edge function | Climate tab |
-| `cars-data.js` | Tesla vehicle data from `tesla_vehicles` + commands via `tesla-command` | Cars tab |
+| `cars-data.js` | Tesla vehicle data from `vehicles` + commands via `tesla-command` | Cars tab |
 | `laundry-data.js` | LG washer/dryer state via `lg-control` edge function | (web only, not in mobile yet) |
 
 ### Build & Development

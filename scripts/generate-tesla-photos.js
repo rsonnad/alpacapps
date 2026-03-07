@@ -95,7 +95,7 @@ async function main() {
   console.log('\n✓ All jobs queued successfully!');
   console.log(`Batch ID: ${batchId}`);
   console.log('\nThe worker will process these jobs and generate images.');
-  console.log('Once generated, you can link them to vehicles in the tesla_vehicles table.');
+  console.log('Once generated, you can link them to vehicles in the vehicles table.');
 }
 
 main().catch(console.error);

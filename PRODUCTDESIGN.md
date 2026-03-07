@@ -476,7 +476,31 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ---
 
-## 17. What This Document Does NOT Cover
+## 17. Template Architecture Decisions (March 2026)
+
+### Role vocabulary standardization
+**Decision:** Standardized on `demo` everywhere, replacing the earlier `demon` role name.
+**Why:** Code and DB were split — API permissions used `demo`, DB migrations used `demon`, causing silent auth failures for demo users. One canonical name eliminates the drift.
+
+### Property configuration centralization
+**Decision:** Added `property_config` table (singleton JSONB, same pattern as `brand_config`) with client and edge function loaders.
+**Why:** Hardcoded property identity (name, domain, email senders, payment handles, timezone) was spread across 20+ files, making reuse require manual find-and-replace. Config-driven identity makes cloning a DB-seed operation. Brand config stays separate (visual tokens vs. operational identity).
+
+### Feature registry
+**Decision:** Created `shared/feature-registry.js` defining core platform modules (always-on) vs optional hardware-specific extensions (config-driven).
+**Why:** Adopters who want rentals + payments but not Tesla + Sonos shouldn't inherit all the complexity. The registry provides the vocabulary for future nav filtering, backend gating, and feature presets.
+
+### PAI entrypoint consolidation
+**Decision:** Removed `pai-api` edge function (zero callers — dead proxy). Kept `ask-question` as the anonymous public Q&A endpoint alongside `alpaca-pai` as the authenticated assistant.
+**Why:** `pai-api` was creating confusion about which PAI endpoint to use. The two remaining endpoints serve genuinely different audiences: visitors (no auth, no tools) vs residents (full AI assistant).
+
+### Legacy auth alias removal
+**Decision:** Removed `LEGACY_SERVICE_ROLE_KEY`, `SERVICE_ROLE_JWT`, and `SUPABASE_SECRET_KEY` fallbacks from edge functions. Only `SUPABASE_SERVICE_ROLE_KEY` is accepted.
+**Why:** Multiple accepted env var names for the same secret created ambiguous trust boundaries and deployment drift.
+
+---
+
+## 18. What This Document Does NOT Cover
 
 - **Technical architecture** (component diagrams, data flow, deployment topology) -> see `ARCHITECTURE.md`
 - **Database schema details** (table definitions, columns, relationships) -> see `CLAUDE.md` and `docs/claude/database-schema.md`

@@ -84,6 +84,8 @@ No server-side code - all logic runs client-side. Supabase handles data persiste
 - `signwell-service.js` - SignWell e-signature API integration
 - `email-service.js` - Email sending via Resend
 - `brand-config.js` - Brand configuration loader (colors, fonts, logos from DB)
+- `config-loader.js` - Property configuration loader (name, domain, email, payment, timezone from DB)
+- `feature-registry.js` - Feature registry (core vs optional modules, config-driven enable/disable)
 - `sms-service.js` - SMS sending via Telnyx (mirrors email-service.js pattern)
 - `square-service.js` - Square payment processing (client-side tokenization)
 - `hours-service.js` - Associate hours tracking (clock in/out, time entries)
@@ -329,7 +331,7 @@ tesla_accounts  - Tesla account credentials + Fleet API config
                    token_expires_at, is_active, last_error,
                    last_token_refresh_at, fleet_client_id, fleet_client_secret,
                    fleet_api_base, created_at, updated_at)
-vehicles        - All vehicles (renamed from tesla_vehicles)
+vehicles        - All vehicles
                   (account_id [FK→tesla_accounts], vehicle_api_id, vin,
                    name, make, model, year, color, color_hex, svg_key, image_url,
                    owner_name, display_order, is_active,
@@ -445,8 +447,15 @@ app_users       - Application users with roles and profiles
 user_invitations - Pending user invitations (email, role, invited_by, expires_at)
 ```
 
-### Brand Configuration
+### Property & Brand Configuration
 ```
+property_config - Singleton (id=1) operational identity stored as JSONB
+                  (config [jsonb], updated_at, updated_by [FK→app_users])
+                  Contains: property name/address/timezone, domain, email senders,
+                  payment handles, AI assistant identity, WiFi, mobile app config
+                  Readable by all (anon), writable by admin only
+                  Client loader: shared/config-loader.js
+                  Edge function loader: supabase/functions/_shared/property-config.ts
 brand_config    - Singleton (id=1) brand configuration stored as JSONB
                   (config [jsonb], updated_at, updated_by [FK→app_users])
                   Contains: brand names, color palette, typography, logos,
@@ -533,8 +542,8 @@ Key columns on spaces:
 
 ### Legacy (Deprecated - don't use for new features)
 ```
-photos          - Old photo storage
-photo_spaces    - Old photo-space links
+photos          - DEPRECATED: migrated to media (table retained for historical reference)
+photo_spaces    - DEPRECATED: migrated to media_spaces
 ```
 
 ### Key Columns on `spaces`
@@ -741,7 +750,7 @@ Common page URLs for testing links (use only on main deploys):
 
 ## Important Conventions
 
-1. **Use `media_spaces` not `photo_spaces`** - The old photo system is deprecated
+1. **Use `media_spaces` not `photo_spaces`** - The legacy photos/photo_spaces tables are fully migrated to media/media_spaces
 2. **Filter archived spaces** - Always add `.filter(s => !s.is_archived)` client-side
 3. **Don't expose personal info in consumer view** - Load assignment dates only, not person details
 4. **Toast notifications in admin** - Use `showToast(message, type)` not `alert()`

@@ -34,7 +34,7 @@ async function updateVehicleImages() {
     console.log(`Updating ${name}...`);
 
     const { data, error } = await supabase
-      .from('tesla_vehicles')
+      .from('vehicles')
       .update({ image_url: imageUrl })
       .eq('name', name)
       .select();

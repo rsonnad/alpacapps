@@ -1,5 +1,5 @@
 /**
- * Demo mode redaction: only applies when current user has role 'demon'.
+ * Demo mode redaction: only applies when current user has role 'demo'.
  * Does not change behavior for any other role.
  *
  * Each unique real value is deterministically mapped to a unique fake value
@@ -121,7 +121,7 @@ function pickFakeDate(realValue) {
  */
 export function isDemoUser() {
   const state = getAuthState();
-  return state?.appUser?.role === 'demon';
+  return state?.appUser?.role === 'demo';
 }
 
 /**
