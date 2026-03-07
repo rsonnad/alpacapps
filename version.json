@@ -1,12 +1,12 @@
 {
-  "version": "v260307.10 10:23a",
-  "release": 503,
-  "sha": "fb75146c8",
-  "fullSha": "fb75146c87ab40bdeb0012e4d38b187b146473dc",
+  "version": "v260307.12 10:25a",
+  "release": 505,
+  "sha": "8b66cf846",
+  "fullSha": "8b66cf846d01620b2361eda5a4357263ca387815",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:23:38+00",
-  "commits": [{"sha":"fb75146c8","message":"Use sshpass -f password file for SSH; avoid shell escaping for ! and special chars","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:25:29+00",
+  "commits": [{"sha":"8b66cf846","message":"Add Passwords and shell escaping to alpacapps-infra setup skill scaffold","author":"Rahul"}]
 }
