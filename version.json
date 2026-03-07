@@ -1,12 +1,12 @@
 {
-  "version": "v260307.16 10:53a",
-  "release": 509,
-  "sha": "5e055fc82",
-  "fullSha": "5e055fc82db9ddd770358be5298a816758c4f6bd",
+  "version": "v260307.17 10:54a",
+  "release": 510,
+  "sha": "8a706e81a",
+  "fullSha": "8a706e81aeb48e0df09ead724d67db7aae9df2ba",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 16:53:13+00",
-  "commits": [{"sha":"5e055fc82","message":"ninja: 13min line flush — row-gap 0, meta line-height 1.2, meta-extra margin-top -0.15rem","author":"Rahul"}]
+  "pushedAt": "2026-03-07 16:54:56+00",
+  "commits": [{"sha":"8a706e81a","message":"Fix hero subtitle alignment on ninja page","author":"Rahul"}]
 }
