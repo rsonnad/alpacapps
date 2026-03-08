@@ -1,12 +1,12 @@
 {
-  "version": "v260308.11 2:31p",
-  "release": 547,
-  "sha": "2907d2b76",
-  "fullSha": "2907d2b76a9e73335f1d6d736f79f5cbadeb9bb3",
+  "version": "v260308.12 2:33p",
+  "release": 548,
+  "sha": "15d58296c",
+  "fullSha": "15d58296c6aa5414df1a1520c0dc581941920669",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 19:31:48+00",
-  "commits": [{"sha":"2907d2b76","message":"Fix email approval confirmation page (redirect to static HTML)","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:33:06+00",
+  "commits": [{"sha":"0f02580f3","message":"Ninja page copy tweaks: free text, button font, spacing, students line","author":"Rahul"},{"sha":"15d58296c","message":"Merge branch 'flamboyant-proskuriakova'","author":"Rahul"}]
 }
