@@ -881,6 +881,79 @@
       line-height: 1.6;
     }
 
+    /* ── Interest signup (inline email box) ── */
+    .interest-signup {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .interest-signup__label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .interest-signup__row {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .interest-signup__input {
+      flex: 1;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-dark);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .interest-signup__input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(212, 136, 58, 0.15);
+    }
+    .interest-signup__btn {
+      padding: 0.6rem 1.25rem;
+      background: var(--amber);
+      color: #fff;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    .interest-signup__btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      background: var(--amber-glow);
+    }
+    .interest-signup__btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .interest-signup__done {
+      display: none;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.9rem;
+      color: var(--amber);
+      margin-top: 0.5rem;
+    }
+    .interest-signup__done.visible {
+      display: block;
+    }
+    @media (max-width: 600px) {
+      .interest-signup__input { min-height: 48px; font-size: 16px; }
+      .interest-signup__btn { min-height: 48px; }
+    }
+
     /* ── RSVP Section (site style: section__eyebrow, section__title, section__lead) ── */
     .rsvp-section {
       padding: 1.5rem 0;
@@ -1043,6 +1116,14 @@
         <p class="ninja-hero__cta-note" id="ninjaCtaNoteSoon" style="display: none;">We'll have another one soon.</p>
         <p class="ninja-hero__cta-note">Only if you are 100% sure you can make it.</p>
         <p class="ninja-hero__cta-note">Can't make it? No worries, you can do it all yourself at home by following <a href="https://alpacaplayhouse.com/docs/alpacappsinfra.html">these instructions</a>.</p>
+        <div class="interest-signup" id="interestSignup">
+          <span class="interest-signup__label">Sign up for notification of our next session</span>
+          <form class="interest-signup__row" id="interestForm">
+            <input class="interest-signup__input" type="email" id="interestEmail" placeholder="you@example.com" required>
+            <button class="interest-signup__btn" type="submit" id="interestBtn">Notify Me</button>
+          </form>
+          <div class="interest-signup__done" id="interestDone">You're on the list! We'll let you know.</div>
+        </div>
       </div>
       <p class="ninja-hero__note"><span class="free-asterisk">*</span> You can get setup for free, but you'll need an AI subscription to Claude Code ($20–$200/month for ongoing development — depending on how addicted you become — note: there is serious addiction potential here, but it's better than 95% of other addictions). Students can get this for free.</p>
 
@@ -1459,6 +1540,40 @@
         }
         form.style.display = 'none';
         success.classList.add('visible');
+      });
+    }
+
+    // ── Interest / Notify-Me Form ──
+    const interestForm = document.getElementById('interestForm');
+    if (interestForm) {
+      interestForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('interestBtn');
+        const emailInput = document.getElementById('interestEmail');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        const payload = {
+          name: '',
+          email: emailInput.value.trim(),
+          event: 'ai-ninja-workshop-2026-03-09',
+          status: 'interest',
+          submitted_at: new Date().toISOString()
+        };
+
+        try {
+          const { createClient } = window.supabase || {};
+          if (createClient) {
+            const sb = createClient(
+              'https://aphrrfprbixmhissnjfn.supabase.co',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
+            );
+            await sb.from('event_rsvps').insert(payload);
+          }
+        } catch (_) {}
+
+        interestForm.style.display = 'none';
+        document.getElementById('interestDone').classList.add('visible');
       });
     }
   </script>

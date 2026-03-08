@@ -38,14 +38,16 @@ async function loadSignups() {
 
     const confirmed = (rows || []).filter((r) => r.status === 'confirmed');
     const waitlist = (rows || []).filter((r) => r.status === 'waitlist');
+    const interest = (rows || []).filter((r) => r.status === 'interest');
+    const rsvpRows = (rows || []).filter((r) => r.status !== 'interest');
     const closed = confirmed.length >= MAX_SPOTS;
 
     if (closed) {
-      lead.textContent = `Registration closed — ${confirmed.length} spots filled. New signups go to the waitlist. We'll have another workshop soon.`;
+      lead.textContent = `Registration closed — ${confirmed.length} spots filled. ${waitlist.length} on waitlist. ${interest.length} AI-interest signups.`;
       lead.classList.remove('text-muted');
       lead.classList.add('text-aap-amber');
     } else {
-      lead.textContent = `${confirmed.length} of ${MAX_SPOTS} spots filled. ${waitlist.length} on waitlist.`;
+      lead.textContent = `${confirmed.length} of ${MAX_SPOTS} spots filled. ${waitlist.length} on waitlist. ${interest.length} AI-interest signups.`;
     }
 
     if (!rows || rows.length === 0) {
@@ -53,7 +55,7 @@ async function loadSignups() {
       return;
     }
 
-    tbody.innerHTML = rows
+    tbody.innerHTML = rsvpRows
       .map((r, i) => {
         const submitted = r.submitted_at
           ? new Date(r.submitted_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
@@ -75,6 +77,30 @@ async function loadSignups() {
           </tr>`;
       })
       .join('');
+
+    // ── AI-Interest section ──
+    const interestTbody = document.getElementById('ninjaInterestBody');
+    const interestCount = document.getElementById('ninjaInterestCount');
+    if (interestTbody) {
+      if (interestCount) interestCount.textContent = interest.length;
+      if (interest.length === 0) {
+        interestTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #999; padding: 1rem;">No AI-interest signups yet.</td></tr>';
+      } else {
+        interestTbody.innerHTML = interest
+          .map((r, i) => {
+            const submitted = r.submitted_at
+              ? new Date(r.submitted_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+              : '—';
+            return `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${escapeHtml(r.email || '—')}</td>
+                <td>${escapeHtml(submitted)}</td>
+              </tr>`;
+          })
+          .join('');
+      }
+    }
   } catch (e) {
     console.error(e);
     tbody.innerHTML = `<tr><td colspan="7" class="text-aap-error">${escapeHtml(String(e))}</td></tr>`;
