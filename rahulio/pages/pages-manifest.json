@@ -1,85 +1,105 @@
 {
-  "generatedAt": "2026-03-08T02:32:22.776Z",
+  "generatedAt": "2026-03-08T02:36:48.196Z",
+  "sections": [
+    "E-2 Visa",
+    "Projects"
+  ],
   "entries": [
     {
       "path": "donate.html",
       "title": "Donate — Gaden Shartse Gungru Khangtsen Monastery",
-      "section": null
-    },
-    {
-      "path": "get-a-tesla.html",
-      "title": "Why You Should Get Annabelle a Tesla",
-      "section": null
-    },
-    {
-      "path": "india-business-visa.html",
-      "title": "Indian Visa via Business: Step-by-Step for EU Citizens",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "ninja.html",
       "title": "AI Software Ninja Workshop — Alpaca Playhouse",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "no-longer-a-hot-mess.html",
       "title": "No longer a hot mess.",
-      "section": null
-    },
-    {
-      "path": "poland-sauna-business.html",
-      "title": "Starting a Sauna Business in Poland: Complete Guide for Americans",
-      "section": null
-    },
-    {
-      "path": "spiritofpai.html",
-      "title": "Spirit of PAI — When AI Inhabits a Home",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "thaivisa/index.html",
       "title": "Thai Visa Strategy Guide",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "thaivisa/th/index.html",
       "title": "คู่มือกลยุทธ์วีซ่าสหรัฐ",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
+    },
+    {
+      "path": "spiritofpai.html",
+      "title": "Spirit of PAI — When AI Inhabits a Home",
+      "section": null,
+      "modifiedAt": "2026-02-28T00:46:33.000Z"
     },
     {
       "path": "withinmigration.html",
       "title": "Within Center — Site Migration Proposal",
-      "section": null
+      "section": null,
+      "modifiedAt": "2026-02-24T17:52:57.000Z"
+    },
+    {
+      "path": "poland-sauna-business.html",
+      "title": "Starting a Sauna Business in Poland: Complete Guide for Americans",
+      "section": null,
+      "modifiedAt": "2026-02-20T10:11:20.000Z"
+    },
+    {
+      "path": "india-business-visa.html",
+      "title": "Indian Visa via Business: Step-by-Step for EU Citizens",
+      "section": null,
+      "modifiedAt": "2026-02-20T09:55:42.000Z"
+    },
+    {
+      "path": "get-a-tesla.html",
+      "title": "Why You Should Get Annabelle a Tesla",
+      "section": null,
+      "modifiedAt": "2026-02-10T20:33:45.000Z"
     },
     {
       "path": "E2v/e2v2.html",
-      "title": "E-2 Visa Playbook: Polish Citizen in Austin, TX",
-      "section": "E-2 Visa"
+      "title": "E-2 Visa Playbook v2: Polish Citizen in Austin, TX",
+      "section": "E-2 Visa",
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "E2v/ev23.html",
       "title": "AlpacApps → E-2 Business | E-2 Visa Investment Guide",
-      "section": "E-2 Visa"
+      "section": "E-2 Visa",
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "E2v/index.html",
       "title": "E-2 Visa Playbook: Polish Citizen in Austin, TX",
-      "section": "E-2 Visa"
-    },
-    {
-      "path": "bandb/index.html",
-      "title": "The Animist Apothecary — Bodywork + Botanicals",
-      "section": "Projects"
+      "section": "E-2 Visa",
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "iaw/index.html",
       "title": "Welcome to the Alpachuasca Playhouse",
-      "section": "Projects"
+      "section": "Projects",
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
     },
     {
       "path": "sloop/index.html",
       "title": "Sloop — Tesla Model Y 2026",
-      "section": "Projects"
+      "section": "Projects",
+      "modifiedAt": "2026-03-08T02:32:39.000Z"
+    },
+    {
+      "path": "bandb/index.html",
+      "title": "The Animist Apothecary — Bodywork + Botanicals",
+      "section": "Projects",
+      "modifiedAt": "2026-03-06T05:44:39.000Z"
     }
   ]
 }

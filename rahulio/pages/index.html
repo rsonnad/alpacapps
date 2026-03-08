@@ -53,6 +53,17 @@
             color: #8a7f76;
             margin-top: 0.2rem;
         }
+        .page-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.2rem;
+        }
+        .page-date {
+            font-size: 0.75rem;
+            color: #a89f96;
+            white-space: nowrap;
+        }
         .section-label {
             font-size: 0.75rem;
             font-weight: 600;
@@ -95,9 +106,16 @@
                 return div.innerHTML;
             }
 
+            function formatDate(iso) {
+                if (!iso) return '';
+                const d = new Date(iso);
+                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
             function render(manifest) {
                 const entries = manifest.entries || [];
-                const sectionOrder = [null, 'E-2 Visa', 'Projects'];
+                // Build section order from manifest (data-driven)
+                const sectionOrder = [null, ...(manifest.sections || [])];
                 const bySection = {};
                 for (const e of entries) {
                     const key = e.section != null ? e.section : '';
@@ -112,9 +130,13 @@
                     if (section) html += '<div class="section-label">' + escapeHtml(section) + '</div>';
                     html += '<ul class="pages-list">';
                     for (const e of list) {
+                        const dateStr = formatDate(e.modifiedAt);
                         html += '<li><a href="' + escapeHtml(e.path) + '">' +
                             '<div class="page-title">' + escapeHtml(e.title) + '</div>' +
-                            '<div class="page-path">' + escapeHtml(e.path) + '</div></a></li>';
+                            '<div class="page-meta">' +
+                              '<span class="page-path">' + escapeHtml(e.path) + '</span>' +
+                              (dateStr ? '<span class="page-date">' + escapeHtml(dateStr) + '</span>' : '') +
+                            '</div></a></li>';
                     }
                     html += '</ul>';
                 }
@@ -122,7 +144,7 @@
 
                 if (manifest.generatedAt) {
                     const d = new Date(manifest.generatedAt);
-                    meta.textContent = 'List built ' + d.toLocaleDateString(undefined, { dateStyle: 'medium' }) + '. New pages appear after running \u2018node scripts/rahulio-pages-manifest.js\u2019 and deploying.';
+                    meta.textContent = 'List built ' + d.toLocaleDateString(undefined, { dateStyle: 'medium' }) + '. New pages auto-update on each deploy.';
                 }
             }
 
