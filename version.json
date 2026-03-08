@@ -1,12 +1,12 @@
 {
-  "version": "v260307.35 8:18p",
-  "release": 528,
-  "sha": "abdc4bde4",
-  "fullSha": "abdc4bde4be640fbae0bad6f1eb29525b9490f54",
+  "version": "v260307.36 8:36p",
+  "release": 529,
+  "sha": "a15722202",
+  "fullSha": "a15722202db78e4c6acfe0d4e037020112668588",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 02:18:56+00",
-  "commits": [{"sha":"abdc4bde4","message":"Visiting: add period after 'how tempting'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:36:48+00",
+  "commits": [{"sha":"a15722202","message":"Rahulio pages: data-driven sections, reverse-chrono sort, date display","author":"Rahul"}]
 }
