@@ -110,17 +110,6 @@ See `references/core-services.md` → "GitHub + GitHub Pages" for detailed steps
 5. Validate deployment (poll for HTTP 200, up to 60s)
 6. Fill in `CLAUDE.md` placeholders (USERNAME, REPO, project name), create `CLAUDE.local.md`, update `docs/DEPLOY.md` with live URLs, commit, push
 
-### Step 2a: Developer Tooling
-
-Set up project-level Claude Code settings for LSP intelligence.
-
-**Steps (all handled by you):**
-1. Create `.claude/settings.json` with `{ "env": { "ENABLE_LSP_TOOL": "1" } }`
-2. Install typescript-language-server globally if missing: `npm install -g typescript-language-server typescript`
-3. Tell the user to run `/plugin install typescript-lsp@claude-plugins-official` once (this is a Claude Code slash command, not a shell command)
-4. Add "First-Time Setup" section to `CLAUDE.md` with the plugin install instruction
-5. Commit and push
-
 ### Step 2b: Tailwind CSS v4
 
 Set up Tailwind CSS for utility-class styling alongside existing CSS.
@@ -128,22 +117,26 @@ Set up Tailwind CSS for utility-class styling alongside existing CSS.
 **Steps (all handled by you):**
 1. Initialize npm if needed: `npm init -y`
 2. Install: `npm install -D tailwindcss @tailwindcss/cli`
-3. Create `styles/tailwind.css` (Tailwind v4 CSS-first config):
+3. Also install LSP tooling: `npm install -g typescript-language-server typescript`
+4. Create `.claude/settings.json` with `{ "env": { "ENABLE_LSP_TOOL": "1" } }`
+5. Create `styles/tailwind.css` (Tailwind v4 CSS-first config):
    - `@import "tailwindcss";`
    - `@source` directives pointing to HTML/JS files
    - `@theme` block mapping project design tokens (colors, fonts, shadows, radii)
-4. Build: `npx @tailwindcss/cli -i styles/tailwind.css -o styles/tailwind.out.css --minify`
-5. Add npm scripts to `package.json`: `css:build` and `css:watch`
-6. Add `<link rel="stylesheet" href="styles/tailwind.out.css">` to all HTML pages
-7. Add `node_modules/` to `.gitignore`
-8. If GitHub Actions CI exists, add `npm ci && npm run css:build` step before deploy
-9. Commit `package.json`, `package-lock.json`, `styles/tailwind.css`, `styles/tailwind.out.css`
+6. Build: `npx @tailwindcss/cli -i styles/tailwind.css -o styles/tailwind.out.css --minify`
+7. Add npm scripts to `package.json`: `css:build` and `css:watch`
+8. Add `<link rel="stylesheet" href="styles/tailwind.out.css">` to all HTML pages
+9. Add `node_modules/` to `.gitignore`
+10. If GitHub Actions CI exists, add `npm ci && npm run css:build` step before deploy
+11. Commit `package.json`, `package-lock.json`, `styles/tailwind.css`, `styles/tailwind.out.css`, `.claude/settings.json`
 
 **Key points:**
 - Tailwind v4 uses CSS-first config (no `tailwind.config.js`)
 - Coexists with existing CSS — no rewrite needed
 - `tailwind.out.css` is committed to repo (GitHub Pages has no server-side build)
 - Map existing CSS custom properties to Tailwind theme in `@theme` block
+
+**LSP plugin (one-time manual step):** After the npm installs finish, tell the user: "While I set up the Tailwind config, please run this in your Claude Code session: `/plugin install typescript-lsp@claude-plugins-official` — this gives me type-aware code intelligence for your project." This is a Claude Code slash command (not a shell command) that must be typed by the user.
 
 ### Step 3: Supabase
 
