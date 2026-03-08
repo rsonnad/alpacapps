@@ -898,7 +898,7 @@
   <div class="hero-inner">
     <div class="hero-text">
       <h1><span>AlpacApps</span> Infra</h1>
-      <p><strong>AlpacApps is an open-source property management platform.</strong> Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, tenant management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
+      <p><strong>AlpacApps is an open-source AI-powered platform.</strong> Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
       <span class="badge">Starting from: $0/month infrastructure &bull; ~$10/month for Claude Code (API + Sonnet)</span>
     </div>
     <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/infra/alpacaservers2.jpg" alt="Alpacas in a server room" class="hero-image">
@@ -910,6 +910,25 @@
   <div class="philosophy">
     <strong>The philosophy:</strong> You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want &mdash; it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes.
   </div>
+
+  <!-- Two-profile callout -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div style="background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow);">
+      <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent);">Property Management</div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Full stack &mdash; spaces, tenants, devices, events, smart home, bookings. Everything you need to run a rental property or co-living space.</p>
+    </div>
+    <div style="background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow);">
+      <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent);">General AI Enablement</div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Core framework &mdash; auth, payments, email, permissions, accounting, web pages. Build anything: a SaaS, personal tool, booking system, CRM, portfolio, or side project. The setup wizard strips property-specific overhead so you start clean.</p>
+    </div>
+  </div>
+  <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; margin: -1.5rem 0 2rem 0;">Both profiles use the same template repo. The setup wizard asks what you're building and tailors the project for you &mdash; removing unused code, generating focused documentation, and configuring Claude Code to ignore irrelevant files.</p>
+
+  <style>
+    @media (max-width: 640px) {
+      .container > div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+  </style>
 
   <div class="capabilities">
     <h2>What can you build with this?</h2>
@@ -1880,6 +1899,14 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <div class="callout">
       <strong>Tip:</strong> The setup wizard builds all these files automatically as it sets up each service. Both <code>CLAUDE.local.md</code> and <code>docs/CREDENTIALS.md</code> are already in <code>.gitignore</code>.
     </div>
+
+    <h3>Profile-aware context</h3>
+    <p>The wizard generates different context files based on your profile:</p>
+    <ul>
+      <li><strong>General AI Enablement:</strong> CLAUDE.md with 4 doc references and 3 code guards (~20 lines). Only core docs are generated. A <code>.claudeignore</code> file excludes property-management code from Claude&rsquo;s search scope, saving thousands of tokens per conversation.</li>
+      <li><strong>Property Management:</strong> CLAUDE.md with all 7 doc references and full code guards (~35 lines). All docs are generated including KEY-FILES, INTEGRATIONS, and CHANGELOG.</li>
+    </ul>
+    <p>See <code>docs/CLAUDE-TEMPLATE.md</code> for the exact templates and <code>feature-manifest.json</code> for the file-to-feature mapping that drives pruning.</p>
   </div>
 
   <!-- 15. Day-One Checklist -->

@@ -25,6 +25,8 @@ You are an expert infrastructure setup assistant. You help users build full-stac
    - `docs/CHANGELOG.md` (checked in): recent changes log
    - After each service: append to the **appropriate doc file** (not CLAUDE.md), commit, push.
    - **Why this pattern:** CLAUDE.md is always loaded into context. By keeping it slim (~30 lines) and splitting heavy content into on-demand docs, Claude only loads what it needs per task — saving thousands of tokens per conversation.
+   - **Profile-aware generation:** Use `docs/CLAUDE-TEMPLATE.md` as the base. For the **General AI Enablement** profile, use the `## General AI Enablement Profile` section (4 doc refs, 3 code guards, no property-specific content). For the **Property Management** profile, use the `## Property Management Profile` section (all 7 doc refs, all code guards). See `docs/CLAUDE-TEMPLATE.md` for both templates.
+   - **Profile-aware docs:** Only generate docs relevant to the profile and selected services. For General AI Enablement, skip `docs/KEY-FILES.md`, `docs/INTEGRATIONS.md`, and `docs/CHANGELOG.md` unless the user specifically asks for them. Start `docs/SCHEMA.md` with only core tables. Do NOT copy over `PRODUCTDESIGN.md` or `docs/CHANGELOG.md` from the template — start fresh.
 6. **Validate before proceeding.** Test every credential and connection before moving on.
 7. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs as copy-paste-ready values.
 8. **Derive everything you can.** Don't ask for things you can compute (project URL from ref, pooler string from ref + password, etc.).
@@ -58,6 +60,43 @@ Ask two things in one message:
 - Oracle Cloud ARM instance (free tier) — Always Free (4 cores, 24 GB RAM, 200 GB)
 
 Remember their choices and skip everything they don't need.
+
+### Step 1b: Profile Selection & Project Pruning
+
+Based on the user's answer to "What are you building?", determine which profile applies:
+
+**Profile A — Property Management:**
+User is building something that manages physical spaces, renters/tenants, bookings, events, or smart home devices. Keep all property-management directories and features. Only remove AlpacApps Playhouse-specific content (listed in `feature-manifest.json` → `_alpacapps_specific`).
+
+**Profile B — General Personal/Business AI Enablement Platform:**
+User is building anything else — a SaaS app, personal tool, booking system, CRM, portfolio, etc. They want the core framework (auth, payments, email, web pages, permissions) but NOT property-management overhead.
+
+**After determining the profile, ask General AI Enablement users (AskUserQuestion):**
+
+> Your project doesn't need the property management modules (renters, devices, events, etc.). How should I handle them?
+
+Options:
+- **Full prune (Recommended)** — Delete property-management directories and files. Cleaner project, no dead code.
+- **Soft hide** — Keep files on disk but configure `.claudeignore` so Claude Code ignores them. Reversible if you change your mind.
+
+**Then execute the following:**
+
+1. **Read `feature-manifest.json`** from the repo root. This maps every feature to its files, dirs, edge functions, and DB tables.
+
+2. **Generate `.claudeignore`:**
+   - Always include base exclusions: `_alpacapps_specific.dirs` and `_alpacapps_specific.docs` from the manifest, plus `package-lock.json` and `styles/tailwind.out.css`.
+   - For General AI Enablement profile, also add exclusions for every feature where `"profile": "property_management"` in the manifest. Include their `dirs`, `pages`, `pollers`, `shared` files, and the `shared/services/` directory.
+   - Write the generated `.claudeignore` file.
+
+3. **If "Full prune" was selected**, physically delete the excluded directories and files:
+   ```bash
+   rm -rf <dirs from manifest where profile = property_management>
+   ```
+   Also remove property-specific shared modules listed in the manifest.
+
+4. **Commit and push** the `.claudeignore` (and deletions if pruned).
+
+**Important:** The `.claudeignore` is generated BEFORE any other setup steps, so Claude Code immediately benefits from the reduced search scope for the rest of the wizard.
 
 ### Step 2: GitHub + GitHub Pages
 
