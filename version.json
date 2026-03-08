@@ -1,12 +1,12 @@
 {
-  "version": "v260307.43 10:58p",
-  "release": 536,
-  "sha": "f02672660",
-  "fullSha": "f02672660274268adcdcffc06dc3c188f1766d24",
+  "version": "v260308.01 12:01p",
+  "release": 537,
+  "sha": "4b9eaf52e",
+  "fullSha": "4b9eaf52ed3bb4aafc47623627914ed470394204",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 04:58:24+00",
-  "commits": [{"sha":"f02672660","message":"Add two-profile clone architecture (Property Mgmt vs General AI Enablement)","author":"Rahul"}]
+  "pushedAt": "2026-03-08 17:01:29+00",
+  "commits": [{"sha":"4b9eaf52e","message":"Fix false overdue rent emails for ended leases","author":"Rahul"}]
 }
