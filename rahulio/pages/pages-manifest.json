@@ -1,39 +1,45 @@
 {
-  "generatedAt": "2026-03-08T19:36:26.539Z",
+  "generatedAt": "2026-03-08T20:09:34.025Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
-      "path": "ninja.html",
-      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
+      "path": "saleemproto/index.html",
+      "title": "VIP Insider's Guide to SXSW 2026 — The Anti-VC",
       "section": null,
-      "modifiedAt": "2026-03-08T19:35:57.000Z"
+      "modifiedAt": "2026-03-08T20:07:19.000Z"
     },
     {
       "path": "donate.html",
       "title": "Donate — Gaden Shartse Gungru Khangtsen Monastery",
       "section": null,
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
+    },
+    {
+      "path": "ninja.html",
+      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
+      "section": null,
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "no-longer-a-hot-mess.html",
       "title": "No longer a hot mess.",
       "section": null,
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "thaivisa/index.html",
       "title": "Thai Visa Strategy Guide",
       "section": null,
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "thaivisa/th/index.html",
       "title": "คู่มือกลยุทธ์วีซ่าสหรัฐ",
       "section": null,
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "spiritofpai.html",
@@ -69,31 +75,31 @@
       "path": "E2v/e2v2.html",
       "title": "E-2 Visa Playbook v2: Polish Citizen in Austin, TX",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "E2v/ev23.html",
       "title": "AlpacApps → E-2 Business | E-2 Visa Investment Guide",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "E2v/index.html",
       "title": "E-2 Visa Playbook: Polish Citizen in Austin, TX",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "iaw/index.html",
       "title": "Welcome to the Alpachuasca Playhouse",
       "section": "Projects",
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "sloop/index.html",
       "title": "Sloop — Tesla Model Y 2026",
       "section": "Projects",
-      "modifiedAt": "2026-03-08T19:33:48.000Z"
+      "modifiedAt": "2026-03-08T19:36:43.000Z"
     },
     {
       "path": "bandb/index.html",
