@@ -107,6 +107,23 @@ vehicles        - All vehicles
                    last_state [jsonb], last_synced_at, created_at, updated_at)
 vehicle_drivers - Junction: vehicles ↔ people (who can drive which vehicle)
                   (vehicle_id [FK→vehicles], person_id [FK→people])
+vehicle_rentals - Car rental agreements with rate schedules
+                  (vehicle_id [FK→vehicles INT], person_id [FK→people],
+                   renter_name, renter_email, renter_phone, renter_address,
+                   renter_dl_number, renter_dl_state,
+                   vehicle_vin, vehicle_make, vehicle_model, vehicle_year, vehicle_color,
+                   starting_mileage, start_date, end_date, auto_renew, cancel_notice_days,
+                   status [draft/active/ended/cancelled],
+                   rate_schedule [jsonb array: {from, to, rate}],
+                   current_monthly_rate, security_deposit_amount,
+                   security_deposit_paid, security_deposit_returned,
+                   deposit_deductions, deposit_deduction_notes,
+                   insurance_provider, insurance_policy_number, insurance_verified,
+                   monthly_mileage_limit, mileage_overage_rate, current_mileage,
+                   late_return_hourly_rate, accident_deductible_max,
+                   existing_damage, contract_pdf_url, contract_signed_at,
+                   signwell_document_id, admin_notes, additional_terms,
+                   created_at, updated_at, ended_at)
 ```
 
 ### Camera Streaming System
