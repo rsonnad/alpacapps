@@ -1701,6 +1701,306 @@ async function handleOutboundZellePayment(
 }
 
 // =============================================
+// VENMO PAYMENT EMAIL PARSING
+// =============================================
+
+interface VenmoPayment {
+  amount: number;
+  personName: string;
+  direction: "inbound" | "outbound";
+  memo: string | null;
+  transactionId: string | null;
+  transactionDate: string | null;
+}
+
+/**
+ * Parse Venmo payment notification emails.
+ *
+ * Outbound (you sent money):
+ *   Subject: "You paid Aseem Tiwari $65.29"
+ *   Body: "You paid Aseem Tiwari $65.29", memo, transaction ID, date
+ *
+ * Inbound (you received money):
+ *   Subject: "NAME paid you $X.XX"
+ *   Body: "NAME paid you $X.XX", memo, transaction ID, date
+ *
+ * Only matches emails originating from venmo.com.
+ */
+function parseVenmoPayment(bodyText: string, fromAddress: string): VenmoPayment | null {
+  // Only process emails from Venmo (original sender in forwarded emails)
+  const fromLower = fromAddress.toLowerCase();
+  const bodyLower = bodyText.toLowerCase();
+  const isVenmo = fromLower.includes("venmo") || bodyLower.includes("venmo@venmo.com") || bodyLower.includes("from: venmo");
+  if (!isVenmo) return null;
+
+  const normalized = bodyText.replace(/\s+/g, " ");
+
+  // Outbound: "You paid NAME $X.XX" or "You paid NAME $ XX . XX"
+  // Venmo emails sometimes split the dollar amount across elements: "$ 65 . 29"
+  const outboundMatch = normalized.match(/You paid ([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*\$\s*([\d,]+)\s*\.\s*(\d{2})/);
+  if (outboundMatch) {
+    const amount = parseFloat(outboundMatch[2].replace(/,/g, "") + "." + outboundMatch[3]);
+    const personName = outboundMatch[1].trim();
+    const memo = extractVenmoMemo(normalized, personName, amount);
+    const transactionId = extractVenmoTransactionId(normalized);
+    const transactionDate = extractVenmoDate(normalized);
+    return { amount, personName, direction: "outbound", memo, transactionId, transactionDate };
+  }
+
+  // Inbound: "NAME paid you $X.XX" or "NAME paid you $ XX . XX"
+  const inboundMatch = normalized.match(/([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+paid you\s*\$\s*([\d,]+)\s*\.\s*(\d{2})/);
+  if (inboundMatch) {
+    const amount = parseFloat(inboundMatch[2].replace(/,/g, "") + "." + inboundMatch[3]);
+    const personName = inboundMatch[1].trim();
+    const memo = extractVenmoMemo(normalized, personName, amount);
+    const transactionId = extractVenmoTransactionId(normalized);
+    const transactionDate = extractVenmoDate(normalized);
+    return { amount, personName, direction: "inbound", memo, transactionId, transactionDate };
+  }
+
+  return null;
+}
+
+function extractVenmoMemo(text: string, personName: string, amount: number): string | null {
+  // Memo appears after the amount display, before "See transaction"
+  // In plain text: after "$\nXX\n.\nXX\n" then the memo, then "See transaction"
+  // In normalized form: after the dollar breakdown, there's often free-form text
+  const amountStr = amount.toFixed(2);
+  // Try to find text between the amount region and "See transaction" or "Transaction details"
+  const memoMatch = text.match(/\.\s*\d{2}\s+(.+?)\s+(?:See transaction|Transaction details)/i);
+  if (memoMatch) {
+    const candidate = memoMatch[1].trim();
+    // Filter out Venmo boilerplate
+    if (candidate.length > 0 && candidate.length < 200 && !/venmo logo/i.test(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+function extractVenmoTransactionId(text: string): string | null {
+  const match = text.match(/Transaction ID\s+(\d+)/i);
+  return match ? match[1] : null;
+}
+
+function extractVenmoDate(text: string): string | null {
+  // "Mar 08, 2026" or "Date Mar 08, 2026"
+  const match = text.match(/(?:Date\s+)?([A-Z][a-z]{2}\s+\d{1,2},?\s+\d{4})/);
+  if (match) {
+    const d = new Date(match[1]);
+    if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
+  }
+  return null;
+}
+
+/**
+ * Handle a parsed outbound Venmo payment (refund/payout).
+ * Creates an expense ledger entry, same pattern as handleOutboundZellePayment.
+ */
+async function handleOutboundVenmoPayment(
+  supabase: any,
+  resendApiKey: string,
+  venmo: VenmoPayment
+): Promise<void> {
+  // Try to match recipient to a person in the DB
+  const nameMatch = await matchByName(supabase, venmo.personName);
+  const personId = nameMatch?.person_id || null;
+  const personName = nameMatch?.name || venmo.personName;
+
+  const txDate = venmo.transactionDate || new Date().toISOString().split("T")[0];
+
+  // Infer category from memo
+  const memoLower = (venmo.memo || "").toLowerCase();
+  let category = "other";
+  if (/refund|deposit return|deposit refund/i.test(memoLower)) {
+    category = "refund";
+  } else if (/clean|maint|repair|lawn|landscap|plumb|electric|paint|handyman|contractor|work/i.test(memoLower)) {
+    category = "associate_payment";
+  } else if (/decor|suppli|order|purchas|merch|material|equipment|furniture|appliance|hardware|tool|part/i.test(memoLower)) {
+    category = "merchandise";
+  } else if (nameMatch) {
+    category = "associate_payment";
+  }
+
+  const memoStr = venmo.memo ? ` — "${venmo.memo}"` : "";
+  const txIdStr = venmo.transactionId ? `, txn#${venmo.transactionId}` : "";
+
+  // Create expense ledger entry
+  const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
+    direction: "expense",
+    category,
+    amount: venmo.amount,
+    payment_method: "venmo",
+    transaction_date: txDate,
+    person_id: personId,
+    person_name: personName,
+    status: "completed",
+    description: `Outbound Venmo to ${personName}${memoStr} (auto-recorded${txIdStr})`,
+    notes: venmo.memo || null,
+    recorded_by: "system:venmo-outbound-email",
+  }).select("id").single();
+
+  if (ledgerError) {
+    console.error("Failed to create outbound Venmo ledger entry:", ledgerError);
+  } else {
+    console.log(`Outbound Venmo ledger entry created: ${ledgerEntry.id}, $${venmo.amount} to ${personName}, category=${category}`);
+  }
+
+  // Notify admin
+  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : category === "merchandise" ? "Merchandise/Supplies" : "Other (verify)";
+  const subject = `Outbound Venmo Recorded: $${venmo.amount.toFixed(2)} to ${personName}${venmo.memo ? ` — ${venmo.memo}` : ""}`;
+  const html = `
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+      <h2 style="color:#2d7d46;">&#x2705; Outbound Venmo Payment Auto-Recorded</h2>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${venmo.amount.toFixed(2)}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Sent To</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.personName}</td></tr>
+        ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${venmo.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.memo}</td></tr>` : ""}
+        ${venmo.transactionId ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.transactionId}</td></tr>` : ""}
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Venmo outbound</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${categoryLabel}</td></tr>
+      </table>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound Venmo payment was auto-recorded in the ledger. Verify the category in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+    </div>
+  `;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        to: ["team@alpacaplayhouse.com"],
+        subject,
+        html,
+      }),
+    });
+    console.log("Outbound Venmo payment notification sent to admin");
+  } catch (err) {
+    console.error("Failed to send outbound Venmo notification:", err);
+  }
+}
+
+/**
+ * Handle a parsed inbound Venmo payment (someone paid us).
+ * Routes through the same deposit/tenant matching pipeline as Zelle inbound.
+ */
+async function handleInboundVenmoPayment(
+  supabase: any,
+  resendApiKey: string,
+  venmo: VenmoPayment,
+  emailRecord: any
+): Promise<void> {
+  const nameMatch = await matchByName(supabase, venmo.personName);
+
+  if (nameMatch) {
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      console.log(`Venmo inbound match: ${venmo.personName} → ${nameMatch.name}, app=${application.id}`);
+      // Build a ZellePayment-compatible object for the existing deposit handler
+      const pseudoZelle: ZellePayment = {
+        amount: venmo.amount,
+        senderName: venmo.personName,
+        confirmationNumber: venmo.transactionId || null,
+        bank: "venmo",
+      };
+      await autoRecordDeposit(supabase, application, pseudoZelle, resendApiKey);
+      return;
+    }
+    console.log(`Venmo name matched ${nameMatch.name} but no pending deposit application found`);
+  }
+
+  // Fallback: record in ledger as income, try to match to active assignment
+  const personId = nameMatch?.person_id || null;
+  const personName = nameMatch?.name || venmo.personName;
+  const txDate = venmo.transactionDate || new Date().toISOString().split("T")[0];
+
+  // Find active assignment for this person
+  let assignmentId: string | null = null;
+  if (personId) {
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id")
+      .eq("person_id", personId)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    assignmentId = assignment?.id || null;
+  }
+
+  // Infer category from memo
+  const memoLower = (venmo.memo || "").toLowerCase();
+  let category = "rent";
+  if (/deposit|security/i.test(memoLower)) {
+    category = memoLower.includes("move") ? "move_in_deposit" : "security_deposit";
+  }
+
+  const memoStr = venmo.memo ? ` — "${venmo.memo}"` : "";
+  const txIdStr = venmo.transactionId ? `, txn#${venmo.transactionId}` : "";
+
+  const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
+    direction: "income",
+    category,
+    amount: venmo.amount,
+    payment_method: "venmo",
+    transaction_date: txDate,
+    person_id: personId,
+    person_name: personName,
+    assignment_id: assignmentId,
+    status: "completed",
+    description: `Venmo from ${personName}${memoStr} (auto-recorded${txIdStr})`,
+    notes: venmo.memo || null,
+    recorded_by: "system:venmo-inbound-email",
+  }).select("id").single();
+
+  if (ledgerError) {
+    console.error("Failed to create inbound Venmo ledger entry:", ledgerError);
+  } else {
+    console.log(`Inbound Venmo ledger entry created: ${ledgerEntry.id}, $${venmo.amount} from ${personName}, category=${category}`);
+  }
+
+  // Notify admin
+  const subject = `Inbound Venmo Recorded: $${venmo.amount.toFixed(2)} from ${personName}${venmo.memo ? ` — ${venmo.memo}` : ""}`;
+  const html = `
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+      <h2 style="color:#2d7d46;">&#x2705; Inbound Venmo Payment Auto-Recorded</h2>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${venmo.amount.toFixed(2)}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.personName}</td></tr>
+        ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${venmo.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.memo}</td></tr>` : ""}
+        ${venmo.transactionId ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${venmo.transactionId}</td></tr>` : ""}
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${category}</td></tr>
+      </table>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">Auto-recorded in the ledger. Verify in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+    </div>
+  `;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        to: ["team@alpacaplayhouse.com"],
+        subject,
+        html,
+      }),
+    });
+  } catch (err) {
+    console.error("Failed to send inbound Venmo notification:", err);
+  }
+}
+
+// =============================================
 // PAYPAL PAYMENT EMAIL PARSING
 // =============================================
 
@@ -2600,7 +2900,20 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1b. Try to parse as outbound Zelle payment (refund/payout sent)
+  // 1b. Try to parse as Venmo payment (inbound or outbound)
+  const venmoParsed = parseVenmoPayment(bodyText, fromAddress);
+  if (venmoParsed) {
+    if (venmoParsed.direction === "outbound") {
+      console.log(`Parsed outbound Venmo payment: $${venmoParsed.amount} to ${venmoParsed.personName}, memo="${venmoParsed.memo || ""}"`);
+      await handleOutboundVenmoPayment(supabase, resendApiKey, venmoParsed);
+    } else {
+      console.log(`Parsed inbound Venmo payment: $${venmoParsed.amount} from ${venmoParsed.personName}, memo="${venmoParsed.memo || ""}"`);
+      await handleInboundVenmoPayment(supabase, resendApiKey, venmoParsed, emailRecord);
+    }
+    return;
+  }
+
+  // 1c. Try to parse as outbound Zelle payment (refund/payout sent)
   const outboundParsed = parseOutboundZellePayment(bodyText);
   if (outboundParsed) {
     console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}, memo="${outboundParsed.memo || ""}"`);
@@ -2608,10 +2921,10 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1c. Try to parse as inbound Zelle payment
+  // 1d. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), forwarding to admin for review");
+    console.log("Could not parse payment from email (tried Zelle + PayPal + Venmo + outbound Zelle), forwarding to admin for review");
     // Forward the unrecognized email to admin for manual classification
     try {
       const subject = emailRecord.subject || "Unknown payment email";
