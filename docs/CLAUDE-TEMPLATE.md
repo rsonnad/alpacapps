@@ -1,78 +1,101 @@
-# CLAUDE.md - [Your Project Name]
+# CLAUDE.md Templates
 
-This file provides context for Claude (AI assistant) when working on this codebase.
+The setup wizard uses one of these templates based on the selected profile.
+Replace all `{PLACEHOLDERS}` with actual values during setup.
 
-> **IMPORTANT: You have direct database access!**
-> Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.
+---
 
-> **IMPORTANT: Push changes immediately!**
-> This is a GitHub Pages site - changes only go live after pushing.
-> Always `git push` as soon as changes are ready.
+## General AI Enablement Profile
 
-> **IMPORTANT: First-time setup!**
-> If the Supabase CLI is not installed or linked, run:
-> `npm install -g supabase && supabase login && supabase link --project-ref YOUR_REF`
+Use this for projects that are NOT property management — SaaS apps, personal tools, booking systems, CRMs, portfolios, etc. Minimal context, no property-specific overhead.
 
-## Project Overview
+```markdown
+# {PROJECT_NAME} — Project Directives
 
-[Your project] is a [type of system] for [purpose]. It manages [core entities].
+> **On-demand docs — load when the task matches:**
+> - `docs/CREDENTIALS.md` — SQL queries, deploying functions, API calls
+> - `docs/SCHEMA.md` — writing queries, modifying tables, debugging data
+> - `docs/PATTERNS.md` — writing UI code, Tailwind styling, testing
+> - `docs/DEPLOY.md` — pushing, deploying, version questions
 
-**Tech Stack:**
-- Frontend: Vanilla HTML/CSS/JavaScript (no framework)
-- Backend: Supabase (PostgreSQL + Storage + Auth)
-- Hosting: GitHub Pages (static site)
+## Mandatory Behaviors
 
-**Live URLs:**
-- Public view: https://USERNAME.github.io/REPO/
-- Admin view: https://USERNAME.github.io/REPO/admin/
+1. After code changes: end response with `vYYMMDD.NN H:MMa [model]` + affected URLs (read `version.json`)
+2. Push immediately — GitHub Pages deploys on push to main. See `docs/DEPLOY.md`
+3. CI bumps version — never bump locally
 
-## Deployment
+## Code Guards
 
-Push to main and it's live. No build step, no PR process.
-**For Claude:** Always push changes immediately.
+- Filter archived items: `.filter(s => !s.is_archived)` client-side
+- `showToast()` not `alert()` in admin
+- Tailwind: use project tokens (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.
 
-## Supabase Details
+## Quick Refs
 
-- Project ID: `YOUR_PROJECT_REF`
-- URL: `https://YOUR_PROJECT_REF.supabase.co`
-- Anon key is in `shared/supabase.js`
-
-### Direct Database Access (for Claude)
-
-```bash
-psql "postgres://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
+- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages
+- **Live:** https://{USERNAME}.github.io/{REPO}/
+- **Architecture:** Browser → GitHub Pages → Supabase (no server-side code)
 ```
 
-### Supabase CLI Access (for Claude)
+---
 
-```bash
-supabase functions deploy <function-name>
-supabase functions logs <function-name>
-supabase secrets set KEY=value
+## Property Management Profile
+
+Use this for projects that manage physical spaces, tenants, bookings, devices, events, etc. Full context with all doc references and code guards.
+
+```markdown
+# {PROJECT_NAME} — Project Directives
+
+> **On-demand docs — load when the task matches:**
+> - `docs/CREDENTIALS.md` — SQL queries, deploying functions, SSH, API calls
+> - `docs/SCHEMA.md` — writing queries, modifying tables, debugging data
+> - `docs/PATTERNS.md` — writing UI code, Tailwind styling, code review, testing
+> - `docs/KEY-FILES.md` — finding files, understanding project structure
+> - `docs/DEPLOY.md` — pushing, deploying, version questions
+> - `docs/INTEGRATIONS.md` — external APIs, vendor setup, pricing
+> - `docs/CHANGELOG.md` — understanding recent changes, migration context
+
+## Mandatory Behaviors
+
+1. After code changes: end response with `vYYMMDD.NN H:MMa [model]` + affected URLs (read `version.json`)
+2. On significant decisions: update `PRODUCTDESIGN.md` with **Decision** and **Why**
+3. Push immediately — GitHub Pages deploys on push to main. See `docs/DEPLOY.md`
+4. CI bumps version — never bump locally
+
+## Code Guards
+
+- `media_spaces` not `photo_spaces` — legacy migrated
+- Filter archived items: `.filter(s => !s.is_archived)` client-side
+- No personal info in consumer views — assignment dates only
+- `showToast()` not `alert()` in admin
+- `openLightbox(url)` for images
+- Tailwind: use project tokens (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.
+- Claude CLI as subprocess, never Anthropic API. Edge functions use Gemini.
+
+## Quick Refs
+
+- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Capacitor 8
+- **Live:** https://{USERNAME}.github.io/{REPO}/
+- **Architecture:** Browser → GitHub Pages → Supabase (no server-side code)
 ```
 
-Run these directly. If CLI not installed, install and link first.
+---
 
-## External Services
+## CLAUDE.local.md Template (both profiles)
 
-### Email (Resend)
-- API key stored as Supabase secret: `RESEND_API_KEY`
+Always gitignored. Created during setup.
 
-### SMS (Telnyx)
-- Config in `telnyx_config` table
-- Edge functions: `send-sms`, `telnyx-webhook` (deploy with `--no-verify-jwt`)
+```markdown
+# Operator Directives
 
-### Payments (Square)
-- Config in `square_config` table
-- Edge function: `process-square-payment`
+> **DB access:** Read `docs/CREDENTIALS.md`. Use Supabase Management API (never psql).
+> **Push:** Always push immediately. Never bump version locally — CI handles it.
+> **After push:** Wait ~60s, `git pull --rebase origin main`, read `version.json`.
+> **Links:** Always include clickable URLs to affected pages after every push.
+> **SQL:** Run migrations directly via Management API — never ask user to run SQL manually.
 
-### E-Signatures (SignWell)
-- Config in `signwell_config` table
-- Edge function: `signwell-webhook` (deploy with `--no-verify-jwt`)
+## Live URLs
 
-## Conventions
-
-1. Use toast notifications, not alert()
-2. Filter archived items client-side
-3. Don't expose personal info in public views
-4. Client-side image compression for files > 500KB
+- https://{USERNAME}.github.io/{REPO}/ (GitHub Pages)
+- https://github.com/{USERNAME}/{REPO} (repo)
+```
