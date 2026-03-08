@@ -1,12 +1,12 @@
 {
-  "version": "v260308.07 1:29p",
-  "release": 543,
-  "sha": "e42d3ca0a",
-  "fullSha": "e42d3ca0a7cbf34673b82b500db9e9c1f36902fa",
+  "version": "v260308.08 2:09p",
+  "release": 544,
+  "sha": "e6025f64c",
+  "fullSha": "e6025f64ce6ee1d851d9640a88a39317c8dcd88d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 18:29:09+00",
-  "commits": [{"sha":"e42d3ca0a","message":"Add AI-interest email signup on ninja page and admin signups view","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:09:52+00",
+  "commits": [{"sha":"fc9932dc4","message":"Change ninja.html hero to wide alpaca banner, stacked layout","author":"Rahul"},{"sha":"e6025f64c","message":"Merge branch 'flamboyant-proskuriakova'","author":"Rahul"}]
 }
