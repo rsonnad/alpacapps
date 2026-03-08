@@ -1,12 +1,12 @@
 {
-  "version": "v260307.38 8:45p",
-  "release": 531,
-  "sha": "9a9614fe2",
-  "fullSha": "9a9614fe242dbd27ec073988eb53d389c2b33992",
+  "version": "v260307.39 8:52p",
+  "release": 532,
+  "sha": "d61fde662",
+  "fullSha": "d61fde6621cb1d54eaf5dd3ba763c4538102f7ea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 02:45:00+00",
-  "commits": [{"sha":"9a9614fe2","message":"Fix ninja-signups page: add missing Supabase vendor script and version-info","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:52:09+00",
+  "commits": [{"sha":"d61fde662","message":"Fix ninja signup form: replace rotated anon key with current one","author":"Rahul"}]
 }
