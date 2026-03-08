@@ -1,12 +1,12 @@
 {
-  "version": "v260307.30 2:53p",
-  "release": 523,
-  "sha": "3b66cc8cf",
-  "fullSha": "3b66cc8cffa02ce3c95d9f1538bbae45eb7be489",
+  "version": "v260307.31 8:04p",
+  "release": 524,
+  "sha": "2bbfd7a41",
+  "fullSha": "2bbfd7a41e87f022c44680f7002bef2d8a133b80",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-07 20:53:14+00",
-  "commits": [{"sha":"3b66cc8cf","message":"Slim CLAUDE.md to fix context exhaustion; move schema, integrations, changelog to docs/","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:04:43+00",
+  "commits": [{"sha":"2bbfd7a41","message":"Slim CLAUDE.md to fix context exhaustion; move schema, integrations, changelog to docs/","author":"Rahul"}]
 }
