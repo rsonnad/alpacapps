@@ -29,7 +29,8 @@
 
 ## First-Time Setup
 
-- Run `/plugin install typescript-lsp@claude-plugins-official` once (LSP env var is set via `.claude/settings.json`)
+1. `npm install -g typescript-language-server typescript`
+2. Run `/plugin install typescript-lsp@claude-plugins-official` in Claude Code (LSP env var is set via `.claude/settings.json`)
 
 ## Quick Refs
 
