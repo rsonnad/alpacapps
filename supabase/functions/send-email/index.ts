@@ -61,6 +61,8 @@ type EmailType =
   | "pai_document_received"
   // Payment statement
   | "payment_statement"
+  // Move-out financial statement
+  | "move_out_statement"
   // Waiver
   | "waiver_confirmation"
   // Work photo reminder
@@ -845,6 +847,176 @@ ${data._payment_methods_text || '- Contact us for payment options'}
 Please include your name and "rent" in the payment memo.
 
 If you have any questions about your statement, just reply to this email.
+
+Best regards,
+Alpaca Playhouse`
+      };
+    }
+
+    // ===== MOVE-OUT FINANCIAL STATEMENT =====
+    case "move_out_statement": {
+      // data: { first_name, last_name, space_name, lease_start, lease_end,
+      //         rate, rate_term, security_deposit,
+      //         rent_charges: [{ period, amount, note? }],
+      //         payments: [{ date, method, amount, note? }],
+      //         deductions: [{ label, amount }]?,
+      //         refund_amount?, balance_due?, pay_now_url? }
+
+      const fullName = `${data.first_name} ${data.last_name}`;
+      const rateLabel = data.rate_term === 'weekly' ? 'Weekly Rate'
+        : data.rate_term === 'nightly' ? 'Nightly Rate'
+        : data.rate_term === 'biweekly' ? 'Biweekly Rate' : 'Monthly Rate';
+
+      const rentCharges = data.rent_charges || [];
+      const totalRent = rentCharges.reduce((s: number, c: any) => s + Number(c.amount), 0);
+      const chargeRowsHtml = rentCharges.map((c: any) => `
+        <tr>
+          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:14px;">${c.period}${c.note ? ` <span style="color:#7d6f74;font-size:12px;">(${c.note})</span>` : ''}</td>
+          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;color:#333;font-weight:600;font-size:14px;">$${Number(c.amount).toFixed(2)}</td>
+        </tr>`).join('\n');
+
+      const payments = data.payments || [];
+      const totalPaid = payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
+      const fmtMethod = (m: string) => {
+        const map: Record<string, string> = { zelle: 'Zelle', venmo: 'Venmo', paypal: 'PayPal', cashapp: 'CashApp', stripe: 'Card/ACH', bank_ach: 'Bank ACH', cash: 'Cash', check: 'Check', manual: 'Manual' };
+        return map[m?.toLowerCase()] || (m ? m.charAt(0).toUpperCase() + m.slice(1) : '—');
+      };
+      const paymentRowsHtml = payments.map((p: any) => `
+        <tr>
+          <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:13px;">${p.date}</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:13px;">${fmtMethod(p.method)}</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;text-align:right;color:#2e7d32;font-weight:600;font-size:13px;">$${Number(p.amount).toFixed(2)}</td>
+        </tr>`).join('\n');
+
+      const deductions = data.deductions || [];
+      const totalDeductions = deductions.reduce((s: number, d: any) => s + Number(d.amount), 0);
+      const deductionRowsHtml = deductions.map((d: any) => `
+        <tr>
+          <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:13px;">${d.label}</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;text-align:right;color:#c62828;font-weight:600;font-size:13px;">−$${Number(d.amount).toFixed(2)}</td>
+        </tr>`).join('\n');
+
+      const securityDeposit = Number(data.security_deposit || 0);
+      const netBalance = totalRent - totalPaid + totalDeductions;
+      const refundAmount = data.refund_amount != null ? Number(data.refund_amount) : (securityDeposit > 0 ? Math.max(0, securityDeposit - Math.max(0, netBalance)) : 0);
+      const balanceDue = data.balance_due != null ? Number(data.balance_due) : Math.max(0, netBalance - securityDeposit);
+
+      const infoCardStyle = 'background:#fff;border:1px dashed #e6e2d9;border-radius:12px;padding:20px 24px;margin-bottom:28px;';
+      const labelStyle = 'padding:6px 0;color:#7d6f74;font-size:14px;';
+      const valueStyle = 'padding:6px 0;text-align:right;color:#2a1f23;font-weight:600;font-size:14px;';
+      const sectionTitle = 'color:#2a1f23;font-size:18px;font-weight:700;margin:0 0 16px;';
+      const thStyle = 'padding:10px 16px;text-align:left;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;border-bottom:2px solid #d4883a;';
+      const thStyleRight = 'padding:10px 16px;text-align:right;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;border-bottom:2px solid #d4883a;';
+      const totalRowStyle = 'background:#f2f0e8;';
+      const totalLabelStyle = 'padding:12px 16px;font-weight:700;color:#2a1f23;font-size:14px;';
+      const totalValueStyle = 'padding:12px 16px;text-align:right;font-weight:700;color:#2a1f23;font-size:14px;';
+
+      const html = `
+        <h2 style="color:#2a1f23;font-size:20px;font-weight:700;margin:0 0 20px;">Move-Out Financial Statement</h2>
+        <p style="color:#7d6f74;font-size:14px;margin:0 0 24px;">Hi ${data.first_name}, here is your final financial statement for your stay at <strong>${data.space_name}</strong>.</p>
+
+        <!-- Info Card -->
+        <div style="${infoCardStyle}">
+          <table style="border-collapse:collapse;width:100%;">
+            <tr><td style="${labelStyle}">Resident</td><td style="${valueStyle}">${fullName}</td></tr>
+            <tr><td style="${labelStyle}">Space</td><td style="${valueStyle}">${data.space_name}</td></tr>
+            <tr><td style="${labelStyle}">Lease Period</td><td style="${valueStyle}">${data.lease_start} – ${data.lease_end}</td></tr>
+            <tr><td style="${labelStyle}">${rateLabel}</td><td style="${valueStyle}">$${Number(data.rate).toFixed(2)}</td></tr>
+            ${securityDeposit > 0 ? `<tr><td style="${labelStyle}">Security Deposit Held</td><td style="${valueStyle}">$${securityDeposit.toFixed(2)}</td></tr>` : ''}
+          </table>
+        </div>
+
+        <!-- Rent Charges -->
+        <h3 style="${sectionTitle}">Rent Charges</h3>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:4px;">
+          <thead><tr><th style="${thStyle}">Period</th><th style="${thStyleRight}">Amount</th></tr></thead>
+          <tbody>${chargeRowsHtml}</tbody>
+        </table>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:28px;">
+          <tr style="${totalRowStyle}"><td style="${totalLabelStyle}">Total Rent</td><td style="${totalValueStyle}">$${totalRent.toFixed(2)}</td></tr>
+        </table>
+
+        ${payments.length > 0 ? `
+        <!-- Payments Received -->
+        <h3 style="${sectionTitle}">Payments Received</h3>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:4px;">
+          <thead><tr><th style="${thStyle}">Date</th><th style="${thStyle}">Method</th><th style="${thStyleRight}">Amount</th></tr></thead>
+          <tbody>${paymentRowsHtml}</tbody>
+        </table>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:28px;">
+          <tr style="${totalRowStyle}"><td style="${totalLabelStyle}">Total Paid</td><td style="${totalValueStyle}">$${totalPaid.toFixed(2)}</td></tr>
+        </table>` : ''}
+
+        ${deductions.length > 0 ? `
+        <!-- Deductions -->
+        <h3 style="${sectionTitle}">Deductions</h3>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:4px;">
+          <thead><tr><th style="${thStyle}">Description</th><th style="${thStyleRight}">Amount</th></tr></thead>
+          <tbody>${deductionRowsHtml}</tbody>
+        </table>
+        <table style="border-collapse:collapse;width:100%;margin-bottom:28px;">
+          <tr style="${totalRowStyle}"><td style="${totalLabelStyle}">Total Deductions</td><td style="${totalValueStyle}">−$${totalDeductions.toFixed(2)}</td></tr>
+        </table>` : ''}
+
+        <!-- Final Balance -->
+        ${refundAmount > 0 ? `
+        <div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+          <div style="font-size:13px;color:#2e7d32;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Refund Due to You</div>
+          <div style="font-size:28px;font-weight:700;color:#1b5e20;">$${refundAmount.toFixed(2)}</div>
+        </div>` : ''}
+
+        ${balanceDue > 0 ? `
+        <div style="background:#fff3e0;border-left:4px solid #e65100;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+          <div style="font-size:13px;color:#e65100;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Balance Due</div>
+          <div style="font-size:28px;font-weight:700;color:#bf360c;">$${balanceDue.toFixed(2)}</div>
+        </div>
+        ${data.pay_now_url ? `<div style="text-align:center;margin:24px 0;">
+          <a href="${data.pay_now_url}" style="display:inline-block;background:#d4883a;color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;box-shadow:0 2px 8px rgba(212,136,58,0.30);">Pay $${balanceDue.toFixed(2)} Now</a>
+        </div>` : ''}` : ''}
+
+        ${refundAmount <= 0 && balanceDue <= 0 ? `
+        <div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
+          <strong style="color:#2e7d32;font-size:16px;">&#10003; All settled — no balance due.</strong>
+        </div>` : ''}
+
+        <p style="color:#7d6f74;font-size:13px;margin-top:20px;line-height:1.5;">If you have any questions about this statement, please reply to this email.</p>
+        <p style="color:#2a1f23;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+      `;
+
+      const chargesText = rentCharges.map((c: any) => `  ${c.period}${c.note ? ` (${c.note})` : ''}: $${Number(c.amount).toFixed(2)}`).join('\n');
+      const paymentsText = payments.map((p: any) => `  ${p.date}  ${fmtMethod(p.method)}  $${Number(p.amount).toFixed(2)}`).join('\n');
+      const deductionsText = deductions.map((d: any) => `  ${d.label}: -$${Number(d.amount).toFixed(2)}`).join('\n');
+
+      return {
+        subject: `Move-Out Statement - ${data.space_name} - ${fullName}`,
+        html,
+        text: `Move-Out Financial Statement
+
+Hi ${data.first_name},
+
+Here is your final financial statement for your stay at ${data.space_name}.
+
+Resident: ${fullName}
+Space: ${data.space_name}
+Lease Period: ${data.lease_start} – ${data.lease_end}
+${rateLabel}: $${Number(data.rate).toFixed(2)}
+${securityDeposit > 0 ? `Security Deposit Held: $${securityDeposit.toFixed(2)}` : ''}
+
+Rent Charges:
+${chargesText}
+Total Rent: $${totalRent.toFixed(2)}
+${payments.length > 0 ? `
+Payments Received:
+${paymentsText}
+Total Paid: $${totalPaid.toFixed(2)}` : ''}
+${deductions.length > 0 ? `
+Deductions:
+${deductionsText}
+Total Deductions: -$${totalDeductions.toFixed(2)}` : ''}
+
+${refundAmount > 0 ? `Refund Due to You: $${refundAmount.toFixed(2)}` : ''}${balanceDue > 0 ? `Balance Due: $${balanceDue.toFixed(2)}${data.pay_now_url ? `\nPay now: ${data.pay_now_url}` : ''}` : ''}${refundAmount <= 0 && balanceDue <= 0 ? 'All settled — no balance due.' : ''}
+
+If you have any questions about this statement, please reply to this email.
 
 Best regards,
 Alpaca Playhouse`
