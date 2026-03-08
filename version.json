@@ -1,12 +1,12 @@
 {
-  "version": "v260308.06 1:10p",
-  "release": 542,
-  "sha": "2420b0a2a",
-  "fullSha": "2420b0a2a4b9eb4f88a5b08e7479df931a3659a2",
+  "version": "v260308.07 1:29p",
+  "release": 543,
+  "sha": "e42d3ca0a",
+  "fullSha": "e42d3ca0a7cbf34673b82b500db9e9c1f36902fa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 18:10:05+00",
-  "commits": [{"sha":"bab564885","message":"Add CashApp payment option, fix processing fee accounting","author":"Rahul"},{"sha":"2420b0a2a","message":"Merge branch 'affectionate-lamport'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 18:29:09+00",
+  "commits": [{"sha":"e42d3ca0a","message":"Add AI-interest email signup on ninja page and admin signups view","author":"Rahul"}]
 }
