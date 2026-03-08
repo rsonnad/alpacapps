@@ -135,6 +135,10 @@ li {
   margin-bottom: var(--aap-space-sm);
 }
 
+.aap-content > ol > li {
+  margin-bottom: var(--aap-space-lg);
+}
+
 ::selection {
   background: rgba(212, 136, 58, 0.2);
   color: var(--aap-text);
