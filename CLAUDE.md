@@ -1,13 +1,13 @@
 # AlpacApps — Project Directives
 
-> **On-demand docs (read when needed):**
-> - `docs/KEY-FILES.md` — file index, edge function deploy flags
-> - `docs/PATTERNS.md` — code patterns, sorting rules, testing
-> - `docs/SCHEMA.md` — database tables + relationships
-> - `docs/CREDENTIALS.md` — all credentials + DB access commands (gitignored)
-> - `docs/INTEGRATIONS.md` — external services + API costs
-> - `docs/CHANGELOG.md` — recent changes
-> - `docs/DEPLOY.md` — deployment workflow, version format, live URLs
+> **On-demand docs — load when the task matches:**
+> - `docs/CREDENTIALS.md` — **load for:** SQL queries, deploying functions, SSH, API calls
+> - `docs/SCHEMA.md` — **load for:** writing queries, modifying tables, debugging data
+> - `docs/PATTERNS.md` — **load for:** writing UI code, Tailwind styling, code review, testing
+> - `docs/KEY-FILES.md` — **load for:** finding files, understanding project structure
+> - `docs/DEPLOY.md` — **load for:** pushing, deploying, version questions
+> - `docs/INTEGRATIONS.md` — **load for:** external APIs, vendor setup, pricing
+> - `docs/CHANGELOG.md` — **load for:** understanding recent changes, migration context
 
 ## Mandatory Behaviors
 
@@ -24,7 +24,7 @@
 - No personal info in consumer views — assignment dates only
 - `showToast()` not `alert()` in admin
 - `openLightbox(url)` for images
-- Tailwind `aap-*` tokens: `bg-aap-cream`, `bg-aap-dark`, `text-aap-amber`, `shadow-aap`, `rounded-aap`
+- Tailwind: use `aap-*` tokens (see `docs/PATTERNS.md` for full list). Run `npm run css:build` after new classes.
 - Claude CLI as subprocess, never Anthropic API. Edge functions use Gemini.
 
 ## Quick Refs

@@ -2,6 +2,18 @@
 
 > This file is loaded on-demand. Referenced from CLAUDE.md.
 
+## Tailwind CSS Design Tokens
+
+Use `aap-*` tokens for all new UI. Run `npm run css:build` after adding new classes.
+
+| Token | Usage |
+|-------|-------|
+| `bg-aap-cream` | Page/card backgrounds |
+| `bg-aap-dark` | Dark sections, headers |
+| `text-aap-amber` | Accent text, links |
+| `shadow-aap` | Card shadows |
+| `rounded-aap` | Border radius |
+
 ## Fetching Spaces with Media
 ```javascript
 const { data } = await supabase
