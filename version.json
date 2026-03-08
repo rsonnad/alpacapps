@@ -1,12 +1,12 @@
 {
-  "version": "v260307.42 10:41p",
-  "release": 535,
-  "sha": "c4762d262",
-  "fullSha": "c4762d2622545074d7c42e4000e7d46e21140b92",
+  "version": "v260307.43 10:58p",
+  "release": 536,
+  "sha": "f02672660",
+  "fullSha": "f02672660274268adcdcffc06dc3c188f1766d24",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 04:41:08+00",
-  "commits": [{"sha":"c4762d262","message":"Sync on-demand context system to skill files and docs page","author":"Rahul"}]
+  "pushedAt": "2026-03-08 04:58:24+00",
+  "commits": [{"sha":"f02672660","message":"Add two-profile clone architecture (Property Mgmt vs General AI Enablement)","author":"Rahul"}]
 }
