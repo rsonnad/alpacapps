@@ -209,8 +209,8 @@ def build_contract():
 
     rate_data = [
         ["Period", "Monthly Rate"],
-        ["May 21, 2025 \u2013 December 31, 2025", "$495/month"],
-        ["January 1, 2026 onward", "$295/month"],
+        ["May 21, 2025 \u2013 September 30, 2025", "$495/month"],
+        ["October 1, 2025 onward", "$295/month"],
     ]
     rt = Table(rate_data, colWidths=[3.2 * inch, 2.6 * inch])
     rt.setStyle(TableStyle([
