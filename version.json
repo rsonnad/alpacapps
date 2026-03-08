@@ -1,12 +1,12 @@
 {
-  "version": "v260308.08 2:09p",
-  "release": 544,
-  "sha": "e6025f64c",
-  "fullSha": "e6025f64ce6ee1d851d9640a88a39317c8dcd88d",
+  "version": "v260308.09 2:25p",
+  "release": 545,
+  "sha": "de1575bb2",
+  "fullSha": "de1575bb2254b05ea11802933325d13f5d2b9515",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 19:09:52+00",
-  "commits": [{"sha":"fc9932dc4","message":"Change ninja.html hero to wide alpaca banner, stacked layout","author":"Rahul"},{"sha":"e6025f64c","message":"Merge branch 'flamboyant-proskuriakova'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:25:26+00",
+  "commits": [{"sha":"de1575bb2","message":"Add project-level LSP tool config for cloners (#10)","author":"Rahul"}]
 }
