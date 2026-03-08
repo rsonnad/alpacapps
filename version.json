@@ -1,12 +1,12 @@
 {
-  "version": "v260307.36 8:36p",
-  "release": 529,
-  "sha": "a15722202",
-  "fullSha": "a15722202db78e4c6acfe0d4e037020112668588",
+  "version": "v260307.37 8:38p",
+  "release": 530,
+  "sha": "652da279e",
+  "fullSha": "652da279e8ba1999085e4c6ed395b53fade88532",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 02:36:48+00",
-  "commits": [{"sha":"a15722202","message":"Rahulio pages: data-driven sections, reverse-chrono sort, date display","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:38:49+00",
+  "commits": [{"sha":"652da279e","message":"Context optimization: directives-only CLAUDE.md + consolidated DEPLOY.md","author":"Rahul"}]
 }
