@@ -516,7 +516,7 @@ Deno.serve(async (req) => {
         const pi = event.data.object as { id: string };
         const { data: rows } = await supabase
           .from('stripe_payments')
-          .select('id, ledger_id, payment_type, amount, person_id, person_name')
+          .select('id, ledger_id, payment_type, amount, original_amount, fee_amount, person_id, person_name')
           .eq('stripe_payment_intent_id', pi.id);
 
         const PAYMENT_TYPE_TO_CATEGORY: Record<string, string> = {
@@ -535,14 +535,21 @@ Deno.serve(async (req) => {
         if (rows?.length) {
           for (const row of rows) {
             const category = PAYMENT_TYPE_TO_CATEGORY[row.payment_type] || 'other';
+            // Use original_amount (before fee) for the income entry; fall back to amount
+            const incomeAmount = row.original_amount && row.original_amount > 0
+              ? row.original_amount
+              : row.amount;
+            const feeAmount = row.fee_amount || 0;
+            const today = new Date().toISOString().split('T')[0];
+
             const { data: ledgerEntry, error: ledgerErr } = await supabase
               .from('ledger')
               .insert({
                 direction: 'income',
                 category,
-                amount: row.amount,
+                amount: incomeAmount,
                 payment_method: 'stripe',
-                transaction_date: new Date().toISOString().split('T')[0],
+                transaction_date: today,
                 person_id: row.person_id || null,
                 person_name: row.person_name || null,
                 status: 'completed',
@@ -552,6 +559,23 @@ Deno.serve(async (req) => {
               })
               .select('id')
               .single();
+
+            // Record processing fee as expense if present
+            if (feeAmount > 0) {
+              await supabase.from('ledger').insert({
+                direction: 'expense',
+                category: 'processing_fee',
+                amount: feeAmount,
+                payment_method: 'stripe',
+                transaction_date: today,
+                person_id: row.person_id || null,
+                person_name: row.person_name || null,
+                status: 'completed',
+                description: `Stripe processing fee (${row.payment_type.replace(/_/g, ' ')})`,
+                recorded_by: 'system:stripe-webhook',
+                is_test: false
+              });
+            }
 
             if (!ledgerErr && ledgerEntry) {
               await supabase.from('stripe_payments').update({

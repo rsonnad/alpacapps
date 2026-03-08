@@ -174,6 +174,7 @@ function buildPaymentMethodCardsHtml(
   const METHOD_STYLES: Record<string, { bg: string; border: string }> = {
     venmo: { bg: '#f0f7fc', border: '#3d95ce' },
     zelle: { bg: '#f3edfc', border: '#6c1cd3' },
+    cashapp: { bg: '#e6fbe9', border: '#00D632' },
     paypal: { bg: '#eef1f8', border: '#003087' },
     bank_ach: { bg: '#f5f5f5', border: '#333333' },
     cash: { bg: '#f0f7f0', border: '#2e7d32' },
@@ -775,7 +776,7 @@ Deno.serve(async (req) => {
             <div style="text-align:center;color:#7d6f74;font-size:13px;margin:20px 0;border-top:1px solid #e6e2d9;padding-top:20px;">or pay online</div>
             <div style="text-align:center;margin-bottom:8px;">
               <a href="${payUrl}" style="display:inline-block;background:#d4883a;color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(212,136,58,0.30);">Pay ${formatCurrency(totalDue)} Online</a>
-              <p style="color:#7d6f74;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH) &mdash; processing fee applies</p>
+              <p style="color:#7d6f74;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
             </div>
 
             ${idInfo.needsId ? `
@@ -819,7 +820,7 @@ ${payMethodsText}
 
 Please include "${memoText}" in the payment memo.
 
-Or pay online (processing fee applies): ${payUrl}
+Or pay online (0.8% processing fee, max $5): ${payUrl}
 ${idInfo.needsId ? `
 ID VERIFICATION REQUIRED
 We also need a copy of your government-issued photo ID to complete your rental setup.

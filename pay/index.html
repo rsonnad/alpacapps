@@ -312,6 +312,29 @@
       text-align: center;
     }
 
+    /* Fee breakdown */
+    .pay-fee-breakdown {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .pay-fee-breakdown__row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      color: var(--text-muted);
+    }
+    .pay-fee-breakdown__total {
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+      padding-top: 8px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
     /* Success */
     .pay-success {
       text-align: center;
@@ -431,6 +454,17 @@
               <div class="pay-methods__qr-label">Scan to pay via Venmo</div>
             </div>
 
+            <div class="pay-methods__row" data-method="cashapp">
+              <span class="pay-methods__badge" style="background:#00D632;">Cash App</span>
+              <a class="pay-methods__handle" href="https://cash.app/$rahuliox" target="_blank" rel="noopener">$rahuliox</a>
+              <button class="pay-methods__qr-toggle" onclick="toggleQR('cashapp-qr')" title="Show QR code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="5" y="5" width="2" height="2"/><rect x="17" y="5" width="2" height="2"/><rect x="5" y="17" width="2" height="2"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 4h2v-2h-2zm0-4h2v2h-2z"/></svg></button>
+              <span class="pay-methods__free">No fee</span>
+            </div>
+            <div class="pay-methods__qr-wrap" id="cashapp-qr">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fcash.app%2F%24rahuliox" alt="Cash App QR Code">
+              <div class="pay-methods__qr-label">Scan to pay via Cash App</div>
+            </div>
+
             <div class="pay-methods__row" data-method="paypal">
               <span class="pay-methods__badge" style="background:#003087;">PayPal</span>
               <span class="pay-methods__handle">rahulioson@gmail.com</span>
@@ -469,11 +503,16 @@
           <div class="pay-error" id="payError"></div>
 
           <div id="stripeSection">
+            <div id="feeBreakdown" class="pay-fee-breakdown" style="display:none;">
+              <div class="pay-fee-breakdown__row"><span>Payment</span><span id="feeBase"></span></div>
+              <div class="pay-fee-breakdown__row"><span>Processing fee (0.8%, max $5)</span><span id="feeAmount"></span></div>
+              <div class="pay-fee-breakdown__row pay-fee-breakdown__total"><span>Total charge</span><span id="feeTotal"></span></div>
+            </div>
             <div id="payment-element"></div>
             <button class="pay-btn" id="payBtn" disabled>
               Pay via Bank Transfer
             </button>
-            <span class="pay-btn__sub">Secure payment via Stripe &bull; 0.8% fee, capped at $5</span>
+            <span class="pay-btn__sub">Secure payment via Stripe &bull; 0.8% processing fee, max $5</span>
           </div>
         </div>
       </div>
@@ -586,9 +625,25 @@
 
     function getAmount() { return parseFloat(payAmountInput.value) || 0; }
 
+    function calcFee(amount) {
+      return Math.min(Math.round(amount * 0.008 * 100) / 100, 5.00);
+    }
+
     function updatePayBtnText() {
       var amt = getAmount();
-      payBtn.textContent = amt > 0 ? 'Pay $' + amt.toFixed(2) + ' via Bank Transfer' : 'Pay via Bank Transfer';
+      var fee = calcFee(amt);
+      var total = amt + fee;
+      var breakdown = document.getElementById('feeBreakdown');
+      if (amt > 0) {
+        payBtn.textContent = 'Pay $' + total.toFixed(2) + ' via Bank Transfer';
+        document.getElementById('feeBase').textContent = '$' + amt.toFixed(2);
+        document.getElementById('feeAmount').textContent = '+$' + fee.toFixed(2);
+        document.getElementById('feeTotal').textContent = '$' + total.toFixed(2);
+        breakdown.style.display = '';
+      } else {
+        payBtn.textContent = 'Pay via Bank Transfer';
+        breakdown.style.display = 'none';
+      }
     }
 
     // Toggle QR code visibility
@@ -600,11 +655,13 @@
     // Progressive enhancement: update hardcoded methods with fresh DB data
     // Links for payment methods
     var METHOD_LINKS = {
-      venmo: 'https://venmo.com/rahuliox'
+      venmo: 'https://venmo.com/rahuliox',
+      cashapp: 'https://cash.app/$rahuliox'
     };
 
     var METHOD_QR_LABELS = {
       venmo: 'Scan to pay via Venmo',
+      cashapp: 'Scan to pay via Cash App',
       paypal: 'Scan to pay via PayPal \u2022 select Friends & Family'
     };
 
@@ -621,6 +678,7 @@
           var BADGE_COLORS = {
             zelle: '#6c1cd3',
             venmo: '#3d95ce',
+            cashapp: '#00D632',
             paypal: '#003087',
             bank_ach: '#333',
             cash: '#2e7d32',
@@ -738,6 +796,9 @@
       var amount = getAmount();
       if (amount < 0.50) { showError('Minimum payment amount is $0.50'); return; }
 
+      var fee = calcFee(amount);
+      var totalAmount = amount + fee;
+
       showError('');
       payBtn.disabled = true;
       payBtn.innerHTML = '<span class="spinner"></span> Preparing...';
@@ -746,7 +807,9 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
         body: JSON.stringify({
-          amount: Math.round(amount * 100),
+          amount: Math.round(totalAmount * 100),
+          original_amount: Math.round(amount * 100),
+          fee_amount: Math.round(fee * 100),
           payment_type: presetPaymentType || 'rent',
           reference_type: presetRefType || 'direct_payment',
           reference_id: presetRefId || crypto.randomUUID(),
@@ -842,7 +905,9 @@
       document.getElementById('paymentForm').style.display = 'none';
       document.getElementById('successState').classList.add('visible');
       var amt = getAmount();
-      document.getElementById('successMessage').textContent = 'Your payment of $' + amt.toFixed(2) + ' has been received. A confirmation email will be sent shortly.';
+      var fee = calcFee(amt);
+      var total = amt + fee;
+      document.getElementById('successMessage').textContent = 'Your payment of $' + total.toFixed(2) + ' ($' + amt.toFixed(2) + ' + $' + fee.toFixed(2) + ' processing fee) has been received. A confirmation email will be sent shortly.';
       document.title = 'Payment Received - Alpaca Playhouse';
     }
 
