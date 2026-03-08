@@ -1,12 +1,12 @@
 {
-  "version": "v260307.40 9:03p",
-  "release": 533,
-  "sha": "8634492f2",
-  "fullSha": "8634492f25fde07624b31d60abc26e6202a06095",
+  "version": "v260307.41 9:11p",
+  "release": 534,
+  "sha": "b5501e6a2",
+  "fullSha": "b5501e6a2ef2541b797f4ecc3144ca8f04d3a91d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 03:03:22+00",
-  "commits": [{"sha":"8634492f2","message":"Context loading: trigger hints in doc index + Tailwind tokens to PATTERNS.md","author":"Rahul"}]
+  "pushedAt": "2026-03-08 03:11:39+00",
+  "commits": [{"sha":"b5501e6a2","message":"Add Claude referral link to Install Claude Code section","author":"Rahul"}]
 }
