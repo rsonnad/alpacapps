@@ -66,7 +66,9 @@ type EmailType =
   // Work photo reminder
   | "work_photo_reminder"
   // Custom (raw HTML passthrough)
-  | "custom";
+  | "custom"
+  // Internal — never sent to recipients directly
+  | "email_approval_request";
 
 interface EmailRequest {
   type: EmailType;
@@ -2139,6 +2141,93 @@ async function getRenderedTemplate(
   };
 }
 
+// ===== EMAIL APPROVAL SYSTEM =====
+const approvalConfigCache = new Map<string, { requiresApproval: boolean; fetchedAt: number }>();
+const APPROVAL_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+async function checkApprovalRequired(emailType: string): Promise<boolean> {
+  if (emailType === "email_approval_request") return false; // infinite loop guard
+  const cached = approvalConfigCache.get(emailType);
+  if (cached && Date.now() - cached.fetchedAt < APPROVAL_CACHE_TTL_MS) return cached.requiresApproval;
+  try {
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data } = await sb.from("email_type_approval_config").select("requires_approval").eq("email_type", emailType).maybeSingle();
+    const req = data?.requires_approval === true;
+    approvalConfigCache.set(emailType, { requiresApproval: req, fetchedAt: Date.now() });
+    return req;
+  } catch (e) {
+    console.warn("Approval config lookup failed:", e);
+    approvalConfigCache.set(emailType, { requiresApproval: false, fetchedAt: Date.now() });
+    return false;
+  }
+}
+
+async function holdForApproval(
+  emailType: string, toAddresses: string[], fromAddress: string, replyTo: string | undefined,
+  ccArr: string[] | undefined, bccArr: string[] | undefined, subject: string,
+  finalHtml: string, textContent: string, resendApiKey: string,
+): Promise<{ approvalId: string }> {
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const approvalToken = crypto.randomUUID();
+  const { data: approval, error } = await sb.from("pending_email_approvals").insert({
+    email_type: emailType, to_addresses: toAddresses, from_address: fromAddress,
+    reply_to: replyTo || null, cc: ccArr || null, bcc: bccArr || null,
+    subject, html: finalHtml, text_content: textContent, status: "pending", approval_token: approvalToken,
+  }).select("id").single();
+  if (error) throw new Error(`Failed to store pending approval: ${error.message}`);
+
+  const baseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/approve-email`;
+  const approveOneUrl = `${baseUrl}?token=${approvalToken}&action=approve_one`;
+  const approveAllUrl = `${baseUrl}?token=${approvalToken}&action=approve_all`;
+  const typeLabel = emailType.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const recipientList = toAddresses.join(", ");
+
+  const reviewHtml = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:640px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+    <div style="background:#1c1618;padding:20px 24px;">
+      <h2 style="color:#d4883a;margin:0;font-size:18px;">Email Approval Required</h2>
+    </div>
+    <div style="padding:20px 24px;border-bottom:1px solid #eee;">
+      <table style="width:100%;font-size:14px;color:#555;">
+        <tr><td style="padding:4px 0;font-weight:600;width:80px;">Type:</td><td><span style="background:#d4883a;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">${typeLabel}</span></td></tr>
+        <tr><td style="padding:4px 0;font-weight:600;">To:</td><td>${recipientList}</td></tr>
+        <tr><td style="padding:4px 0;font-weight:600;">Subject:</td><td>${subject}</td></tr>
+      </table>
+    </div>
+    <div style="padding:20px 24px;text-align:center;background:#faf9f6;">
+      <a href="${approveOneUrl}" style="display:inline-block;padding:14px 32px;background:#54a326;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;margin:0 8px 8px 0;">Approve This Email</a>
+      <a href="${approveAllUrl}" style="display:inline-block;padding:14px 32px;background:#d4883a;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;margin:0 0 8px 8px;">Approve All "${typeLabel}" Emails</a>
+      <p style="color:#888;font-size:12px;margin:12px 0 0;">Approve All permanently disables approval for this email type.</p>
+    </div>
+    <div style="padding:20px 24px;">
+      <p style="font-size:13px;color:#888;margin:0 0 12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Email Preview</p>
+      <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">${finalHtml}</div>
+    </div>
+    <div style="padding:16px 24px;background:#f4f4f4;text-align:center;">
+      <p style="color:#999;font-size:11px;margin:0;">AlpacApps Email Approval System</p>
+    </div>
+  </div>
+</body></html>`;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "AlpacApps <noreply@alpacaplayhouse.com>",
+      to: ["alpacaplayhouse@gmail.com"],
+      reply_to: "team@alpacaplayhouse.com",
+      subject: `[Approval Required] ${typeLabel}: ${subject}`,
+      html: reviewHtml,
+      text: `Email Approval Required\nType: ${typeLabel}\nTo: ${recipientList}\nSubject: ${subject}\n\nApprove: ${approveOneUrl}\nApprove All: ${approveAllUrl}`,
+    }),
+  });
+
+  return { approvalId: approval.id };
+}
+// ===== END EMAIL APPROVAL SYSTEM =====
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -2187,6 +2276,24 @@ serve(async (req) => {
         console.warn("Brand wrapper failed, sending unwrapped:", wrapErr);
         // Fall through with unwrapped HTML
       }
+    }
+
+    // === APPROVAL GATE ===
+    const needsApproval = await checkApprovalRequired(type);
+    if (needsApproval) {
+      const toArray = Array.isArray(to) ? to : [to];
+      const ccArray = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
+      const bccArray = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : undefined;
+      const { approvalId } = await holdForApproval(
+        type, toArray, from || sender.from, reply_to || sender.reply_to,
+        ccArray, bccArray, customSubject || rendered.subject,
+        finalHtml, rendered.text, RESEND_API_KEY,
+      );
+      console.log(`Email held for approval: type=${type}, to=${toArray.join(",")}, id=${approvalId}`);
+      return new Response(
+        JSON.stringify({ success: true, status: "pending_approval", approval_id: approvalId }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Send email via Resend

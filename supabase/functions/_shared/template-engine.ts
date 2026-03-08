@@ -51,26 +51,26 @@ export const SENDER_MAP: Record<
 > = {
   team: {
     from: "Alpaca Team <team@alpacaplayhouse.com>",
-    reply_to: "team@alpacaplayhouse.com",
+    reply_to: "pai@alpacaplayhouse.com",
   },
   auto: {
-    from: "Alpaca Automaton <auto@alpacaplayhouse.com>",
-    reply_to: "auto@alpacaplayhouse.com",
+    from: "Alpaca Automaton <pai@alpacaplayhouse.com>",
+    reply_to: "pai@alpacaplayhouse.com",
   },
   noreply: {
     from: "AlpacApps <noreply@alpacaplayhouse.com>",
-    reply_to: "team@alpacaplayhouse.com",
+    reply_to: "pai@alpacaplayhouse.com",
   },
   payments: {
     from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
-    reply_to: "team@alpacaplayhouse.com",
+    reply_to: "pai@alpacaplayhouse.com",
   },
   pai: {
     from: "Pai In-the-Sky Alpaca Playhouse <pai@alpacaplayhouse.com>",
     reply_to: "pai@alpacaplayhouse.com",
   },
   claudero: {
-    from: "Claudero <claudero@alpacaplayhouse.com>",
-    reply_to: "claudero@alpacaplayhouse.com",
+    from: "Claudero <pai@alpacaplayhouse.com>",
+    reply_to: "pai@alpacaplayhouse.com",
   },
 };

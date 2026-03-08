@@ -1292,6 +1292,29 @@ const TOOL_DECLARATIONS = [
       required: ["query"],
     },
   },
+  {
+    name: "check_pending_emails",
+    description:
+      "Check emails that are pending admin approval before being sent. Use when someone asks about pending emails, held messages, or approval status. Returns a list of emails waiting for approval with their type, recipients, subject, and when they were queued.",
+    parameters: {
+      type: "object",
+      properties: {
+        status: {
+          type: "string",
+          enum: ["pending", "approved", "expired", "all"],
+          description: "Filter by approval status. Defaults to 'pending'.",
+        },
+        email_type: {
+          type: "string",
+          description: "Filter by email type (e.g., 'pai_email_reply'). Optional.",
+        },
+        recipient: {
+          type: "string",
+          description: "Filter by recipient email address. Optional.",
+        },
+      },
+    },
+  },
 ];
 
 // =============================================
@@ -2577,6 +2600,37 @@ async function executeToolCall(
         }).then(() => {});
 
         return `Web search results for "${query}":\n\n${formatted}`;
+      }
+
+      case "check_pending_emails": {
+        const supabaseAdmin3 = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        let query = supabaseAdmin3
+          .from("pending_email_approvals")
+          .select("id, email_type, to_addresses, subject, status, created_at, expires_at")
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        const statusFilter = args.status || "pending";
+        if (statusFilter !== "all") {
+          query = query.eq("status", statusFilter);
+        }
+        if (args.email_type) {
+          query = query.eq("email_type", args.email_type);
+        }
+        if (args.recipient) {
+          query = query.contains("to_addresses", [args.recipient]);
+        }
+
+        const { data, error } = await query;
+        if (error) return `Error querying pending emails: ${error.message}`;
+        if (!data || data.length === 0) return `No ${statusFilter} emails found.`;
+
+        const lines = data.map((row: any) => {
+          const to = (row.to_addresses || []).join(", ");
+          const age = Math.round((Date.now() - new Date(row.created_at).getTime()) / 60000);
+          return `• [${row.status}] "${row.subject}" → ${to} (type: ${row.email_type}, ${age}min ago, id: ${row.id})`;
+        });
+        return `Found ${data.length} email(s):\n${lines.join("\n")}`;
       }
 
       default:

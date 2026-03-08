@@ -113,6 +113,7 @@
 - `send-email/` - Outbound email via Resend API (45+ templates, branded wrapper)
 - `_shared/email-brand-wrapper.ts` - Branded email shell (header/footer/buttons from brand_config)
 - `resend-inbound-webhook/` - Receives inbound email via Resend webhook, routes/forwards, auto-records Zelle payments
+- `approve-email/` - Email approval handler: validates token, sends held email to original recipient, supports "approve all" to disable approval for a type
 - `govee-control/` - Proxies requests to Govee Cloud API (resident+ auth)
 - `alpaca-pai/` - PAI chat + voice assistant: Gemini-powered natural language smart home control + property Q&A + Vapi voice calling (resident+ auth)
 - `sonos-control/` - Proxies requests to Sonos HTTP API via Alpaca Mac (resident+ auth)
@@ -176,4 +177,5 @@ Functions that handle auth internally MUST be deployed with `--no-verify-jwt` to
 | `square-webhook` | `supabase functions deploy square-webhook --no-verify-jwt` |
 | `stripe-webhook` | `supabase functions deploy stripe-webhook --no-verify-jwt` |
 | `share-space` | `supabase functions deploy share-space --no-verify-jwt` |
+| `approve-email` | `supabase functions deploy approve-email --no-verify-jwt` |
 | All others | `supabase functions deploy <name>` (default JWT verification) |
