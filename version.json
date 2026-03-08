@@ -1,12 +1,12 @@
 {
-  "version": "v260307.41 9:11p",
-  "release": 534,
-  "sha": "b5501e6a2",
-  "fullSha": "b5501e6a2ef2541b797f4ecc3144ca8f04d3a91d",
+  "version": "v260307.42 10:41p",
+  "release": 535,
+  "sha": "c4762d262",
+  "fullSha": "c4762d2622545074d7c42e4000e7d46e21140b92",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 03:11:39+00",
-  "commits": [{"sha":"b5501e6a2","message":"Add Claude referral link to Install Claude Code section","author":"Rahul"}]
+  "pushedAt": "2026-03-08 04:41:08+00",
+  "commits": [{"sha":"c4762d262","message":"Sync on-demand context system to skill files and docs page","author":"Rahul"}]
 }
