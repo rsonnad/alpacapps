@@ -1,12 +1,12 @@
 {
-  "version": "v260308.14 3:07p",
-  "release": 550,
-  "sha": "1197e6af8",
-  "fullSha": "1197e6af81d2a8a92da1975d03feb767c9133720",
+  "version": "v260308.15 4:12p",
+  "release": 551,
+  "sha": "1c1f85b55",
+  "fullSha": "1c1f85b554c0787e1697b1395c625c7fda7347fe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 20:07:19+00",
-  "commits": [{"sha":"1197e6af8","message":"Add SXSW VIP Insider's Guide prototype page for Saleem","author":"Rahul"}]
+  "pushedAt": "2026-03-08 21:12:47+00",
+  "commits": [{"sha":"1c1f85b55","message":"Fix visiting page: add spacing between list items, update food/alcohol rules","author":"Rahul"}]
 }
