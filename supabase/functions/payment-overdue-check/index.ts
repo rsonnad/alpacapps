@@ -634,8 +634,8 @@ Deno.serve(async (req) => {
         const statusText = item.daysOverdue > 0 ? `${item.daysOverdue} days overdue` : 'Due today';
         return `<tr>
           <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:14px;">${item.periodLabel}</td>
-          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:center;color:#333;font-weight:600;font-size:14px;">${formatCurrency(item.amountDue)}</td>
-          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;"><span style="color:${statusColor};font-size:13px;font-weight:600;">${statusText}</span></td>
+          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="color:${statusColor};font-size:13px;font-weight:600;">${statusText}</span></td>
+          <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;color:#333;font-weight:600;font-size:14px;">${formatCurrency(item.amountDue)}</td>
         </tr>`;
       }).join('\n');
 
@@ -694,18 +694,21 @@ Deno.serve(async (req) => {
               <thead>
                 <tr style="background:#f2f0e8;">
                   <th style="padding:10px 16px;text-align:left;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Period</th>
-                  <th style="padding:10px 16px;text-align:center;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Amount</th>
-                  <th style="padding:10px 16px;text-align:right;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Status</th>
+                  <th style="padding:10px 16px;text-align:center;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Status</th>
+                  <th style="padding:10px 16px;text-align:right;font-size:12px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Amount</th>
                 </tr>
               </thead>
               <tbody>
                 ${periodRows}
               </tbody>
             </table>
-            <div style="background:#f2f0e8;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:0 0 8px 8px;margin-bottom:24px;">
-              <span style="font-weight:600;color:#2a1f23;font-size:14px;">Total Due</span>
-              <span style="font-weight:800;color:#2a1f23;font-size:20px;">${formatCurrency(totalDue)}</span>
-            </div>
+            <table style="border-collapse:collapse;width:100%;margin-bottom:24px;">
+              <tr style="background:#f2f0e8;">
+                <td style="padding:14px 16px;font-weight:600;color:#2a1f23;font-size:14px;border-radius:0 0 0 8px;">Total Due</td>
+                <td style="padding:14px 16px;border-radius:0 0 0 0;">&nbsp;</td>
+                <td style="padding:14px 16px;text-align:right;font-weight:800;color:#2a1f23;font-size:20px;border-radius:0 0 8px 0;">${formatCurrency(totalDue)}</td>
+              </tr>
+            </table>
 
             ${(paymentMethods || []).length > 0 ? `
             <p style="color:#2a1f23;font-size:14px;font-weight:600;margin-bottom:12px;text-align:center;">Pay with no fees:</p>
