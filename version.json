@@ -1,12 +1,12 @@
 {
-  "version": "v260308.17 4:19p",
-  "release": 553,
-  "sha": "f59d7cf81",
-  "fullSha": "f59d7cf813324044d73a3bea9d7c06b06882b3f0",
+  "version": "v260308.18 4:22p",
+  "release": 554,
+  "sha": "75aa729fc",
+  "fullSha": "75aa729fcc3db825d5a17eb8b176aed689a37aad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 21:19:22+00",
-  "commits": [{"sha":"3627675de","message":"Replace map text link with clickable embedded map on visiting page","author":"Rahul"},{"sha":"f59d7cf81","message":"Merge branch 'sharp-tesla'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 21:22:14+00",
+  "commits": [{"sha":"f0629d1d8","message":"Fix header version badge overlapping nav links","author":"Rahul"},{"sha":"75aa729fc","message":"Merge branch 'sharp-tesla'","author":"Rahul"}]
 }
