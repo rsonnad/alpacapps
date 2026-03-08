@@ -623,6 +623,51 @@ async function sendPaiReply(
   originalSubject: string,
   originalBody: string
 ): Promise<{ ok: boolean; status: number }> {
+  // Check if PAI replies require approval — route through send-email if so
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (supabaseUrl && supabaseKey) {
+      const sb = createClient(supabaseUrl, supabaseKey);
+      const { data: config } = await sb
+        .from("email_type_approval_config")
+        .select("requires_approval")
+        .eq("email_type", "pai_email_reply")
+        .maybeSingle();
+
+      if (config?.requires_approval) {
+        // Route through send-email edge function (which has the approval gate)
+        const sendEmailRes = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({
+            type: "pai_email_reply",
+            to: to,
+            from: "PAI <pai@alpacaplayhouse.com>",
+            reply_to: "pai@alpacaplayhouse.com",
+            data: {
+              reply_body: replyBody,
+              original_subject: originalSubject,
+              original_body: originalBody.substring(0, 500),
+            },
+          }),
+        });
+        const result = await sendEmailRes.json();
+        if (result.status === "pending_approval") {
+          console.log(`PAI reply to ${to} held for approval: ${result.approval_id}`);
+          return { ok: true, status: 202 };
+        }
+        return { ok: sendEmailRes.ok, status: sendEmailRes.status };
+      }
+    }
+  } catch (e) {
+    console.warn("Approval check for PAI reply failed, sending directly:", e);
+  }
+
+  // Direct send (no approval required or check failed)
   const bodySnippet = originalBody.substring(0, 500);
   const subject = `Re: ${originalSubject || "Your message to PAI"}`;
   const html = `

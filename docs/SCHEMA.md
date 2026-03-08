@@ -34,6 +34,19 @@ inbound_emails       - Log of all inbound emails received via Resend
                        processed_at, raw_payload)
 ```
 
+### Email Approval System
+```
+email_type_approval_config - Per-type flag for whether emails need admin approval
+                            (email_type PK, requires_approval bool,
+                             auto_approved_at, auto_approved_by, updated_at)
+pending_email_approvals    - Held emails waiting for admin approval
+                            (id uuid PK, email_type, to_addresses[], from_address,
+                             reply_to, cc[], bcc[], subject, html, text_content,
+                             status enum(pending/approved/rejected/expired),
+                             approval_token unique, created_at, approved_at,
+                             approved_by, expires_at default +7 days)
+```
+
 ### Lease Agreement System
 ```
 lease_templates      - Markdown templates with {{placeholders}}
