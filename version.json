@@ -1,12 +1,12 @@
 {
-  "version": "v260308.10 2:27p",
-  "release": 546,
-  "sha": "6ea67b0cd",
-  "fullSha": "6ea67b0cd114b9d901cad3273e3061c113ce1bf6",
+  "version": "v260308.11 2:31p",
+  "release": 547,
+  "sha": "2907d2b76",
+  "fullSha": "2907d2b76a9e73335f1d6d736f79f5cbadeb9bb3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 19:27:22+00",
-  "commits": [{"sha":"6ea67b0cd","message":"Fold LSP setup into Tailwind step in wizard (#11)","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:31:48+00",
+  "commits": [{"sha":"2907d2b76","message":"Fix email approval confirmation page (redirect to static HTML)","author":"Rahul"}]
 }
