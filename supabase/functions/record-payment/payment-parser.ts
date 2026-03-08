@@ -69,13 +69,13 @@ export function parsePaymentString(paymentString: string): ParsedPayment {
 
       // Extract sender name from description
       // Common patterns: "ZELLE FROM NAME", "VENMO FROM NAME", "TRANSFER FROM NAME"
-      const fromMatch = description.match(/(?:ZELLE|VENMO|TRANSFER|PAYMENT|ACH|DEPOSIT)\s+(?:FROM\s+)?(.+)/i);
+      const fromMatch = description.match(/(?:ZELLE|VENMO|TRANSFER|PAYMENT|ACH|DEPOSIT|CASH\s*APP|CASHAPP)\s+(?:FROM\s+)?(.+)/i);
       if (fromMatch) {
         result.sender_name = fromMatch[1].trim();
         // Extract payment method from description
-        const methodMatch = description.match(/^(ZELLE|VENMO|ACH|CHECK|WIRE|PAYPAL)/i);
+        const methodMatch = description.match(/^(ZELLE|VENMO|ACH|CHECK|WIRE|PAYPAL|CASH\s*APP|CASHAPP)/i);
         if (methodMatch) {
-          result.method = methodMatch[1].toLowerCase();
+          result.method = methodMatch[1].toLowerCase().replace(/\s+/g, '');
         }
       } else {
         // Use full description as sender name if no pattern matched

@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
         'paypal': 'paypal',
         'check': 'check',
         'cash': 'cash',
+        'cashapp': 'cashapp',
         'stripe': 'stripe'
       };
       const paymentMethod = methodMap[pending.parsed_method?.toLowerCase() || ''] || 'other';
