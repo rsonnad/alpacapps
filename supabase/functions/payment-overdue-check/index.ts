@@ -680,6 +680,62 @@ Deno.serve(async (req) => {
       const memoText = `${first.personFirstName} rent`;
       const methodCardsHtml = buildPaymentMethodCardsHtml(paymentMethods || [], memoText);
 
+      // Fetch recent payments for this person (last 90 days)
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+      const { data: recentPayments } = await supabase
+        .from('ledger')
+        .select('transaction_date, payment_method, amount, category, direction, description')
+        .eq('person_id', personId)
+        .eq('status', 'completed')
+        .eq('is_test', false)
+        .gte('transaction_date', ninetyDaysAgo)
+        .order('transaction_date', { ascending: false });
+
+      const formatMethod = (m: string | null) => {
+        if (!m) return '—';
+        const map: Record<string, string> = { zelle: 'Zelle', venmo: 'Venmo', paypal: 'PayPal', cashapp: 'CashApp', stripe: 'Card/ACH', bank_ach: 'Bank ACH', cash: 'Cash', check: 'Check', manual: 'Manual' };
+        return map[m.toLowerCase()] || m.charAt(0).toUpperCase() + m.slice(1);
+      };
+      const formatDate = (d: string) => {
+        const dt = new Date(d + 'T12:00:00');
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+
+      let recentPaymentsHtml = '';
+      if (recentPayments && recentPayments.length > 0) {
+        const rows = recentPayments.map(p => {
+          const isRefund = p.direction === 'expense' || (p.category && p.category.includes('refund'));
+          const amountStr = isRefund ? `(${formatCurrency(p.amount)})` : formatCurrency(p.amount);
+          const amountColor = isRefund ? '#7d6f74' : '#2e7d32';
+          return `<tr>
+            <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:13px;">${formatDate(p.transaction_date)}</td>
+            <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#333;font-size:13px;">${formatMethod(p.payment_method)}${isRefund ? ' <span style="color:#7d6f74;font-size:11px;">(Refund)</span>' : ''}</td>
+            <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;text-align:right;color:${amountColor};font-weight:600;font-size:13px;">${amountStr}</td>
+          </tr>`;
+        }).join('\n');
+        recentPaymentsHtml = `
+          <div style="margin-top:24px;border-top:1px solid #e6e2d9;padding-top:20px;">
+            <p style="color:#2a1f23;font-size:14px;font-weight:600;margin-bottom:12px;">Recent Payments (Last 90 Days)</p>
+            <table style="border-collapse:collapse;width:100%;margin-bottom:8px;">
+              <thead>
+                <tr style="background:#f2f0e8;">
+                  <th style="padding:8px 16px;text-align:left;font-size:11px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Date</th>
+                  <th style="padding:8px 16px;text-align:left;font-size:11px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Method</th>
+                  <th style="padding:8px 16px;text-align:right;font-size:11px;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        recentPaymentsHtml = `
+          <div style="margin-top:24px;border-top:1px solid #e6e2d9;padding-top:20px;">
+            <p style="color:#7d6f74;font-size:13px;font-style:italic;">No payments recorded in the last 90 days.</p>
+          </div>`;
+      }
+
       const emailHtml = `
         <div style="max-width:600px;margin:0 auto;background:#faf9f6;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
           <div style="background:${headerBg};padding:28px 32px;text-align:center;">
@@ -731,6 +787,8 @@ Deno.serve(async (req) => {
             </div>
             ` : ''}
 
+            ${recentPaymentsHtml}
+
             <p style="color:#7d6f74;font-size:13px;margin-top:20px;line-height:1.5;">If you've already sent payment, please disregard this notice &mdash; it may take a day to process.</p>
             <p style="color:#2a1f23;font-size:14px;margin-top:8px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
           </div>
@@ -768,6 +826,13 @@ ID VERIFICATION REQUIRED
 We also need a copy of your government-issued photo ID to complete your rental setup.
 ${idInfo.uploadUrl ? `Upload here: ${idInfo.uploadUrl}` : 'Please reply to this email with a photo of your ID.'}
 ` : ''}
+${recentPayments && recentPayments.length > 0 ? `Recent Payments (Last 90 Days):
+${recentPayments.map(p => {
+  const isRefund = p.direction === 'expense' || (p.category && p.category.includes('refund'));
+  const amt = isRefund ? `(${formatCurrency(p.amount)}) Refund` : formatCurrency(p.amount);
+  return `  ${formatDate(p.transaction_date)}  ${formatMethod(p.payment_method)}  ${amt}`;
+}).join('\n')}
+` : 'No payments recorded in the last 90 days.'}
 If you've already sent payment, please disregard this notice.
 
 Best regards,
