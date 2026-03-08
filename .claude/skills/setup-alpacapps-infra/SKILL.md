@@ -13,11 +13,18 @@ You are an expert infrastructure setup assistant. You help users build full-stac
 2. **Silent prerequisite installs.** Check and install Supabase CLI if missing. Only pause if git or Node.js is missing (link user to https://git-scm.com and https://nodejs.org).
 3. **One service at a time.** Complete each fully before moving on.
 4. **Every URL must be clickable.** Always `https://...` — never path fragments or unsubstituted templates.
-5. **Build CLAUDE.md + CLAUDE.local.md incrementally.**
-   - `CLAUDE.md` (checked in): architecture, schema, patterns, conventions
-   - `CLAUDE.local.md` (gitignored): credentials, connection strings, operator directives
-   - **Initial CLAUDE.local.md must include the "Passwords and shell escaping" section** (see `references/core-services.md` → scaffold). Use `sshpass -f <file>` for any SSH password auth; never put passwords on the command line.
-   - After each service: append details, commit, push. This is implicit — don't repeat it.
+5. **Build context docs incrementally using the on-demand doc system.**
+   - `CLAUDE.md` (checked in): slim directives file (~30 lines) with on-demand doc index. Replace placeholders (USERNAME, REPO, project name).
+   - `CLAUDE.local.md` (gitignored): operator directives, live URLs, push workflow
+   - `docs/CREDENTIALS.md` (gitignored): all API keys, tokens, connection strings, passwords
+   - `docs/SCHEMA.md` (checked in): database table definitions — update after each migration
+   - `docs/PATTERNS.md` (checked in): code patterns, Tailwind tokens, auth system, conventions
+   - `docs/KEY-FILES.md` (checked in): project file structure reference
+   - `docs/DEPLOY.md` (checked in): deployment workflow, live URLs, version format
+   - `docs/INTEGRATIONS.md` (checked in): external service configs (non-secret), cost tiers
+   - `docs/CHANGELOG.md` (checked in): recent changes log
+   - After each service: append to the **appropriate doc file** (not CLAUDE.md), commit, push.
+   - **Why this pattern:** CLAUDE.md is always loaded into context. By keeping it slim (~30 lines) and splitting heavy content into on-demand docs, Claude only loads what it needs per task — saving thousands of tokens per conversation.
 6. **Validate before proceeding.** Test every credential and connection before moving on.
 7. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs as copy-paste-ready values.
 8. **Derive everything you can.** Don't ask for things you can compute (project URL from ref, pooler string from ref + password, etc.).
@@ -62,7 +69,7 @@ See `references/core-services.md` → "GitHub + GitHub Pages" for detailed steps
 3. Create or configure repo (prefer `gh api repos/.../generate` for template API)
 4. Enable Pages (branch deploy from main, not GitHub Actions)
 5. Validate deployment (poll for HTTP 200, up to 60s)
-6. Scaffold `CLAUDE.md` + `CLAUDE.local.md`, add to `.gitignore`, commit, push
+6. Fill in `CLAUDE.md` placeholders (USERNAME, REPO, project name), create `CLAUDE.local.md`, update `docs/DEPLOY.md` with live URLs, commit, push
 
 ### Step 2b: Tailwind CSS v4
 
@@ -133,7 +140,7 @@ For each selected service, follow the detailed instructions in the appropriate r
 3. Create DB tables, insert config, set Supabase secrets
 4. Create and deploy edge functions (webhooks with `--no-verify-jwt`)
 5. Create client service module
-6. Append to CLAUDE.md (shareable) and CLAUDE.local.md (private)
+6. Append credentials to `docs/CREDENTIALS.md`, service config to `docs/INTEGRATIONS.md`, new tables to `docs/SCHEMA.md`, new files to `docs/KEY-FILES.md`
 
 ### Step 11: Server Setup — if selected
 
@@ -201,7 +208,7 @@ Actions:
 1. Check existing Supabase link (should already be configured)
 2. Extract project ref from existing config
 3. Follow Telnyx setup from `references/optional-services.md`
-4. Update CLAUDE.md + CLAUDE.local.md
+4. Update appropriate docs/ files (CREDENTIALS.md, INTEGRATIONS.md, SCHEMA.md, KEY-FILES.md)
 
 ## Common Issues
 
@@ -234,5 +241,5 @@ Solution: Re-check the service dashboard. Make sure you're using the right envir
 - **psql**: Use session pooler (IPv4 compatible), URL-encode password special chars
 - **Telnyx**: Bearer token auth (NOT Basic), JSON body (NOT form-encoded)
 - **Square/Stripe**: Sandbox first, production later
-- **Two context files**: `CLAUDE.md` (checked in) for architecture/patterns. `CLAUDE.local.md` (gitignored) for credentials/operator directives.
+- **On-demand context system**: `CLAUDE.md` (~30 lines, always loaded) indexes `docs/*.md` files that Claude loads only when needed. `docs/CREDENTIALS.md` is gitignored. This saves thousands of tokens per conversation.
 - **Permissions key**: Use `permissions.allow` array (NOT deprecated `allowedTools`)
