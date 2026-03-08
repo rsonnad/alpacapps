@@ -1,12 +1,12 @@
 {
-  "version": "v260308.05 12:55p",
-  "release": 541,
-  "sha": "982d11df2",
-  "fullSha": "982d11df2985323beec449c82946f1e7482874c6",
+  "version": "v260308.06 1:10p",
+  "release": 542,
+  "sha": "2420b0a2a",
+  "fullSha": "2420b0a2a4b9eb4f88a5b08e7479df931a3659a2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 17:55:51+00",
-  "commits": [{"sha":"c70b879ed","message":"Add email approval workflow + unified pai@alpacaplayhouse.com reply-to","author":"Rahul"},{"sha":"982d11df2","message":"Merge branch 'eager-colden'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 18:10:05+00",
+  "commits": [{"sha":"bab564885","message":"Add CashApp payment option, fix processing fee accounting","author":"Rahul"},{"sha":"2420b0a2a","message":"Merge branch 'affectionate-lamport'","author":"Rahul"}]
 }
