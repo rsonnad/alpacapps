@@ -1,12 +1,12 @@
 {
-  "version": "v260307.37 8:38p",
-  "release": 530,
-  "sha": "652da279e",
-  "fullSha": "652da279e8ba1999085e4c6ed395b53fade88532",
+  "version": "v260307.38 8:45p",
+  "release": 531,
+  "sha": "9a9614fe2",
+  "fullSha": "9a9614fe242dbd27ec073988eb53d389c2b33992",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 02:38:49+00",
-  "commits": [{"sha":"652da279e","message":"Context optimization: directives-only CLAUDE.md + consolidated DEPLOY.md","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:45:00+00",
+  "commits": [{"sha":"9a9614fe2","message":"Fix ninja-signups page: add missing Supabase vendor script and version-info","author":"Rahul"}]
 }
