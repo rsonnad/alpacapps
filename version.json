@@ -1,12 +1,12 @@
 {
-  "version": "v260308.01 12:01p",
-  "release": 537,
-  "sha": "4b9eaf52e",
-  "fullSha": "4b9eaf52ed3bb4aafc47623627914ed470394204",
+  "version": "v260308.03 12:17p",
+  "release": 539,
+  "sha": "dfca95012",
+  "fullSha": "dfca9501235ffff14ad6428db07be233aa4840b5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 17:01:29+00",
-  "commits": [{"sha":"4b9eaf52e","message":"Fix false overdue rent emails for ended leases","author":"Rahul"}]
+  "pushedAt": "2026-03-08 17:17:23+00",
+  "commits": [{"sha":"ae0c52fc1","message":"Email footer: 1 image instead of 2, prefer \"email footer\" tag","author":"Rahul"},{"sha":"dfca95012","message":"Merge branch 'eager-colden'","author":"Rahul"}]
 }
