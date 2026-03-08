@@ -1,12 +1,12 @@
 {
-  "version": "v260308.09 2:25p",
-  "release": 545,
-  "sha": "de1575bb2",
-  "fullSha": "de1575bb2254b05ea11802933325d13f5d2b9515",
+  "version": "v260308.10 2:27p",
+  "release": 546,
+  "sha": "6ea67b0cd",
+  "fullSha": "6ea67b0cd114b9d901cad3273e3061c113ce1bf6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 19:25:26+00",
-  "commits": [{"sha":"de1575bb2","message":"Add project-level LSP tool config for cloners (#10)","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:27:22+00",
+  "commits": [{"sha":"6ea67b0cd","message":"Fold LSP setup into Tailwind step in wizard (#11)","author":"Rahul"}]
 }
