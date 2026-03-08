@@ -325,6 +325,24 @@ Deno.serve(async (req) => {
 
     console.log(`Payment & contract overdue check running for ${todayStr}`);
 
+    // ========== 0. Auto-complete ended assignments ==========
+    const { data: staleActive, error: staleErr } = await supabase
+      .from('assignments')
+      .select('id, end_date, person:person_id (first_name, last_name)')
+      .eq('status', 'active')
+      .not('end_date', 'is', null)
+      .lt('end_date', todayStr);
+
+    if (staleActive && staleActive.length > 0) {
+      for (const sa of staleActive) {
+        const person = sa.person as { first_name: string; last_name: string } | null;
+        const name = person ? `${person.first_name} ${person.last_name}` : 'unknown';
+        console.log(`Auto-completing ended assignment ${sa.id} (${name}, ended ${sa.end_date})`);
+        await supabase.from('assignments').update({ status: 'completed' }).eq('id', sa.id);
+      }
+      console.log(`Auto-completed ${staleActive.length} ended assignment(s)`);
+    }
+
     // ========== A. Detect overdue rent ==========
     const { data: activeAssignments, error: assignError } = await supabase
       .from('assignments')
@@ -418,10 +436,18 @@ Deno.serve(async (req) => {
           .gte('transaction_date', due.periodStart)
           .lte('transaction_date', due.periodEnd);
 
-        const hasPeriodPayment = payments && payments.length > 0;
-        const hasUnlinkedPayment = unlinkedPayments && unlinkedPayments.length > 0;
+        // Sum all payments found for this period (partial or full)
+        let totalPaid = 0;
+        if (payments && payments.length > 0) {
+          totalPaid += payments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
+        }
+        if (unlinkedPayments && unlinkedPayments.length > 0) {
+          totalPaid += unlinkedPayments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
+        }
 
-        if (!hasPeriodPayment && !hasUnlinkedPayment) {
+        const netRemaining = Math.round((due.amount - totalPaid) * 100) / 100;
+
+        if (netRemaining > 0) {
           overdueItems.push({
             sourceType: 'rent',
             sourceId: assignment.id,
@@ -430,7 +456,7 @@ Deno.serve(async (req) => {
             personFirstName: person.first_name,
             personLastName: person.last_name,
             periodLabel: due.label,
-            amountDue: due.amount,
+            amountDue: netRemaining,
             dueDate: due.dueDate,
             daysOverdue,
             rateTerm: assignment.rate_term,

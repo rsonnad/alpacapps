@@ -899,8 +899,32 @@ async function updateOverallDepositStatus(applicationId) {
 
 /**
  * Confirm deposit (funds cleared, ready for move-in)
+ * Validates that at least one deposit ledger entry exists before confirming.
  */
 async function confirmDeposit(applicationId) {
+  // Fetch application to get person_id and assignment_id
+  const { data: app, error: appError } = await supabase
+    .from('rental_applications')
+    .select('person_id, assignment_id')
+    .eq('id', applicationId)
+    .single();
+
+  if (appError) throw appError;
+
+  // Verify a deposit payment exists in the ledger
+  const { data: depositEntries } = await supabase
+    .from('ledger')
+    .select('id')
+    .in('category', ['security_deposit', 'move_in_deposit'])
+    .eq('status', 'completed')
+    .eq('is_test', false)
+    .or(`assignment_id.eq.${app.assignment_id},person_id.eq.${app.person_id}`)
+    .limit(1);
+
+  if (!depositEntries || depositEntries.length === 0) {
+    throw new Error('Cannot confirm deposit: no deposit payment found in ledger. Record the deposit payment first.');
+  }
+
   const { data, error } = await supabase
     .from('rental_applications')
     .update({

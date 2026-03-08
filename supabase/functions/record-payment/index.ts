@@ -110,11 +110,15 @@ Deno.serve(async (req) => {
       };
       const paymentMethod = methodMap[parsed.method?.toLowerCase() || ''] || 'other';
 
+      // Pre-infer category for payment type (basic keywords before full inference)
+      const rawStr = payment_string.toLowerCase();
+      const paymentType = (rawStr.includes('deposit') || rawStr.includes('security')) ? 'deposit' : 'rent';
+
       const { data: payment, error: paymentError } = await supabase
         .from('payments')
         .insert({
           assignment_id: matchResult.assignment_id,
-          type: 'rent',
+          type: paymentType,
           amount_received: parsed.amount,
           received_date: paymentDate,
           payment_method: paymentMethod,
@@ -149,26 +153,89 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Dual-write to ledger for accounting
+      // Compute rent period and infer category from assignment schedule
+      let periodStart: string | null = null;
+      let periodEnd: string | null = null;
+      const { data: assignmentData } = await supabase
+        .from('assignments')
+        .select('start_date, end_date, rate_term, rate_amount, deposit_amount')
+        .eq('id', matchResult.assignment_id)
+        .single();
+
+      if (assignmentData?.rate_term === 'monthly') {
+        const pd = new Date(paymentDate + 'T12:00:00');
+        const year = pd.getFullYear();
+        const month = pd.getMonth();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        periodStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+        periodEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      } else if (assignmentData?.rate_term === 'weekly' || assignmentData?.rate_term === 'biweekly') {
+        const intervalDays = assignmentData.rate_term === 'weekly' ? 7 : 14;
+        const pd = new Date(paymentDate + 'T12:00:00');
+        const start = new Date(assignmentData.start_date + 'T12:00:00');
+        // Find the period that contains the payment date
+        const cursor = new Date(start);
+        while (cursor <= pd) {
+          const next = new Date(cursor);
+          next.setDate(next.getDate() + intervalDays);
+          if (pd < next) {
+            periodStart = cursor.toISOString().split('T')[0];
+            const end = new Date(next);
+            end.setDate(end.getDate() - 1);
+            periodEnd = end.toISOString().split('T')[0];
+            break;
+          }
+          cursor.setDate(cursor.getDate() + intervalDays);
+        }
+      }
+
+      // Infer payment category from amount vs assignment details
+      let inferredCategory = 'rent';
+      const paymentStr = payment_string.toLowerCase();
+      if (paymentStr.includes('deposit') || paymentStr.includes('security')) {
+        inferredCategory = paymentStr.includes('move') ? 'move_in_deposit' : 'security_deposit';
+      } else if (assignmentData?.deposit_amount && parsed.amount === assignmentData.deposit_amount) {
+        // Amount exactly matches deposit — check if it's early in tenancy (within 7 days of start)
+        const startDate = new Date(assignmentData.start_date + 'T12:00:00');
+        const pDate = new Date(paymentDate + 'T12:00:00');
+        const daysSinceStart = (pDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceStart <= 7) {
+          inferredCategory = 'security_deposit';
+        }
+      } else if (assignmentData?.rate_amount && parsed.amount < assignmentData.rate_amount * 0.95) {
+        // Significantly less than full rate — likely prorated
+        inferredCategory = 'prorated_rent';
+      }
+      console.log(`Inferred category: ${inferredCategory} (amount: ${parsed.amount}, rate: ${assignmentData?.rate_amount}, deposit: ${assignmentData?.deposit_amount})`);
+
+      // Dual-write to ledger for accounting (MUST succeed — fail request if not)
       const { error: ledgerError } = await supabase.from('ledger').insert({
         direction: 'income',
-        category: 'rent',
+        category: inferredCategory,
         amount: parsed.amount,
         payment_method: paymentMethod,
         transaction_date: paymentDate,
+        period_start: periodStart,
+        period_end: periodEnd,
         person_id: matchResult.person_id,
         person_name: matchResult.person_name,
         assignment_id: matchResult.assignment_id,
         source_payment_id: payment.id,
         status: 'completed',
-        description: `Rent from ${senderName}`,
+        description: `${inferredCategory === 'rent' ? 'Rent' : inferredCategory === 'prorated_rent' ? 'Prorated rent' : inferredCategory === 'security_deposit' ? 'Security deposit' : inferredCategory === 'move_in_deposit' ? 'Move-in deposit' : 'Payment'} from ${senderName}`,
         notes: `Auto-recorded from ${source}. Match method: ${matchResult.method}`,
         recorded_by: `system:${source}`,
       });
 
       if (ledgerError) {
-        console.error('Error writing to ledger:', ledgerError);
-        // Don't fail the request - payment was recorded successfully
+        console.error('CRITICAL: Ledger write failed after payment recorded:', ledgerError);
+        // Record the gap for admin review
+        if (logEntry) {
+          await supabase
+            .from('payment_processing_log')
+            .update({ status: 'ledger_failed', error_message: `Payment ${payment.id} recorded but ledger failed: ${ledgerError.message}` })
+            .eq('id', logEntry.id);
+        }
       }
 
       // Update log with payment ID
