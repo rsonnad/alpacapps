@@ -1,12 +1,12 @@
 {
-  "version": "v260308.12 2:33p",
-  "release": 548,
-  "sha": "15d58296c",
-  "fullSha": "15d58296c6aa5414df1a1520c0dc581941920669",
+  "version": "v260308.13 2:35p",
+  "release": 549,
+  "sha": "0f32c170a",
+  "fullSha": "0f32c170ad6118e8881a74fdbdec47265f84d8e4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 19:33:06+00",
-  "commits": [{"sha":"0f02580f3","message":"Ninja page copy tweaks: free text, button font, spacing, students line","author":"Rahul"},{"sha":"15d58296c","message":"Merge branch 'flamboyant-proskuriakova'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 19:35:57+00",
+  "commits": [{"sha":"0f18622bd","message":"Fix OG image (use smaller JPEG), make bottom image full width","author":"Rahul"},{"sha":"0f32c170a","message":"Merge branch 'flamboyant-proskuriakova'","author":"Rahul"}]
 }
