@@ -554,7 +554,7 @@ li {
 }
 
 .aap-hero--short {
-  min-height: 50vh;
+  min-height: 38vh;
 }
 
 .aap-hero--medium {
@@ -626,7 +626,7 @@ li {
    ============================================= */
 
 .aap-content {
-  padding: var(--aap-space-3xl) var(--aap-space-md);
+  padding: var(--aap-space-xl) var(--aap-space-md);
   max-width: 720px;
   margin: 0 auto;
 }
