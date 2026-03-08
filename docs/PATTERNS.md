@@ -107,3 +107,12 @@ const messages = await smsService.getConversation(personId);
 ### Email Template Previewing
 
 **Do NOT send real emails while iterating on email template design.** Resend has a daily quota. Write HTML to `tmp-invite-preview.html` and open in browser. Only send once design is finalized.
+
+### Financial Content Typography
+
+**All financial/money-related content must use sans-serif fonts** (e.g., `'Inter', 'Helvetica Neue', Arial, sans-serif`). This applies to:
+- Move-out statements, invoices, payment summaries
+- Ledger tables, rent charges, refund summaries
+- Any email or UI displaying dollar amounts, accounting, or transaction data
+
+Serif fonts (Georgia, Times) are reserved for editorial/marketing content only.

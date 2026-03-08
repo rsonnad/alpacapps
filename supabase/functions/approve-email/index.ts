@@ -25,7 +25,7 @@ serve(async (req) => {
     const action = url.searchParams.get("action");
 
     if (!token || !action || !["approve_one", "approve_all"].includes(action)) {
-      return htmlResponse("Invalid Request", "Missing or invalid token/action.", 400);
+      return redirectToConfirmation("error", "Invalid Request", "Missing or invalid token/action.");
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -41,20 +41,20 @@ serve(async (req) => {
       .single();
 
     if (error || !approval) {
-      return htmlResponse("Not Found", "This approval link is invalid or has expired.", 404);
+      return redirectToConfirmation("error", "Not Found", "This approval link is invalid or has expired.");
     }
 
     if (approval.status !== "pending") {
-      return htmlResponse(
+      return redirectToConfirmation(
+        "warning",
         "Already Processed",
         `This email was already ${approval.status} on ${new Date(approval.approved_at || approval.created_at).toLocaleString()}.`,
-        200,
       );
     }
 
     if (new Date(approval.expires_at) < new Date()) {
       await sb.from("pending_email_approvals").update({ status: "expired" }).eq("id", approval.id);
-      return htmlResponse("Expired", "This approval link has expired (7-day limit).", 410);
+      return redirectToConfirmation("warning", "Expired", "This approval link has expired (7-day limit).");
     }
 
     // Send the original email via Resend
@@ -81,7 +81,7 @@ serve(async (req) => {
     if (!sendRes.ok) {
       const errBody = await sendRes.text();
       console.error("Resend send failed:", errBody);
-      return htmlResponse("Send Failed", `Failed to send email: ${sendRes.status}`, 500);
+      return redirectToConfirmation("error", "Send Failed", `Failed to send email (${sendRes.status}). Please try again or contact support.`);
     }
 
     const sendResult = await sendRes.json();
@@ -111,7 +111,7 @@ serve(async (req) => {
       },
     });
 
-    let extraMessage = "";
+    let autoType = "";
 
     // If approve_all, disable approval for this type going forward
     if (action === "approve_all") {
@@ -122,40 +122,35 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       }).eq("email_type", approval.email_type);
 
-      const typeLabel = approval.email_type.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-      extraMessage = `<p style="margin-top:16px;padding:12px 16px;background:#fff8e1;border-left:4px solid #f9a825;border-radius:0 8px 8px 0;font-size:14px;">
-        All future <strong>${typeLabel}</strong> emails will now send automatically without approval.
-      </p>`;
+      autoType = approval.email_type.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     }
 
     const recipientDisplay = approval.to_addresses.join(", ");
-    return htmlResponse(
+    return redirectToConfirmation("success",
       "Email Approved & Sent",
-      `<p>The email "<strong>${approval.subject}</strong>" has been sent to <strong>${recipientDisplay}</strong>.</p>${extraMessage}`,
-      200,
+      `The email "<strong>${approval.subject}</strong>" has been sent to <strong>${recipientDisplay}</strong>.`,
+      autoType,
     );
   } catch (err) {
     console.error("Approve-email error:", err);
-    return htmlResponse("Error", `An unexpected error occurred: ${(err as Error).message}`, 500);
+    return redirectToConfirmation("error", "Error", `An unexpected error occurred: ${(err as Error).message}`);
   }
 });
 
-function htmlResponse(title: string, body: string, status: number): Response {
-  const ok = status >= 200 && status < 300;
-  const icon = ok ? "&#10003;" : "&#10007;";
-  const color = ok ? "#54a326" : "#e53935";
+const CONFIRM_PAGE = "https://alpacaplayhouse.com/admin/email-approved.html";
 
+function redirectToConfirmation(status: string, title: string, message: string, autoType?: string): Response {
+  const url = new URL(CONFIRM_PAGE);
+  url.searchParams.set("status", status);
+  url.searchParams.set("title", title);
+  url.searchParams.set("message", message);
+  if (autoType) url.searchParams.set("auto_type", autoType);
+  return Response.redirect(url.toString(), 302);
+}
+
+function htmlFallback(title: string, message: string, status: number): Response {
   return new Response(
-    `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} - AlpacApps</title></head>
-<body style="margin:0;padding:40px 16px;background:#f4f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;padding:32px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-    <div style="font-size:48px;color:${color};margin-bottom:16px;">${icon}</div>
-    <h1 style="color:#1c1618;font-size:22px;margin:0 0 16px;">${title}</h1>
-    <div style="color:#555;font-size:15px;line-height:1.6;">${body}</div>
-    <p style="margin-top:24px;color:#999;font-size:12px;">AlpacApps Email Approval System</p>
-  </div>
-</body></html>`,
-    { status, headers: { "Content-Type": "text/html; charset=utf-8" } },
+    `${title}: ${message.replace(/<[^>]*>/g, "")}`,
+    { status, headers: { "Content-Type": "text/plain; charset=utf-8" } },
   );
 }
