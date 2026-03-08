@@ -110,6 +110,17 @@ See `references/core-services.md` → "GitHub + GitHub Pages" for detailed steps
 5. Validate deployment (poll for HTTP 200, up to 60s)
 6. Fill in `CLAUDE.md` placeholders (USERNAME, REPO, project name), create `CLAUDE.local.md`, update `docs/DEPLOY.md` with live URLs, commit, push
 
+### Step 2a: Developer Tooling
+
+Set up project-level Claude Code settings for LSP intelligence.
+
+**Steps (all handled by you):**
+1. Create `.claude/settings.json` with `{ "env": { "ENABLE_LSP_TOOL": "1" } }`
+2. Install typescript-language-server globally if missing: `npm install -g typescript-language-server typescript`
+3. Tell the user to run `/plugin install typescript-lsp@claude-plugins-official` once (this is a Claude Code slash command, not a shell command)
+4. Add "First-Time Setup" section to `CLAUDE.md` with the plugin install instruction
+5. Commit and push
+
 ### Step 2b: Tailwind CSS v4
 
 Set up Tailwind CSS for utility-class styling alongside existing CSS.

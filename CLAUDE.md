@@ -27,6 +27,10 @@
 - Tailwind: use `aap-*` tokens (see `docs/PATTERNS.md` for full list). Run `npm run css:build` after new classes.
 - Claude CLI as subprocess, never Anthropic API. Edge functions use Gemini.
 
+## First-Time Setup
+
+- Run `/plugin install typescript-lsp@claude-plugins-official` once (LSP env var is set via `.claude/settings.json`)
+
 ## Quick Refs
 
 - **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Capacitor 8
