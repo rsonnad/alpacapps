@@ -306,6 +306,11 @@ Alpaca Playhouse`
             <li>Submit your move-in deposit: <strong>$${data.move_in_deposit || data.monthly_rate}</strong></li>
             ${data.security_deposit ? `<li>Submit your security deposit: <strong>$${data.security_deposit}</strong></li>` : ''}
           </ul>
+          <p><strong>Pay with no fees:</strong></p>
+          <ul style="list-style:none;padding-left:0;">
+            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
+          </ul>
+          <p style="font-size:13px;color:#666;">Please include your name and &quot;deposit&quot; in the payment memo.</p>
           <p>Once deposits are received, we'll confirm your move-in date.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -318,6 +323,11 @@ Your lease agreement has been successfully signed. A copy will be provided for y
 Next Steps:
 - Submit your move-in deposit: $${data.move_in_deposit || data.monthly_rate}
 ${data.security_deposit ? `- Submit your security deposit: $${data.security_deposit}` : ''}
+
+Pay with no fees:
+${data._payment_methods_text || '- Contact us for payment options'}
+
+Please include your name and "deposit" in the payment memo.
 
 Once deposits are received, we'll confirm your move-in date.
 
@@ -338,12 +348,18 @@ Alpaca Playhouse`
             <tr><td style="padding: 8px; font-weight: bold;"><strong>Total Due:</strong></td><td style="padding: 8px; font-weight: bold;">$${data.total_due}</td></tr>
           </table>
           ${data.due_date ? `<p><strong>Due Date:</strong> ${data.due_date}</p>` : ''}
-          <p><strong>Payment Methods:</strong></p>
-          <ul>
-            <li>Venmo: @AlpacaPlayhouse</li>
-            <li>Zelle: alpacaplayhouse@gmail.com</li>
+          <p><strong>Pay with no fees:</strong></p>
+          <ul style="list-style:none;padding-left:0;">
+            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
           </ul>
-          <p>Please include your name in the payment memo.</p>
+          <p style="font-size:13px;color:#666;">Please include your name and &quot;deposit&quot; in the payment memo.</p>
+          ${data.pay_url ? `
+          <div style="text-align:center;color:#888;font-size:13px;margin:20px 0;border-top:1px solid #eee;padding-top:20px;">or pay online</div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${data.pay_url}" style="display:inline-block;background:#d4883a;color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;">Pay $${data.total_due} Online</a>
+            <p style="color:#888;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
+          </div>
+          ` : ''}
           ${data.needs_id_verification ? `
           <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
             <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
@@ -366,11 +382,11 @@ ${data.security_deposit ? `Security Deposit: $${data.security_deposit}` : ''}
 Total Due: $${data.total_due}
 ${data.due_date ? `Due Date: ${data.due_date}` : ''}
 
-Payment Methods:
-- Venmo: @AlpacaPlayhouse
-- Zelle: alpacaplayhouse@gmail.com
+Pay with no fees:
+${data._payment_methods_text || '- Contact us for payment options'}
 
-Please include your name in the payment memo.
+Please include your name and "deposit" in the payment memo.
+${data.pay_url ? `\nOr pay online (0.8% processing fee, max $5): ${data.pay_url}\n` : ''}
 ${data.needs_id_verification ? `
 ID VERIFICATION REQUIRED
 We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.
@@ -474,6 +490,7 @@ Alpaca Playhouse`
       const methodBadges: Record<string, { bg: string; label: string }> = {
         venmo: { bg: '#3d95ce', label: 'Venmo' },
         zelle: { bg: '#6c1cd3', label: 'Zelle' },
+        cashapp: { bg: '#00D632', label: 'Cash App' },
         paypal: { bg: '#003087', label: 'PayPal' },
         bank_ach: { bg: '#333333', label: 'Bank' },
         stripe: { bg: '#635bff', label: 'Stripe' },
@@ -508,7 +525,7 @@ Alpaca Playhouse`
               <table style="width:100%;border-collapse:collapse;font-size:14px;">${miPaymentMethodsHtml}</table>
               ${data.pay_url ? `<div style="text-align:center;margin-top:12px;">
                 <a href="${data.pay_url}" style="display:inline-block;background:${B.accent};color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:0.3px;">Pay Online</a>
-                <p style="margin:6px 0 0;font-size:12px;color:${B.textMuted};">Secure payment via Stripe</p>
+                <p style="margin:6px 0 0;font-size:12px;color:${B.textMuted};">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
               </div>` : ''}
             </div>`
         : '';
@@ -742,7 +759,7 @@ Alpaca Playhouse`
       const ctaSection = hasDue && data.pay_now_url
         ? `<div style="text-align:center;margin:32px 0;">
               <a href="${data.pay_now_url}" style="display:inline-block;background:linear-gradient(135deg,#e65100 0%,#bf360c 100%);color:white;padding:16px 48px;text-decoration:none;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">Pay $${Number(data.balance_due).toFixed(2)} Now</a>
-              <p style="margin:8px 0 0;font-size:12px;color:#999;">Secure payment via Stripe &bull; Cards, Apple Pay, Google Pay, or Bank Transfer</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#999;">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
             </div>`
         : hasDue
         ? `<div style="text-align:center;margin:32px 0;">
@@ -754,6 +771,7 @@ Alpaca Playhouse`
       const methodBadges: Record<string, { bg: string; label: string }> = {
         venmo: { bg: '#3d95ce', label: 'Venmo' },
         zelle: { bg: '#6c1cd3', label: 'Zelle' },
+        cashapp: { bg: '#00D632', label: 'Cash App' },
         paypal: { bg: '#003087', label: 'PayPal' },
         bank_ach: { bg: '#333333', label: 'Bank' },
         square: { bg: '#1a1a1a', label: 'Square' },
@@ -2034,8 +2052,9 @@ const corsHeaders = {
 
 /**
  * Fetch active payment methods from DB and format them for email templates.
+ * Returns html (list items), text (plain text), and raw (array of method objects).
  */
-async function getPaymentMethodsForEmail(): Promise<{ html: string; text: string }> {
+async function getPaymentMethodsForEmail(): Promise<{ html: string; text: string; raw: any[] }> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -2050,6 +2069,7 @@ async function getPaymentMethodsForEmail(): Promise<{ html: string; text: string
       return {
         html: `<li>Contact us for payment options</li>`,
         text: `- Contact us for payment options`,
+        raw: [],
       };
     }
 
@@ -2065,12 +2085,13 @@ async function getPaymentMethodsForEmail(): Promise<{ html: string; text: string
       return `- ${m.name}${id}${instr}`;
     }).join("\n");
 
-    return { html: htmlItems, text: textItems };
+    return { html: htmlItems, text: textItems, raw: methods };
   } catch (e) {
     console.error("Failed to fetch payment methods:", e);
     return {
       html: `<li>Contact us for payment options</li>`,
       text: `- Contact us for payment options`,
+      raw: [],
     };
   }
 }
@@ -2084,11 +2105,14 @@ async function getRenderedTemplate(
   data: Record<string, any>
 ): Promise<{ subject: string; html: string; text: string; senderType: string }> {
   // Enrich payment-related templates with dynamic payment methods from DB
-  const paymentTypes: EmailType[] = ["payment_reminder", "payment_overdue", "payment_statement"];
+  const paymentTypes: EmailType[] = ["deposit_requested", "payment_reminder", "payment_overdue", "payment_statement", "move_in_confirmed"];
   if (paymentTypes.includes(type)) {
     const pm = await getPaymentMethodsForEmail();
     data._payment_methods_html = pm.html;
     data._payment_methods_text = pm.text;
+    if (!data._payment_methods_raw) {
+      data._payment_methods_raw = pm.raw;
+    }
   }
 
   // 1. Try DB template (cached)

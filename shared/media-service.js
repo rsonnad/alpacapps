@@ -33,7 +33,7 @@ const CONFIG = {
   },
 
   // Categories
-  validCategories: ['space', 'mktg', 'projects', 'archive'],
+  validCategories: ['space', 'mktg', 'projects', 'archive', 'qr_code'],
 
   // File type detection
   imageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
