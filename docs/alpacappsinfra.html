@@ -1174,7 +1174,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
           <span class="calc-svc__name">Home Server</span>
           <span class="calc-svc__desc">Local Mac for smart home, cameras, media</span>
         </span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
+        <span class="cost-badge cost-payg" style="margin-left:auto;">$150–$600 one-time</span>
       </label>
     </div>
 
@@ -2105,7 +2105,7 @@ function recalcCost() {
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
     'android':     { basic: 25, complicated: 25, hyper: 25 },
-    'homeserver':  { basic: 150, complicated: 150, hyper: 150 }
+    'homeserver':  { basic: 150, complicated: 350, hyper: 600 }
   };
 
   var svcLabels = {
@@ -2124,7 +2124,7 @@ function recalcCost() {
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
     'android':     'Android App (Google Play)',
-    'homeserver':  'Home Server (used Mac)'
+    'homeserver':  'Home Server (old Mac)'
   };
 
   var svcNotes = {
@@ -2137,7 +2137,7 @@ function recalcCost() {
     'stripe':   { complicated: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout', hyper: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout' },
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
     'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
-    'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' },
+    'homeserver': { basic: 'Old Mac Mini or MacBook ($150\u2013$600 one-time, or free if you have one)', complicated: 'Old Mac Mini or MacBook ($150\u2013$600 one-time, or free if you have one)', hyper: 'Old Mac Mini or MacBook ($150\u2013$600 one-time, or free if you have one)' },
     'workers': { complicated: '$12/mo VM for bug fixer, pollers, image gen', hyper: '$32/mo VM for heavy workers + Claude Code automation' }
   };
 
