@@ -1,12 +1,12 @@
 {
-  "version": "v260308.18 4:22p",
-  "release": 554,
-  "sha": "75aa729fc",
-  "fullSha": "75aa729fcc3db825d5a17eb8b176aed689a37aad",
+  "version": "v260308.19 4:34p",
+  "release": 555,
+  "sha": "b279455ef",
+  "fullSha": "b279455efc82445a6d9878057918d8b7210da53d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 21:22:14+00",
-  "commits": [{"sha":"f0629d1d8","message":"Fix header version badge overlapping nav links","author":"Rahul"},{"sha":"75aa729fc","message":"Merge branch 'sharp-tesla'","author":"Rahul"}]
+  "pushedAt": "2026-03-08 21:34:31+00",
+  "commits": [{"sha":"c363d026c","message":"Reduce hero height and content top padding for tighter layout","author":"Rahul"},{"sha":"b279455ef","message":"Merge branch 'sharp-tesla'","author":"Rahul"}]
 }
