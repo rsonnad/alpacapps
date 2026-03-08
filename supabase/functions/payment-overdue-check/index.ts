@@ -92,9 +92,19 @@ function computeRentDueDates(assignment: {
       if (endDate && dueDate > endDate) break;
       const lastDay = new Date(year, month + 1, 0).getDate();
       const periodStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-      const periodEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      let effectiveLastDay = lastDay;
+      let amount = assignment.rate_amount;
+      // Prorate final partial month if lease ends mid-month
+      if (endDate) {
+        const endD = new Date(endDate);
+        if (endD.getFullYear() === year && endD.getMonth() === month && endD.getDate() < lastDay) {
+          effectiveLastDay = endD.getDate();
+          amount = Math.round(assignment.rate_amount * effectiveLastDay / lastDay * 100) / 100;
+        }
+      }
+      const periodEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(effectiveLastDay).padStart(2, '0')}`;
       const label = dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      dues.push({ dueDate: periodStart, periodStart, periodEnd, amount: assignment.rate_amount, label });
+      dues.push({ dueDate: periodStart, periodStart, periodEnd, amount, label });
       month++;
       if (month > 11) { month = 0; year++; }
     }
@@ -109,6 +119,14 @@ function computeRentDueDates(assignment: {
       periodEnd.setDate(periodEnd.getDate() - 1);
       if (cursor > today) break;
       if (endDate && cursor > endDate) break;
+      let amount = assignment.rate_amount;
+      // Prorate final partial period if lease ends mid-period
+      if (endDate && periodEnd > endDate) {
+        const fullDays = intervalDays;
+        const actualDays = Math.ceil((endDate.getTime() - cursor.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        amount = Math.round(assignment.rate_amount * actualDays / fullDays * 100) / 100;
+        periodEnd.setTime(endDate.getTime());
+      }
       const ps = new Date(periodStart + 'T12:00:00');
       const pe = new Date(periodEnd.toISOString().split('T')[0] + 'T12:00:00');
       const label = `${ps.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${pe.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
@@ -116,7 +134,7 @@ function computeRentDueDates(assignment: {
         dueDate: periodStart,
         periodStart,
         periodEnd: periodEnd.toISOString().split('T')[0],
-        amount: assignment.rate_amount,
+        amount,
         label,
       });
       cursor.setDate(cursor.getDate() + intervalDays);
@@ -353,6 +371,22 @@ Deno.serve(async (req) => {
         rate_term: assignment.rate_term,
         rate_amount: effectiveRate,
       });
+
+      // Check if a refund/credit has been issued for this assignment (account settled)
+      const { data: refunds } = await supabase
+        .from('ledger')
+        .select('id')
+        .eq('category', 'refund')
+        .eq('status', 'completed')
+        .eq('is_test', false)
+        .or(`assignment_id.eq.${assignment.id},person_id.eq.${person.id}`)
+        .limit(1);
+
+      const hasRefund = refunds && refunds.length > 0;
+      if (hasRefund) {
+        console.log(`Skipping overdue check for ${person.email}: refund found on assignment ${assignment.id}`);
+        continue;
+      }
 
       // For each due date, check if paid
       for (const due of dueDates) {
