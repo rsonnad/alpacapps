@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
       }
 
       // Dual-write to ledger for accounting
-      // Get person name for ledger entry
+      // Get person name + assignment details for ledger entry
       const { data: personData } = await supabase
         .from('people')
         .select('first_name, last_name')
@@ -161,12 +161,49 @@ Deno.serve(async (req) => {
 
       const personName = personData ? `${personData.first_name} ${personData.last_name}` : pending.sender_name;
 
+      // Compute rent period from assignment schedule
+      let periodStart: string | null = null;
+      let periodEnd: string | null = null;
+      const { data: assignmentData } = await supabase
+        .from('assignments')
+        .select('start_date, end_date, rate_term')
+        .eq('id', assignment_id)
+        .single();
+
+      if (assignmentData?.rate_term === 'monthly') {
+        const pd = new Date(paymentDate + 'T12:00:00');
+        const year = pd.getFullYear();
+        const month = pd.getMonth();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        periodStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+        periodEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      } else if (assignmentData?.rate_term === 'weekly' || assignmentData?.rate_term === 'biweekly') {
+        const intervalDays = assignmentData.rate_term === 'weekly' ? 7 : 14;
+        const pd = new Date(paymentDate + 'T12:00:00');
+        const start = new Date(assignmentData.start_date + 'T12:00:00');
+        const cursor = new Date(start);
+        while (cursor <= pd) {
+          const next = new Date(cursor);
+          next.setDate(next.getDate() + intervalDays);
+          if (pd < next) {
+            periodStart = cursor.toISOString().split('T')[0];
+            const end = new Date(next);
+            end.setDate(end.getDate() - 1);
+            periodEnd = end.toISOString().split('T')[0];
+            break;
+          }
+          cursor.setDate(cursor.getDate() + intervalDays);
+        }
+      }
+
       const { error: ledgerError } = await supabase.from('ledger').insert({
         direction: 'income',
         category: 'rent',
         amount: pending.parsed_amount,
         payment_method: paymentMethod,
         transaction_date: paymentDate,
+        period_start: periodStart,
+        period_end: periodEnd,
         person_id: person_id,
         person_name: personName,
         assignment_id: assignment_id,
@@ -178,8 +215,7 @@ Deno.serve(async (req) => {
       });
 
       if (ledgerError) {
-        console.error('Error writing to ledger:', ledgerError);
-        // Don't fail the request - payment was recorded successfully
+        console.error('CRITICAL: Ledger write failed after payment recorded:', ledgerError);
       }
 
       // Save mapping for future payments (if requested)
