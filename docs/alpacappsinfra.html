@@ -8,31 +8,28 @@
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
-    /* AAP styleguide tokens — congruent with alpacaplayhouse.com */
     :root {
       --bg: #ffffff;
-      --bg-warm: var(--aap-bg, #faf9f6);
-      --text: var(--aap-text, #2a1f23);
-      --text-muted: var(--aap-text-muted, #7d6f74);
-      --accent: var(--aap-accent, #d4883a);
-      --accent-light: var(--aap-accent-light, rgba(212, 136, 58, 0.1));
-      --border: var(--aap-border, #e6e2d9);
-      --code-bg: var(--aap-bg, #faf9f6);
-      --success: #2d8a4e;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --success: #6b8e5a;
       --success-light: #eef5eb;
-      --warning-bg: #fff3e0;
-      --warning-border: #d69e2e;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
       --claude-bg: #f3effc;
       --claude-border: #7c6a9a;
-      --shadow: var(--aap-shadow, 0 2px 8px rgba(42, 31, 35, 0.06), 0 1px 2px rgba(42, 31, 35, 0.04));
-      --shadow-lg: var(--aap-shadow-lg, 0 8px 24px rgba(42, 31, 35, 0.08), 0 2px 6px rgba(42, 31, 35, 0.04));
-      --shadow-xl: var(--aap-shadow-xl, 0 16px 48px rgba(42, 31, 35, 0.12), 0 4px 12px rgba(42, 31, 35, 0.06));
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: var(--aap-font-body, 'DM Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
       color: var(--text);
       background: var(--bg-warm);
       line-height: 1.7;
@@ -41,91 +38,69 @@
     }
 
     .hero {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-      padding-top: 2.5rem;
-    }
-    .hero-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--aap-radius-lg, 16px);
-      padding: 2.5rem;
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
-      position: relative;
-    }
-    .hero-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--aap-accent, #d4883a), rgba(212, 136, 58, 0.3));
-      border-radius: var(--aap-radius-lg, 16px) var(--aap-radius-lg, 16px) 0 0;
+      background: var(--text);
+      color: #ffffff;
+      padding: 3.5rem 2rem;
     }
     .hero-inner {
+      max-width: 1000px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
-      gap: 2.5rem;
+      gap: 3rem;
     }
     .hero-image {
       flex-shrink: 0;
-      width: 260px;
+      width: 308px;
       height: auto;
-      border-radius: var(--aap-radius, 8px);
-      box-shadow: var(--shadow);
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(201,168,124,0.2);
     }
     .hero-text {
       flex: 1;
     }
     .hero h1 {
-      font-family: var(--aap-font-heading, 'DM Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 2.4rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      font-size: 2.8rem;
       font-weight: 400;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       line-height: 1.2;
-      color: var(--text);
     }
-    .hero h1 span { color: var(--aap-accent, #d4883a); }
+    .hero h1 span { color: var(--accent); }
     .hero p {
-      font-size: 1.05rem;
-      color: var(--text-muted);
+      font-size: 1.1rem;
+      color: #b0b0b0;
       max-width: 620px;
       line-height: 1.7;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .hero .badge {
       display: inline-block;
-      background: var(--accent-light);
-      color: var(--aap-accent, #d4883a);
-      padding: 0.45rem 1.25rem;
+      background: rgba(201,168,124,0.15);
+      color: var(--accent);
+      padding: 0.5rem 1.5rem;
       border-radius: 999px;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       letter-spacing: 0.02em;
-      border: 1px solid rgba(212, 136, 58, 0.2);
     }
 
     .container {
       max-width: 860px;
       margin: 0 auto;
       padding: 2.5rem 1.5rem 4rem;
-      background: var(--aap-bg, #faf9f6);
     }
 
     .philosophy {
       background: var(--bg);
       border: 1px solid var(--border);
-      border-left: 4px solid var(--aap-accent, #d4883a);
-      border-radius: 0 var(--aap-radius, 8px) var(--aap-radius, 8px) 0;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
       padding: 1.5rem 2rem;
       margin-bottom: 2.5rem;
       font-size: 0.95rem;
-      box-shadow: var(--shadow);
     }
-    .philosophy strong { color: var(--aap-accent, #d4883a); }
+    .philosophy strong { color: var(--accent); }
 
     .toc {
       background: var(--bg);
@@ -191,21 +166,14 @@
       line-height: 1.3;
     }
     .section h2 .cost-badge { margin-left: 0.75rem; vertical-align: middle; }
-    /* Override site.css img { max-width: 100% } so these stay small in flex headers */
-    .section h2 .service-icon,
-    .infra-section__header .service-icon,
-    .infra-section__title .service-icon {
-      width: 24px !important;
-      height: 24px !important;
-      max-width: 24px !important;
-      max-height: 24px !important;
+    .section h2 .service-icon {
+      width: 24px;
+      height: 24px;
       vertical-align: middle;
       margin-right: 0.5rem;
       position: relative;
       top: -2px;
       border-radius: 4px;
-      flex-shrink: 0;
-      display: inline-block;
     }
     .section h3 {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
@@ -217,64 +185,6 @@
       letter-spacing: 0.04em;
     }
     .section h3:first-of-type { margin-top: 1.25rem; }
-
-    /* Expandable section (details/summary, like devices page) */
-    .infra-section {
-      margin-bottom: 1.5rem;
-      background: var(--bg);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .infra-section__header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem 1.5rem 1rem 1.25rem;
-      cursor: pointer;
-      user-select: none;
-      list-style: none;
-    }
-    .infra-section__header::-webkit-details-marker { display: none; }
-    .infra-section__header::marker { content: ''; }
-    .infra-section__chevron {
-      display: inline-block;
-      width: 0.6em;
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      transition: transform 0.15s ease;
-      flex-shrink: 0;
-    }
-    .infra-section__chevron::before {
-      content: '\25BC';
-    }
-    .infra-section:not([open]) .infra-section__chevron {
-      transform: rotate(-90deg);
-    }
-    .infra-section__title {
-      margin: 0;
-      font-size: 1.6rem;
-      font-weight: 400;
-      line-height: 1.3;
-      flex: 1;
-    }
-    .infra-section__body {
-      padding: 0 2.5rem 2.5rem 2.5rem;
-      border-top: 1px solid var(--border);
-    }
-    .infra-section__body > :first-child { margin-top: 1.25rem; }
-    .infra-section__body h3 {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin: 2rem 0 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .infra-section__body h3:first-of-type { margin-top: 1.25rem; }
 
     .step-label {
       display: inline-block;
@@ -471,14 +381,11 @@
     .conversation .ai { font-style: italic; color: var(--text-muted); }
 
     @media (max-width: 640px) {
-      .hero { padding-top: 1.5rem; }
-      .hero-card { padding: 1.75rem; }
       .hero-inner { flex-direction: column; gap: 1.5rem; text-align: center; }
-      .hero-image { width: 200px; height: auto; order: -1; }
-      .hero h1 { font-size: 1.8rem; }
+      .hero-image { width: 200px; height: auto; }
+      .hero h1 { font-size: 2rem; }
       .hero p { font-size: 0.95rem; }
       .section { padding: 1.5rem; }
-      .infra-section__body { padding: 1.25rem 1.5rem 1.5rem; }
       .toc-grid { grid-template-columns: 1fr; }
       table { font-size: 0.8rem; }
       td, thead th { padding: 0.5rem 0.6rem; }
@@ -977,26 +884,24 @@
     @media print {
       body { background: white; }
       .aap-header, .aap-mobile-nav { display: none; }
-      .hero, .hero-card { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
     }
   </style>
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260307.41 9:11p</span>
+<span data-site-version style="display:none;">v260226.01 10:35am</span>
 <div id="siteHeader"></div>
 
-<div class="hero">
-  <div class="hero-card">
-    <div class="hero-inner">
-      <div class="hero-text">
-        <h1><span>AlpacApps</span> Infra</h1>
-        <p><strong>AlpacApps is an open-source property management platform.</strong> Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, tenant management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
-        <span class="badge">Starting from: $0/month infrastructure &bull; ~$20 &ndash; $200/month for Claude Code (API + Sonnet)</span>
-      </div>
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/infra/alpacaservers2.jpg" alt="Alpacas in a server room" class="hero-image">
+<div class="hero" style="padding-top: calc(80px + 3.5rem);">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1><span>AlpacApps</span> Infra</h1>
+      <p><strong>AlpacApps is an open-source property management platform.</strong> Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, tenant management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
+      <span class="badge">Starting from: $0/month infrastructure &bull; ~$10/month for Claude Code (API + Sonnet)</span>
     </div>
+    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/infra/alpacaservers2.jpg" alt="Alpacas in a server room" class="hero-image">
   </div>
 </div>
 
@@ -1065,27 +970,26 @@
     <div class="toc-grid">
       <a href="#architecture"><span class="num" style="background:var(--bg-warm);color:var(--text-muted);">&mdash;</span> Architecture &amp; Cost Calculator</a>
       <a href="#github"><span class="num">1</span> GitHub + Starter Template</a>
-      <a href="#claude-code"><span class="num">2</span> Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Free week here</a></a>
+      <a href="#claude-code"><span class="num">2</span> Install Claude Code</a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
-      <a href="#resend"><span class="num">4</span> Resend (Email)</a>
-      <a href="#google-auth"><span class="num">5</span> Google Sign-In</a>
-      <a href="#gemini"><span class="num">6</span> Google Gemini (AI)</a>
-      <a href="#telnyx"><span class="num">7</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">8</span> Square (Payments)</a>
-      <a href="#stripe"><span class="num">9</span> Stripe (Payments)</a>
-      <a href="#signwell"><span class="num">10</span> SignWell (E-Signatures)</a>
+      <a href="#google-auth"><span class="num">4</span> Google Sign-In</a>
+      <a href="#resend"><span class="num">5</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">7</span> Square (Payments)</a>
+      <a href="#stripe"><span class="num">8</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">9</span> SignWell (E-Signatures)</a>
+      <a href="#gemini"><span class="num">10</span> Google Gemini (AI)</a>
       <a href="#workers"><span class="num">11</span> Background Workers</a>
       <a href="#domain"><span class="num">12</span> Custom Domain</a>
-      <a href="#template"><span class="num">13</span> CLAUDE.md Templates</a>
+      <a href="#template"><span class="num">13</span> Context System</a>
       <a href="#checklist"><span class="num">14</span> Day-One Checklist</a>
       <a href="#mobile"><span class="num">15</span> Mobile App (iOS &amp; Android)</a>
     </div>
   </nav>
 
   <!-- Architecture + Cost Calculator -->
-  <details class="infra-section" id="architecture" open>
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">Architecture &amp; Cost Calculator</h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="architecture">
+    <h2>Architecture &amp; Cost Calculator</h2>
     <div class="arch-diagram">Browser &rarr; GitHub Pages (static HTML/CSS/JS) &rarr; Supabase (PostgreSQL + Auth + Edge Functions)
                                              &nearr;          &darr;
 Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media storage, optional)</div>
@@ -1194,7 +1098,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
           <span class="calc-svc__name">Cloudflare R2</span>
-          <span class="calc-svc__desc">Object &amp; video storage (10 GB free, zero egress)</span>
+          <span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1276,13 +1180,11 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
       <div class="calc-result__note" id="calc-note"></div>
       <div class="calc-result__scope" id="calc-scope"></div>
     </div>
-    </div>
-  </details>
+  </div>
 
   <!-- 1. GitHub + Starter Template -->
-  <details class="infra-section" id="github">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/github" alt="GitHub" class="service-icon">1. GitHub + Starter Template <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="github">
+    <h2><img src="https://cdn.simpleicons.org/github" alt="GitHub" class="service-icon">1. GitHub + Starter Template <span class="cost-badge cost-free">Free</span></h2>
     <p>First, get a GitHub account and create your project from the starter template. Everything here is done in your browser &mdash; no terminal needed.</p>
 
     <h3><span class="step-label step-you">Create a GitHub account</span></h3>
@@ -1309,7 +1211,6 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
       <li>Enter your project name as the <strong>Repository name</strong> (e.g., <code>my-salon-app</code>)</li>
       <li>Make sure <strong>Public</strong> is selected (required for free GitHub Pages hosting)</li>
       <li>Click <strong>"Create repository"</strong> &mdash; GitHub copies all the template files into your own repo</li>
-      <li><strong>Branches:</strong> Use the default branch only. You do <em>not</em> need to copy all branches &mdash; the template has a single branch (<code>main</code>). If GitHub shows an &ldquo;Include all branches&rdquo; option, leave it unchecked.</li>
     </ol>
 
     <h3><span class="step-label step-you">Turn on GitHub Pages</span></h3>
@@ -1391,18 +1292,12 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 │       └── manage.html
 └── supabase/               # Edge functions (deployed via CLI)
     └── functions/</code></pre>
-    </div>
-  </details>
+  </div>
 
   <!-- 2. Claude Code -->
-  <details class="infra-section" id="claude-code">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Get a free week</a></h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="claude-code">
+    <h2><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code</h2>
     <p>Claude Code is your AI developer. Once it's set up, you won't need to use the terminal again &mdash; but if Claude asks you to do something in the terminal or bash something, just ask it to do it by itself. Claude can handle everything from here, but sometimes forgets.</p>
-
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong><a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent);">Click here for a free week of Claude Pro</a></strong> &mdash; no credit card required to start. This referral link gives you a full week of Pro-level usage to get your project set up.
-    </div>
 
     <div class="callout">
       <strong>Recommended: Claude Pro ($20/month) or higher</strong>
@@ -1411,7 +1306,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 
     <h3><span class="step-label step-you">You do (one time)</span></h3>
     <ol>
-      <li>Sign up for <a href="https://claude.ai/referral/fzGCallNug" target="_blank">Claude Pro</a> ($20/month recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">free week here</a>)</li>
+      <li>Sign up for <a href="https://claude.ai" target="_blank">Claude Pro</a> ($20/month recommended)</li>
       <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a> &mdash; Claude Code is built in</li>
       <li>Open the app and click the <strong>Code</strong> tab in the top right to open Claude Code</li>
       <li>Point it at the project folder you cloned in Step 1</li>
@@ -1429,7 +1324,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <h3>Run the setup wizard</h3>
     <p>Once Claude Code is open in your project folder, type:</p>
     <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
-    <p>Claude will ask you what you're building, which services you need, then walk you through the entire setup &mdash; creating your database, deploying edge functions, configuring webhooks, and building your <code>CLAUDE.md</code> (checked into repo) and <code>CLAUDE.local.md</code> (gitignored credentials). You don't need to read the rest of this guide unless you want to understand what's happening under the hood.</p>
+    <p>Claude will ask you what you're building, which services you need, then walk you through the entire setup &mdash; creating your database, deploying edge functions, configuring webhooks, and building your on-demand context system (<code>CLAUDE.md</code> directives + <code>docs/*.md</code> reference files). You don't need to read the rest of this guide unless you want to understand what's happening under the hood.</p>
 
     <div class="callout warning" style="font-size: 0.85rem;">
       <strong>Slash command not working?</strong>
@@ -1448,15 +1343,13 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <p>You never need to edit files yourself. Just tell Claude what you want in plain English.</p>
     <div class="conversation">
       <div class="you">"Set up Supabase. Here are my credentials: project ref is abc123, anon key is eyJ..."</div>
-      <div class="ai">installs Supabase CLI, links project, updates CLAUDE.md + CLAUDE.local.md, creates tables with RLS, creates storage buckets, commits and pushes</div>
+      <div class="ai">installs Supabase CLI, links project, updates docs/CREDENTIALS.md + docs/SCHEMA.md, creates tables with RLS, creates storage buckets, commits and pushes</div>
     </div>
-    </div>
-  </details>
+  </div>
 
   <!-- 3. Supabase -->
-  <details class="infra-section" id="supabase">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/supabase" alt="Supabase" class="service-icon">3. Supabase <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="supabase">
+    <h2><img src="https://cdn.simpleicons.org/supabase" alt="Supabase" class="service-icon">3. Supabase <span class="cost-badge cost-free">Free</span></h2>
     <p>Database, storage, auth, and serverless edge functions &mdash; all in one.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1517,43 +1410,15 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will install the CLI, login, link, create <code>shared/supabase.js</code>, run SQL for tables + RLS + storage policies, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 4. Resend -->
-  <details class="infra-section" id="resend">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">4. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
-
-    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
-    <ol>
-      <li>Sign up at <a href="https://resend.com/signup" target="_blank">resend.com/signup</a> (free: 3,000 emails/month)</li>
-      <li><strong>Recommended:</strong> Add your domain at <a href="https://resend.com/domains" target="_blank">resend.com/domains</a> and set up DNS records. Without this, you can only send from <code>onboarding@resend.dev</code>.</li>
-      <li>Create an API key at <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a> and copy it</li>
-    </ol>
-
-    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <pre data-lang="markdown"><code>### Email (Resend)
-- API key: `re_your_key_here` (store as Supabase secret: RESEND_API_KEY)
-- From address: notifications@yourdomain.com (or onboarding@resend.dev)</code></pre>
-
-    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude" style="position: relative;">
-      <strong>"Set up email sending with Resend. Store the API key as a Supabase secret and create a send-email edge function."</strong>
-      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
-      <span class="claude-detail">Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.</span>
-    </div>
-    </div>
-  </details>
-
-  <!-- 5. Google Auth -->
-  <details class="infra-section" id="google-auth">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">5. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
+  <!-- 4. Google Auth -->
+  <div class="section" id="google-auth">
+    <h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2>
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 6 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 10 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
@@ -1615,41 +1480,35 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create <code>shared/auth.js</code>, add login/logout UI, set up auth guards on admin pages, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 6. Gemini -->
-  <details class="infra-section" id="gemini">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">6. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
-    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
-
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 5</a>. Use the same project &mdash; just grab a Gemini API key below.
-    </div>
+  <!-- 5. Resend -->
+  <div class="section" id="resend">
+    <h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
-      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
+      <li>Sign up at <a href="https://resend.com/signup" target="_blank">resend.com/signup</a> (free: 3,000 emails/month)</li>
+      <li><strong>Recommended:</strong> Add your domain at <a href="https://resend.com/domains" target="_blank">resend.com/domains</a> and set up DNS records. Without this, you can only send from <code>onboarding@resend.dev</code>.</li>
+      <li>Create an API key at <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a> and copy it</li>
     </ol>
 
     <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
-- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
+    <pre data-lang="markdown"><code>### Email (Resend)
+- API key: `re_your_key_here` (store as Supabase secret: RESEND_API_KEY)
+- From address: notifications@yourdomain.com (or onboarding@resend.dev)</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
     <div class="callout claude" style="position: relative;">
-      <strong>"Store my Gemini API key as a Supabase secret."</strong>
+      <strong>"Set up email sending with Resend. Store the API key as a Supabase secret and create a send-email edge function."</strong>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
-      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
+      <span class="claude-detail">Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 7. Telnyx -->
-  <details class="infra-section" id="telnyx">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">7. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
-    <div class="infra-section__body">
+  <!-- 6. Telnyx -->
+  <div class="section" id="telnyx">
+    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1686,13 +1545,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create tables, insert config, write both edge functions, deploy, create <code>shared/sms-service.js</code>, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 8. Square -->
-  <details class="infra-section" id="square">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">8. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
-    <div class="infra-section__body">
+  <!-- 7. Square -->
+  <div class="section" id="square">
+    <h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1724,13 +1581,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create tables, insert config, write the edge function + client module, deploy, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 9. Stripe -->
-  <details class="infra-section" id="stripe">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">9. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
-    <div class="infra-section__body">
+  <!-- 8. Stripe -->
+  <div class="section" id="stripe">
+    <h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1768,13 +1623,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create tables, insert config, write and deploy both edge functions, create the client module, commit, and push.</span>
     </div>
-    </div>
-  </details>
+  </div>
 
-  <!-- 10. SignWell -->
-  <details class="infra-section" id="signwell">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">10. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
+  <!-- 9. SignWell -->
+  <div class="section" id="signwell">
+    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1800,14 +1653,38 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.</span>
     </div>
+  </div>
+
+  <!-- 10. Gemini -->
+  <div class="section" id="gemini">
+    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
+
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 4</a>. Use the same project &mdash; just grab a Gemini API key below.
     </div>
-  </details>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
+- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Store my Gemini API key as a Supabase secret."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
+    </div>
+  </div>
 
   <!-- 11. Cloudflare R2 -->
-  <details class="infra-section" id="cloudflare-r2-setup">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title"><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object &amp; Video Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="infra-section__body">
-    <p>Optional. S3-compatible object and video storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, video, and other media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
+  <div class="section" id="cloudflare-r2-setup">
+    <h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2>
+    <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1836,13 +1713,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         <code>supabase secrets set R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=... R2_BUCKET_NAME=... R2_PUBLIC_URL=...</code>,
         create <code>r2_config</code> table, create <code>supabase/functions/_shared/r2-upload.ts</code> (S3-compatible upload with AWS Sig V4)</span>
     </div>
-    </div>
-  </details>
+  </div>
 
   <!-- 12. Background Workers -->
-  <details class="infra-section" id="workers">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">12. Background Workers (Optional)</h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="workers">
+    <h2>12. Background Workers (Optional)</h2>
 
     <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
 
@@ -1890,13 +1765,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>
       <strong>&ldquo;Set up the background workers on my server at [IP]. Create systemd services for the bug fixer, device pollers, and image gen worker. Add SSH access details to CLAUDE.local.md.&rdquo;</strong>
     </p>
-    </div>
-  </details>
+  </div>
 
   <!-- 13. Custom Domain -->
-  <details class="infra-section" id="domain">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">13. Custom Domain (Optional)</h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="domain">
+    <h2>13. Custom Domain (Optional)</h2>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
@@ -1967,50 +1840,51 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>DNS changes can take up to 24 hours to fully propagate &mdash; wait and try again</li>
       <li>Use <a href="https://dnschecker.org" target="_blank">dnschecker.org</a> to verify your records are visible worldwide</li>
     </ul>
-    </div>
-  </details>
+  </div>
 
   <!-- 14. CLAUDE.md Templates -->
-  <details class="infra-section" id="template">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">14. CLAUDE.md Templates</h2></summary>
-    <div class="infra-section__body">
-    <p>Claude Code uses two files for project context: <code>CLAUDE.md</code> (checked into the repo) for shareable project context, and <code>CLAUDE.local.md</code> (gitignored) for credentials and operator directives. Enter your project name and download both.</p>
+  <div class="section" id="template">
+    <h2>14. On-Demand Context System</h2>
+    <p>Claude Code reads <code>CLAUDE.md</code> at the start of every conversation. To keep this fast and efficient, we use an <strong>on-demand context loading</strong> pattern: CLAUDE.md stays slim (~30 lines) and indexes separate <code>docs/*.md</code> files that Claude only loads when the task requires them.</p>
 
-    <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1.5rem 0; flex-wrap: wrap;">
-      <input type="text" id="project-name-input" placeholder="My Project Name" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-      <button onclick="downloadClaudeMd()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--text); color: #ffffff; padding: 0.7rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='var(--text)'">&darr;&ensp;CLAUDE.md</button>
-      <button onclick="downloadClaudeLocalMd()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--text); color: #ffffff; padding: 0.7rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='var(--text)'">&darr;&ensp;CLAUDE.local.md</button>
-    </div>
+    <h3>Why this matters</h3>
+    <p>A monolithic CLAUDE.md with credentials, schema, patterns, and integrations can easily reach 200+ lines &mdash; thousands of tokens loaded into every conversation whether needed or not. With on-demand loading, a conversation about Tailwind styling only loads <code>docs/PATTERNS.md</code>, while a database migration only loads <code>docs/SCHEMA.md</code> and <code>docs/CREDENTIALS.md</code>.</p>
 
-    <p><strong><code>CLAUDE.md</code></strong> (checked in) includes:</p>
-    <ul>
-      <li>Project overview and tech stack</li>
-      <li>Architecture and key files</li>
-      <li>Database schema and common patterns</li>
-      <li>Deployment workflow (push to main = live)</li>
-      <li>External systems overview (no credentials)</li>
-      <li>Coding conventions</li>
-    </ul>
+    <h3>File structure</h3>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th><th>Git status</th></tr></thead>
+      <tbody>
+        <tr><td><code>CLAUDE.md</code></td><td>Slim directives + on-demand doc index (~30 lines)</td><td>Checked in</td></tr>
+        <tr><td><code>CLAUDE.local.md</code></td><td>Operator directives, live URLs, push workflow</td><td>Gitignored</td></tr>
+        <tr><td><code>docs/CREDENTIALS.md</code></td><td>All API keys, tokens, connection strings</td><td>Gitignored</td></tr>
+        <tr><td><code>docs/SCHEMA.md</code></td><td>Database table definitions</td><td>Checked in</td></tr>
+        <tr><td><code>docs/PATTERNS.md</code></td><td>Code patterns, Tailwind tokens, auth system</td><td>Checked in</td></tr>
+        <tr><td><code>docs/KEY-FILES.md</code></td><td>Project file structure reference</td><td>Checked in</td></tr>
+        <tr><td><code>docs/DEPLOY.md</code></td><td>Deployment workflow, version format</td><td>Checked in</td></tr>
+        <tr><td><code>docs/INTEGRATIONS.md</code></td><td>External services, cost tiers</td><td>Checked in</td></tr>
+        <tr><td><code>docs/CHANGELOG.md</code></td><td>Recent changes log</td><td>Checked in</td></tr>
+      </tbody>
+    </table>
 
-    <p><strong><code>CLAUDE.local.md</code></strong> (gitignored) includes:</p>
-    <ul>
-      <li>Operator directives (push immediately, direct DB access, version bumping)</li>
-      <li>Supabase project ref, URL, psql connection string</li>
-      <li>Live URLs (GitHub Pages)</li>
-      <li>External service credentials: Resend, Telnyx, Square, SignWell</li>
-      <li>Server access (cloud VM SSH, worker configuration)</li>
-    </ul>
+    <h3>How the index works</h3>
+    <p>The top of <code>CLAUDE.md</code> contains trigger hints that tell Claude which doc to load for which task:</p>
+    <pre><code>&gt; **On-demand docs &mdash; load when the task matches:**
+&gt; - `docs/CREDENTIALS.md` &mdash; **load for:** SQL queries, deploying functions, SSH, API calls
+&gt; - `docs/SCHEMA.md` &mdash; **load for:** writing queries, modifying tables, debugging data
+&gt; - `docs/PATTERNS.md` &mdash; **load for:** writing UI code, Tailwind styling, code review
+&gt; - `docs/KEY-FILES.md` &mdash; **load for:** finding files, understanding project structure
+&gt; - `docs/DEPLOY.md` &mdash; **load for:** pushing, deploying, version questions
+&gt; - `docs/INTEGRATIONS.md` &mdash; **load for:** external APIs, vendor setup, pricing
+&gt; - `docs/CHANGELOG.md` &mdash; **load for:** understanding recent changes</code></pre>
 
     <div class="callout">
-      <strong>Tip:</strong> The setup wizard (Step 2) builds both files for you automatically as it sets up each service. Don't forget to add <code>CLAUDE.local.md</code> to your <code>.gitignore</code>.
+      <strong>Tip:</strong> The setup wizard builds all these files automatically as it sets up each service. Both <code>CLAUDE.local.md</code> and <code>docs/CREDENTIALS.md</code> are already in <code>.gitignore</code>.
     </div>
-    </div>
-  </details>
+  </div>
 
   <!-- 15. Day-One Checklist -->
-  <details class="infra-section" id="checklist">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">15. Day-One Checklist</h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="checklist">
+    <h2>15. Day-One Checklist</h2>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
 
@@ -2096,13 +1970,11 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <p>Or just type <code>/setup-alpacapps-infra</code> in Claude Code &mdash; the skill walks through the same setup interactively, asking what services you need as it goes.</p>
 
     <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
-    </div>
-  </details>
+  </div>
 
   <!-- 16. Mobile App -->
-  <details class="infra-section" id="mobile">
-    <summary class="infra-section__header"><span class="infra-section__chevron"></span><h2 class="infra-section__title">16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
-    <div class="infra-section__body">
+  <div class="section" id="mobile">
+    <h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2>
     <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
 
     <h3>How It Works</h3>
@@ -2165,8 +2037,7 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
       <li><strong>Inline login</strong> &mdash; Capacitor WebView can't handle multi-page redirects, so the mobile app uses an inline login form instead of a separate login page</li>
     </ul>
 
-    </div>
-  </details>
+  </div>
 
 
 </div>
@@ -2211,7 +2082,7 @@ function recalcCost() {
     'stripe':      'Stripe (payments)',
     'signwell':    'SignWell (e-sign)',
     'gemini':      'Google Gemini (AI)',
-    'cloudflare-r2': 'Cloudflare R2 (object & video)',
+    'cloudflare-r2': 'Cloudflare R2 (storage)',
     'workers':     'Background Workers (cloud VM)',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
@@ -2401,62 +2272,33 @@ function updateSupabaseLinks() {
   }
 }
 
-// Download CLAUDE.md (shareable, checked into repo)
+// Download CLAUDE.md (slim directives with on-demand doc index)
 function downloadClaudeMd() {
   var name = document.getElementById('project-name-input').value.trim() || 'My Project';
-  var template = '# CLAUDE.md - ' + name + '\n\n' +
-    'This file provides context for Claude (AI assistant) when working on this codebase.\n\n' +
-    '> **See `CLAUDE.local.md` for credentials, connection strings, and environment-specific configuration.**\n' +
-    '> That file is gitignored and contains operator directives, database access details, API keys, and deployment-specific settings.\n\n' +
-    '## Project Overview\n\n' +
-    name + ' is a [type of system] for [purpose]. It manages [core entities].\n\n' +
-    '**Tech Stack:**\n' +
-    '- Frontend: Vanilla HTML/CSS/JavaScript (no framework) + Tailwind CSS v4\n' +
-    '- CSS: CSS custom properties + Tailwind utility classes (coexist)\n' +
-    '- Backend: Supabase (PostgreSQL + Storage + Auth)\n' +
-    '- Hosting: GitHub Pages (static site)\n\n' +
-    '## Architecture\n\n' +
-    '```\n' +
-    'Browser \u2192 GitHub Pages (static HTML/JS) \u2192 Supabase (database + storage)\n' +
-    '```\n\n' +
-    'No server-side code - all logic runs client-side. Supabase handles data persistence.\n\n' +
-    '## Deployment\n\n' +
-    'Push to main and it\'s live. No build step, no PR process.\n\n' +
-    '```bash\n' +
-    'git add <files>\n' +
-    'git commit -m "Description"\n' +
-    'git push\n' +
-    '# Changes are live in 1-2 minutes\n' +
-    '```\n\n' +
-    '## Supabase Details\n\n' +
-    '- Anon key is in `shared/supabase.js` (safe to expose, RLS protects data)\n' +
-    '- Storage buckets: [list your buckets here]\n\n' +
-    '## Authentication\n\n' +
-    '### Google Sign-In (OAuth via Supabase)\n' +
-    '- Auth handled by Supabase Auth (no edge function needed)\n' +
-    '- Sign-in method: `supabase.auth.signInWithOAuth({ provider: \'google\' })`\n\n' +
-    '## External Systems\n\n' +
-    '### Email (Resend)\n' +
-    '- API key stored as Supabase secret: `RESEND_API_KEY`\n\n' +
-    '### SMS (Telnyx)\n' +
-    '- Config in `telnyx_config` table\n' +
-    '- Edge functions: `send-sms`, `telnyx-webhook`\n\n' +
-    '### Payments (Square)\n' +
-    '- Config in `square_config` table\n' +
-    '- Edge function: `process-square-payment`\n\n' +
-    '### Payments (Stripe)\n' +
-    '- Config in `stripe_config` table\n' +
-    '- Edge functions: `process-stripe-payment`, `stripe-webhook`\n' +
-    '- Client: `shared/stripe-service.js`\n' +
-    '- ACH: 0.8% capped at $5; Cards: 2.9% + 30\\u00a2\n\n' +
-    '### E-Signatures (SignWell)\n' +
-    '- Config in `signwell_config` table\n' +
-    '- Edge function: `signwell-webhook`\n\n' +
-    '## Conventions\n\n' +
-    '1. Use toast notifications, not alert()\n' +
-    '2. Filter archived items client-side\n' +
-    '3. Don\'t expose personal info in public views\n' +
-    '4. Client-side image compression for files > 500KB\n';
+  var template = '# ' + name + ' \u2014 Project Directives\n\n' +
+    '> **On-demand docs \u2014 load when the task matches:**\n' +
+    '> - `docs/CREDENTIALS.md` \u2014 **load for:** SQL queries, deploying functions, SSH, API calls\n' +
+    '> - `docs/SCHEMA.md` \u2014 **load for:** writing queries, modifying tables, debugging data\n' +
+    '> - `docs/PATTERNS.md` \u2014 **load for:** writing UI code, Tailwind styling, code review, testing\n' +
+    '> - `docs/KEY-FILES.md` \u2014 **load for:** finding files, understanding project structure\n' +
+    '> - `docs/DEPLOY.md` \u2014 **load for:** pushing, deploying, version questions\n' +
+    '> - `docs/INTEGRATIONS.md` \u2014 **load for:** external APIs, vendor setup, pricing\n' +
+    '> - `docs/CHANGELOG.md` \u2014 **load for:** understanding recent changes, migration context\n\n' +
+    '## Mandatory Behaviors\n\n' +
+    '1. After code changes: end response with `vYYMMDD.NN H:MMa [model]` + affected URLs (read `version.json`)\n' +
+    '2. Push immediately \u2014 GitHub Pages deploys on push to main. See `docs/DEPLOY.md`\n' +
+    '3. CI bumps version \u2014 never bump locally\n' +
+    '4. Run SQL migrations directly \u2014 never ask the user to run SQL manually\n\n' +
+    '## Code Guards\n\n' +
+    '- Filter archived items: `.filter(s => !s.is_archived)` client-side\n' +
+    '- No personal info in consumer/public views\n' +
+    '- `showToast()` not `alert()` in admin\n' +
+    '- `openLightbox(url)` for images\n' +
+    '- Tailwind: use design tokens from `@theme` block (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.\n\n' +
+    '## Quick Refs\n\n' +
+    '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages\n' +
+    '- **Live:** https://USERNAME.github.io/REPO/\n' +
+    '- **Architecture:** Browser \u2192 GitHub Pages \u2192 Supabase (no server-side code)\n';
 
   downloadFile(template, 'CLAUDE.md');
 }
@@ -2464,57 +2306,14 @@ function downloadClaudeMd() {
 // Download CLAUDE.local.md (private, gitignored)
 function downloadClaudeLocalMd() {
   var name = document.getElementById('project-name-input').value.trim() || 'My Project';
-  var template = '# CLAUDE.local.md - Private Configuration & Operator Directives\n\n' +
-    'This file contains credentials, connection strings, and operator-specific directives.\n' +
-    'It is gitignored and should NOT be checked into version control.\n\n' +
-    '## Operator Directives\n\n' +
-    '> **IMPORTANT: You have direct database access!**\n' +
-    '> See "Direct Database Access" section below.\n' +
-    '> Always run SQL migrations directly using `psql` - never ask the user to run SQL manually.\n\n' +
-    '> **IMPORTANT: Push changes immediately!**\n' +
-    '> This is a GitHub Pages site - changes only go live after pushing.\n' +
-    '> Always `git push` as soon as changes are ready. Don\'t wait for user to ask.\n\n' +
+  var template = '# Operator Directives\n\n' +
+    '> **DB access:** Read `docs/CREDENTIALS.md`. Use Supabase Management API (never psql).\n' +
+    '> **Push:** Always push immediately. Never bump version locally \u2014 CI handles it.\n' +
+    '> **After push:** Wait ~60s, `git pull --rebase origin main`, read `version.json`.\n' +
+    '> **Links:** Always include clickable URLs to affected pages after every push.\n' +
+    '> **SQL:** Run migrations directly via Management API \u2014 never ask user to run SQL manually.\n\n' +
     '## Live URLs\n\n' +
-    '- Public view: https://USERNAME.github.io/REPO/\n' +
-    '- Admin view: https://USERNAME.github.io/REPO/admin/\n\n' +
-    '## Supabase Credentials\n\n' +
-    '- Project ID: `YOUR_PROJECT_REF`\n' +
-    '- URL: `https://YOUR_PROJECT_REF.supabase.co`\n\n' +
-    '### Direct Database Access\n\n' +
-    '```bash\n' +
-    'psql "postgres://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"\n' +
-    '```\n\n' +
-    '- URL-encode special chars in password: `!` \u2192 `%21`, `@` \u2192 `%40`\n' +
-    '- Use session pooler (IPv4 compatible)\n' +
-    '- Always use this for database migrations\n\n' +
-    '### Supabase CLI Access\n\n' +
-    '```bash\n' +
-    'supabase functions deploy <function-name>\n' +
-    'supabase functions logs <function-name>\n' +
-    'supabase secrets set KEY=value\n' +
-    '```\n\n' +
-    'Run these directly - don\'t ask the user to run them manually.\n\n' +
-    '## Authentication\n\n' +
-    '- Google Client ID: `your-client-id.apps.googleusercontent.com`\n' +
-    '- Redirect URI: `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`\n\n' +
-    '## External Service Credentials\n\n' +
-    '### Resend (Email)\n' +
-    '- API key: stored as Supabase secret `RESEND_API_KEY`\n\n' +
-    '### Telnyx (SMS)\n' +
-    '- Phone Number: YOUR_PHONE_NUMBER\n' +
-    '- Messaging Profile ID: YOUR_PROFILE_ID\n' +
-    '- Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/telnyx-webhook`\n\n' +
-    '### Square (Payments)\n' +
-    '- Application ID: YOUR_APP_ID\n' +
-    '- Location ID: YOUR_LOCATION_ID\n\n' +
-    '### Stripe (Payments)\n' +
-    '- Publishable key (test): `pk_test_...`\n' +
-    '- Secret key (test): `sk_test_...`\n' +
-    '- Webhook secret: `whsec_...`\n' +
-    '- Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`\n\n' +
-    '### SignWell (E-Signatures)\n' +
-    '- Account: YOUR_EMAIL\n' +
-    '- Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/signwell-webhook`\n';
+    '- https://USERNAME.github.io/REPO/ (GitHub Pages)\n';
 
   downloadFile(template, 'CLAUDE.local.md');
 }
@@ -2539,7 +2338,7 @@ function downloadFile(content, filename) {
 <script type="module">
   import { initPublicPage } from '/shared/public-shell.js';
 
-  initPublicPage({ transparent: false, light: false });
+  initPublicPage({ transparent: true, light: true });
 </script>
 
 </body>
