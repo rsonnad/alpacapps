@@ -45,10 +45,12 @@ serve(async (req) => {
     }
 
     if (approval.status !== "pending") {
+      const ts = new Date(approval.approved_at || approval.created_at)
+        .toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" });
       return redirectToConfirmation(
         "warning",
         "Already Processed",
-        `This email was already ${approval.status} on ${new Date(approval.approved_at || approval.created_at).toLocaleString()}.`,
+        `This email was already ${approval.status} on ${ts} CT.`,
       );
     }
 
