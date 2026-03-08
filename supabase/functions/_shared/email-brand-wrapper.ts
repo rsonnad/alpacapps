@@ -91,7 +91,8 @@ async function loadBrandConfig(): Promise<any> {
 }
 
 /**
- * Load 2 latest AI-generated alpaca images (cached).
+ * Load 1 latest alpaca image for email footer (cached).
+ * Prefers images tagged "email footer"; falls back to any mktg image.
  */
 async function loadGalleryImages(): Promise<string[]> {
   if (_galleryCache && Date.now() - _galleryCache.fetchedAt < CACHE_TTL) {
@@ -102,16 +103,45 @@ async function loadGalleryImages(): Promise<string[]> {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
+
+    // First: try to find the most recent image tagged "email footer"
+    const { data: tagRow } = await sb
+      .from("media_tags")
+      .select("id")
+      .ilike("name", "email footer")
+      .limit(1)
+      .single();
+
+    if (tagRow?.id) {
+      const { data: taggedMedia } = await sb
+        .from("media_tag_assignments")
+        .select("media:media_id(url, uploaded_at, is_archived)")
+        .eq("tag_id", tagRow.id)
+        .limit(10);
+
+      const match = taggedMedia
+        ?.map((r: any) => r.media)
+        .filter((m: any) => m?.url && !m.is_archived)
+        .sort((a: any, b: any) => (b.uploaded_at || '').localeCompare(a.uploaded_at || ''))
+        ?.[0];
+
+      if (match?.url) {
+        _galleryCache = { images: [match.url], fetchedAt: Date.now() };
+        return [match.url];
+      }
+    }
+
+    // Fallback: most recent mktg category image
     const { data, error } = await sb
       .from("media")
       .select("url")
       .eq("category", "mktg")
       .eq("is_archived", false)
       .order("uploaded_at", { ascending: false })
-      .limit(2);
+      .limit(1);
 
     if (data && !error && data.length > 0) {
-      const urls = data.map((m: any) => m.url);
+      const urls = [data[0].url];
       _galleryCache = { images: urls, fetchedAt: Date.now() };
       return urls;
     }
