@@ -1,12 +1,12 @@
 {
-  "version": "v260307.31 8:04p",
-  "release": 524,
-  "sha": "2bbfd7a41",
-  "fullSha": "2bbfd7a41e87f022c44680f7002bef2d8a133b80",
+  "version": "v260307.32 8:07p",
+  "release": 525,
+  "sha": "bd719038a",
+  "fullSha": "bd719038ac5166930a03b6cc64060f8a076a9174",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 02:04:43+00",
-  "commits": [{"sha":"2bbfd7a41","message":"Slim CLAUDE.md to fix context exhaustion; move schema, integrations, changelog to docs/","author":"Rahul"}]
+  "pushedAt": "2026-03-08 02:07:06+00",
+  "commits": [{"sha":"bd719038a","message":"Visiting page: clarify guest-invite responsibility and trust-but-verify","author":"Rahul"}]
 }
