@@ -16,7 +16,9 @@ const corsHeaders = {
 };
 
 interface CreatePaymentRequest {
-  amount: number;           // Amount in cents
+  amount: number;           // Total amount in cents (including fee)
+  original_amount?: number; // Base amount in cents (before fee)
+  fee_amount?: number;      // Processing fee in cents
   description?: string;
   payment_type: string;    // e.g. rental_application, rent, event_cleaning_deposit
   reference_type: string;   // e.g. rental_application, assignment, event_request
@@ -88,6 +90,8 @@ Deno.serve(async (req) => {
     const body: CreatePaymentRequest = await req.json();
     const {
       amount,
+      original_amount,
+      fee_amount,
       description,
       payment_type,
       reference_type,
@@ -141,6 +145,8 @@ Deno.serve(async (req) => {
     }
 
     const amountDollars = amount / 100;
+    const originalDollars = original_amount ? original_amount / 100 : amountDollars;
+    const feeDollars = fee_amount ? fee_amount / 100 : 0;
     const desc = description || `${payment_type.replace(/_/g, ' ')} — ${reference_id}`;
 
     const { data: paymentRecord, error: insertError } = await supabase
@@ -150,7 +156,8 @@ Deno.serve(async (req) => {
         reference_type,
         reference_id,
         amount: amountDollars,
-        original_amount: amountDollars,
+        original_amount: originalDollars,
+        fee_amount: feeDollars,
         status: 'pending',
         person_id: person_id || null,
         person_name: person_name || null,
