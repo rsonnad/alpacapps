@@ -1,12 +1,12 @@
 {
-  "version": "v260308.21 4:44p",
-  "release": 557,
-  "sha": "fac4fe4fd",
-  "fullSha": "fac4fe4fdb51ded0aeaf6133262b6b45d00a9c20",
+  "version": "v260308.22 4:49p",
+  "release": 558,
+  "sha": "a1fc354b3",
+  "fullSha": "a1fc354b3d239f0f8d859aab05bf1cc20e7420d0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-08 21:44:47+00",
-  "commits": [{"sha":"fac4fe4fd","message":"Use Central time in email approval timestamps","author":"Rahul"}]
+  "pushedAt": "2026-03-08 21:49:05+00",
+  "commits": [{"sha":"a1fc354b3","message":"Add two-step email approval to prevent Gmail link prefetch","author":"Rahul"}]
 }
