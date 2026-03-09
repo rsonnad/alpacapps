@@ -16,12 +16,12 @@
   h1 { text-align: center; font-size: 1.6rem; font-weight: 600; margin-bottom: 4px; color: #d4883a; }
   .subtitle { text-align: center; font-size: 0.9rem; color: #a09080; margin-bottom: 16px; }
   .plan-container {
-    max-width: 960px; margin: 0 auto; background: #faf9f6;
+    max-width: 1200px; margin: 0 auto; background: #faf9f6;
     border-radius: 12px; padding: 12px; overflow-x: auto;
   }
   svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
   .legend {
-    max-width: 960px; margin: 16px auto 0;
+    max-width: 1200px; margin: 16px auto 0;
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;
   }
   .legend-card {
@@ -40,7 +40,7 @@
   .legend-card.info { border-left-color: #9f7aea; }
   .legend-card.info h3 { color: #9f7aea; }
   .setback-summary {
-    max-width: 960px; margin: 16px auto 0; background: #2a2224;
+    max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px;
   }
   .setback-summary h2 { font-size: 1rem; color: #d4883a; margin-bottom: 10px; }
@@ -59,7 +59,7 @@
   .badge-violation { background: #e53e3e22; color: #fc8181; border: 1px solid #e53e3e44; }
   .badge-ok { background: #38a16922; color: #68d391; border: 1px solid #38a16944; }
   .notes {
-    max-width: 960px; margin: 16px auto 0; background: #2a2224;
+    max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px; font-size: 0.82rem;
     color: #a09080; line-height: 1.5;
   }
@@ -83,190 +83,146 @@
 
 <div class="plan-container">
 <!--
-  BASE: Survey plat by 4Ward Land Surveying, 2/4/2021, Jason Ward R.P.L.S. #5811
-  OVERLAYS: Containers, trailers, bathroom building, setback zones added by owner (March 2026)
-  ADDITIONAL SOURCES: Bastrop County GIS Viewer (PID 44401), Google Earth, on-site photos
+  BASE: Full survey plat by 4Ward Land Surveying, 2/4/2021, Jason Ward R.P.L.S. #5811
+  IMAGE: survey-base.png — full plat rendered at 2400×1600 from original PDF
+  OVERLAYS: Setback zones, structure labels, and bathroom building added by owner (March 2026)
 
   KEY INFO:
     ESD: BCESD #3 (Bastrop County Emergency Services District #3)
     Flood Zone: X (unshaded) — NOT in 100-year floodplain
     Houston Toad Habitat: NOT in habitat area
 
-  COORDINATE REFERENCE (in 1600x1600 image space):
+  COORDINATE REFERENCE (in 2400×1600 image space):
     Property boundary = bold black lines on survey plat
-    NW corner: ~(97, 55)     NE corner: ~(1350, 35)
-    East boundary to: ~(1345, 1070)   SE jog: ~(1370, 1185)
-    South boundary: ~(780, 1350)      SW corner: ~(97, 1280)
-    Horizontal scale: ~6.67 px/ft (187.92' N boundary = 1253px)
-    Vertical scale: ~3.73 px/ft (328.51' W boundary = 1225px)
+    NW corner: ~(568, 224)    NE corner: ~(1620, 214)
+    East boundary to: ~(1612, 1020)   SE jog: ~(1670, 1128)
+    South boundary: ~(1100, 1268)     SW corner: ~(568, 1195)
+    Horizontal scale: ~5.60 px/ft (187.92' N boundary = 1052px)
+    Vertical scale: ~2.96 px/ft (328.51' W boundary = 971px)
+    25' setback: 140px horiz, 74px vert
+    15' setback: 84px horiz, 44px vert
 -->
-<svg viewBox="0 0 1600 1600" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+<svg viewBox="0 0 2400 1600" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
   <defs>
     <!-- Setback zone hatching -->
-    <pattern id="hatch-red" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="12" stroke="#e53e3e" stroke-width="1.5" opacity="0.35"/>
-    </pattern>
-    <pattern id="hatch-green" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="12" stroke="#38a169" stroke-width="1" opacity="0.3"/>
+    <pattern id="hatch-red" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#e53e3e" stroke-width="1.5" opacity="0.4"/>
     </pattern>
   </defs>
 
-  <!-- ===== SURVEY BASE IMAGE ===== -->
-  <image href="survey-base.png" x="0" y="0" width="1600" height="1600"/>
+  <!-- ===== FULL SURVEY PLAT BASE IMAGE ===== -->
+  <image href="survey-base.png" x="0" y="0" width="2400" height="1600"/>
 
 
-  <!-- ===== SETBACK ZONES (overlaid on survey) ===== -->
+  <!-- ===== SETBACK ZONES (overlaid on survey property boundary lines) ===== -->
 
   <!-- 25' WEST SETBACK from Leisure Lane ROW -->
-  <!-- West property line (bold black) at x≈97, 25' inset = 25×6.67 = 167px → setback line at x≈264 -->
-  <polygon points="97,55 264,55 264,1280 97,1280" fill="url(#hatch-red)" opacity="0.5"/>
-  <line x1="264" y1="55" x2="264" y2="1280" stroke="#e53e3e" stroke-width="3" stroke-dasharray="12,6"/>
-  <text x="180" y="650" text-anchor="middle" font-size="22" fill="#e53e3e" font-weight="700" transform="rotate(-90, 180, 650)">25' ROAD SETBACK (Leisure Lane)</text>
+  <!-- West property line (bold black) at x≈568, 25' inset = 140px → setback line at x≈708 -->
+  <polygon points="568,224 708,224 708,1195 568,1195" fill="url(#hatch-red)" opacity="0.45"/>
+  <line x1="708" y1="224" x2="708" y2="1195" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <text x="638" y="700" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700" transform="rotate(-90, 638, 700)">25' ROAD SETBACK (Leisure Lane)</text>
 
   <!-- 15' NORTH SETBACK from north property line -->
-  <!-- North property line (bold black) from (97,55) to (1350,35), 15' inset = 15×3.73 = 56px down -->
-  <polygon points="97,55 1350,35 1350,91 97,111" fill="url(#hatch-red)" opacity="0.4"/>
-  <line x1="97" y1="111" x2="1350" y2="91" stroke="#e53e3e" stroke-width="3" stroke-dasharray="12,6"/>
-  <text x="720" y="72" font-size="20" fill="#e53e3e" font-weight="600" text-anchor="middle">15' REAR SETBACK (North)</text>
+  <!-- North property line (bold black) from (568,224) to (1620,214), 15' inset = 44px down -->
+  <polygon points="568,224 1620,214 1620,258 568,268" fill="url(#hatch-red)" opacity="0.35"/>
+  <line x1="568" y1="268" x2="1620" y2="258" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <text x="1090" y="240" font-size="14" fill="#e53e3e" font-weight="600" text-anchor="middle">15' REAR SETBACK (North)</text>
 
   <!-- 15' EAST SETBACK from east property line -->
-  <!-- East property line (bold black) from (1350,35) to (1345,1070) to SE jog (1370,1185), 15' inset = 15×6.67 = 100px left -->
-  <polygon points="1350,35 1345,1070 1370,1185 1270,1185 1245,1070 1250,35" fill="url(#hatch-red)" opacity="0.35"/>
-  <line x1="1250" y1="35" x2="1245" y2="1070" stroke="#e53e3e" stroke-width="3" stroke-dasharray="12,6"/>
-  <text x="1300" y="600" font-size="20" fill="#e53e3e" font-weight="600" transform="rotate(90, 1300, 600)">15' SIDE SETBACK (East)</text>
+  <!-- East property line (bold black) from (1620,214) to (1612,1020) to SE jog (1670,1128), 15' inset = 84px left -->
+  <polygon points="1620,214 1612,1020 1670,1128 1586,1128 1528,1020 1536,214" fill="url(#hatch-red)" opacity="0.3"/>
+  <line x1="1536" y1="214" x2="1528" y2="1020" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <text x="1580" y="620" font-size="14" fill="#e53e3e" font-weight="600" transform="rotate(90, 1580, 620)">15' SIDE SETBACK (East)</text>
 
   <!-- 25' SOUTH SETBACK from Still Forest Dr ROW -->
-  <!-- South property line (bold black) from (97,1280) to (780,1350) to (1370,1185), 25' inset = 25×3.73 = 93px up -->
-  <polygon points="97,1280 780,1350 1370,1185 1370,1092 780,1257 97,1187" fill="url(#hatch-red)" opacity="0.35"/>
-  <line x1="97" y1="1187" x2="780" y2="1257" stroke="#e53e3e" stroke-width="3" stroke-dasharray="12,6"/>
-  <text x="470" y="1310" font-size="20" fill="#e53e3e" font-weight="600" text-anchor="middle">25' FRONT SETBACK (Still Forest Dr)</text>
+  <!-- South property line (bold black) from (568,1195) to (1100,1268) to (1670,1128), 25' inset = 74px up -->
+  <polygon points="568,1195 1100,1268 1670,1128 1670,1054 1100,1194 568,1121" fill="url(#hatch-red)" opacity="0.3"/>
+  <line x1="568" y1="1121" x2="1100" y2="1194" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <line x1="1100" y1="1194" x2="1670" y2="1054" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <text x="860" y="1230" font-size="14" fill="#e53e3e" font-weight="600" text-anchor="middle">25' FRONT SETBACK (Still Forest Dr)</text>
 
 
   <!-- ===== ADDITIONAL STRUCTURES (not on original survey) ===== -->
 
-  <!-- ========================================= -->
-  <!-- A. BIG TRAILER (10'×42')                   -->
-  <!--    Near west property line, along Leisure Lane     -->
-  <!--    ~1'3" from property line — CRITICAL violation   -->
-  <!-- ========================================= -->
-  <rect x="105" y="700" width="55" height="110" fill="#c62828" fill-opacity="0.7" stroke="#8b0000" stroke-width="3" rx="3"/>
-  <text x="132" y="748" text-anchor="middle" font-size="14" fill="#fff" font-weight="700" transform="rotate(-90, 132, 748)">BIG TRAILER 10'×42'</text>
-  <!-- Violation callout -->
-  <line x1="160" y1="755" x2="320" y2="755" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="320" y="730" width="180" height="55" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="410" y="750" text-anchor="middle" font-size="16" fill="#e53e3e" font-weight="700">1'3" from property line</text>
-  <text x="410" y="770" text-anchor="middle" font-size="14" fill="#e53e3e">NEEDS 25' (road ROW)</text>
+  <!-- A. BIG TRAILER (10'×42') — 1'3" from W property line — CRITICAL -->
+  <rect x="575" y="575" width="45" height="90" fill="#c62828" fill-opacity="0.65" stroke="#8b0000" stroke-width="2.5" rx="3"/>
+  <text x="597" y="618" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" transform="rotate(-90, 597, 618)">BIG TRAILER 10'×42'</text>
+  <line x1="620" y1="620" x2="740" y2="620" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="740" y="605" width="145" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="812" y="620" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">1'3" from property line</text>
+  <text x="812" y="634" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 25' (road ROW)</text>
 
-  <!-- ========================================= -->
-  <!-- B. CONTAINER (40'×8') — brown              -->
-  <!--    West side, between deck & trailer       -->
-  <!--    ~4'10" from property line                       -->
-  <!-- ========================================= -->
-  <rect x="129" y="560" width="45" height="108" fill="#8B4513" fill-opacity="0.75" stroke="#5a2d0a" stroke-width="3" rx="3"/>
-  <text x="151" y="610" text-anchor="middle" font-size="12" fill="#fff" font-weight="700" transform="rotate(-90, 151, 610)">CONTAINER 40'×8'</text>
-  <!-- Violation callout -->
-  <line x1="174" y1="614" x2="320" y2="614" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="320" y="595" width="170" height="42" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="405" y="613" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">4'10" from property line</text>
-  <text x="405" y="630" text-anchor="middle" font-size="13" fill="#e53e3e">NEEDS 25'</text>
+  <!-- B. CONTAINER (40'×8') — brown — 4'10" from W property line -->
+  <rect x="595" y="435" width="35" height="85" fill="#8B4513" fill-opacity="0.7" stroke="#5a2d0a" stroke-width="2.5" rx="3"/>
+  <text x="612" y="475" text-anchor="middle" font-size="8" fill="#fff" font-weight="700" transform="rotate(-90, 612, 475)">CONTAINER 40'×8'</text>
+  <line x1="630" y1="478" x2="740" y2="478" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="740" y="463" width="135" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="807" y="478" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">4'10" from prop. line</text>
+  <text x="807" y="492" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 25'</text>
 
-  <!-- ========================================= -->
-  <!-- C. RED CONTAINER (40'×8')                  -->
-  <!--    "Alpaca Playhouse" container             -->
-  <!--    West side, below big trailer             -->
-  <!--    ~2' from property line                           -->
-  <!-- ========================================= -->
-  <rect x="110" y="850" width="50" height="108" fill="#c62828" fill-opacity="0.7" stroke="#8b0000" stroke-width="3" rx="3"/>
-  <text x="135" y="900" text-anchor="middle" font-size="11" fill="#fff" font-weight="700" transform="rotate(-90, 135, 900)">RED CONTAINER 40'×8'</text>
-  <text x="135" y="970" text-anchor="middle" font-size="11" fill="#8b0000" font-weight="600">"Alpaca</text>
-  <text x="135" y="985" text-anchor="middle" font-size="11" fill="#8b0000" font-weight="600">Playhouse"</text>
-  <!-- Violation callout -->
-  <line x1="160" y1="904" x2="320" y2="904" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="320" y="886" width="140" height="42" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="390" y="904" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">~2' from property line</text>
-  <text x="390" y="921" text-anchor="middle" font-size="13" fill="#e53e3e">NEEDS 25'</text>
+  <!-- C. RED CONTAINER (40'×8') — "Alpaca Playhouse" — ~2' from W property line -->
+  <rect x="579" y="690" width="40" height="85" fill="#c62828" fill-opacity="0.65" stroke="#8b0000" stroke-width="2.5" rx="3"/>
+  <text x="599" y="730" text-anchor="middle" font-size="8" fill="#fff" font-weight="700" transform="rotate(-90, 599, 730)">RED CONTAINER 40'×8'</text>
+  <line x1="619" y1="732" x2="740" y2="732" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="740" y="717" width="120" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="800" y="732" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">~2' from prop. line</text>
+  <text x="800" y="746" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 25'</text>
 
-  <!-- ========================================= -->
-  <!-- D. BATHROOM BUILDING (UNDER CONSTRUCTION)  -->
-  <!--    East side, south of main house          -->
-  <!--    Built AFTER the survey — not shown on   -->
-  <!--    original plat. NO PERMIT.               -->
-  <!-- ========================================= -->
-  <rect x="1265" y="640" width="75" height="95" fill="#FFB74D" fill-opacity="0.8" stroke="#E65100" stroke-width="4" rx="5" stroke-dasharray="10,5"/>
-  <text x="1302" y="672" text-anchor="middle" font-size="16" fill="#3a2010" font-weight="800">BATHROOM</text>
-  <text x="1302" y="692" text-anchor="middle" font-size="14" fill="#E65100" font-weight="700">UNDER CONST.</text>
-  <text x="1302" y="710" text-anchor="middle" font-size="12" fill="#5a4a30">2 toilets + shower</text>
-  <text x="1302" y="745" text-anchor="middle" font-size="14" fill="#E65100" font-weight="800">NO PERMIT</text>
-  <!-- Violation callout -->
-  <line x1="1340" y1="688" x2="1420" y2="688" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="1420" y="670" width="160" height="42" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="1500" y="688" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">~10' from E line</text>
-  <text x="1500" y="705" text-anchor="middle" font-size="13" fill="#e53e3e">NEEDS 15'</text>
+  <!-- D. BATHROOM BUILDING (UNDER CONSTRUCTION) — ~10' from E property line — NO PERMIT -->
+  <rect x="1500" y="510" width="60" height="70" fill="#FFB74D" fill-opacity="0.8" stroke="#E65100" stroke-width="3" rx="4" stroke-dasharray="8,4"/>
+  <text x="1530" y="533" text-anchor="middle" font-size="12" fill="#3a2010" font-weight="800">BATHROOM</text>
+  <text x="1530" y="548" text-anchor="middle" font-size="10" fill="#E65100" font-weight="700">UNDER CONST.</text>
+  <text x="1530" y="562" text-anchor="middle" font-size="9" fill="#5a4a30">2 toilets + shower</text>
+  <text x="1530" y="586" text-anchor="middle" font-size="11" fill="#E65100" font-weight="800">NO PERMIT</text>
+  <line x1="1560" y1="545" x2="1660" y2="545" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="1660" y="530" width="120" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="1720" y="545" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">~10' from E line</text>
+  <text x="1720" y="559" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 15'</text>
 
-  <!-- ========================================= -->
-  <!-- E. SMALL TRAILER (7'5"×20'5")              -->
-  <!--    East side, south of bathroom             -->
-  <!-- ========================================= -->
-  <rect x="1290" y="770" width="40" height="72" fill="#e57340" fill-opacity="0.75" stroke="#c44a20" stroke-width="3" rx="3"/>
-  <text x="1310" y="806" text-anchor="middle" font-size="10" fill="#fff" font-weight="700" transform="rotate(90, 1310, 806)">TRAILER 7'5"×20'5"</text>
-  <!-- Violation callout -->
-  <line x1="1330" y1="806" x2="1420" y2="806" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="1420" y="788" width="160" height="42" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="1500" y="806" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">6'9" from E line</text>
-  <text x="1500" y="823" text-anchor="middle" font-size="13" fill="#e53e3e">NEEDS 15'</text>
+  <!-- E. SMALL TRAILER (7'5"×20'5") — 6'9" from E property line -->
+  <rect x="1535" y="610" width="30" height="55" fill="#e57340" fill-opacity="0.7" stroke="#c44a20" stroke-width="2.5" rx="3"/>
+  <text x="1550" y="637" text-anchor="middle" font-size="7" fill="#fff" font-weight="700" transform="rotate(90, 1550, 637)">TRAILER 7'5"×20'5"</text>
+  <line x1="1565" y1="637" x2="1660" y2="637" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="1660" y="622" width="120" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="1720" y="637" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">6'9" from E line</text>
+  <text x="1720" y="651" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 15'</text>
 
-  <!-- ========================================= -->
-  <!-- F. BEIGE CONTAINER (40'×8') — near south   -->
-  <!--    Close to Still Forest Dr                -->
-  <!-- ========================================= -->
-  <rect x="680" y="1335" width="130" height="30" fill="#c8b48a" fill-opacity="0.8" stroke="#8a7050" stroke-width="3" rx="3"/>
-  <text x="745" y="1356" text-anchor="middle" font-size="14" fill="#3a2a10" font-weight="700">BEIGE CONTAINER 40'×8'</text>
-  <!-- Violation callout -->
-  <rect x="630" y="1290" width="230" height="40" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="745" y="1308" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">7'1" from road ROW</text>
-  <text x="745" y="1325" text-anchor="middle" font-size="13" fill="#e53e3e">NEEDS 25'</text>
+  <!-- F. BEIGE CONTAINER (40'×8') — near south boundary / Still Forest Dr -->
+  <rect x="1030" y="1240" width="100" height="18" fill="#c8b48a" fill-opacity="0.75" stroke="#8a7050" stroke-width="2" rx="2"/>
+  <text x="1080" y="1254" text-anchor="middle" font-size="9" fill="#3a2a10" font-weight="700">BEIGE CONTAINER 40'×8'</text>
+  <rect x="1000" y="1205" width="160" height="30" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="1080" y="1218" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">7'1" from road ROW</text>
+  <text x="1080" y="1231" text-anchor="middle" font-size="10" fill="#e53e3e">NEEDS 25'</text>
 
 
-  <!-- ===== ANNOTATIONS & INFO LABELS ===== -->
+  <!-- ===== ANNOTATIONS ===== -->
 
-  <!-- ESD Label -->
-  <rect x="40" y="30" width="260" height="95" fill="#2d1b4e" fill-opacity="0.85" rx="8"/>
-  <text x="170" y="58" text-anchor="middle" font-size="20" fill="#c4a0ff" font-weight="700">BCESD #3</text>
-  <text x="170" y="80" text-anchor="middle" font-size="14" fill="#a080d0">Emergency Services Dist.</text>
-  <text x="170" y="100" text-anchor="middle" font-size="12" fill="#38a169" font-weight="600">NOT in Houston Toad Habitat</text>
-  <text x="170" y="118" text-anchor="middle" font-size="12" fill="#38a169" font-weight="600">Flood Zone X (NOT in floodplain)</text>
+  <!-- ESD / Jurisdiction info box — positioned over the survey notes area (left side) -->
+  <rect x="30" y="1350" width="200" height="85" fill="#2d1b4e" fill-opacity="0.9" rx="6"/>
+  <text x="130" y="1372" text-anchor="middle" font-size="16" fill="#c4a0ff" font-weight="700">BCESD #3</text>
+  <text x="130" y="1390" text-anchor="middle" font-size="11" fill="#a080d0">Emergency Services District</text>
+  <text x="130" y="1407" text-anchor="middle" font-size="10" fill="#38a169" font-weight="600">NOT in Houston Toad Habitat</text>
+  <text x="130" y="1422" text-anchor="middle" font-size="10" fill="#38a169" font-weight="600">Flood Zone X (NOT in floodplain)</text>
 
   <!-- Corner Lot indicator -->
-  <rect x="40" y="1420" width="200" height="60" fill="#c87020" fill-opacity="0.85" rx="8"/>
-  <text x="140" y="1448" text-anchor="middle" font-size="22" fill="#fff" font-weight="800">CORNER LOT</text>
-  <text x="140" y="1470" text-anchor="middle" font-size="13" fill="#ffd4a0">2 road frontages = 2× 25' setbacks</text>
+  <rect x="240" y="1350" width="165" height="50" fill="#c87020" fill-opacity="0.9" rx="6"/>
+  <text x="322" y="1373" text-anchor="middle" font-size="16" fill="#fff" font-weight="800">CORNER LOT</text>
+  <text x="322" y="1390" text-anchor="middle" font-size="9" fill="#ffd4a0">2 road frontages = 2× 25' setbacks</text>
 
   <!-- Deck setback callout (deck is visible on survey) -->
-  <line x1="400" y1="530" x2="264" y2="530" stroke="#e53e3e" stroke-width="2"/>
-  <rect x="320" y="500" width="170" height="42" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="405" y="518" text-anchor="middle" font-size="15" fill="#e53e3e" font-weight="700">DECK: 13'10"</text>
-  <text x="405" y="535" text-anchor="middle" font-size="13" fill="#e53e3e">from property line → NEEDS 25'</text>
+  <line x1="770" y1="430" x2="708" y2="430" stroke="#e53e3e" stroke-width="1.5"/>
+  <rect x="740" y="395" width="140" height="35" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="810" y="410" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700">DECK: 13'10"</text>
+  <text x="810" y="424" text-anchor="middle" font-size="10" fill="#e53e3e">from prop. line → NEEDS 25'</text>
 
-  <!-- Sauna OK callout (sauna may be near the deck on survey) -->
-  <rect x="320" y="548" width="150" height="35" fill="#fff" fill-opacity="0.9" rx="4"/>
-  <text x="395" y="564" text-anchor="middle" font-size="14" fill="#38a169" font-weight="700">SAUNA: 30' OK</text>
-  <text x="395" y="578" text-anchor="middle" font-size="12" fill="#38a169">(25' req'd, +5' buffer)</text>
+  <!-- Sauna OK callout -->
+  <rect x="740" y="435" width="115" height="25" fill="#fff" fill-opacity="0.92" rx="4"/>
+  <text x="797" y="448" text-anchor="middle" font-size="11" fill="#38a169" font-weight="700">SAUNA: 30' OK</text>
+  <text x="797" y="458" text-anchor="middle" font-size="9" fill="#38a169">(25' req'd)</text>
 
-  <!-- Title block overlay -->
-  <rect x="1350" y="1420" width="230" height="160" fill="#faf8f4" fill-opacity="0.95" stroke="#c0b0a0" stroke-width="2" rx="8"/>
-  <text x="1465" y="1448" text-anchor="middle" font-size="16" fill="#3a2a10" font-weight="800">160 STILL FOREST DR</text>
-  <text x="1465" y="1468" text-anchor="middle" font-size="12" fill="#5a4a30">Cedar Creek, TX 78612</text>
-  <text x="1465" y="1484" text-anchor="middle" font-size="12" fill="#5a4a30">PID 44401 • Lot 14-B, Block 6</text>
-  <text x="1465" y="1500" text-anchor="middle" font-size="14" fill="#2d5016" font-weight="700">1.7348 Acres (75,133 SF)</text>
-  <text x="1465" y="1518" text-anchor="middle" font-size="11" fill="#5a8a40">Zone X • BCESD #3</text>
-  <text x="1465" y="1534" text-anchor="middle" font-size="11" fill="#c87020" font-weight="600">CORNER LOT</text>
-  <text x="1465" y="1555" text-anchor="middle" font-size="10" fill="#8a7a60">Survey: 4Ward, 2/4/2021</text>
-  <text x="1465" y="1570" text-anchor="middle" font-size="10" fill="#8a7a60">J. Ward RPLS #5811</text>
-
-  <!-- Disclaimer -->
-  <rect x="350" y="1430" width="560" height="40" fill="#faf8f4" fill-opacity="0.9" rx="6"/>
-  <text x="630" y="1450" text-anchor="middle" font-size="12" fill="#8a7a60">PRELIMINARY — NOT TO SCALE — For planning purposes only</text>
-  <text x="630" y="1465" text-anchor="middle" font-size="11" fill="#8a7a60">PE-stamped site plan required for IDP submission to Bastrop County</text>
+  <!-- Disclaimer overlay -->
+  <rect x="560" y="1460" width="430" height="30" fill="#faf8f4" fill-opacity="0.9" rx="4"/>
+  <text x="775" y="1477" text-anchor="middle" font-size="10" fill="#8a7a60">PRELIMINARY — NOT TO SCALE — For planning purposes only — PE-stamped plan required for IDP</text>
 
 </svg>
 </div>
@@ -398,7 +354,7 @@
   </div>
   <div class="legend-card">
     <h3>Base Map Source</h3>
-    <p>Background image is the official survey plat by <strong>4Ward Land Surveying</strong> (Feb 4, 2021, Jason Ward R.P.L.S. #5811). All structures, driveway, house shape, and pond are drawn to scale by the surveyor. Colored overlays show containers, trailers, and bathroom added after survey.</p>
+    <p>Background is the <strong>complete official survey plat</strong> by <strong>4Ward Land Surveying</strong> (Feb 4, 2021, Jason Ward R.P.L.S. #5811) including vicinity map, notes, and title block. Colored overlays show setback zones and structures added after the survey.</p>
   </div>
 </div>
 
@@ -406,9 +362,9 @@
 <div class="notes">
   <h2>Notes &amp; Next Steps</h2>
   <ul>
-    <li><strong>Base Map:</strong> Official survey plat by 4Ward Land Surveying (2/4/2021, Jason Ward R.P.L.S. #5811). House shape, driveway loop, pond, wood building, kennels, deck, and all surveyed structures are shown exactly as drawn by the professional surveyor.</li>
+    <li><strong>Base Map:</strong> Complete official survey plat by 4Ward Land Surveying (2/4/2021, Jason Ward R.P.L.S. #5811) — includes the vicinity map, legal description, surveyor's notes, and title block.</li>
     <li><strong>Colored Overlays:</strong> Red/orange/brown rectangles show containers, trailers, and bathroom building — structures added after the survey was drawn or not included on the plat.</li>
-    <li><strong>Red Hatched Zones:</strong> Setback zones overlaid on the survey: 25' from road ROW (south + west), 15' from property lines (north + east).</li>
+    <li><strong>Red Hatched Zones:</strong> Setback zones starting at the bold black property boundary lines: 25' from road ROW (south + west), 15' from property lines (north + east).</li>
     <li><strong>ESD:</strong> Property is in <strong>BCESD #3</strong> (Bastrop County Emergency Services District #3). ESD letter required for IDP.</li>
     <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain. No floodplain surcharges apply.</li>
     <li><strong>Houston Toad:</strong> Property is NOT in the Houston Toad habitat area. No LPHCP Declination of Coverage needed.</li>
