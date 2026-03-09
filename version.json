@@ -1,12 +1,12 @@
 {
-  "version": "v260309.19 3:02p",
-  "release": 583,
-  "sha": "32a782993",
-  "fullSha": "32a782993f1831c16d0d777b9c7e2736ab40a78c",
+  "version": "v260309.20 3:04p",
+  "release": 584,
+  "sha": "ac099aa9a",
+  "fullSha": "ac099aa9aaf5576ce3761165372f142509abc5a2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:02:27+00",
-  "commits": [{"sha":"32a782993","message":"Fix copy wording: \"paste it below\" not \"copy it\" for connection string","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:04:07+00",
+  "commits": [{"sha":"ac099aa9a","message":"Rewrite Supabase credential gathering section for clarity","author":"Rahul"}]
 }
