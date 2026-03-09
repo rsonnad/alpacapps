@@ -1,12 +1,12 @@
 {
-  "version": "v260309.26 3:52p",
-  "release": 590,
-  "sha": "a20530054",
-  "fullSha": "a20530054072602b92104a597604dc4b8b5b9302",
+  "version": "v260309.27 3:55p",
+  "release": 591,
+  "sha": "10585f8bc",
+  "fullSha": "10585f8bc8ed9dbfad1500f3c0ac2515fbf379ae",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:52:22+00",
-  "commits": [{"sha":"a20530054","message":"Add interactive input fields with URL auto-parsing to calliinstall","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:55:33+00",
+  "commits": [{"sha":"10585f8bc","message":"Add setup wizard step (Step 6) to calliinstall page","author":"Rahul"}]
 }
