@@ -1,12 +1,12 @@
 {
-  "version": "v260309.20 3:04p",
-  "release": 584,
-  "sha": "ac099aa9a",
-  "fullSha": "ac099aa9aaf5576ce3761165372f142509abc5a2",
+  "version": "v260309.21 3:10p",
+  "release": 585,
+  "sha": "a40831dc6",
+  "fullSha": "a40831dc6ae1bc7d3aaa3fc93995f19ff2dfb0ab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:04:07+00",
-  "commits": [{"sha":"ac099aa9a","message":"Rewrite Supabase credential gathering section for clarity","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:10:00+00",
+  "commits": [{"sha":"a40831dc6","message":"Replace static credential block with interactive paste fields","author":"Rahul"}]
 }
