@@ -121,11 +121,12 @@
 <div class="plan-container">
 <!--
   SURVEY REFERENCE: 4Ward Land Surveying, 2/4/2021, Jason Ward R.P.L.S. #5811
-  Layout traced from survey plat + satellite imagery.
+  Layout traced from survey plat + satellite imagery + GIS aerial.
   Structures positioned to match survey relative positions.
   All measurements taken from FENCE POST, not property boundary line.
+  Property is essentially a RECTANGLE tilted ~26deg from cardinal north.
 -->
-<svg viewBox="0 0 700 960" width="700" height="960" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+<svg viewBox="0 0 700 860" width="700" height="860" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
   <defs>
     <pattern id="setbackHatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
       <line x1="0" y1="0" x2="0" y2="8" stroke="#e53e3e" stroke-width="1" opacity="0.15"/>
@@ -136,47 +137,52 @@
   </defs>
 
   <!-- Background -->
-  <rect width="700" height="960" fill="#f7f4ef"/>
+  <rect width="700" height="860" fill="#f7f4ef"/>
 
   <!-- ===== ROADS ===== -->
   <!-- South: Still Forest Dr (CR 329) -->
-  <rect x="50" y="800" width="460" height="55" fill="#d4c8b0" opacity="0.35" rx="2"/>
-  <text x="280" y="832" text-anchor="middle" font-size="11" fill="#5a4a30" font-weight="600">STILL FOREST DRIVE (CR 329) — 60' ROW</text>
-  <line x1="50" y1="800" x2="510" y2="800" stroke="#8a7a60" stroke-width="1.5"/>
+  <rect x="50" y="660" width="460" height="55" fill="#d4c8b0" opacity="0.35" rx="2"/>
+  <text x="280" y="692" text-anchor="middle" font-size="11" fill="#5a4a30" font-weight="600">STILL FOREST DRIVE (CR 329) — 60' ROW</text>
+  <line x1="50" y1="660" x2="510" y2="660" stroke="#8a7a60" stroke-width="1.5"/>
 
   <!-- West: Leisure Lane (CR 331) -->
-  <rect x="18" y="165" width="55" height="640" fill="#d4c8b0" opacity="0.35" rx="2"/>
-  <text x="45" y="500" text-anchor="middle" font-size="11" fill="#5a4a30" font-weight="600" transform="rotate(-90, 45, 500)">LEISURE LANE (CR 331) — 60' ROW</text>
-  <line x1="73" y1="165" x2="73" y2="748" stroke="#8a7a60" stroke-width="1.5"/>
+  <rect x="18" y="165" width="55" height="500" fill="#d4c8b0" opacity="0.35" rx="2"/>
+  <text x="45" y="420" text-anchor="middle" font-size="11" fill="#5a4a30" font-weight="600" transform="rotate(-90, 45, 420)">LEISURE LANE (CR 331) — 60' ROW</text>
+  <line x1="73" y1="165" x2="73" y2="618" stroke="#8a7a60" stroke-width="1.5"/>
 
   <!-- SW corner curve fill -->
-  <path d="M 73,748 Q 60,800 130,800" fill="#d4c8b0" opacity="0.25"/>
+  <path d="M 80,618 Q 72,655 140,660" fill="#d4c8b0" opacity="0.25"/>
 
   <!-- ===== PROPERTY BOUNDARY (dark green dashed) ===== -->
-  <path d="M 73,200 L 440,165 L 460,565 L 445,610 L 250,800 Q 100,800 73,748 Z"
+  <!--
+    Property is essentially a RECTANGLE tilted ~26deg from cardinal north.
+    North: 352.14', East: 399.94' (10' P.U.E. & B.L.), SE jog: 60',
+    South: 187.86', West: 328.51', SW: road intersection curve
+  -->
+  <path d="M 80,220 L 440,178 L 455,558 L 442,600 L 165,640 Q 108,648 80,618 Z"
     fill="none" stroke="#2d5016" stroke-width="3" stroke-dasharray="12,4"/>
 
   <!-- ===== SETBACK LINES (red dashed) ===== -->
 
   <!-- South 25' setback from Still Forest Dr -->
-  <path d="M 85,763 L 440,763" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4" fill="none"/>
-  <polygon points="85,763 440,763 440,800 250,800 115,800 85,780" fill="url(#setbackHatch)" opacity="0.4"/>
-  <text x="280" y="786" text-anchor="middle" font-size="8" fill="#e53e3e" font-weight="500">25' FRONT SETBACK (Still Forest Dr)</text>
+  <path d="M 100,598 L 425,580" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4" fill="none"/>
+  <polygon points="100,598 425,580 442,600 165,640 108,648 80,618 80,598" fill="url(#setbackHatch)" opacity="0.3"/>
+  <text x="270" y="625" text-anchor="middle" font-size="8" fill="#e53e3e" font-weight="500">25' FRONT SETBACK (Still Forest Dr)</text>
 
   <!-- West 25' setback from Leisure Lane -->
-  <line x1="112" y1="200" x2="112" y2="763" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
-  <rect x="73" y="200" width="39" height="548" fill="url(#setbackHatch)" opacity="0.4"/>
-  <text x="93" y="480" font-size="8" fill="#e53e3e" font-weight="600" transform="rotate(-90, 93, 480)">25' SETBACK (Leisure Lane — ROAD)</text>
+  <line x1="118" y1="220" x2="118" y2="618" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <rect x="80" y="220" width="38" height="398" fill="url(#setbackHatch)" opacity="0.4"/>
+  <text x="99" y="420" font-size="8" fill="#e53e3e" font-weight="600" transform="rotate(-90, 99, 420)">25' SETBACK (Leisure Lane — ROAD)</text>
 
   <!-- East 15' setback from east property line -->
-  <line x1="422" y1="178" x2="442" y2="565" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
-  <polygon points="440,165 460,565 442,565 422,178" fill="url(#setbackHatch)" opacity="0.3"/>
-  <text x="438" y="370" font-size="8" fill="#e53e3e" font-weight="500" transform="rotate(84, 438, 370)">15' SIDE SETBACK (East)</text>
+  <line x1="425" y1="190" x2="440" y2="550" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <polygon points="440,178 455,558 440,550 425,190" fill="url(#setbackHatch)" opacity="0.3"/>
+  <text x="445" y="370" font-size="8" fill="#e53e3e" font-weight="500" transform="rotate(84, 445, 370)">15' SIDE SETBACK (East)</text>
 
   <!-- North 15' setback from rear -->
-  <line x1="73" y1="223" x2="440" y2="188" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
-  <polygon points="73,200 440,165 440,188 73,223" fill="url(#setbackHatch)" opacity="0.3"/>
-  <text x="260" y="183" text-anchor="middle" font-size="8" fill="#e53e3e" font-weight="500">15' REAR SETBACK (North)</text>
+  <line x1="80" y1="238" x2="440" y2="196" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <polygon points="80,220 440,178 440,196 80,238" fill="url(#setbackHatch)" opacity="0.3"/>
+  <text x="260" y="195" text-anchor="middle" font-size="8" fill="#e53e3e" font-weight="500">15' REAR SETBACK (North)</text>
 
   <!-- ===== BOUNDARY DIMENSION LABELS ===== -->
   <!-- North: 352.14' -->
@@ -189,14 +195,14 @@
   <text x="475" y="290" font-size="7" fill="#5a8a40" transform="rotate(83, 475, 290)">10' P.U.E. &amp; B.L.</text>
 
   <!-- SE jog: 60.00' -->
-  <text x="468" y="590" font-size="8" fill="#2d5016" font-weight="600">60.00'</text>
-  <text x="468" y="600" font-size="6" fill="#2d5016">jog</text>
+  <text x="462" y="578" font-size="8" fill="#2d5016" font-weight="600">60.00'</text>
+  <text x="462" y="588" font-size="6" fill="#2d5016">jog</text>
 
   <!-- South: 187.86' -->
-  <text x="340" y="818" text-anchor="middle" font-size="9" fill="#2d5016" font-weight="700">~182 ft (South)</text>
+  <text x="300" y="655" text-anchor="middle" font-size="9" fill="#2d5016" font-weight="700">~188' (South)</text>
 
   <!-- West: 328.51' -->
-  <text x="60" y="480" font-size="9" fill="#2d5016" font-weight="700" transform="rotate(-90, 60, 480)">~328 ft (West — Leisure Lane)</text>
+  <text x="60" y="430" font-size="9" fill="#2d5016" font-weight="700" transform="rotate(-90, 60, 430)">328.51' (West — Leisure Lane)</text>
 
   <!-- ===== CONCRETE DRIVEWAY (traced from survey) ===== -->
   <!--
@@ -206,37 +212,37 @@
   -->
 
   <!-- Driveway - WEST branch: south entrance up to house area -->
-  <path d="M 230,800 L 220,740 Q 200,660 185,580 Q 170,500 175,430 Q 180,380 210,350 Q 240,320 290,330"
+  <path d="M 225,655 Q 215,610 200,560 Q 180,490 178,430 Q 180,380 210,350 Q 240,320 290,330"
     stroke="#b8a888" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.3"/>
-  <path d="M 230,800 L 220,740 Q 200,660 185,580 Q 170,500 175,430 Q 180,380 210,350 Q 240,320 290,330"
+  <path d="M 225,655 Q 215,610 200,560 Q 180,490 178,430 Q 180,380 210,350 Q 240,320 290,330"
     stroke="#8a7860" stroke-width="1" fill="none" stroke-dasharray="4,6"/>
 
   <!-- Driveway - EAST branch: from house area south around pond back to entrance -->
-  <path d="M 370,420 Q 385,470 385,520 Q 385,580 370,630 Q 350,700 320,750 L 300,800"
+  <path d="M 370,420 Q 382,460 380,500 Q 375,540 360,575 Q 340,610 305,640 L 285,655"
     stroke="#b8a888" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.3"/>
-  <path d="M 370,420 Q 385,470 385,520 Q 385,580 370,630 Q 350,700 320,750 L 300,800"
+  <path d="M 370,420 Q 382,460 380,500 Q 375,540 360,575 Q 340,610 305,640 L 285,655"
     stroke="#8a7860" stroke-width="1" fill="none" stroke-dasharray="4,6"/>
 
   <!-- Driveway - connecting path north of pond (between house and pond) -->
-  <path d="M 290,445 Q 310,475 340,475 Q 360,465 370,445"
+  <path d="M 290,430 Q 310,460 340,460 Q 360,450 370,430"
     stroke="#b8a888" stroke-width="18" fill="none" opacity="0.25"/>
 
   <!-- Driveway labels -->
-  <text x="175" y="470" font-size="7" fill="#6a5a40" transform="rotate(-80, 175, 470)">CONCRETE DRIVEWAY</text>
-  <text x="365" y="650" font-size="7" fill="#6a5a40" transform="rotate(75, 365, 650)">CONCRETE DRIVEWAY</text>
+  <text x="178" y="460" font-size="7" fill="#6a5a40" transform="rotate(-80, 178, 460)">CONCRETE DRIVEWAY</text>
+  <text x="365" y="560" font-size="7" fill="#6a5a40" transform="rotate(72, 365, 560)">CONCRETE DRIVEWAY</text>
 
   <!-- ===== STONE GATE ENTRANCE (from survey: "Stone Column (Typical)") ===== -->
-  <rect x="222" y="790" width="15" height="10" fill="#8a7050" rx="2"/>
-  <rect x="294" y="790" width="15" height="10" fill="#8a7050" rx="2"/>
-  <text x="265" y="788" text-anchor="middle" font-size="7" fill="#5a4a30" font-weight="500">STONE GATE ENTRANCE</text>
+  <rect x="217" y="648" width="15" height="10" fill="#8a7050" rx="2"/>
+  <rect x="280" y="648" width="15" height="10" fill="#8a7050" rx="2"/>
+  <text x="256" y="645" text-anchor="middle" font-size="7" fill="#5a4a30" font-weight="500">STONE GATE ENTRANCE</text>
 
   <!-- ===== POND (center of property, inside driveway loop — per GIS aerial + survey) ===== -->
-  <ellipse cx="300" cy="560" rx="75" ry="55" fill="#7ab4d4" opacity="0.2" stroke="#5a8ab0" stroke-width="1.5"/>
-  <text x="300" y="564" text-anchor="middle" font-size="10" fill="#4a7a9a" font-weight="500">POND</text>
+  <ellipse cx="285" cy="500" rx="68" ry="48" fill="#7ab4d4" opacity="0.2" stroke="#5a8ab0" stroke-width="1.5"/>
+  <text x="285" y="504" text-anchor="middle" font-size="10" fill="#4a7a9a" font-weight="500">POND</text>
 
   <!-- Flood Zone X marker (confirmed by GIS viewer + survey) -->
-  <text x="220" y="530" font-size="18" fill="#4a7a9a" opacity="0.25" font-weight="700">X</text>
-  <text x="205" y="545" font-size="6" fill="#4a7a9a" opacity="0.5">FLOOD ZONE X</text>
+  <text x="230" y="480" font-size="18" fill="#4a7a9a" opacity="0.25" font-weight="700">X</text>
+  <text x="215" y="495" font-size="6" fill="#4a7a9a" opacity="0.5">FLOOD ZONE X</text>
 
   <!-- ===== STRUCTURES (positioned per survey) ===== -->
 
@@ -369,76 +375,75 @@
   <!-- ──────────────────────────────────────────── -->
   <!-- 8. BATHROOM BUILDING (under construction) — east side — VIOLATION -->
   <!-- ──────────────────────────────────────────── -->
-  <rect x="390" y="480" width="40" height="55" fill="#FFB74D" stroke="#E65100" stroke-width="2" rx="3" stroke-dasharray="6,3"/>
-  <text x="410" y="500" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="700">BATHROOM</text>
-  <text x="410" y="512" text-anchor="middle" font-size="6" fill="#E65100" font-weight="600">UNDER CONST.</text>
-  <text x="410" y="523" text-anchor="middle" font-size="6" fill="#5a4a30">2 toilets + shower</text>
-  <text x="410" y="542" text-anchor="middle" font-size="6" fill="#E65100" font-weight="700">⚠ NO PERMIT</text>
-  <line x1="430" y1="507" x2="470" y2="507" stroke="#e53e3e" stroke-width="1"/>
-  <text x="472" y="503" font-size="7" fill="#e53e3e" font-weight="700">~10'</text>
-  <text x="472" y="513" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
-  <text x="472" y="523" font-size="6" fill="#e53e3e">(from fence)</text>
+  <rect x="390" y="475" width="40" height="50" fill="#FFB74D" stroke="#E65100" stroke-width="2" rx="3" stroke-dasharray="6,3"/>
+  <text x="410" y="494" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="700">BATHROOM</text>
+  <text x="410" y="505" text-anchor="middle" font-size="6" fill="#E65100" font-weight="600">UNDER CONST.</text>
+  <text x="410" y="516" text-anchor="middle" font-size="6" fill="#5a4a30">2 toilets + shower</text>
+  <text x="410" y="530" text-anchor="middle" font-size="6" fill="#E65100" font-weight="700">⚠ NO PERMIT</text>
+  <line x1="430" y1="500" x2="470" y2="500" stroke="#e53e3e" stroke-width="1"/>
+  <text x="472" y="496" font-size="7" fill="#e53e3e" font-weight="700">~10'</text>
+  <text x="472" y="506" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+  <text x="472" y="516" font-size="6" fill="#e53e3e">(from fence)</text>
 
   <!-- ──────────────────────────────────────────── -->
   <!-- 9. SMALL TRAILER (7'5"×20'5") — east side, below bathroom — VIOLATION -->
   <!-- ──────────────────────────────────────────── -->
-  <rect x="410" y="545" width="14" height="38" fill="#e57340" stroke="#c44a20" stroke-width="1.5" rx="2" opacity="0.85"/>
-  <text x="417" y="562" text-anchor="middle" font-size="5.5" fill="#fff" font-weight="600" transform="rotate(90, 417, 562)">SM TRAILER 7'5"×20'5"</text>
-  <line x1="424" y1="564" x2="470" y2="564" stroke="#e53e3e" stroke-width="1"/>
-  <text x="472" y="560" font-size="7" fill="#e53e3e" font-weight="700">6'9"</text>
-  <text x="472" y="570" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
-  <text x="472" y="580" font-size="6" fill="#e53e3e">(from fence)</text>
+  <rect x="412" y="530" width="14" height="35" fill="#e57340" stroke="#c44a20" stroke-width="1.5" rx="2" opacity="0.85"/>
+  <text x="419" y="548" text-anchor="middle" font-size="5.5" fill="#fff" font-weight="600" transform="rotate(90, 419, 548)">SM TRAILER 7'5"×20'5"</text>
+  <line x1="426" y1="547" x2="470" y2="547" stroke="#e53e3e" stroke-width="1"/>
+  <text x="472" y="543" font-size="7" fill="#e53e3e" font-weight="700">6'9"</text>
+  <text x="472" y="553" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+  <text x="472" y="563" font-size="6" fill="#e53e3e">(from fence)</text>
 
   <!-- ──────────────────────────────────────────── -->
   <!-- 10. RED CONTAINER ("Alpaca Playhouse") 40'×8' — SE area — VIOLATION -->
   <!-- ──────────────────────────────────────────── -->
-  <rect x="395" y="680" width="14" height="65" fill="#c62828" stroke="#8b0000" stroke-width="2" rx="2"/>
-  <text x="402" y="710" text-anchor="middle" font-size="5.5" fill="#fff" font-weight="600" transform="rotate(90, 402, 710)">RED CONTAINER 40'×8'</text>
-  <text x="402" y="752" text-anchor="middle" font-size="5" fill="#c62828">"Alpaca Playhouse"</text>
-  <line x1="409" y1="712" x2="470" y2="712" stroke="#e53e3e" stroke-width="1"/>
-  <text x="472" y="708" font-size="7" fill="#e53e3e" font-weight="700">13'6"</text>
-  <text x="472" y="718" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
-  <text x="472" y="728" font-size="6" fill="#e53e3e">(from fence)</text>
+  <rect x="400" y="545" width="14" height="55" fill="#c62828" stroke="#8b0000" stroke-width="2" rx="2"/>
+  <text x="407" y="572" text-anchor="middle" font-size="5.5" fill="#fff" font-weight="600" transform="rotate(90, 407, 572)">RED CONTAINER 40'×8'</text>
+  <text x="407" y="610" text-anchor="middle" font-size="5" fill="#c62828">"Alpaca Playhouse"</text>
+  <line x1="414" y1="572" x2="470" y2="572" stroke="#e53e3e" stroke-width="1"/>
+  <text x="472" y="568" font-size="7" fill="#e53e3e" font-weight="700">13'6"</text>
+  <text x="472" y="578" font-size="6" fill="#e53e3e">⚠ NEEDS 15'</text>
+  <text x="472" y="588" font-size="6" fill="#e53e3e">(from fence)</text>
 
   <!-- ──────────────────────────────────────────── -->
   <!-- 11. BEIGE CONTAINER (40'×8') — near south (Still Forest) — VIOLATION -->
   <!-- ──────────────────────────────────────────── -->
-  <rect x="300" y="778" width="65" height="14" fill="#c8b48a" stroke="#8a7050" stroke-width="1.5" rx="2"/>
-  <text x="332" y="789" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="600">BEIGE 40'×8'</text>
-  <line x1="332" y1="792" x2="332" y2="808" stroke="#e53e3e" stroke-width="1"/>
-  <text x="332" y="815" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="700">7'1" from road</text>
-  <text x="332" y="825" text-anchor="middle" font-size="6" fill="#e53e3e">⚠ NEEDS 25' (from fence)</text>
+  <rect x="215" y="606" width="60" height="14" fill="#c8b48a" stroke="#8a7050" stroke-width="1.5" rx="2"/>
+  <text x="245" y="617" text-anchor="middle" font-size="7" fill="#3a2a10" font-weight="600">BEIGE 40'×8'</text>
+  <line x1="245" y1="620" x2="245" y2="640" stroke="#e53e3e" stroke-width="1"/>
+  <text x="245" y="650" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="700">7'1" from road ⚠ NEEDS 25'</text>
 
   <!-- ===== UTILITIES ===== -->
 
   <!-- Water meter (near front gate on Still Forest Dr) -->
-  <rect x="260" y="788" width="8" height="8" fill="#4299e1" rx="2"/>
-  <text x="255" y="785" text-anchor="end" font-size="6" fill="#4299e1">WATER METER</text>
+  <rect x="250" y="650" width="8" height="8" fill="#4299e1" rx="2"/>
+  <text x="245" y="648" text-anchor="end" font-size="6" fill="#4299e1">WATER METER</text>
 
   <!-- Electric meter (near bathroom / east side) -->
-  <rect x="380" y="545" width="8" height="10" fill="#f6ad55" rx="1"/>
-  <text x="375" y="560" text-anchor="end" font-size="6" fill="#f6ad55">ELEC METER</text>
+  <rect x="380" y="538" width="8" height="10" fill="#f6ad55" rx="1"/>
+  <text x="375" y="553" text-anchor="end" font-size="6" fill="#f6ad55">ELEC METER</text>
 
-  <!-- Power pole (south boundary) -->
-  <circle cx="380" cy="790" r="5" fill="#8a7050" stroke="#5a4a30" stroke-width="1.5"/>
-  <text x="392" y="793" font-size="6" fill="#5a4a30">POWER POLE</text>
+  <!-- Power pole (south boundary near road) -->
+  <circle cx="375" cy="655" r="5" fill="#8a7050" stroke="#5a4a30" stroke-width="1.5"/>
+  <text x="387" y="658" font-size="6" fill="#5a4a30">POWER POLE</text>
 
   <!-- Electrical sub-panels (south of house) -->
   <rect x="360" y="445" width="6" height="8" fill="#f6ad55" rx="1"/>
   <text x="370" y="451" font-size="5" fill="#f6ad55">PANELS</text>
 
   <!-- ===== TREES (from satellite) ===== -->
-  <circle cx="180" cy="620" r="14" fill="#4a7a2a" opacity="0.2"/>
+  <circle cx="180" cy="580" r="14" fill="#4a7a2a" opacity="0.2"/>
   <circle cx="220" cy="250" r="12" fill="#4a7a2a" opacity="0.18"/>
-  <circle cx="155" cy="720" r="16" fill="#4a7a2a" opacity="0.2"/>
+  <circle cx="155" cy="590" r="16" fill="#4a7a2a" opacity="0.2"/>
   <circle cx="370" cy="300" r="10" fill="#4a7a2a" opacity="0.18"/>
-  <circle cx="150" cy="550" r="12" fill="#4a7a2a" opacity="0.2"/>
-  <circle cx="360" cy="750" r="13" fill="#4a7a2a" opacity="0.18"/>
-  <circle cx="140" cy="450" r="11" fill="#4a7a2a" opacity="0.18"/>
-  <circle cx="200" cy="740" r="10" fill="#4a7a2a" opacity="0.2"/>
+  <circle cx="150" cy="490" r="12" fill="#4a7a2a" opacity="0.2"/>
+  <circle cx="340" cy="580" r="13" fill="#4a7a2a" opacity="0.18"/>
+  <circle cx="140" cy="440" r="11" fill="#4a7a2a" opacity="0.18"/>
+  <circle cx="200" cy="605" r="10" fill="#4a7a2a" opacity="0.2"/>
 
   <!-- ===== FENCE (north boundary) ===== -->
-  <line x1="73" y1="200" x2="440" y2="165" stroke="#7a6a50" stroke-width="1.5" opacity="0.4"/>
+  <line x1="73" y1="205" x2="440" y2="168" stroke="#7a6a50" stroke-width="1.5" opacity="0.4"/>
   <text x="170" y="198" font-size="6" fill="#7a6a50">FENCE (NORTH)</text>
 
   <!-- ===== LABELS ===== -->
@@ -452,24 +457,24 @@
   <text x="500" y="465" font-size="7" fill="#8a7a60">(Adjacent — East)</text>
 
   <!-- South neighbor (from GIS: PID 23190, Lot 14-A, 3.233 acres) -->
-  <text x="160" y="770" font-size="7" fill="#8a7a60" font-style="italic">PID 23190 — Lot 14-A, Blk 6 — 3.233 Ac (South)</text>
+  <text x="260" y="730" text-anchor="middle" font-size="7" fill="#8a7a60" font-style="italic">PID 23190 — Lot 14-A, Blk 6 — 3.233 Ac (South)</text>
 
   <!-- West neighbor (from GIS: PID 23206, Lot 16, 4.591 acres) -->
   <text x="20" y="230" font-size="6" fill="#8a7a60" transform="rotate(-90, 20, 230)">PID 23206 — Lot 16 — 4.591 Ac</text>
 
   <!-- FIRM Panel info (from GIS) -->
-  <text x="180" y="680" font-size="6" fill="#6a8a9a" opacity="0.6">FIRM Panel 48021C0190G</text>
-  <text x="180" y="690" font-size="6" fill="#6a8a9a" opacity="0.6">eff. 5/9/2023</text>
+  <text x="140" y="575" font-size="6" fill="#6a8a9a" opacity="0.6">FIRM Panel 48021C0190G</text>
+  <text x="140" y="585" font-size="6" fill="#6a8a9a" opacity="0.6">eff. 5/9/2023</text>
 
   <!-- Corner lot indicator -->
-  <rect x="25" y="805" width="55" height="45" fill="#f6ad55" opacity="0.15" rx="4"/>
-  <text x="52" y="825" text-anchor="middle" font-size="8" fill="#c87020" font-weight="700">CORNER</text>
-  <text x="52" y="837" text-anchor="middle" font-size="7" fill="#c87020">LOT</text>
+  <rect x="25" y="700" width="55" height="40" fill="#f6ad55" opacity="0.15" rx="4"/>
+  <text x="52" y="718" text-anchor="middle" font-size="8" fill="#c87020" font-weight="700">CORNER</text>
+  <text x="52" y="730" text-anchor="middle" font-size="7" fill="#c87020">LOT</text>
 
   <!-- Owner info -->
-  <text x="260" y="650" text-anchor="middle" font-size="8" fill="#8a7a60" font-weight="500">PID 44401 — Lot 14-B, Blk 6</text>
-  <text x="260" y="662" text-anchor="middle" font-size="7" fill="#8a7a60">Owner: Nicole D Reeves</text>
-  <text x="260" y="672" text-anchor="middle" font-size="6" fill="#8a7a60">Doc. No. 202005552, O.P.R.B.C.T.</text>
+  <text x="260" y="575" text-anchor="middle" font-size="8" fill="#8a7a60" font-weight="500">PID 44401 — Lot 14-B, Blk 6</text>
+  <text x="260" y="587" text-anchor="middle" font-size="7" fill="#8a7a60">Owner: Nicole D Reeves</text>
+  <text x="260" y="597" text-anchor="middle" font-size="6" fill="#8a7a60">Doc. No. 202005552, O.P.R.B.C.T.</text>
 
   <!-- North arrow -->
   <g transform="translate(630, 100)">
@@ -494,12 +499,12 @@
   <text x="592" y="360" text-anchor="middle" font-size="6" fill="#5a4a30">Jason Ward R.P.L.S. #5811</text>
 
   <!-- Scale disclaimer -->
-  <text x="73" y="890" font-size="7" fill="#8a7a60">⚠ PRELIMINARY — NOT TO SCALE — For planning purposes only.</text>
-  <text x="73" y="902" font-size="7" fill="#8a7a60">PE-stamped site plan required for IDP submission to Bastrop County.</text>
-  <text x="73" y="914" font-size="7" fill="#8a7a60">Survey: 2/4/2021, 4Ward Land Surveying, Jason Ward R.P.L.S. #5811</text>
-  <text x="73" y="926" font-size="7" fill="#8a7a60">All measurements taken from fence post, not property boundary line.</text>
-  <text x="73" y="938" font-size="7" fill="#8a7a60">Lot grid rotated ~26° from cardinal. Bearings per Texas State Plane, Grid North.</text>
-  <text x="73" y="950" font-size="7" fill="#8a7a60">Photos: 30 site photos taken March 2026 documenting structures &amp; utilities.</text>
+  <text x="73" y="790" font-size="7" fill="#8a7a60">⚠ PRELIMINARY — NOT TO SCALE — For planning purposes only.</text>
+  <text x="73" y="802" font-size="7" fill="#8a7a60">PE-stamped site plan required for IDP submission to Bastrop County.</text>
+  <text x="73" y="814" font-size="7" fill="#8a7a60">Survey: 2/4/2021, 4Ward Land Surveying, Jason Ward R.P.L.S. #5811</text>
+  <text x="73" y="826" font-size="7" fill="#8a7a60">All measurements taken from fence post, not property boundary line.</text>
+  <text x="73" y="838" font-size="7" fill="#8a7a60">Lot grid rotated ~26° from cardinal. Bearings per Texas State Plane, Grid North.</text>
+  <text x="73" y="850" font-size="7" fill="#8a7a60">Photos: 30 site photos taken March 2026 documenting structures &amp; utilities.</text>
 
 </svg>
 </div>
