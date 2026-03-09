@@ -73,10 +73,12 @@ function main() {
       console.error('Failed to read', rel, err.message);
     }
 
-    // Use git log for real last-modified date (not filesystem mtime which resets on checkout)
+    // Use git log for real last-modified date (not filesystem mtime which resets on checkout).
+    // --invert-grep --grep='[skip ci]' excludes CI version-bump commits that touch every
+    // HTML file (rewriting version strings), so we get the actual content-change date.
     try {
       const gitDate = execSync(
-        `git log -1 --format=%aI -- "${path.join('rahulio/pages', rel)}"`,
+        `git log -1 --format=%aI --invert-grep --grep='\\[skip ci\\]' -- "${path.join('rahulio/pages', rel)}"`,
         { encoding: 'utf8', cwd: path.join(__dirname, '..') }
       ).trim();
       if (gitDate) modifiedAt = new Date(gitDate).toISOString();
