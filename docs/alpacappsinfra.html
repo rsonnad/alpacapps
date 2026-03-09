@@ -1446,35 +1446,60 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <li>Choose a <strong>region</strong> close to your users, click <strong>Create new project</strong>, and wait 1-2 minutes</li>
     </ol>
 
-    <h3><span class="step-label step-you">Grab your credentials</span></h3>
-    <p>Once your project is ready, paste the project ref or any Supabase URL below &mdash; the links will update so you can jump to the right pages:</p>
+    <h3><span class="step-label step-paste">Grab your credentials</span></h3>
+    <p>Copy each value from Supabase one at a time and paste it into the matching field. The block at the bottom will build itself &mdash; when you&rsquo;re done, just copy it into Claude Code.</p>
 
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light); padding: 1rem 1.25rem;">
-      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-        <label for="supabase-ref" style="font-weight: 600; white-space: nowrap;">Project ref:</label>
-        <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" style="font-family: inherit; font-size: 0.95rem; padding: 0.6rem 1rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 240px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
+    <div style="display: flex; flex-direction: column; gap: 1rem; margin: 1.25rem 0;">
+
+      <!-- 1. Project ref -->
+      <div style="background: var(--accent-light); border: 1px solid var(--accent); border-radius: 8px; padding: 1rem 1.25rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="supabase-ref" style="font-weight: 600; white-space: nowrap; min-width: 160px;">① Project ref</label>
+          <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" style="font-family: inherit; font-size: 0.95rem; padding: 0.55rem 0.85rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 220px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks(); buildSupabaseBlock()">
+        </div>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.82rem; color: var(--text-muted);">Look at your browser&rsquo;s address bar: <code>supabase.com/dashboard/project/<strong style="color:var(--accent);">abcdefghijk</strong>/...</code> &mdash; the highlighted part is the ref. Or go to <strong>Project Settings</strong> &rarr; <strong>General</strong>.</p>
       </div>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Find this in your browser&rsquo;s address bar: <code>supabase.com/dashboard/project/<strong style="color:var(--accent);">abcdefghijk</strong>/...</code> &mdash; the highlighted part is your ref. Or go to <strong>Project Settings</strong> &rarr; <strong>General</strong>.</p>
+
+      <!-- 2. Anon key -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="supabase-anon" style="font-weight: 600; white-space: nowrap; min-width: 160px;">② Anon public key</label>
+          <input type="text" id="supabase-anon" placeholder="eyJhbGciOi..." style="font-family: monospace; font-size: 0.85rem; padding: 0.55rem 0.85rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 220px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="buildSupabaseBlock()">
+        </div>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.82rem; color: var(--text-muted);">Go to <a id="supabase-api-link" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">API settings &rarr; supabase.com/.../project/<strong id="supabase-api-ref">___</strong>/settings/api</a> &rarr; copy the <strong>anon public</strong> key.</p>
+      </div>
+
+      <!-- 3. Database password -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="supabase-dbpass" style="font-weight: 600; white-space: nowrap; min-width: 160px;">③ Database password</label>
+          <input type="text" id="supabase-dbpass" placeholder="the password you set in step 4" style="font-family: monospace; font-size: 0.85rem; padding: 0.55rem 0.85rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 220px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="buildSupabaseBlock()">
+        </div>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.82rem; color: var(--text-muted);">The password you chose when creating the project. If you forgot it, reset it in <a id="supabase-db-link" href="https://supabase.com/dashboard/project/_/settings/database" target="_blank">Database settings &rarr; supabase.com/.../project/<strong id="supabase-db-ref">___</strong>/settings/database</a>.</p>
+      </div>
+
+      <!-- 4. Connection string -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="supabase-connstr" style="font-weight: 600; white-space: nowrap; min-width: 160px;">④ Connection string</label>
+          <input type="text" id="supabase-connstr" placeholder="postgresql://postgres.abc:...@...pooler.supabase.com:6543/postgres" style="font-family: monospace; font-size: 0.85rem; padding: 0.55rem 0.85rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 220px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="buildSupabaseBlock()">
+        </div>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.82rem; color: var(--text-muted);">Same Database settings page &rarr; click <strong>Connection string</strong> &rarr; select the <strong>Session pooler</strong> tab &rarr; copy the URI string.</p>
+      </div>
+
     </div>
 
-    <ol>
-      <li>Go to <strong>API settings</strong>: <a id="supabase-api-link" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">supabase.com/dashboard/project/<strong id="supabase-api-ref">___</strong>/settings/api</a> &mdash; copy these two values:
-        <ul>
-          <li><strong>Project URL</strong> (looks like <code>https://abcdefghijk.supabase.co</code>)</li>
-          <li><strong>Anon public key</strong> (a long <code>eyJ...</code> string &mdash; safe to use in frontend code)</li>
-        </ul>
-      </li>
-      <li>Go to <strong>Database settings</strong>: <a id="supabase-db-link" href="https://supabase.com/dashboard/project/_/settings/database" target="_blank">supabase.com/dashboard/project/<strong id="supabase-db-ref">___</strong>/settings/database</a> &rarr; click <strong>Connection string</strong> &rarr; select the <strong>Session pooler</strong> tab &rarr; copy the connection string</li>
-    </ol>
-
-    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">Fill in the blanks below, then copy and paste the whole block into Claude Code:</p>
-    <pre data-lang="paste into Claude Code"><code>## Supabase Details
-- Project ref: `<span class="supa-ref">YOUR_PROJECT_REF</span>`
-- Project URL: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co`
-- Anon key: `paste-your-anon-key-here`
-- Database password: `the-password-you-set-in-step-4`
-- Session pooler connection string: `paste-the-full-string-here`</code></pre>
+    <h3><span class="step-label step-paste">Copy this into Claude Code</span></h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">This block auto-fills as you paste values above. Click <strong>Copy</strong> when all fields are filled, then paste it into Claude Code.</p>
+    <div style="position: relative;">
+      <pre id="supabase-cred-block" data-lang="paste into Claude Code" style="white-space: pre-wrap; word-break: break-all;"><code>## Supabase Details
+- Project ref: `___`
+- Project URL: `https://___.supabase.co`
+- Anon key: `___`
+- Database password: `___`
+- Session pooler connection string: `___`</code></pre>
+      <button onclick="copySupabaseBlock(this)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Copy</button>
+    </div>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
     <div class="callout claude" style="position: relative;">
@@ -2385,6 +2410,31 @@ function updateSupabaseLinks() {
     dbLink.href = 'https://supabase.com/dashboard/project/_/settings/database';
     if (authLink) authLink.href = 'https://supabase.com/dashboard/project/_/auth/providers';
   }
+}
+
+// Build the Supabase credential block from individual input fields
+function buildSupabaseBlock() {
+  var ref = document.getElementById('supabase-ref').value.trim() || '___';
+  var anon = document.getElementById('supabase-anon').value.trim() || '___';
+  var dbpass = document.getElementById('supabase-dbpass').value.trim() || '___';
+  var conn = document.getElementById('supabase-connstr').value.trim() || '___';
+  var block = '## Supabase Details\n' +
+    '- Project ref: `' + ref + '`\n' +
+    '- Project URL: `https://' + ref + '.supabase.co`\n' +
+    '- Anon key: `' + anon + '`\n' +
+    '- Database password: `' + dbpass + '`\n' +
+    '- Session pooler connection string: `' + conn + '`';
+  var el = document.querySelector('#supabase-cred-block code');
+  if (el) el.textContent = block;
+}
+
+function copySupabaseBlock(btn) {
+  var el = document.querySelector('#supabase-cred-block code');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
 }
 
 // Download CLAUDE.md (slim directives with on-demand doc index)
