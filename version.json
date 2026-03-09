@@ -1,12 +1,12 @@
 {
-  "version": "v260309.07 10:27a",
-  "release": 571,
-  "sha": "5375d7348",
-  "fullSha": "5375d734894019651fc2ec7e7dc077f5c007f1df",
+  "version": "v260309.08 10:41a",
+  "release": 572,
+  "sha": "4f78220aa",
+  "fullSha": "4f78220aaf939d4e0341d3c8234de71b5576d566",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 15:27:35+00",
-  "commits": [{"sha":"100a820ca","message":"Complete site plan rewrite matching survey layout","author":"Jacqueline Giroux"},{"sha":"cc832728a","message":"Add GIS data: neighboring parcels, flood zone, FIRM panel, pond reposition","author":"Jacqueline Giroux"},{"sha":"5375d7348","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 15:41:16+00",
+  "commits": [{"sha":"5091f1087","message":"Fix site plan: rectangular property boundary with all structures inside","author":"Jacqueline Giroux"},{"sha":"4f78220aa","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
