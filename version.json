@@ -1,12 +1,12 @@
 {
-  "version": "v260309.29 4:37p",
-  "release": 593,
-  "sha": "dd54b370e",
-  "fullSha": "dd54b370e295005713c0ed5a25487b9f9be12bd9",
+  "version": "v260309.30 5:21p",
+  "release": 594,
+  "sha": "cba9bba54",
+  "fullSha": "cba9bba5466d5f6816817828b7ab8c50c9d19dae",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 21:37:51+00",
-  "commits": [{"sha":"dd54b370e","message":"Streamline infra wizard with interactive profile/service picker","author":"Rahul"}]
+  "pushedAt": "2026-03-09 22:21:00+00",
+  "commits": [{"sha":"cba9bba54","message":"feat: add architecture diagram to infra page + fix version stamp on cloned sites","author":"Rahul"}]
 }
