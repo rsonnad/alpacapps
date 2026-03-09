@@ -1,12 +1,12 @@
 {
-  "version": "v260309.08 10:41a",
-  "release": 572,
-  "sha": "4f78220aa",
-  "fullSha": "4f78220aaf939d4e0341d3c8234de71b5576d566",
+  "version": "v260309.09 10:52a",
+  "release": 573,
+  "sha": "cf7615ef5",
+  "fullSha": "cf7615ef51069d68235134220b86d2f3b0832c42",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 15:41:16+00",
-  "commits": [{"sha":"5091f1087","message":"Fix site plan: rectangular property boundary with all structures inside","author":"Jacqueline Giroux"},{"sha":"4f78220aa","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 15:52:50+00",
+  "commits": [{"sha":"ac2dda5f7","message":"Redraw site plan matching survey layout with straight rectangle","author":"Jacqueline Giroux"},{"sha":"cf7615ef5","message":"Restore original v3 site plan per user request","author":"Jacqueline Giroux"}]
 }
