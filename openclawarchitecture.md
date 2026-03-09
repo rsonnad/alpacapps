@@ -1,6 +1,6 @@
 # OpenClaw (Alpaclaw) — System Architecture
 
-> **Alpaclaw** is the operational AI agent for AlpacApps Residency, powered by [OpenClaw](https://github.com/openclaw/openclaw) and hosted on a Hostinger KVM 4 VPS.
+> **Alpaclaw** is the operational AI agent for Alpaca Playhouse, powered by [OpenClaw](https://github.com/openclaw/openclaw) and hosted on a Hostinger KVM 4 VPS.
 
 ## Overview
 
@@ -56,7 +56,7 @@ Alpaclaw handles property management automation: resident communications, smart 
 | **Name** | Alpaclaw |
 | **Emoji** | 🦙 |
 | **Creature** | Alpaca |
-| **Role** | Operations orchestrator for AlpacApps Residency |
+| **Role** | Operations orchestrator for Alpaca Playhouse |
 | **Primary Model** | Gemini 2.5 Flash (via Google AI) |
 | **Fallback** | Gemini 2.5 Flash Lite |
 | **Deep Reasoning** | Gemini 2.5 Pro (for complex tasks) |

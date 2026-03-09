@@ -2352,7 +2352,7 @@ async function sendTenantReceipt(
         </div>
 
         <p style="color:#999;font-size:0.8rem;margin-top:20px;text-align:center;">
-          AlpacApps Residency &bull; This is an automated receipt.
+          Alpaca Playhouse &bull; This is an automated receipt.
         </p>
       </div>
     </div>

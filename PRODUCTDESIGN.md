@@ -6,7 +6,7 @@ This document captures the **why** behind how AlpacApps has been built. It cover
 
 ## 1. What AlpacApps Is
 
-AlpacApps is a property management system built for **AlpacApps Residency** (a co-living property in Cedar Creek, TX). It handles spaces, tenants, bookings, payments, smart home control, and an AI concierge (PAI).
+AlpacApps is a property management system built for **Alpaca Playhouse** (a co-living property in Cedar Creek, TX). It handles spaces, tenants, bookings, payments, smart home control, and an AI concierge (PAI).
 
 The product was purpose-built for one property. Multi-tenancy is a future consideration (see `docs/MULTI_TENANCY_EFFORT_ASSESSMENT.md`) but every decision today optimizes for the single-property experience first.
 

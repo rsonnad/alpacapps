@@ -375,14 +375,14 @@ function getTemplatePreview(templateContent) {
 // Default template for initial setup
 const DEFAULT_TEMPLATE = `# RESIDENTIAL LEASE AGREEMENT
 
-**AlpacApps Residency**
+**Alpaca Playhouse**
 160 Still Forest Drive, Cedar Creek, TX 78612
 
 ---
 
 This Residential Lease Agreement ("Agreement") is entered into on **{{signing_date}}** between:
 
-**LANDLORD:** AlpacApps Residency ("Landlord")
+**LANDLORD:** Alpaca Playhouse ("Landlord")
 
 **TENANT:** {{tenant_name}} ("Tenant")
 - Email: {{tenant_email}}
@@ -458,7 +458,7 @@ By signing below, both parties agree to the terms of this Lease Agreement.
 
 Signature: _________________________
 
-Name: AlpacApps Residency
+Name: Alpaca Playhouse
 
 Date: _________________________
 
@@ -663,7 +663,7 @@ Date: _________________________
 
 const DEFAULT_VEHICLE_RENTAL = `# VEHICLE RENTAL AGREEMENT
 
-**AlpacApps Residency**
+**Alpaca Playhouse**
 160 Still Forest Drive, Cedar Creek, TX 78612
 
 ---

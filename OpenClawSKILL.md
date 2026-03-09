@@ -1,6 +1,6 @@
 # AlpacApps Property Management Skill
 
-Manage the AlpacApps Residency property system - spaces, tenants, photos, and bookings.
+Manage the Alpaca Playhouse property system - spaces, tenants, photos, and bookings.
 
 ## Configuration
 

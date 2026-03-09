@@ -1,6 +1,6 @@
 # AlpacApps Ops
 
-Property management UI for AlpacApps Residency.
+Property management UI for Alpaca Playhouse.
 
 ## Setup
 

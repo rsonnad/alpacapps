@@ -1,7 +1,7 @@
 {
   "name": "genalpaca-admin",
   "version": "1.0.0",
-  "description": "Property management UI for AlpacApps Residency.",
+  "description": "Property management UI for Alpaca Playhouse.",
   "main": "app.js",
   "directories": {
     "doc": "docs"

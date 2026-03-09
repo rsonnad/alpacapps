@@ -4,7 +4,7 @@ Comprehensive documentation for the AlpacApps property management system.
 
 ## Overview
 
-AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, Cedar Creek, TX). The system tracks spaces, tenants, bookings, payments, and photos.
+AlpacApps manages rental spaces at Alpaca Playhouse (160 Still Forest Drive, Cedar Creek, TX). The system tracks spaces, tenants, bookings, payments, and photos.
 
 ## Components
 

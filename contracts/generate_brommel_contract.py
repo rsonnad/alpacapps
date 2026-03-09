@@ -123,7 +123,7 @@ def build_contract():
 
     # ── HEADER ──
     story.append(Paragraph("CAR RENTAL AGREEMENT", styles['ContractTitle']))
-    story.append(Paragraph("AlpacApps Residency &bull; 160 Still Forest Drive, Cedar Creek, TX 78612", styles['ContractSubtitle']))
+    story.append(Paragraph("Alpaca Playhouse &bull; 160 Still Forest Drive, Cedar Creek, TX 78612", styles['ContractSubtitle']))
     story.append(hr())
 
     # ── INTRO ──
@@ -471,7 +471,7 @@ def build_contract():
         leftMargin=1 * inch,
         rightMargin=1 * inch,
         title="Car Rental Agreement - Juston Brommel",
-        author="AlpacApps Residency",
+        author="Alpaca Playhouse",
     )
     doc.build(story)
     print(f"PDF generated: {OUTPUT_PATH}")
