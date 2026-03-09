@@ -968,22 +968,109 @@
     <strong>The philosophy:</strong> You set up the (mostly free) vendor accounts and gather credentials. Then tell Claude Code what you have and what you want &mdash; it handles all the terminal work: database migrations, CLI setup, edge function deployment, git pushes.
   </div>
 
-  <!-- Two-profile callout -->
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
-    <div style="background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow);">
+  <!-- Profile Picker -->
+  <p style="font-weight: 600; font-size: 1.05rem; margin-bottom: 0.75rem; text-align: center;">What are you building?</p>
+  <div id="profile-picker" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+    <button onclick="selectProfile('property')" id="profile-property" class="profile-card" style="background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow); cursor: pointer; text-align: left; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s;">
       <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent);">Property Management</div>
       <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Full stack &mdash; spaces, tenants, devices, events, smart home, bookings. Everything you need to run a rental property or co-living space.</p>
+    </button>
+    <button onclick="selectProfile('personal')" id="profile-personal" class="profile-card" style="background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow); cursor: pointer; text-align: left; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s;">
+      <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent);">Personal / Business</div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">SaaS apps, portfolios, CRMs, booking systems, personal tools &mdash; clean framework without property modules.</p>
+    </button>
+  </div>
+  <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; margin: 0 0 1rem 0;">Both profiles use the same template repo. The setup wizard tailors the project for you.</p>
+
+  <!-- Service picker (shown after Personal/Business is selected) -->
+  <div id="service-picker" style="display: none; background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; box-shadow: var(--shadow);">
+    <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">Which services do you want to set up now?</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">GitHub Pages, Supabase, and Claude Code are always included. Pick what else you need &mdash; you can add more later.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+
+      <!-- Recommended -->
+      <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--success); margin: 0.25rem 0 0.15rem;">Recommended</div>
+      <label class="svc-pick svc-pick--recommended" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border: 2px solid var(--success); border-radius: 8px; background: var(--success-light); cursor: pointer;">
+        <input type="checkbox" checked data-pick="resend" onchange="updatePickedServices()" style="width: 18px; height: 18px; accent-color: var(--success);">
+        <span style="flex: 1;">
+          <span style="font-weight: 600;">Resend</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);"> &mdash; Transactional email (3,000/mo free)</span>
+        </span>
+        <span class="cost-badge cost-free" style="font-size: 0.75rem;">Free</span>
+      </label>
+
+      <!-- Nice to have -->
+      <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin: 0.75rem 0 0.15rem;">Nice to have</div>
+      <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg-warm); cursor: pointer;">
+        <input type="checkbox" data-pick="google-auth" onchange="updatePickedServices()" style="width: 18px; height: 18px; accent-color: var(--accent);">
+        <span style="flex: 1;">
+          <span style="font-weight: 600;">Google Sign-In</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);"> &mdash; OAuth user login</span>
+        </span>
+        <span class="cost-badge cost-free" style="font-size: 0.75rem;">Free</span>
+      </label>
+      <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg-warm); cursor: pointer;">
+        <input type="checkbox" data-pick="gemini" onchange="updatePickedServices()" style="width: 18px; height: 18px; accent-color: var(--accent);">
+        <span style="flex: 1;">
+          <span style="font-weight: 600;">Google Gemini</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);"> &mdash; AI-powered features</span>
+        </span>
+        <span class="cost-badge cost-free" style="font-size: 0.75rem;">Free</span>
+      </label>
+
+      <!-- Add later -->
+      <details style="margin-top: 0.5rem;">
+        <summary style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer; padding: 0.25rem 0;">Show more services (add anytime later)</summary>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+          <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">
+            <input type="checkbox" data-pick="telnyx" onchange="updatePickedServices()" style="width: 16px; height: 16px;">
+            <span style="flex: 1; font-size: 0.9rem;"><strong>Telnyx</strong> &mdash; SMS notifications</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">~$0.004/SMS</span>
+          </label>
+          <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">
+            <input type="checkbox" data-pick="square" onchange="updatePickedServices()" style="width: 16px; height: 16px;">
+            <span style="flex: 1; font-size: 0.9rem;"><strong>Square</strong> &mdash; Payment processing</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">2.9% + 30&cent;</span>
+          </label>
+          <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">
+            <input type="checkbox" data-pick="stripe" onchange="updatePickedServices()" style="width: 16px; height: 16px;">
+            <span style="flex: 1; font-size: 0.9rem;"><strong>Stripe</strong> &mdash; ACH &amp; card payments</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">0.8%&ndash;2.9%</span>
+          </label>
+          <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">
+            <input type="checkbox" data-pick="signwell" onchange="updatePickedServices()" style="width: 16px; height: 16px;">
+            <span style="flex: 1; font-size: 0.9rem;"><strong>SignWell</strong> &mdash; E-signatures</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Free</span>
+          </label>
+          <label class="svc-pick" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">
+            <input type="checkbox" data-pick="cloudflare-r2" onchange="updatePickedServices()" style="width: 16px; height: 16px;">
+            <span style="flex: 1; font-size: 0.9rem;"><strong>Cloudflare R2</strong> &mdash; Object storage (10 GB free)</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Free</span>
+          </label>
+        </div>
+      </details>
     </div>
-    <div style="background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow);">
-      <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent);">General AI Enablement</div>
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Core framework &mdash; auth, payments, email, permissions, accounting, web pages. Build anything: a SaaS, personal tool, booking system, CRM, portfolio, or side project. The setup wizard strips property-specific overhead so you start clean.</p>
+
+    <!-- Picked summary + scroll cue -->
+    <div id="picked-summary" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem;">
+      <strong>Your setup path:</strong> <span id="picked-list">GitHub Pages &rarr; Claude Code &rarr; Supabase &rarr; Resend</span>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.35rem 0 0;">Follow the steps below in order. Only the sections you picked will be highlighted.</p>
     </div>
   </div>
-  <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; margin: -1.5rem 0 2rem 0;">Both profiles use the same template repo. The setup wizard asks what you're building and tailors the project for you &mdash; removing unused code, generating focused documentation, and configuring Claude Code to ignore irrelevant files.</p>
+
+  <!-- Property profile message -->
+  <div id="property-message" style="display: none; background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; box-shadow: var(--shadow);">
+    <p style="font-weight: 600; margin-bottom: 0.5rem;">Property Management includes everything.</p>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">The setup wizard will configure all services for a full property management stack &mdash; spaces, tenants, bookings, smart home, payments, email, SMS, and more. Follow all the steps below in order.</p>
+  </div>
 
   <style>
+    .profile-card:hover { border-color: var(--accent) !important; box-shadow: 0 2px 8px rgba(201,168,124,0.2) !important; }
+    .profile-card.active { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(201,168,124,0.2) !important; }
+    .svc-pick:hover { background: var(--accent-light) !important; }
     @media (max-width: 640px) {
-      .container > div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+      #profile-picker { grid-template-columns: 1fr !important; }
     }
   </style>
 
@@ -1409,19 +1496,8 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
 
     <div style="background: rgba(217,119,6,0.06); border: 2px solid rgba(217,119,6,0.3); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1rem 0;">
-      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">The wizard asks: &ldquo;What are you building?&rdquo;</p>
-      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">Based on your answer, it configures your project as one of two profiles:</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem;">
-          <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--text);">Property Management</p>
-          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">Renters, bookings, events, smart home devices, resident portal, Airbnb sync &mdash; everything for managing physical spaces.</p>
-        </div>
-        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem;">
-          <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--text);">Personal / Business</p>
-          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">SaaS apps, portfolios, CRMs, booking systems, personal tools &mdash; clean framework without property modules.</p>
-        </div>
-      </div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.75rem 0 0;">It then asks which optional services you need (email, SMS, payments, e-signatures, AI, etc.), prunes unused modules, configures <code>.claudeignore</code>, creates your database tables, and pushes everything.</p>
+      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">The wizard configures your project based on the profile you picked above.</p>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">It prunes unused modules, configures <code>.claudeignore</code>, creates your database tables, and pushes everything. If you picked <strong>Personal / Business</strong>, only the services you selected will be set up.</p>
     </div>
 
     <div class="callout warning" style="font-size: 0.85rem; border-color: #EF4444;">
@@ -2523,6 +2599,89 @@ document.querySelectorAll('.toc a[href^="#"]').forEach(function(a) {
   });
 });
 openHashTarget();
+
+// ---- Profile Picker & Service Selection ----
+var selectedProfile = null;
+
+// Map service-picker data-pick values to section IDs
+var pickToSection = {
+  'resend': 'resend',
+  'google-auth': 'google-auth',
+  'gemini': 'gemini',
+  'telnyx': 'telnyx',
+  'square': 'square',
+  'stripe': 'stripe',
+  'signwell': 'signwell',
+  'cloudflare-r2': 'cloudflare-r2-setup'
+};
+
+// Map service-picker data-pick values to display labels
+var pickLabels = {
+  'resend': 'Resend',
+  'google-auth': 'Google Sign-In',
+  'gemini': 'Google Gemini',
+  'telnyx': 'Telnyx',
+  'square': 'Square',
+  'stripe': 'Stripe',
+  'signwell': 'SignWell',
+  'cloudflare-r2': 'Cloudflare R2'
+};
+
+function selectProfile(profile) {
+  selectedProfile = profile;
+  // Update card styles
+  document.getElementById('profile-property').classList.toggle('active', profile === 'property');
+  document.getElementById('profile-personal').classList.toggle('active', profile === 'personal');
+  // Show/hide panels
+  document.getElementById('service-picker').style.display = profile === 'personal' ? 'block' : 'none';
+  document.getElementById('property-message').style.display = profile === 'property' ? 'block' : 'none';
+
+  if (profile === 'personal') {
+    updatePickedServices();
+  } else {
+    // Property: remove all dim styling, all sections relevant
+    document.querySelectorAll('details.section').forEach(function(d) {
+      d.style.opacity = '';
+      d.style.borderLeftColor = '';
+    });
+  }
+}
+
+function updatePickedServices() {
+  // Build the picked list string
+  var picks = [];
+  document.querySelectorAll('#service-picker input[data-pick]').forEach(function(cb) {
+    if (cb.checked) picks.push(cb.dataset.pick);
+  });
+
+  var parts = ['GitHub Pages', 'Claude Code', 'Supabase'];
+  picks.forEach(function(p) { parts.push(pickLabels[p] || p); });
+  document.getElementById('picked-list').textContent = parts.join(' \u2192 ');
+
+  // Highlight/dim sections based on picks
+  // Always-visible sections: github, claude-code, supabase, architecture, checklist, template
+  var alwaysShow = ['github', 'claude-code', 'supabase', 'architecture', 'checklist', 'template'];
+  var pickedSections = picks.map(function(p) { return pickToSection[p]; }).filter(Boolean);
+  var allVisible = alwaysShow.concat(pickedSections);
+
+  document.querySelectorAll('details.section').forEach(function(d) {
+    var id = d.id;
+    if (!id) return;
+    if (allVisible.indexOf(id) !== -1) {
+      d.style.opacity = '';
+      d.style.borderLeft = '';
+    } else {
+      d.style.opacity = '0.4';
+      d.style.borderLeft = '3px solid var(--border)';
+    }
+  });
+
+  // Also sync the cost calculator checkboxes to match picks
+  document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
+    cb.checked = picks.indexOf(cb.dataset.svc) !== -1;
+  });
+  recalcCost();
+}
 
 // Public header is initialized by public-shell.js
 </script>
