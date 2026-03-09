@@ -1,12 +1,12 @@
 {
-  "version": "v260308.24 10:10p",
-  "release": 560,
-  "sha": "75aef8af4",
-  "fullSha": "75aef8af4f9c961e2722864b3e21621f871f4c6c",
+  "version": "v260308.25 10:14p",
+  "release": 561,
+  "sha": "eaed5ee11",
+  "fullSha": "eaed5ee11657791e98a4ec2232af3daff1b779fa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 03:10:31+00",
-  "commits": [{"sha":"75aef8af4","message":"Update spaces/ical/skyloft.ics [automated]","author":"Rahul"}]
+  "pushedAt": "2026-03-09 03:14:13+00",
+  "commits": [{"sha":"831311ffb","message":"Increase ninja workshop capacity from 6 to 10 spots","author":"Rahul"},{"sha":"eaed5ee11","message":"Merge branch 'angry-goodall'","author":"Rahul"}]
 }
