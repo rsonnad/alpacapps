@@ -1,12 +1,12 @@
 {
-  "version": "v260309.03 12:39a",
-  "release": 567,
-  "sha": "21813affc",
-  "fullSha": "21813affca3d86cfe3d2ac54c61727650e977550",
-  "actor": "rsonnad",
+  "version": "v260309.04 9:26a",
+  "release": 568,
+  "sha": "f09f7ac13",
+  "fullSha": "f09f7ac1313bb76c5c3398d5d6e462928f0b7208",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 05:39:07+00",
-  "commits": [{"sha":"21813affc","message":"Prevent duplicate ninja signups: unique constraint + form handling","author":"Rahul"}]
+  "pushedAt": "2026-03-09 14:26:07+00",
+  "commits": [{"sha":"9b277a04d","message":"Correct site plan: corner lot, structure orientations, survey dimensions","author":"Jacqueline Giroux"},{"sha":"f09f7ac13","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
