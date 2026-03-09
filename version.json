@@ -1,12 +1,12 @@
 {
-  "version": "v260309.06 10:19a",
-  "release": 570,
-  "sha": "6a3b3fbf5",
-  "fullSha": "6a3b3fbf56d53aa57bb8ffd1955d40667cb80dd4",
+  "version": "v260309.07 10:27a",
+  "release": 571,
+  "sha": "5375d7348",
+  "fullSha": "5375d734894019651fc2ec7e7dc077f5c007f1df",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 15:19:30+00",
-  "commits": [{"sha":"6a3b3fbf5","message":"Complete site plan rewrite matching survey layout","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 15:27:35+00",
+  "commits": [{"sha":"100a820ca","message":"Complete site plan rewrite matching survey layout","author":"Jacqueline Giroux"},{"sha":"cc832728a","message":"Add GIS data: neighboring parcels, flood zone, FIRM panel, pond reposition","author":"Jacqueline Giroux"},{"sha":"5375d7348","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
