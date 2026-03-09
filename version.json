@@ -1,12 +1,12 @@
 {
-  "version": "v260309.13 12:22p",
-  "release": 577,
-  "sha": "2d7284f7c",
-  "fullSha": "2d7284f7c5bd2897add2c87bddd8fba37ecb23d2",
+  "version": "v260309.14 12:33p",
+  "release": 578,
+  "sha": "6bfc1ae3d",
+  "fullSha": "6bfc1ae3df4bd0c0c951f3c89b655a2f6a162700",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 17:22:55+00",
-  "commits": [{"sha":"5d947ed6e","message":"Site plan: use survey as base, add overlays, ESD3 info, remove fence refs","author":"Jacqueline Giroux"},{"sha":"e94a615a6","message":"Fix setback zone alignment to match bold black property boundary lines","author":"Jacqueline Giroux"},{"sha":"f4070cb46","message":"Use full survey plat as site plan background (2400x1600)","author":"Jacqueline Giroux"},{"sha":"84dc5e2cf","message":"Use portrait crop of survey for site plan — full property visible","author":"Jacqueline Giroux"},{"sha":"2d7284f7c","message":"Merge portrait survey site plan to main","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 17:33:59+00",
+  "commits": [{"sha":"bc4d5e043","message":"Replace site plan with clean full survey — remove all structure overlays","author":"Jacqueline Giroux"},{"sha":"6bfc1ae3d","message":"Merge clean survey site plan to main","author":"Jacqueline Giroux"}]
 }
