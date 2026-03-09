@@ -1,12 +1,12 @@
 {
-  "version": "v260309.28 3:57p",
-  "release": 592,
-  "sha": "f6da32f31",
-  "fullSha": "f6da32f317f721ffe1d818701c32ee5ec8df0159",
+  "version": "v260309.29 4:37p",
+  "release": 593,
+  "sha": "dd54b370e",
+  "fullSha": "dd54b370e295005713c0ed5a25487b9f9be12bd9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:57:37+00",
-  "commits": [{"sha":"f6da32f31","message":"Make setup wizard step more prominent on infra page","author":"Rahul"}]
+  "pushedAt": "2026-03-09 21:37:51+00",
+  "commits": [{"sha":"dd54b370e","message":"Streamline infra wizard with interactive profile/service picker","author":"Rahul"}]
 }
