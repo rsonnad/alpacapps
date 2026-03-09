@@ -1,12 +1,12 @@
 {
-  "version": "v260309.17 2:05p",
-  "release": 581,
-  "sha": "c282a17c0",
-  "fullSha": "c282a17c0e9ca94e961ad3ad0b67df551e47f8b1",
+  "version": "v260309.18 2:58p",
+  "release": 582,
+  "sha": "ce251bb03",
+  "fullSha": "ce251bb03f06321eb4649bb3457d38516288969b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 19:05:02+00",
-  "commits": [{"sha":"c282a17c0","message":"Restore Claude referral link (free week) to infra page","author":"Rahul"}]
+  "pushedAt": "2026-03-09 19:58:25+00",
+  "commits": [{"sha":"ce251bb03","message":"Auto-extract Supabase project ref from pasted URLs","author":"Rahul"}]
 }
