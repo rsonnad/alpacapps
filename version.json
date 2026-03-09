@@ -1,12 +1,12 @@
 {
-  "version": "v260309.27 3:55p",
-  "release": 591,
-  "sha": "10585f8bc",
-  "fullSha": "10585f8bc8ed9dbfad1500f3c0ac2515fbf379ae",
+  "version": "v260309.28 3:57p",
+  "release": 592,
+  "sha": "f6da32f31",
+  "fullSha": "f6da32f317f721ffe1d818701c32ee5ec8df0159",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:55:33+00",
-  "commits": [{"sha":"10585f8bc","message":"Add setup wizard step (Step 6) to calliinstall page","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:57:37+00",
+  "commits": [{"sha":"f6da32f31","message":"Make setup wizard step more prominent on infra page","author":"Rahul"}]
 }
