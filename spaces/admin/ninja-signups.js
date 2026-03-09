@@ -1,10 +1,10 @@
-// Ninja Workshop Signups — list who signed up; show when closed (6 spots)
+// Ninja Workshop Signups — list who signed up; show when closed (10 spots)
 
 import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
 const EVENT_ID = 'ai-ninja-workshop-2026-03-09';
-const MAX_SPOTS = 6;
+const MAX_SPOTS = 10;
 
 let loaded = false;
 
