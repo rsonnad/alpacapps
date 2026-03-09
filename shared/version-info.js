@@ -73,15 +73,25 @@ function rNum(n) {
 function findVersionSpan() {
   // Match vYYMMDD.NN (primary) or r000000000 (legacy)
   const pat = /^(v\d{6}\.\d{2}|r\d{9})/;
+  const versionClasses = [
+    '.aap-header__version',
+    '.site-nav__version',
+    '.login-card__version',
+  ];
   const candidates = [
-    ...document.querySelectorAll('.aap-header__version'),
-    ...document.querySelectorAll('.site-nav__version'),
-    ...document.querySelectorAll('.login-card__version'),
+    ...document.querySelectorAll(versionClasses.join(',')),
     ...document.querySelectorAll('.header-left span'),
   ];
+  // First pass: look for spans that already contain a version string
   for (const el of candidates) if (pat.test(el.textContent.trim())) return el;
   for (const span of document.querySelectorAll('span'))
     if (pat.test(span.textContent.trim())) return span;
+  // Second pass: return the first empty/placeholder span with a known version class
+  // so setupVersionInfo() can populate it from /version.json at runtime
+  for (const el of candidates) {
+    const txt = el.textContent.trim();
+    if (!txt || txt === '—' || txt === '--') return el;
+  }
   return null;
 }
 
