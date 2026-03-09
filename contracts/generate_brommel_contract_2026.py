@@ -351,8 +351,8 @@ def build_contract():
     ))
     story.append(Paragraph(
         "Either Party may terminate this Agreement by providing <b>thirty (30) days' written notice</b> "
-        "to the other Party via email. Upon proper notice, the Agreement will terminate at the end of "
-        "the next full calendar month following receipt of the notice.",
+        "to the other Party via email. The Agreement will terminate thirty (30) days from the date "
+        "the notice is received.",
         styles['Body']
     ))
 
