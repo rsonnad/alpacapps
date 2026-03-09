@@ -1,12 +1,12 @@
 {
-  "version": "v260309.09 10:52a",
-  "release": 573,
-  "sha": "cf7615ef5",
-  "fullSha": "cf7615ef51069d68235134220b86d2f3b0832c42",
+  "version": "v260309.10 11:10a",
+  "release": 574,
+  "sha": "a7cd314d8",
+  "fullSha": "a7cd314d8baf14b418583a0b3a5856171f41ec34",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 15:52:50+00",
-  "commits": [{"sha":"ac2dda5f7","message":"Redraw site plan matching survey layout with straight rectangle","author":"Jacqueline Giroux"},{"sha":"cf7615ef5","message":"Restore original v3 site plan per user request","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 16:10:44+00",
+  "commits": [{"sha":"52323a3da","message":"Redraw site plan matching survey layout with straight rectangle","author":"Jacqueline Giroux"},{"sha":"7c6412813","message":"Restore original v3 site plan per user request","author":"Jacqueline Giroux"},{"sha":"371fdf8b1","message":"Redraw site plan from scratch using survey, GIS aerial, and Google Earth","author":"Jacqueline Giroux"},{"sha":"a7cd314d8","message":"Merge: use new site plan from worktree (complete rewrite)","author":"Jacqueline Giroux"}]
 }
