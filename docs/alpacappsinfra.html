@@ -1295,7 +1295,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
       <li>In your new repo, go to <strong>Settings</strong> (gear icon near the top)</li>
       <li>Click <strong>Pages</strong> in the left sidebar</li>
       <li>Under "Source," select <strong>Deploy from a branch</strong> &rarr; <strong>main</strong> &rarr; <strong>/ (root)</strong> &rarr; <strong>Save</strong></li>
-      <li>Wait 1&ndash;2 minutes. Your site is live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code></li>
+      <li>Wait 1&ndash;2 minutes. Your site is live at <code class="gh-pages-url">https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code></li>
     </ol>
 
     <h3><span class="step-label step-you">Download the project to your computer</span></h3>
@@ -1873,7 +1873,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     <div class="section-body">
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
-      <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
+      <strong>No rush on this step.</strong> Your site is already live at <code class="gh-pages-url">https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
     </div>
 
     <h3><span class="step-label step-you">1. Buy a domain</span></h3>
@@ -1910,7 +1910,7 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.109.153</code></td></tr>
         <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.110.153</code></td></tr>
         <tr><td><code>A</code></td><td><code>@</code></td><td><code>185.199.111.153</code></td></tr>
-        <tr><td><code>CNAME</code></td><td><code>www</code></td><td><code>&lt;username&gt;.github.io</code></td></tr>
+        <tr><td><code>CNAME</code></td><td><code>www</code></td><td><code class="gh-cname-value">&lt;username&gt;.github.io</code></td></tr>
       </tbody>
     </table>
 
@@ -2319,13 +2319,17 @@ function copyPrompt(btn) {
   });
 }
 
-// Clone commands with dynamic project name
+// Clone commands with dynamic project name + update all path placeholders
 function updateCloneCommands() {
   var username = document.getElementById('github-username').value.trim() || 'USERNAME';
   var name = document.getElementById('clone-project-name').value.trim() || 'my-salon-app';
   var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   document.getElementById('clone-commands').textContent =
     'git clone https://github.com/' + username + '/' + slug + '.git\ncd ' + slug;
+  // Update GitHub Pages URL placeholders throughout the page
+  var pagesUrl = 'https://' + username + '.github.io/' + slug + '/';
+  document.querySelectorAll('.gh-pages-url').forEach(function(el) { el.textContent = pagesUrl; });
+  document.querySelectorAll('.gh-cname-value').forEach(function(el) { el.textContent = username + '.github.io'; });
   // Clear previous check result when name changes
   document.getElementById('repo-check-result').textContent = '';
 }
@@ -2348,9 +2352,11 @@ function checkRepoName() {
   fetch('https://api.github.com/repos/' + username + '/' + slug)
     .then(function(r) {
       if (r.status === 404) {
+        updateCloneCommands();
         result.innerHTML = '<span style="color:var(--success); font-weight:600;">\u2713 "' + slug + '" is available for ' + username + '</span>';
       } else if (r.ok) {
-        result.innerHTML = '<span style="color:#c0392b; font-weight:600;">\u2717 "' + slug + '" is already taken \u2014 choose a different name</span>';
+        updateCloneCommands();
+        result.innerHTML = '<span style="color:var(--success); font-weight:600;">\u2713 "' + slug + '" already exists under ' + username + ' \u2014 you\'re all set! Skip to "Turn on GitHub Pages" below.</span>';
       } else {
         result.innerHTML = '<span style="color:var(--text-muted);">Could not check \u2014 verify manually at github.com/' + username + '/' + slug + '</span>';
       }
@@ -2390,8 +2396,10 @@ function updateSupabaseLinks() {
 
 // Download CLAUDE.md (slim directives with on-demand doc index)
 function downloadClaudeMd() {
-  var name = document.getElementById('project-name-input').value.trim() || 'My Project';
-  var template = '# ' + name + ' \u2014 Project Directives\n\n' +
+  var username = document.getElementById('github-username').value.trim() || 'USERNAME';
+  var repo = document.getElementById('clone-project-name').value.trim() || 'my-salon-app';
+  var slug = repo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  var template = '# ' + slug + ' \u2014 Project Directives\n\n' +
     '> **On-demand docs \u2014 load when the task matches:**\n' +
     '> - `docs/CREDENTIALS.md` \u2014 **load for:** SQL queries, deploying functions, SSH, API calls\n' +
     '> - `docs/SCHEMA.md` \u2014 **load for:** writing queries, modifying tables, debugging data\n' +
@@ -2413,7 +2421,7 @@ function downloadClaudeMd() {
     '- Tailwind: use design tokens from `@theme` block (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.\n\n' +
     '## Quick Refs\n\n' +
     '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages\n' +
-    '- **Live:** https://USERNAME.github.io/REPO/\n' +
+    '- **Live:** https://' + username + '.github.io/' + slug + '/\n' +
     '- **Architecture:** Browser \u2192 GitHub Pages \u2192 Supabase (no server-side code)\n';
 
   downloadFile(template, 'CLAUDE.md');
@@ -2421,7 +2429,9 @@ function downloadClaudeMd() {
 
 // Download CLAUDE.local.md (private, gitignored)
 function downloadClaudeLocalMd() {
-  var name = document.getElementById('project-name-input').value.trim() || 'My Project';
+  var username = document.getElementById('github-username').value.trim() || 'USERNAME';
+  var repo = document.getElementById('clone-project-name').value.trim() || 'my-salon-app';
+  var slug = repo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   var template = '# Operator Directives\n\n' +
     '> **DB access:** Read `docs/CREDENTIALS.md`. Use Supabase Management API (never psql).\n' +
     '> **Push:** Always push immediately. Never bump version locally \u2014 CI handles it.\n' +
@@ -2429,7 +2439,7 @@ function downloadClaudeLocalMd() {
     '> **Links:** Always include clickable URLs to affected pages after every push.\n' +
     '> **SQL:** Run migrations directly via Management API \u2014 never ask user to run SQL manually.\n\n' +
     '## Live URLs\n\n' +
-    '- https://USERNAME.github.io/REPO/ (GitHub Pages)\n';
+    '- https://' + username + '.github.io/' + slug + '/ (GitHub Pages)\n';
 
   downloadFile(template, 'CLAUDE.local.md');
 }
