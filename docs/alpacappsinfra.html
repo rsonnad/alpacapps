@@ -1479,7 +1479,9 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 My project ref is: ___
 My database password is: ___
 
-Log into the Supabase CLI (supabase login), link my project (supabase link --project-ref), then fetch the project URL and anon key from the API settings automatically. Install the CLI if it's not already installed. Create the core database tables for [describe your app here], enable RLS on all tables, create storage buckets for photos and documents, commit, and push.</code></pre>
+Log into the Supabase CLI (supabase login), link my project (supabase link --project-ref), then fetch the project URL and anon key from the API settings automatically. Install the CLI if it's not already installed. Create the core database tables for [describe your app here], enable RLS on all tables, create storage buckets for photos and documents, commit, and push.
+
+Don't ask me for permission at each step — just do the work end to end and show me the results when you're done.</code></pre>
       <button onclick="copySupabaseBlock(this)" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Copy</button>
     </div>
 
@@ -2404,7 +2406,8 @@ function buildSupabaseBlock() {
     'then fetch the project URL and anon key from the API settings automatically. ' +
     'Install the CLI if it\'s not already installed. ' +
     'Create the core database tables for [describe your app here], ' +
-    'enable RLS on all tables, create storage buckets for photos and documents, commit, and push.';
+    'enable RLS on all tables, create storage buckets for photos and documents, commit, and push.\n\n' +
+    'Don\'t ask me for permission at each step — just do the work end to end and show me the results when you\'re done.';
   var el = document.querySelector('#supabase-cred-block code');
   if (el) el.textContent = block;
 }
