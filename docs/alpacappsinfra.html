@@ -1455,7 +1455,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <p>Paste your project ref here &mdash; the links below will update so you can click straight to the right pages:</p>
 
     <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1rem 0 1.5rem 0; flex-wrap: wrap;">
-      <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 260px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
+      <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 340px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
     </div>
 
     <ol start="5">
@@ -2366,7 +2366,15 @@ function checkRepoName() {
 
 // Supabase project ref — updates settings links + all credential placeholders
 function updateSupabaseLinks() {
-  var ref = document.getElementById('supabase-ref').value.trim();
+  var input = document.getElementById('supabase-ref');
+  var ref = input.value.trim();
+  // Extract project ref if user pastes a full URL
+  // Handles: https://supabase.com/dashboard/project/abcdefghijk/...
+  var dashMatch = ref.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+  if (dashMatch) { ref = dashMatch[1]; input.value = ref; }
+  // Handles: https://abcdefghijk.supabase.co
+  var subMatch = !dashMatch && ref.match(/^https?:\/\/([a-z0-9]+)\.supabase\.co/i);
+  if (subMatch) { ref = subMatch[1]; input.value = ref; }
   var display = ref || '___';
   var placeholder = ref || 'YOUR_PROJECT_REF';
   var apiLink = document.getElementById('supabase-api-link');
