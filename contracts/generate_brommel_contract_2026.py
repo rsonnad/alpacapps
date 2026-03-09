@@ -104,6 +104,16 @@ def build_styles():
         fontName='Helvetica-Oblique',
     ))
     styles.add(ParagraphStyle(
+        name='BodyLeft',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=14,
+        textColor=black,
+        alignment=TA_LEFT,
+        spaceAfter=6,
+        fontName='Helvetica',
+    ))
+    styles.add(ParagraphStyle(
         name='SignLine',
         parent=styles['Normal'],
         fontSize=10,
@@ -134,13 +144,18 @@ def build_contract():
     ))
     story.append(Spacer(1, 6))
     story.append(Paragraph(
-        '<b>Rahul Sonnad</b>, with an address of 160 Still Forest Drive, Cedar Creek, Texas ("Owner"),',
-        styles['Body']
+        '<b>Rahul Sonnad</b><br/>'
+        '160 Still Forest Drive, Cedar Creek, Texas<br/>'
+        'Email: rahulioson@gmail.com &bull; Phone: (424) 234-1750<br/>'
+        '("Owner")',
+        styles['BodyLeft']
     ))
     story.append(Paragraph('and', styles['Body']))
     story.append(Paragraph(
-        '<b>Juston Brommel</b> ("Renter").',
-        styles['Body']
+        '<b>Juston Brommel</b><br/>'
+        'Email: j@brommel.com &bull; Phone: (415) 812-2524<br/>'
+        '("Renter")',
+        styles['BodyLeft']
     ))
     story.append(Spacer(1, 4))
     story.append(Paragraph(
@@ -162,6 +177,7 @@ def build_contract():
         ["Year", "2022"],
         ["Color", "White"],
         ["VIN", "5YJ3E1EB0NF189739"],
+        ["Mileage", "106,225"],
     ]
     t = Table(vehicle_data, colWidths=[1.8 * inch, 4.0 * inch])
     t.setStyle(TableStyle([
@@ -200,7 +216,7 @@ def build_contract():
     story.append(Paragraph("3. Rental Rate &amp; Payment", styles['SectionHead']))
 
     rate_data = [
-        ["Monthly Rate", "$299/month"],
+        ["Monthly Rate", "$295/month"],
     ]
     rt = Table(rate_data, colWidths=[3.2 * inch, 2.6 * inch])
     rt.setStyle(TableStyle([
@@ -221,7 +237,7 @@ def build_contract():
     story.append(Paragraph(
         "Rent is due on the <b>1st of each month</b>. Payment shall be made via Zelle to "
         "<b>alpacaplayhouse@gmail.com</b>.",
-        styles['Body']
+        styles['BodyLeft']
     ))
     story.append(Paragraph(
         "Rental rate does not include Full Self-Driving (FSD) subscription, which can optionally "
