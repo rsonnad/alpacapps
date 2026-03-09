@@ -308,15 +308,25 @@
 
   <!-- ===== STRUCTURES ===== -->
 
-  <!-- 1. MAIN HOUSE (2-story stone/frame) — center-north of property -->
-  <rect x="220" y="320" width="120" height="95" fill="#c4a87a" stroke="#8a7050" stroke-width="2" rx="3"/>
-  <!-- House detail - complex roofline from satellite -->
-  <line x1="280" y1="320" x2="280" y2="415" stroke="#9a8060" stroke-width="0.7" opacity="0.4"/>
-  <line x1="220" y1="370" x2="340" y2="370" stroke="#9a8060" stroke-width="0.7" opacity="0.4"/>
-  <text x="280" y="355" text-anchor="middle" font-size="11" fill="#3a2a10" font-weight="700">MAIN HOUSE</text>
-  <text x="280" y="370" text-anchor="middle" font-size="8" fill="#5a4a30">2-Story Stone &amp; Frame</text>
-  <text x="280" y="383" text-anchor="middle" font-size="8" fill="#5a4a30">~40' × 50'</text>
-  <text x="280" y="400" text-anchor="middle" font-size="7" fill="#4a6a3a">✓ Compliant</text>
+  <!-- 1. MAIN HOUSE (2-story stone/frame) — L-shaped footprint per survey -->
+  <!-- Main body: ~72' wide × ~29' deep, east-west orientation -->
+  <path d="M 210,330 L 370,330 L 370,400 L 310,400 L 310,430 L 210,430 Z"
+    fill="#c4a87a" stroke="#8a7050" stroke-width="2"/>
+  <!-- Internal detail lines showing roof/room divisions -->
+  <line x1="290" y1="330" x2="290" y2="400" stroke="#9a8060" stroke-width="0.7" opacity="0.4"/>
+  <line x1="210" y1="365" x2="370" y2="365" stroke="#9a8060" stroke-width="0.7" opacity="0.4"/>
+  <line x1="310" y1="400" x2="310" y2="430" stroke="#9a8060" stroke-width="0.7" opacity="0.4"/>
+  <!-- 2nd story deck on north side (from survey) -->
+  <rect x="265" y="318" width="60" height="12" fill="#d4b07a" stroke="#8a7050" stroke-width="1" opacity="0.6"/>
+  <text x="295" y="327" text-anchor="middle" font-size="5" fill="#5a4a30">2ND STORY DECK</text>
+  <!-- Covered porch/entrance on south side -->
+  <rect x="240" y="430" width="50" height="12" fill="#d4b07a" stroke="#8a7050" stroke-width="1" opacity="0.5" stroke-dasharray="3,2"/>
+  <text x="265" y="439" text-anchor="middle" font-size="5" fill="#5a4a30">COVERED PORCH</text>
+  <!-- Labels -->
+  <text x="290" y="358" text-anchor="middle" font-size="11" fill="#3a2a10" font-weight="700">MAIN HOUSE</text>
+  <text x="290" y="373" text-anchor="middle" font-size="8" fill="#5a4a30">2-Story Stone &amp; Frame</text>
+  <text x="290" y="386" text-anchor="middle" font-size="8" fill="#5a4a30">~72' × 29' (L-shape)</text>
+  <text x="290" y="420" text-anchor="middle" font-size="7" fill="#4a6a3a">✓ Compliant</text>
 
   <!-- 2. 1-STORY WOOD BUILDING (Auxiliary) — northeast area, near north boundary -->
   <rect x="280" y="210" width="85" height="50" fill="#7B5B3A" stroke="#4a3a20" stroke-width="1.5" rx="3"/>
@@ -398,15 +408,15 @@
 
   <!-- ===== UTILITIES ===== -->
 
-  <!-- Septic tank lids (between house and north) -->
-  <circle cx="250" cy="300" r="7" fill="none" stroke="#4299e1" stroke-width="2"/>
-  <circle cx="268" cy="300" r="7" fill="none" stroke="#4299e1" stroke-width="2"/>
-  <text x="259" y="315" text-anchor="middle" font-size="7" fill="#4299e1" font-weight="500">SEPTIC TANKS</text>
-  <text x="259" y="324" text-anchor="middle" font-size="6" fill="#4299e1">Aerobic (JET INC)</text>
+  <!-- Septic tank lids (east/right side of main house per owner) -->
+  <circle cx="385" cy="360" r="7" fill="none" stroke="#4299e1" stroke-width="2"/>
+  <circle cx="403" cy="360" r="7" fill="none" stroke="#4299e1" stroke-width="2"/>
+  <text x="394" y="350" text-anchor="middle" font-size="7" fill="#4299e1" font-weight="500">SEPTIC TANKS</text>
+  <text x="394" y="378" text-anchor="middle" font-size="6" fill="#4299e1">Aerobic (JET INC)</text>
 
-  <!-- Septic control panel -->
-  <rect x="215" y="310" width="8" height="6" fill="#4299e1" rx="1"/>
-  <text x="212" y="310" text-anchor="end" font-size="6" fill="#4299e1">Septic Panel</text>
+  <!-- Septic control panel (near septic tanks) -->
+  <rect x="380" y="385" width="8" height="6" fill="#4299e1" rx="1"/>
+  <text x="392" y="390" font-size="6" fill="#4299e1">Septic Panel</text>
 
   <!-- Water meter (near front gate on Still Forest Dr) -->
   <rect x="255" y="780" width="8" height="8" fill="#4299e1" rx="2"/>
@@ -420,9 +430,9 @@
   <circle cx="360" cy="782" r="5" fill="#8a7050" stroke="#5a4a30" stroke-width="1.5"/>
   <text x="372" y="785" font-size="7" fill="#5a4a30" font-weight="500">POWER POLE</text>
 
-  <!-- Electrical sub-panels -->
-  <rect x="350" y="400" width="6" height="8" fill="#f6ad55" rx="1"/>
-  <text x="360" y="405" font-size="6" fill="#f6ad55">PANELS</text>
+  <!-- Electrical sub-panels (south side of house) -->
+  <rect x="350" y="435" width="6" height="8" fill="#f6ad55" rx="1"/>
+  <text x="360" y="441" font-size="6" fill="#f6ad55">PANELS (FRONT/MID PP)</text>
 
   <!-- ===== DECORATIVE ELEMENTS ===== -->
 
@@ -443,9 +453,13 @@
   <line x1="280" y1="260" x2="400" y2="255" stroke="#888" stroke-width="1" opacity="0.3" stroke-dasharray="3,2"/>
   <text x="340" y="270" font-size="5" fill="#888">CHAIN LINK ON CONCRETE</text>
 
-  <!-- Stone/granite counter area (from survey) -->
-  <rect x="350" y="330" width="20" height="15" fill="#a09080" stroke="#7a6a50" stroke-width="1" rx="1" opacity="0.5"/>
-  <text x="360" y="355" text-anchor="middle" font-size="5" fill="#7a6a50">STONE CTR</text>
+  <!-- Stone/granite counter area (NE of house per survey) -->
+  <rect x="375" y="310" width="20" height="15" fill="#a09080" stroke="#7a6a50" stroke-width="1" rx="1" opacity="0.5"/>
+  <text x="385" y="335" text-anchor="middle" font-size="5" fill="#7a6a50">STONE/GRANITE CTR</text>
+
+  <!-- Water softener (east side of house per survey) -->
+  <rect x="375" y="395" width="8" height="10" fill="#a09080" stroke="#7a6a50" stroke-width="1" rx="1" opacity="0.4"/>
+  <text x="388" y="403" font-size="5" fill="#7a6a50">WATER SOFT.</text>
 
   <!-- ===== CORNER LOT INDICATOR ===== -->
   <rect x="25" y="797" width="55" height="50" fill="#f6ad55" opacity="0.15" rx="4"/>
@@ -480,6 +494,9 @@
 
   <!-- North neighbor label -->
   <text x="200" y="140" text-anchor="middle" font-size="9" fill="#8a7a60" font-style="italic">North Neighbor (Lot boundary)</text>
+
+  <!-- Concrete driveway label (from survey - surrounds house) -->
+  <text x="190" y="460" font-size="6" fill="#8a7a60" font-style="italic">CONCRETE DRIVEWAY</text>
 
   <!-- Owner info -->
   <text x="260" y="640" text-anchor="middle" font-size="7" fill="#8a7a60">Owner: Nicole D Reeves</text>
