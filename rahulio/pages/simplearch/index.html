@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps — Architecture</title>
+  <meta property="og:title" content="AlpacApps Architecture Diagram">
+  <meta property="og:description" content="How AlpacApps is built: Claude Code, Supabase, GitHub Pages, Alpaca Mac, and Hostinger working together.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F1117;
+      --bg-card: #181B24;
+      --bg-card-hover: #1E2230;
+      --border: #2A2E3B;
+      --border-glow: #3A3F50;
+      --text: #E8EAED;
+      --text-soft: #9BA1B0;
+      --text-dim: #6B7280;
+
+      /* Entity colors */
+      --claude: #D97706;
+      --claude-bg: rgba(217,119,6,0.08);
+      --claude-border: rgba(217,119,6,0.25);
+
+      --supabase: #3ECF8E;
+      --supabase-bg: rgba(62,207,142,0.08);
+      --supabase-border: rgba(62,207,142,0.25);
+
+      --github: #8B5CF6;
+      --github-bg: rgba(139,92,246,0.08);
+      --github-border: rgba(139,92,246,0.25);
+
+      --mac: #3B82F6;
+      --mac-bg: rgba(59,130,246,0.08);
+      --mac-border: rgba(59,130,246,0.25);
+
+      --hostinger: #EF4444;
+      --hostinger-bg: rgba(239,68,68,0.08);
+      --hostinger-border: rgba(239,68,68,0.25);
+
+      --external: #EC4899;
+      --external-bg: rgba(236,72,153,0.08);
+      --external-border: rgba(236,72,153,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    header h1 span {
+      background: linear-gradient(135deg, var(--supabase), var(--github), var(--claude));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--text-soft);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* SVG Diagram */
+    .diagram-wrapper {
+      width: 100%;
+      margin-bottom: 48px;
+    }
+
+    .diagram-wrapper svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Entity cards below diagram */
+    .entities {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .entity-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.2s ease;
+    }
+
+    .entity-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+    }
+
+    .entity-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .entity-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .entity-header h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .entity-header .entity-role {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-left: auto;
+    }
+
+    .entity-card p {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .entity-services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .service-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    /* Color variants */
+    .claude-card .entity-icon { background: var(--claude-bg); color: var(--claude); border: 1px solid var(--claude-border); }
+    .claude-card .entity-role { background: var(--claude-bg); color: var(--claude); border: 1px solid var(--claude-border); }
+    .claude-card:hover { border-color: var(--claude-border); }
+
+    .supabase-card .entity-icon { background: var(--supabase-bg); color: var(--supabase); border: 1px solid var(--supabase-border); }
+    .supabase-card .entity-role { background: var(--supabase-bg); color: var(--supabase); border: 1px solid var(--supabase-border); }
+    .supabase-card:hover { border-color: var(--supabase-border); }
+
+    .github-card .entity-icon { background: var(--github-bg); color: var(--github); border: 1px solid var(--github-border); }
+    .github-card .entity-role { background: var(--github-bg); color: var(--github); border: 1px solid var(--github-border); }
+    .github-card:hover { border-color: var(--github-border); }
+
+    .mac-card .entity-icon { background: var(--mac-bg); color: var(--mac); border: 1px solid var(--mac-border); }
+    .mac-card .entity-role { background: var(--mac-bg); color: var(--mac); border: 1px solid var(--mac-border); }
+    .mac-card:hover { border-color: var(--mac-border); }
+
+    .hostinger-card .entity-icon { background: var(--hostinger-bg); color: var(--hostinger); border: 1px solid var(--hostinger-border); }
+    .hostinger-card .entity-role { background: var(--hostinger-bg); color: var(--hostinger); border: 1px solid var(--hostinger-border); }
+    .hostinger-card:hover { border-color: var(--hostinger-border); }
+
+    /* Data flow section */
+    .flow-section {
+      margin-top: 56px;
+    }
+
+    .flow-section h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      position: relative;
+    }
+
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .flow-step .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .flow-step .step-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .flow-step .step-desc {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    .flow-step .step-arrow {
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      z-index: 2;
+    }
+
+    .flow-step:last-child .step-arrow { display: none; }
+
+    /* Footer */
+    footer {
+      margin-top: 64px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.82rem;
+    }
+
+    footer a {
+      color: var(--text-soft);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 24px 16px 60px; }
+      header h1 { font-size: 1.5rem; }
+      header p { font-size: 0.95rem; }
+      .entities { grid-template-columns: 1fr; }
+      .flow-steps { grid-template-columns: 1fr; }
+      .flow-step .step-arrow {
+        right: auto;
+        bottom: -16px;
+        top: auto;
+        left: 50%;
+        transform: translateX(-50%) rotate(90deg);
+      }
+    }
+
+    /* Animation */
+    @keyframes dash {
+      to { stroke-dashoffset: -20; }
+    }
+
+    .flow-line {
+      stroke-dasharray: 8 6;
+      animation: dash 1.5s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <h1><span>AlpacApps</span> Architecture</h1>
+      <p>A zero-server property management system. Five services, one property, no backend code.</p>
+    </header>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--claude)"></div> Claude Code</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--supabase)"></div> Supabase</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--github)"></div> GitHub Pages</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--mac)"></div> Alpaca Mac</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--hostinger)"></div> Hostinger</div>
+    </div>
+
+    <!-- SVG Architecture Diagram -->
+    <div class="diagram-wrapper">
+      <svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#4B5563" stroke-width="1.5"/>
+          </marker>
+          <marker id="arrowClaude" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#D97706" stroke-width="1.5"/>
+          </marker>
+          <marker id="arrowSupabase" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3ECF8E" stroke-width="1.5"/>
+          </marker>
+          <marker id="arrowGithub" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#8B5CF6" stroke-width="1.5"/>
+          </marker>
+          <marker id="arrowMac" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3B82F6" stroke-width="1.5"/>
+          </marker>
+
+          <!-- Glow filters -->
+          <filter id="glowClaude"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#D97706" flood-opacity="0.3"/></filter>
+          <filter id="glowSupabase"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3ECF8E" flood-opacity="0.3"/></filter>
+          <filter id="glowGithub"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#8B5CF6" flood-opacity="0.3"/></filter>
+          <filter id="glowMac"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3B82F6" flood-opacity="0.3"/></filter>
+          <filter id="glowHostinger"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#EF4444" flood-opacity="0.3"/></filter>
+        </defs>
+
+        <!-- ============================================ -->
+        <!-- USERS at top -->
+        <!-- ============================================ -->
+        <rect x="350" y="10" width="300" height="50" rx="25" fill="#1E2230" stroke="#3A3F50" stroke-width="1.5"/>
+        <text x="500" y="40" text-anchor="middle" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="15">Residents / Admins / Public</text>
+
+        <!-- Arrow: Users -> GitHub Pages -->
+        <line x1="500" y1="60" x2="500" y2="115" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrowGithub)" opacity="0.7"/>
+        <text x="512" y="93" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">HTTPS</text>
+
+        <!-- ============================================ -->
+        <!-- GitHub Pages (center-top) -->
+        <!-- ============================================ -->
+        <rect x="340" y="120" width="320" height="100" rx="16" fill="#181B24" stroke="#8B5CF6" stroke-width="2" filter="url(#glowGithub)"/>
+        <circle cx="370" cy="148" r="14" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1"/>
+        <text x="370" y="153" text-anchor="middle" fill="#8B5CF6" font-size="14">GH</text>
+        <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">GitHub Pages</text>
+        <text x="362" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Static HTML/JS/CSS hosting</text>
+        <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">alpacaplayhouse.com</text>
+        <text x="362" y="207" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">/spaces/ /residents/ /admin/ /auth/</text>
+
+        <!-- Arrow: GitHub Pages -> Supabase -->
+        <line x1="500" y1="220" x2="500" y2="285" stroke="#3ECF8E" stroke-width="2" marker-end="url(#arrowSupabase)" opacity="0.7"/>
+        <text x="512" y="258" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">API calls</text>
+
+        <!-- ============================================ -->
+        <!-- Supabase (center) -->
+        <!-- ============================================ -->
+        <rect x="280" y="290" width="440" height="130" rx="16" fill="#181B24" stroke="#3ECF8E" stroke-width="2" filter="url(#glowSupabase)"/>
+        <circle cx="310" cy="320" r="14" fill="rgba(62,207,142,0.15)" stroke="#3ECF8E" stroke-width="1"/>
+        <text x="310" y="325" text-anchor="middle" fill="#3ECF8E" font-size="13">SB</text>
+        <text x="332" y="325" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Supabase</text>
+        <text x="302" y="348" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Backend-as-a-Service (database, auth, storage, edge functions)</text>
+
+        <!-- Sub-components inside Supabase -->
+        <rect x="300" y="362" width="95" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+        <text x="347" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">PostgreSQL</text>
+
+        <rect x="405" y="362" width="65" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+        <text x="437" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Auth</text>
+
+        <rect x="480" y="362" width="80" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+        <text x="520" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Storage</text>
+
+        <rect x="570" y="362" width="130" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+        <text x="635" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Edge Functions</text>
+
+        <!-- ============================================ -->
+        <!-- Claude Code (left) -->
+        <!-- ============================================ -->
+        <rect x="20" y="120" width="260" height="100" rx="16" fill="#181B24" stroke="#D97706" stroke-width="2" filter="url(#glowClaude)"/>
+        <circle cx="50" cy="148" r="14" fill="rgba(217,119,6,0.15)" stroke="#D97706" stroke-width="1"/>
+        <text x="50" y="153" text-anchor="middle" fill="#D97706" font-size="12">CC</text>
+        <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Claude Code</text>
+        <text x="42" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">AI dev agent: writes code,</text>
+        <text x="42" y="192" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">fixes bugs, deploys, runs SQL</text>
+        <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Oracle Cloud (free tier)</text>
+
+        <!-- Arrow: Claude Code -> GitHub Pages (push) -->
+        <line x1="280" y1="155" x2="338" y2="155" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrowClaude)" opacity="0.6"/>
+        <text x="290" y="148" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">git push</text>
+
+        <!-- Arrow: Claude Code -> Supabase (SQL) -->
+        <path d="M 150 220 L 150 345 L 278 345" fill="none" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrowClaude)" opacity="0.5" class="flow-line"/>
+        <text x="158" y="280" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">migrations</text>
+
+        <!-- ============================================ -->
+        <!-- Alpaca Mac (bottom-left) -->
+        <!-- ============================================ -->
+        <rect x="20" y="470" width="280" height="130" rx="16" fill="#181B24" stroke="#3B82F6" stroke-width="2" filter="url(#glowMac)"/>
+        <circle cx="50" cy="498" r="14" fill="rgba(59,130,246,0.15)" stroke="#3B82F6" stroke-width="1"/>
+        <text x="50" y="502" text-anchor="middle" fill="#3B82F6" font-size="11">Mac</text>
+        <text x="72" y="503" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Alpaca Mac</text>
+        <text x="42" y="525" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">On-prem home server. Bridges</text>
+        <text x="42" y="542" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">LAN-only smart home devices</text>
+
+        <!-- Sub-components -->
+        <rect x="40" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+        <text x="67" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">Sonos</text>
+
+        <rect x="103" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+        <text x="130" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">go2rtc</text>
+
+        <rect x="166" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+        <text x="193" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">HomeA</text>
+
+        <rect x="229" y="555" width="60" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+        <text x="259" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">MusicA</text>
+
+        <!-- Arrow: Supabase Edge Functions -> Alpaca Mac via Tailscale -->
+        <path d="M 380 420 L 380 490 L 302 490" fill="none" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#arrowMac)" opacity="0.6" class="flow-line"/>
+        <text x="318" y="460" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">Tailscale VPN</text>
+
+        <!-- ============================================ -->
+        <!-- Hostinger (bottom-right) -->
+        <!-- ============================================ -->
+        <rect x="700" y="470" width="280" height="130" rx="16" fill="#181B24" stroke="#EF4444" stroke-width="2" filter="url(#glowHostinger)"/>
+        <circle cx="730" cy="498" r="14" fill="rgba(239,68,68,0.15)" stroke="#EF4444" stroke-width="1"/>
+        <text x="730" y="503" text-anchor="middle" fill="#EF4444" font-size="11">HG</text>
+        <text x="752" y="503" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Hostinger VPS</text>
+        <text x="722" y="525" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Reverse proxy + tunneling.</text>
+        <text x="722" y="542" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Routes cloud traffic to LAN</text>
+
+        <!-- Sub-components -->
+        <rect x="722" y="555" width="70" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+        <text x="757" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">Caddy</text>
+
+        <rect x="800" y="555" width="80" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+        <text x="840" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">Tailscale</text>
+
+        <rect x="888" y="555" width="78" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+        <text x="927" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">PAI-Claw</text>
+
+        <!-- Arrow: Supabase -> Hostinger -->
+        <path d="M 620 420 L 620 490 L 698 490" fill="none" stroke="#EF4444" stroke-width="1.5" marker-end="url(#arrowGray)" opacity="0.6" class="flow-line"/>
+        <text x="628" y="460" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">Edge Fn proxy</text>
+
+        <!-- Arrow: Hostinger -> Alpaca Mac -->
+        <line x1="700" y1="540" x2="302" y2="540" stroke="#4B5563" stroke-width="1.5" marker-end="url(#arrowMac)" opacity="0.4" class="flow-line"/>
+        <text x="480" y="534" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">Tailscale mesh</text>
+
+        <!-- ============================================ -->
+        <!-- External APIs (right side) -->
+        <!-- ============================================ -->
+        <rect x="770" y="290" width="210" height="130" rx="16" fill="#181B24" stroke="#EC4899" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="875" y="318" text-anchor="middle" fill="#EC4899" font-family="DM Sans, sans-serif" font-weight="600" font-size="13">External APIs</text>
+
+        <text x="790" y="342" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Stripe   Resend    Tesla</text>
+        <text x="790" y="358" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Telnyx   SignWell  Govee</text>
+        <text x="790" y="374" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Gemini   Vapi      Nest</text>
+        <text x="790" y="390" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Brave    LG ThinQ  Anova</text>
+        <text x="875" y="412" text-anchor="middle" fill="#4B5563" font-family="JetBrains Mono, monospace" font-size="9">webhooks + API calls</text>
+
+        <!-- Arrow: Supabase -> External -->
+        <line x1="720" y1="355" x2="768" y2="355" stroke="#EC4899" stroke-width="1.5" marker-end="url(#arrowGray)" opacity="0.5"/>
+
+        <!-- Key principle callout -->
+        <rect x="770" y="140" width="210" height="60" rx="12" fill="rgba(62,207,142,0.05)" stroke="rgba(62,207,142,0.15)" stroke-width="1"/>
+        <text x="875" y="163" text-anchor="middle" fill="#3ECF8E" font-family="DM Sans, sans-serif" font-weight="600" font-size="11">ZERO SERVER ARCHITECTURE</text>
+        <text x="875" y="180" text-anchor="middle" fill="#6B7280" font-family="DM Sans, sans-serif" font-size="10">Browser talks directly to Supabase</text>
+        <text x="875" y="193" text-anchor="middle" fill="#6B7280" font-family="DM Sans, sans-serif" font-size="10">RLS enforces security at DB level</text>
+      </svg>
+    </div>
+
+    <!-- Entity Detail Cards -->
+    <div class="entities">
+
+      <div class="entity-card claude-card">
+        <div class="entity-header">
+          <div class="entity-icon">CC</div>
+          <h3>Claude Code</h3>
+          <span class="entity-role">AI Developer</span>
+        </div>
+        <p>Autonomous AI agent that writes code, fixes bugs, runs database migrations, and deploys changes directly to production. Runs on Oracle Cloud free tier as a systemd service.</p>
+        <div class="entity-services">
+          <span class="service-tag">Bug Scout</span>
+          <span class="service-tag">Feature Builder</span>
+          <span class="service-tag">SQL migrations</span>
+          <span class="service-tag">git push to main</span>
+        </div>
+      </div>
+
+      <div class="entity-card supabase-card">
+        <div class="entity-header">
+          <div class="entity-icon">SB</div>
+          <h3>Supabase</h3>
+          <span class="entity-role">Backend</span>
+        </div>
+        <p>The entire backend. PostgreSQL database with row-level security, auth, file storage, and 38+ edge functions that handle payments, webhooks, device control, and the PAI chatbot.</p>
+        <div class="entity-services">
+          <span class="service-tag">PostgreSQL</span>
+          <span class="service-tag">Auth / RLS</span>
+          <span class="service-tag">Storage</span>
+          <span class="service-tag">Edge Functions</span>
+          <span class="service-tag">Realtime</span>
+        </div>
+      </div>
+
+      <div class="entity-card github-card">
+        <div class="entity-header">
+          <div class="entity-icon">GH</div>
+          <h3>GitHub Pages</h3>
+          <span class="entity-role">Frontend</span>
+        </div>
+        <p>Serves the static HTML/JS/CSS website. No build step needed. Push to main branch and it's live at alpacaplayhouse.com within seconds. CI auto-bumps version on each deploy.</p>
+        <div class="entity-services">
+          <span class="service-tag">Vanilla HTML/JS</span>
+          <span class="service-tag">Tailwind v4</span>
+          <span class="service-tag">Capacitor 8</span>
+          <span class="service-tag">Auto-deploy</span>
+        </div>
+      </div>
+
+      <div class="entity-card mac-card">
+        <div class="entity-header">
+          <div class="entity-icon">Mac</div>
+          <h3>Alpaca Mac</h3>
+          <span class="entity-role">LAN Bridge</span>
+        </div>
+        <p>Always-on Mac at the property. Bridges cloud requests to LAN-only devices (Sonos speakers, security cameras, smart lights). Connected via Tailscale private mesh network.</p>
+        <div class="entity-services">
+          <span class="service-tag">Sonos HTTP API</span>
+          <span class="service-tag">go2rtc (cameras)</span>
+          <span class="service-tag">Home Assistant</span>
+          <span class="service-tag">Music Assistant</span>
+        </div>
+      </div>
+
+      <div class="entity-card hostinger-card">
+        <div class="entity-header">
+          <div class="entity-icon">HG</div>
+          <h3>Hostinger VPS</h3>
+          <span class="entity-role">Proxy</span>
+        </div>
+        <p>Cloud-side endpoint with a static IP. Runs Caddy as a reverse proxy, routing requests through Tailscale to reach Alpaca Mac's LAN services. Also hosts the PAI Discord bridge.</p>
+        <div class="entity-services">
+          <span class="service-tag">Caddy proxy</span>
+          <span class="service-tag">Tailscale node</span>
+          <span class="service-tag">PAI-Claw (Discord)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Data Flow -->
+    <div class="flow-section">
+      <h2>How a request flows</h2>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">01</div>
+          <div class="step-label">Browser</div>
+          <div class="step-desc">User loads page from GitHub Pages</div>
+          <div class="step-arrow">&rarr;</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">02</div>
+          <div class="step-label">Supabase</div>
+          <div class="step-desc">JS calls Supabase API (auth + data)</div>
+          <div class="step-arrow">&rarr;</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-label">Edge Function</div>
+          <div class="step-desc">Sensitive ops run server-side</div>
+          <div class="step-arrow">&rarr;</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">04</div>
+          <div class="step-label">Hostinger</div>
+          <div class="step-desc">Proxies to LAN via Tailscale</div>
+          <div class="step-arrow">&rarr;</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">05</div>
+          <div class="step-label">Alpaca Mac</div>
+          <div class="step-desc">Controls Sonos, cameras, lights</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>AlpacApps &mdash; <a href="https://alpacaplayhouse.com">alpacaplayhouse.com</a></p>
+    </footer>
+
+  </div>
+</body>
+</html>
