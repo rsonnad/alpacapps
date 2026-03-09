@@ -1,12 +1,12 @@
 {
-  "version": "v260309.18 2:58p",
-  "release": 582,
-  "sha": "ce251bb03",
-  "fullSha": "ce251bb03f06321eb4649bb3457d38516288969b",
+  "version": "v260309.19 3:02p",
+  "release": 583,
+  "sha": "32a782993",
+  "fullSha": "32a782993f1831c16d0d777b9c7e2736ab40a78c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 19:58:25+00",
-  "commits": [{"sha":"ce251bb03","message":"Auto-extract Supabase project ref from pasted URLs","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:02:27+00",
+  "commits": [{"sha":"32a782993","message":"Fix copy wording: \"paste it below\" not \"copy it\" for connection string","author":"Rahul"}]
 }
