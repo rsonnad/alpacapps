@@ -1,12 +1,12 @@
 {
-  "version": "v260309.22 3:12p",
-  "release": 586,
-  "sha": "9caa35568",
-  "fullSha": "9caa35568215787439a5ef17817f36afe8869199",
+  "version": "v260309.23 3:20p",
+  "release": 587,
+  "sha": "02e7e6637",
+  "fullSha": "02e7e6637a73df7f47c8f71bb0fe1c0b9ae02721",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:12:27+00",
-  "commits": [{"sha":"9caa35568","message":"Simplify Supabase setup to 2 fields — Claude Code fetches the rest","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:20:21+00",
+  "commits": [{"sha":"02e7e6637","message":"Add 'don't ask permissions' instruction to Supabase setup prompt","author":"Rahul"}]
 }
