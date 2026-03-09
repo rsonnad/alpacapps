@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Ninja Workshop Signups</title>
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f6f5f0; color: #2a2420; margin: 0; padding: 0; }
+    .page-wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .page-header h1 { font-size: 1.35rem; font-weight: 600; margin: 0; }
+    .back-link { font-size: 0.85rem; color: #d4883a; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .status-lead { font-size: 0.95rem; color: #7a7470; margin-bottom: 1rem; }
+    .status-lead.amber { color: #b86e2a; }
+    .section { background: #fff; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .section h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.25rem; }
+    .section-sub { font-size: 0.85rem; color: #7a7470; margin-bottom: 0.75rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; font-weight: 600; color: #7a7470; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.5rem 0.75rem; border-bottom: 2px solid #e8e2d8; }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f0ebe3; }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-confirmed { background: #d4883a; color: #fff; }
+    .badge-waitlist { background: #f59e0b; color: #fff; }
+    .empty-state { text-align: center; color: #999; padding: 1.5rem; }
+    .auth-gate { display: flex; align-items: center; justify-content: center; min-height: 60vh; text-align: center; color: #7a7470; }
+    @media (max-width: 640px) {
+      .page-wrap { padding: 1rem 0.5rem 2rem; }
+      .section { padding: 1rem 0.75rem; }
+      td, th { padding: 0.4rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="authGate" class="auth-gate">
+    <p>Checking access...</p>
+  </div>
+
+  <div id="appContent" style="display:none;">
+    <div class="page-wrap">
+      <div class="page-header">
+        <h1>Ninja Workshop Signups</h1>
+        <a href="/rahulio/pages/ninja.html" target="_blank" class="back-link">View public page &#8599;</a>
+      </div>
+
+      <p id="statusLead" class="status-lead">Loading signups...</p>
+
+      <div class="section">
+        <h2>AI Software Ninja Workshop — March 9, 2026</h2>
+        <div style="overflow-x: auto; margin-top: 0.75rem;">
+          <table id="signupsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Goals</th>
+                <th>List</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="signupsBody">
+              <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>AI-Interest Signups <span id="interestCount" style="font-size:0.85rem; color:#888; font-weight:normal;"></span></h2>
+        <p class="section-sub">People who signed up for notification of the next session.</p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="interestBody">
+              <tr><td colspan="3" class="empty-state">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { supabase } from '/shared/supabase.js';
+    import { initAuth, getAuthState, hasPermission } from '/shared/auth.js';
+
+    const EVENT_ID = 'ai-ninja-workshop-2026-03-09';
+    const MAX_SPOTS = 10;
+
+    async function boot() {
+      try {
+        await initAuth();
+      } catch (_) { /* timeout ok — check state anyway */ }
+
+      const { appUser } = getAuthState();
+      if (!appUser || !hasPermission('view_events')) {
+        document.getElementById('authGate').innerHTML = '<p>You need staff access to view this page.</p>';
+        return;
+      }
+
+      document.getElementById('authGate').style.display = 'none';
+      document.getElementById('appContent').style.display = 'block';
+      loadSignups();
+    }
+
+    async function loadSignups() {
+      const tbody = document.getElementById('signupsBody');
+      const lead = document.getElementById('statusLead');
+
+      try {
+        const { data: rows, error } = await supabase
+          .from('event_rsvps')
+          .select('id, name, email, phone, goals, status, submitted_at')
+          .eq('event', EVENT_ID)
+          .order('submitted_at', { ascending: true });
+
+        if (error) {
+          tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#dc2626">${esc(error.message)}</td></tr>`;
+          lead.textContent = 'Error loading signups.';
+          return;
+        }
+
+        const confirmed = (rows || []).filter(r => r.status === 'confirmed');
+        const waitlist  = (rows || []).filter(r => r.status === 'waitlist');
+        const interest  = (rows || []).filter(r => r.status === 'interest');
+        const rsvpRows  = (rows || []).filter(r => r.status !== 'interest');
+        const closed    = confirmed.length >= MAX_SPOTS;
+
+        if (closed) {
+          lead.textContent = `Registration closed — ${confirmed.length} spots filled. ${waitlist.length} on waitlist. ${interest.length} AI-interest signups.`;
+          lead.classList.add('amber');
+        } else {
+          lead.textContent = `${confirmed.length} of ${MAX_SPOTS} spots filled. ${waitlist.length} on waitlist. ${interest.length} AI-interest signups.`;
+        }
+
+        if (rsvpRows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No signups yet.</td></tr>';
+        } else {
+          tbody.innerHTML = rsvpRows.map((r, i) => {
+            const submitted = r.submitted_at
+              ? new Date(r.submitted_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+              : '—';
+            const badge = r.status === 'waitlist'
+              ? '<span class="badge badge-waitlist">Waitlist</span>'
+              : '<span class="badge badge-confirmed">Confirmed</span>';
+            const goals = (r.goals || '').trim().slice(0, 80);
+            const goalsCell = goals ? (goals.length >= 80 ? goals + '…' : goals) : '—';
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${esc(r.name || '—')}</td>
+              <td>${esc(r.email || '—')}</td>
+              <td>${esc(r.phone || '—')}</td>
+              <td style="max-width:220px;">${esc(goalsCell)}</td>
+              <td>${badge}</td>
+              <td>${esc(submitted)}</td>
+            </tr>`;
+          }).join('');
+        }
+
+        // Interest section
+        const interestTbody = document.getElementById('interestBody');
+        const interestCount = document.getElementById('interestCount');
+        if (interestCount) interestCount.textContent = interest.length;
+        if (interest.length === 0) {
+          interestTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No AI-interest signups yet.</td></tr>';
+        } else {
+          interestTbody.innerHTML = interest.map((r, i) => {
+            const submitted = r.submitted_at
+              ? new Date(r.submitted_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+              : '—';
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${esc(r.email || '—')}</td>
+              <td>${esc(submitted)}</td>
+            </tr>`;
+          }).join('');
+        }
+      } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#dc2626">${esc(String(e))}</td></tr>`;
+        lead.textContent = 'Error loading signups.';
+      }
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    boot();
+  </script>
+</body>
+</html>
