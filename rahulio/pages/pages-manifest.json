@@ -1,15 +1,21 @@
 {
-  "generatedAt": "2026-03-09T05:10:06.411Z",
+  "generatedAt": "2026-03-09T05:40:13.383Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
+      "path": "ninja.html",
+      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
+      "section": null,
+      "modifiedAt": "2026-03-09T05:39:07.000Z"
+    },
+    {
       "path": "WarsawPilot/index.html",
       "title": "Three Pillars — Warsaw Pilot",
-      "section": "Projects",
-      "modifiedAt": "2026-03-09T12:00:00.000Z"
+      "section": null,
+      "modifiedAt": "2026-03-09T05:38:43.000Z"
     },
     {
       "path": "perps/index.html",
@@ -22,12 +28,6 @@
       "title": "Ninja Workshop Signups",
       "section": null,
       "modifiedAt": "2026-03-09T03:49:00.000Z"
-    },
-    {
-      "path": "ninja.html",
-      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
-      "section": null,
-      "modifiedAt": "2026-03-09T03:14:13.000Z"
     },
     {
       "path": "saleemproto/index.html",
