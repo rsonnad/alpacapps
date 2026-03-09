@@ -16,12 +16,14 @@
   h1 { text-align: center; font-size: 1.6rem; font-weight: 600; margin-bottom: 4px; color: #d4883a; }
   .subtitle { text-align: center; font-size: 0.9rem; color: #a09080; margin-bottom: 16px; }
   .plan-container {
-    max-width: 800px; margin: 0 auto; background: #faf9f6;
+    max-width: 1200px; margin: 0 auto; background: #faf9f6;
     border-radius: 12px; padding: 12px; overflow-x: auto;
   }
-  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .plan-container img {
+    display: block; width: 100%; height: auto; border-radius: 4px;
+  }
   .legend {
-    max-width: 800px; margin: 16px auto 0;
+    max-width: 1200px; margin: 16px auto 0;
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;
   }
   .legend-card {
@@ -40,7 +42,7 @@
   .legend-card.info { border-left-color: #9f7aea; }
   .legend-card.info h3 { color: #9f7aea; }
   .setback-summary {
-    max-width: 800px; margin: 16px auto 0; background: #2a2224;
+    max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px;
   }
   .setback-summary h2 { font-size: 1rem; color: #d4883a; margin-bottom: 10px; }
@@ -59,7 +61,7 @@
   .badge-violation { background: #e53e3e22; color: #fc8181; border: 1px solid #e53e3e44; }
   .badge-ok { background: #38a16922; color: #68d391; border: 1px solid #38a16944; }
   .notes {
-    max-width: 800px; margin: 16px auto 0; background: #2a2224;
+    max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px; font-size: 0.82rem;
     color: #a09080; line-height: 1.5;
   }
@@ -82,83 +84,8 @@
 <p class="subtitle">Cedar Creek, TX 78612 &bull; PID 44401 &bull; Lot 14-B, Block 6, Blue Bonnet Acres &bull; 1.7348 Ac (75,133 SF) &bull; CORNER LOT &bull; NOT TO SCALE &bull; March 2026</p>
 
 <div class="plan-container">
-<!--
-  BASE: Property drawing from survey plat by 4Ward Land Surveying, 2/4/2021, Jason Ward R.P.L.S. #5811
-  IMAGE: survey-base.png — cropped property drawing at 1314×1500 from PDF
-  The survey already shows: all structures, distances to property lines, bearings, labels
-  OVERLAYS: Setback zones + bathroom building (built after survey) added March 2026
-
-  COORDINATE REFERENCE (in 1314×1500 image):
-    Property boundary = bold black lines on survey
-    NW corner: ~(120, 210)    NE corner: ~(1126, 199)
-    East boundary to: ~(1118, 977)   SE jog: ~(1163, 1060)
-    South boundary: ~(638, 1202)     SW corner: ~(120, 1127)
-    Horizontal scale: ~5.35 px/ft    Vertical scale: ~2.79 px/ft
-    25' setback: 134px horiz, 70px vert
-    15' setback: 80px horiz, 42px vert
--->
-<svg viewBox="0 0 1314 1500" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
-  <defs>
-    <pattern id="hatch-red" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="8" stroke="#e53e3e" stroke-width="1.2" opacity="0.45"/>
-    </pattern>
-  </defs>
-
-  <!-- ===== SURVEY PROPERTY DRAWING (base image) ===== -->
-  <image href="survey-base.png" x="0" y="0" width="1314" height="1500"/>
-
-
-  <!-- ===== SETBACK ZONES (aligned to bold black property boundary lines) ===== -->
-
-  <!-- 25' WEST SETBACK from Leisure Lane ROW (x=120 → x=254) -->
-  <polygon points="120,210 254,210 254,1127 120,1127" fill="url(#hatch-red)" opacity="0.45"/>
-  <line x1="254" y1="210" x2="254" y2="1127" stroke="#e53e3e" stroke-width="2" stroke-dasharray="8,4"/>
-  <text x="187" y="660" text-anchor="middle" font-size="12" fill="#e53e3e" font-weight="700" transform="rotate(-90, 187, 660)">25' ROAD SETBACK</text>
-
-  <!-- 15' NORTH SETBACK (y=210→252 west, y=199→241 east) -->
-  <polygon points="120,210 1126,199 1126,241 120,252" fill="url(#hatch-red)" opacity="0.35"/>
-  <line x1="120" y1="252" x2="1126" y2="241" stroke="#e53e3e" stroke-width="2" stroke-dasharray="8,4"/>
-  <text x="620" y="225" font-size="11" fill="#e53e3e" font-weight="600" text-anchor="middle">15' REAR SETBACK</text>
-
-  <!-- 15' EAST SETBACK (x=1126→1046 upper, jog at x=1163→1083) -->
-  <polygon points="1126,199 1118,977 1163,1060 1083,1060 1038,977 1046,199" fill="url(#hatch-red)" opacity="0.3"/>
-  <line x1="1046" y1="199" x2="1038" y2="977" stroke="#e53e3e" stroke-width="2" stroke-dasharray="8,4"/>
-  <text x="1088" y="580" font-size="11" fill="#e53e3e" font-weight="600" transform="rotate(90, 1088, 580)">15' SIDE SETBACK</text>
-
-  <!-- 25' SOUTH SETBACK from Still Forest Dr (up 70px from south boundary) -->
-  <polygon points="120,1127 638,1202 1163,1060 1163,990 638,1132 120,1057" fill="url(#hatch-red)" opacity="0.3"/>
-  <line x1="120" y1="1057" x2="638" y2="1132" stroke="#e53e3e" stroke-width="2" stroke-dasharray="8,4"/>
-  <line x1="638" y1="1132" x2="1163" y2="990" stroke="#e53e3e" stroke-width="2" stroke-dasharray="8,4"/>
-  <text x="420" y="1170" font-size="11" fill="#e53e3e" font-weight="600" text-anchor="middle">25' FRONT SETBACK</text>
-
-
-  <!-- ===== BATHROOM BUILDING (built after survey — NOT on original plat) ===== -->
-  <rect x="1010" y="440" width="60" height="55" fill="#FFB74D" fill-opacity="0.75" stroke="#E65100" stroke-width="2.5" rx="3" stroke-dasharray="6,3"/>
-  <text x="1040" y="458" text-anchor="middle" font-size="9" fill="#3a2010" font-weight="800">BATHROOM</text>
-  <text x="1040" y="469" text-anchor="middle" font-size="8" fill="#E65100" font-weight="700">UNDER CONST.</text>
-  <text x="1040" y="479" text-anchor="middle" font-size="7" fill="#5a4a30">2 toilets + shower</text>
-  <text x="1040" y="498" text-anchor="middle" font-size="9" fill="#E65100" font-weight="800">NO PERMIT</text>
-
-
-  <!-- ===== ANNOTATIONS ===== -->
-
-  <!-- ESD / Jurisdiction info -->
-  <rect x="10" y="10" width="155" height="65" fill="#2d1b4e" fill-opacity="0.9" rx="5"/>
-  <text x="87" y="27" text-anchor="middle" font-size="13" fill="#c4a0ff" font-weight="700">BCESD #3</text>
-  <text x="87" y="40" text-anchor="middle" font-size="8" fill="#a080d0">Emergency Services District</text>
-  <text x="87" y="53" text-anchor="middle" font-size="7" fill="#38a169" font-weight="600">NOT in Houston Toad Habitat</text>
-  <text x="87" y="64" text-anchor="middle" font-size="7" fill="#38a169" font-weight="600">Flood Zone X (NOT in floodplain)</text>
-
-  <!-- Corner Lot indicator -->
-  <rect x="170" y="10" width="130" height="38" fill="#c87020" fill-opacity="0.9" rx="5"/>
-  <text x="235" y="27" text-anchor="middle" font-size="12" fill="#fff" font-weight="800">CORNER LOT</text>
-  <text x="235" y="40" text-anchor="middle" font-size="7" fill="#ffd4a0">2 road frontages = 2× 25' setbacks</text>
-
-  <!-- Disclaimer -->
-  <rect x="400" y="1465" width="300" height="22" fill="#faf8f4" fill-opacity="0.9" rx="3"/>
-  <text x="550" y="1479" text-anchor="middle" font-size="8" fill="#8a7a60">PRELIMINARY — NOT TO SCALE — PE-stamped plan required for IDP</text>
-
-</svg>
+  <!-- Full survey plat by 4Ward Land Surveying, 2/4/2021, Jason Ward R.P.L.S. #5811 -->
+  <img src="survey-base.png" alt="Land Title Survey of Lot 14-B, Block 6 — 160 Still Forest Dr, Cedar Creek TX — 4Ward Land Surveying, Feb 4 2021"/>
 </div>
 
 <!-- SETBACK COMPLIANCE TABLE -->
@@ -168,7 +95,7 @@
     CORNER LOT: West side (Leisure Lane CR 331) is a road — requires 25' setback from ROW, not 15'
   </p>
   <p style="font-size:0.75rem; color:#a09080; margin-bottom:10px;">
-    All distances from the survey plat by 4Ward Land Surveying (2/4/2021). Setback zones shown as red hatched areas starting at the bold black property boundary lines.
+    All distances from the survey plat by 4Ward Land Surveying (2/4/2021).
   </p>
   <table class="setback-table">
     <thead>
@@ -270,7 +197,7 @@
   </div>
   <div class="legend-card violation">
     <h3>7 of 11 Structures Violate Setbacks</h3>
-    <p><strong>Big Trailer</strong> (24' deficit), <strong>Red Container</strong> (~23'), and <strong>Container</strong> (20') are most critical — all on the Leisure Lane road side. <strong>Bathroom building</strong> is under construction without a permit (Class B misdemeanor). All structure distances are shown on the survey base map.</p>
+    <p><strong>Big Trailer</strong> (24' deficit), <strong>Red Container</strong> (~23'), and <strong>Container</strong> (20') are most critical — all on the Leisure Lane road side. <strong>Bathroom building</strong> is under construction without a permit (Class B misdemeanor).</p>
   </div>
   <div class="legend-card info">
     <h3>Jurisdictional Findings</h3>
@@ -295,7 +222,7 @@
   </div>
   <div class="legend-card">
     <h3>Base Map Source</h3>
-    <p>Property drawing from the official survey plat by <strong>4Ward Land Surveying</strong> (Feb 4, 2021, Jason Ward R.P.L.S. #5811). All structures, distances to property lines, driveway, pond, and bearings are drawn by the surveyor. Only the bathroom building and setback zones are added overlays.</p>
+    <p>Full survey plat by <strong>4Ward Land Surveying</strong> (Feb 4, 2021, Jason Ward R.P.L.S. #5811). All structures, distances to property lines, driveway, pond, and bearings are drawn by the surveyor.</p>
   </div>
 </div>
 
@@ -303,9 +230,8 @@
 <div class="notes">
   <h2>Notes &amp; Next Steps</h2>
   <ul>
-    <li><strong>Base Map:</strong> Property drawing from the official survey plat by 4Ward Land Surveying (2/4/2021). The survey shows all existing structures with distances to property lines already labeled by the surveyor.</li>
-    <li><strong>Red Hatched Zones:</strong> Setback zones starting at the bold black property boundary lines: 25' from road ROW (south + west), 15' from property lines (north + east).</li>
-    <li><strong>Bathroom Building (orange overlay):</strong> Built AFTER the survey — the only structure not shown on the original plat. Under construction WITHOUT a permit — Class B misdemeanor per Bastrop County Lodging/RV Infrastructure Requirements.</li>
+    <li><strong>Base Map:</strong> Full survey plat by 4Ward Land Surveying (2/4/2021). All structures and distances are labeled by the surveyor.</li>
+    <li><strong>Bathroom Building:</strong> Built AFTER the survey — under construction WITHOUT a permit — Class B misdemeanor per Bastrop County Lodging/RV Infrastructure Requirements.</li>
     <li><strong>ESD:</strong> Property is in <strong>BCESD #3</strong>. ESD letter required for IDP.</li>
     <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain.</li>
     <li><strong>Houston Toad:</strong> NOT in habitat area — no LPHCP Declination needed.</li>
