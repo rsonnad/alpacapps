@@ -1,12 +1,12 @@
 {
-  "version": "v260308.26 10:32p",
-  "release": 562,
-  "sha": "7e1c115bf",
-  "fullSha": "7e1c115bfbe6ade692b3854a4257ed65e2e7bc88",
+  "version": "v260308.27 10:55p",
+  "release": 563,
+  "sha": "045bf6ab5",
+  "fullSha": "045bf6ab51fa60a8732c7c5379842d045fcdb47f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 03:32:24+00",
-  "commits": [{"sha":"7e1c115bf","message":"Fix timezone bug: hours grouped by UTC date instead of Austin date","author":"Rahul"}]
+  "pushedAt": "2026-03-09 03:55:21+00",
+  "commits": [{"sha":"045bf6ab5","message":"Fix admin ninja signups page: update MAX_SPOTS from 6 to 10","author":"Rahul"}]
 }
