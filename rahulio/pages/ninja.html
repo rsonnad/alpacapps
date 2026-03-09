@@ -1508,7 +1508,16 @@
               'https://aphrrfprbixmhissnjfn.supabase.co',
               'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
             );
-            await sb.from('event_rsvps').insert(payload);
+            const { error } = await sb.from('event_rsvps').insert(payload);
+            if (error && error.code === '23505') {
+              const titleEl = document.getElementById('rsvpSuccessTitle');
+              const textEl = document.getElementById('rsvpSuccessText');
+              if (titleEl) titleEl.textContent = "You're already signed up!";
+              if (textEl) textEl.textContent = "Looks like you already registered with this email. See you there!";
+              form.style.display = 'none';
+              success.classList.add('visible');
+              return;
+            }
           }
         } catch (_) {}
 
@@ -1548,7 +1557,10 @@
               'https://aphrrfprbixmhissnjfn.supabase.co',
               'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
             );
-            await sb.from('event_rsvps').insert(payload);
+            const { error } = await sb.from('event_rsvps').insert(payload);
+            if (error && error.code === '23505') {
+              document.getElementById('interestDone').textContent = "You're already on the list!";
+            }
           }
         } catch (_) {}
 
