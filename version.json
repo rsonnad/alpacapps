@@ -1,12 +1,12 @@
 {
-  "version": "v260309.21 3:10p",
-  "release": 585,
-  "sha": "a40831dc6",
-  "fullSha": "a40831dc6ae1bc7d3aaa3fc93995f19ff2dfb0ab",
+  "version": "v260309.22 3:12p",
+  "release": 586,
+  "sha": "9caa35568",
+  "fullSha": "9caa35568215787439a5ef17817f36afe8869199",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:10:00+00",
-  "commits": [{"sha":"a40831dc6","message":"Replace static credential block with interactive paste fields","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:12:27+00",
+  "commits": [{"sha":"9caa35568","message":"Simplify Supabase setup to 2 fields — Claude Code fetches the rest","author":"Rahul"}]
 }
