@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEXC vs Hyperliquid: Stock Perps Showdown</title>
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Tokens ── */
+    :root {
+      --bg: #09090b;
+      --bg-subtle: #0e0f13;
+      --surface: #141419;
+      --surface-2: #1a1b22;
+      --surface-3: #22232c;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --text: #f0f0f3;
+      --text-secondary: #a0a3b1;
+      --text-muted: #5c5f6e;
+      --mexc: #34d399;
+      --mexc-bg: rgba(52,211,153,0.08);
+      --mexc-border: rgba(52,211,153,0.2);
+      --hl: #60a5fa;
+      --hl-bg: rgba(96,165,250,0.08);
+      --hl-border: rgba(96,165,250,0.2);
+      --accent: #818cf8;
+      --amber: #fbbf24;
+      --amber-bg: rgba(251,191,36,0.08);
+      --red: #f87171;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 100px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: 0.015;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 920px; margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+      margin-bottom: 1.75rem; transition: color 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .back-link:hover { color: var(--text-secondary); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── Header ── */
+    .page-header { margin-bottom: 2.5rem; }
+    .page-header h1 {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.035em;
+      line-height: 1.15;
+    }
+    .h1-mexc { color: var(--mexc); }
+    .h1-vs { color: var(--text-muted); font-weight: 400; }
+    .h1-hl { color: var(--hl); }
+    .page-header .tldr {
+      margin-top: 0.85rem; font-size: 0.88rem; color: var(--text-secondary);
+      line-height: 1.65; max-width: 720px;
+    }
+
+    /* ── Tabs ── */
+    .tabs-wrap {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(9,9,11,0.85);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      margin: 0 -1.5rem; padding: 0 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs-bar {
+      display: flex; gap: 0; overflow-x: auto;
+      scrollbar-width: none; -ms-overflow-style: none;
+      position: relative;
+    }
+    .tabs-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; padding: 0.85rem 1.1rem; font-size: 0.8rem; font-weight: 500;
+      color: var(--text-muted); background: none; border: none; cursor: pointer;
+      position: relative; transition: color 0.25s var(--ease);
+      font-family: var(--font); white-space: nowrap; letter-spacing: 0.01em;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--text); }
+    .tab-indicator {
+      position: absolute; bottom: 0; height: 2px;
+      background: var(--accent); border-radius: 2px;
+      transition: left 0.35s var(--ease), width 0.35s var(--ease);
+    }
+
+    /* ── Panels ── */
+    .tab-panel { display: none; padding-top: 1.75rem; }
+    .tab-panel.active { display: block; animation: panelIn 0.4s var(--ease); }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-hover); }
+    .card-title {
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem;
+    }
+
+    /* ── VS Grid ── */
+    .vs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .vs-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.9rem; font-weight: 700; margin-bottom: 0.85rem;
+      padding-bottom: 0.6rem; border-bottom: 2px solid;
+    }
+    .vs-header.mexc { color: var(--mexc); border-color: var(--mexc); }
+    .vs-header.hl { color: var(--hl); border-color: var(--hl); }
+    .vs-header .vs-badge {
+      font-size: 0.6rem; font-weight: 600; padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-pill); text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .vs-header.mexc .vs-badge { background: var(--mexc-bg); color: var(--mexc); }
+    .vs-header.hl .vs-badge { background: var(--hl-bg); color: var(--hl); }
+
+    /* ── Lists ── */
+    .feature-list { list-style: none; }
+    .feature-list li {
+      font-size: 0.84rem; color: var(--text-secondary); line-height: 1.6;
+      padding: 0.25rem 0 0.25rem 1.35rem; position: relative;
+    }
+    .feature-list li::before {
+      content: ''; position: absolute; left: 0; top: 0.65rem;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .feature-list li strong { color: var(--text); font-weight: 600; }
+
+    /* ── Data Table ── */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      text-align: left; font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); padding: 0 0.85rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 0.84rem;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr { transition: background 0.15s; }
+    .data-table tbody tr:hover { background: var(--surface-2); }
+    .v-mexc { color: var(--mexc); font-weight: 600; font-family: var(--mono); font-size: 0.82rem; }
+    .v-hl { color: var(--hl); font-weight: 600; font-family: var(--mono); font-size: 0.82rem; }
+
+    /* ── Fee Calculator ── */
+    .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .calc-field { }
+    .calc-label {
+      display: block; font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .calc-input {
+      width: 100%; padding: 0.65rem 0.85rem; font-size: 0.88rem;
+      font-family: var(--mono); background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); outline: none; transition: all 0.2s;
+    }
+    .calc-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(129,140,248,0.12);
+    }
+    .calc-input::placeholder { color: var(--text-muted); }
+
+    /* Range slider */
+    .range-wrap { position: relative; margin-top: 0.25rem; }
+    .range-value {
+      font-family: var(--mono); font-size: 0.88rem; font-weight: 600;
+      color: var(--text); margin-bottom: 0.4rem;
+    }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 4px;
+      background: var(--surface-3); outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px;
+      border-radius: 50%; background: var(--accent); cursor: pointer;
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 2px rgba(129,140,248,0.25);
+      transition: box-shadow 0.2s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 4px rgba(129,140,248,0.3);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+      border: 3px solid var(--surface);
+    }
+
+    /* Segmented control */
+    .seg-control {
+      display: inline-flex; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 3px; gap: 2px; width: 100%;
+    }
+    .seg-btn {
+      flex: 1; padding: 0.5rem 0.6rem; font-size: 0.78rem; font-weight: 500;
+      color: var(--text-muted); background: none; border: none; cursor: pointer;
+      border-radius: 6px; transition: all 0.2s var(--ease);
+      font-family: var(--font); text-align: center;
+    }
+    .seg-btn.active {
+      background: var(--surface-3); color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .seg-btn:hover:not(.active) { color: var(--text-secondary); }
+
+    /* Result cards */
+    .calc-results-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .result-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.15rem;
+      text-align: center; position: relative; overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .result-card.mexc { border-color: var(--mexc-border); }
+    .result-card.hl { border-color: var(--hl-border); }
+    .result-card .rc-glow {
+      position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 80px; border-radius: 50%; filter: blur(40px);
+      opacity: 0.15; pointer-events: none;
+    }
+    .result-card.mexc .rc-glow { background: var(--mexc); }
+    .result-card.hl .rc-glow { background: var(--hl); }
+    .rc-label {
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 0.5rem; position: relative;
+    }
+    .result-card.mexc .rc-label { color: var(--mexc); }
+    .result-card.hl .rc-label { color: var(--hl); }
+    .rc-value {
+      font-size: 1.75rem; font-weight: 700; font-family: var(--mono);
+      color: var(--text); position: relative; letter-spacing: -0.02em;
+    }
+    .rc-sub {
+      font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem;
+      font-family: var(--mono); position: relative;
+    }
+    .calc-verdict {
+      text-align: center; margin-top: 0.85rem; padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600;
+      transition: all 0.3s var(--ease);
+    }
+    .calc-verdict.favor-mexc { background: var(--mexc-bg); color: var(--mexc); border: 1px solid var(--mexc-border); }
+    .calc-verdict.favor-hl { background: var(--hl-bg); color: var(--hl); border: 1px solid var(--hl-border); }
+    .calc-verdict.neutral { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* ── Stat Chips ── */
+    .stat-row { display: flex; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .stat-chip {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+      flex: 1; min-width: 130px;
+    }
+    .stat-chip .sc-label {
+      font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted);
+    }
+    .stat-chip .sc-value {
+      font-size: 1.15rem; font-weight: 700; font-family: var(--mono);
+      margin-top: 0.2rem; letter-spacing: -0.01em;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6;
+      margin-top: 0.85rem; padding: 0.75rem 1rem;
+      background: var(--amber-bg); border-radius: var(--radius-sm);
+      border-left: 3px solid var(--amber);
+    }
+
+    /* ── Decision Matrix ── */
+    .matrix-pills {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem;
+    }
+    .m-pill {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.4rem 0.7rem; font-size: 0.78rem; font-weight: 500;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-pill); color: var(--text-muted);
+      cursor: pointer; transition: all 0.25s var(--ease);
+      font-family: var(--font); user-select: none;
+    }
+    .m-pill:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+    .m-pill.on {
+      background: rgba(129,140,248,0.1); border-color: rgba(129,140,248,0.3);
+      color: var(--accent);
+    }
+    .m-pill .m-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text-muted); transition: all 0.25s var(--ease);
+      flex-shrink: 0;
+    }
+    .m-pill.on .m-dot { background: var(--accent); transform: scale(1.3); }
+
+    .m-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--border);
+      transition: all 0.3s var(--ease); border-radius: 0;
+    }
+    .m-row:last-child { border-bottom: none; }
+    .m-row.dim { opacity: 0.2; transform: scale(0.98); }
+    .m-row.lit { background: rgba(129,140,248,0.04); border-radius: var(--radius-sm); }
+    .m-row-label { font-size: 0.84rem; color: var(--text); font-weight: 500; }
+    .m-row-winner {
+      font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.65rem;
+      border-radius: var(--radius-pill); letter-spacing: 0.01em;
+    }
+    .m-row-winner.w-mexc { color: var(--mexc); background: var(--mexc-bg); }
+    .m-row-winner.w-hl { color: var(--hl); background: var(--hl-bg); }
+    .m-row-winner.w-neither { color: var(--amber); background: var(--amber-bg); }
+
+    .score-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 1.25rem; padding-top: 1.15rem;
+      border-top: 1px solid var(--border);
+    }
+    .score-bar .sb-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; min-width: 85px; text-align: right;
+    }
+    .score-bar .sb-label.mexc { color: var(--mexc); }
+    .score-bar .sb-label.hl { color: var(--hl); }
+    .sb-track {
+      flex: 1; height: 28px; background: var(--surface-2);
+      border-radius: var(--radius-pill); overflow: hidden;
+      display: flex; position: relative;
+    }
+    .sb-fill {
+      height: 100%; transition: width 0.5s var(--ease);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; font-family: var(--mono);
+      color: var(--bg); min-width: 28px;
+    }
+    .sb-fill.f-mexc { background: var(--mexc); }
+    .sb-fill.f-tie { background: var(--text-muted); }
+    .sb-fill.f-hl { background: var(--hl); }
+
+    /* ── Landscape ── */
+    .landscape-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+    .l-card {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem;
+      transition: all 0.2s;
+    }
+    .l-card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+    .l-card .l-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .l-card .l-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.5; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .page-wrap { padding: 1.5rem 1rem 3.5rem; }
+      .tabs-wrap { margin: 0 -1rem; padding: 0 1rem; }
+      .page-header h1 { font-size: 1.5rem; }
+      .vs-grid { grid-template-columns: 1fr; }
+      .calc-grid { grid-template-columns: 1fr; }
+      .calc-results-grid { grid-template-columns: 1fr; }
+      .landscape-grid { grid-template-columns: 1fr; }
+      .score-bar { flex-direction: column; gap: 0.35rem; }
+      .score-bar .sb-label { text-align: center; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <a href="/rahulio/pages/" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      All Pages
+    </a>
+
+    <div class="page-header">
+      <h1><span class="h1-mexc">MEXC</span> <span class="h1-vs">vs</span> <span class="h1-hl">Hyperliquid</span></h1>
+      <p class="tldr">
+        Both exchanges offer perpetual futures on US equities. MEXC leads on volume (~$12.6B daily) and fees (0% maker / 0.02% taker). Hyperliquid counters with full decentralization, self-custody, no KYC, and permissionless market creation via HIP-3.
+      </p>
+    </div>
+
+    <!-- Sticky tabs -->
+    <div class="tabs-wrap">
+      <nav class="tabs-bar" id="tabs-bar" role="tablist">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="fees">Fees</button>
+        <button class="tab-btn" data-tab="calculator">Calculator</button>
+        <button class="tab-btn" data-tab="volume">Volume</button>
+        <button class="tab-btn" data-tab="liquidity">Liquidity</button>
+        <button class="tab-btn" data-tab="architecture">Architecture</button>
+        <button class="tab-btn" data-tab="matrix">Decision Matrix</button>
+        <button class="tab-btn" data-tab="landscape">Landscape</button>
+        <div class="tab-indicator" id="tab-indicator"></div>
+      </nav>
+    </div>
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <section class="tab-panel active" id="panel-overview">
+      <div class="vs-grid">
+        <div class="card">
+          <div class="vs-header mexc">MEXC <span class="vs-badge">CEX</span></div>
+          <ul class="feature-list">
+            <li>Launched mid-2025, USDT-margined</li>
+            <li><strong>13 tickers:</strong> COIN, HOOD, NVDA, AAPL, AMZN, GOOGL, META, TSLA, MCD, IREN, LMT, OXY, ACHR</li>
+            <li>Prices reference Ondo tokenized stocks</li>
+            <li>US market hours only</li>
+            <li>Up to <strong>100x</strong> leverage</li>
+            <li>Funding fees currently <strong>waived</strong></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="vs-header hl">Hyperliquid <span class="vs-badge">DEX</span></div>
+          <ul class="feature-list">
+            <li>Launched Oct 2025 via HIP-3 protocol</li>
+            <li><strong>12+ tickers:</strong> NVDA, TSLA, AAPL, MSFT, PLTR, META, AMZN, GOOGL, AMD, COIN, NFLX, SpaceX</li>
+            <li>XYZ100 tracks Nasdaq-100 ($80M+ daily vol)</li>
+            <li>HyperStone oracle (3s updates, 4-of-6 quorum)</li>
+            <li>Near <strong>24/7 trading</strong></li>
+            <li>Permissionless deployment (500K HYPE stake)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FEES ═══ -->
+    <section class="tab-panel" id="panel-fees">
+      <div class="card">
+        <div class="card-title">Base Fee Comparison</div>
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>MEXC</th><th>Hyperliquid</th></tr></thead>
+          <tbody>
+            <tr><td>Maker fee</td><td class="v-mexc">0.00%</td><td class="v-hl">0.015%</td></tr>
+            <tr><td>Taker fee</td><td class="v-mexc">0.02%</td><td class="v-hl">0.045%</td></tr>
+            <tr><td>Stock perps maker</td><td class="v-mexc">0.00%</td><td class="v-hl">~0.03%</td></tr>
+            <tr><td>Stock perps taker</td><td class="v-mexc">0.02%</td><td class="v-hl">~0.09%</td></tr>
+            <tr><td>Funding settlement</td><td class="v-mexc">Every 8h</td><td class="v-hl">Every 1h</td></tr>
+            <tr><td>Stock funding</td><td class="v-mexc">Waived</td><td class="v-hl">Standard</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="vs-grid">
+        <div class="card">
+          <div class="card-title">MEXC Discounts</div>
+          <ul class="feature-list">
+            <li>Hold 500+ MX &rarr; <strong>50% taker discount</strong> (0.01%)</li>
+            <li>Pay in MX &rarr; 20% deduction</li>
+            <li>VIP Card ($10M+ vol elsewhere) &rarr; 0.01% taker</li>
+            <li>$5B+ 30d volume &rarr; <strong>0.005% taker</strong></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">Hyperliquid Discounts</div>
+          <ul class="feature-list">
+            <li>7 volume tiers (14-day rolling)</li>
+            <li>Top tier ($7B+) &rarr; <strong>0.024% taker, 0% maker</strong></li>
+            <li>HYPE staking: 5-40% multiplicative discount</li>
+            <li>Top MMs (&gt;3% vol) &rarr; -0.003% maker rebate</li>
+            <li>4% referral on first $25M</li>
+            <li>HIP-3 Growth Mode &rarr; <strong>90% fee slash</strong></li>
+            <li>USDH quote &rarr; 20% taker discount</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CALCULATOR ═══ -->
+    <section class="tab-panel" id="panel-calculator">
+      <div class="card">
+        <div class="card-title">Fee Calculator</div>
+
+        <div class="calc-grid">
+          <div>
+            <label class="calc-label">Trade Size</label>
+            <div class="range-value" id="size-display">$10,000</div>
+            <input type="range" id="calc-size" min="100" max="500000" value="10000" step="100">
+          </div>
+          <div>
+            <label class="calc-label">Trades per Month</label>
+            <div class="range-value" id="trades-display">30</div>
+            <input type="range" id="calc-trades" min="1" max="500" value="30" step="1">
+          </div>
+          <div>
+            <label class="calc-label">Order Type</label>
+            <div class="seg-control" id="seg-type">
+              <button class="seg-btn active" data-val="taker">Taker</button>
+              <button class="seg-btn" data-val="maker">Maker</button>
+            </div>
+          </div>
+          <div>
+            <label class="calc-label">Market</label>
+            <div class="seg-control" id="seg-market">
+              <button class="seg-btn active" data-val="stock">Stock Perps</button>
+              <button class="seg-btn" data-val="crypto">Crypto Perps</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-results-grid">
+          <div class="result-card mexc">
+            <div class="rc-glow"></div>
+            <div class="rc-label">MEXC per trade</div>
+            <div class="rc-value" id="r-mexc-trade">$2.00</div>
+            <div class="rc-sub" id="r-mexc-mo">$60.00 /mo</div>
+          </div>
+          <div class="result-card hl">
+            <div class="rc-glow"></div>
+            <div class="rc-label">Hyperliquid per trade</div>
+            <div class="rc-value" id="r-hl-trade">$9.00</div>
+            <div class="rc-sub" id="r-hl-mo">$270.00 /mo</div>
+          </div>
+        </div>
+        <div class="calc-verdict" id="calc-verdict"></div>
+      </div>
+    </section>
+
+    <!-- ═══ VOLUME ═══ -->
+    <section class="tab-panel" id="panel-volume">
+      <div class="card">
+        <div class="card-title">Platform Volume</div>
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>MEXC</th><th>Hyperliquid</th></tr></thead>
+          <tbody>
+            <tr><td>24h perps volume</td><td class="v-mexc">~$12.6B</td><td class="v-hl">~$3.4B</td></tr>
+            <tr><td>Monthly volume</td><td>Not published</td><td class="v-hl">$200B+</td></tr>
+            <tr><td>Cumulative lifetime</td><td>Not published</td><td class="v-hl">$2.76T+</td></tr>
+            <tr><td>Futures pairs</td><td class="v-mexc">1,300+</td><td class="v-hl">150+</td></tr>
+            <tr><td>Market share (2024)</td><td class="v-mexc">3% &rarr; 11%</td><td>N/A (DEX)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Stock Perps Volume</div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <div class="sc-label">Hyperliquid HIP-3 Daily</div>
+            <div class="sc-value" style="color:var(--hl)">$1.4-1.5B</div>
+          </div>
+          <div class="stat-chip">
+            <div class="sc-label">Hyperliquid OI</div>
+            <div class="sc-value" style="color:var(--hl)">~$790M</div>
+          </div>
+          <div class="stat-chip">
+            <div class="sc-label">MEXC Depth (TSLA/NVDA)</div>
+            <div class="sc-value" style="color:var(--mexc)">300-600K</div>
+          </div>
+        </div>
+        <div class="callout">
+          12 of Hyperliquid's top 17 pairs by volume are HIP-3 markets.
+          MEXC's volume-to-reserves ratio ($2.97B assets vs $12.6B daily) has drawn scrutiny.
+          Hyperliquid's OI-to-volume ratio of ~45% suggests genuine liquidity.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ LIQUIDITY ═══ -->
+    <section class="tab-panel" id="panel-liquidity">
+      <div class="vs-grid">
+        <div class="card">
+          <div class="vs-header mexc">MEXC <span class="vs-badge">CEX</span></div>
+          <ul class="feature-list">
+            <li>BTC perp: <strong>~$82M</strong> within &plusmn;5 bps (2.6x nearest competitor)</li>
+            <li>Total BTCUSDT depth: $3.1B across 150 levels</li>
+            <li>Matching engine: <strong>1.4M orders/sec</strong></li>
+            <li>Insurance fund: $560M+</li>
+            <li>Stock futures: 300K-600K USDT tight-range</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="vs-header hl">Hyperliquid <span class="vs-badge">DEX</span></div>
+          <ul class="feature-list">
+            <li>Fully on-chain CLOB on custom L1</li>
+            <li>~200K orders/sec, <strong>sub-second finality</strong> (~0.2s)</li>
+            <li>BTC perps depth comparable to Binance</li>
+            <li>TWAP orders with 3% max slippage per suborder</li>
+            <li>Silver perps: <strong>$1.1B daily vol</strong> (Feb 2026 spike)</li>
+            <li>Order book fully transparent on-chain</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ ARCHITECTURE ═══ -->
+    <section class="tab-panel" id="panel-architecture">
+      <div class="vs-grid">
+        <div class="card">
+          <div class="vs-header mexc">MEXC <span class="vs-badge">Centralized</span></div>
+          <ul class="feature-list">
+            <li>KYC required</li>
+            <li>Custodial (exchange holds funds)</li>
+            <li>Proprietary order book (opaque)</li>
+            <li>Fiat on-ramps available</li>
+            <li>Unified CEX interface for crypto + stocks</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="vs-header hl">Hyperliquid <span class="vs-badge">Decentralized</span></div>
+          <ul class="feature-list">
+            <li>No KYC</li>
+            <li>Self-custody (funds in user wallet)</li>
+            <li>On-chain order book (fully transparent)</li>
+            <li>No counterparty risk from exchange insolvency</li>
+            <li>HIP-3: permissionless market creation</li>
+            <li>US/UK users geo-blocked</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ DECISION MATRIX ═══ -->
+    <section class="tab-panel" id="panel-matrix">
+      <div class="card">
+        <div class="card-title">Toggle Your Priorities</div>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;">
+          Select what matters to you. Non-selected items dim out and the score bar updates in real time.
+        </p>
+        <div class="matrix-pills" id="matrix-pills"></div>
+      </div>
+      <div class="card">
+        <div id="matrix-rows"></div>
+        <div class="score-bar" id="score-bar"></div>
+      </div>
+    </section>
+
+    <!-- ═══ LANDSCAPE ═══ -->
+    <section class="tab-panel" id="panel-landscape">
+      <div class="card">
+        <div class="card-title">Other Players</div>
+        <div class="landscape-grid">
+          <div class="l-card">
+            <div class="l-name">Kraken xStocks</div>
+            <div class="l-desc">Feb 2026. Regulated, 1:1 asset-backed tokenized equity perps.</div>
+          </div>
+          <div class="l-card">
+            <div class="l-name">OKX</div>
+            <div class="l-desc">Live since March 2025 with equity perps.</div>
+          </div>
+          <div class="l-card">
+            <div class="l-name">Binance</div>
+            <div class="l-desc">API hints at imminent stock perps entry.</div>
+          </div>
+          <div class="l-card">
+            <div class="l-name">DeFi Protocols</div>
+            <div class="l-desc">Ostium, Gains Network also offer equity perps on-chain.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Regulatory Risk</div>
+        <ul class="feature-list">
+          <li>CFTC rulemaking on perpetuals is ongoing</li>
+          <li>SEC stance on crypto-traded equity derivatives in flux</li>
+          <li>Neither MEXC nor Hyperliquid designed for compliant US access</li>
+          <li>Category barely existed before March 2025 &mdash; frameworks lagging</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Tab system with sliding indicator ──
+    const bar = document.getElementById('tabs-bar');
+    const indicator = document.getElementById('tab-indicator');
+    const btns = bar.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    function moveIndicator(btn) {
+      indicator.style.left = btn.offsetLeft + 'px';
+      indicator.style.width = btn.offsetWidth + 'px';
+    }
+
+    function switchTab(btn) {
+      btns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      moveIndicator(btn);
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    btns.forEach(btn => btn.addEventListener('click', () => switchTab(btn)));
+    // Init indicator position
+    requestAnimationFrame(() => moveIndicator(bar.querySelector('.tab-btn.active')));
+    window.addEventListener('resize', () => moveIndicator(bar.querySelector('.tab-btn.active')));
+
+    // ── Segmented controls ──
+    function initSegControl(id) {
+      const wrap = document.getElementById(id);
+      const segs = wrap.querySelectorAll('.seg-btn');
+      segs.forEach(s => s.addEventListener('click', () => {
+        segs.forEach(b => b.classList.remove('active'));
+        s.classList.add('active');
+        updateCalc();
+      }));
+    }
+    initSegControl('seg-type');
+    initSegControl('seg-market');
+
+    function getSegVal(id) {
+      return document.getElementById(id).querySelector('.seg-btn.active').dataset.val;
+    }
+
+    // ── Fee Calculator ──
+    const FEES = {
+      stock: { mexc: { maker: 0, taker: 0.0002 }, hl: { maker: 0.0003, taker: 0.0009 } },
+      crypto: { mexc: { maker: 0, taker: 0.0002 }, hl: { maker: 0.00015, taker: 0.00045 } },
+    };
+
+    const sizeSlider = document.getElementById('calc-size');
+    const tradesSlider = document.getElementById('calc-trades');
+    const sizeDisplay = document.getElementById('size-display');
+    const tradesDisplay = document.getElementById('trades-display');
+
+    function fmtUSD(n) {
+      if (n === 0) return '$0';
+      if (n < 1) return '$' + n.toFixed(3);
+      return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateCalc() {
+      const size = +sizeSlider.value;
+      const trades = +tradesSlider.value;
+      const type = getSegVal('seg-type');
+      const market = getSegVal('seg-market');
+
+      sizeDisplay.textContent = '$' + size.toLocaleString();
+      tradesDisplay.textContent = trades;
+
+      const mRate = FEES[market].mexc[type];
+      const hRate = FEES[market].hl[type];
+      const mPer = size * mRate;
+      const hPer = size * hRate;
+      const mMo = mPer * trades;
+      const hMo = hPer * trades;
+
+      document.getElementById('r-mexc-trade').textContent = fmtUSD(mPer);
+      document.getElementById('r-mexc-mo').textContent = fmtUSD(mMo) + ' /mo';
+      document.getElementById('r-hl-trade').textContent = fmtUSD(hPer);
+      document.getElementById('r-hl-mo').textContent = fmtUSD(hMo) + ' /mo';
+
+      const v = document.getElementById('calc-verdict');
+      const diff = Math.abs(mMo - hMo);
+      if (mMo === 0 && hMo === 0) {
+        v.className = 'calc-verdict neutral';
+        v.textContent = 'Both platforms: $0 (maker fees are free)';
+      } else if (mMo < hMo) {
+        const pct = ((1 - mMo / hMo) * 100).toFixed(0);
+        v.className = 'calc-verdict favor-mexc';
+        v.textContent = 'MEXC saves ' + fmtUSD(diff) + '/mo (' + pct + '% cheaper)';
+      } else if (hMo < mMo) {
+        const pct = ((1 - hMo / mMo) * 100).toFixed(0);
+        v.className = 'calc-verdict favor-hl';
+        v.textContent = 'Hyperliquid saves ' + fmtUSD(diff) + '/mo (' + pct + '% cheaper)';
+      } else {
+        v.className = 'calc-verdict neutral';
+        v.textContent = 'Same cost on both platforms';
+      }
+    }
+
+    sizeSlider.addEventListener('input', updateCalc);
+    tradesSlider.addEventListener('input', updateCalc);
+    updateCalc();
+
+    // ── Decision Matrix ──
+    const MATRIX = [
+      { label: 'Lowest fees', winner: 'mexc', tag: 'fees' },
+      { label: 'Broadest stock perps selection', winner: 'hl', tag: 'selection' },
+      { label: 'Decentralization / self-custody', winner: 'hl', tag: 'defi' },
+      { label: 'Order book transparency', winner: 'hl', tag: 'transparency' },
+      { label: 'No KYC', winner: 'hl', tag: 'privacy' },
+      { label: 'Fiat on-ramps', winner: 'mexc', tag: 'fiat' },
+      { label: 'US market hours execution', winner: 'mexc', tag: 'hours' },
+      { label: '24/7 trading', winner: 'hl', tag: '247' },
+      { label: 'Regulatory compliance', winner: 'neither', tag: 'compliance' },
+      { label: 'Permissionless new markets', winner: 'hl', tag: 'permissionless' },
+      { label: 'Insurance fund protection', winner: 'mexc', tag: 'insurance' },
+    ];
+
+    const active = new Set();
+
+    function renderMatrix() {
+      const pillsEl = document.getElementById('matrix-pills');
+      pillsEl.innerHTML = MATRIX.map(m =>
+        '<button class="m-pill' + (active.has(m.tag) ? ' on' : '') + '" data-tag="' + m.tag + '">' +
+        '<span class="m-dot"></span>' + m.label + '</button>'
+      ).join('');
+
+      pillsEl.querySelectorAll('.m-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = btn.dataset.tag;
+          active.has(t) ? active.delete(t) : active.add(t);
+          renderMatrix();
+        });
+      });
+
+      const hasFilter = active.size > 0;
+      const rowsEl = document.getElementById('matrix-rows');
+      rowsEl.innerHTML = MATRIX.map(m => {
+        const on = active.has(m.tag);
+        const cls = hasFilter ? (on ? 'lit' : 'dim') : '';
+        const wCls = m.winner === 'mexc' ? 'w-mexc' : m.winner === 'hl' ? 'w-hl' : 'w-neither';
+        const wTxt = m.winner === 'mexc' ? 'MEXC' : m.winner === 'hl' ? 'Hyperliquid' : 'Neither';
+        return '<div class="m-row ' + cls + '">' +
+          '<span class="m-row-label">' + m.label + '</span>' +
+          '<span class="m-row-winner ' + wCls + '">' + wTxt + '</span></div>';
+      }).join('');
+
+      // Score bar
+      const set = hasFilter ? MATRIX.filter(m => active.has(m.tag)) : MATRIX;
+      let mC = 0, hC = 0, tC = 0;
+      set.forEach(m => { if (m.winner === 'mexc') mC++; else if (m.winner === 'hl') hC++; else tC++; });
+      const total = mC + hC + tC || 1;
+      const mP = (mC / total * 100).toFixed(1);
+      const tP = (tC / total * 100).toFixed(1);
+      const hP = (hC / total * 100).toFixed(1);
+
+      document.getElementById('score-bar').innerHTML =
+        '<div class="sb-label mexc">MEXC ' + mC + '</div>' +
+        '<div class="sb-track">' +
+          '<div class="sb-fill f-mexc" style="width:' + mP + '%">' + (mC > 0 ? mC : '') + '</div>' +
+          '<div class="sb-fill f-tie" style="width:' + tP + '%">' + (tC > 0 ? tC : '') + '</div>' +
+          '<div class="sb-fill f-hl" style="width:' + hP + '%">' + (hC > 0 ? hC : '') + '</div>' +
+        '</div>' +
+        '<div class="sb-label hl">' + hC + ' Hyperliquid</div>';
+    }
+
+    renderMatrix();
+  })();
+  </script>
+</body>
+</html>
