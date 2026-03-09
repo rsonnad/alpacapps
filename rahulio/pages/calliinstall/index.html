@@ -465,15 +465,46 @@
       <strong>Where's my project ref?</strong> On your <a href="https://supabase.com/dashboard" target="_blank">Supabase dashboard</a>, click your project. The ref is in the URL: <code>supabase.com/dashboard/project/<strong>abcdefghijk</strong></code>. Your database password is what you set when you created the project.
     </div>
 
-    <h3 style="font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem;">5b. Paste this into Claude Code</h3>
-    <p>Fill in your three values and paste into your Claude Code session:</p>
+    <h3 style="font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem;">5b. Fill in your values</h3>
+    <p>Paste each value below. The prompt at the bottom auto-fills as you type.</p>
+
+    <div style="display: grid; gap: 0.75rem; margin: 0.75rem 0 1.25rem;">
+      <!-- Project ref -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="sb-ref" style="font-weight: 600; white-space: nowrap; min-width: 150px;">Project ref</label>
+          <input type="text" id="sb-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" oninput="parseRef(this); buildPrompt()" style="font-family: inherit; font-size: 0.88rem; padding: 0.45rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 200px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <p style="margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted);">Paste the ref <em>or</em> a full URL like <code>supabase.com/dashboard/project/abcdefghijk/...</code> &mdash; the ref will be extracted automatically.</p>
+      </div>
+
+      <!-- Database password -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="sb-pass" style="font-weight: 600; white-space: nowrap; min-width: 150px;">Database password</label>
+          <input type="text" id="sb-pass" placeholder="the password you set when creating the project" oninput="buildPrompt()" style="font-family: monospace; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 200px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+      </div>
+
+      <!-- Management API token -->
+      <div style="background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="sb-token" style="font-weight: 600; white-space: nowrap; min-width: 150px;">Management API token</label>
+          <input type="text" id="sb-token" placeholder="sbp_..." oninput="buildPrompt()" style="font-family: monospace; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 200px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <p style="margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted);">From step 5a above. Starts with <code>sbp_</code>.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem;">5c. Copy this into Claude Code</h3>
+    <p style="font-size: 0.88rem; color: var(--text-soft); margin-bottom: 0.5rem;">This auto-fills as you type above. Click <strong>Copy</strong>, paste into Claude Code, and it handles the rest.</p>
 
     <div class="code-wrap">
-      <pre><code>Set up Supabase for my project.
+      <pre id="sb-prompt" style="white-space: pre-wrap; word-break: break-all;"><code>Set up Supabase for my project.
 
-My project ref is: <span class="string">[paste your project ref]</span>
-My database password is: <span class="string">[paste your database password]</span>
-My Supabase Management API token is: <span class="string">[paste your sbp_ token]</span>
+My project ref is: ___
+My database password is: ___
+My Supabase Management API token is: ___
 
 Log into the Supabase CLI (supabase login), link my project
 (supabase link --project-ref), then use the Management API
@@ -483,7 +514,7 @@ automatically. Install the CLI if it's not already installed.
 Create CLAUDE.local.md and docs/CREDENTIALS.md with all the
 connection details. Don't ask me for permission at each step —
 just do the work end to end and show me the results when done.</code></pre>
-      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
     </div>
 
     <p>If you have other API keys from your old machine (Resend, Stripe, Square, etc.), tell Claude Code about them too and it will add them to <code>docs/CREDENTIALS.md</code>.</p>
@@ -539,6 +570,46 @@ function copyBlock(btn) {
   if (!pre) return;
   var text = pre.textContent;
   navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+// Auto-extract project ref from pasted URLs
+function parseRef(input) {
+  var val = input.value.trim();
+  // supabase.com/dashboard/project/abcdefghijk/...
+  var dashMatch = val.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+  if (dashMatch) { input.value = dashMatch[1]; return; }
+  // https://abcdefghijk.supabase.co
+  var subMatch = val.match(/^https?:\/\/([a-z0-9]+)\.supabase\.co/i);
+  if (subMatch) { input.value = subMatch[1]; return; }
+}
+
+// Rebuild the prompt block from input values
+function buildPrompt() {
+  var ref = document.getElementById('sb-ref').value.trim() || '___';
+  var pass = document.getElementById('sb-pass').value.trim() || '___';
+  var token = document.getElementById('sb-token').value.trim() || '___';
+  var block = 'Set up Supabase for my project.\n\n' +
+    'My project ref is: ' + ref + '\n' +
+    'My database password is: ' + pass + '\n' +
+    'My Supabase Management API token is: ' + token + '\n\n' +
+    'Log into the Supabase CLI (supabase login), link my project\n' +
+    '(supabase link --project-ref), then use the Management API\n' +
+    'token to fetch the project URL, anon key, and service role key\n' +
+    'automatically. Install the CLI if it\'s not already installed.\n\n' +
+    'Create CLAUDE.local.md and docs/CREDENTIALS.md with all the\n' +
+    'connection details. Don\'t ask me for permission at each step \u2014\n' +
+    'just do the work end to end and show me the results when done.';
+  var el = document.querySelector('#sb-prompt code');
+  if (el) el.textContent = block;
+}
+
+function copyPrompt(btn) {
+  var el = document.querySelector('#sb-prompt code');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(function() {
     btn.textContent = 'Copied!';
     setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
   });
