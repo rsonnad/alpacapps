@@ -1,12 +1,12 @@
 {
-  "version": "v260309.11 11:45a",
-  "release": 575,
-  "sha": "79a2e742c",
-  "fullSha": "79a2e742c975325bba02b1df05d7f26aedaff7b0",
+  "version": "v260309.12 12:01p",
+  "release": 576,
+  "sha": "518d0e133",
+  "fullSha": "518d0e1333134cd4cf66da6c2739196e279465d1",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 16:45:56+00",
-  "commits": [{"sha":"79a2e742c","message":"Site plan: use survey as base, add overlays, ESD3 info, remove fence refs","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 17:01:26+00",
+  "commits": [{"sha":"5f4700f01","message":"Fix setback zone alignment to match bold black property boundary lines","author":"Jacqueline Giroux"},{"sha":"518d0e133","message":"Use full survey plat as site plan background (2400x1600)","author":"Jacqueline Giroux"}]
 }
