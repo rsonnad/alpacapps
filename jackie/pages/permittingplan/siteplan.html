@@ -212,13 +212,13 @@
     stroke="#8a7860" stroke-width="1" fill="none" stroke-dasharray="4,6"/>
 
   <!-- Driveway - EAST branch: from house area south around pond back to entrance -->
-  <path d="M 370,420 Q 380,480 375,540 Q 370,600 350,660 Q 330,720 310,760 L 300,800"
+  <path d="M 370,420 Q 385,470 385,520 Q 385,580 370,630 Q 350,700 320,750 L 300,800"
     stroke="#b8a888" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.3"/>
-  <path d="M 370,420 Q 380,480 375,540 Q 370,600 350,660 Q 330,720 310,760 L 300,800"
+  <path d="M 370,420 Q 385,470 385,520 Q 385,580 370,630 Q 350,700 320,750 L 300,800"
     stroke="#8a7860" stroke-width="1" fill="none" stroke-dasharray="4,6"/>
 
   <!-- Driveway - connecting path north of pond (between house and pond) -->
-  <path d="M 290,420 Q 310,445 340,445 Q 360,440 370,420"
+  <path d="M 290,445 Q 310,475 340,475 Q 360,465 370,445"
     stroke="#b8a888" stroke-width="18" fill="none" opacity="0.25"/>
 
   <!-- Driveway labels -->
@@ -230,9 +230,13 @@
   <rect x="294" y="790" width="15" height="10" fill="#8a7050" rx="2"/>
   <text x="265" y="788" text-anchor="middle" font-size="7" fill="#5a4a30" font-weight="500">STONE GATE ENTRANCE</text>
 
-  <!-- ===== POND (south-center, inside driveway loop — per survey) ===== -->
-  <ellipse cx="280" cy="640" rx="70" ry="55" fill="#7ab4d4" opacity="0.2" stroke="#5a8ab0" stroke-width="1.5"/>
-  <text x="280" y="644" text-anchor="middle" font-size="10" fill="#4a7a9a" font-weight="500">POND</text>
+  <!-- ===== POND (center of property, inside driveway loop — per GIS aerial + survey) ===== -->
+  <ellipse cx="300" cy="560" rx="75" ry="55" fill="#7ab4d4" opacity="0.2" stroke="#5a8ab0" stroke-width="1.5"/>
+  <text x="300" y="564" text-anchor="middle" font-size="10" fill="#4a7a9a" font-weight="500">POND</text>
+
+  <!-- Flood Zone X marker (confirmed by GIS viewer + survey) -->
+  <text x="220" y="530" font-size="18" fill="#4a7a9a" opacity="0.25" font-weight="700">X</text>
+  <text x="205" y="545" font-size="6" fill="#4a7a9a" opacity="0.5">FLOOD ZONE X</text>
 
   <!-- ===== STRUCTURES (positioned per survey) ===== -->
 
@@ -439,12 +443,23 @@
 
   <!-- ===== LABELS ===== -->
 
-  <!-- North neighbor -->
-  <text x="260" y="140" text-anchor="middle" font-size="9" fill="#8a7a60" font-style="italic">North Neighbor (Lot Boundary)</text>
+  <!-- North neighbor (from GIS: PID 92234, Lot 15-A, 2.39 acres) -->
+  <text x="260" y="133" text-anchor="middle" font-size="9" fill="#8a7a60" font-style="italic">PID 92234 — Lot 15-A, Blk 6 — 2.39 Acres</text>
+  <text x="260" y="145" text-anchor="middle" font-size="7" fill="#8a7a60">(North Neighbor)</text>
 
-  <!-- Lot 15-A (east) -->
+  <!-- Lot 15-A label on east side -->
   <text x="500" y="450" font-size="10" fill="#8a7a60" font-weight="600" font-style="italic">LOT 15-A</text>
   <text x="500" y="465" font-size="7" fill="#8a7a60">(Adjacent — East)</text>
+
+  <!-- South neighbor (from GIS: PID 23190, Lot 14-A, 3.233 acres) -->
+  <text x="160" y="770" font-size="7" fill="#8a7a60" font-style="italic">PID 23190 — Lot 14-A, Blk 6 — 3.233 Ac (South)</text>
+
+  <!-- West neighbor (from GIS: PID 23206, Lot 16, 4.591 acres) -->
+  <text x="20" y="230" font-size="6" fill="#8a7a60" transform="rotate(-90, 20, 230)">PID 23206 — Lot 16 — 4.591 Ac</text>
+
+  <!-- FIRM Panel info (from GIS) -->
+  <text x="180" y="680" font-size="6" fill="#6a8a9a" opacity="0.6">FIRM Panel 48021C0190G</text>
+  <text x="180" y="690" font-size="6" fill="#6a8a9a" opacity="0.6">eff. 5/9/2023</text>
 
   <!-- Corner lot indicator -->
   <rect x="25" y="805" width="55" height="45" fill="#f6ad55" opacity="0.15" rx="4"/>
@@ -452,8 +467,9 @@
   <text x="52" y="837" text-anchor="middle" font-size="7" fill="#c87020">LOT</text>
 
   <!-- Owner info -->
-  <text x="220" y="720" text-anchor="middle" font-size="7" fill="#8a7a60">Owner: Nicole D Reeves</text>
-  <text x="220" y="730" text-anchor="middle" font-size="6" fill="#8a7a60">Doc. No. 202005552, O.P.R.B.C.T.</text>
+  <text x="260" y="650" text-anchor="middle" font-size="8" fill="#8a7a60" font-weight="500">PID 44401 — Lot 14-B, Blk 6</text>
+  <text x="260" y="662" text-anchor="middle" font-size="7" fill="#8a7a60">Owner: Nicole D Reeves</text>
+  <text x="260" y="672" text-anchor="middle" font-size="6" fill="#8a7a60">Doc. No. 202005552, O.P.R.B.C.T.</text>
 
   <!-- North arrow -->
   <g transform="translate(630, 100)">
