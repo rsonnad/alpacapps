@@ -1,12 +1,12 @@
 {
-  "version": "v260309.15 1:32p",
-  "release": 579,
-  "sha": "2f6f9b467",
-  "fullSha": "2f6f9b467e4108d9c89a18b12ac34b99f9e4c5f1",
+  "version": "v260309.16 1:51p",
+  "release": 580,
+  "sha": "c965b02d7",
+  "fullSha": "c965b02d7d2e3d7a17e3d39c137b2c82085b7b90",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 18:32:23+00",
-  "commits": [{"sha":"2f6f9b467","message":"Add AlpacApps architecture diagram page (#14)","author":"Rahul"}]
+  "pushedAt": "2026-03-09 18:51:17+00",
+  "commits": [{"sha":"c965b02d7","message":"Restore collapsible rollup sections on infra page","author":"Rahul"}]
 }
