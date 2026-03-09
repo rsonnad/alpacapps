@@ -1,11 +1,11 @@
 // Public endpoint: returns { count, closed } for AI Ninja workshop RSVPs.
-// closed is true when count >= 6. No auth required.
+// closed is true when count >= 10. No auth required.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const EVENT_ID = "ai-ninja-workshop-2026-03-09";
-const MAX_SPOTS = 6;
+const MAX_SPOTS = 10;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
