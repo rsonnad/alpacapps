@@ -1,12 +1,12 @@
 {
-  "version": "v260308.25 10:14p",
-  "release": 561,
-  "sha": "eaed5ee11",
-  "fullSha": "eaed5ee11657791e98a4ec2232af3daff1b779fa",
+  "version": "v260308.26 10:32p",
+  "release": 562,
+  "sha": "7e1c115bf",
+  "fullSha": "7e1c115bfbe6ade692b3854a4257ed65e2e7bc88",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 03:14:13+00",
-  "commits": [{"sha":"831311ffb","message":"Increase ninja workshop capacity from 6 to 10 spots","author":"Rahul"},{"sha":"eaed5ee11","message":"Merge branch 'angry-goodall'","author":"Rahul"}]
+  "pushedAt": "2026-03-09 03:32:24+00",
+  "commits": [{"sha":"7e1c115bf","message":"Fix timezone bug: hours grouped by UTC date instead of Austin date","author":"Rahul"}]
 }
