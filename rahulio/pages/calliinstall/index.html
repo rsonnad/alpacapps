@@ -520,10 +520,51 @@ just do the work end to end and show me the results when done.</code></pre>
     <p>If you have other API keys from your old machine (Resend, Stripe, Square, etc.), tell Claude Code about them too and it will add them to <code>docs/CREDENTIALS.md</code>.</p>
   </div>
 
-  <!-- Step 6: Verify -->
+  <!-- Step 6: Run the setup wizard -->
   <div class="step">
     <div class="step-header">
       <div class="step-num">6</div>
+      <h2>Run the Setup Wizard</h2>
+    </div>
+    <p>This is the step where Claude Code configures your project for what <strong>you're</strong> building. It will ask you one question:</p>
+
+    <div style="background: var(--accent-light); border: 2px solid rgba(217,119,6,0.3); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 0.75rem 0 1rem;">
+      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.6rem;">What are you building?</p>
+      <p style="font-size: 0.88rem; color: var(--text-soft); margin-bottom: 0.75rem;">Based on your answer, Claude Code will set up your project as one of two profiles:</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem;">
+          <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem;">Property Management</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">Renters, bookings, events, smart home devices, resident portal, Airbnb sync &mdash; everything for managing physical spaces.</p>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem;">
+          <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem;">Personal / Business</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">SaaS apps, portfolios, CRMs, booking systems, personal tools &mdash; clean framework without property modules.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>In Claude Code, type:</p>
+    <div class="code-wrap">
+      <pre><code><span class="cmd">set up my project infrastructure</span></code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <p>Claude Code will:</p>
+    <ol class="sub-steps">
+      <li>Ask what you're building and which optional services you need (email, SMS, payments, e-signatures, AI, etc.)</li>
+      <li>Choose the right profile and <strong>prune modules you don't need</strong> so your codebase stays clean</li>
+      <li>Configure <code>.claudeignore</code>, create your database tables, set up auth, and push everything</li>
+    </ol>
+
+    <div class="callout">
+      <strong>Don't skip this step.</strong> If you don't run the setup wizard, your project will have all the property management modules cluttering your codebase even if you don't need them.
+    </div>
+  </div>
+
+  <!-- Step 7: Verify -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">7</div>
       <h2>Verify Everything Works</h2>
     </div>
     <p>Run through this checklist to make sure your new machine is fully set up:</p>
