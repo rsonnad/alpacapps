@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Up Your New Machine — CalliApp</title>
+  <meta property="og:title" content="CalliApp — New Machine Setup">
+  <meta property="og:description" content="Step-by-step guide to port your AlpacApps project to a new laptop.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAF8;
+      --bg-card: #FFFFFF;
+      --bg-warm: #F5F3EF;
+      --bg-code: #1E1E2E;
+      --border: #E5E2DB;
+      --border-accent: #D97706;
+      --text: #1A1A1A;
+      --text-soft: #555555;
+      --text-muted: #888888;
+      --accent: #D97706;
+      --accent-light: rgba(217,119,6,0.08);
+      --green: #16A34A;
+      --green-bg: rgba(22,163,74,0.08);
+      --green-border: rgba(22,163,74,0.25);
+      --blue: #2563EB;
+      --blue-bg: rgba(37,99,235,0.06);
+      --purple: #7C3AED;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ---- Hero ---- */
+    .hero {
+      text-align: center;
+      padding: 3rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.85rem;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-soft);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ---- Already-have box ---- */
+    .already-have {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .already-have h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 0.5rem;
+    }
+    .already-have ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1.5rem;
+    }
+    .already-have li {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+    }
+    .already-have li::before {
+      content: "\2713 ";
+      color: var(--green);
+      font-weight: 700;
+      margin-right: 0.3rem;
+    }
+
+    /* ---- Section steps ---- */
+    .step {
+      margin-bottom: 2.5rem;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .step p {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      margin-bottom: 0.75rem;
+    }
+    .step p:last-child { margin-bottom: 0; }
+
+    /* ---- Code blocks ---- */
+    pre {
+      background: var(--bg-code);
+      color: #CDD6F4;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      position: relative;
+    }
+    pre .comment { color: #6C7086; }
+    pre .cmd { color: #89B4FA; }
+    pre .flag { color: #A6E3A1; }
+    pre .string { color: #F9E2AF; }
+    pre .output { color: #6C7086; font-style: italic; }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+      background: var(--bg-warm);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* Copy button on code blocks */
+    .code-wrap {
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      color: #9BA1B0;
+      border: none;
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.72rem;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* ---- Callout boxes ---- */
+    .callout {
+      background: var(--bg-warm);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1.15rem;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+    }
+    .callout strong { color: var(--text); }
+
+    .callout-blue {
+      background: var(--blue-bg);
+      border-left-color: var(--blue);
+    }
+
+    /* ---- Checklist ---- */
+    .checklist {
+      list-style: none;
+      margin: 0.75rem 0;
+    }
+    .checklist li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-box.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .check-box.checked::after {
+      content: "\2713";
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    /* ---- Finish banner ---- */
+    .finish {
+      background: var(--accent-light);
+      border: 1px solid rgba(217,119,6,0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .finish h2 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .finish p {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+    }
+
+    /* ---- Ordered sub-steps ---- */
+    .sub-steps {
+      margin: 0.5rem 0 1rem 1.25rem;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+    }
+    .sub-steps li {
+      margin-bottom: 0.4rem;
+    }
+    .sub-steps a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .sub-steps a:hover { text-decoration: underline; }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 600px) {
+      .container { padding: 1.25rem 1rem 3rem; }
+      .hero { padding: 2rem 0 1.5rem; }
+      .hero h1 { font-size: 1.6rem; }
+      .already-have ul { grid-template-columns: 1fr; }
+      pre { font-size: 0.75rem; padding: 0.85rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">New Machine Setup</div>
+    <h1>Port Your Project to a New Laptop</h1>
+    <p>Everything you need to get your AlpacApps project running on a fresh machine. About 15 minutes.</p>
+  </div>
+
+  <!-- What you already have -->
+  <div class="already-have">
+    <h3>You already have these (nothing to create)</h3>
+    <ul>
+      <li>GitHub account &amp; repo</li>
+      <li>Supabase project</li>
+      <li>Claude Code account</li>
+      <li>Your app is live on GitHub Pages</li>
+    </ul>
+  </div>
+
+  <!-- Step 1: Prerequisites -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <h2>Install Prerequisites</h2>
+    </div>
+    <p>Open <strong>Terminal</strong> (search for it in Spotlight or find it in Applications &rarr; Utilities) and run these one at a time:</p>
+
+    <div class="code-wrap">
+      <pre><code><span class="comment"># Install Homebrew (Mac package manager)</span>
+<span class="cmd">/bin/bash</span> <span class="flag">-c</span> <span class="string">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>
+
+<span class="comment"># Install Git</span>
+<span class="cmd">brew</span> install git
+
+<span class="comment"># Install Node.js (needed for CSS builds)</span>
+<span class="cmd">brew</span> install node
+
+<span class="comment"># Verify everything installed</span>
+<span class="cmd">git</span> <span class="flag">--version</span>    <span class="output"># should print git version 2.x</span>
+<span class="cmd">node</span> <span class="flag">--version</span>   <span class="output"># should print v18+ or v20+</span>
+<span class="cmd">npm</span> <span class="flag">--version</span>    <span class="output"># should print 9+ or 10+</span></code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <div class="callout">
+      <strong>Already have Homebrew?</strong> Skip the first command. If <code>git --version</code> already works, skip that too. You just need Git and Node.js.
+    </div>
+  </div>
+
+  <!-- Step 2: GitHub SSH -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <h2>Set Up GitHub SSH</h2>
+    </div>
+    <p>SSH keys let your laptop push code to GitHub without typing your password every time.</p>
+
+    <div class="code-wrap">
+      <pre><code><span class="comment"># Generate a new SSH key (press Enter for all prompts)</span>
+<span class="cmd">ssh-keygen</span> <span class="flag">-t ed25519</span> <span class="flag">-C</span> <span class="string">"your-email@example.com"</span>
+
+<span class="comment"># Start the SSH agent</span>
+<span class="cmd">eval</span> <span class="string">"$(ssh-agent -s)"</span>
+
+<span class="comment"># Add your key to the agent</span>
+<span class="cmd">ssh-add</span> ~/.ssh/id_ed25519
+
+<span class="comment"># Copy your public key to clipboard</span>
+<span class="cmd">pbcopy</span> < ~/.ssh/id_ed25519.pub</code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <p>Now add the key to GitHub:</p>
+    <ol class="sub-steps">
+      <li>Go to <a href="https://github.com/settings/ssh/new" target="_blank">github.com/settings/ssh/new</a></li>
+      <li>Give it a title like "New Laptop"</li>
+      <li>Paste the key (it's already on your clipboard from <code>pbcopy</code>)</li>
+      <li>Click <strong>Add SSH key</strong></li>
+    </ol>
+
+    <div class="code-wrap">
+      <pre><code><span class="comment"># Test the connection</span>
+<span class="cmd">ssh</span> <span class="flag">-T</span> git@github.com
+<span class="output"># Should say: "Hi callisummer! You've successfully authenticated..."</span></code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Clone repo -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <h2>Clone Your Repo</h2>
+    </div>
+    <p>Pull down your project and install dependencies:</p>
+
+    <div class="code-wrap">
+      <pre><code><span class="comment"># Go to your home folder (or wherever you keep projects)</span>
+<span class="cmd">cd</span> ~/Documents
+
+<span class="comment"># Clone your repo</span>
+<span class="cmd">git</span> clone git@github.com:callisummer/CalliApp.git
+
+<span class="comment"># Move into the project</span>
+<span class="cmd">cd</span> CalliApp
+
+<span class="comment"># Install npm dependencies (Tailwind CSS, etc.)</span>
+<span class="cmd">npm</span> install</code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <div class="callout">
+      <strong>Different repo name?</strong> Replace <code>callisummer/CalliApp</code> with your actual GitHub username and repo name. You can find it at the top of your repo page on GitHub.
+    </div>
+  </div>
+
+  <!-- Step 4: Install Claude Code -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <h2>Install Claude Code</h2>
+    </div>
+    <p>Claude Code is your AI developer. It lives in the terminal and builds your app with you.</p>
+
+    <div class="code-wrap">
+      <pre><code><span class="comment"># Install Claude Code</span>
+<span class="cmd">npm</span> install <span class="flag">-g</span> @anthropic-ai/claude-code
+
+<span class="comment"># Open your project in Claude Code</span>
+<span class="cmd">cd</span> ~/Documents/CalliApp
+<span class="cmd">claude</span></code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <p>The first time you run <code>claude</code>, it will open your browser to log in with your Anthropic account. Once logged in, you're connected.</p>
+
+    <div class="callout callout-blue">
+      <strong>One-time setup:</strong> Inside Claude Code, type this command to enable code intelligence:<br>
+      <code>/plugin install typescript-lsp@claude-plugins-official</code>
+    </div>
+  </div>
+
+  <!-- Step 5: Restore credentials -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <h2>Restore Your Credentials</h2>
+    </div>
+    <p>Two files with your API keys and settings are <strong>not stored in GitHub</strong> (for security). You need to recreate them on the new machine. The easiest way: <strong>ask Claude Code to do it.</strong></p>
+
+    <p>In your Claude Code session, paste this:</p>
+
+    <div class="code-wrap">
+      <pre><code>Set up Supabase for my project.
+
+My project ref is: <span class="string">[paste your project ref]</span>
+My database password is: <span class="string">[paste your database password]</span>
+
+Log into the Supabase CLI (supabase login), link my project
+(supabase link --project-ref), then fetch the project URL and
+anon key from the API settings automatically. Install the CLI
+if it's not already installed.
+
+Create CLAUDE.local.md and docs/CREDENTIALS.md with all the
+connection details. Don't ask me for permission at each step —
+just do the work end to end and show me the results when done.</code></pre>
+      <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+    </div>
+
+    <div class="callout">
+      <strong>Where's my project ref?</strong> Log into <a href="https://supabase.com/dashboard" target="_blank">supabase.com/dashboard</a>. Click your project. The ref is in the URL: <code>supabase.com/dashboard/project/<strong>abcdefghijk</strong></code>. Your database password is what you set when creating the project.
+    </div>
+
+    <p>If you have other API keys from your old machine (Resend, Stripe, Square, etc.), tell Claude Code about them too and it will add them to <code>docs/CREDENTIALS.md</code>.</p>
+  </div>
+
+  <!-- Step 6: Verify -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <h2>Verify Everything Works</h2>
+    </div>
+    <p>Run through this checklist to make sure your new machine is fully set up:</p>
+
+    <ul class="checklist">
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>Git push works</strong> &mdash; <code>git status</code> shows your repo, <code>git push</code> succeeds</span>
+      </li>
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>CSS build works</strong> &mdash; <code>npm run css:build</code> runs without errors</span>
+      </li>
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>Claude Code opens</strong> &mdash; <code>claude</code> starts and you see the prompt</span>
+      </li>
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>Supabase linked</strong> &mdash; <code>supabase status</code> shows your project ref</span>
+      </li>
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>Credentials exist</strong> &mdash; <code>CLAUDE.local.md</code> and <code>docs/CREDENTIALS.md</code> are present</span>
+      </li>
+      <li>
+        <div class="check-box" onclick="this.classList.toggle('checked')"></div>
+        <span><strong>Site is live</strong> &mdash; push a small change and see it deploy to your GitHub Pages URL</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Finish -->
+  <div class="finish">
+    <h2>You're all set!</h2>
+    <p>Your new machine is ready. Push to <code>main</code> and your site auto-deploys to GitHub Pages. Claude Code handles everything else.</p>
+  </div>
+
+</div>
+
+<script>
+function copyBlock(btn) {
+  var pre = btn.closest('.code-wrap').querySelector('pre');
+  if (!pre) return;
+  var text = pre.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
