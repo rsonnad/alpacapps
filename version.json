@@ -1,12 +1,12 @@
 {
-  "version": "v260309.04 9:26a",
-  "release": 568,
-  "sha": "f09f7ac13",
-  "fullSha": "f09f7ac1313bb76c5c3398d5d6e462928f0b7208",
+  "version": "v260309.05 10:10a",
+  "release": 569,
+  "sha": "0cc13cdad",
+  "fullSha": "0cc13cdad968430a419a03da9cfc68885aaa9cbc",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 14:26:07+00",
-  "commits": [{"sha":"9b277a04d","message":"Correct site plan: corner lot, structure orientations, survey dimensions","author":"Jacqueline Giroux"},{"sha":"f09f7ac13","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-09 15:10:24+00",
+  "commits": [{"sha":"4f238ec22","message":"Update site plan v3 with correct survey dimensions from New Survey PDF","author":"Jacqueline Giroux"},{"sha":"ab40c989b","message":"Update site plan: L-shaped house footprint, move septic tanks to east side","author":"Jacqueline Giroux"},{"sha":"0cc13cdad","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
