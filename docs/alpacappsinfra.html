@@ -1446,48 +1446,35 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <li>Choose a <strong>region</strong> close to your users, click <strong>Create new project</strong>, and wait 1-2 minutes</li>
     </ol>
 
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Where to find your project ref:</strong> After your project is created, look at the URL in your browser&rsquo;s address bar. It will look like:<br>
-      <code style="display:inline-block; margin: 0.5rem 0; font-size:0.9rem;">https://supabase.com/dashboard/project/<strong style="color:var(--accent);">abcdefghijk</strong>/...</code><br>
-      The highlighted part (a random string of letters and numbers) is your <strong>project ref</strong>. You can also find it on your project&rsquo;s home page under <strong>Project Settings</strong> &rarr; <strong>General</strong>.
+    <h3><span class="step-label step-you">Grab your credentials</span></h3>
+    <p>Once your project is ready, paste the project ref or any Supabase URL below &mdash; the links will update so you can jump to the right pages:</p>
+
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light); padding: 1rem 1.25rem;">
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <label for="supabase-ref" style="font-weight: 600; white-space: nowrap;">Project ref:</label>
+        <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" style="font-family: inherit; font-size: 0.95rem; padding: 0.6rem 1rem; border: 2px solid var(--border); border-radius: 6px; flex: 1; min-width: 240px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
+      </div>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Find this in your browser&rsquo;s address bar: <code>supabase.com/dashboard/project/<strong style="color:var(--accent);">abcdefghijk</strong>/...</code> &mdash; the highlighted part is your ref. Or go to <strong>Project Settings</strong> &rarr; <strong>General</strong>.</p>
     </div>
 
-    <p>Paste your project ref here &mdash; the links below will update so you can click straight to the right pages:</p>
-
-    <div style="display: flex; gap: 0.75rem; align-items: center; margin: 1rem 0 1.5rem 0; flex-wrap: wrap;">
-      <input type="text" id="supabase-ref" placeholder="e.g. abcdefghijk or paste a Supabase URL" style="font-family: inherit; font-size: 0.95rem; padding: 0.7rem 1rem; border: 2px solid var(--border); border-radius: 6px; width: 340px; outline: none; transition: border-color 0.2s; letter-spacing: 0.02em;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="updateSupabaseLinks()">
-    </div>
-
-    <ol start="5">
-      <li>Go to <strong>API settings</strong>: <a id="supabase-api-link" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">supabase.com/dashboard/project/<strong id="supabase-api-ref">___</strong>/settings/api</a> and copy:
+    <ol>
+      <li>Go to <strong>API settings</strong>: <a id="supabase-api-link" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">supabase.com/dashboard/project/<strong id="supabase-api-ref">___</strong>/settings/api</a> &mdash; copy these two values:
         <ul>
-          <li><strong>Project URL</strong> (e.g., <code>https://abcdefghijk.supabase.co</code>)</li>
-          <li><strong>Anon public key</strong> (safe to embed in frontend &mdash; RLS protects your data)</li>
-          <li><strong>Project ref</strong> (the <code>abcdefghijk</code> part of the URL)</li>
+          <li><strong>Project URL</strong> (looks like <code>https://abcdefghijk.supabase.co</code>)</li>
+          <li><strong>Anon public key</strong> (a long <code>eyJ...</code> string &mdash; safe to use in frontend code)</li>
         </ul>
       </li>
-      <li>Go to <strong>Database settings</strong>: <a id="supabase-db-link" href="https://supabase.com/dashboard/project/_/settings/database" target="_blank">supabase.com/dashboard/project/<strong id="supabase-db-ref">___</strong>/settings/database</a> &rarr; <strong>Connection string</strong> &rarr; <strong>Session pooler</strong> tab and paste it below</li>
+      <li>Go to <strong>Database settings</strong>: <a id="supabase-db-link" href="https://supabase.com/dashboard/project/_/settings/database" target="_blank">supabase.com/dashboard/project/<strong id="supabase-db-ref">___</strong>/settings/database</a> &rarr; click <strong>Connection string</strong> &rarr; select the <strong>Session pooler</strong> tab &rarr; copy the connection string</li>
     </ol>
 
     <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <pre data-lang="markdown"><code>## Supabase Details
-- Project ID: `<span class="supa-ref">YOUR_PROJECT_REF</span>`
-- URL: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co`
-- Anon key: `your-anon-key-here`
-- Database password: `your-db-password`
-
-### Direct Database Access (for Claude)
-Session pooler connection string (paste yours from Database settings):
-psql "postgres://postgres.<span class="supa-ref">YOUR_PROJECT_REF</span>:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres" -c "SQL HERE"
-
-URL-encode special characters in password (! = %21, @ = %40).
-
-### Supabase CLI Access (for Claude)
-If CLI not installed: npm install -g supabase &amp;&amp; supabase login &amp;&amp; supabase link --project-ref <span class="supa-ref">YOUR_PROJECT_REF</span>
-supabase functions deploy &lt;function-name&gt;
-supabase secrets set KEY=value
-
-For Claude: Run these directly. Don't ask the user.</code></pre>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">Fill in the blanks below, then copy and paste the whole block into Claude Code:</p>
+    <pre data-lang="paste into Claude Code"><code>## Supabase Details
+- Project ref: `<span class="supa-ref">YOUR_PROJECT_REF</span>`
+- Project URL: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co`
+- Anon key: `paste-your-anon-key-here`
+- Database password: `the-password-you-set-in-step-4`
+- Session pooler connection string: `paste-the-full-string-here`</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
     <div class="callout claude" style="position: relative;">
