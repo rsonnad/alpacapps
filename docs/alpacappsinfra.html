@@ -167,13 +167,57 @@
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
+    details.section {
+      padding: 0;
+    }
+    details.section > summary {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 1.5rem 2.5rem;
+      list-style: none;
+      user-select: none;
+      transition: background 0.15s;
+      border-radius: 8px;
+    }
+    details.section > summary::-webkit-details-marker { display: none; }
+    details.section > summary::after {
+      content: '';
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      margin-left: auto;
+      border-right: 2px solid var(--text-muted);
+      border-bottom: 2px solid var(--text-muted);
+      transform: rotate(-45deg);
+      transition: transform 0.2s;
+    }
+    details.section[open] > summary::after {
+      transform: rotate(45deg);
+    }
+    details.section > summary:hover {
+      background: var(--bg-warm);
+    }
+    details.section[open] > summary {
+      border-bottom: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+    }
+    details.section > .section-body {
+      padding: 1.5rem 2.5rem 2.5rem;
+    }
+    details.section > summary h2 .service-icon {
+      display: inline-block;
+    }
     .section h2 {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
       font-size: 1.6rem;
       font-weight: 400;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0;
       color: var(--text);
       line-height: 1.3;
+    }
+    .section:not(details) h2 {
+      margin-bottom: 0.75rem;
     }
     .section h2 .cost-badge { margin-left: 0.75rem; vertical-align: middle; }
     .section h2 .service-icon {
@@ -396,6 +440,9 @@
       .hero h1 { font-size: 2rem; }
       .hero p { font-size: 0.95rem; }
       .section { padding: 1.5rem; }
+      details.section { padding: 0; }
+      details.section > summary { padding: 1rem 1.5rem; }
+      details.section > .section-body { padding: 1rem 1.5rem 1.5rem; }
       .toc-grid { grid-template-columns: 1fr; }
       table { font-size: 0.8rem; }
       td, thead th { padding: 0.5rem 0.6rem; }
@@ -1212,8 +1259,9 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
   </div>
 
   <!-- 1. GitHub + Starter Template -->
-  <div class="section" id="github">
-    <h2><img src="https://cdn.simpleicons.org/github" alt="GitHub" class="service-icon">1. GitHub + Starter Template <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="github">
+      <summary><h2><img src="https://cdn.simpleicons.org/github" alt="GitHub" class="service-icon">1. GitHub + Starter Template <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
     <p>First, get a GitHub account and create your project from the starter template. Everything here is done in your browser &mdash; no terminal needed.</p>
 
     <h3><span class="step-label step-you">Create a GitHub account</span></h3>
@@ -1322,10 +1370,12 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
 └── supabase/               # Edge functions (deployed via CLI)
     └── functions/</code></pre>
   </div>
+  </details>
 
   <!-- 2. Claude Code -->
-  <div class="section" id="claude-code">
-    <h2><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code</h2>
+  <details class="section" id="claude-code">
+      <summary><h2><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code</h2></summary>
+    <div class="section-body">
     <p>Claude Code is your AI developer. Once it's set up, you won't need to use the terminal again &mdash; but if Claude asks you to do something in the terminal or bash something, just ask it to do it by itself. Claude can handle everything from here, but sometimes forgets.</p>
 
     <div class="callout">
@@ -1375,10 +1425,12 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       <div class="ai">installs Supabase CLI, links project, updates docs/CREDENTIALS.md + docs/SCHEMA.md, creates tables with RLS, creates storage buckets, commits and pushes</div>
     </div>
   </div>
+  </details>
 
   <!-- 3. Supabase -->
-  <div class="section" id="supabase">
-    <h2><img src="https://cdn.simpleicons.org/supabase" alt="Supabase" class="service-icon">3. Supabase <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="supabase">
+      <summary><h2><img src="https://cdn.simpleicons.org/supabase" alt="Supabase" class="service-icon">3. Supabase <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
     <p>Database, storage, auth, and serverless edge functions &mdash; all in one.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1440,10 +1492,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will install the CLI, login, link, create <code>shared/supabase.js</code>, run SQL for tables + RLS + storage policies, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 4. Google Auth -->
-  <div class="section" id="google-auth">
-    <h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="google-auth">
+      <summary><h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
@@ -1510,10 +1564,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will create <code>shared/auth.js</code>, add login/logout UI, set up auth guards on admin pages, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 5. Resend -->
-  <div class="section" id="resend">
-    <h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="resend">
+      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1534,10 +1590,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will run <code>supabase secrets set</code>, create the edge function, deploy it, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 6. Telnyx -->
-  <div class="section" id="telnyx">
-    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+  <details class="section" id="telnyx">
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1575,10 +1633,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will create tables, insert config, write both edge functions, deploy, create <code>shared/sms-service.js</code>, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 7. Square -->
-  <div class="section" id="square">
-    <h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+  <details class="section" id="square">
+      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1611,10 +1671,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will create tables, insert config, write the edge function + client module, deploy, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 8. Stripe -->
-  <div class="section" id="stripe">
-    <h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2>
+  <details class="section" id="stripe">
+      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+    <div class="section-body">
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1653,10 +1715,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will create tables, insert config, write and deploy both edge functions, create the client module, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 9. SignWell -->
-  <div class="section" id="signwell">
-    <h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="signwell">
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
@@ -1683,10 +1747,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.</span>
     </div>
   </div>
+  </details>
 
   <!-- 10. Gemini -->
-  <div class="section" id="gemini">
-    <h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="gemini">
+      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
@@ -1709,10 +1775,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
     </div>
   </div>
+  </details>
 
   <!-- 11. Cloudflare R2 -->
-  <div class="section" id="cloudflare-r2-setup">
-    <h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2>
+  <details class="section" id="cloudflare-r2-setup">
+      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
     <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1743,10 +1811,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
         create <code>r2_config</code> table, create <code>supabase/functions/_shared/r2-upload.ts</code> (S3-compatible upload with AWS Sig V4)</span>
     </div>
   </div>
+  </details>
 
   <!-- 12. Background Workers -->
-  <div class="section" id="workers">
-    <h2>12. Background Workers (Optional)</h2>
+  <details class="section" id="workers">
+      <summary><h2>12. Background Workers (Optional)</h2></summary>
+    <div class="section-body">
 
     <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
 
@@ -1795,10 +1865,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <strong>&ldquo;Set up the background workers on my server at [IP]. Create systemd services for the bug fixer, device pollers, and image gen worker. Add SSH access details to CLAUDE.local.md.&rdquo;</strong>
     </p>
   </div>
+  </details>
 
   <!-- 13. Custom Domain -->
-  <div class="section" id="domain">
-    <h2>13. Custom Domain (Optional)</h2>
+  <details class="section" id="domain">
+      <summary><h2>13. Custom Domain (Optional)</h2></summary>
+    <div class="section-body">
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>No rush on this step.</strong> Your site is already live at <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;/</code> and that works great while you&rsquo;re building. Come back to this when you&rsquo;re ready to share your app with the world under your own brand name.
@@ -1870,10 +1942,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
       <li>Use <a href="https://dnschecker.org" target="_blank">dnschecker.org</a> to verify your records are visible worldwide</li>
     </ul>
   </div>
+  </details>
 
   <!-- 14. CLAUDE.md Templates -->
-  <div class="section" id="template">
-    <h2>14. On-Demand Context System</h2>
+  <details class="section" id="template">
+      <summary><h2>14. On-Demand Context System</h2></summary>
+    <div class="section-body">
     <p>Claude Code reads <code>CLAUDE.md</code> at the start of every conversation. To keep this fast and efficient, we use an <strong>on-demand context loading</strong> pattern: CLAUDE.md stays slim (~30 lines) and indexes separate <code>docs/*.md</code> files that Claude only loads when the task requires them.</p>
 
     <h3>Why this matters</h3>
@@ -1918,10 +1992,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
     </ul>
     <p>See <code>docs/CLAUDE-TEMPLATE.md</code> for the exact templates and <code>feature-manifest.json</code> for the file-to-feature mapping that drives pruning.</p>
   </div>
+  </details>
 
   <!-- 15. Day-One Checklist -->
-  <div class="section" id="checklist">
-    <h2>15. Day-One Checklist</h2>
+  <details class="section" id="checklist">
+      <summary><h2>15. Day-One Checklist</h2></summary>
+    <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
 
@@ -2008,10 +2084,12 @@ For Claude: Run these directly. Don't ask the user.</code></pre>
 
     <p>Claude handles everything from there &mdash; creating tables, writing edge functions, deploying, setting secrets, committing, and pushing. You never need to touch the terminal yourself.</p>
   </div>
+  </details>
 
   <!-- 16. Mobile App -->
-  <div class="section" id="mobile">
-    <h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2>
+  <details class="section" id="mobile">
+      <summary><h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
+    <div class="section-body">
     <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
 
     <h3>How It Works</h3>
@@ -2075,6 +2153,7 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
     </ul>
 
   </div>
+  </details>
 
 
 </div>
@@ -2367,6 +2446,31 @@ function downloadFile(content, filename) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+// Auto-open details sections when navigating via anchor link (TOC or direct URL)
+function openHashTarget() {
+  var hash = window.location.hash;
+  if (!hash) return;
+  var target = document.querySelector(hash);
+  if (target && target.tagName === 'DETAILS') {
+    target.open = true;
+    setTimeout(function() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  }
+}
+window.addEventListener('hashchange', openHashTarget);
+document.querySelectorAll('.toc a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    var id = this.getAttribute('href');
+    var target = document.querySelector(id);
+    if (target && target.tagName === 'DETAILS') {
+      e.preventDefault();
+      target.open = true;
+      history.pushState(null, '', id);
+      setTimeout(function() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+    }
+  });
+});
+openHashTarget();
 
 // Public header is initialized by public-shell.js
 </script>
