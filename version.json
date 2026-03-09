@@ -1,12 +1,12 @@
 {
-  "version": "v260309.25 3:33p",
-  "release": 589,
-  "sha": "8247e11bd",
-  "fullSha": "8247e11bd5ffe733b1e10a00e5b55d458d90d66d",
+  "version": "v260309.26 3:52p",
+  "release": 590,
+  "sha": "a20530054",
+  "fullSha": "a20530054072602b92104a597604dc4b8b5b9302",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:33:52+00",
-  "commits": [{"sha":"8247e11bd","message":"Add Supabase Management API token step to calliinstall guide","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:52:22+00",
+  "commits": [{"sha":"a20530054","message":"Add interactive input fields with URL auto-parsing to calliinstall","author":"Rahul"}]
 }
