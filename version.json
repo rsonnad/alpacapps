@@ -1,12 +1,12 @@
 {
-  "version": "v260309.23 3:20p",
-  "release": 587,
-  "sha": "02e7e6637",
-  "fullSha": "02e7e6637a73df7f47c8f71bb0fe1c0b9ae02721",
+  "version": "v260309.24 3:28p",
+  "release": 588,
+  "sha": "492b26cfa",
+  "fullSha": "492b26cfa45cf043adcf151de6c4f3b864501bdf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 20:20:21+00",
-  "commits": [{"sha":"02e7e6637","message":"Add 'don't ask permissions' instruction to Supabase setup prompt","author":"Rahul"}]
+  "pushedAt": "2026-03-09 20:28:07+00",
+  "commits": [{"sha":"492b26cfa","message":"Add CalliApp new-machine setup guide at /rahulio/pages/calliinstall/","author":"Rahul"}]
 }
