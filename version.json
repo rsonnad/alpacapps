@@ -1,12 +1,12 @@
 {
-  "version": "v260308.27 10:55p",
-  "release": 563,
-  "sha": "045bf6ab5",
-  "fullSha": "045bf6ab51fa60a8732c7c5379842d045fcdb47f",
+  "version": "v260308.28 11:16p",
+  "release": 564,
+  "sha": "d6956842e",
+  "fullSha": "d6956842eba5bff037fb85b72acef629a138654e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-09 03:55:21+00",
-  "commits": [{"sha":"045bf6ab5","message":"Fix admin ninja signups page: update MAX_SPOTS from 6 to 10","author":"Rahul"}]
+  "pushedAt": "2026-03-09 04:16:38+00",
+  "commits": [{"sha":"d6956842e","message":"Add MEXC vs Hyperliquid stock perps comparison page","author":"Rahul"}]
 }
