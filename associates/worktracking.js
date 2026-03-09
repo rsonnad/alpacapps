@@ -8,6 +8,7 @@ import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-s
 import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
 import { identityService } from '../shared/identity-service.js';
+import { AUSTIN_TIMEZONE } from '../shared/timezone.js';
 import { projectService } from '../shared/project-service.js';
 import { payoutService } from '../shared/payout-service.js';
 import { initTabList } from '../shared/tab-utils.js';
@@ -1373,7 +1374,7 @@ async function loadSchedule() {
     scheduleActuals = {};
     for (const e of entries) {
       if (!e.duration_minutes) continue;
-      const date = e.clock_in.split('T')[0];
+      const date = new Date(e.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
       scheduleActuals[date] = (scheduleActuals[date] || 0) + parseFloat(e.duration_minutes);
     }
 
@@ -1631,7 +1632,7 @@ async function refreshCoworkers() {
       // Index actuals by associate_id → date (sum minutes)
       const actualsByAssoc = {};
       for (const a of actuals) {
-        const date = a.clock_in.split('T')[0];
+        const date = new Date(a.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
         if (!actualsByAssoc[a.associate_id]) actualsByAssoc[a.associate_id] = {};
         actualsByAssoc[a.associate_id][date] = (actualsByAssoc[a.associate_id][date] || 0) + parseFloat(a.duration_minutes);
       }

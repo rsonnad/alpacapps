@@ -8,6 +8,7 @@ import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
 import { payoutService } from '../../shared/payout-service.js';
 import { identityService } from '../../shared/identity-service.js';
 import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { AUSTIN_TIMEZONE } from '../../shared/timezone.js';
 
 // State
 let associates = [];
@@ -209,7 +210,7 @@ function renderEntries() {
   tbody.innerHTML = entries.map(e => {
     const assoc = e.associate;
     const name = assoc ? getAssocName(assoc) : '?';
-    const date = e.clock_in.split('T')[0];
+    const date = new Date(e.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
     const clockIn = HoursService.formatTime(e.clock_in);
     const clockOut = e.clock_out ? HoursService.formatTime(e.clock_out) : '<span class="badge active">Active</span>';
     const mins = parseFloat(e.duration_minutes) || 0;
@@ -829,9 +830,9 @@ function openEditEntry(entryId) {
   if (!entry) return;
   editingEntryId = entryId;
   document.getElementById('addEntryTitle').textContent = 'Edit Entry';
-  document.getElementById('entryDate').value = entry.clock_in.split('T')[0];
-  document.getElementById('entryClockIn').value = new Date(entry.clock_in).toTimeString().slice(0, 5);
-  document.getElementById('entryClockOut').value = entry.clock_out ? new Date(entry.clock_out).toTimeString().slice(0, 5) : '';
+  document.getElementById('entryDate').value = new Date(entry.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
+  document.getElementById('entryClockIn').value = new Date(entry.clock_in).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: AUSTIN_TIMEZONE });
+  document.getElementById('entryClockOut').value = entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: AUSTIN_TIMEZONE }) : '';
   document.getElementById('entryDescription').value = entry.description || '';
   document.getElementById('entryAssociate').value = entry.associate_id;
   document.getElementById('entrySpace').value = entry.space?.id || '';

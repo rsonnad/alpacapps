@@ -5,6 +5,7 @@
 
 import { supabase } from './supabase.js';
 import { accountingService, DIRECTION, PAYMENT_METHOD_LABELS } from './accounting-service.js';
+import { AUSTIN_TIMEZONE } from './timezone.js';
 
 // =============================================
 // CONSTANTS
@@ -403,7 +404,8 @@ class HoursService {
     const days = {};
 
     for (const entry of entries) {
-      const date = entry.clock_in.split('T')[0];
+      // Convert UTC timestamp to Austin date (YYYY-MM-DD) to group by local day
+      const date = new Date(entry.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
       if (!days[date]) {
         days[date] = { date, entries: [], totalMinutes: 0, totalAmount: 0, hasPaid: false, hasUnpaid: false };
       }
@@ -483,7 +485,7 @@ class HoursService {
     }
 
     // Determine date range
-    const dates = entries.map(e => e.clock_in.split('T')[0]).sort();
+    const dates = entries.map(e => new Date(e.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })).sort();
     const periodStart = dates[0];
     const periodEnd = dates[dates.length - 1];
 
@@ -537,7 +539,7 @@ class HoursService {
         time_entry_id: timeEntryId || null,
         photo_type: photoType || 'progress',
         caption: caption || null,
-        work_date: workDate || new Date().toISOString().split('T')[0]
+        work_date: workDate || new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })
       })
       .select('*, media:media_id(id, url, caption)')
       .single();
@@ -856,7 +858,7 @@ class HoursService {
    */
   static formatTime(isoString) {
     if (!isoString) return '';
-    return new Date(isoString).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return new Date(isoString).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: AUSTIN_TIMEZONE });
   }
 
   /**
@@ -865,7 +867,7 @@ class HoursService {
   static formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: AUSTIN_TIMEZONE });
   }
 
   /**
@@ -874,7 +876,7 @@ class HoursService {
   static formatDateFull(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: AUSTIN_TIMEZONE });
   }
 }
 
