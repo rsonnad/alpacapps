@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-09T17:34:32.179Z",
+  "generatedAt": "2026-03-09T18:32:56.467Z",
   "sections": [
     "E-2 Visa",
     "Projects"
@@ -7,9 +7,9 @@
   "entries": [
     {
       "path": "simplearch/index.html",
-      "title": "AlpacApps — Architecture Diagram",
+      "title": "AlpacApps — Architecture",
       "section": null,
-      "modifiedAt": "2026-03-09T12:00:00.000Z"
+      "modifiedAt": "2026-03-09T18:32:23.000Z"
     },
     {
       "path": "ninja.html",
