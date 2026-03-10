@@ -273,6 +273,7 @@
 | Item | Location |
 |------|----------|
 | Evaluation | `docs/MUSIC-ASSISTANT-EVALUATION.md` |
+| Alpaca Mac setup (MA, local music, schedules) | `docs/music-assistant-alpaca-mac-setup.md` |
 | Edge function | `supabase/functions/sonos-control/index.ts` |
 | Data layer | `shared/services/sonos-data.js` |
 | Resident page | `residents/sonos.js`, `residents/sonos.html` |
