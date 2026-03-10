@@ -1227,9 +1227,8 @@ function renderSensors() {
 function getCameraNameMap() {
   const map = {};
   for (const cam of cameras) {
-    for (const s of cam.streams) {
-      if (s.protect_camera_id) map[s.protect_camera_id] = cam.camera_name;
-    }
+    // cam.protectCameraId is set at the camera level during grouping
+    if (cam.protectCameraId) map[cam.protectCameraId] = cam.name;
   }
   return map;
 }
