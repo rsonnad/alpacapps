@@ -278,6 +278,28 @@
       color: var(--text-dim); border-top: 1px solid var(--border); letter-spacing: 0.05em;
     }
 
+    /* ── Video grid ── */
+    .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .video-card {
+      display: block; text-decoration: none; border-radius: var(--radius); overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--border);
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .video-card:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+    .video-thumb {
+      position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #000;
+    }
+    .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-play {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.3); opacity: 0; transition: opacity var(--transition);
+    }
+    .video-card:hover .video-play { opacity: 1; }
+    .video-play svg { width: 40px; height: 40px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+    .video-info { padding: 0.75rem 1rem; }
+    .video-info .card-title { font-size: 0.85rem; line-height: 1.4; }
+    .video-info .card-sub { margin-top: 0.25rem; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .hero { padding: 3.5rem 0 2.5rem; }
@@ -287,6 +309,7 @@
       p { font-size: 0.98rem; }
       .writing-item { flex-direction: column; gap: 0.15rem; }
       .edu-card { flex-direction: column; gap: 0.5rem; }
+      .video-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -505,6 +528,58 @@
           <div class="tag-list">
             <span class="tag">English (native)</span>
             <span class="tag">Japanese</span>
+          </div>
+        </section>
+
+        <!-- Videos -->
+        <section aria-label="Videos">
+          <h2>Videos</h2>
+          <div class="video-grid">
+
+            <a class="video-card" href="https://youtu.be/nu0BNTEJ1Tw" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <img src="https://img.youtube.com/vi/nu0BNTEJ1Tw/hqdefault.jpg" alt="Rahul Sonnad at Startup Grind" loading="lazy">
+                <div class="video-play"><svg viewBox="0 0 68 48"><path d="M66.5 7.7s-.7-4.7-2.8-6.8C60.7-2 57.2-2 55.6-2.2 46.4-3 34-3 34-3s-12.4 0-21.6.8C10.8-2 7.3-2 4.3.9 2.2 3 1.5 7.7 1.5 7.7S.8 13.3.8 18.8v5.2c0 5.5.7 11.1.7 11.1s.7 4.7 2.8 6.8c3 3.1 6.9 3 8.7 3.3 6.3.6 26.8.9 26.8.9s12.4 0 21.6-.8c1.6-.2 5.1-.2 8.1-3.1 2.1-2.1 2.8-6.8 2.8-6.8s.7-5.5.7-11.1v-5.2c0-5.5-.7-11.1-.7-11.1z" fill="red"/><path d="M27 33V13l18 10z" fill="#fff"/></svg></div>
+              </div>
+              <div class="video-info">
+                <div class="card-title">Disrupting Transportation with Tesla Infrastructure</div>
+                <div class="card-sub">Startup Grind</div>
+              </div>
+            </a>
+
+            <a class="video-card" href="https://youtu.be/Em86bQLo_4A" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <img src="https://img.youtube.com/vi/Em86bQLo_4A/hqdefault.jpg" alt="Tesla Enabling New Mobility Platforms" loading="lazy">
+                <div class="video-play"><svg viewBox="0 0 68 48"><path d="M66.5 7.7s-.7-4.7-2.8-6.8C60.7-2 57.2-2 55.6-2.2 46.4-3 34-3 34-3s-12.4 0-21.6.8C10.8-2 7.3-2 4.3.9 2.2 3 1.5 7.7 1.5 7.7S.8 13.3.8 18.8v5.2c0 5.5.7 11.1.7 11.1s.7 4.7 2.8 6.8c3 3.1 6.9 3 8.7 3.3 6.3.6 26.8.9 26.8.9s12.4 0 21.6-.8c1.6-.2 5.1-.2 8.1-3.1 2.1-2.1 2.8-6.8 2.8-6.8s.7-5.5.7-11.1v-5.2c0-5.5-.7-11.1-.7-11.1z" fill="red"/><path d="M27 33V13l18 10z" fill="#fff"/></svg></div>
+              </div>
+              <div class="video-info">
+                <div class="card-title">Tesla Enabling New Mobility Platforms</div>
+                <div class="card-sub">HyperChange</div>
+              </div>
+            </a>
+
+            <a class="video-card" href="https://youtu.be/SqSaek5yB1s" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <img src="https://img.youtube.com/vi/SqSaek5yB1s/hqdefault.jpg" alt="Rahul Sonnad on This Week in Startups" loading="lazy">
+                <div class="video-play"><svg viewBox="0 0 68 48"><path d="M66.5 7.7s-.7-4.7-2.8-6.8C60.7-2 57.2-2 55.6-2.2 46.4-3 34-3 34-3s-12.4 0-21.6.8C10.8-2 7.3-2 4.3.9 2.2 3 1.5 7.7 1.5 7.7S.8 13.3.8 18.8v5.2c0 5.5.7 11.1.7 11.1s.7 4.7 2.8 6.8c3 3.1 6.9 3 8.7 3.3 6.3.6 26.8.9 26.8.9s12.4 0 21.6-.8c1.6-.2 5.1-.2 8.1-3.1 2.1-2.1 2.8-6.8 2.8-6.8s.7-5.5.7-11.1v-5.2c0-5.5-.7-11.1-.7-11.1z" fill="red"/><path d="M27 33V13l18 10z" fill="#fff"/></svg></div>
+              </div>
+              <div class="video-info">
+                <div class="card-title">Founder &amp; CEO of Geodelic</div>
+                <div class="card-sub">This Week in Startups</div>
+              </div>
+            </a>
+
+            <a class="video-card" href="https://youtu.be/7Z_dSE8yUQ8" target="_blank" rel="noopener">
+              <div class="video-thumb">
+                <img src="https://img.youtube.com/vi/7Z_dSE8yUQ8/hqdefault.jpg" alt="Rahul Sonnad at Stanford Always On Conference" loading="lazy">
+                <div class="video-play"><svg viewBox="0 0 68 48"><path d="M66.5 7.7s-.7-4.7-2.8-6.8C60.7-2 57.2-2 55.6-2.2 46.4-3 34-3 34-3s-12.4 0-21.6.8C10.8-2 7.3-2 4.3.9 2.2 3 1.5 7.7 1.5 7.7S.8 13.3.8 18.8v5.2c0 5.5.7 11.1.7 11.1s.7 4.7 2.8 6.8c3 3.1 6.9 3 8.7 3.3 6.3.6 26.8.9 26.8.9s12.4 0 21.6-.8c1.6-.2 5.1-.2 8.1-3.1 2.1-2.1 2.8-6.8 2.8-6.8s.7-5.5.7-11.1v-5.2c0-5.5-.7-11.1-.7-11.1z" fill="red"/><path d="M27 33V13l18 10z" fill="#fff"/></svg></div>
+              </div>
+              <div class="video-info">
+                <div class="card-title">Stanford Always On Conference</div>
+                <div class="card-sub">Rahuliox</div>
+              </div>
+            </a>
+
           </div>
         </section>
 
