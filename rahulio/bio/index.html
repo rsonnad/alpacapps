@@ -278,6 +278,20 @@
       color: var(--text-dim); border-top: 1px solid var(--border); letter-spacing: 0.05em;
     }
 
+    /* ── Firsts list ── */
+    .firsts-list {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .firsts-list li {
+      font-size: 0.88rem; color: var(--text-secondary); line-height: 1.65;
+      padding: 0.35rem 0 0.35rem 1.25rem; position: relative;
+    }
+    .firsts-list li::before {
+      content: ''; position: absolute; left: 0; top: 0.7rem;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); opacity: 0.6;
+    }
+
     /* ── Video grid ── */
     .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     .video-card {
@@ -409,19 +423,17 @@
         <!-- Industry Firsts -->
         <section aria-label="Industry Firsts">
           <h2>Industry Firsts</h2>
-          <div class="card-grid">
-            <div class="glass-card">
-              <div class="card-desc" style="margin-top: 0;">
-                First cloud-controlled Tesla fleet &middot;
-                First app on Android (T-Mobile Sherpa) &middot;
-                First large-scale pre-roll video ad campaign (MSN, 2000) &middot;
-                First video subscriptions (CNBC, 2001) &middot;
-                First API web service SaaS (2000) &middot;
-                First premium paid movie downloads (Starz, 2002) &middot;
-                First broadband mobile video (Verizon VCast, 2005) &middot;
-                First combined music/video service (Telstra, 2006)
-              </div>
-            </div>
+          <div class="glass-card">
+            <ul class="firsts-list">
+              <li>First cloud-controlled Tesla fleet</li>
+              <li>First app on Android (T-Mobile Sherpa)</li>
+              <li>First large-scale pre-roll video ad campaign (MSN, 2000)</li>
+              <li>First video subscriptions (CNBC, 2001)</li>
+              <li>First API web service SaaS (2000)</li>
+              <li>First premium paid movie downloads (Starz, 2002)</li>
+              <li>First broadband mobile video (Verizon VCast, 2005)</li>
+              <li>First combined music/video service (Telstra, 2006)</li>
+            </ul>
           </div>
         </section>
 
