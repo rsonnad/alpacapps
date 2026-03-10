@@ -92,36 +92,29 @@ Music Assistant can serve music from local folders or mounted drives so resident
 
 - **DB:** Table `sonos_schedules` stores: `name`, `room`, `time_of_day` (HH:MM:00), `recurrence` (daily / weekdays / weekends / custom / once), `custom_days`, `one_time_date`, `playlist_name`, `source_type` (playlist | favorite), `volume`, `keep_grouped`, `is_active`, `updated_at`.
 - **UI:** Resident Sonos page → “Schedules” section: add/edit/delete/toggle active. Data is read/written via Supabase client.
-- **Gap:** Nothing automatically runs at `time_of_day` to start playback. Schedules are stored but not executed.
+- **Implemented:** `run-schedules` action in `sonos-control` edge function + pg_cron job (every 5 min).
 
-### 4.2 Making schedules run automatically
+### 4.2 How the schedule runner works
 
-To make schedules drive home music automation you need a **runner** that, at the right time, finds due schedules and triggers playback.
+**Option A — Supabase pg_cron + Edge function (implemented)**
 
-**Option A — Supabase pg_cron + Edge function (recommended)**
+1. **pg_cron** job `sonos-schedule-runner` runs every 5 minutes (`*/5 * * * *`).
+2. Calls `sonos-control` with `{ action: “run-schedules” }` authenticated via `X-Cron-Secret` header.
+3. The handler:
+   - Gets current time in America/Chicago.
+   - Queries `sonos_schedules WHERE is_active = true`.
+   - For each schedule, checks if `time_of_day` is within ±7 minutes of now and recurrence matches today.
+   - **Idempotency:** Skips if `last_fired_at` is within the last 30 minutes.
+   - Sets volume (if specified) then plays playlist/favorite via MA (fallback to Sonos proxy).
+   - Updates `last_fired_at`; deactivates one-time schedules after firing.
 
-1. **pg_cron** job every 5–15 minutes (e.g. `*/10 * * * *`), in America/Chicago, that calls a small SQL function or an edge function URL.
-2. **Edge function** (e.g. `sonos-schedule-runner` or a dedicated endpoint of `sonos-control`):
-   - Authenticated with a cron secret or service role.
-   - Queries `sonos_schedules` for rows where `is_active = true` and current local time matches `time_of_day` and `recurrence` (and `one_time_date` for once).
-   - For each due schedule: call existing sonos-control logic (or proxy) to set room, volume, and play playlist/favorite by name (MA or Sonos).
-3. **Idempotency:** Track last-run per schedule (e.g. `last_triggered_at`) or a small `sonos_schedule_log` table so the same schedule is not fired multiple times in the same window.
+**Option B — Hostinger cron script (alternative)**
 
-**Option B — Hostinger cron script**
+- Cron on Hostinger queries Supabase for due schedules and curls the proxy. Not needed now that Option A is live.
 
-1. Cron on Hostinger (e.g. every 10 minutes) runs a script that:
-   - Queries Supabase (service role or a dedicated key) for due `sonos_schedules`.
-   - For each due schedule: `curl` Hostinger Sonos proxy or MA proxy (e.g. set volume, play favorite/playlist by name) using the same secrets the edge function uses.
-2. Requires storing Supabase and proxy secrets on Hostinger and a small script (Node or Python).
+**Option C — Manual cron (still available)**
 
-**Option C — Manual cron (current pattern)**
-
-- As in [HOMEAUTOMATION.md § Scheduling & Alarms](../HOMEAUTOMATION.md): static cron lines on Hostinger that curl the Sonos proxy at fixed times. This does not use the `sonos_schedules` table; it’s for one-off or fixed alarms (e.g. “7am weekdays”, “pause at midnight”).
-
-### 4.3 Recommendation
-
-- Implement **Option A** so that schedules created in the resident UI are executed automatically, in one place (Supabase), with a single contract (sonos-control or a thin runner that calls it).
-- Keep **Option C** for simple, static alarms (e.g. pauseall at midnight) if you prefer not to put those in the DB.
+- Static cron lines on Hostinger for fixed alarms (e.g. pauseall at midnight). Does not use the `sonos_schedules` table.
 
 ---
 
@@ -135,7 +128,7 @@ To make schedules drive home music automation you need a **runner** that, at the
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
 | Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpaca Mac :5005 |
 | MA proxy | Hostinger Caddy | `/ma-api` → Alpaca Mac :8095/api |
-| Schedule runner | Not yet implemented | pg_cron + edge function or Hostinger cron → due `sonos_schedules` → sonos-control/proxy |
+| Schedule runner | pg_cron job #31 (`*/5 * * * *`) | Calls `sonos-control` `run-schedules` action → checks due `sonos_schedules` → MA/Sonos |
 
 ---
 
