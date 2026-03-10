@@ -31,7 +31,8 @@ interface SonosRequest {
     | "tts_preview"
     | "musicsearch"
     | "spotify-search"
-    | "spotify-play";
+    | "spotify-play"
+    | "run-schedules";
   room?: string;
   value?: number | string;
   name?: string;
@@ -657,9 +658,13 @@ serve(async (req) => {
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = token === supabaseServiceKey;
+    // Allow pg_cron calls with X-Cron-Secret header
+    const cronSecret = Deno.env.get("SCHEDULE_CRON_SECRET");
+    const cronHeader = req.headers.get("X-Cron-Secret");
+    const isCronCall = !!(cronSecret && cronHeader === cronSecret);
     let userId: string | null = null;
 
-    if (!isInternalCall) {
+    if (!isInternalCall && !isCronCall) {
       const {
         data: { user },
         error: authError,
@@ -685,6 +690,157 @@ serve(async (req) => {
 
     const body: SonosRequest = await req.json();
     const { action } = body;
+
+    // =============================================
+    // Schedule Runner (internal only, called by pg_cron)
+    // =============================================
+    if (action === "run-schedules") {
+      if (!isInternalCall && !isCronCall) {
+        return jsonResponse({ error: "Forbidden: internal only" }, 403);
+      }
+      console.log("Schedule runner: checking for due schedules");
+
+      // Get current time in America/Chicago
+      const nowChicago = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })
+      );
+      const currentHH = String(nowChicago.getHours()).padStart(2, "0");
+      const currentMM = String(nowChicago.getMinutes()).padStart(2, "0");
+      const currentTime = `${currentHH}:${currentMM}`;
+      // JS getDay(): 0=Sun,1=Mon...6=Sat → convert to 1=Mon...7=Sun for custom_days
+      const jsDow = nowChicago.getDay();
+      const isoDow = jsDow === 0 ? 7 : jsDow; // 1=Mon...7=Sun
+      const isWeekday = isoDow >= 1 && isoDow <= 5;
+      const todayDate = `${nowChicago.getFullYear()}-${String(nowChicago.getMonth() + 1).padStart(2, "0")}-${String(nowChicago.getDate()).padStart(2, "0")}`;
+
+      // Find active schedules whose time_of_day is within ±7 minutes of now
+      const { data: schedules, error: schedErr } = await supabase
+        .from("sonos_schedules")
+        .select("*")
+        .eq("is_active", true);
+
+      if (schedErr) {
+        console.error("Schedule runner: query error", schedErr.message);
+        return jsonResponse({ error: schedErr.message }, 500);
+      }
+      if (!schedules || schedules.length === 0) {
+        console.log("Schedule runner: no active schedules");
+        return jsonResponse({ status: "ok", fired: 0 });
+      }
+
+      const results: Array<{ id: number; name: string; status: string; error?: string }> = [];
+
+      for (const sched of schedules) {
+        // Parse schedule time (HH:MM:SS → HH:MM)
+        const schedTime = (sched.time_of_day || "").substring(0, 5); // "08:00"
+        // Check if within ±7 minute window
+        const schedMins = parseInt(schedTime.split(":")[0]) * 60 + parseInt(schedTime.split(":")[1]);
+        const nowMins = parseInt(currentHH) * 60 + parseInt(currentMM);
+        const diff = Math.abs(schedMins - nowMins);
+        if (diff > 7 && diff < (24 * 60 - 7)) {
+          continue; // Not due
+        }
+
+        // Check recurrence
+        let matchesDay = false;
+        switch (sched.recurrence) {
+          case "daily":
+            matchesDay = true;
+            break;
+          case "weekdays":
+            matchesDay = isWeekday;
+            break;
+          case "weekends":
+            matchesDay = !isWeekday;
+            break;
+          case "custom":
+            matchesDay = Array.isArray(sched.custom_days) && sched.custom_days.includes(isoDow);
+            break;
+          case "once":
+            matchesDay = sched.one_time_date === todayDate;
+            break;
+          default:
+            matchesDay = false;
+        }
+        if (!matchesDay) continue;
+
+        // Idempotency: skip if last_fired_at is within the last 30 minutes
+        if (sched.last_fired_at) {
+          const lastFired = new Date(sched.last_fired_at);
+          const msSinceFired = Date.now() - lastFired.getTime();
+          if (msSinceFired < 30 * 60 * 1000) {
+            console.log(`Schedule runner: skipping "${sched.name}" (fired ${Math.round(msSinceFired / 60000)}m ago)`);
+            continue;
+          }
+        }
+
+        console.log(`Schedule runner: firing "${sched.name}" → ${sched.source_type} "${sched.playlist_name}" in ${sched.room} at vol ${sched.volume}`);
+
+        try {
+          // Step 1: Set volume if specified
+          if (sched.volume !== null && sched.volume !== undefined) {
+            const volBody: SonosRequest = { action: "volume", room: sched.room, value: sched.volume };
+            if (useMa && maUrl) {
+              try { await tryMusicAssistantAction(volBody, maUrl, maToken); }
+              catch { /* fall through to Sonos below if needed */ }
+            }
+          }
+
+          // Step 2: Play playlist or favorite
+          const playAction = sched.source_type === "favorite" ? "favorite" : "playlist";
+          const playBody: SonosRequest = {
+            action: playAction as SonosRequest["action"],
+            room: sched.room,
+            name: sched.playlist_name,
+          };
+
+          if (useMa && maUrl) {
+            try {
+              await tryMusicAssistantAction(playBody, maUrl, maToken);
+            } catch (maErr) {
+              console.warn(`Schedule runner: MA failed for "${sched.name}", trying Sonos proxy`);
+              // Fallback to Sonos proxy
+              if (proxyUrl && proxySecret) {
+                const encodedRoom = encodeURIComponent(sched.room);
+                const encodedName = encodeURIComponent(sched.playlist_name);
+                await fetch(`${proxyUrl}/${encodedRoom}/${playAction}/${encodedName}`, {
+                  headers: { "X-Sonos-Secret": proxySecret },
+                });
+              }
+            }
+          } else if (proxyUrl && proxySecret) {
+            const encodedRoom = encodeURIComponent(sched.room);
+            const encodedName = encodeURIComponent(sched.playlist_name);
+            await fetch(`${proxyUrl}/${encodedRoom}/${playAction}/${encodedName}`, {
+              headers: { "X-Sonos-Secret": proxySecret },
+            });
+          }
+
+          // Step 3: Update last_fired_at
+          await supabase
+            .from("sonos_schedules")
+            .update({ last_fired_at: new Date().toISOString() })
+            .eq("id", sched.id);
+
+          // Step 4: Deactivate one-time schedules
+          if (sched.recurrence === "once") {
+            await supabase
+              .from("sonos_schedules")
+              .update({ is_active: false })
+              .eq("id", sched.id);
+          }
+
+          results.push({ id: sched.id, name: sched.name, status: "fired" });
+        } catch (err) {
+          console.error(`Schedule runner: error firing "${sched.name}":`, (err as Error).message);
+          results.push({ id: sched.id, name: sched.name, status: "error", error: (err as Error).message });
+        }
+      }
+
+      console.log(`Schedule runner: done. Fired ${results.filter(r => r.status === "fired").length}/${results.length} schedules`);
+      return jsonResponse({ status: "ok", time: currentTime, date: todayDate, fired: results.length, results });
+    }
+
     const maActions = new Set([
       "getZones",
       "getState",
