@@ -65,6 +65,8 @@ type EmailType =
   | "waiver_confirmation"
   // Work photo reminder
   | "work_photo_reminder"
+  // Work checkout summary
+  | "work_checkout_summary"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -2029,6 +2031,107 @@ This is just a friendly nudge — no photos are required if they aren't relevant
 
 Thanks,
 Alpaca Playhouse`
+      };
+    }
+
+    case "work_checkout_summary": {
+      const photos = data.photos || [];
+      const beforePhotos = photos.filter((p: any) => p.type === 'before');
+      const progressPhotos = photos.filter((p: any) => p.type === 'progress');
+      const afterPhotos = photos.filter((p: any) => p.type === 'after');
+
+      const photoSection = (label: string, items: any[]) => {
+        if (items.length === 0) return '';
+        return `
+          <tr>
+            <td style="padding:0 0 16px;">
+              <p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">${label} Photos</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  ${items.map((p: any) => `
+                    <td style="width:${Math.floor(100 / Math.min(items.length, 3))}%;padding:0 4px 4px 0;vertical-align:top;">
+                      <img src="${p.url}" alt="${p.caption || label}" width="170" style="display:block;width:100%;max-width:170px;height:auto;border-radius:6px;border:1px solid #e6e2d9;" />
+                      ${p.caption ? `<p style="margin:4px 0 0;font-size:11px;color:#7d6f74;">${p.caption}</p>` : ''}
+                    </td>
+                  `).join('')}
+                </tr>
+              </table>
+            </td>
+          </tr>`;
+      };
+
+      const hasPhotos = photos.length > 0;
+
+      return {
+        subject: `Work Session Summary — ${data.first_name} (${data.date})`,
+        html: `
+          <h2 style="margin:0 0 4px;">Work Session Complete</h2>
+          <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">${data.first_name} has clocked out.</p>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr>
+              <td style="padding:20px 24px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:0 0 8px;"><strong>Date:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.date}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 8px;"><strong>Clock In:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.clock_in_time}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 8px;"><strong>Clock Out:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.clock_out_time}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 8px;"><strong>Duration:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.duration}</td>
+                  </tr>
+                  ${data.space_name ? `<tr>
+                    <td style="padding:0 0 8px;"><strong>Location:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.space_name}</td>
+                  </tr>` : ''}
+                  ${data.task_name ? `<tr>
+                    <td style="padding:0 0 8px;"><strong>Task:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;">${data.task_name}</td>
+                  </tr>` : ''}
+                  <tr>
+                    <td style="padding:0 0 0;border-top:1px solid #e6e2d9;padding-top:8px;"><strong>Earnings:</strong></td>
+                    <td style="padding:0 0 0;border-top:1px solid #e6e2d9;padding-top:8px;text-align:right;font-weight:600;color:#d4883a;">${data.earnings} <span style="font-weight:400;color:#7d6f74;font-size:13px;">@ $${data.hourly_rate}/hr</span></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          ${data.description ? `
+          <p style="margin:0 0 4px;font-weight:600;font-size:14px;">Work Description</p>
+          <p style="margin:0 0 20px;color:#2a1f23;">${data.description}</p>` : ''}
+
+          ${hasPhotos ? `
+          <p style="margin:0 0 12px;font-weight:600;font-size:16px;">Work Photos</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            ${photoSection('Before', beforePhotos)}
+            ${photoSection('Progress', progressPhotos)}
+            ${photoSection('After', afterPhotos)}
+          </table>` : '<p style="color:#7d6f74;font-size:13px;font-style:italic;margin:0 0 16px;">No photos were uploaded for this session.</p>'}
+
+          <p style="margin:16px 0 0;color:#7d6f74;font-size:13px;">This is an automated summary from Alpaca Playhouse work tracking.</p>
+        `,
+        text: `Work Session Complete
+
+${data.first_name} has clocked out.
+
+Date: ${data.date}
+Clock In: ${data.clock_in_time}
+Clock Out: ${data.clock_out_time}
+Duration: ${data.duration}
+${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.task_name ? `Task: ${data.task_name}\n` : ''}Earnings: ${data.earnings} @ $${data.hourly_rate}/hr
+${data.description ? `\nWork Description: ${data.description}` : ''}
+${hasPhotos ? `\nPhotos: ${photos.length} photo(s) uploaded (view in HTML email)` : '\nNo photos uploaded for this session.'}
+
+This is an automated summary from Alpaca Playhouse work tracking.`
       };
     }
 

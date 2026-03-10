@@ -12,6 +12,7 @@ import { AUSTIN_TIMEZONE } from '../shared/timezone.js';
 import { projectService } from '../shared/project-service.js';
 import { payoutService } from '../shared/payout-service.js';
 import { initTabList } from '../shared/tab-utils.js';
+import { emailService } from '../shared/email-service.js';
 
 // =============================================
 // STATE
@@ -289,7 +290,13 @@ async function handleClockOut(description) {
   btn.disabled = true;
   try {
     const loc = await getLocation();
-    await hoursService.clockOut(activeEntry.id, {
+    // Capture entry data before clock-out clears it
+    const entryId = activeEntry.id;
+    const entrySpaceId = activeEntry.space_id;
+    const entryTaskId = activeEntry.task_id;
+    const entryRate = parseFloat(activeEntry.hourly_rate) || 0;
+
+    const updatedEntry = await hoursService.clockOut(entryId, {
       ...(loc || {}),
       description: description || null
     });
@@ -297,10 +304,63 @@ async function handleClockOut(description) {
     showToast('Clocked out!', 'success');
     updateClockUI();
     await refreshToday();
+
+    // Fire-and-forget: send checkout summary email
+    sendCheckoutSummaryEmail(updatedEntry, entrySpaceId, entryTaskId, entryRate, description);
   } catch (err) {
     showToast('Failed to clock out: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
+  }
+}
+
+/**
+ * Send work checkout summary email (fire-and-forget, non-blocking)
+ */
+async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, description) {
+  try {
+    // Gather space name
+    const spaceName = spaceId && spacesMap[spaceId] ? spacesMap[spaceId] : null;
+
+    // Gather task name if applicable
+    let taskName = null;
+    if (taskId) {
+      try {
+        const { data: task } = await supabase.from('tasks').select('title').eq('id', taskId).single();
+        taskName = task?.title || null;
+      } catch (_) { /* ignore */ }
+    }
+
+    // Fetch work photos for this time entry
+    const photos = await hoursService.getWorkPhotos(profile.id, { timeEntryId: entry.id });
+    const photoData = photos.map(p => ({
+      url: p.media?.url || '',
+      type: p.photo_type || 'progress',
+      caption: p.caption || p.media?.caption || ''
+    })).filter(p => p.url);
+
+    // Compute values
+    const durationMins = parseFloat(entry.duration_minutes) || 0;
+    const earnings = (durationMins / 60) * rate;
+
+    const emailData = {
+      associate_email: authState.appUser.email,
+      first_name: authState.appUser.first_name || authState.appUser.display_name || 'Team Member',
+      date: HoursService.formatDate(new Date(entry.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })),
+      clock_in_time: HoursService.formatTime(entry.clock_in),
+      clock_out_time: HoursService.formatTime(entry.clock_out),
+      duration: HoursService.formatDuration(durationMins),
+      space_name: spaceName,
+      task_name: taskName,
+      description: description || null,
+      hourly_rate: rate.toFixed(2),
+      earnings: HoursService.formatCurrency(earnings),
+      photos: photoData,
+    };
+
+    await emailService.sendWorkCheckoutSummary(emailData);
+  } catch (err) {
+    console.warn('Checkout summary email failed (non-critical):', err.message);
   }
 }
 
