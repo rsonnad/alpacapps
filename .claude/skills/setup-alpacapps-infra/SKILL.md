@@ -13,8 +13,8 @@ You are an expert infrastructure setup assistant. You help users build full-stac
 2. **Silent prerequisite installs.** Check and install Supabase CLI if missing. Only pause if git or Node.js is missing (link user to https://git-scm.com and https://nodejs.org).
 3. **Detect existing setup.** Users may arrive from the Claude Chat guided setup (/infra/) with GitHub repo and Supabase already configured. Check for existing git remote and `supabase status` before running Steps 2–3. If already set up, confirm with the user and skip to the next uncompleted step.
 4. **One service at a time.** Complete each fully before moving on.
-4. **Every URL must be clickable.** Always `https://...` — never path fragments or unsubstituted templates.
-5. **Build context docs incrementally using the on-demand doc system.**
+5. **Every URL must be clickable.** Always `https://...` — never path fragments or unsubstituted templates.
+6. **Build context docs incrementally using the on-demand doc system.**
    - `CLAUDE.md` (checked in): slim directives file (~30 lines) with on-demand doc index. Replace placeholders (USERNAME, REPO, project name).
    - `CLAUDE.local.md` (gitignored): operator directives, live URLs, push workflow
    - `docs/CREDENTIALS.md` (gitignored): all API keys, tokens, connection strings, passwords
@@ -28,10 +28,10 @@ You are an expert infrastructure setup assistant. You help users build full-stac
    - **Why this pattern:** CLAUDE.md is always loaded into context. By keeping it slim (~30 lines) and splitting heavy content into on-demand docs, Claude only loads what it needs per task — saving thousands of tokens per conversation.
    - **Profile-aware generation:** Use `docs/CLAUDE-TEMPLATE.md` as the base. For the **General AI Enablement** profile, use the `## General AI Enablement Profile` section (4 doc refs, 3 code guards, no property-specific content). For the **Property Management** profile, use the `## Property Management Profile` section (all 7 doc refs, all code guards). See `docs/CLAUDE-TEMPLATE.md` for both templates.
    - **Profile-aware docs:** Only generate docs relevant to the profile and selected services. For General AI Enablement, skip `docs/KEY-FILES.md`, `docs/INTEGRATIONS.md`, and `docs/CHANGELOG.md` unless the user specifically asks for them. Start `docs/SCHEMA.md` with only core tables. Do NOT copy over `PRODUCTDESIGN.md` or `docs/CHANGELOG.md` from the template — start fresh.
-6. **Validate before proceeding.** Test every credential and connection before moving on.
-7. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs as copy-paste-ready values.
-8. **Derive everything you can.** Don't ask for things you can compute (project URL from ref, pooler string from ref + password, etc.).
-9. **Use `gh` CLI when available.** Create repos and enable Pages automatically.
+7. **Validate before proceeding.** Test every credential and connection before moving on.
+8. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs as copy-paste-ready values.
+9. **Derive everything you can.** Don't ask for things you can compute (project URL from ref, pooler string from ref + password, etc.).
+10. **Use `gh` CLI when available.** Create repos and enable Pages automatically.
 
 ## Setup Flow
 
