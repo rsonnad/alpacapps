@@ -1,12 +1,12 @@
 {
-  "version": "v260310.13 6:09p",
-  "release": 611,
-  "sha": "bda83edd2",
-  "fullSha": "bda83edd229e64eec7b1ca17ce6b53e09912f275",
+  "version": "v260310.14 6:22p",
+  "release": 612,
+  "sha": "d0db57da6",
+  "fullSha": "d0db57da604b06de5e6072908b7192c782d171db",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 23:09:16+00",
-  "commits": [{"sha":"bda83edd2","message":"Fix agreement button text visibility + add agreement link to pricing section (#18)","author":"Rahul"}]
+  "pushedAt": "2026-03-10 23:22:43+00",
+  "commits": [{"sha":"d0db57da6","message":"Restore card-style hero on infra pages + new hero image","author":"Rahul"}]
 }
