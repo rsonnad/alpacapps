@@ -132,11 +132,14 @@
         /* Location Grid */
         .locations-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 1.25rem;
             margin-bottom: 1.5rem;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
+            .locations-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 700px) {
             .locations-grid { grid-template-columns: 1fr; }
         }
 
@@ -544,16 +547,18 @@
         <div class="locations-grid" id="locationsGrid">
             <div class="loading-skeleton skeleton-block"></div>
             <div class="loading-skeleton skeleton-block"></div>
+            <div class="loading-skeleton skeleton-block"></div>
         </div>
         <div id="forecastSection"></div>
         <div id="riskMatrix"></div>
     </main>
 
     <footer class="page-footer">
-        Data from <a href="https://www.weather.gov" target="_blank">National Weather Service</a> &amp;
+        Data from <a href="https://www.weather.gov" target="_blank">National Weather Service</a>,
+        <a href="https://www.spc.noaa.gov" target="_blank">Storm Prediction Center</a> &amp;
         <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
-        Auto-refreshes every 5 minutes. All times local.<br>
-        NWS alerts are official government warnings. Open-Meteo provides forecast model data.
+        Loads on page open. Data older than 5 min shows reload prompt. All times local.<br>
+        Threat analysis combines NWS alerts, SPC Day 1 convective outlook (hail/tornado/wind), NWS forecast text, and Open-Meteo CAPE/wind/precip models.
     </footer>
 
     <script>
@@ -574,6 +579,14 @@
             lat: 30.2876,
             lon: -97.7323,
             tz: 'America/Chicago'
+        },
+        {
+            id: 'calabasas',
+            name: 'Calabasas Property',
+            address: '4601 Oak Glen St, Calabasas, CA 91302',
+            lat: 34.1367,
+            lon: -118.6681,
+            tz: 'America/Los_Angeles'
         }
     ];
 
@@ -659,6 +672,126 @@
         }
     }
 
+    // ─── SPC Convective Outlooks (hail, tornado, wind, categorical) ──
+    let spcCache = null;
+    async function fetchSPCOutlooks() {
+        if (spcCache) return spcCache;
+        const base = 'https://www.spc.noaa.gov/products/outlook/';
+        const urls = {
+            cat: base + 'day1otlk_cat.nolyr.geojson',
+            hail: base + 'day1otlk_hail.nolyr.geojson',
+            torn: base + 'day1otlk_torn.nolyr.geojson',
+            wind: base + 'day1otlk_wind.nolyr.geojson',
+        };
+        const results = {};
+        await Promise.all(Object.entries(urls).map(async ([key, url]) => {
+            try {
+                results[key] = await fetchJSON(url);
+            } catch (e) {
+                console.warn(`SPC ${key} fetch failed:`, e);
+                results[key] = { features: [] };
+            }
+        }));
+        spcCache = results;
+        // Clear cache after 10 minutes
+        setTimeout(() => { spcCache = null; }, 10 * 60 * 1000);
+        return results;
+    }
+
+    // Ray-casting point-in-polygon
+    function pointInPolygon(lat, lon, polygon) {
+        // polygon is an array of [lon, lat] coordinate arrays (GeoJSON format)
+        for (const ring of polygon) {
+            if (pointInRing(lat, lon, ring)) return true;
+        }
+        return false;
+    }
+
+    function pointInRing(lat, lon, ring) {
+        let inside = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            const xi = ring[i][1], yi = ring[i][0]; // lat, lon
+            const xj = ring[j][1], yj = ring[j][0];
+            if (((yi > lon) !== (yj > lon)) && (lat < (xj - xi) * (lon - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
+    function pointInFeature(lat, lon, feature) {
+        const geom = feature.geometry;
+        if (geom.type === 'Polygon') {
+            return pointInPolygon(lat, lon, geom.coordinates);
+        }
+        if (geom.type === 'MultiPolygon') {
+            return geom.coordinates.some(poly => pointInPolygon(lat, lon, poly));
+        }
+        return false;
+    }
+
+    function getSPCRiskForLocation(spc, lat, lon) {
+        const result = { cat: null, hail: 0, torn: 0, wind: 0 };
+
+        // Categorical risk
+        if (spc.cat && spc.cat.features) {
+            for (const f of spc.cat.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = (f.properties.LABEL2 || '').toLowerCase();
+                    // Keep the highest matching risk
+                    const order = { 'general thunderstorms': 1, 'marginal': 2, 'slight': 3, 'enhanced': 4, 'moderate': 5, 'high': 6 };
+                    for (const [key, val] of Object.entries(order)) {
+                        if (label.includes(key) && val > (result.catLevel || 0)) {
+                            result.cat = f.properties.LABEL2;
+                            result.catLevel = val;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Hail probability
+        if (spc.hail && spc.hail.features) {
+            for (const f of spc.hail.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.hail) {
+                        result.hail = Math.round(pct * 100); // 0.15 → 15
+                    }
+                }
+            }
+        }
+
+        // Tornado probability
+        if (spc.torn && spc.torn.features) {
+            for (const f of spc.torn.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.torn) {
+                        result.torn = Math.round(pct * 100);
+                    }
+                }
+            }
+        }
+
+        // Wind probability
+        if (spc.wind && spc.wind.features) {
+            for (const f of spc.wind.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.wind) {
+                        result.wind = Math.round(pct * 100);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     // ─── Open-Meteo (detailed hourly) ────────────────────────────
     async function fetchOpenMeteo(loc) {
         try {
@@ -680,13 +813,14 @@
     }
 
     // ─── Threat analysis ─────────────────────────────────────────
-    function analyzeThreats(alerts, openMeteo) {
+    function analyzeThreats(alerts, openMeteo, nwsForecast, spcRisk) {
         const threats = {};
         THREATS.forEach(t => { threats[t.key] = { level: 'none', pct: 0 }; });
 
-        // From NWS alerts
+        // From NWS alerts — event name + description body scanning
         for (const a of alerts) {
             const ev = a.event.toLowerCase();
+            const desc = ((a.description || '') + ' ' + (a.headline || '')).toLowerCase();
             const sevScore = SEVERITY_ORDER[a.severity] || 0;
             const certWeight = CERTAINTY_WEIGHT[a.certainty] || 0.2;
             const pct = Math.min(100, Math.round(sevScore * certWeight * 25));
@@ -704,6 +838,64 @@
                     assignThreat(threats, 'tornado', Math.round(pct * 0.4), Math.max(1, sevScore - 2));
                 }
             }
+
+            // Scan alert description body for threat keywords not in event name
+            if (desc.includes('hail') && !ev.includes('hail')) {
+                const hailPct = desc.includes('large hail') || desc.includes('2 inch') ? 65 : 40;
+                assignThreat(threats, 'hail', Math.max(hailPct, Math.round(pct * 0.6)));
+            }
+            if (desc.includes('tornado') && !ev.includes('tornado')) {
+                const torPct = desc.includes('possible tornado') || desc.includes('tornadoes possible') ? 40 : 25;
+                assignThreat(threats, 'tornado', Math.max(torPct, Math.round(pct * 0.4)));
+            }
+            if ((desc.includes('damaging wind') || desc.includes('70 mph') || desc.includes('60 mph')) && !ev.includes('wind')) {
+                assignThreat(threats, 'wind', Math.max(45, Math.round(pct * 0.5)));
+            }
+            if (desc.includes('thunderstorm') && !ev.includes('thunderstorm') && !ev.includes('severe')) {
+                assignThreat(threats, 'thunderstorm', Math.max(35, Math.round(pct * 0.5)));
+            }
+        }
+
+        // From NWS forecast periods — scan text for severe weather keywords
+        if (nwsForecast && nwsForecast.forecast && nwsForecast.forecast.properties) {
+            const periods = nwsForecast.forecast.properties.periods || [];
+            // Check first 4 periods (next ~48 hrs)
+            for (const p of periods.slice(0, 4)) {
+                const txt = (p.detailedForecast || '').toLowerCase();
+                const shortTxt = (p.shortForecast || '').toLowerCase();
+                const combined = txt + ' ' + shortTxt;
+
+                if (combined.includes('hail')) {
+                    const hailPct = combined.includes('large hail') || combined.includes('baseball') || combined.includes('2 inch') ? 75 : 50;
+                    assignThreat(threats, 'hail', hailPct);
+                }
+                if (combined.includes('tornado')) {
+                    const torPct = combined.includes('tornadoes likely') ? 70 : combined.includes('possible') ? 45 : 35;
+                    assignThreat(threats, 'tornado', torPct);
+                }
+                if (combined.includes('damaging wind') || combined.includes('destructive')) {
+                    assignThreat(threats, 'wind', 55);
+                }
+                if (combined.includes('severe thunderstorm') || combined.includes('severe storm')) {
+                    assignThreat(threats, 'thunderstorm', 60);
+                }
+            }
+        }
+
+        // From NWS hourly forecast — scan shortForecast text
+        if (nwsForecast && nwsForecast.hourly && nwsForecast.hourly.properties) {
+            const periods = nwsForecast.hourly.properties.periods || [];
+            const now = new Date();
+            const next12hrs = periods.filter(p => {
+                const t = new Date(p.startTime);
+                return t >= now && t <= new Date(now.getTime() + 12 * 3600 * 1000);
+            });
+            for (const p of next12hrs) {
+                const sf = (p.shortForecast || '').toLowerCase();
+                if (sf.includes('hail')) assignThreat(threats, 'hail', 55);
+                if (sf.includes('tornado')) assignThreat(threats, 'tornado', 50);
+                if (sf.includes('severe') || sf.includes('t-storm')) assignThreat(threats, 'thunderstorm', 50);
+            }
         }
 
         // From Open-Meteo forecast data (next 24 hours)
@@ -713,23 +905,74 @@
             const next24 = h.time.map((t, i) => ({ t: new Date(t), i }))
                 .filter(x => x.t >= now && x.t <= new Date(now.getTime() + 24 * 3600 * 1000));
 
+            let maxCape = 0;
+            let maxGust = 0;
+            let maxPrecip = 0;
+            let stormHours = 0;
+
             for (const { i } of next24) {
-                // CAPE > 1500 = elevated thunderstorm risk
-                if (h.cape && h.cape[i] > 1500) {
-                    const capePct = Math.min(80, Math.round((h.cape[i] - 1000) / 30));
-                    assignThreat(threats, 'thunderstorm', capePct, h.cape[i] > 3000 ? 3 : 2);
-                    if (h.cape[i] > 3000) {
-                        assignThreat(threats, 'hail', Math.round(capePct * 0.6), 2);
-                        assignThreat(threats, 'tornado', Math.round(capePct * 0.3), 1);
+                const cape = h.cape ? h.cape[i] : 0;
+                const gust = h.windgusts_10m ? h.windgusts_10m[i] : 0;
+                const precip = h.precipitation ? h.precipitation[i] : 0;
+                const wcode = h.weathercode ? h.weathercode[i] : 0;
+
+                if (cape > maxCape) maxCape = cape;
+                if (gust > maxGust) maxGust = gust;
+                if (precip > maxPrecip) maxPrecip = precip;
+                if (wcode >= 95) stormHours++;
+
+                // CAPE > 1000 = elevated instability
+                if (cape > 1000) {
+                    const capePct = Math.min(85, Math.round((cape - 500) / 30));
+                    assignThreat(threats, 'thunderstorm', capePct);
+                    // CAPE > 2000 = significant hail/tornado risk
+                    if (cape > 2000) {
+                        assignThreat(threats, 'hail', Math.round(capePct * 0.7));
+                        assignThreat(threats, 'tornado', Math.round(capePct * 0.35));
+                    }
+                    // CAPE > 1500 with storm weathercode
+                    if (cape > 1500 && wcode >= 95) {
+                        assignThreat(threats, 'hail', Math.round(capePct * 0.55));
                     }
                 }
-                // Wind gusts > 50 mph
-                if (h.windgusts_10m && h.windgusts_10m[i] > 50) {
-                    assignThreat(threats, 'wind', Math.min(90, Math.round(h.windgusts_10m[i] * 1.2)), 3);
+                // Wind gusts > 40 mph = elevated wind risk
+                if (gust > 40) {
+                    const windPct = Math.min(90, Math.round((gust - 30) * 1.5));
+                    assignThreat(threats, 'wind', windPct);
                 }
                 // Heavy precip
-                if (h.precipitation && h.precipitation[i] > 0.5) {
-                    assignThreat(threats, 'flood', Math.min(60, Math.round(h.precipitation[i] * 30)), 2);
+                if (precip > 0.3) {
+                    assignThreat(threats, 'flood', Math.min(70, Math.round(precip * 35)));
+                }
+            }
+
+            // Bonus: multiple storm hours compounds risk
+            if (stormHours >= 3) {
+                assignThreat(threats, 'thunderstorm', Math.min(90, threats.thunderstorm.pct + 15));
+                assignThreat(threats, 'hail', Math.min(80, threats.hail.pct + 10));
+                assignThreat(threats, 'flood', Math.min(80, threats.flood.pct + 15));
+            }
+        }
+
+        // From SPC Day 1 Convective Outlook (authoritative severe weather probabilities)
+        if (spcRisk) {
+            if (spcRisk.hail > 0) assignThreat(threats, 'hail', spcRisk.hail);
+            if (spcRisk.torn > 0) assignThreat(threats, 'tornado', spcRisk.torn);
+            if (spcRisk.wind > 0) assignThreat(threats, 'wind', spcRisk.wind);
+
+            // Categorical risk boosts thunderstorm baseline
+            if (spcRisk.cat) {
+                const catBoost = {
+                    'General Thunderstorms': 25,
+                    'Marginal': 30, 'Slight': 45,
+                    'Enhanced': 60, 'Moderate': 75, 'High': 90,
+                };
+                // Match against LABEL2 (mixed case from SPC)
+                for (const [label, boost] of Object.entries(catBoost)) {
+                    if (spcRisk.cat.toLowerCase().includes(label.toLowerCase())) {
+                        assignThreat(threats, 'thunderstorm', boost);
+                        break;
+                    }
                 }
             }
         }
@@ -817,7 +1060,7 @@
     }
 
     function renderLocationCard(loc, data) {
-        const { alerts, nws, openMeteo, threats } = data;
+        const { alerts, nws, openMeteo, threats, spcRisk } = data;
         const sev = overallSeverity(alerts);
 
         // Current conditions
@@ -894,7 +1137,10 @@
                         <div class="location-address">${loc.address}</div>
                         <div class="location-coords">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</div>
                     </div>
-                    <span class="severity-badge ${sev}">${sevLabels[sev]}</span>
+                    <div style="text-align:right">
+                        <span class="severity-badge ${sev}">${sevLabels[sev]}</span>
+                        ${spcRisk && spcRisk.cat ? `<div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.3rem">SPC: ${spcRisk.cat}</div>` : ''}
+                    </div>
                 </div>
                 <div class="current-conditions">
                     <div class="condition-item">
@@ -1017,6 +1263,14 @@
 
         const locData = {};
 
+        // Fetch SPC outlooks once (shared across all locations)
+        let spc = null;
+        try {
+            spc = await fetchSPCOutlooks();
+        } catch (e) {
+            console.warn('SPC outlook fetch failed:', e);
+        }
+
         await Promise.all(LOCATIONS.map(async loc => {
             try {
                 const [alerts, nws, openMeteo] = await Promise.all([
@@ -1025,12 +1279,13 @@
                     fetchOpenMeteo(loc),
                 ]);
 
-                const threats = analyzeThreats(alerts, openMeteo);
-                locData[loc.id] = { alerts, nws, openMeteo, threats };
+                const spcRisk = spc ? getSPCRiskForLocation(spc, loc.lat, loc.lon) : null;
+                const threats = analyzeThreats(alerts, openMeteo, nws, spcRisk);
+                locData[loc.id] = { alerts, nws, openMeteo, threats, spcRisk };
             } catch (e) {
                 console.error(`Failed to load data for ${loc.name}:`, e);
                 errorContainer.innerHTML += `<div class="error-banner">Failed to load data for ${loc.name}: ${e.message}</div>`;
-                locData[loc.id] = { alerts: [], nws: { current: null, forecast: null, hourly: null }, openMeteo: null, threats: analyzeThreats([], null) };
+                locData[loc.id] = { alerts: [], nws: { current: null, forecast: null, hourly: null }, openMeteo: null, threats: analyzeThreats([], null, null, null) };
             }
         }));
 
@@ -1045,15 +1300,34 @@
         renderForecast(locData);
         renderRiskMatrix(locData);
 
+        lastRefreshTime = Date.now();
         const now = new Date().toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-        document.getElementById('lastUpdated').textContent = `Last updated: ${now}`;
+        const el = document.getElementById('lastUpdated');
+        el.textContent = `Last updated: ${now}`;
+        el.style.color = '';
 
         btn.classList.remove('loading');
     }
 
-    // ─── Init ────────────────────────────────────────────────────
-    refreshAll();
-    setInterval(refreshAll, 5 * 60 * 1000); // Refresh every 5 minutes
+    // ─── Staleness check ────────────────────────────────────────
+    let lastRefreshTime = null;
+
+    function checkStaleness() {
+        if (!lastRefreshTime) return;
+        const elapsed = Date.now() - lastRefreshTime;
+        const staleMinutes = Math.floor(elapsed / 60000);
+        const el = document.getElementById('lastUpdated');
+        if (staleMinutes >= 5) {
+            el.innerHTML = `Data is ${staleMinutes}m old — <a href="#" onclick="event.preventDefault();refreshAll()" style="color:var(--yellow);text-decoration:underline">reload now</a>`;
+            el.style.color = 'var(--yellow)';
+        }
+    }
+
+    // ─── Init — load once on page load, check staleness periodically ─
+    refreshAll().then(() => {
+        lastRefreshTime = Date.now();
+    });
+    setInterval(checkStaleness, 30 * 1000); // Check staleness every 30s
     </script>
 </body>
 </html>
