@@ -99,7 +99,7 @@ Music Assistant can serve music from local folders or mounted drives so resident
 **Option A — Supabase pg_cron + Edge function (implemented)**
 
 1. **pg_cron** job `sonos-schedule-runner` runs every 5 minutes (`*/5 * * * *`).
-2. Calls `sonos-control` with `{ action: “run-schedules” }` using service role key (internal-only).
+2. Calls `sonos-control` with `{ action: “run-schedules” }` authenticated via `X-Cron-Secret` header.
 3. The handler:
    - Gets current time in America/Chicago.
    - Queries `sonos_schedules WHERE is_active = true`.
@@ -128,7 +128,7 @@ Music Assistant can serve music from local folders or mounted drives so resident
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
 | Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpaca Mac :5005 |
 | MA proxy | Hostinger Caddy | `/ma-api` → Alpaca Mac :8095/api |
-| Schedule runner | pg_cron job #30 (`*/5 * * * *`) | Calls `sonos-control` `run-schedules` action → checks due `sonos_schedules` → MA/Sonos |
+| Schedule runner | pg_cron job #31 (`*/5 * * * *`) | Calls `sonos-control` `run-schedules` action → checks due `sonos_schedules` → MA/Sonos |
 
 ---
 

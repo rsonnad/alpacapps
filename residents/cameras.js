@@ -24,6 +24,7 @@ const BLINK_SNAPSHOT_PATH = 'cameras/blink-latest.jpg';
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
 const SENSORS_PROXY_BASE = 'https://cam.alpacaplayhouse.com/sensors';
+const EVENTS_PROXY_BASE = 'https://cam.alpacaplayhouse.com/protect';
 
 
 // =============================================
@@ -46,6 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderSensors();
       startSensorPolling();
       startLocalClock();
+      // Load and display recent events
+      loadEvents();
     },
   });
 });
@@ -1214,3 +1217,99 @@ function renderSensors() {
     </div>`;
   }).join('');
 }
+
+
+// =============================================
+// RECENT EVENTS (Smart Detect)
+// =============================================
+
+// Camera ID → name map (built from loaded cameras)
+function getCameraNameMap() {
+  const map = {};
+  for (const cam of cameras) {
+    for (const s of cam.streams) {
+      if (s.protect_camera_id) map[s.protect_camera_id] = cam.camera_name;
+    }
+  }
+  return map;
+}
+
+const DETECT_ICONS = {
+  person: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>',
+  animal: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/><path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a13.152 13.152 0 00-.42-3.31"/></svg>',
+  vehicle: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+  package: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16Z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>',
+};
+
+function timeAgo(ms) {
+  const sec = Math.floor((Date.now() - ms) / 1000);
+  if (sec < 60) return 'just now';
+  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  return `${Math.floor(sec / 86400)}d ago`;
+}
+
+async function loadEvents() {
+  try {
+    const res = await fetch(`${EVENTS_PROXY_BASE}/events?limit=20`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    const events = await res.json();
+    renderEvents(events);
+  } catch (err) {
+    console.warn('[Events] Failed to load:', err.message);
+  }
+}
+
+function renderEvents(events) {
+  const section = document.getElementById('eventsSection');
+  const grid = document.getElementById('eventGrid');
+  if (!section || !grid || !events.length) return;
+
+  section.style.display = '';
+  const cameraNames = getCameraNameMap();
+
+  grid.innerHTML = events.map(ev => {
+    const types = ev.smartDetectTypes || [];
+    const mainType = types[0] || 'unknown';
+    const cameraName = cameraNames[ev.camera] || 'Camera';
+    const thumbUrl = ev.thumbnail ? `${EVENTS_PROXY_BASE}/thumbnail/${ev.thumbnail}` : '';
+    const ago = timeAgo(ev.start);
+    const score = ev.score != null ? ev.score : '';
+    const durationSec = ev.end && ev.start ? Math.round((ev.end - ev.start) / 1000) : 0;
+
+    const typeBadges = types.map(t =>
+      `<span class="event-badge event-badge--${t}">${DETECT_ICONS[t] || ''} ${t}</span>`
+    ).join('');
+
+    return `<div class="event-card" data-camera="${ev.camera}" data-start="${ev.start}" data-end="${ev.end}">
+      <div class="event-card__thumb">
+        ${thumbUrl
+          ? `<img src="${thumbUrl}" alt="${mainType} detected" loading="lazy">`
+          : `<div class="event-card__no-thumb">${DETECT_ICONS[mainType] || '?'}</div>`}
+      </div>
+      <div class="event-card__info">
+        <div class="event-card__badges">${typeBadges}</div>
+        <div class="event-card__meta">
+          <span class="event-card__camera">${cameraName}</span>
+          <span class="event-card__time">${ago}</span>
+          ${durationSec ? `<span class="event-card__duration">${durationSec}s</span>` : ''}
+          ${score ? `<span class="event-card__score">${score}%</span>` : ''}
+        </div>
+      </div>
+      <button class="event-card__play" title="Download clip" onclick="window.__downloadClip(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// Expose clip download globally (onclick handler)
+window.__downloadClip = function(btn) {
+  const card = btn.closest('.event-card');
+  if (!card) return;
+  const camera = card.dataset.camera;
+  const start = card.dataset.start;
+  const end = card.dataset.end;
+  if (!camera || !start || !end) return;
+  window.open(`${EVENTS_PROXY_BASE}/export?camera=${camera}&start=${start}&end=${end}`, '_blank');
+};

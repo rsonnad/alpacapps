@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-03-10T05:50:43.483Z",
+  "generatedAt": "2026-03-10T22:37:32.652Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "weatheralert/index.html",
+      "title": "Severe Weather Monitor",
+      "section": null,
+      "modifiedAt": "2026-03-10T22:20:45.000Z"
+    },
     {
       "path": "calliinstall/index.html",
       "title": "Set Up Your New Machine — CalliApp",

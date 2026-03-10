@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Severe Weather Monitor</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0f14;
+            --bg-card: #151921;
+            --bg-card-hover: #1a1f2b;
+            --border: #252b3a;
+            --text: #e8eaf0;
+            --text-muted: #8891a5;
+            --text-dim: #5a6377;
+            --green: #34d399;
+            --green-bg: rgba(52, 211, 153, 0.08);
+            --yellow: #fbbf24;
+            --yellow-bg: rgba(251, 191, 36, 0.08);
+            --orange: #f97316;
+            --orange-bg: rgba(249, 115, 22, 0.08);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.08);
+            --purple: #a78bfa;
+            --purple-bg: rgba(167, 139, 250, 0.08);
+            --blue: #60a5fa;
+            --blue-bg: rgba(96, 165, 250, 0.08);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-header {
+            background: linear-gradient(180deg, #111520 0%, var(--bg) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 1.5rem 1.25rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+        }
+        .page-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .page-title svg { flex-shrink: 0; }
+        .page-title h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .last-updated {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'DM Mono', monospace;
+        }
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.4rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .refresh-btn:hover { border-color: var(--text-muted); color: var(--text); }
+        .refresh-btn.loading svg { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+        .status-banner.clear {
+            background: var(--green-bg);
+            border-color: rgba(52, 211, 153, 0.15);
+            color: var(--green);
+        }
+        .status-banner.warning {
+            background: var(--yellow-bg);
+            border-color: rgba(251, 191, 36, 0.15);
+            color: var(--yellow);
+        }
+        .status-banner.danger {
+            background: var(--red-bg);
+            border-color: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+        .status-banner svg { flex-shrink: 0; }
+
+        /* Location Grid */
+        .locations-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 1100px) {
+            .locations-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 700px) {
+            .locations-grid { grid-template-columns: 1fr; }
+        }
+
+        .location-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .location-header {
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .location-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .location-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+        .location-coords {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-family: 'DM Mono', monospace;
+            margin-top: 0.25rem;
+        }
+        .severity-badge {
+            padding: 0.3rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .severity-badge.clear { background: var(--green-bg); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+        .severity-badge.advisory { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+        .severity-badge.watch { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+        .severity-badge.warning { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+        .severity-badge.extreme { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); }
+
+        /* Current Conditions */
+        .current-conditions {
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .condition-item {
+            text-align: center;
+        }
+        .condition-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            line-height: 1.2;
+        }
+        .condition-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 0.15rem;
+        }
+
+        /* Threat Assessment */
+        .threat-grid {
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .threat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid transparent;
+        }
+        .threat-item.active-low { background: var(--yellow-bg); border-color: rgba(251,191,36,0.1); }
+        .threat-item.active-med { background: var(--orange-bg); border-color: rgba(249,115,22,0.1); }
+        .threat-item.active-high { background: var(--red-bg); border-color: rgba(239,68,68,0.1); }
+
+        .threat-icon { font-size: 1.1rem; flex-shrink: 0; width: 1.5rem; text-align: center; }
+        .threat-info { flex: 1; min-width: 0; }
+        .threat-name { font-size: 0.75rem; font-weight: 500; }
+        .threat-level {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .threat-item.active-low .threat-level { color: var(--yellow); }
+        .threat-item.active-med .threat-level { color: var(--orange); }
+        .threat-item.active-high .threat-level { color: var(--red); }
+        .threat-item.active-low .threat-name { color: var(--yellow); }
+        .threat-item.active-med .threat-name { color: var(--orange); }
+        .threat-item.active-high .threat-name { color: var(--red); }
+
+        /* Active Alerts */
+        .alerts-section {
+            padding: 1.25rem;
+        }
+        .alerts-section h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        .alert-item {
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            border: 1px solid;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .alert-item:last-child { margin-bottom: 0; }
+        .alert-item.severity-minor { background: var(--yellow-bg); border-color: rgba(251,191,36,0.12); }
+        .alert-item.severity-moderate { background: var(--orange-bg); border-color: rgba(249,115,22,0.12); }
+        .alert-item.severity-severe { background: var(--red-bg); border-color: rgba(239,68,68,0.12); }
+        .alert-item.severity-extreme { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.2); }
+        .alert-item.severity-unknown { background: var(--blue-bg); border-color: rgba(96,165,250,0.12); }
+
+        .alert-item:hover { filter: brightness(1.15); }
+        .alert-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .alert-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .alert-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            line-height: 1.5;
+            display: none;
+        }
+        .alert-item.expanded .alert-desc { display: block; }
+
+        .no-alerts {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        .no-alerts svg { margin-bottom: 0.5rem; }
+
+        /* Forecast Section */
+        .forecast-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1.25rem;
+        }
+        .forecast-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .forecast-header h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .forecast-tabs {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .forecast-tab {
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .forecast-tab:hover { color: var(--text); }
+        .forecast-tab.active { background: rgba(255,255,255,0.08); color: var(--text); }
+
+        .hourly-forecast {
+            padding: 1rem 1.25rem;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .hourly-forecast::-webkit-scrollbar { height: 4px; }
+        .hourly-forecast::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .hour-item {
+            flex: 0 0 auto;
+            min-width: 56px;
+            text-align: center;
+            padding: 0.5rem 0.35rem;
+            border-radius: 8px;
+            transition: background 0.15s;
+        }
+        .hour-item:hover { background: rgba(255,255,255,0.03); }
+        .hour-item.has-precip { background: var(--blue-bg); }
+        .hour-time {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 0.35rem;
+        }
+        .hour-icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .hour-temp {
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+        }
+        .hour-precip {
+            font-size: 0.6rem;
+            color: var(--blue);
+            margin-top: 0.2rem;
+            font-family: 'DM Mono', monospace;
+        }
+        .hour-wind {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+
+        /* Risk Matrix */
+        .risk-matrix {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .risk-matrix h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .risk-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.35rem;
+        }
+        .risk-table th {
+            text-align: left;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            padding: 0 0.5rem 0.5rem;
+        }
+        .risk-table td {
+            padding: 0.6rem 0.5rem;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.02);
+        }
+        .risk-table tr td:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+        .risk-table tr td:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+        .risk-table .location-col { font-weight: 500; }
+
+        .risk-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .risk-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        .risk-pct {
+            font-size: 0.7rem;
+            font-family: 'DM Mono', monospace;
+            min-width: 2.5rem;
+            text-align: right;
+        }
+
+        /* Loading State */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card-hover) 50%, var(--bg-card) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-block { height: 200px; margin-bottom: 1rem; }
+
+        /* Pulse dot */
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        .pulse-dot.green { background: var(--green); }
+        .pulse-dot.green::before { background: var(--green); }
+        .pulse-dot.yellow { background: var(--yellow); }
+        .pulse-dot.yellow::before { background: var(--yellow); }
+        .pulse-dot.orange { background: var(--orange); }
+        .pulse-dot.orange::before { background: var(--orange); }
+        .pulse-dot.red { background: var(--red); }
+        .pulse-dot.red::before { background: var(--red); }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.4; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* Footer */
+        .page-footer {
+            max-width: 1200px;
+            margin: 2rem auto 1rem;
+            padding: 0 1.5rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .page-footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+        .page-footer a:hover { color: var(--text); }
+
+        /* Error display */
+        .error-banner {
+            background: var(--red-bg);
+            border: 1px solid rgba(239,68,68,0.15);
+            color: var(--red);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="page-header-inner">
+            <div class="page-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <div>
+                    <h1>Severe Weather Monitor</h1>
+                    <div class="last-updated" id="lastUpdated">Loading...</div>
+                </div>
+            </div>
+            <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div id="statusBanner"></div>
+        <div id="errorContainer"></div>
+        <div class="locations-grid" id="locationsGrid">
+            <div class="loading-skeleton skeleton-block"></div>
+            <div class="loading-skeleton skeleton-block"></div>
+            <div class="loading-skeleton skeleton-block"></div>
+        </div>
+        <div id="forecastSection"></div>
+        <div id="riskMatrix"></div>
+    </main>
+
+    <footer class="page-footer">
+        Data from <a href="https://www.weather.gov" target="_blank">National Weather Service</a>,
+        <a href="https://www.spc.noaa.gov" target="_blank">Storm Prediction Center</a> &amp;
+        <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
+        Loads on page open. Data older than 5 min shows reload prompt. All times local.<br>
+        Threat analysis combines NWS alerts, SPC Day 1 convective outlook (hail/tornado/wind), NWS forecast text, and Open-Meteo CAPE/wind/precip models.
+    </footer>
+
+    <script>
+    // ─── Configuration ───────────────────────────────────────────
+    const LOCATIONS = [
+        {
+            id: 'chicago',
+            name: 'Chicago Property',
+            address: '2930 N Allen Ave, Chicago, IL 60618',
+            lat: 41.9345,
+            lon: -87.7105,
+            tz: 'America/Chicago'
+        },
+        {
+            id: 'austin',
+            name: 'Austin Property',
+            address: '1407 Kirwood, Austin, TX',
+            lat: 30.2876,
+            lon: -97.7323,
+            tz: 'America/Chicago'
+        },
+        {
+            id: 'calabasas',
+            name: 'Calabasas Property',
+            address: '4601 Oak Glen St, Calabasas, CA 91302',
+            lat: 34.1367,
+            lon: -118.6681,
+            tz: 'America/Los_Angeles'
+        }
+    ];
+
+    const THREATS = [
+        { key: 'tornado', icon: '🌪️', label: 'Tornado' },
+        { key: 'hail', icon: '🧊', label: 'Hail' },
+        { key: 'thunderstorm', icon: '⛈️', label: 'T-Storm' },
+        { key: 'wind', icon: '💨', label: 'High Wind' },
+        { key: 'flood', icon: '🌊', label: 'Flooding' },
+        { key: 'winter', icon: '❄️', label: 'Winter Storm' },
+    ];
+
+    const SEVERITY_ORDER = { extreme: 4, severe: 3, moderate: 2, minor: 1, unknown: 0 };
+    const CERTAINTY_WEIGHT = { observed: 1.0, likely: 0.85, possible: 0.6, unlikely: 0.3, unknown: 0.2 };
+
+    let allData = {};
+
+    // ─── Fetch helpers ───────────────────────────────────────────
+    async function fetchJSON(url) {
+        const r = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0 (property-monitoring)' } });
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json();
+    }
+
+    // ─── NWS Alerts ──────────────────────────────────────────────
+    async function fetchAlerts(loc) {
+        try {
+            const data = await fetchJSON(
+                `https://api.weather.gov/alerts/active?point=${loc.lat},${loc.lon}&status=actual`
+            );
+            return (data.features || []).map(f => {
+                const p = f.properties;
+                return {
+                    id: f.id,
+                    event: p.event,
+                    severity: (p.severity || 'unknown').toLowerCase(),
+                    certainty: (p.certainty || 'unknown').toLowerCase(),
+                    urgency: (p.urgency || 'unknown').toLowerCase(),
+                    headline: p.headline,
+                    description: p.description,
+                    instruction: p.instruction,
+                    onset: p.onset,
+                    expires: p.expires,
+                    senderName: p.senderName,
+                    category: (p.category || '').toLowerCase(),
+                };
+            });
+        } catch (e) {
+            console.warn(`Alerts fetch failed for ${loc.name}:`, e);
+            return [];
+        }
+    }
+
+    // ─── NWS Forecast (current conditions) ───────────────────────
+    async function fetchNWSForecast(loc) {
+        try {
+            const meta = await fetchJSON(`https://api.weather.gov/points/${loc.lat},${loc.lon}`);
+            const forecastUrl = meta.properties.forecast;
+            const hourlyUrl = meta.properties.forecastHourly;
+            const stationsUrl = meta.properties.observationStations;
+
+            const [forecast, hourly, stations] = await Promise.all([
+                fetchJSON(forecastUrl),
+                fetchJSON(hourlyUrl),
+                fetchJSON(stationsUrl),
+            ]);
+
+            let current = null;
+            if (stations.features && stations.features.length > 0) {
+                try {
+                    const stationId = stations.features[0].properties.stationIdentifier;
+                    const obs = await fetchJSON(`https://api.weather.gov/stations/${stationId}/observations/latest`);
+                    current = obs.properties;
+                } catch (e) {
+                    console.warn('Current obs failed, using hourly[0]');
+                }
+            }
+
+            return { forecast, hourly, current };
+        } catch (e) {
+            console.warn(`NWS forecast failed for ${loc.name}:`, e);
+            return { forecast: null, hourly: null, current: null };
+        }
+    }
+
+    // ─── SPC Convective Outlooks (hail, tornado, wind, categorical) ──
+    let spcCache = null;
+    async function fetchSPCOutlooks() {
+        if (spcCache) return spcCache;
+        const base = 'https://www.spc.noaa.gov/products/outlook/';
+        const urls = {
+            cat: base + 'day1otlk_cat.nolyr.geojson',
+            hail: base + 'day1otlk_hail.nolyr.geojson',
+            torn: base + 'day1otlk_torn.nolyr.geojson',
+            wind: base + 'day1otlk_wind.nolyr.geojson',
+        };
+        const results = {};
+        await Promise.all(Object.entries(urls).map(async ([key, url]) => {
+            try {
+                results[key] = await fetchJSON(url);
+            } catch (e) {
+                console.warn(`SPC ${key} fetch failed:`, e);
+                results[key] = { features: [] };
+            }
+        }));
+        spcCache = results;
+        // Clear cache after 10 minutes
+        setTimeout(() => { spcCache = null; }, 10 * 60 * 1000);
+        return results;
+    }
+
+    // Ray-casting point-in-polygon
+    function pointInPolygon(lat, lon, polygon) {
+        // polygon is an array of [lon, lat] coordinate arrays (GeoJSON format)
+        for (const ring of polygon) {
+            if (pointInRing(lat, lon, ring)) return true;
+        }
+        return false;
+    }
+
+    function pointInRing(lat, lon, ring) {
+        let inside = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            const xi = ring[i][1], yi = ring[i][0]; // lat, lon
+            const xj = ring[j][1], yj = ring[j][0];
+            if (((yi > lon) !== (yj > lon)) && (lat < (xj - xi) * (lon - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
+    function pointInFeature(lat, lon, feature) {
+        const geom = feature.geometry;
+        if (geom.type === 'Polygon') {
+            return pointInPolygon(lat, lon, geom.coordinates);
+        }
+        if (geom.type === 'MultiPolygon') {
+            return geom.coordinates.some(poly => pointInPolygon(lat, lon, poly));
+        }
+        return false;
+    }
+
+    function getSPCRiskForLocation(spc, lat, lon) {
+        const result = { cat: null, hail: 0, torn: 0, wind: 0 };
+
+        // Categorical risk
+        if (spc.cat && spc.cat.features) {
+            for (const f of spc.cat.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = (f.properties.LABEL2 || '').toLowerCase();
+                    // Keep the highest matching risk
+                    const order = { 'general thunderstorms': 1, 'marginal': 2, 'slight': 3, 'enhanced': 4, 'moderate': 5, 'high': 6 };
+                    for (const [key, val] of Object.entries(order)) {
+                        if (label.includes(key) && val > (result.catLevel || 0)) {
+                            result.cat = f.properties.LABEL2;
+                            result.catLevel = val;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Hail probability
+        if (spc.hail && spc.hail.features) {
+            for (const f of spc.hail.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.hail) {
+                        result.hail = Math.round(pct * 100); // 0.15 → 15
+                    }
+                }
+            }
+        }
+
+        // Tornado probability
+        if (spc.torn && spc.torn.features) {
+            for (const f of spc.torn.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.torn) {
+                        result.torn = Math.round(pct * 100);
+                    }
+                }
+            }
+        }
+
+        // Wind probability
+        if (spc.wind && spc.wind.features) {
+            for (const f of spc.wind.features) {
+                if (pointInFeature(lat, lon, f)) {
+                    const label = f.properties.LABEL || '';
+                    const pct = parseFloat(label);
+                    if (!isNaN(pct) && pct > result.wind) {
+                        result.wind = Math.round(pct * 100);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // ─── Open-Meteo (detailed hourly) ────────────────────────────
+    async function fetchOpenMeteo(loc) {
+        try {
+            const params = new URLSearchParams({
+                latitude: loc.lat,
+                longitude: loc.lon,
+                hourly: 'temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weathercode,windspeed_10m,windgusts_10m,cape,visibility',
+                temperature_unit: 'fahrenheit',
+                windspeed_unit: 'mph',
+                precipitation_unit: 'inch',
+                timezone: loc.tz,
+                forecast_days: 3,
+            });
+            return await fetchJSON(`https://api.open-meteo.com/v1/forecast?${params}`);
+        } catch (e) {
+            console.warn(`Open-Meteo failed for ${loc.name}:`, e);
+            return null;
+        }
+    }
+
+    // ─── Threat analysis ─────────────────────────────────────────
+    function analyzeThreats(alerts, openMeteo, nwsForecast, spcRisk) {
+        const threats = {};
+        THREATS.forEach(t => { threats[t.key] = { level: 'none', pct: 0 }; });
+
+        // From NWS alerts — event name + description body scanning
+        for (const a of alerts) {
+            const ev = a.event.toLowerCase();
+            const desc = ((a.description || '') + ' ' + (a.headline || '')).toLowerCase();
+            const sevScore = SEVERITY_ORDER[a.severity] || 0;
+            const certWeight = CERTAINTY_WEIGHT[a.certainty] || 0.2;
+            const pct = Math.min(100, Math.round(sevScore * certWeight * 25));
+
+            if (ev.includes('tornado')) assignThreat(threats, 'tornado', pct, sevScore);
+            if (ev.includes('hail')) assignThreat(threats, 'hail', pct, sevScore);
+            if (ev.includes('thunderstorm') || ev.includes('t-storm')) assignThreat(threats, 'thunderstorm', pct, sevScore);
+            if (ev.includes('wind') && !ev.includes('winter')) assignThreat(threats, 'wind', pct, sevScore);
+            if (ev.includes('flood') || ev.includes('flash')) assignThreat(threats, 'flood', pct, sevScore);
+            if (ev.includes('winter') || ev.includes('ice') || ev.includes('blizzard') || ev.includes('freeze') || ev.includes('frost') || ev.includes('snow')) assignThreat(threats, 'winter', pct, sevScore);
+            if (ev.includes('severe')) {
+                assignThreat(threats, 'thunderstorm', pct, sevScore);
+                if (ev.includes('warning')) {
+                    assignThreat(threats, 'hail', Math.round(pct * 0.7), Math.max(2, sevScore - 1));
+                    assignThreat(threats, 'tornado', Math.round(pct * 0.4), Math.max(1, sevScore - 2));
+                }
+            }
+
+            // Scan alert description body for threat keywords not in event name
+            if (desc.includes('hail') && !ev.includes('hail')) {
+                const hailPct = desc.includes('large hail') || desc.includes('2 inch') ? 65 : 40;
+                assignThreat(threats, 'hail', Math.max(hailPct, Math.round(pct * 0.6)));
+            }
+            if (desc.includes('tornado') && !ev.includes('tornado')) {
+                const torPct = desc.includes('possible tornado') || desc.includes('tornadoes possible') ? 40 : 25;
+                assignThreat(threats, 'tornado', Math.max(torPct, Math.round(pct * 0.4)));
+            }
+            if ((desc.includes('damaging wind') || desc.includes('70 mph') || desc.includes('60 mph')) && !ev.includes('wind')) {
+                assignThreat(threats, 'wind', Math.max(45, Math.round(pct * 0.5)));
+            }
+            if (desc.includes('thunderstorm') && !ev.includes('thunderstorm') && !ev.includes('severe')) {
+                assignThreat(threats, 'thunderstorm', Math.max(35, Math.round(pct * 0.5)));
+            }
+        }
+
+        // From NWS forecast periods — scan text for severe weather keywords
+        if (nwsForecast && nwsForecast.forecast && nwsForecast.forecast.properties) {
+            const periods = nwsForecast.forecast.properties.periods || [];
+            // Check first 4 periods (next ~48 hrs)
+            for (const p of periods.slice(0, 4)) {
+                const txt = (p.detailedForecast || '').toLowerCase();
+                const shortTxt = (p.shortForecast || '').toLowerCase();
+                const combined = txt + ' ' + shortTxt;
+
+                if (combined.includes('hail')) {
+                    const hailPct = combined.includes('large hail') || combined.includes('baseball') || combined.includes('2 inch') ? 75 : 50;
+                    assignThreat(threats, 'hail', hailPct);
+                }
+                if (combined.includes('tornado')) {
+                    const torPct = combined.includes('tornadoes likely') ? 70 : combined.includes('possible') ? 45 : 35;
+                    assignThreat(threats, 'tornado', torPct);
+                }
+                if (combined.includes('damaging wind') || combined.includes('destructive')) {
+                    assignThreat(threats, 'wind', 55);
+                }
+                if (combined.includes('severe thunderstorm') || combined.includes('severe storm')) {
+                    assignThreat(threats, 'thunderstorm', 60);
+                }
+            }
+        }
+
+        // From NWS hourly forecast — scan shortForecast text
+        if (nwsForecast && nwsForecast.hourly && nwsForecast.hourly.properties) {
+            const periods = nwsForecast.hourly.properties.periods || [];
+            const now = new Date();
+            const next12hrs = periods.filter(p => {
+                const t = new Date(p.startTime);
+                return t >= now && t <= new Date(now.getTime() + 12 * 3600 * 1000);
+            });
+            for (const p of next12hrs) {
+                const sf = (p.shortForecast || '').toLowerCase();
+                if (sf.includes('hail')) assignThreat(threats, 'hail', 55);
+                if (sf.includes('tornado')) assignThreat(threats, 'tornado', 50);
+                if (sf.includes('severe') || sf.includes('t-storm')) assignThreat(threats, 'thunderstorm', 50);
+            }
+        }
+
+        // From Open-Meteo forecast data (next 24 hours)
+        if (openMeteo && openMeteo.hourly) {
+            const h = openMeteo.hourly;
+            const now = new Date();
+            const next24 = h.time.map((t, i) => ({ t: new Date(t), i }))
+                .filter(x => x.t >= now && x.t <= new Date(now.getTime() + 24 * 3600 * 1000));
+
+            let maxCape = 0;
+            let maxGust = 0;
+            let maxPrecip = 0;
+            let stormHours = 0;
+
+            for (const { i } of next24) {
+                const cape = h.cape ? h.cape[i] : 0;
+                const gust = h.windgusts_10m ? h.windgusts_10m[i] : 0;
+                const precip = h.precipitation ? h.precipitation[i] : 0;
+                const wcode = h.weathercode ? h.weathercode[i] : 0;
+
+                if (cape > maxCape) maxCape = cape;
+                if (gust > maxGust) maxGust = gust;
+                if (precip > maxPrecip) maxPrecip = precip;
+                if (wcode >= 95) stormHours++;
+
+                // CAPE > 1000 = elevated instability
+                if (cape > 1000) {
+                    const capePct = Math.min(85, Math.round((cape - 500) / 30));
+                    assignThreat(threats, 'thunderstorm', capePct);
+                    // CAPE > 2000 = significant hail/tornado risk
+                    if (cape > 2000) {
+                        assignThreat(threats, 'hail', Math.round(capePct * 0.7));
+                        assignThreat(threats, 'tornado', Math.round(capePct * 0.35));
+                    }
+                    // CAPE > 1500 with storm weathercode
+                    if (cape > 1500 && wcode >= 95) {
+                        assignThreat(threats, 'hail', Math.round(capePct * 0.55));
+                    }
+                }
+                // Wind gusts > 40 mph = elevated wind risk
+                if (gust > 40) {
+                    const windPct = Math.min(90, Math.round((gust - 30) * 1.5));
+                    assignThreat(threats, 'wind', windPct);
+                }
+                // Heavy precip
+                if (precip > 0.3) {
+                    assignThreat(threats, 'flood', Math.min(70, Math.round(precip * 35)));
+                }
+            }
+
+            // Bonus: multiple storm hours compounds risk
+            if (stormHours >= 3) {
+                assignThreat(threats, 'thunderstorm', Math.min(90, threats.thunderstorm.pct + 15));
+                assignThreat(threats, 'hail', Math.min(80, threats.hail.pct + 10));
+                assignThreat(threats, 'flood', Math.min(80, threats.flood.pct + 15));
+            }
+        }
+
+        // From SPC Day 1 Convective Outlook (authoritative severe weather probabilities)
+        if (spcRisk) {
+            if (spcRisk.hail > 0) assignThreat(threats, 'hail', spcRisk.hail);
+            if (spcRisk.torn > 0) assignThreat(threats, 'tornado', spcRisk.torn);
+            if (spcRisk.wind > 0) assignThreat(threats, 'wind', spcRisk.wind);
+
+            // Categorical risk boosts thunderstorm baseline
+            if (spcRisk.cat) {
+                const catBoost = {
+                    'General Thunderstorms': 25,
+                    'Marginal': 30, 'Slight': 45,
+                    'Enhanced': 60, 'Moderate': 75, 'High': 90,
+                };
+                // Match against LABEL2 (mixed case from SPC)
+                for (const [label, boost] of Object.entries(catBoost)) {
+                    if (spcRisk.cat.toLowerCase().includes(label.toLowerCase())) {
+                        assignThreat(threats, 'thunderstorm', boost);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Assign levels from pct
+        for (const key of Object.keys(threats)) {
+            const pct = threats[key].pct;
+            if (pct >= 70) threats[key].level = 'high';
+            else if (pct >= 35) threats[key].level = 'med';
+            else if (pct > 5) threats[key].level = 'low';
+            else threats[key].level = 'none';
+        }
+
+        return threats;
+    }
+
+    function assignThreat(threats, key, pct, sev) {
+        if (pct > threats[key].pct) threats[key].pct = pct;
+    }
+
+    // ─── Weather code to emoji ───────────────────────────────────
+    function weatherEmoji(code, isNight) {
+        if (code === undefined || code === null) return '—';
+        if (code <= 1) return isNight ? '🌙' : '☀️';
+        if (code <= 3) return isNight ? '🌙' : '⛅';
+        if (code <= 48) return '🌫️';
+        if (code <= 55) return '🌧️';
+        if (code <= 57) return '🌧️';
+        if (code <= 65) return '🌧️';
+        if (code <= 67) return '🌧️';
+        if (code <= 75) return '🌨️';
+        if (code <= 77) return '🌨️';
+        if (code <= 82) return '🌧️';
+        if (code <= 86) return '🌨️';
+        if (code <= 99) return '⛈️';
+        return '🌥️';
+    }
+
+    // ─── Determine overall severity ──────────────────────────────
+    function overallSeverity(alerts) {
+        if (!alerts.length) return 'clear';
+        let max = 0;
+        for (const a of alerts) {
+            const s = SEVERITY_ORDER[a.severity] || 0;
+            if (s > max) max = s;
+        }
+        if (max >= 4) return 'extreme';
+        if (max >= 3) return 'warning';
+        if (max >= 2) return 'watch';
+        return 'advisory';
+    }
+
+    // ─── Render functions ────────────────────────────────────────
+    function renderStatusBanner(locData) {
+        const container = document.getElementById('statusBanner');
+        let worstSev = 'clear';
+        let worstScore = 0;
+        let totalAlerts = 0;
+
+        for (const loc of LOCATIONS) {
+            const d = locData[loc.id];
+            if (!d) continue;
+            totalAlerts += d.alerts.length;
+            const sev = overallSeverity(d.alerts);
+            const score = { clear: 0, advisory: 1, watch: 2, warning: 3, extreme: 4 }[sev] || 0;
+            if (score > worstScore) { worstScore = score; worstSev = sev; }
+        }
+
+        if (worstSev === 'clear') {
+            container.innerHTML = `
+                <div class="status-banner clear">
+                    <span class="pulse-dot green"></span>
+                    All clear — no active severe weather alerts for monitored properties.
+                </div>`;
+        } else {
+            const colors = { advisory: 'warning', watch: 'warning', warning: 'danger', extreme: 'danger' };
+            const dots = { advisory: 'yellow', watch: 'orange', warning: 'red', extreme: 'red' };
+            const labels = { advisory: 'Weather Advisory', watch: 'Weather Watch', warning: 'Severe Warning', extreme: 'Extreme Weather' };
+            container.innerHTML = `
+                <div class="status-banner ${colors[worstSev] || 'warning'}">
+                    <span class="pulse-dot ${dots[worstSev] || 'yellow'}"></span>
+                    ${labels[worstSev] || 'Alert'} — ${totalAlerts} active alert${totalAlerts !== 1 ? 's' : ''} across monitored properties.
+                </div>`;
+        }
+    }
+
+    function renderLocationCard(loc, data) {
+        const { alerts, nws, openMeteo, threats, spcRisk } = data;
+        const sev = overallSeverity(alerts);
+
+        // Current conditions
+        let temp = '—', humidity = '—', wind = '—';
+        if (nws.current) {
+            const c = nws.current;
+            if (c.temperature && c.temperature.value !== null) {
+                temp = Math.round(c.temperature.value * 9 / 5 + 32) + '°F';
+            }
+            if (c.relativeHumidity && c.relativeHumidity.value !== null) {
+                humidity = Math.round(c.relativeHumidity.value) + '%';
+            }
+            if (c.windSpeed && c.windSpeed.value !== null) {
+                wind = Math.round(c.windSpeed.value * 0.621371) + ' mph';
+            }
+        } else if (openMeteo && openMeteo.hourly) {
+            const now = new Date();
+            const idx = openMeteo.hourly.time.findIndex(t => new Date(t) >= now);
+            const i = idx >= 0 ? idx : 0;
+            temp = Math.round(openMeteo.hourly.temperature_2m[i]) + '°F';
+            humidity = Math.round(openMeteo.hourly.relative_humidity_2m[i]) + '%';
+            wind = Math.round(openMeteo.hourly.windspeed_10m[i]) + ' mph';
+        }
+
+        // Threat items
+        const threatHTML = THREATS.map(t => {
+            const d = threats[t.key];
+            const cls = d.level === 'none' ? '' : `active-${d.level}`;
+            const levelLabel = d.level === 'none' ? 'None' : `${d.pct}% risk`;
+            return `
+                <div class="threat-item ${cls}">
+                    <span class="threat-icon">${t.icon}</span>
+                    <div class="threat-info">
+                        <div class="threat-name">${t.label}</div>
+                        <div class="threat-level">${levelLabel}</div>
+                    </div>
+                </div>`;
+        }).join('');
+
+        // Alerts HTML
+        let alertsHTML = '';
+        if (alerts.length === 0) {
+            alertsHTML = `<div class="no-alerts">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                <div>No active alerts</div>
+            </div>`;
+        } else {
+            alertsHTML = alerts.map(a => {
+                const sevCls = 'severity-' + (a.severity || 'unknown');
+                const onset = a.onset ? new Date(a.onset).toLocaleString('en-US', { timeZone: loc.tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+                const expires = a.expires ? new Date(a.expires).toLocaleString('en-US', { timeZone: loc.tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+                const desc = (a.description || '').substring(0, 500).replace(/\n/g, ' ');
+                return `
+                    <div class="alert-item ${sevCls}" onclick="this.classList.toggle('expanded')">
+                        <div class="alert-title">${a.event}</div>
+                        <div class="alert-meta">
+                            <span>${a.severity}</span>
+                            <span>${a.certainty}</span>
+                            ${onset ? `<span>${onset}</span>` : ''}
+                            ${expires ? `<span>→ ${expires}</span>` : ''}
+                        </div>
+                        <div class="alert-desc">${desc}${a.instruction ? '<br><br><strong>Action:</strong> ' + a.instruction.substring(0, 300) : ''}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        const sevLabels = { clear: 'All Clear', advisory: 'Advisory', watch: 'Watch', warning: 'Warning', extreme: 'Extreme' };
+
+        return `
+            <div class="location-card">
+                <div class="location-header">
+                    <div>
+                        <div class="location-name">${loc.name}</div>
+                        <div class="location-address">${loc.address}</div>
+                        <div class="location-coords">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <span class="severity-badge ${sev}">${sevLabels[sev]}</span>
+                        ${spcRisk && spcRisk.cat ? `<div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.3rem">SPC: ${spcRisk.cat}</div>` : ''}
+                    </div>
+                </div>
+                <div class="current-conditions">
+                    <div class="condition-item">
+                        <div class="condition-value">${temp}</div>
+                        <div class="condition-label">Temperature</div>
+                    </div>
+                    <div class="condition-item">
+                        <div class="condition-value">${humidity}</div>
+                        <div class="condition-label">Humidity</div>
+                    </div>
+                    <div class="condition-item">
+                        <div class="condition-value">${wind}</div>
+                        <div class="condition-label">Wind</div>
+                    </div>
+                </div>
+                <div class="threat-grid">${threatHTML}</div>
+                <div class="alerts-section">
+                    <h3>Active Alerts (${alerts.length})</h3>
+                    ${alertsHTML}
+                </div>
+            </div>`;
+    }
+
+    function renderForecast(locData) {
+        const container = document.getElementById('forecastSection');
+        let html = '';
+
+        for (const loc of LOCATIONS) {
+            const d = locData[loc.id];
+            if (!d || !d.openMeteo || !d.openMeteo.hourly) continue;
+
+            const h = d.openMeteo.hourly;
+            const now = new Date();
+            const next48 = h.time.map((t, i) => ({ t: new Date(t), i }))
+                .filter(x => x.t >= now)
+                .slice(0, 48);
+
+            const hoursHTML = next48.map(({ t, i }) => {
+                const hour = t.toLocaleTimeString('en-US', { timeZone: loc.tz, hour: 'numeric', hour12: true });
+                const isNight = t.getHours() >= 20 || t.getHours() < 6;
+                const emoji = weatherEmoji(h.weathercode[i], isNight);
+                const temp = Math.round(h.temperature_2m[i]);
+                const precip = h.precipitation_probability[i] || 0;
+                const gust = h.windgusts_10m ? Math.round(h.windgusts_10m[i]) : '';
+                const hasPrecip = precip > 30;
+
+                return `
+                    <div class="hour-item ${hasPrecip ? 'has-precip' : ''}">
+                        <div class="hour-time">${hour}</div>
+                        <div class="hour-icon">${emoji}</div>
+                        <div class="hour-temp">${temp}°</div>
+                        ${precip > 0 ? `<div class="hour-precip">${precip}%</div>` : '<div class="hour-precip">&nbsp;</div>'}
+                        ${gust ? `<div class="hour-wind">${gust}g</div>` : ''}
+                    </div>`;
+            }).join('');
+
+            html += `
+                <div class="forecast-section">
+                    <div class="forecast-header">
+                        <h2>48-Hour Forecast — ${loc.name}</h2>
+                    </div>
+                    <div class="hourly-forecast">${hoursHTML}</div>
+                </div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function renderRiskMatrix(locData) {
+        const container = document.getElementById('riskMatrix');
+        const riskTypes = ['tornado', 'hail', 'thunderstorm', 'wind', 'flood', 'winter'];
+        const riskLabels = { tornado: 'Tornado', hail: 'Hail', thunderstorm: 'Severe T-Storm', wind: 'Damaging Wind', flood: 'Flash Flood', winter: 'Winter Storm' };
+
+        let rows = '';
+        for (const loc of LOCATIONS) {
+            const d = locData[loc.id];
+            if (!d) continue;
+
+            for (const rk of riskTypes) {
+                const t = d.threats[rk];
+                const pct = t.pct;
+                let color = 'var(--green)';
+                if (pct >= 70) color = 'var(--red)';
+                else if (pct >= 35) color = 'var(--orange)';
+                else if (pct > 5) color = 'var(--yellow)';
+
+                rows += `
+                    <tr>
+                        <td class="location-col">${loc.name.split(' ')[0]}</td>
+                        <td>${riskLabels[rk]}</td>
+                        <td>
+                            <div class="risk-bar-wrap">
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" style="width:${pct}%;background:${color}"></div>
+                                </div>
+                                <span class="risk-pct" style="color:${color}">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        container.innerHTML = `
+            <div class="risk-matrix">
+                <h2>24-Hour Risk Assessment</h2>
+                <table class="risk-table">
+                    <thead><tr><th>Location</th><th>Threat</th><th>Probability</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>`;
+    }
+
+    // ─── Main fetch & render ─────────────────────────────────────
+    async function refreshAll() {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('loading');
+
+        const errorContainer = document.getElementById('errorContainer');
+        errorContainer.innerHTML = '';
+
+        const locData = {};
+
+        // Fetch SPC outlooks once (shared across all locations)
+        let spc = null;
+        try {
+            spc = await fetchSPCOutlooks();
+        } catch (e) {
+            console.warn('SPC outlook fetch failed:', e);
+        }
+
+        await Promise.all(LOCATIONS.map(async loc => {
+            try {
+                const [alerts, nws, openMeteo] = await Promise.all([
+                    fetchAlerts(loc),
+                    fetchNWSForecast(loc),
+                    fetchOpenMeteo(loc),
+                ]);
+
+                const spcRisk = spc ? getSPCRiskForLocation(spc, loc.lat, loc.lon) : null;
+                const threats = analyzeThreats(alerts, openMeteo, nws, spcRisk);
+                locData[loc.id] = { alerts, nws, openMeteo, threats, spcRisk };
+            } catch (e) {
+                console.error(`Failed to load data for ${loc.name}:`, e);
+                errorContainer.innerHTML += `<div class="error-banner">Failed to load data for ${loc.name}: ${e.message}</div>`;
+                locData[loc.id] = { alerts: [], nws: { current: null, forecast: null, hourly: null }, openMeteo: null, threats: analyzeThreats([], null, null, null) };
+            }
+        }));
+
+        allData = locData;
+
+        // Render all sections
+        renderStatusBanner(locData);
+
+        const grid = document.getElementById('locationsGrid');
+        grid.innerHTML = LOCATIONS.map(loc => renderLocationCard(loc, locData[loc.id])).join('');
+
+        renderForecast(locData);
+        renderRiskMatrix(locData);
+
+        lastRefreshTime = Date.now();
+        const now = new Date().toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+        const el = document.getElementById('lastUpdated');
+        el.textContent = `Last updated: ${now}`;
+        el.style.color = '';
+
+        btn.classList.remove('loading');
+    }
+
+    // ─── Staleness check ────────────────────────────────────────
+    let lastRefreshTime = null;
+
+    function checkStaleness() {
+        if (!lastRefreshTime) return;
+        const elapsed = Date.now() - lastRefreshTime;
+        const staleMinutes = Math.floor(elapsed / 60000);
+        const el = document.getElementById('lastUpdated');
+        if (staleMinutes >= 5) {
+            el.innerHTML = `Data is ${staleMinutes}m old — <a href="#" onclick="event.preventDefault();refreshAll()" style="color:var(--yellow);text-decoration:underline">reload now</a>`;
+            el.style.color = 'var(--yellow)';
+        }
+    }
+
+    // ─── Init — load once on page load, check staleness periodically ─
+    refreshAll().then(() => {
+        lastRefreshTime = Date.now();
+    });
+    setInterval(checkStaleness, 30 * 1000); // Check staleness every 30s
+    </script>
+</body>
+</html>
