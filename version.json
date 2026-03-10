@@ -1,12 +1,12 @@
 {
-  "version": "v260310.04 4:54p",
-  "release": 602,
-  "sha": "e75b9f653",
-  "fullSha": "e75b9f65364ec25ed7446572e621ba9e37df67e1",
+  "version": "v260310.06 5:21p",
+  "release": 604,
+  "sha": "1b4cc0ebc",
+  "fullSha": "1b4cc0ebc093efb368d408f0a3ca3c41a46891f6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 21:54:42+00",
-  "commits": [{"sha":"e75b9f653","message":"Add severe weather monitor page for Chicago & Austin properties","author":"Rahul"}]
+  "pushedAt": "2026-03-10 22:21:02+00",
+  "commits": [{"sha":"1b4cc0ebc","message":"Add SPC convective outlook integration + Calabasas property + staleness indicator","author":"Rahul"}]
 }
