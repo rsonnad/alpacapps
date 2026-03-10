@@ -1,12 +1,12 @@
 {
-  "version": "v260310.14 6:22p",
-  "release": 612,
-  "sha": "d0db57da6",
-  "fullSha": "d0db57da604b06de5e6072908b7192c782d171db",
+  "version": "v260310.15 6:24p",
+  "release": 613,
+  "sha": "39db56c00",
+  "fullSha": "39db56c0062f916db1d629799de4db05ee5f7e7b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 23:22:43+00",
-  "commits": [{"sha":"d0db57da6","message":"Restore card-style hero on infra pages + new hero image","author":"Rahul"}]
+  "pushedAt": "2026-03-10 23:24:07+00",
+  "commits": [{"sha":"39db56c00","message":"Add Load More button to Recent Events section","author":"Rahul"}]
 }
