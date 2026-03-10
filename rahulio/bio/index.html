@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <!-- Primary Meta -->
-  <title>Rahul Sonnad — Founder, Inventor, EV Technologist | Austin TX</title>
-  <meta name="description" content="Rahul Sonnad is an Austin-based founder, inventor, and EV technologist. Founder of Austin Alpaca Playhouse. Holds 3 patents in vehicle telemetry and valuation. Writes on Tesla, autonomy, and shared mobility.">
+  <title>Rahul Sonnad — Serial Founder, Technologist | Austin TX</title>
+  <meta name="description" content="Rahul Sonnad is an Austin-based serial founder and technologist. Founded thePlatform (acquired $100m+, now Comcast Technology Solutions), Tesloop (first cloud-controlled Tesla fleet), Geodelic Systems ($11m raised), and Austin Alpaca Playhouse. Harvard MBA. Former Microsoft and Adobe.">
   <meta name="author" content="Rahul Sonnad">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://alpacaplayhouse.com/rahulio/bio/">
@@ -14,18 +14,18 @@
   <!-- Open Graph -->
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/bio/">
-  <meta property="og:title" content="Rahul Sonnad — Founder, Inventor, EV Technologist">
-  <meta property="og:description" content="Austin-based founder, inventor, and EV technologist. Founder of Austin Alpaca Playhouse. 3 patents in vehicle telemetry. Writes on Tesla, autonomy, and shared mobility.">
+  <meta property="og:title" content="Rahul Sonnad — Serial Founder, Technologist">
+  <meta property="og:description" content="Founded thePlatform (acquired $100m+), Tesloop (first Tesla fleet), Geodelic ($11m raised), Austin Alpaca Playhouse. Harvard MBA. Former Microsoft &amp; Adobe.">
   <meta property="og:locale" content="en_US">
   <meta property="profile:first_name" content="Rahul">
   <meta property="profile:last_name" content="Sonnad">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Rahul Sonnad — Founder, Inventor, EV Technologist">
-  <meta name="twitter:description" content="Austin-based founder, inventor, and EV technologist. 3 patents in vehicle telemetry. Writes on Tesla, autonomy, and shared mobility.">
+  <meta name="twitter:title" content="Rahul Sonnad — Serial Founder, Technologist">
+  <meta name="twitter:description" content="Founded thePlatform (acquired $100m+), Tesloop (first Tesla fleet), Geodelic ($11m raised). Harvard MBA. Former Microsoft &amp; Adobe.">
 
-  <!-- JSON-LD Person Schema (birthDate here for SEO, not shown visually) -->
+  <!-- JSON-LD Person Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -33,17 +33,42 @@
     "name": "Rahul Sonnad",
     "givenName": "Rahul",
     "familyName": "Sonnad",
-    "birthDate": "1976-03-01",
+    "birthDate": "1978-03-01",
     "url": "https://alpacaplayhouse.com/rahulio/bio/",
     "sameAs": [
       "https://www.linkedin.com/in/rahulio"
     ],
-    "jobTitle": "Founder",
-    "worksFor": {
-      "@type": "Organization",
-      "name": "Austin Alpaca Playhouse",
-      "url": "https://alpacaplayhouse.com"
-    },
+    "jobTitle": "Founder & Creative Director",
+    "worksFor": [
+      {
+        "@type": "Organization",
+        "name": "Austin Alpaca Playhouse",
+        "url": "https://alpacaplayhouse.com"
+      },
+      {
+        "@type": "Organization",
+        "name": "CatGPT",
+        "url": "https://catgpt.fun"
+      }
+    ],
+    "alumniOf": [
+      {
+        "@type": "EducationalOrganization",
+        "name": "Harvard Business School"
+      },
+      {
+        "@type": "EducationalOrganization",
+        "name": "University of Washington"
+      },
+      {
+        "@type": "EducationalOrganization",
+        "name": "University of Pennsylvania"
+      },
+      {
+        "@type": "EducationalOrganization",
+        "name": "Phillips Academy Andover"
+      }
+    ],
     "homeLocation": {
       "@type": "Place",
       "name": "Austin, Texas",
@@ -61,7 +86,11 @@
       "Autonomous Driving",
       "Shared Mobility",
       "Fleet Management",
-      "Software Development"
+      "Digital Media",
+      "Mobile Applications",
+      "Generative AI",
+      "Software Development",
+      "Entrepreneurship"
     ],
     "hasPatent": [
       {
@@ -103,7 +132,6 @@
       --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ── Reset ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -116,255 +144,132 @@
       padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
     }
 
-    /* ── SR-only (birthdate hidden visually, present for crawlers) ── */
     .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
 
-    /* ── Animated grain overlay ── */
+    /* ── Grain overlay ── */
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9999;
+      pointer-events: none; z-index: 9999;
     }
 
     /* ── Ambient glow orbs ── */
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glow-orb.violet {
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(108, 99, 255, 0.12), transparent 70%);
-      top: -10%; left: -5%;
-    }
-    .glow-orb.cyan {
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.08), transparent 70%);
-      bottom: 10%; right: -8%;
-    }
-    .glow-orb.magenta {
-      width: 350px; height: 350px;
-      background: radial-gradient(circle, rgba(232, 121, 249, 0.06), transparent 70%);
-      top: 50%; left: 60%;
-    }
+    .glow-orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+    .glow-orb.violet { width: 500px; height: 500px; background: radial-gradient(circle, rgba(108,99,255,0.12), transparent 70%); top: -10%; left: -5%; }
+    .glow-orb.cyan { width: 400px; height: 400px; background: radial-gradient(circle, rgba(34,211,238,0.08), transparent 70%); bottom: 10%; right: -8%; }
+    .glow-orb.magenta { width: 350px; height: 350px; background: radial-gradient(circle, rgba(232,121,249,0.06), transparent 70%); top: 50%; left: 60%; }
 
     /* ── Layout ── */
-    .page-wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
+    .page-wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 1.5rem; }
 
     /* ── Hero ── */
-    .hero {
-      padding: 5rem 0 3rem;
-      text-align: center;
-      position: relative;
-    }
+    .hero { padding: 5rem 0 3rem; text-align: center; position: relative; }
     .hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent);
     }
     .hero h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 3.2rem;
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
+      font-family: 'Space Grotesk', sans-serif; font-size: 3.2rem; font-weight: 700;
+      letter-spacing: -0.04em; line-height: 1.1;
       background: linear-gradient(135deg, var(--text) 0%, var(--accent) 50%, var(--cyan) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       margin-bottom: 1rem;
     }
     .hero .tagline {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 300;
-      color: var(--text-secondary);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 300;
+      color: var(--text-secondary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem;
     }
     .hero .location {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.82rem;
-      color: var(--cyan);
-      font-weight: 500;
-      letter-spacing: 0.05em;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.82rem; color: var(--cyan); font-weight: 500; letter-spacing: 0.05em;
     }
     .hero .location::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 8px var(--cyan);
-      animation: pulse 2s ease-in-out infinite;
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulse 2s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     /* ── Sections ── */
-    section {
-      padding: 2.5rem 0;
-      border-top: 1px solid var(--border);
-    }
+    section { padding: 2.5rem 0; border-top: 1px solid var(--border); }
 
     h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); margin-bottom: 1.25rem;
     }
 
-    p {
-      font-size: 1.05rem;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-      line-height: 1.75;
-    }
-    p strong {
-      color: var(--text);
-      font-weight: 500;
-    }
+    p { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.75; }
+    p strong { color: var(--text); font-weight: 500; }
 
     /* ── Glass cards ── */
     .glass-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      backdrop-filter: blur(8px);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; backdrop-filter: blur(8px);
       transition: border-color var(--transition), background var(--transition), transform var(--transition);
     }
-    .glass-card:hover {
-      border-color: var(--border-accent);
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-    }
-    .card-grid {
-      display: grid;
-      gap: 0.75rem;
-    }
+    .glass-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); transform: translateY(-2px); }
+    .card-grid { display: grid; gap: 0.75rem; }
     .card-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 0.15rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 500;
+      color: var(--text); margin-bottom: 0.15rem;
     }
-    .card-sub {
-      font-size: 0.78rem;
-      color: var(--text-dim);
+    .card-sub { font-size: 0.78rem; color: var(--text-dim); }
+    .card-desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.6; }
+    .card-highlight {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; font-weight: 500;
+      color: var(--cyan); margin-top: 0.5rem; letter-spacing: 0.02em;
     }
 
+    /* ── Timeline accent bar on experience cards ── */
+    .exp-card { border-left: 2px solid var(--accent); border-left-color: var(--border-accent); }
+    .exp-card:hover { border-left-color: var(--accent); }
+
     /* ── Tags ── */
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .tag {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      background: var(--accent-soft);
-      border: 1px solid var(--border-accent);
-      border-radius: 100px;
-      padding: 0.4rem 0.9rem;
-      white-space: nowrap;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 500;
+      color: var(--text-secondary); background: var(--accent-soft); border: 1px solid var(--border-accent);
+      border-radius: 100px; padding: 0.4rem 0.9rem; white-space: nowrap;
       transition: background var(--transition), color var(--transition);
     }
-    .tag:hover {
-      background: var(--accent-glow);
-      color: var(--text);
-    }
+    .tag:hover { background: var(--accent-glow); color: var(--text); }
 
     /* ── Writing list ── */
     .writing-item {
-      padding: 0.85rem 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 1rem;
+      padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
     }
     .writing-item:last-child { border-bottom: none; }
-    .writing-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 400;
-      color: var(--text);
+    .writing-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 400; color: var(--text); }
+    .writing-year { font-size: 0.75rem; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+    /* ── Education cards ── */
+    .edu-card { display: flex; gap: 1rem; align-items: flex-start; }
+    .edu-icon {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.02em;
     }
-    .writing-year {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      font-variant-numeric: tabular-nums;
-      flex-shrink: 0;
-    }
+    .edu-details { flex: 1; }
 
     /* ── Connect links ── */
-    .links-row {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
+    .links-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .links-row a {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--accent);
-      text-decoration: none;
-      padding: 0.55rem 1.15rem;
-      border: 1px solid var(--border-accent);
-      border-radius: 100px;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 500;
+      color: var(--accent); text-decoration: none; padding: 0.55rem 1.15rem;
+      border: 1px solid var(--border-accent); border-radius: 100px;
       transition: background var(--transition), color var(--transition), box-shadow var(--transition);
     }
-    .links-row a:hover {
-      background: var(--accent-soft);
-      color: var(--text);
-      box-shadow: 0 0 20px var(--accent-soft);
-    }
+    .links-row a:hover { background: var(--accent-soft); color: var(--text); box-shadow: 0 0 20px var(--accent-soft); }
 
     /* ── Footer ── */
     footer {
-      text-align: center;
-      padding: 2.5rem 1.5rem;
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      border-top: 1px solid var(--border);
-      letter-spacing: 0.05em;
+      text-align: center; padding: 2.5rem 1.5rem; font-size: 0.72rem;
+      color: var(--text-dim); border-top: 1px solid var(--border); letter-spacing: 0.05em;
     }
 
     /* ── Responsive ── */
@@ -375,13 +280,13 @@
       .page-wrap { padding: 0 1.25rem; }
       p { font-size: 0.98rem; }
       .writing-item { flex-direction: column; gap: 0.15rem; }
+      .edu-card { flex-direction: column; gap: 0.5rem; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Ambient glow effects -->
   <div class="glow-orb violet" aria-hidden="true"></div>
   <div class="glow-orb cyan" aria-hidden="true"></div>
   <div class="glow-orb magenta" aria-hidden="true"></div>
@@ -391,44 +296,146 @@
     <!-- ════ Hero ════ -->
     <header class="hero" role="banner">
       <h1>Rahul Sonnad</h1>
-      <p class="tagline">Founder &middot; Inventor &middot; EV Technologist</p>
+      <p class="tagline">Serial Founder &middot; Technologist</p>
       <p class="location">Austin, Texas</p>
-      <!-- Birthdate: hidden visually, present for SEO crawlers via JSON-LD + microdata -->
-      <span class="sr-only" itemprop="birthDate" content="1976-03-01">Born March 1, 1976</span>
+      <span class="sr-only" itemprop="birthDate" content="1978-03-01">Born March 1, 1978</span>
     </header>
 
     <!-- ════ Main ════ -->
     <main>
-
       <article itemscope itemtype="https://schema.org/Person">
         <meta itemprop="name" content="Rahul Sonnad">
-        <meta itemprop="birthDate" content="1976-03-01">
+        <meta itemprop="birthDate" content="1978-03-01">
 
         <!-- About -->
         <section aria-label="About">
           <h2>About</h2>
           <p>
-            Rahul Sonnad is an Austin-based founder, inventor, and technologist focused on electric vehicles,
-            autonomous driving, and shared mobility. He is the founder of <strong>Austin Alpaca Playhouse</strong>,
-            a creative compound in Cedar Creek, Texas.
+            Rahul Sonnad is a serial founder and technologist who has built companies across digital media,
+            electric vehicles, mobile commerce, and generative AI. His ventures have raised over $28 million,
+            generated $100M+ in exits, and launched industry firsts — from the first cloud-controlled Tesla fleet
+            to the first app on Android phones.
           </p>
           <p>
-            With over two decades in technology, Rahul holds three patents — including foundational work in
-            vehicle telemetry and valuation — and has written extensively on EV economics, fleet management,
-            and the future of transportation. He speaks English and Japanese.
+            A <strong>Harvard Business School</strong> MBA with engineering roots at <strong>Microsoft</strong>
+            and <strong>Adobe</strong>, Rahul holds three patents in vehicle telemetry and valuation. He speaks
+            English and Japanese. He currently runs the <strong>Austin Alpaca Playhouse</strong>, a creative
+            compound in Cedar Creek, Texas.
           </p>
         </section>
 
-        <!-- Focus Areas -->
-        <section aria-label="Focus Areas">
-          <h2>Focus Areas</h2>
-          <div class="tag-list">
-            <span class="tag">Electric Vehicles</span>
-            <span class="tag">Autonomous Driving</span>
-            <span class="tag">Shared Mobility</span>
-            <span class="tag">Fleet Management</span>
-            <span class="tag">Vehicle Telemetry</span>
-            <span class="tag">AI &amp; Software</span>
+        <!-- Experience -->
+        <section aria-label="Experience">
+          <h2>Experience</h2>
+          <div class="card-grid">
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Cofounder — CatGPT</div>
+              <div class="card-sub">2023 &ndash; Present</div>
+              <div class="card-desc">Generative AI network for creating AI-generated cat imagery.</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Founder &amp; Creative Director — Austin Alpaca Playhouse</div>
+              <div class="card-sub">2021 &ndash; Present &middot; Cedar Creek, TX</div>
+              <div class="card-desc">Creative compound redefining what an alpaca playhouse can be.</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Cofounder &amp; CEO — Tesloop</div>
+              <div class="card-sub">2015 &ndash; 2020</div>
+              <div class="card-desc">Launched and managed the first cloud-controlled Tesla fleet, operating LA to Las Vegas, Palm Springs, and San Diego. Transported 2k+ people/month. Built a connected car network with 2,000+ Teslas and the most extensive codebase ever built on Tesla APIs. Operated 8 of the 10 highest-mileage Teslas in the world (up to 500k miles).</div>
+              <div class="card-highlight">4.9&#9733; on Yelp &middot; 17k miles/month per vehicle</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Founder &amp; CEO — Geodelic Systems</div>
+              <div class="card-sub">2008 &ndash; 2012</div>
+              <div class="card-desc">Venture-funded mobile commerce and location-based content startup. Raised $11M, generated $3M in revenue in first 3 years. Customers included Verizon, Universal Studios, Clear Channel, and Korea Telecom.</div>
+              <div class="card-highlight">Created T-Mobile Sherpa &mdash; 1M+ downloads in 90 days, first app launched on Android</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Founder, CEO, CTO — thePlatform</div>
+              <div class="card-sub">2000 &ndash; 2008</div>
+              <div class="card-desc">Conceived and founded thePlatform, recruiting from Microsoft and Adobe. Now Comcast Technology Solutions — the main platform for Comcast's IP products. Raised $17M. Serviced Hulu, Microsoft, Telstra, Qualcomm, CBS, Verizon, ABC, CNBC, AOL/Time Warner, and dozens of cable brands. Spark Capital's first investment.</div>
+              <div class="card-highlight">Acquired for $100M+ in 2006</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">R&amp;D Manager, MS Office Asia — Microsoft</div>
+              <div class="card-sub">1996 &ndash; 2000</div>
+              <div class="card-desc">Managed the entire Asian R&amp;D effort for Microsoft Office — a $1B product group across 5 countries and 200+ people. Led product design and management for Microsoft Word in all Asian markets.</div>
+            </div>
+
+            <div class="glass-card exp-card">
+              <div class="card-title">Engineering Manager — Adobe</div>
+              <div class="card-sub">1995 &ndash; 1996</div>
+              <div class="card-desc">Managed API engineering for desktop publishing products. C++ engineer on the InDesign team.</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Industry Firsts -->
+        <section aria-label="Industry Firsts">
+          <h2>Industry Firsts</h2>
+          <div class="card-grid">
+            <div class="glass-card">
+              <div class="card-desc" style="margin-top: 0;">
+                First cloud-controlled Tesla fleet &middot;
+                First app on Android (T-Mobile Sherpa) &middot;
+                First large-scale pre-roll video ad campaign (MSN, 2000) &middot;
+                First video subscriptions (CNBC, 2001) &middot;
+                First API web service SaaS (2000) &middot;
+                First premium paid movie downloads (Starz, 2002) &middot;
+                First broadband mobile video (Verizon VCast, 2005) &middot;
+                First combined music/video service (Telstra, 2006)
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Education -->
+        <section aria-label="Education">
+          <h2>Education</h2>
+          <div class="card-grid">
+            <div class="glass-card">
+              <div class="edu-card">
+                <div class="edu-icon">HBS</div>
+                <div class="edu-details">
+                  <div class="card-title">Harvard Business School</div>
+                  <div class="card-sub">MBA Program</div>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card">
+              <div class="edu-card">
+                <div class="edu-icon">UW</div>
+                <div class="edu-details">
+                  <div class="card-title">University of Washington</div>
+                  <div class="card-sub">Masters, Interengineering &middot; Computer Science &amp; Technical Japanese</div>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card">
+              <div class="edu-card">
+                <div class="edu-icon">Penn</div>
+                <div class="edu-details">
+                  <div class="card-title">University of Pennsylvania</div>
+                  <div class="card-sub">B.S. Anthropology</div>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card">
+              <div class="edu-card">
+                <div class="edu-icon">PA</div>
+                <div class="edu-details">
+                  <div class="card-title">Phillips Academy Andover</div>
+                  <div class="card-sub">High School</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -464,14 +471,20 @@
           </div>
         </section>
 
-        <!-- Current -->
-        <section aria-label="Current Venture">
-          <h2>Current</h2>
-          <div class="card-grid">
-            <div class="glass-card">
-              <div class="card-title">Austin Alpaca Playhouse</div>
-              <div class="card-sub">Founder &middot; Cedar Creek, TX</div>
-            </div>
+        <!-- Skills -->
+        <section aria-label="Skills">
+          <h2>Skills</h2>
+          <div class="tag-list">
+            <span class="tag">Electric Vehicles</span>
+            <span class="tag">Autonomous Driving</span>
+            <span class="tag">Digital Media</span>
+            <span class="tag">Mobile Applications</span>
+            <span class="tag">Generative AI</span>
+            <span class="tag">Location Based Services</span>
+            <span class="tag">Fleet Management</span>
+            <span class="tag">Vehicle Telemetry</span>
+            <span class="tag">Entrepreneurship</span>
+            <span class="tag">Mobile Strategy</span>
           </div>
         </section>
 
