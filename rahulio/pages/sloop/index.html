@@ -44,42 +44,45 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Compact hero for Tesla — thin bar instead of tall splash */
     .hero {
-      padding: 4rem 1.5rem 3rem;
+      padding: 0.75rem 1.5rem;
       text-align: center;
-      background: linear-gradient(180deg, #e8f0fe 0%, #f0eff6 40%, var(--bg) 100%);
+      background: linear-gradient(180deg, #e8f0fe 0%, var(--bg) 100%);
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
     }
 
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-size: 1.4rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 0.5rem;
+      line-height: 1;
     }
 
     .hero .subtitle {
-      font-size: 1.15rem;
+      font-size: 0.85rem;
       color: var(--text-dim);
       font-weight: 400;
     }
 
     .badge {
       display: inline-block;
-      margin-top: 1rem;
-      padding: 0.35rem 1rem;
+      padding: 0.2rem 0.6rem;
       background: var(--green-soft);
       color: var(--green);
       border-radius: 999px;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       font-weight: 600;
     }
 
     .container {
-      max-width: 720px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: 1rem 1.5rem 2rem;
     }
 
     .card {
@@ -200,59 +203,68 @@
     .chart-stat .value.low { color: var(--green); }
     .chart-stat .value.current { color: var(--accent); }
 
-    @media (max-width: 480px) {
-      .chart-wrap { height: 280px; }
-      .chart-stat-row { grid-template-columns: 1fr 1fr; }
-    }
-
     .footer {
       text-align: center;
-      padding: 2rem 1.5rem;
+      padding: 1rem 1.5rem;
       color: var(--text-muted);
       font-size: 0.8rem;
       border-top: 1px solid var(--border);
     }
 
-    /* Ukulele chord chart styles */
+    /* ===================== */
+    /* Ukulele chord chart   */
+    /* ===================== */
     .chord-chart {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 2rem;
+      padding: 1.5rem 2rem;
       margin-bottom: 1.5rem;
       box-shadow: var(--shadow);
     }
 
+    .chord-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
     .chord-chart h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 0;
       letter-spacing: -0.02em;
     }
 
     .chord-chart .song-meta {
       color: var(--text-dim);
-      font-size: 0.9rem;
-      margin-bottom: 1.25rem;
+      font-size: 1rem;
+    }
+
+    /* Two-column landscape layout: diagrams left, lyrics right */
+    .chord-layout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      align-items: start;
     }
 
     .chord-diagrams {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem 1.5rem;
     }
 
     .chord-box {
       text-align: center;
-      min-width: 80px;
     }
 
     .chord-box .chord-name {
       font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 0.4rem;
+      font-size: 1.15rem;
+      margin-bottom: 0.3rem;
       color: var(--text);
     }
 
@@ -261,24 +273,28 @@
       margin: 0 auto;
     }
 
+    .song-sections {
+      min-width: 0;
+    }
+
     .song-section {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
     }
 
     .song-section .section-label {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 0.4rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.3rem;
     }
 
     .chord-line {
       font-family: 'Courier New', Courier, monospace;
       white-space: pre;
-      line-height: 1.4;
-      font-size: 0.95rem;
+      line-height: 1.35;
+      font-size: 1.15rem;
       overflow-x: auto;
     }
 
@@ -292,202 +308,201 @@
     }
 
     .song-note {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       font-style: italic;
-      margin-top: 0.75rem;
+      margin-top: 0.5rem;
     }
 
-    @media (max-width: 480px) {
-      .chord-line { font-size: 0.8rem; }
-      .chord-diagrams { gap: 1rem; }
-      .chord-box { min-width: 65px; }
+    /* Mobile / portrait: stack vertically */
+    @media (max-width: 700px) {
+      .chord-layout { grid-template-columns: 1fr; }
+      .chord-diagrams { grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
+      .chord-line { font-size: 0.85rem; }
+      .hero { flex-direction: column; gap: 0.25rem; padding: 1rem; }
     }
 
     @media (max-width: 480px) {
       .spec-grid { grid-template-columns: 1fr 1fr; }
       .card { padding: 1.5rem; }
+      .chord-diagrams { grid-template-columns: repeat(3, 1fr); }
+      .chart-wrap { height: 280px; }
+      .chart-stat-row { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <section class="hero">
-    <h1>Sloop</h1>
-    <p class="subtitle">2026 Tesla Model Y</p>
-    <span class="badge">Test Page</span>
-  </section>
+  <!-- Slim top bar: AlpacApps logo + version -->
+  <nav class="hero">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+      <path d="M12 2L2 19h20L12 2z" fill="#2563eb" opacity="0.15"/>
+      <path d="M12 5l7 13H5l7-13z" fill="#2563eb"/>
+      <circle cx="9.5" cy="14" r="1.2" fill="#fff"/>
+      <circle cx="14.5" cy="14" r="1.2" fill="#fff"/>
+    </svg>
+    <span style="font-weight:700;font-size:0.85rem;letter-spacing:-0.02em;color:var(--text)">AlpacApps</span>
+    <span style="color:var(--text-muted);font-size:0.75rem" data-site-version>v260309.30</span>
+    <span style="flex:1"></span>
+    <span style="font-size:0.75rem;color:var(--text-dim)">Sloop &middot; 2026 Model Y</span>
+  </nav>
 
   <div class="container">
 
     <div class="chord-chart">
-      <h2>One — U2</h2>
-      <p class="song-meta">Ukulele Chords &bull; Key of A minor &bull; Capo: none</p>
-
-      <div class="chord-diagrams">
-        <!-- Am -->
-        <div class="chord-box">
-          <div class="chord-name">Am</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Finger: 2nd string, 2nd fret -->
-            <circle cx="36.7" cy="33" r="4.5" fill="#2563eb"/>
-            <!-- Open strings -->
-            <text x="10" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="23.3" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="50" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
-        <!-- Dsus2 -->
-        <div class="chord-box">
-          <div class="chord-name">Dsus2</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Fingers: 4th string 2nd fret, 3rd string 2nd fret -->
-            <circle cx="10" cy="33" r="4.5" fill="#2563eb"/>
-            <circle cx="23.3" cy="33" r="4.5" fill="#2563eb"/>
-            <!-- Open strings -->
-            <text x="36.7" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="50" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
-        <!-- Fmaj7 -->
-        <div class="chord-box">
-          <div class="chord-name">Fmaj7</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Fingers: 2nd string 1st fret, 4th string 2nd fret -->
-            <circle cx="36.7" cy="19" r="4.5" fill="#2563eb"/>
-            <circle cx="10" cy="33" r="4.5" fill="#2563eb"/>
-            <!-- Open strings -->
-            <text x="23.3" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="50" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
-        <!-- G -->
-        <div class="chord-box">
-          <div class="chord-name">G</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Fingers: 3rd string 2nd fret, 1st string 3rd fret, 4th string 2nd fret -->
-            <circle cx="23.3" cy="33" r="4.5" fill="#2563eb"/>
-            <circle cx="10" cy="33" r="4.5" fill="#2563eb"/>
-            <circle cx="50" cy="40" r="4.5" fill="#2563eb"/>
-            <!-- Open string -->
-            <text x="36.7" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
-        <!-- C -->
-        <div class="chord-box">
-          <div class="chord-name">C</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Finger: 1st string 3rd fret -->
-            <circle cx="50" cy="40" r="4.5" fill="#2563eb"/>
-            <!-- Open strings -->
-            <text x="10" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="23.3" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="36.7" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
-        <!-- F -->
-        <div class="chord-box">
-          <div class="chord-name">F</div>
-          <svg width="60" height="72" viewBox="0 0 60 72">
-            <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
-            <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
-            <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
-            <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
-            <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
-            <!-- Fingers: 2nd string 1st fret, 4th string 2nd fret -->
-            <circle cx="36.7" cy="19" r="4.5" fill="#2563eb"/>
-            <circle cx="10" cy="33" r="4.5" fill="#2563eb"/>
-            <!-- Open strings -->
-            <text x="23.3" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-            <text x="50" y="8" text-anchor="middle" font-size="8" fill="#1a1a1a" font-family="Inter">○</text>
-          </svg>
-        </div>
+      <div class="chord-header">
+        <h2>One — U2</h2>
+        <span class="song-meta">Ukulele &bull; Key of Am &bull; ~98 BPM &bull; Strum: D DU UDU</span>
       </div>
 
-      <div class="song-section">
-        <div class="section-label">Verse 1</div>
-        <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>              <span class="c">Fmaj7</span></div>
-        <div class="chord-line"><span class="lyric">Is it getting better,    or do you feel the same?</span></div>
-        <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>              <span class="c">Fmaj7</span></div>
-        <div class="chord-line"><span class="lyric">Will it make it easier on you now,  you got someone to blame?</span></div>
-      </div>
+      <div class="chord-layout">
+        <!-- Left: chord diagrams -->
+        <div class="chord-diagrams">
+          <!-- Am -->
+          <div class="chord-box">
+            <div class="chord-name">Am</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="36.7" cy="33" r="5" fill="#2563eb"/>
+              <text x="10" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="23.3" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="50" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+          <!-- Dsus2 -->
+          <div class="chord-box">
+            <div class="chord-name">Dsus2</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="10" cy="33" r="5" fill="#2563eb"/>
+              <circle cx="23.3" cy="33" r="5" fill="#2563eb"/>
+              <text x="36.7" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="50" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+          <!-- Fmaj7 -->
+          <div class="chord-box">
+            <div class="chord-name">Fmaj7</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="36.7" cy="19" r="5" fill="#2563eb"/>
+              <circle cx="10" cy="33" r="5" fill="#2563eb"/>
+              <text x="23.3" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="50" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+          <!-- G -->
+          <div class="chord-box">
+            <div class="chord-name">G</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="23.3" cy="33" r="5" fill="#2563eb"/>
+              <circle cx="10" cy="33" r="5" fill="#2563eb"/>
+              <circle cx="50" cy="40" r="5" fill="#2563eb"/>
+              <text x="36.7" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+          <!-- C -->
+          <div class="chord-box">
+            <div class="chord-name">C</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="50" cy="40" r="5" fill="#2563eb"/>
+              <text x="10" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="23.3" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="36.7" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+          <!-- F -->
+          <div class="chord-box">
+            <div class="chord-name">F</div>
+            <svg width="72" height="88" viewBox="0 0 60 72">
+              <rect x="10" y="12" width="40" height="2" rx="1" fill="#1a1a1a"/>
+              <line x1="10" y1="12" x2="10" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="23.3" y1="12" x2="23.3" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="36.7" y1="12" x2="36.7" y2="68" stroke="#ccc" stroke-width="1"/>
+              <line x1="50" y1="12" x2="50" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+              <line x1="10" y1="26" x2="50" y2="26" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="54" x2="50" y2="54" stroke="#ccc" stroke-width="1"/>
+              <line x1="10" y1="68" x2="50" y2="68" stroke="#ccc" stroke-width="1"/>
+              <circle cx="36.7" cy="19" r="5" fill="#2563eb"/>
+              <circle cx="10" cy="33" r="5" fill="#2563eb"/>
+              <text x="23.3" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+              <text x="50" y="8" text-anchor="middle" font-size="9" fill="#1a1a1a" font-family="Inter">o</text>
+            </svg>
+          </div>
+        </div>
 
-      <div class="song-section">
-        <div class="section-label">Chorus</div>
-        <div class="chord-line"><span class="c">C</span>                                  <span class="c">Am</span></div>
-        <div class="chord-line"><span class="lyric">One love, one life,  when it's one need</span></div>
-        <div class="chord-line"><span class="c">Fmaj7</span>                              <span class="c">C</span></div>
-        <div class="chord-line"><span class="lyric">in the night.  One love, we get to share it</span></div>
-        <div class="chord-line"><span class="c">Am</span>                  <span class="c">Fmaj7</span>             <span class="c">C</span></div>
-        <div class="chord-line"><span class="lyric">Leaves you baby if you  don't care for it</span></div>
-      </div>
+        <!-- Right: lyrics with chords -->
+        <div class="song-sections">
+          <div class="song-section">
+            <div class="section-label">Verse</div>
+            <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>            <span class="c">Fmaj7</span></div>
+            <div class="chord-line"><span class="lyric">Is it getting better,    or do you feel the same?</span></div>
+            <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>            <span class="c">Fmaj7</span></div>
+            <div class="chord-line"><span class="lyric">Will it make it easier on you,  you got someone to blame?</span></div>
+          </div>
 
-      <div class="song-section">
-        <div class="section-label">Verse 2</div>
-        <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>              <span class="c">Fmaj7</span></div>
-        <div class="chord-line"><span class="lyric">Did I disappoint you,   or leave a bad taste in your mouth?</span></div>
-        <div class="chord-line"><span class="c">Am</span>                  <span class="c">Dsus2</span>              <span class="c">Fmaj7</span></div>
-        <div class="chord-line"><span class="lyric">You act like you never had love,    and you want me to go without</span></div>
-      </div>
+          <div class="song-section">
+            <div class="section-label">Chorus</div>
+            <div class="chord-line"><span class="c">C</span>                            <span class="c">Am</span></div>
+            <div class="chord-line"><span class="lyric">One love, one life,  when it's one need</span></div>
+            <div class="chord-line"><span class="c">Fmaj7</span>                        <span class="c">C</span></div>
+            <div class="chord-line"><span class="lyric">in the night.  One love, we get to share it</span></div>
+            <div class="chord-line"><span class="c">Am</span>            <span class="c">Fmaj7</span>           <span class="c">C</span></div>
+            <div class="chord-line"><span class="lyric">Leaves you baby if you  don't care for it</span></div>
+          </div>
 
-      <div class="song-section">
-        <div class="section-label">Bridge</div>
-        <div class="chord-line"><span class="c">G</span>          <span class="c">Am</span>          <span class="c">F</span>          <span class="c">C</span></div>
-        <div class="chord-line"><span class="lyric">Have you come here for forgiveness,</span></div>
-        <div class="chord-line"><span class="c">G</span>          <span class="c">Am</span>          <span class="c">F</span>          <span class="c">C</span></div>
-        <div class="chord-line"><span class="lyric">have you come to raise the dead?</span></div>
+          <div class="song-section">
+            <div class="section-label">Bridge</div>
+            <div class="chord-line"><span class="c">G</span>        <span class="c">Am</span>        <span class="c">F</span>        <span class="c">C</span></div>
+            <div class="chord-line"><span class="lyric">Have you come here for forgiveness,</span></div>
+            <div class="chord-line"><span class="c">G</span>        <span class="c">Am</span>        <span class="c">F</span>        <span class="c">C</span></div>
+            <div class="chord-line"><span class="lyric">have you come to raise the dead?</span></div>
+          </div>
+        </div>
       </div>
-
-      <p class="song-note">Strum pattern: D DU UDU &bull; Tempo: ~98 BPM &bull; Repeat verse/chorus pattern throughout</p>
     </div>
 
     <div class="card">
@@ -571,7 +586,7 @@
   </div>
 
   <footer class="footer">
-    <span data-site-version>v260309.30 5:21p</span>
+    AlpacApps
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
