@@ -1,12 +1,12 @@
 {
-  "version": "v260310.11 6:01p",
-  "release": 609,
-  "sha": "60daea0e4",
-  "fullSha": "60daea0e4b5ab8c4dbfe4f99430be1ec046bce20",
+  "version": "v260310.13 6:09p",
+  "release": 611,
+  "sha": "bda83edd2",
+  "fullSha": "bda83edd229e64eec7b1ca17ce6b53e09912f275",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 23:01:11+00",
-  "commits": [{"sha":"60daea0e4","message":"Fix getCameraNameMap: use cam.protectCameraId instead of iterating streams object","author":"Rahul"}]
+  "pushedAt": "2026-03-10 23:09:16+00",
+  "commits": [{"sha":"bda83edd2","message":"Fix agreement button text visibility + add agreement link to pricing section (#18)","author":"Rahul"}]
 }
