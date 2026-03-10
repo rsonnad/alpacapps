@@ -38,6 +38,8 @@ export const EMAIL_TYPES = {
   W9_REQUEST: 'w9_request',
   // Payment statement
   PAYMENT_STATEMENT: 'payment_statement',
+  // Work checkout summary
+  WORK_CHECKOUT_SUMMARY: 'work_checkout_summary',
 };
 
 /**
@@ -401,6 +403,28 @@ export const emailService = {
       first_name: person.first_name,
       upload_url: uploadUrl,
     });
+  },
+
+  // ===== WORK TRACKING =====
+
+  /**
+   * Send work checkout summary email to associate + admin
+   * @param {object} data - Checkout summary data
+   * @param {string} data.associate_email - Associate's email address
+   * @param {string} data.first_name - Associate first name
+   * @param {string} data.date - Formatted date string
+   * @param {string} data.clock_in_time - Clock in time
+   * @param {string} data.clock_out_time - Clock out time
+   * @param {string} data.duration - Formatted duration
+   * @param {string} data.space_name - Space/location name
+   * @param {string} data.description - Work description
+   * @param {number} data.hourly_rate - Rate
+   * @param {string} data.earnings - Formatted earnings
+   * @param {Array} data.photos - Array of {url, type, caption}
+   */
+  async sendWorkCheckoutSummary(data) {
+    const recipients = [data.associate_email, 'team@alpacaplayhouse.com'].filter(Boolean);
+    return sendEmail(EMAIL_TYPES.WORK_CHECKOUT_SUMMARY, recipients, data);
   },
 
   /**
