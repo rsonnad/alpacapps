@@ -1,0 +1,155 @@
+# Music Assistant on Alpaca Mac — Setup & Home Music Automation
+
+Review and configuration guide for Music Assistant (MA) on the Alpaca Mac: Docker setup, local/hard-drive music, and scheduled playback for home music automation.
+
+**Related:** [MUSIC-ASSISTANT-EVALUATION.md](./MUSIC-ASSISTANT-EVALUATION.md), [music-assistant-api-mapping.md](./music-assistant-api-mapping.md), [instructions/music-assistant-implementation-plan.md](../instructions/music-assistant-implementation-plan.md).
+
+---
+
+## 1. Current Architecture
+
+| Layer | Role |
+|-------|------|
+| **Alpaca Mac** | Runs node-sonos-http-api (:5005) and Music Assistant in Docker (:8095). Same LAN as Sonos. |
+| **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API, `/ma-api` → MA API. Reaches Alpaca Mac via Tailscale. |
+| **Supabase** | Edge function `sonos-control` routes playback/grouping to MA first, fallback to Sonos proxy; announce/EQ stay on Sonos. |
+
+---
+
+## 2. Music Assistant on Alpaca Mac — Checklist
+
+### 2.1 Docker and container
+
+- [ ] **Docker** installed and running (Docker Desktop or Colima). Daemon starts at login.
+- [ ] **MA container** (example; use a fixed tag in production):
+
+  ```bash
+  docker run -d \
+    --name music-assistant \
+    --restart unless-stopped \
+    -p 8095:8095 \
+    -v music-assistant-data:/data \
+    ghcr.io/music-assistant/server:latest
+  ```
+
+- [ ] **Auto-start after reboot:** Either `--restart unless-stopped` (Docker daemon must be running at login) or a LaunchAgent that runs `docker start music-assistant` after user login.
+
+### 2.2 First-run and Sonos provider
+
+- [ ] Open MA UI: `http://<alpaca-mac-ip>:8095` (or `http://localhost:8095` on the Mac). Complete first-run setup (admin user if prompted).
+- [ ] **Settings → Player providers:** Add **Sonos S1** (or **Sonos** for S2). Confirm all zones appear with correct names.
+- [ ] **Settings:** Create a long-lived **API token**. Store in Supabase secret `MUSIC_ASSISTANT_TOKEN` and (if needed) on Hostinger for Caddy injection.
+
+### 2.3 Proxy and edge function
+
+- [ ] Hostinger Caddy: `https://alpaclaw.cloud/ma-api` → `http://<alpaca-mac-tailscale-ip>:8095/api`, with Bearer token if not sent by edge.
+- [ ] Supabase secrets: `MUSIC_ASSISTANT_URL` (e.g. `https://alpaclaw.cloud/ma-api`), `MUSIC_ASSISTANT_TOKEN`, `USE_MUSIC_ASSISTANT=true`.
+- [ ] From resident Sonos page: zones load, play/pause/volume work via MA.
+
+---
+
+## 3. Local Music (Hard Drives / Filesystem)
+
+Music Assistant can serve music from local folders or mounted drives so residents can use library content and playlists from disk.
+
+### 3.1 Add a local music source in MA
+
+1. In MA UI: **Settings → Music providers**.
+2. Add **Filesystem** (local) or **Filesystem (remote share)** for NAS/SMB.
+3. **Local path (Docker):** The container must see the path. Use a bind mount when starting the container, e.g.:
+
+   ```bash
+   docker run -d \
+     --name music-assistant \
+     --restart unless-stopped \
+     -p 8095:8095 \
+     -v music-assistant-data:/data \
+     -v /Volumes/YourMusic:/music:ro \
+     ghcr.io/music-assistant/server:latest
+   ```
+
+   Then in MA add a **Filesystem** provider and set the path to `/music` (inside the container). Replace `/Volumes/YourMusic` with the actual path on the Mac (e.g. external drive mount point).
+
+4. **Multiple drives/folders:** Add multiple Filesystem providers or multiple paths under one provider if supported (see MA docs).
+5. **Sync:** MA will scan and catalog; configure sync interval in provider settings if needed.
+
+### 3.2 Paths on Alpaca Mac
+
+- Internal disk: e.g. `/Users/alpaca/Music` or a dedicated volume.
+- External USB drive: typically `/Volumes/DriveName`; ensure the drive is mounted before Docker (and MA) starts, or use a LaunchAgent to start MA after mounts are available.
+- **Reboot behavior:** External drives may mount after login. If MA starts at login, either use a path that exists at boot (internal) or delay MA start until after the drive is mounted.
+
+### 3.3 Using local music in the app
+
+- Playlists and library from MA (including filesystem) are exposed via the existing `playlists` / `favorites` and play actions; the edge function already routes play to MA. Residents can pick MA playlists/favorites that include local files.
+- If you use **playlist by name** in schedules, ensure the playlist exists in MA (created from local library or synced).
+
+---
+
+## 4. Schedules (Home Music Automation)
+
+### 4.1 Current state
+
+- **DB:** Table `sonos_schedules` stores: `name`, `room`, `time_of_day` (HH:MM:00), `recurrence` (daily / weekdays / weekends / custom / once), `custom_days`, `one_time_date`, `playlist_name`, `source_type` (playlist | favorite), `volume`, `keep_grouped`, `is_active`, `updated_at`.
+- **UI:** Resident Sonos page → “Schedules” section: add/edit/delete/toggle active. Data is read/written via Supabase client.
+- **Gap:** Nothing automatically runs at `time_of_day` to start playback. Schedules are stored but not executed.
+
+### 4.2 Making schedules run automatically
+
+To make schedules drive home music automation you need a **runner** that, at the right time, finds due schedules and triggers playback.
+
+**Option A — Supabase pg_cron + Edge function (recommended)**
+
+1. **pg_cron** job every 5–15 minutes (e.g. `*/10 * * * *`), in America/Chicago, that calls a small SQL function or an edge function URL.
+2. **Edge function** (e.g. `sonos-schedule-runner` or a dedicated endpoint of `sonos-control`):
+   - Authenticated with a cron secret or service role.
+   - Queries `sonos_schedules` for rows where `is_active = true` and current local time matches `time_of_day` and `recurrence` (and `one_time_date` for once).
+   - For each due schedule: call existing sonos-control logic (or proxy) to set room, volume, and play playlist/favorite by name (MA or Sonos).
+3. **Idempotency:** Track last-run per schedule (e.g. `last_triggered_at`) or a small `sonos_schedule_log` table so the same schedule is not fired multiple times in the same window.
+
+**Option B — Hostinger cron script**
+
+1. Cron on Hostinger (e.g. every 10 minutes) runs a script that:
+   - Queries Supabase (service role or a dedicated key) for due `sonos_schedules`.
+   - For each due schedule: `curl` Hostinger Sonos proxy or MA proxy (e.g. set volume, play favorite/playlist by name) using the same secrets the edge function uses.
+2. Requires storing Supabase and proxy secrets on Hostinger and a small script (Node or Python).
+
+**Option C — Manual cron (current pattern)**
+
+- As in [HOMEAUTOMATION.md § Scheduling & Alarms](../HOMEAUTOMATION.md): static cron lines on Hostinger that curl the Sonos proxy at fixed times. This does not use the `sonos_schedules` table; it’s for one-off or fixed alarms (e.g. “7am weekdays”, “pause at midnight”).
+
+### 4.3 Recommendation
+
+- Implement **Option A** so that schedules created in the resident UI are executed automatically, in one place (Supabase), with a single contract (sonos-control or a thin runner that calls it).
+- Keep **Option C** for simple, static alarms (e.g. pauseall at midnight) if you prefer not to put those in the DB.
+
+---
+
+## 5. Configuration Summary
+
+| Item | Where | Purpose |
+|------|--------|---------|
+| MA Docker container | Alpaca Mac | MA server, port 8095 |
+| MA data volume | Alpaca Mac | `/data` in container (persistent) |
+| Music folders | Alpaca Mac + Docker bind mount | Local/hard-drive music → MA Filesystem provider |
+| MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
+| Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpaca Mac :5005 |
+| MA proxy | Hostinger Caddy | `/ma-api` → Alpaca Mac :8095/api |
+| Schedule runner | Not yet implemented | pg_cron + edge function or Hostinger cron → due `sonos_schedules` → sonos-control/proxy |
+
+---
+
+## 6. Quick verification
+
+1. **MA and Sonos:** Resident Sonos page → zones load, play/pause/volume on one zone.
+2. **Local library:** In MA UI, add Filesystem provider, point to mounted path, run sync; in app, play a track/playlist from that source.
+3. **Schedules (manual):** Create a schedule in the UI, note time; when the runner is implemented, confirm it fires at that time and playback starts in the chosen room.
+
+---
+
+## 7. References
+
+- MA installation: https://music-assistant.io/installation/
+- MA Filesystem provider: https://www.music-assistant.io/music-providers/filesystem/
+- MA API: https://www.music-assistant.io/api/
+- Sonos player support: https://www.music-assistant.io/player-support/sonos/

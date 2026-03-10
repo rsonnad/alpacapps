@@ -132,7 +132,8 @@ The Mac is configured to survive power outages, reboots, and network disruptions
 4. Tailscale app launches (Login Item, `TailscaleStartOnLogin=1`)
 5. Sonos HTTP API starts (`~/Library/LaunchAgents/com.sonos.httpapi.plist`)
 6. go2rtc starts (`~/Library/LaunchAgents/com.go2rtc.plist`)
-7. DO droplet can SSH in via Tailscale within ~60 seconds of boot
+7. Music Assistant starts (Docker container `music-assistant`, if Docker is running at login)
+8. DO droplet can SSH in via Tailscale within ~60 seconds of boot
 
 **No human intervention required.**
 
@@ -141,6 +142,7 @@ The Mac is configured to survive power outages, reboots, and network disruptions
 | Service | Port | Auto-Start | Purpose |
 |---------|------|------------|---------|
 | node-sonos-http-api | 5005 | launchd (`com.sonos.httpapi`) | Sonos speaker control |
+| Music Assistant | 8095 | Docker (`music-assistant` container) | Primary music control plane (playback, grouping, library); see `docs/music-assistant-alpaca-mac-setup.md` |
 | go2rtc | 1984 | launchd (`com.go2rtc`) | Camera HLS/WebRTC streaming (9 streams) |
 | Tailscale | — | Login item | VPN mesh connectivity |
 | caffeinate | — | LaunchDaemon | Prevent sleep |
@@ -150,6 +152,8 @@ The Mac is configured to survive power outages, reboots, and network disruptions
 - **Homebrew** (`/usr/local/bin/brew`)
 - **Node.js 18.20.8** via nvm (`~/.nvm/versions/node/v18.20.8/`)
 - **node-sonos-http-api** (`~/node-sonos-http-api/`)
+- **Docker** (Desktop or Colima) — for Music Assistant container
+- **Music Assistant** — `ghcr.io/music-assistant/server` (Docker); data in volume `music-assistant-data`; optional bind mount for local music (e.g. `-v /Volumes/YourMusic:/music:ro`); see `docs/music-assistant-alpaca-mac-setup.md`
 - **Tailscale 1.94.1** (`/Applications/Tailscale.app`, CLI at `/usr/local/bin/tailscale`)
 
 ### Setting Up a New Remote Mac (Checklist)
@@ -412,6 +416,8 @@ Browser / Mobile / PAI
 | `USE_MUSIC_ASSISTANT` | Feature flag (`true`/`false`) |
 
 `sonos-control` routes playback and grouping actions to MA first, with Sonos fallback. Announce and EQ actions remain Sonos-proxy-based.
+
+For **Music Assistant on Alpaca Mac** (Docker, auto-start, local/hard-drive music, and schedule automation), see **`docs/music-assistant-alpaca-mac-setup.md`**.
 
 ### Legacy Sonos Proxy Chain (Browser → Supabase → DO Droplet → Alpaca Mac)
 
@@ -699,7 +705,13 @@ Libraries: `unifi-protect` (npm), `pyunifiprotect` (pip)
 
 ## Scheduling & Alarms
 
-Use cron on Hostinger VPS to trigger Sonos or MA actions via Hostinger proxy:
+### Resident schedules (sonos_schedules)
+
+The resident Sonos page stores **scheduled alarms** in Supabase table `sonos_schedules` (name, room, time_of_day, recurrence, playlist/favorite, volume, is_active). These are created and edited in the UI but are **not executed automatically** until a schedule runner is in place. For full home music automation from the UI, implement a runner (e.g. pg_cron + edge function or Hostinger cron) that queries due rows and triggers playback via the Sonos/MA proxy. See **`docs/music-assistant-alpaca-mac-setup.md`** (§ Schedules) for options and recommended approach.
+
+### Static cron on Hostinger
+
+Use cron on Hostinger VPS to trigger Sonos or MA actions via Hostinger proxy (fixed times, no DB):
 
 ```bash
 # Example: Wake-up alarm weekdays at 7am CT
