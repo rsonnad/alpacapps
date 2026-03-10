@@ -1,12 +1,12 @@
 {
-  "version": "v260310.06 5:21p",
-  "release": 604,
-  "sha": "1b4cc0ebc",
-  "fullSha": "1b4cc0ebc093efb368d408f0a3ca3c41a46891f6",
+  "version": "v260310.07 5:36p",
+  "release": 605,
+  "sha": "ca6434e76",
+  "fullSha": "ca6434e7610625895891f8ce0162b76f3fd77438",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 22:21:02+00",
-  "commits": [{"sha":"1b4cc0ebc","message":"Add SPC convective outlook integration + Calabasas property + staleness indicator","author":"Rahul"}]
+  "pushedAt": "2026-03-10 22:36:58+00",
+  "commits": [{"sha":"ca6434e76","message":"Add Recent Events section to cameras page","author":"Rahul"}]
 }
