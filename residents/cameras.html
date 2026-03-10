@@ -82,6 +82,9 @@
           <div class="event-grid" id="eventGrid">
             <!-- Rendered by JS -->
           </div>
+          <div class="event-more-wrap">
+            <button id="eventsMoreBtn" class="event-more-btn" style="display:none" onclick="window.__loadMoreEvents(this)">Load More</button>
+          </div>
         </div>
       </section>
     </main>
@@ -92,6 +95,6 @@
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-  <script type="module" src="cameras.js?v=2"></script>
+  <script type="module" src="cameras.js?v=3"></script>
 </body>
 </html>

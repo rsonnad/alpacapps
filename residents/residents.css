@@ -6073,6 +6073,34 @@ span.sonos-library-item__star.starred {
   }
 }
 
+.event-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 0.5rem;
+}
+
+.event-more-btn {
+  padding: 0.5rem 2rem;
+  border: 1px solid var(--border-subtle, #e5e3de);
+  border-radius: 0.5rem;
+  background: var(--surface-bg, #fff);
+  color: var(--text-primary, #1f1720);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.event-more-btn:hover {
+  background: var(--surface-hover, #f5f5f0);
+  border-color: var(--border-default, #ccc);
+}
+
+.event-more-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ===== DEVICES INVENTORY PAGE ===== */
 
 /* Borderless section header (used as page-level heading, not inside a card) */
