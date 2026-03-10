@@ -1,12 +1,12 @@
 {
-  "version": "v260310.10 5:54p",
-  "release": 608,
-  "sha": "b4223b8f6",
-  "fullSha": "b4223b8f65a629e5e5206e3014cd7b3ecc7d91b7",
+  "version": "v260310.11 6:01p",
+  "release": 609,
+  "sha": "60daea0e4",
+  "fullSha": "60daea0e4b5ab8c4dbfe4f99430be1ec046bce20",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 22:54:29+00",
-  "commits": [{"sha":"b4223b8f6","message":"Add public event agreement preview page (#17)","author":"Rahul"}]
+  "pushedAt": "2026-03-10 23:01:11+00",
+  "commits": [{"sha":"60daea0e4","message":"Fix getCameraNameMap: use cam.protectCameraId instead of iterating streams object","author":"Rahul"}]
 }
