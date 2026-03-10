@@ -1,12 +1,12 @@
 {
-  "version": "v260310.09 5:47p",
-  "release": 607,
-  "sha": "650de11df",
-  "fullSha": "650de11df85b1c9ceb035d539dc652dd20c82670",
+  "version": "v260310.10 5:54p",
+  "release": 608,
+  "sha": "b4223b8f6",
+  "fullSha": "b4223b8f65a629e5e5206e3014cd7b3ecc7d91b7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 22:47:20+00",
-  "commits": [{"sha":"d0ea9d6f3","message":"Add Recent Events section to cameras page","author":"Rahul"},{"sha":"3a207d0ad","message":"Merge branch 'recursing-wing'","author":"Rahul"},{"sha":"45fba1da7","message":"Add work checkout summary email on clock-out","author":"Rahul"},{"sha":"650de11df","message":"Merge work checkout summary email feature","author":"Rahul"}]
+  "pushedAt": "2026-03-10 22:54:29+00",
+  "commits": [{"sha":"b4223b8f6","message":"Add public event agreement preview page (#17)","author":"Rahul"}]
 }
