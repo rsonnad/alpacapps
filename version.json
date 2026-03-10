@@ -1,12 +1,12 @@
 {
-  "version": "v260310.02 12:50a",
-  "release": 600,
-  "sha": "5ca025080",
-  "fullSha": "5ca0250804a1fd88b2e90e6f83f15f262e45e37b",
+  "version": "v260310.03 12:52a",
+  "release": 601,
+  "sha": "f6eb0be34",
+  "fullSha": "f6eb0be342c07f7be3da9194c927a937576c7111",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 05:50:10+00",
-  "commits": [{"sha":"5ca025080","message":"Add Claude Chat guided setup flow at /infra/","author":"Rahul"}]
+  "pushedAt": "2026-03-10 05:52:18+00",
+  "commits": [{"sha":"f6eb0be34","message":"Fix SKILL.md rule numbering after adding detect-existing-setup rule","author":"Rahul"}]
 }
