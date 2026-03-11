@@ -1,12 +1,12 @@
 {
-  "version": "v260311.04 1:17p",
-  "release": 627,
-  "sha": "3516109de",
-  "fullSha": "3516109dec938c56d7c46de5860fccb9df29302b",
+  "version": "v260311.05 1:55p",
+  "release": 628,
+  "sha": "31e094831",
+  "fullSha": "31e0948313bc7e26d77a27cb573b08c474f7cd15",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 18:17:53+00",
-  "commits": [{"sha":"3516109de","message":"One-shot photo reminder: replace cron with 15-min setTimeout","author":"Rahul"}]
+  "pushedAt": "2026-03-11 18:55:47+00",
+  "commits": [{"sha":"31e094831","message":"Add CAD & site plan system setup guide","author":"Rahul"}]
 }
