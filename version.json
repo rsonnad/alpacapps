@@ -1,12 +1,12 @@
 {
-  "version": "v260311.01 1:17a",
-  "release": 624,
-  "sha": "1c23ab23f",
-  "fullSha": "1c23ab23fe9bea2a422d5b72080e41c5858d4ad8",
+  "version": "v260311.02 1:08p",
+  "release": 625,
+  "sha": "d01965058",
+  "fullSha": "d0196505890c5cb01d9dd99dceea71c977794cab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 06:17:42+00",
-  "commits": [{"sha":"f6c565b20","message":"Move Gemini calls behind Supabase edge function proxy","author":"Rahul"},{"sha":"1c23ab23f","message":"Merge branch 'happy-hertz'","author":"Rahul"}]
+  "pushedAt": "2026-03-11 18:08:17+00",
+  "commits": [{"sha":"d01965058","message":"Change work checkout email recipient to alpacaplayhouse@gmail.com","author":"Rahul"}]
 }
