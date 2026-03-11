@@ -7,13 +7,13 @@
   <meta name="description" content="AlpacApps Infra - An AI Enablement Platform for Personal/Business/Property Mgmgt">
   <meta property="og:title" content="AlpacApps Infra - An AI Enablement Platform for Personal/Business/Property Mgmgt">
   <meta property="og:description" content="AlpacApps Infra - An AI Enablement Platform for Personal/Business/Property Mgmgt">
-  <meta property="og:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg">
+  <meta property="og:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png">
   <meta property="og:url" content="https://alpacaplayhouse.com/docs/alpacappsinfra.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AlpacApps Infra - An AI Enablement Platform for Personal/Business/Property Mgmgt">
   <meta name="twitter:description" content="AlpacApps Infra - An AI Enablement Platform for Personal/Business/Property Mgmgt">
-  <meta name="twitter:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg">
+  <meta name="twitter:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
@@ -990,7 +990,7 @@
         <p><strong>AlpacApps is an open-source AI-powered platform.</strong> Set up a super low cost do-it-all system from scratch &mdash; messaging, marketing, management, and finance. You just need to set up the required (mostly free) accounts, then tell Claude Code what you have, where it is, and what you ideally want. Then watch the AI magic transpire.</p>
         <span class="badge">$20 &ndash; $200 / month</span>
       </div>
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/site/hero-alpacas.jpeg" alt="Alpacas" class="hero-image">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="Alpacas" class="hero-image">
     </div>
   </div>
 </div>
@@ -1169,12 +1169,12 @@
       <a href="#claude-code"><span class="num">2</span> Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Free week here</a></a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
       <a href="#google-auth"><span class="num">4</span> Google Sign-In</a>
-      <a href="#resend"><span class="num">5</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">6</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">7</span> Square (Payments)</a>
-      <a href="#stripe"><span class="num">8</span> Stripe (Payments)</a>
-      <a href="#signwell"><span class="num">9</span> SignWell (E-Signatures)</a>
-      <a href="#gemini"><span class="num">10</span> Google Gemini (AI)</a>
+      <a href="#gemini"><span class="num">5</span> Google Gemini (AI)</a>
+      <a href="#resend"><span class="num">6</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">7</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">8</span> Square (Payments)</a>
+      <a href="#stripe"><span class="num">9</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">10</span> SignWell (E-Signatures)</a>
       <a href="#workers"><span class="num">11</span> Background Workers</a>
       <a href="#domain"><span class="num">12</span> Custom Domain</a>
       <a href="#template"><span class="num">13</span> Context System</a>
@@ -1236,6 +1236,15 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc">
+        <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Google Gemini</span>
+          <span class="calc-svc__desc">AI-powered features</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
         <input type="checkbox" data-svc="resend" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
@@ -1277,15 +1286,6 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__info">
           <span class="calc-svc__name">SignWell</span>
           <span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span>
-        </span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info">
-          <span class="calc-svc__name">Google Gemini</span>
-          <span class="calc-svc__desc">AI-powered features</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1626,7 +1626,7 @@ Don't ask me for permission at each step — just do the work end to end and sho
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 10 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 5 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
@@ -1691,9 +1691,37 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 5. Resend -->
+  <!-- 5. Gemini -->
+  <details class="section" id="gemini">
+      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">5. Google Gemini (AI) <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
+    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
+
+    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
+      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 4</a>. Use the same project &mdash; just grab a Gemini API key below.
+    </div>
+
+    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
+    <ol>
+      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
+- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>"Store my Gemini API key as a Supabase secret."</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
+    </div>
+  </div>
+  </details>
+
+  <!-- 6. Resend -->
   <details class="section" id="resend">
-      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">5. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">6. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1717,9 +1745,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 6. Telnyx -->
+  <!-- 7. Telnyx -->
   <details class="section" id="telnyx">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">6. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">7. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1760,9 +1788,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 7. Square -->
+  <!-- 8. Square -->
   <details class="section" id="square">
-      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">7. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">8. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1798,9 +1826,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 8. Stripe -->
+  <!-- 9. Stripe -->
   <details class="section" id="stripe">
-      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">8. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">9. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
@@ -1842,9 +1870,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 9. SignWell -->
+  <!-- 10. SignWell -->
   <details class="section" id="signwell">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">9. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">10. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1870,34 +1898,6 @@ Don't ask me for permission at each step — just do the work end to end and sho
       <strong>"Set up SignWell for e-signatures. Create the config table, a webhook edge function, and client-side signwell-service.js and pdf-service.js modules."</strong>
       <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
       <span class="claude-detail">Claude will create the table, insert config, write and deploy the webhook, create client modules, commit, and push.</span>
-    </div>
-  </div>
-  </details>
-
-  <!-- 10. Gemini -->
-  <details class="section" id="gemini">
-      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">10. Google Gemini (AI Matching) <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="section-body">
-    <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
-
-    <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Already set up Google Sign-In?</strong> You already have a Google Cloud project from <a href="#google-auth">Step 4</a>. Use the same project &mdash; just grab a Gemini API key below.
-    </div>
-
-    <h3><span class="step-label step-you">You do (in your browser)</span></h3>
-    <ol>
-      <li>Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
-    </ol>
-
-    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
-    <pre data-lang="markdown"><code>### AI Matching (Google Gemini)
-- API key: `your-gemini-key` (store as Supabase secret: GEMINI_API_KEY)</code></pre>
-
-    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
-    <div class="callout claude" style="position: relative;">
-      <strong>"Store my Gemini API key as a Supabase secret."</strong>
-      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
-      <span class="claude-detail">Claude will run: <code>supabase secrets set GEMINI_API_KEY=your_key_here</code></span>
     </div>
   </div>
   </details>
@@ -2511,12 +2511,12 @@ function recalcCost() {
     'supabase':    'Supabase',
     'claude':      'Claude Code',
     'google-auth': 'Google Sign-In',
+    'gemini':      'Google Gemini (AI)',
     'resend':      'Resend (email)',
     'telnyx':      'Telnyx (SMS)',
     'square':      'Square (payments)',
     'stripe':      'Stripe (payments)',
     'signwell':    'SignWell (e-sign)',
-    'gemini':      'Google Gemini (AI)',
     'cloudflare-r2': 'Cloudflare R2 (storage)',
     'workers':     'Background Workers (cloud VM)',
     'domain':      'Custom domain',
@@ -2844,9 +2844,9 @@ var pickToSection = {
 
 // Map service-picker data-pick values to display labels
 var pickLabels = {
-  'resend': 'Resend',
   'google-auth': 'Google Sign-In',
   'gemini': 'Google Gemini',
+  'resend': 'Resend',
   'telnyx': 'Telnyx',
   'square': 'Square',
   'stripe': 'Stripe',
