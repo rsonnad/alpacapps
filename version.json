@@ -1,12 +1,12 @@
 {
-  "version": "v260310.15 6:24p",
-  "release": 613,
-  "sha": "39db56c00",
-  "fullSha": "39db56c0062f916db1d629799de4db05ee5f7e7b",
+  "version": "v260310.16 7:30p",
+  "release": 614,
+  "sha": "7a60b31a3",
+  "fullSha": "7a60b31a305cbdf7553817d0831cf806f36c088a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-10 23:24:07+00",
-  "commits": [{"sha":"39db56c00","message":"Add Load More button to Recent Events section","author":"Rahul"}]
+  "pushedAt": "2026-03-11 00:30:24+00",
+  "commits": [{"sha":"7a60b31a3","message":"Switch hero to wide AI banner + move Gemini after Google Sign-In","author":"Rahul"}]
 }
