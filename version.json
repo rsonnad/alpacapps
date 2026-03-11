@@ -1,12 +1,12 @@
 {
-  "version": "v260311.08 3:10p",
-  "release": 631,
-  "sha": "17cd524a1",
-  "fullSha": "17cd524a1a61d061bc1ba6f3ae6d1cc6a4c021c6",
+  "version": "v260311.09 3:13p",
+  "release": 632,
+  "sha": "9b036aeb4",
+  "fullSha": "9b036aeb4957898bd8bbcdab65c1700d99af7f96",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 20:10:28+00",
-  "commits": [{"sha":"17cd524a1","message":"SEO: optimize OG tags with proper 1200x630 image for infra pages","author":"Rahul"}]
+  "pushedAt": "2026-03-11 20:13:29+00",
+  "commits": [{"sha":"9b036aeb4","message":"Update infra description: freely hosted, 30-90 minutes","author":"Rahul"}]
 }
