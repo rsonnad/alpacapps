@@ -142,11 +142,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // --- Clock-out reminders (missing "after" photos) — batch mode only ---
-    if (!targetEntryId) {
-    const fifteenMinAgoOut = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const twentyFourHoursAgoOut = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: clockOutEntries, error: clockOutError } = await supabase
+    // --- Clock-out reminders (missing "after" photos) ---
+    let clockOutQuery = supabase
       .from('time_entries')
       .select(`
         id,
@@ -166,9 +163,20 @@ Deno.serve(async (req) => {
         )
       `)
       .is('photo_reminder_clockout_sent_at', null)
-      .not('clock_out', 'is', null)
-      .lte('clock_out', fifteenMinAgoOut)
-      .gte('clock_out', twentyFourHoursAgoOut);
+      .not('clock_out', 'is', null);
+
+    if (targetEntryId) {
+      // Single-entry mode: check just this entry (called from client after clock-out)
+      clockOutQuery = clockOutQuery.eq('id', targetEntryId);
+    } else {
+      // Batch mode: scan recent entries
+      const fifteenMinAgoOut = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const twentyFourHoursAgoOut = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      clockOutQuery = clockOutQuery.lte('clock_out', fifteenMinAgoOut).gte('clock_out', twentyFourHoursAgoOut);
+    }
+
+    {
+    const { data: clockOutEntries, error: clockOutError } = await clockOutQuery;
 
     if (clockOutError) {
       console.error('Error querying clock-out entries:', clockOutError);
@@ -233,7 +241,7 @@ Deno.serve(async (req) => {
         }
       }
     }
-    } // end if (!targetEntryId) — clock-out batch
+    } // end clock-out reminders block
 
     // Log API usage
     if (remindersSent > 0) {

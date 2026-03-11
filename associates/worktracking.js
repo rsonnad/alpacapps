@@ -318,6 +318,15 @@ async function handleClockOut(description) {
 
     // Fire-and-forget: send checkout summary email
     sendCheckoutSummaryEmail(updatedEntry, entrySpaceId, entryTaskId, entryRate, description);
+
+    // Schedule a photo reminder 15 min after clock-out (if no after photos)
+    setTimeout(() => {
+      fetch(`${SUPABASE_URL}/functions/v1/work-photo-reminder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ time_entry_id: entryId })
+      }).catch(() => {});
+    }, 15 * 60 * 1000);
   } catch (err) {
     showToast('Failed to clock out: ' + err.message, 'error');
   } finally {
