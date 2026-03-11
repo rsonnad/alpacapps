@@ -525,6 +525,87 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Interactive Chat */
+        .weather-chat {
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            padding-top: 0.5rem;
+        }
+        .chat-messages {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .chat-msg {
+            font-size: 0.75rem;
+            line-height: 1.5;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.3rem;
+        }
+        .chat-msg strong {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-right: 0.3rem;
+        }
+        .chat-user {
+            background: rgba(96, 165, 250, 0.08);
+            color: var(--text);
+        }
+        .chat-user strong { color: var(--blue); }
+        .chat-ai {
+            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+        }
+        .chat-ai strong { color: var(--text-dim); }
+        .chat-typing .risk-commentary-loading {
+            font-size: 0.72rem;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .chat-input-row input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.75rem;
+            color: var(--text);
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input-row input:focus {
+            border-color: var(--blue);
+        }
+        .chat-input-row input::placeholder {
+            color: var(--text-dim);
+        }
+        .chat-input-row button {
+            background: rgba(96, 165, 250, 0.15);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 6px;
+            color: var(--blue);
+            padding: 0.4rem 0.7rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .chat-input-row button:hover {
+            background: rgba(96, 165, 250, 0.25);
+        }
+        .chat-input-row button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
         /* Loading State */
         .loading-skeleton {
             background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card-hover) 50%, var(--bg-card) 100%);
@@ -1227,13 +1308,12 @@
         return 'advisory';
     }
 
-    // ─── Gemini commentary ─────────────────────────────────────
-    const GEMINI_KEY = 'AIzaSyD9YsEfYz9hfKOp3bbm0NoWqOWsu4C4IBw';
+    // ─── Gemini commentary + interactive chat ─────────────────────────
+    const GEMINI_KEY = 'AIzaSyBjTli0N3b-OKrzQRzgSU_26Tmz4IVG24w';
+    const chatHistories = {}; // per-location chat history for follow-ups
 
-    async function generateGeminiCommentary(loc, data) {
+    function buildWeatherContext(loc, data) {
         const { alerts, threats, spcRisk, windShear, openMeteo } = data;
-
-        // Build data summary for prompt
         let maxCape = 0, maxGust = 0, stormHours = 0;
         if (openMeteo && openMeteo.hourly) {
             const h = openMeteo.hourly;
@@ -1249,24 +1329,47 @@
                 if (wcode >= 95) stormHours++;
             }
         }
-
         const threatSummary = Object.entries(threats)
             .map(([k, v]) => `${k}: ${v.pct}% (${v.level})`)
             .join(', ');
-
         const alertSummary = alerts.length === 0 ? 'No active alerts.'
             : alerts.map(a => `${a.event} (${a.severity}, ${a.certainty})`).join('; ');
-
-        const prompt = `You are a concise weather risk analyst. Write a 2-3 sentence plain-language risk summary for a property at ${loc.address} (${loc.name}).
-
-Current data:
+        return `Property: ${loc.name} at ${loc.address}
 - Threats: ${threatSummary}
 - Active alerts: ${alertSummary}
 - SPC outlook: ${spcRisk ? spcRisk.cat || 'None' : 'None'}
 - Wind shear: 0-6km ${windShear?.shear06km || 0}kt, 0-1km ${windShear?.shear01km || 0}kt
 - Max CAPE next 24h: ${maxCape} J/kg
 - Max gusts: ${Math.round(maxGust)} mph
-- Storm hours ahead: ${stormHours}
+- Storm hours ahead: ${stormHours}`;
+    }
+
+    async function callGemini(contents) {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents,
+                generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+            })
+        });
+        if (!resp.ok) {
+            const errText = await resp.text();
+            console.error('Gemini API error:', resp.status, errText);
+            return null;
+        }
+        const json = await resp.json();
+        // Gemini 2.5 may return thinking parts before the actual text part
+        const parts = json.candidates?.[0]?.content?.parts || [];
+        const textPart = parts.filter(p => p.text !== undefined).pop(); // last text part = actual response
+        return textPart?.text?.trim() || null;
+    }
+
+    async function generateGeminiCommentary(loc, data) {
+        const context = buildWeatherContext(loc, data);
+        const prompt = `You are a concise weather risk analyst. Given the following live weather data, write a 2-3 sentence plain-language risk summary.
+
+${context}
 
 Rules:
 - Be direct and specific about timing and threats
@@ -1277,21 +1380,86 @@ Rules:
 - Keep it under 60 words.`;
 
         try {
-            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3, maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } }
-                })
-            });
-            const json = await resp.json();
-            const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            return text.trim();
+            const text = await callGemini([{ role: 'user', parts: [{ text: prompt }] }]);
+            if (text) {
+                // Seed chat history with the initial exchange + instructions for follow-ups
+                chatHistories[loc.id] = [
+                    { role: 'user', parts: [{ text: `You are a helpful weather analyst. Here is live weather data for ${loc.name}:\n\n${context}\n\nRules for ALL your responses:\n- Plain text only. No markdown, no bold, no bullets, no asterisks, no emoji.\n- Keep answers under 80 words.\n- Be specific and practical.\n\nGive me a risk summary.` }] },
+                    { role: 'model', parts: [{ text }] }
+                ];
+            }
+            return text;
         } catch (e) {
             console.warn('Gemini commentary failed for', loc.name, e);
             return null;
         }
+    }
+
+    async function handleChatQuestion(locId) {
+        const input = document.getElementById(`chat-input-${locId}`);
+        const chatArea = document.getElementById(`chat-messages-${locId}`);
+        const sendBtn = document.getElementById(`chat-send-${locId}`);
+        const question = input.value.trim();
+        if (!question) return;
+
+        // Show user message
+        chatArea.innerHTML += `<div class="chat-msg chat-user"><strong>You:</strong> ${escapeHTML(question)}</div>`;
+        input.value = '';
+        input.disabled = true;
+        sendBtn.disabled = true;
+
+        // Show typing indicator
+        const typingId = `typing-${locId}-${Date.now()}`;
+        chatArea.innerHTML += `<div class="chat-msg chat-ai chat-typing" id="${typingId}"><span class="risk-commentary-loading">Thinking...</span></div>`;
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // Build conversation with context
+        const loc = LOCATIONS.find(l => l.id === locId);
+        const data = allData[locId];
+        if (!chatHistories[locId]) {
+            // No prior history — seed with context
+            const context = buildWeatherContext(loc, data);
+            chatHistories[locId] = [
+                { role: 'user', parts: [{ text: `You are a helpful weather analyst. Here is live weather data:\n\n${context}\n\nRules for ALL your responses:\n- Plain text only. No markdown, no bold, no bullets, no asterisks, no emoji.\n- Keep answers under 80 words.\n- Be specific and practical about timing, risks, and what to expect.` }] },
+                { role: 'model', parts: [{ text: 'Understood. I have the live weather data for this property. What would you like to know?' }] }
+            ];
+        }
+
+        // Add user question
+        chatHistories[locId].push({ role: 'user', parts: [{ text: question }] });
+
+        try {
+            const reply = await callGemini(chatHistories[locId]);
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+
+            if (reply) {
+                chatHistories[locId].push({ role: 'model', parts: [{ text: reply }] });
+                chatArea.innerHTML += `<div class="chat-msg chat-ai"><strong>Gemini:</strong> ${escapeHTML(reply)}</div>`;
+            } else {
+                chatArea.innerHTML += `<div class="chat-msg chat-ai" style="color:var(--text-dim);font-style:italic">Failed to get a response. Try again.</div>`;
+            }
+        } catch (e) {
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+            chatArea.innerHTML += `<div class="chat-msg chat-ai" style="color:var(--red)">Error: ${escapeHTML(e.message)}</div>`;
+        }
+
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // Keep history manageable (last 10 turns)
+        if (chatHistories[locId].length > 22) {
+            chatHistories[locId] = chatHistories[locId].slice(0, 2).concat(chatHistories[locId].slice(-20));
+        }
+    }
+
+    function escapeHTML(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
     }
 
     // ─── Render functions ────────────────────────────────────────
@@ -1449,6 +1617,13 @@ Rules:
                     <div class="risk-commentary-title">Risk Analysis <span class="gemini-badge">Gemini</span></div>
                     <div class="risk-commentary-loading">Analyzing conditions...</div>
                 </div>
+                <div class="weather-chat" id="chat-${loc.id}">
+                    <div class="chat-messages" id="chat-messages-${loc.id}"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input-${loc.id}" placeholder="Ask about this location's weather..." onkeydown="if(event.key==='Enter')handleChatQuestion('${loc.id}')">
+                        <button id="chat-send-${loc.id}" onclick="handleChatQuestion('${loc.id}')">Ask</button>
+                    </div>
+                </div>
             </div>`;
     }
 
@@ -1598,10 +1773,14 @@ Rules:
                 const el = document.getElementById(`commentary-${loc.id}`);
                 if (!el) return;
                 if (text) {
-                    el.innerHTML = `<div class="risk-commentary-title">Risk Analysis <span class="gemini-badge">Gemini</span></div><p>${text}</p>`;
+                    el.innerHTML = `<div class="risk-commentary-title">Risk Analysis <span class="gemini-badge">Gemini</span></div><p>${escapeHTML(text)}</p>`;
                 } else {
                     el.innerHTML = `<div class="risk-commentary-title">Risk Analysis</div><p style="color:var(--text-dim);font-style:italic">Commentary unavailable</p>`;
                 }
+            }).catch(e => {
+                console.error('Gemini commentary error for', loc.name, e);
+                const el = document.getElementById(`commentary-${loc.id}`);
+                if (el) el.innerHTML = `<div class="risk-commentary-title">Risk Analysis</div><p style="color:var(--text-dim);font-style:italic">Commentary unavailable</p>`;
             });
         }
 
