@@ -1,12 +1,12 @@
 {
-  "version": "v260310.18 7:35p",
-  "release": 616,
-  "sha": "04274986d",
-  "fullSha": "04274986de2bdf6b74960095fde603cacf731b50",
+  "version": "v260310.19 7:52p",
+  "release": 617,
+  "sha": "9f676f63b",
+  "fullSha": "9f676f63b922871a87748fdf89e9708009db6aaa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 00:35:27+00",
-  "commits": [{"sha":"04274986d","message":"Fix invisible nav on infra pages — switch header to dark mode","author":"Rahul"}]
+  "pushedAt": "2026-03-11 00:52:05+00",
+  "commits": [{"sha":"9f676f63b","message":"Add wind shear + proximity tornado watch to weather monitor","author":"Rahul"}]
 }
