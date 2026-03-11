@@ -1,12 +1,12 @@
 {
-  "version": "v260311.12 4:03p",
-  "release": 635,
-  "sha": "fb25456ef",
-  "fullSha": "fb25456ef413492a91333050212fec2ac46f0ea4",
+  "version": "v260311.13 5:24p",
+  "release": 636,
+  "sha": "e5c297fde",
+  "fullSha": "e5c297fde6af2a00702be5a237ea1b07811f52bc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 21:03:57+00",
-  "commits": [{"sha":"fb25456ef","message":"Layout: make forecast & risk matrix side-by-side columns","author":"Rahul"}]
+  "pushedAt": "2026-03-11 22:24:01+00",
+  "commits": [{"sha":"e5c297fde","message":"Add clock-out photo reminder: trigger 15min after checkout if no after photos","author":"Rahul"}]
 }
