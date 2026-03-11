@@ -26,6 +26,7 @@
 - `openLightbox(url)` for images
 - Tailwind: use `aap-*` tokens (see `docs/PATTERNS.md` for full list). Run `npm run css:build` after new classes.
 - Claude CLI as subprocess, never Anthropic API. Edge functions use Gemini.
+- **Infra hero banner:** `infra/index.html` and `docs/alpacappsinfra.html` use a full-width banner card hero (wide alpaca image on top, text below). Do NOT replace with dark full-bleed hero or side-by-side layout. Look for the `⚠️ HERO BANNER` comment.
 
 ## First-Time Setup
 
