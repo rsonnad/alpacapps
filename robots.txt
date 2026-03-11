@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /login/
+Disallow: /kiosk/
+Disallow: /mobile/
+Disallow: /spaces/admin/
+Disallow: /mistiq/
+Sitemap: https://alpacaplayhouse.com/sitemap.xml
