@@ -6149,6 +6149,27 @@ span.sonos-library-item__star.starred {
   background: #f0f0f0;
 }
 
+/* Video loading / progress ring */
+.video-overlay__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+}
+.video-overlay__progress-ring {
+  width: 48px;
+  height: 48px;
+}
+.video-overlay__progress-ring svg {
+  transform: rotate(-90deg);
+}
+.video-overlay__progress-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 /* ===== DEVICES INVENTORY PAGE ===== */
 
 /* Borderless section header (used as page-level heading, not inside a card) */

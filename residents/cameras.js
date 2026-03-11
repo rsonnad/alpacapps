@@ -1336,7 +1336,7 @@ window.__loadMoreEvents = function(btn) {
   });
 };
 
-// Inline video player overlay
+// Inline video player — fetches clip as blob with progress, then plays from memory
 window.__playClip = function(btn) {
   const card = btn.closest('.event-card');
   if (!card) return;
@@ -1356,14 +1356,27 @@ window.__playClip = function(btn) {
   overlay.innerHTML = `
     <div class="video-overlay__backdrop"></div>
     <div class="video-overlay__container">
-      <video class="video-overlay__player" src="${src}" controls autoplay playsinline></video>
+      <div class="video-overlay__loading" id="videoLoading">
+        <div class="video-overlay__progress-ring">
+          <svg viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
+            <circle cx="24" cy="24" r="20" fill="none" stroke="#fff" stroke-width="3"
+              stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-linecap="round"
+              id="videoProgressCircle"/>
+          </svg>
+        </div>
+        <div class="video-overlay__progress-text" id="videoProgressText">Loading clip…</div>
+      </div>
+      <video class="video-overlay__player" id="videoPlayer" controls playsinline style="display:none"></video>
       <button class="video-overlay__close" aria-label="Close">&times;</button>
     </div>`;
   document.body.appendChild(overlay);
 
+  let blobUrl = null;
   const close = () => {
     const v = overlay.querySelector('video');
     if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
     overlay.remove();
   };
   overlay.querySelector('.video-overlay__backdrop').addEventListener('click', close);
@@ -1371,4 +1384,55 @@ window.__playClip = function(btn) {
   document.addEventListener('keydown', function esc(e) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
   });
+
+  // Fetch clip as blob with progress
+  (async () => {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const total = Number(res.headers.get('content-length')) || 0;
+      const reader = res.body.getReader();
+      const chunks = [];
+      let loaded = 0;
+
+      const circle = document.getElementById('videoProgressCircle');
+      const textEl = document.getElementById('videoProgressText');
+      const circumference = 125.66; // 2 * PI * 20
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        loaded += value.length;
+
+        // Update progress
+        if (total > 0) {
+          const pct = Math.min(loaded / total, 1);
+          if (circle) circle.setAttribute('stroke-dashoffset', String(circumference * (1 - pct)));
+          if (textEl) textEl.textContent = `${Math.round(pct * 100)}%`;
+        } else {
+          const mb = (loaded / 1048576).toFixed(1);
+          if (textEl) textEl.textContent = `${mb} MB`;
+        }
+      }
+
+      // Build blob and play
+      const blob = new Blob(chunks, { type: 'video/mp4' });
+      blobUrl = URL.createObjectURL(blob);
+
+      const loading = document.getElementById('videoLoading');
+      const player = document.getElementById('videoPlayer');
+      if (loading) loading.style.display = 'none';
+      if (player) {
+        player.src = blobUrl;
+        player.style.display = '';
+        player.play().catch(() => {}); // autoplay may be blocked
+      }
+    } catch (err) {
+      const textEl = document.getElementById('videoProgressText');
+      if (textEl) textEl.textContent = `Failed to load clip`;
+      console.warn('[Video] Error:', err.message);
+    }
+  })();
 };
