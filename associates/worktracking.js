@@ -2,7 +2,7 @@
  * Associate Hours Page - Mobile-optimized time tracking
  * Clock in/out, view history, upload work photos, manage payment preferences
  */
-import { supabase } from '../shared/supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initAssociatePage, showToast as shellShowToast } from '../shared/associate-shell.js';
 import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-service.js';
 import { mediaService } from '../shared/media-service.js';
@@ -272,6 +272,17 @@ async function handleClockIn() {
     showToast('Clocked in!', 'success');
     updateClockUI();
     await refreshToday();
+    // Schedule a one-shot photo reminder 15 min after clock-in
+    if (activeEntry?.id) {
+      const entryId = activeEntry.id;
+      setTimeout(() => {
+        fetch(`${SUPABASE_URL}/functions/v1/work-photo-reminder`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ time_entry_id: entryId })
+        }).catch(() => {});
+      }, 15 * 60 * 1000);
+    }
   } catch (err) {
     showToast('Failed to clock in: ' + err.message, 'error');
   } finally {
