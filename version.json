@@ -1,12 +1,12 @@
 {
-  "version": "v260311.03 1:11p",
-  "release": 626,
-  "sha": "d58f0f532",
-  "fullSha": "d58f0f532813d540b527f767cdf9a4af56398271",
+  "version": "v260311.04 1:17p",
+  "release": 627,
+  "sha": "3516109de",
+  "fullSha": "3516109dec938c56d7c46de5860fccb9df29302b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 18:11:24+00",
-  "commits": [{"sha":"d58f0f532","message":"Fix work-photo-reminder: remove non-existent status column filter","author":"Rahul"}]
+  "pushedAt": "2026-03-11 18:17:53+00",
+  "commits": [{"sha":"3516109de","message":"One-shot photo reminder: replace cron with 15-min setTimeout","author":"Rahul"}]
 }
