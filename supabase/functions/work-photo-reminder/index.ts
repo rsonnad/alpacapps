@@ -1,9 +1,11 @@
 /**
  * Work Photo Reminder
- * Sends email reminders ~15 minutes after clock-in or clock-out
- * if the associate hasn't uploaded before/after photos.
+ * Sends email reminders if an associate hasn't uploaded before/after photos.
  *
- * Trigger: Called every 5 minutes via pg_cron or external cron
+ * Modes:
+ *   1. Single-entry: POST { time_entry_id } — checks one entry (called from client 15min after clock-in)
+ *   2. Batch scan: POST {} — scans all recent entries (legacy/fallback)
+ *
  * Deploy: supabase functions deploy work-photo-reminder
  */
 
@@ -33,16 +35,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 15 minutes ago
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    // Don't look back more than 24 hours (avoid spamming old entries)
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Parse optional time_entry_id from body
+    let body: any = {};
+    try { body = await req.json(); } catch { /* empty body is fine */ }
+    const targetEntryId = body?.time_entry_id;
 
     let remindersSent = 0;
     let errors = 0;
 
     // --- Clock-in reminders (missing "before" photos) ---
-    const { data: clockInEntries, error: clockInError } = await supabase
+    let query = supabase
       .from('time_entries')
       .select(`
         id,
@@ -61,9 +63,19 @@ Deno.serve(async (req) => {
           name
         )
       `)
-      .is('photo_reminder_clockin_sent_at', null)
-      .lte('clock_in', fifteenMinAgo)
-      .gte('clock_in', twentyFourHoursAgo);
+      .is('photo_reminder_clockin_sent_at', null);
+
+    if (targetEntryId) {
+      // Single-entry mode: check just this entry
+      query = query.eq('id', targetEntryId);
+    } else {
+      // Batch mode: scan recent entries
+      const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      query = query.lte('clock_in', fifteenMinAgo).gte('clock_in', twentyFourHoursAgo);
+    }
+
+    const { data: clockInEntries, error: clockInError } = await query;
 
     if (clockInError) {
       console.error('Error querying clock-in entries:', clockInError);
@@ -130,7 +142,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // --- Clock-out reminders (missing "after" photos) ---
+    // --- Clock-out reminders (missing "after" photos) — batch mode only ---
+    if (!targetEntryId) {
+    const fifteenMinAgoOut = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const twentyFourHoursAgoOut = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data: clockOutEntries, error: clockOutError } = await supabase
       .from('time_entries')
       .select(`
@@ -152,8 +167,8 @@ Deno.serve(async (req) => {
       `)
       .is('photo_reminder_clockout_sent_at', null)
       .not('clock_out', 'is', null)
-      .lte('clock_out', fifteenMinAgo)
-      .gte('clock_out', twentyFourHoursAgo);
+      .lte('clock_out', fifteenMinAgoOut)
+      .gte('clock_out', twentyFourHoursAgoOut);
 
     if (clockOutError) {
       console.error('Error querying clock-out entries:', clockOutError);
@@ -218,6 +233,7 @@ Deno.serve(async (req) => {
         }
       }
     }
+    } // end if (!targetEntryId) — clock-out batch
 
     // Log API usage
     if (remindersSent > 0) {
