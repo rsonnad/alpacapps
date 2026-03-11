@@ -1801,11 +1801,19 @@ Rules:
         const elapsed = Date.now() - lastRefreshTime;
         const staleMinutes = Math.floor(elapsed / 60000);
         const el = document.getElementById('lastUpdated');
-        if (staleMinutes >= 5) {
+        if (staleMinutes >= 15) {
+            // Auto-reload if data is 15+ minutes old
+            refreshAll().then(() => { lastRefreshTime = Date.now(); });
+        } else if (staleMinutes >= 5) {
             el.innerHTML = `Data is ${staleMinutes}m old — <a href="#" onclick="event.preventDefault();refreshAll()" style="color:var(--yellow);text-decoration:underline">reload now</a>`;
             el.style.color = 'var(--yellow)';
         }
     }
+
+    // Auto-reload on visibility change (e.g. switching back to tab)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkStaleness();
+    });
 
     // ─── Init — load once on page load, check staleness periodically ─
     refreshAll().then(() => {
