@@ -2105,6 +2105,37 @@ Alpaca Playhouse`
             </tr>
           </table>
 
+          ${data.cumulative ? `
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f7f6f1;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px 24px;">
+                <p style="margin:0 0 10px;font-weight:600;font-size:14px;color:#2a1f23;">Cumulative Totals</p>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr style="color:#7d6f74;font-size:12px;">
+                    <td style="padding:0 0 6px;"></td>
+                    <td style="padding:0 0 6px;text-align:right;">Hours</td>
+                    <td style="padding:0 0 6px;text-align:right;">Earnings</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 4px;font-size:13px;"><strong>This Week</strong></td>
+                    <td style="padding:0 0 4px;text-align:right;font-size:13px;">${data.cumulative.week.hours}</td>
+                    <td style="padding:0 0 4px;text-align:right;font-size:13px;color:#d4883a;font-weight:600;">${data.cumulative.week.earnings}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 4px;font-size:13px;"><strong>This Month</strong></td>
+                    <td style="padding:0 0 4px;text-align:right;font-size:13px;">${data.cumulative.month.hours}</td>
+                    <td style="padding:0 0 4px;text-align:right;font-size:13px;color:#d4883a;font-weight:600;">${data.cumulative.month.earnings}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 0;font-size:13px;border-top:1px solid #e6e2d9;padding-top:4px;"><strong>This Year</strong></td>
+                    <td style="padding:0 0 0;text-align:right;font-size:13px;border-top:1px solid #e6e2d9;padding-top:4px;">${data.cumulative.year.hours}</td>
+                    <td style="padding:0 0 0;text-align:right;font-size:13px;border-top:1px solid #e6e2d9;padding-top:4px;color:#d4883a;font-weight:600;">${data.cumulative.year.earnings}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>` : ''}
+
           ${data.description ? `
           <p style="margin:0 0 4px;font-weight:600;font-size:14px;">Work Description</p>
           <p style="margin:0 0 20px;color:#2a1f23;">${data.description}</p>` : ''}
@@ -2128,6 +2159,7 @@ Clock In: ${data.clock_in_time}
 Clock Out: ${data.clock_out_time}
 Duration: ${data.duration}
 ${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.task_name ? `Task: ${data.task_name}\n` : ''}Earnings: ${data.earnings} @ $${data.hourly_rate}/hr
+${data.cumulative ? `\nCumulative Totals:\n  This Week:  ${data.cumulative.week.hours}  |  ${data.cumulative.week.earnings}\n  This Month: ${data.cumulative.month.hours}  |  ${data.cumulative.month.earnings}\n  This Year:  ${data.cumulative.year.hours}  |  ${data.cumulative.year.earnings}` : ''}
 ${data.description ? `\nWork Description: ${data.description}` : ''}
 ${hasPhotos ? `\nPhotos: ${photos.length} photo(s) uploaded (view in HTML email)` : '\nNo photos uploaded for this session.'}
 
