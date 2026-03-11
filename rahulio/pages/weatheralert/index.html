@@ -558,7 +558,8 @@
         <a href="https://www.spc.noaa.gov" target="_blank">Storm Prediction Center</a> &amp;
         <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
         Loads on page open. Data older than 5 min shows reload prompt. All times local.<br>
-        Threat analysis combines NWS alerts, SPC Day 1 convective outlook (hail/tornado/wind), NWS forecast text, and Open-Meteo CAPE/wind/precip models.
+        Threat analysis combines NWS alerts, SPC Day 1 convective outlook (hail/tornado/wind), NWS forecast text, Open-Meteo CAPE/wind/precip models,
+        bulk wind shear (0-6km &amp; 0-1km), and proximity tornado watch/warning detection (~35mi radius).
     </footer>
 
     <script>
@@ -798,7 +799,7 @@
             const params = new URLSearchParams({
                 latitude: loc.lat,
                 longitude: loc.lon,
-                hourly: 'temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weathercode,windspeed_10m,windgusts_10m,cape,visibility',
+                hourly: 'temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weathercode,windspeed_10m,windgusts_10m,winddirection_10m,cape,visibility,windspeed_850hPa,winddirection_850hPa,windspeed_500hPa,winddirection_500hPa',
                 temperature_unit: 'fahrenheit',
                 windspeed_unit: 'mph',
                 precipitation_unit: 'inch',
@@ -812,8 +813,79 @@
         }
     }
 
+    // ─── Wind shear computation ─────────────────────────────────
+    // Compute bulk wind shear (knots) between two levels given speed (mph) and direction (degrees)
+    function computeShear(spdLow, dirLow, spdHigh, dirHigh) {
+        if (spdLow == null || dirLow == null || spdHigh == null || dirHigh == null) return 0;
+        // Convert mph to knots (1 mph = 0.868976 kt)
+        const kLow = spdLow * 0.868976;
+        const kHigh = spdHigh * 0.868976;
+        const dLowRad = dirLow * Math.PI / 180;
+        const dHighRad = dirHigh * Math.PI / 180;
+        const uLow = -kLow * Math.sin(dLowRad);
+        const vLow = -kLow * Math.cos(dLowRad);
+        const uHigh = -kHigh * Math.sin(dHighRad);
+        const vHigh = -kHigh * Math.cos(dHighRad);
+        return Math.sqrt((uHigh - uLow) ** 2 + (vHigh - vLow) ** 2);
+    }
+
+    // Compute max wind shear values from Open-Meteo pressure-level data (next 24 hours)
+    function computeWindShear(openMeteo) {
+        if (!openMeteo || !openMeteo.hourly) return { shear06km: 0, shear01km: 0 };
+        const h = openMeteo.hourly;
+        const now = new Date();
+        const next24 = h.time.map((t, i) => ({ t: new Date(t), i }))
+            .filter(x => x.t >= now && x.t <= new Date(now.getTime() + 24 * 3600 * 1000));
+
+        let maxShear06 = 0, maxShear01 = 0;
+        for (const { i } of next24) {
+            // 0-6 km bulk shear: surface (10m) vs 500 hPa (~5.5 km)
+            const s06 = computeShear(
+                h.windspeed_10m?.[i], h.winddirection_10m?.[i],
+                h.windspeed_500hPa?.[i], h.winddirection_500hPa?.[i]
+            );
+            // 0-1 km low-level shear: surface (10m) vs 850 hPa (~1.5 km)
+            const s01 = computeShear(
+                h.windspeed_10m?.[i], h.winddirection_10m?.[i],
+                h.windspeed_850hPa?.[i], h.winddirection_850hPa?.[i]
+            );
+            if (s06 > maxShear06) maxShear06 = s06;
+            if (s01 > maxShear01) maxShear01 = s01;
+        }
+        return { shear06km: Math.round(maxShear06), shear01km: Math.round(maxShear01) };
+    }
+
+    // ─── Nearby tornado watch check ──────────────────────────────
+    // Check 4 offset points (~35 mi / 0.5°) for tornado watches/warnings
+    async function fetchNearbyTornadoAlerts(loc) {
+        const offsets = [
+            { lat: loc.lat + 0.5, lon: loc.lon },      // ~35mi north
+            { lat: loc.lat - 0.5, lon: loc.lon },      // ~35mi south
+            { lat: loc.lat, lon: loc.lon + 0.6 },      // ~35mi east
+            { lat: loc.lat, lon: loc.lon - 0.6 },      // ~35mi west
+        ];
+        try {
+            const results = await Promise.all(offsets.map(async pt => {
+                try {
+                    const data = await fetchJSON(
+                        `https://api.weather.gov/alerts/active?point=${pt.lat.toFixed(4)},${pt.lon.toFixed(4)}&status=actual`
+                    );
+                    return (data.features || []).map(f => f.properties);
+                } catch { return []; }
+            }));
+            const all = results.flat();
+            const tornadoAlerts = all.filter(p => {
+                const ev = (p.event || '').toLowerCase();
+                return ev.includes('tornado');
+            });
+            return tornadoAlerts;
+        } catch {
+            return [];
+        }
+    }
+
     // ─── Threat analysis ─────────────────────────────────────────
-    function analyzeThreats(alerts, openMeteo, nwsForecast, spcRisk) {
+    function analyzeThreats(alerts, openMeteo, nwsForecast, spcRisk, windShear, nearbyTornadoAlerts) {
         const threats = {};
         THREATS.forEach(t => { threats[t.key] = { level: 'none', pct: 0 }; });
 
@@ -977,6 +1049,60 @@
             }
         }
 
+        // ─── Wind shear → tornado risk boost ─────────────────────
+        if (windShear) {
+            const { shear06km, shear01km } = windShear;
+            const tstormPct = threats.thunderstorm.pct;
+
+            // Deep-layer shear (0-6km) + active thunderstorm environment → tornado potential
+            if (tstormPct > 30 && shear06km > 50) {
+                assignThreat(threats, 'tornado', 25);
+            } else if (tstormPct > 30 && shear06km > 35) {
+                assignThreat(threats, 'tornado', 15);
+            }
+
+            // Strong low-level shear (0-1km) → mesocyclone/rotation potential
+            if (tstormPct > 20 && shear01km > 20) {
+                assignThreat(threats, 'tornado', 20);
+            }
+            if (tstormPct > 20 && shear01km > 30) {
+                assignThreat(threats, 'tornado', 30);
+            }
+
+            // CAPE + shear composite: the classic supercell parameter
+            if (openMeteo && openMeteo.hourly && openMeteo.hourly.cape) {
+                const now = new Date();
+                const next24 = openMeteo.hourly.time.map((t, i) => ({ t: new Date(t), i }))
+                    .filter(x => x.t >= now && x.t <= new Date(now.getTime() + 24 * 3600 * 1000));
+                let maxCape = 0;
+                for (const { i } of next24) {
+                    const c = openMeteo.hourly.cape[i] || 0;
+                    if (c > maxCape) maxCape = c;
+                }
+                // Significant Tornado Parameter proxy: CAPE > 1000 + shear06 > 40kt
+                if (maxCape > 1000 && shear06km > 40) {
+                    const composite = Math.min(50, Math.round((maxCape / 100) * (shear06km / 40) * 3));
+                    assignThreat(threats, 'tornado', composite);
+                }
+                // Very high CAPE + strong low-level shear = significant tornado risk
+                if (maxCape > 2000 && shear01km > 25) {
+                    assignThreat(threats, 'tornado', 35);
+                }
+            }
+        }
+
+        // ─── Proximity-based tornado watch boosting ──────────────
+        if (nearbyTornadoAlerts && nearbyTornadoAlerts.length > 0) {
+            for (const a of nearbyTornadoAlerts) {
+                const ev = (a.event || '').toLowerCase();
+                if (ev.includes('tornado warning')) {
+                    assignThreat(threats, 'tornado', 30); // Confirmed tornado nearby
+                } else if (ev.includes('tornado watch')) {
+                    assignThreat(threats, 'tornado', 20); // Watch area nearby
+                }
+            }
+        }
+
         // Assign levels from pct
         for (const key of Object.keys(threats)) {
             const pct = threats[key].pct;
@@ -1060,7 +1186,7 @@
     }
 
     function renderLocationCard(loc, data) {
-        const { alerts, nws, openMeteo, threats, spcRisk } = data;
+        const { alerts, nws, openMeteo, threats, spcRisk, windShear } = data;
         const sev = overallSeverity(alerts);
 
         // Current conditions
@@ -1156,6 +1282,21 @@
                         <div class="condition-label">Wind</div>
                     </div>
                 </div>
+                ${windShear && (windShear.shear06km > 20 || windShear.shear01km > 10) ? `
+                <div class="current-conditions" style="border-bottom:1px solid var(--border);padding-top:0;">
+                    <div class="condition-item">
+                        <div class="condition-value" style="font-size:1.1rem;color:${windShear.shear06km > 50 ? 'var(--red)' : windShear.shear06km > 35 ? 'var(--orange)' : 'var(--text)'}">${windShear.shear06km} kt</div>
+                        <div class="condition-label">0-6km Shear</div>
+                    </div>
+                    <div class="condition-item">
+                        <div class="condition-value" style="font-size:1.1rem;color:${windShear.shear01km > 25 ? 'var(--red)' : windShear.shear01km > 15 ? 'var(--orange)' : 'var(--text)'}">${windShear.shear01km} kt</div>
+                        <div class="condition-label">0-1km Shear</div>
+                    </div>
+                    <div class="condition-item">
+                        <div class="condition-value" style="font-size:1.1rem;color:${windShear.shear06km > 40 ? 'var(--orange)' : 'var(--text-muted)'}">🔄</div>
+                        <div class="condition-label">Rotation</div>
+                    </div>
+                </div>` : ''}
                 <div class="threat-grid">${threatHTML}</div>
                 <div class="alerts-section">
                     <h3>Active Alerts (${alerts.length})</h3>
@@ -1273,19 +1414,21 @@
 
         await Promise.all(LOCATIONS.map(async loc => {
             try {
-                const [alerts, nws, openMeteo] = await Promise.all([
+                const [alerts, nws, openMeteo, nearbyTorAlerts] = await Promise.all([
                     fetchAlerts(loc),
                     fetchNWSForecast(loc),
                     fetchOpenMeteo(loc),
+                    fetchNearbyTornadoAlerts(loc),
                 ]);
 
                 const spcRisk = spc ? getSPCRiskForLocation(spc, loc.lat, loc.lon) : null;
-                const threats = analyzeThreats(alerts, openMeteo, nws, spcRisk);
-                locData[loc.id] = { alerts, nws, openMeteo, threats, spcRisk };
+                const windShear = computeWindShear(openMeteo);
+                const threats = analyzeThreats(alerts, openMeteo, nws, spcRisk, windShear, nearbyTorAlerts);
+                locData[loc.id] = { alerts, nws, openMeteo, threats, spcRisk, windShear };
             } catch (e) {
                 console.error(`Failed to load data for ${loc.name}:`, e);
                 errorContainer.innerHTML += `<div class="error-banner">Failed to load data for ${loc.name}: ${e.message}</div>`;
-                locData[loc.id] = { alerts: [], nws: { current: null, forecast: null, hourly: null }, openMeteo: null, threats: analyzeThreats([], null, null, null) };
+                locData[loc.id] = { alerts: [], nws: { current: null, forecast: null, hourly: null }, openMeteo: null, threats: analyzeThreats([], null, null, null, null, null), windShear: { shear06km: 0, shear01km: 0 } };
             }
         }));
 
