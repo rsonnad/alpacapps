@@ -4,6 +4,7 @@
 
 ## Recent Changes to Be Aware Of
 
+0. **Infra page hero banner redesign (v260310)** — Both `/infra/index.html` and `/docs/alpacappsinfra.html` use a full-width banner card hero (alpaca AI banner image spanning the card width, text below). **Do NOT revert to the old dark full-bleed hero** — it was lost once already and had to be restored. Both files have a `⚠️ HERO BANNER` HTML comment marking the section.
 1. **Consumer view now loads real availability** - Fetches assignments to show actual dates
 2. **Media system migration** - Using `media`/`media_spaces` tables instead of `photos`/`photo_spaces`
 3. **Space archiving** - `is_archived` flag for soft deletes
