@@ -1,12 +1,12 @@
 {
-  "version": "v260310.24 11:13p",
-  "release": 622,
-  "sha": "8449f1ede",
-  "fullSha": "8449f1edeaf20d94123689a79284df799f3b135e",
+  "version": "v260310.25 11:27p",
+  "release": 623,
+  "sha": "ced6dfe45",
+  "fullSha": "ced6dfe452a0ac523706d9477e2defebac9395ec",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 04:13:13+00",
-  "commits": [{"sha":"231d96bde","message":"Blob-based video player with progress ring","author":"Rahul"},{"sha":"8449f1ede","message":"Merge: blob video player with progress","author":"Rahul"}]
+  "pushedAt": "2026-03-11 04:27:29+00",
+  "commits": [{"sha":"ced6dfe45","message":"Add infra hero banner code guard to CLAUDE.md","author":"Rahul"}]
 }
