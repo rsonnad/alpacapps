@@ -1,12 +1,12 @@
 {
-  "version": "v260310.17 7:32p",
-  "release": 615,
-  "sha": "d18027a0c",
-  "fullSha": "d18027a0c6011d57df2a31a96caed3f3d213b989",
+  "version": "v260310.18 7:35p",
+  "release": 616,
+  "sha": "04274986d",
+  "fullSha": "04274986de2bdf6b74960095fde603cacf731b50",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 00:32:31+00",
-  "commits": [{"sha":"5df53ac2a","message":"Stream events inline + adjust page sizes (28 initial, 24 per load)","author":"Rahul"},{"sha":"d18027a0c","message":"Merge: stream events inline + page sizes 28/24","author":"Rahul"}]
+  "pushedAt": "2026-03-11 00:35:27+00",
+  "commits": [{"sha":"04274986d","message":"Fix invisible nav on infra pages — switch header to dark mode","author":"Rahul"}]
 }
