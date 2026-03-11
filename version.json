@@ -1,12 +1,12 @@
 {
-  "version": "v260310.19 7:52p",
-  "release": 617,
-  "sha": "9f676f63b",
-  "fullSha": "9f676f63b922871a87748fdf89e9708009db6aaa",
+  "version": "v260310.20 7:58p",
+  "release": 618,
+  "sha": "1cbe8b564",
+  "fullSha": "1cbe8b5646d2e3bae9386dbab00fe80984ca6de8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 00:52:05+00",
-  "commits": [{"sha":"9f676f63b","message":"Add wind shear + proximity tornado watch to weather monitor","author":"Rahul"}]
+  "pushedAt": "2026-03-11 00:58:42+00",
+  "commits": [{"sha":"1cbe8b564","message":"Redesign infra hero as full-width banner + fix OG tags","author":"Rahul"}]
 }
