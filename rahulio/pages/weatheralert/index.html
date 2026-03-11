@@ -1309,7 +1309,7 @@
     }
 
     // ─── Gemini commentary + interactive chat ─────────────────────────
-    const GEMINI_KEY = 'AIzaSyBjTli0N3b-OKrzQRzgSU_26Tmz4IVG24w';
+    const GEMINI_PROXY = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/gemini-weather';
     const chatHistories = {}; // per-location chat history for follow-ups
 
     function buildWeatherContext(loc, data) {
@@ -1345,7 +1345,7 @@
     }
 
     async function callGemini(contents) {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
+        const resp = await fetch(GEMINI_PROXY, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
