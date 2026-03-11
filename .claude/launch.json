@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "weather",
+      "name": "alpacapps",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "8082", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin"],
-      "port": 8082
+      "runtimeArgs": ["-m", "http.server", "8090", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/eager-hodgkin"],
+      "port": 8090
     }
   ]
 }
