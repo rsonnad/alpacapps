@@ -160,6 +160,17 @@
             .locations-grid { grid-template-columns: 1fr; }
         }
 
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+        .bottom-grid > div { min-width: 0; }
+        @media (max-width: 900px) {
+            .bottom-grid { grid-template-columns: 1fr; }
+        }
+
         .location-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -329,8 +340,9 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
+        .forecast-section:last-child { margin-bottom: 0; }
         .forecast-header {
             padding: 1rem 1.25rem;
             border-bottom: 1px solid var(--border);
@@ -412,7 +424,6 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 1.25rem;
-            margin-bottom: 1.25rem;
         }
         .risk-matrix h2 {
             font-size: 0.9rem;
@@ -706,8 +717,10 @@
             <div class="loading-skeleton skeleton-block"></div>
             <div class="loading-skeleton skeleton-block"></div>
         </div>
-        <div id="forecastSection"></div>
-        <div id="riskMatrix"></div>
+        <div class="bottom-grid">
+            <div id="forecastSection"></div>
+            <div id="riskMatrix"></div>
+        </div>
     </main>
 
     <footer class="page-footer">
