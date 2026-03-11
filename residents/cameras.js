@@ -1248,8 +1248,10 @@ function timeAgo(ms) {
   return `${Math.floor(sec / 86400)}d ago`;
 }
 
-const EVENTS_PAGE_SIZE = 10;
+const EVENTS_INITIAL = 28;
+const EVENTS_MORE = 24;
 let allEvents = [];
+let eventsFirstLoad = true;
 
 async function loadEvents(older) {
   const section = document.getElementById('eventsSection');
@@ -1258,7 +1260,8 @@ async function loadEvents(older) {
   if (!section || !grid) return;
 
   try {
-    let url = `${EVENTS_PROXY_BASE}/events?limit=${EVENTS_PAGE_SIZE}`;
+    const pageSize = eventsFirstLoad ? EVENTS_INITIAL : EVENTS_MORE;
+    let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}`;
     if (older && allEvents.length) {
       const oldest = allEvents[allEvents.length - 1];
       url += `&end=${oldest.start - 1}`;
@@ -1266,6 +1269,7 @@ async function loadEvents(older) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`${res.status}`);
     const events = await res.json();
+    eventsFirstLoad = false;
 
     if (!older) allEvents = events;
     else allEvents = allEvents.concat(events);
@@ -1273,7 +1277,8 @@ async function loadEvents(older) {
     renderEvents();
 
     // Show/hide Load More button
-    if (moreBtn) moreBtn.style.display = events.length >= EVENTS_PAGE_SIZE ? '' : 'none';
+    const expectedSize = older ? EVENTS_MORE : EVENTS_INITIAL;
+    if (moreBtn) moreBtn.style.display = events.length >= expectedSize ? '' : 'none';
   } catch (err) {
     console.warn('[Events] Failed to load:', err.message);
   }
@@ -1315,7 +1320,7 @@ function renderEvents() {
           ${score ? `<span class="event-card__score">${score}%</span>` : ''}
         </div>
       </div>
-      <button class="event-card__play" title="Download clip" onclick="window.__downloadClip(this)">
+      <button class="event-card__play" title="Play clip" onclick="window.__playClip(this)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       </button>
     </div>`;
@@ -1331,13 +1336,39 @@ window.__loadMoreEvents = function(btn) {
   });
 };
 
-// Expose clip download globally (onclick handler)
-window.__downloadClip = function(btn) {
+// Inline video player overlay
+window.__playClip = function(btn) {
   const card = btn.closest('.event-card');
   if (!card) return;
   const camera = card.dataset.camera;
   const start = card.dataset.start;
   const end = card.dataset.end;
   if (!camera || !start || !end) return;
-  window.open(`${EVENTS_PROXY_BASE}/export?camera=${camera}&start=${start}&end=${end}`, '_blank');
+
+  const src = `${EVENTS_PROXY_BASE}/export?camera=${camera}&start=${start}&end=${end}`;
+
+  // Remove existing overlay if any
+  document.getElementById('videoOverlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'videoOverlay';
+  overlay.className = 'video-overlay';
+  overlay.innerHTML = `
+    <div class="video-overlay__backdrop"></div>
+    <div class="video-overlay__container">
+      <video class="video-overlay__player" src="${src}" controls autoplay playsinline></video>
+      <button class="video-overlay__close" aria-label="Close">&times;</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    const v = overlay.querySelector('video');
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    overlay.remove();
+  };
+  overlay.querySelector('.video-overlay__backdrop').addEventListener('click', close);
+  overlay.querySelector('.video-overlay__close').addEventListener('click', close);
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+  });
 };
