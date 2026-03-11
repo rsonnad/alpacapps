@@ -1,12 +1,12 @@
 {
-  "version": "v260311.07 3:01p",
-  "release": 630,
-  "sha": "ece439baf",
-  "fullSha": "ece439bafb4535a74d60d49446e7a0fbaf20e3eb",
+  "version": "v260311.08 3:10p",
+  "release": 631,
+  "sha": "17cd524a1",
+  "fullSha": "17cd524a1a61d061bc1ba6f3ae6d1cc6a4c021c6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 20:01:50+00",
-  "commits": [{"sha":"ece439baf","message":"SEO: add robots.txt, sitemap, OG/Twitter/canonical tags, JSON-LD schemas across all pages","author":"Rahul"}]
+  "pushedAt": "2026-03-11 20:10:28+00",
+  "commits": [{"sha":"17cd524a1","message":"SEO: optimize OG tags with proper 1200x630 image for infra pages","author":"Rahul"}]
 }
