@@ -1,12 +1,12 @@
 {
-  "version": "v260311.09 3:13p",
-  "release": 632,
-  "sha": "9b036aeb4",
-  "fullSha": "9b036aeb4957898bd8bbcdab65c1700d99af7f96",
+  "version": "v260311.10 3:19p",
+  "release": 633,
+  "sha": "224dd1569",
+  "fullSha": "224dd15695cab38e97ccf800e817a15997808330",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 20:13:29+00",
-  "commits": [{"sha":"9b036aeb4","message":"Update infra description: freely hosted, 30-90 minutes","author":"Rahul"}]
+  "pushedAt": "2026-03-11 20:19:52+00",
+  "commits": [{"sha":"224dd1569","message":"Fix weather monitor auto-reload: refresh at 15min, reload on tab focus","author":"Rahul"}]
 }
