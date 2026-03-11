@@ -4,6 +4,7 @@
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
 import { getAuthState } from '../shared/auth.js';
+import { identityService } from '../shared/identity-service.js';
 
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2MB after compression
 const AVATAR_MAX_DIM = 512;
@@ -78,6 +79,7 @@ async function loadProfile() {
   renderProfile();
   renderPersonalUrl();
   renderVehicles();
+  renderIdVerification();
 
   // Auto-generate slug if not set
   if (!profileData.slug) {
@@ -849,6 +851,113 @@ function bindEvents() {
     }
     showVehicleForm(null);
   });
+}
+
+// =============================================
+// ID VERIFICATION
+// =============================================
+
+async function renderIdVerification() {
+  const container = document.getElementById('idVerificationContent');
+  if (!container) return;
+
+  // Check if user has an associate profile with verification status
+  const { data: assocProfile } = await supabase
+    .from('associate_profiles')
+    .select('identity_verification_status, identity_verification_id')
+    .eq('app_user_id', currentUser.id)
+    .maybeSingle();
+
+  const status = assocProfile?.identity_verification_status || null;
+
+  // Also check for any verification records directly linked to this user
+  const { data: verification } = await supabase
+    .from('identity_verifications')
+    .select('id, verification_status, extracted_name, verified_at, created_at')
+    .eq('app_user_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const effectiveStatus = status || (verification ? verification.verification_status : null);
+
+  if (effectiveStatus === 'verified' || effectiveStatus === 'auto_approved' || effectiveStatus === 'manually_approved') {
+    const verifiedDate = verification?.verified_at || verification?.created_at;
+    const dateStr = verifiedDate ? new Date(verifiedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+        <span style="font-size:1.5rem;">&#9989;</span>
+        <div>
+          <p style="margin:0;font-weight:600;color:#065f46;">Identity Verified</p>
+          <p style="margin:0.15rem 0 0;font-size:0.8rem;color:var(--text-muted);">Your ID has been verified.${dateStr ? ' Verified on ' + dateStr + '.' : ''}</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (effectiveStatus === 'link_sent') {
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+        <span style="font-size:1.5rem;">&#9203;</span>
+        <div>
+          <p style="margin:0;font-weight:600;color:#0c4a6e;">Verification Link Sent</p>
+          <p style="margin:0.15rem 0 0;font-size:0.8rem;color:var(--text-muted);">A verification link was sent. You can complete it now or request a new one.</p>
+          <button class="btn-small btn-primary" id="btnProfileVerifyId" style="margin-top:0.5rem;">Verify My ID</button>
+        </div>
+      </div>`;
+    document.getElementById('btnProfileVerifyId')?.addEventListener('click', handleProfileVerify);
+    return;
+  }
+
+  if (effectiveStatus === 'flagged') {
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+        <span style="font-size:1.5rem;">&#128269;</span>
+        <div>
+          <p style="margin:0;font-weight:600;color:#92400e;">Under Review</p>
+          <p style="margin:0.15rem 0 0;font-size:0.8rem;color:var(--text-muted);">Your ID is being reviewed by our team. We'll update you shortly.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (effectiveStatus === 'rejected' || effectiveStatus === 'manually_rejected') {
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+        <span style="font-size:1.5rem;">&#10060;</span>
+        <div>
+          <p style="margin:0;font-weight:600;color:#991b1b;">Verification Issue</p>
+          <p style="margin:0.15rem 0 0;font-size:0.8rem;color:var(--text-muted);">There was an issue with your previous submission. Please try again with a clear photo of your ID.</p>
+          <button class="btn-small btn-primary" id="btnProfileVerifyId" style="margin-top:0.5rem;">Upload New ID</button>
+        </div>
+      </div>`;
+    document.getElementById('btnProfileVerifyId')?.addEventListener('click', handleProfileVerify);
+    return;
+  }
+
+  // Default: pending / not started
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+      <span style="font-size:1.5rem;">&#128196;</span>
+      <div>
+        <p style="margin:0;font-weight:600;color:var(--text);">Verify Your Identity</p>
+        <p style="margin:0.15rem 0 0;font-size:0.8rem;color:var(--text-muted);">Upload your driver's license or state ID to verify your identity.</p>
+        <button class="btn-small btn-primary" id="btnProfileVerifyId" style="margin-top:0.5rem;">Verify My ID</button>
+      </div>
+    </div>`;
+  document.getElementById('btnProfileVerifyId')?.addEventListener('click', handleProfileVerify);
+}
+
+async function handleProfileVerify() {
+  const btn = document.getElementById('btnProfileVerifyId');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating link...'; }
+  try {
+    const { uploadUrl } = await identityService.requestAssociateVerification(currentUser.id, 'self');
+    window.location.href = uploadUrl;
+  } catch (err) {
+    showToast('Failed to start verification: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Verify My ID'; }
+  }
 }
 
 // =============================================
