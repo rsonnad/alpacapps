@@ -1,12 +1,12 @@
 {
-  "version": "v260310.25 11:27p",
-  "release": 623,
-  "sha": "ced6dfe45",
-  "fullSha": "ced6dfe452a0ac523706d9477e2defebac9395ec",
+  "version": "v260311.01 1:17a",
+  "release": 624,
+  "sha": "1c23ab23f",
+  "fullSha": "1c23ab23fe9bea2a422d5b72080e41c5858d4ad8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 04:27:29+00",
-  "commits": [{"sha":"ced6dfe45","message":"Add infra hero banner code guard to CLAUDE.md","author":"Rahul"}]
+  "pushedAt": "2026-03-11 06:17:42+00",
+  "commits": [{"sha":"f6c565b20","message":"Move Gemini calls behind Supabase edge function proxy","author":"Rahul"},{"sha":"1c23ab23f","message":"Merge branch 'happy-hertz'","author":"Rahul"}]
 }
