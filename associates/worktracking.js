@@ -363,6 +363,46 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
     const durationMins = parseFloat(entry.duration_minutes) || 0;
     const earnings = (durationMins / 60) * rate;
 
+    // Compute cumulative stats (week, month, year)
+    const now = new Date();
+    const austinDate = new Date(now.toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE }));
+    const dayOfWeek = austinDate.getDay(); // 0=Sun
+    const weekStart = new Date(austinDate);
+    weekStart.setDate(weekStart.getDate() - dayOfWeek);
+    const monthStart = new Date(austinDate.getFullYear(), austinDate.getMonth(), 1);
+    const yearStart = new Date(austinDate.getFullYear(), 0, 1);
+
+    const toDateStr = d => d.toLocaleDateString('en-CA');
+    const todayStr = toDateStr(austinDate);
+
+    let cumulative = null;
+    try {
+      const [weekEntries, monthEntries, yearEntries] = await Promise.all([
+        hoursService.getEntries(profile.id, { dateFrom: toDateStr(weekStart), dateTo: todayStr }),
+        hoursService.getEntries(profile.id, { dateFrom: toDateStr(monthStart), dateTo: todayStr }),
+        hoursService.getEntries(profile.id, { dateFrom: toDateStr(yearStart), dateTo: todayStr }),
+      ]);
+
+      const sumUp = (entries) => {
+        let mins = 0, pay = 0;
+        for (const e of entries) {
+          if (!e.clock_out) continue;
+          const m = parseFloat(e.duration_minutes) || 0;
+          mins += m;
+          pay += (m / 60) * parseFloat(e.hourly_rate || 0);
+        }
+        return { hours: HoursService.formatDuration(mins), earnings: HoursService.formatCurrency(pay) };
+      };
+
+      cumulative = {
+        week: sumUp(weekEntries),
+        month: sumUp(monthEntries),
+        year: sumUp(yearEntries),
+      };
+    } catch (e) {
+      console.warn('Failed to compute cumulative stats:', e.message);
+    }
+
     const emailData = {
       associate_email: authState.appUser.email,
       first_name: authState.appUser.first_name || authState.appUser.display_name || 'Team Member',
@@ -376,6 +416,7 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
       hourly_rate: rate.toFixed(2),
       earnings: HoursService.formatCurrency(earnings),
       photos: photoData,
+      cumulative,
     };
 
     await emailService.sendWorkCheckoutSummary(emailData);
