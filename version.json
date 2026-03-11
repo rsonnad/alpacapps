@@ -1,12 +1,12 @@
 {
-  "version": "v260311.06 2:55p",
-  "release": 629,
-  "sha": "b755516a7",
-  "fullSha": "b755516a7dd3bb6a4fc10e3b6d448d31a5a60a7d",
+  "version": "v260311.07 3:01p",
+  "release": 630,
+  "sha": "ece439baf",
+  "fullSha": "ece439bafb4535a74d60d49446e7a0fbaf20e3eb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 19:55:02+00",
-  "commits": [{"sha":"b755516a7","message":"Add CAD tool reference doc with install locations","author":"Rahul"}]
+  "pushedAt": "2026-03-11 20:01:50+00",
+  "commits": [{"sha":"ece439baf","message":"SEO: add robots.txt, sitemap, OG/Twitter/canonical tags, JSON-LD schemas across all pages","author":"Rahul"}]
 }
