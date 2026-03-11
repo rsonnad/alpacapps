@@ -8,6 +8,8 @@
   <meta property="og:title" content="AlpacApps Infra — Set Up Your AI-Powered Platform">
   <meta property="og:description" content="Set up a full-stack AI-powered platform in under 30 minutes. Claude walks you through every step.">
   <meta property="og:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png">
+  <meta property="og:image:width" content="1509">
+  <meta property="og:image:height" content="475">
   <meta property="og:url" content="https://alpacaplayhouse.com/infra/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -57,7 +59,6 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 2.5rem;
       box-shadow: 0 4px 16px rgba(26,26,26,0.08), 0 1px 3px rgba(26,26,26,0.06);
       overflow: hidden;
       position: relative;
@@ -72,20 +73,14 @@
       background: linear-gradient(90deg, var(--accent), rgba(201,168,124,0.3));
       border-radius: 16px 16px 0 0;
     }
-    .hero-inner {
-      display: flex;
-      align-items: center;
-      gap: 2.5rem;
-    }
     .hero-image {
-      flex-shrink: 0;
-      width: 260px;
+      display: block;
+      width: 100%;
       height: auto;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+      border-radius: 16px 16px 0 0;
     }
     .hero-text {
-      flex: 1;
+      padding: 2rem 2.5rem 2.5rem;
     }
     .hero h1 {
       font-size: 2.4rem;
@@ -574,9 +569,7 @@
 
     @media (max-width: 640px) {
       .hero { padding-top: 1.5rem; }
-      .hero-card { padding: 1.75rem; }
-      .hero-inner { flex-direction: column; gap: 1.5rem; text-align: center; }
-      .hero-image { width: 200px; order: -1; }
+      .hero-text { padding: 1.5rem 1.75rem 1.75rem; text-align: center; }
       .hero h1 { font-size: 1.8rem; }
       .hero p { font-size: 0.95rem; }
       .setup-step { padding: 1.5rem; }
@@ -610,15 +603,15 @@
 <span data-site-version style="display:none;">v260310.19 7:52p</span>
 <div id="siteHeader"></div>
 
+<!-- ⚠️ HERO BANNER — Intentionally designed as full-width banner card.
+     Do NOT replace with old dark/full-bleed hero. See docs/CHANGELOG.md. -->
 <div class="hero" style="padding-top: calc(80px + 1rem);">
   <div class="hero-card">
-    <div class="hero-inner">
-      <div class="hero-text">
-        <h1><span>AlpacApps</span> Infra</h1>
-        <p><strong>Set up a full-stack AI-powered platform in under 30 minutes.</strong> Claude walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Just install Claude and paste one prompt.</p>
-        <span class="badge">$20 &ndash; $200 / month</span>
-      </div>
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="Alpacas" class="hero-image">
+    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
+    <div class="hero-text">
+      <h1><span>AlpacApps</span> Infra</h1>
+      <p><strong>Set up a full-stack AI-powered platform in under 30 minutes.</strong> Claude walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Just install Claude and paste one prompt.</p>
+      <span class="badge">$20 &ndash; $200 / month</span>
     </div>
   </div>
 </div>
