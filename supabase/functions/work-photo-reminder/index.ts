@@ -63,8 +63,7 @@ Deno.serve(async (req) => {
       `)
       .is('photo_reminder_clockin_sent_at', null)
       .lte('clock_in', fifteenMinAgo)
-      .gte('clock_in', twentyFourHoursAgo)
-      .in('status', ['active', 'completed']);
+      .gte('clock_in', twentyFourHoursAgo);
 
     if (clockInError) {
       console.error('Error querying clock-in entries:', clockInError);
@@ -154,8 +153,7 @@ Deno.serve(async (req) => {
       .is('photo_reminder_clockout_sent_at', null)
       .not('clock_out', 'is', null)
       .lte('clock_out', fifteenMinAgo)
-      .gte('clock_out', twentyFourHoursAgo)
-      .eq('status', 'completed');
+      .gte('clock_out', twentyFourHoursAgo);
 
     if (clockOutError) {
       console.error('Error querying clock-out entries:', clockOutError);
