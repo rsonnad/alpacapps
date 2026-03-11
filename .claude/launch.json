@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "siteplan",
-      "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "8081", "--directory", "/Users/jacquelinegiroux/alpacapps/.claude/worktrees/admiring-chatterjee/jackie/pages/permittingplan"],
-      "port": 8081
+      "name": "weather",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8085", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/happy-hertz"],
+      "port": 8085
     }
   ]
 }
