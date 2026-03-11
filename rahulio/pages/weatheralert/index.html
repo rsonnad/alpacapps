@@ -3,9 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Severe Weather Monitor</title>
+    <title>Severe Weather Monitor — AlpacApps</title>
+    <meta name="description" content="Real-time severe weather monitoring for Chicago and Austin properties. Tracks tornado, hail, thunderstorm, wind, flood, and winter storm risks using NWS alerts, SPC outlooks, and wind shear analysis.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Severe Weather Monitor">
+    <meta property="og:description" content="Real-time severe weather monitoring with tornado, hail, thunderstorm, wind, flood, and winter storm risk analysis. Powered by NWS, SPC, and Open-Meteo data.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/weatheralert/">
+    <meta property="og:image" content="https://alpacaplayhouse.com/apple-touch-icon.png">
+    <meta property="og:site_name" content="AlpacApps">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Severe Weather Monitor">
+    <meta name="twitter:description" content="Real-time severe weather monitoring with tornado, hail, thunderstorm, wind, flood, and winter storm risk analysis.">
+    <meta name="twitter:image" content="https://alpacaplayhouse.com/apple-touch-icon.png">
+
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="canonical" href="https://alpacaplayhouse.com/rahulio/pages/weatheralert/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -448,6 +465,65 @@
             min-width: 2.5rem;
             text-align: right;
         }
+
+        /* Risk Commentary */
+        .risk-commentary {
+            margin-top: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+        .risk-commentary-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .risk-commentary-title .gemini-badge {
+            font-size: 0.55rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+            background: rgba(96, 165, 250, 0.1);
+            color: var(--blue);
+            font-weight: 500;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+        .risk-commentary p {
+            margin: 0 0 0.5rem 0;
+        }
+        .risk-commentary p:last-child {
+            margin-bottom: 0;
+        }
+        .risk-commentary .risk-high { color: var(--red); font-weight: 500; }
+        .risk-commentary .risk-med { color: var(--orange); font-weight: 500; }
+        .risk-commentary .risk-low { color: var(--yellow); font-weight: 500; }
+        .risk-commentary-loading {
+            color: var(--text-dim);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .risk-commentary-loading::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Loading State */
         .loading-skeleton {
@@ -1151,6 +1227,73 @@
         return 'advisory';
     }
 
+    // ─── Gemini commentary ─────────────────────────────────────
+    const GEMINI_KEY = 'AIzaSyD9YsEfYz9hfKOp3bbm0NoWqOWsu4C4IBw';
+
+    async function generateGeminiCommentary(loc, data) {
+        const { alerts, threats, spcRisk, windShear, openMeteo } = data;
+
+        // Build data summary for prompt
+        let maxCape = 0, maxGust = 0, stormHours = 0;
+        if (openMeteo && openMeteo.hourly) {
+            const h = openMeteo.hourly;
+            const now = new Date();
+            const next24 = h.time.map((t, i) => ({ t: new Date(t), i }))
+                .filter(x => x.t >= now && x.t <= new Date(now.getTime() + 24 * 3600 * 1000));
+            for (const { i } of next24) {
+                const cape = h.cape ? h.cape[i] : 0;
+                const gust = h.windgusts_10m ? h.windgusts_10m[i] : 0;
+                const wcode = h.weathercode ? h.weathercode[i] : 0;
+                if (cape > maxCape) maxCape = cape;
+                if (gust > maxGust) maxGust = gust;
+                if (wcode >= 95) stormHours++;
+            }
+        }
+
+        const threatSummary = Object.entries(threats)
+            .map(([k, v]) => `${k}: ${v.pct}% (${v.level})`)
+            .join(', ');
+
+        const alertSummary = alerts.length === 0 ? 'No active alerts.'
+            : alerts.map(a => `${a.event} (${a.severity}, ${a.certainty})`).join('; ');
+
+        const prompt = `You are a concise weather risk analyst. Write a 2-3 sentence plain-language risk summary for a property at ${loc.address} (${loc.name}).
+
+Current data:
+- Threats: ${threatSummary}
+- Active alerts: ${alertSummary}
+- SPC outlook: ${spcRisk ? spcRisk.cat || 'None' : 'None'}
+- Wind shear: 0-6km ${windShear?.shear06km || 0}kt, 0-1km ${windShear?.shear01km || 0}kt
+- Max CAPE next 24h: ${maxCape} J/kg
+- Max gusts: ${Math.round(maxGust)} mph
+- Storm hours ahead: ${stormHours}
+
+Rules:
+- Be direct and specific about timing and threats
+- If all threats are NONE/low, say conditions are calm
+- Mention the highest-risk threat first
+- Reference wind shear only if significant (>35kt deep-layer or >15kt low-level)
+- Don't use emoji or markdown. Plain text only.
+- Keep it under 60 words.`;
+
+        try {
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.3, maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } }
+                })
+            });
+            const json = await resp.json();
+            const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            return text.trim();
+        } catch (e) {
+            console.warn('Gemini commentary failed for', loc.name, e);
+            return null;
+        }
+    }
+
     // ─── Render functions ────────────────────────────────────────
     function renderStatusBanner(locData) {
         const container = document.getElementById('statusBanner');
@@ -1302,6 +1445,10 @@
                     <h3>Active Alerts (${alerts.length})</h3>
                     ${alertsHTML}
                 </div>
+                <div class="risk-commentary" id="commentary-${loc.id}">
+                    <div class="risk-commentary-title">Risk Analysis <span class="gemini-badge">Gemini</span></div>
+                    <div class="risk-commentary-loading">Analyzing conditions...</div>
+                </div>
             </div>`;
     }
 
@@ -1442,6 +1589,21 @@
 
         renderForecast(locData);
         renderRiskMatrix(locData);
+
+        // Fire Gemini commentary in parallel (non-blocking)
+        for (const loc of LOCATIONS) {
+            const d = locData[loc.id];
+            if (!d) continue;
+            generateGeminiCommentary(loc, d).then(text => {
+                const el = document.getElementById(`commentary-${loc.id}`);
+                if (!el) return;
+                if (text) {
+                    el.innerHTML = `<div class="risk-commentary-title">Risk Analysis <span class="gemini-badge">Gemini</span></div><p>${text}</p>`;
+                } else {
+                    el.innerHTML = `<div class="risk-commentary-title">Risk Analysis</div><p style="color:var(--text-dim);font-style:italic">Commentary unavailable</p>`;
+                }
+            });
+        }
 
         lastRefreshTime = Date.now();
         const now = new Date().toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
