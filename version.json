@@ -1,12 +1,12 @@
 {
-  "version": "v260311.05 1:55p",
-  "release": 628,
-  "sha": "31e094831",
-  "fullSha": "31e0948313bc7e26d77a27cb573b08c474f7cd15",
+  "version": "v260311.06 2:55p",
+  "release": 629,
+  "sha": "b755516a7",
+  "fullSha": "b755516a7dd3bb6a4fc10e3b6d448d31a5a60a7d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 18:55:47+00",
-  "commits": [{"sha":"31e094831","message":"Add CAD & site plan system setup guide","author":"Rahul"}]
+  "pushedAt": "2026-03-11 19:55:02+00",
+  "commits": [{"sha":"b755516a7","message":"Add CAD tool reference doc with install locations","author":"Rahul"}]
 }
