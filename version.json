@@ -1,12 +1,12 @@
 {
-  "version": "v260310.16 7:30p",
-  "release": 614,
-  "sha": "7a60b31a3",
-  "fullSha": "7a60b31a305cbdf7553817d0831cf806f36c088a",
+  "version": "v260310.17 7:32p",
+  "release": 615,
+  "sha": "d18027a0c",
+  "fullSha": "d18027a0c6011d57df2a31a96caed3f3d213b989",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 00:30:24+00",
-  "commits": [{"sha":"7a60b31a3","message":"Switch hero to wide AI banner + move Gemini after Google Sign-In","author":"Rahul"}]
+  "pushedAt": "2026-03-11 00:32:31+00",
+  "commits": [{"sha":"5df53ac2a","message":"Stream events inline + adjust page sizes (28 initial, 24 per load)","author":"Rahul"},{"sha":"d18027a0c","message":"Merge: stream events inline + page sizes 28/24","author":"Rahul"}]
 }
