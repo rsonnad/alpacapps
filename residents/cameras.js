@@ -1362,7 +1362,7 @@ async function loadEvents(older) {
 
   try {
     const pageSize = eventsFirstLoad ? EVENTS_INITIAL : EVENTS_MORE;
-    let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}`;
+    let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}&types[]=motion&types[]=smartDetectZone`;
     if (older && allEvents.length) {
       const oldest = allEvents[allEvents.length - 1];
       url += `&end=${oldest.start - 1}`;
@@ -1394,8 +1394,8 @@ function renderEvents() {
   const cameraNames = getCameraNameMap();
 
   grid.innerHTML = allEvents.map(ev => {
-    const types = ev.smartDetectTypes || [];
-    const mainType = types[0] || 'unknown';
+    const types = ev.smartDetectTypes && ev.smartDetectTypes.length ? ev.smartDetectTypes : [ev.type || 'motion'];
+    const mainType = types[0];
     const cameraName = cameraNames[ev.camera] || 'Camera';
     const thumbUrl = ev.thumbnail ? `${EVENTS_PROXY_BASE}/thumbnail/${ev.thumbnail}` : '';
     const ago = timeAgo(ev.start);

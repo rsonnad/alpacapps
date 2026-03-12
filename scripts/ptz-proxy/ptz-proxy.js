@@ -632,6 +632,11 @@ const server = http.createServer(async (req, res) => {
 
       const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       const params = urlObj.searchParams;
+      // Default to motion + smart detect events (skip system events like offline, update, etc.)
+      if (!params.has('types[]')) {
+        params.append('types[]', 'motion');
+        params.append('types[]', 'smartDetectZone');
+      }
       // Forward query params (limit, start, end, types, cameras, etc.)
       const qs = params.toString();
       const protectPath = `/proxy/protect/api/events${qs ? '?' + qs : ''}`;
