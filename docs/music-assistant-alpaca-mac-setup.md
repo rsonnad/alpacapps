@@ -18,25 +18,22 @@ Review and configuration guide for Music Assistant (MA) on the Alpaca Mac: Docke
 
 ## 2. Music Assistant on Alpaca Mac — Checklist
 
-### 2.1 Docker and container
+### 2.1 Native install (Python 3.12 venv — no Docker)
 
-- [ ] **Docker** installed and running (Docker Desktop or Colima). Daemon starts at login.
-- [ ] **MA container** (example; use a fixed tag in production):
+- [x] **Python 3.12** installed via Homebrew (`/usr/local/bin/python3.12`)
+- [x] **ffmpeg** installed via Homebrew (`/usr/local/bin/ffmpeg` v8.0.1)
+- [x] **MA venv:** `~/music-assistant-venv-312/` with `music-assistant[server]` 2.6.0
+- [x] **Data dir:** `~/music-assistant-data/`
+- [x] **Auto-start:** LaunchAgent `~/Library/LaunchAgents/com.music-assistant.server.plist` — starts on boot, auto-restarts on crash
+- [x] **Logs:** `/tmp/music-assistant.log`
+- [x] **Web UI:** `http://192.168.1.74:8095` — verified accessible from dev machine
+- [x] **Stream server:** port 8097 (auto-detected LAN IP)
 
-  ```bash
-  docker run -d \
-    --name music-assistant \
-    --restart unless-stopped \
-    -p 8095:8095 \
-    -v music-assistant-data:/data \
-    ghcr.io/music-assistant/server:latest
-  ```
+> **Why native, not Docker?** macOS 12 on this Intel Mac can't run Docker (QEMU/Colima fails due to missing llvm). Native pip install works fine and uses less resources.
 
-- [ ] **Auto-start after reboot:** Either `--restart unless-stopped` (Docker daemon must be running at login) or a LaunchAgent that runs `docker start music-assistant` after user login.
+### 2.2 First-run and Sonos provider (MANUAL)
 
-### 2.2 First-run and Sonos provider
-
-- [ ] Open MA UI: `http://<alpaca-mac-ip>:8095` (or `http://localhost:8095` on the Mac). Complete first-run setup (admin user if prompted).
+- [ ] Open MA UI: `http://192.168.1.74:8095`. Complete first-run setup (admin user if prompted).
 - [ ] **Settings → Player providers:** Add **Sonos S1** (or **Sonos** for S2). Confirm all zones appear with correct names.
 - [ ] **Settings:** Create a long-lived **API token**. Store in Supabase secret `MUSIC_ASSISTANT_TOKEN` and (if needed) on Hostinger for Caddy injection.
 
@@ -122,9 +119,9 @@ Music Assistant can serve music from local folders or mounted drives so resident
 
 | Item | Where | Purpose |
 |------|--------|---------|
-| MA Docker container | Alpaca Mac | MA server, port 8095 |
-| MA data volume | Alpaca Mac | `/data` in container (persistent) |
-| Music folders | Alpaca Mac + Docker bind mount | Local/hard-drive music → MA Filesystem provider |
+| MA native (Python 3.12 venv) | Alpaca Mac | MA server, port 8095 — LaunchAgent auto-starts |
+| MA data dir | Alpaca Mac `~/music-assistant-data/` | Persistent config + database |
+| Music folders | Alpaca Mac filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
 | Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpaca Mac :5005 |
 | MA proxy | Hostinger Caddy | `/ma-api` → Alpaca Mac :8095/api |
