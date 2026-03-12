@@ -75,8 +75,16 @@
 
       <!-- Recent Events Section -->
       <section class="section" id="eventsSection" style="display: none;">
-        <div class="section-header">
-          <h2>Recent Events</h2>
+        <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+          <h2 style="margin:0">Recent Events</h2>
+          <div class="event-date-filter" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem">
+            <label for="eventDateFrom" style="color:var(--text-muted)">From</label>
+            <input type="date" id="eventDateFrom" style="padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:var(--bg-card);color:var(--text)">
+            <label for="eventDateTo" style="color:var(--text-muted)">To</label>
+            <input type="date" id="eventDateTo" style="padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:var(--bg-card);color:var(--text)">
+            <button id="eventDateApply" onclick="window.__filterEventsByDate()" style="padding:0.25rem 0.75rem;border:1px solid var(--aap-accent,#3b82f6);border-radius:6px;background:var(--aap-accent,#3b82f6);color:#fff;font-size:0.8rem;cursor:pointer">Filter</button>
+            <button id="eventDateClear" onclick="window.__clearEventDateFilter()" style="padding:0.25rem 0.5rem;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;display:none">✕</button>
+          </div>
         </div>
         <div class="section-body">
           <div class="event-grid" id="eventGrid">
