@@ -320,7 +320,7 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (t.task_code === 'A6' ? renderDocLinks([], t.task_code) : '')}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A6','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
@@ -336,6 +336,11 @@
       if (taskCode === 'A6') {
         html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
         html += `<a href="development-description.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
+      }
+      // B16: add direct links to local operator information files
+      if (taskCode === 'B16') {
+        html += `<a href="operator-information.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
+        html += `<a href="operator-information.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
       }
       return `<div class="doc-links">${html}</div>`;
     }
