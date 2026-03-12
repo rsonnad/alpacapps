@@ -1,12 +1,12 @@
 {
-  "version": "v260312.11 2:09p",
-  "release": 658,
-  "sha": "72c5d5715",
-  "fullSha": "72c5d57155b419f57be7c5665f63eef3ad838118",
+  "version": "v260312.12 2:26p",
+  "release": 659,
+  "sha": "3c571ad47",
+  "fullSha": "3c571ad473226f4c69e57bf1a90d2ee8ad70ecaa",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 19:09:24+00",
-  "commits": [{"sha":"90b1b45ff","message":"Add pre-professional checklist for 160 Still Forest Dr","author":"Jacqueline Giroux"},{"sha":"72c5d5715","message":"Merge pull request #27 from rsonnad/claude/frosty-carson","author":"jackie61899280"}]
+  "pushedAt": "2026-03-12 19:26:58+00",
+  "commits": [{"sha":"3db02e020","message":"Rename Pre-Professional Checklist to Priority List, add professional contacts","author":"Jacqueline Giroux"},{"sha":"3c571ad47","message":"Merge pull request #28 from rsonnad/claude/frosty-carson","author":"jackie61899280"}]
 }
