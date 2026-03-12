@@ -35,11 +35,29 @@ serve(async (req) => {
     );
 
     const channel = supabase.channel("polish-lesson-1");
+
+    // Must subscribe before sending — wait for SUBSCRIBED status
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Channel subscribe timeout"));
+      }, 5000);
+      channel.subscribe((status: string) => {
+        if (status === "SUBSCRIBED") {
+          clearTimeout(timeout);
+          resolve();
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          clearTimeout(timeout);
+          reject(new Error(`Channel error: ${status}`));
+        }
+      });
+    });
+
     await channel.send({
       type: "broadcast",
       event: "navigate",
       payload: { section },
     });
+
     // Clean up channel
     await supabase.removeChannel(channel);
 
@@ -48,6 +66,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
+    console.error("lesson-nav error:", e.message);
     return new Response(
       JSON.stringify({ error: e.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
