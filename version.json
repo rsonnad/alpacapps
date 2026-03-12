@@ -1,12 +1,12 @@
 {
-  "version": "v260312.19 6:08p",
-  "release": 666,
-  "sha": "e697e3952",
-  "fullSha": "e697e395269968d763f2c920143b3adc88455fe4",
+  "version": "v260312.20 6:15p",
+  "release": 667,
+  "sha": "4f2d04517",
+  "fullSha": "4f2d04517577f5dc2a38c6dcea0a0a1174ef85b4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 23:08:20+00",
-  "commits": [{"sha":"9cfdfa20a","message":"Rearrange camera card header: model–location (blue/bold), resolution far right","author":"Rahul"},{"sha":"e697e3952","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
+  "pushedAt": "2026-03-12 23:15:52+00",
+  "commits": [{"sha":"6b3a83d4b","message":"Add reverse chronological events + date filter","author":"Rahul"},{"sha":"4f2d04517","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
 }
