@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Camera Control Proxy — HTTP server proxying PTZ + camera controls to UniFi Protect API
- * Runs on DO droplet, accessed via Caddy reverse proxy at cam.alpacaplayhouse.com
+ * Runs on Alpaca Mac, exposed via Cloudflare Tunnel at cam.alpacaplayhouse.com
  *
  * Routes:
  *   POST /ptz/{cameraId}              — body: { action: "move", x, y, z } or { action: "goto", slot }
@@ -12,12 +12,15 @@
  *   GET  /sensor/{sensorId}            — returns individual sensor state
  *   GET  /clients                      — returns connected network clients (from UDM Network API)
  *   GET  /clients?search=blink         — filter clients by hostname/name/oui/mac/ip
+ *   GET  /protect/events               — proxy Protect events (motion, smart detect, etc.)
+ *   GET  /protect/export               — stream video clip export (mp4)
+ *   GET  /protect/thumbnail/{id}       — proxy event thumbnail image
  *
  * Auth to UniFi Protect:
  *   Cookie-based with CSRF token from JWT. Caches session for reuse.
  *
- * Deploy to: /opt/ptz-proxy/ on DO droplet
- * Systemd: ptz-proxy.service
+ * Deploy to: ~/ptz-proxy/ on Alpaca Mac
+ * LaunchAgent: com.alpacapps.ptz-proxy.plist
  */
 
 const http = require('http');
@@ -78,6 +81,18 @@ function httpsRequestBinary(options) {
         body: Buffer.concat(chunks),
       }));
     });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+// Streaming HTTPS request — pipes response directly to client (for video export)
+function httpsStream(options) {
+  return new Promise((resolve, reject) => {
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    options.agent = agent;
+
+    const req = https.request(options, (res) => resolve(res));
     req.on('error', reject);
     req.end();
   });
@@ -610,9 +625,149 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // ---- Route: GET /protect/events ----
+    // Proxy Protect events (motion, smart detection, etc.)
+    if (req.url.startsWith('/protect/events') && req.method === 'GET') {
+      await ensureAuth();
+
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const params = urlObj.searchParams;
+      // Forward query params (limit, start, end, types, cameras, etc.)
+      const qs = params.toString();
+      const protectPath = `/proxy/protect/api/events${qs ? '?' + qs : ''}`;
+
+      const fetchEvents = () => httpsRequest({
+        hostname: UDM_HOST,
+        port: 443,
+        path: protectPath,
+        method: 'GET',
+        headers: {
+          'Cookie': sessionCookie,
+          'X-CSRF-Token': csrfToken,
+        },
+      });
+
+      const result = await withAuthRetry(fetchEvents);
+
+      if (result.status !== 200) {
+        res.writeHead(result.status, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Events fetch failed: ${result.status}` }));
+        return;
+      }
+
+      console.log(`[Events] Proxied events request: ${protectPath}`);
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      res.end(result.body);
+      return;
+    }
+
+    // ---- Route: GET /protect/export ----
+    // Stream video clip from Protect (mp4) — pipes directly, no buffering
+    if (req.url.startsWith('/protect/export') && req.method === 'GET') {
+      await ensureAuth();
+
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const camera = urlObj.searchParams.get('camera');
+      const start = urlObj.searchParams.get('start');
+      const end = urlObj.searchParams.get('end');
+
+      if (!camera || !start || !end) {
+        res.writeHead(400, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing required params: camera, start, end' }));
+        return;
+      }
+
+      const protectPath = `/proxy/protect/api/video/export?camera=${camera}&start=${start}&end=${end}`;
+      console.log(`[Export] Streaming clip: ${protectPath}`);
+
+      const doExport = async () => {
+        const upstream = await httpsStream({
+          hostname: UDM_HOST,
+          port: 443,
+          path: protectPath,
+          method: 'GET',
+          headers: {
+            'Cookie': sessionCookie,
+            'X-CSRF-Token': csrfToken,
+          },
+        });
+        return upstream;
+      };
+
+      let upstream = await doExport();
+
+      // Retry once on 401
+      if (upstream.statusCode === 401) {
+        console.log('[Export] Got 401, re-authenticating...');
+        sessionCookie = null;
+        await ensureAuth();
+        upstream = await doExport();
+      }
+
+      if (upstream.statusCode !== 200) {
+        res.writeHead(upstream.statusCode, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Export failed: ${upstream.statusCode}` }));
+        return;
+      }
+
+      // Stream the response — pipe directly to client
+      const headers = {
+        ...cors,
+        'Content-Type': upstream.headers['content-type'] || 'video/mp4',
+        'Transfer-Encoding': 'chunked',
+      };
+      if (upstream.headers['content-length']) {
+        headers['Content-Length'] = upstream.headers['content-length'];
+        delete headers['Transfer-Encoding'];
+      }
+      res.writeHead(200, headers);
+      upstream.pipe(res);
+      return;
+    }
+
+    // ---- Route: GET /protect/thumbnail/{id} ----
+    if (req.url.startsWith('/protect/thumbnail/') && req.method === 'GET') {
+      const thumbId = req.url.replace('/protect/thumbnail/', '').split('?')[0];
+      if (!thumbId) {
+        res.writeHead(400, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing thumbnail ID' }));
+        return;
+      }
+
+      await ensureAuth();
+
+      const fetchThumb = () => httpsRequestBinary({
+        hostname: UDM_HOST,
+        port: 443,
+        path: `/proxy/protect/api/thumbnails/${thumbId}`,
+        method: 'GET',
+        headers: {
+          'Cookie': sessionCookie,
+          'X-CSRF-Token': csrfToken,
+        },
+      });
+
+      const result = await withAuthRetry(fetchThumb);
+
+      if (result.status !== 200) {
+        res.writeHead(result.status, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Thumbnail fetch failed: ${result.status}` }));
+        return;
+      }
+
+      res.writeHead(200, {
+        ...cors,
+        'Content-Type': result.headers['content-type'] || 'image/jpeg',
+        'Content-Length': result.body.length,
+        'Cache-Control': 'public, max-age=86400',
+      });
+      res.end(result.body);
+      return;
+    }
+
     // ---- 404 ----
     res.writeHead(404, { ...cors, 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients' }));
+    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}' }));
 
   } catch (err) {
     console.error('[Proxy] Error:', err.message);
@@ -624,7 +779,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Camera Control Proxy listening on 127.0.0.1:${PORT}`);
   console.log(`UDM Host: ${UDM_HOST}`);
-  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients`);
+  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}`);
   // Pre-auth on startup
   authenticate().catch(err => console.error('[Auth] Startup auth failed:', err.message));
 });
