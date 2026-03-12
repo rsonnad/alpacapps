@@ -1,12 +1,12 @@
 {
-  "version": "v260312.15 2:36p",
-  "release": 662,
-  "sha": "2a780fd7e",
-  "fullSha": "2a780fd7ebc8f70670878b1631ddb5953c569b4e",
-  "actor": "jackie61899280",
+  "version": "v260312.16 3:06p",
+  "release": 663,
+  "sha": "881358772",
+  "fullSha": "8813587725b57e429b256cd0d93b41c250c02b0c",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 19:36:26+00",
-  "commits": [{"sha":"dfd07f326","message":"Add B1 application PDF link to permit plan page, fix owner to Revocable Trust of Subhash Sonnad","author":"Jacqueline Giroux"},{"sha":"2a780fd7e","message":"Merge: Add County Application PDF, B1 doc links, fix owner to Revocable Trust of Subhash Sonnad","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-12 20:06:13+00",
+  "commits": [{"sha":"881358772","message":"Fix weather badge showing ALL CLEAR despite elevated SPC risk (#25)","author":"Rahul"}]
 }
