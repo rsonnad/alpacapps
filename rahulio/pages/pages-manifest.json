@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-11T22:27:44.141Z",
+  "generatedAt": "2026-03-12T00:03:17.641Z",
   "sections": [
     "E-2 Visa",
     "Projects"
@@ -126,16 +126,16 @@
       "modifiedAt": "2026-03-03T07:40:51.000Z"
     },
     {
+      "path": "sloop/index.html",
+      "title": "Sloop — Tesla Model Y 2026",
+      "section": "Projects",
+      "modifiedAt": "2026-03-12T00:02:48.000Z"
+    },
+    {
       "path": "bandb/index.html",
       "title": "The Animist Apothecary — Bodywork + Botanicals",
       "section": "Projects",
       "modifiedAt": "2026-03-06T05:44:39.000Z"
-    },
-    {
-      "path": "sloop/index.html",
-      "title": "Sloop — Tesla Model Y 2026",
-      "section": "Projects",
-      "modifiedAt": "2026-03-05T22:29:46.000Z"
     },
     {
       "path": "iaw/index.html",

@@ -1,12 +1,12 @@
 {
-  "version": "v260311.14 5:27p",
-  "release": 637,
-  "sha": "aad292de9",
-  "fullSha": "aad292de97b05265f85ec736adf770c720902683",
+  "version": "v260311.15 7:02p",
+  "release": 638,
+  "sha": "78a4e6784",
+  "fullSha": "78a4e67843e127bd82633262d0d6fbf5fc841e72",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-11 22:27:17+00",
-  "commits": [{"sha":"28cb7c71b","message":"Add clock-out photo reminder: trigger 15min after checkout if no after photos","author":"Rahul"},{"sha":"7e657c662","message":"Add cumulative week/month/year hours & earnings to checkout email","author":"Rahul"},{"sha":"aad292de9","message":"Merge: Add cumulative stats to work checkout email","author":"Rahul"}]
+  "pushedAt": "2026-03-12 00:02:48+00",
+  "commits": [{"sha":"9965bb698","message":"Security: add SRI integrity attributes to all external CDN scripts","author":"Rahul"},{"sha":"78a4e6784","message":"Merge branch 'gallant-hertz'","author":"Rahul"}]
 }
