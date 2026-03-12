@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRAFT — 24×36 Site Plan Sheet Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #2a2224;
+    color: #faf9f6;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 { font-size: 1.3rem; color: #d4883a; margin-bottom: 4px; }
+  .draft-label { font-size: 0.85rem; color: #e53e3e; font-weight: 700; margin-bottom: 16px; letter-spacing: 0.1em; }
+
+  /* The 24x36 sheet — scaled to fit screen (aspect ratio 2:3) */
+  .sheet {
+    width: min(95vw, 1080px);
+    aspect-ratio: 36 / 24;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  /* Inner border (typical drawing border — 0.5" margin) */
+  .inner-border {
+    position: absolute;
+    inset: 1.4% 1.4%;
+    border: 2px solid #222;
+  }
+
+  /* Grid zones */
+  .zone {
+    position: absolute;
+    border: 2px dashed #4299e1;
+    background: rgba(66, 153, 225, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(0.5rem, 1.2vw, 0.85rem);
+    color: #2b6cb0;
+    padding: 4px;
+  }
+  .zone .zone-title {
+    font-weight: 700;
+    font-size: clamp(0.55rem, 1.3vw, 0.9rem);
+    margin-bottom: 2px;
+  }
+  .zone .zone-desc {
+    font-size: clamp(0.4rem, 0.9vw, 0.7rem);
+    color: #4a7ab5;
+    line-height: 1.3;
+  }
+
+  /* Title block — bottom right */
+  .title-block {
+    position: absolute;
+    bottom: 1.4%;
+    right: 1.4%;
+    width: 28%;
+    height: 22%;
+    border: 2px solid #222;
+    background: #fefefe;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto auto;
+    font-size: clamp(0.35rem, 0.8vw, 0.65rem);
+    color: #222;
+    overflow: hidden;
+  }
+  .tb-row {
+    border-bottom: 1px solid #999;
+    padding: 2px 6px;
+    display: flex;
+    align-items: center;
+  }
+  .tb-row:last-child { border-bottom: none; }
+  .tb-label { color: #888; font-size: clamp(0.3rem, 0.6vw, 0.5rem); text-transform: uppercase; margin-right: 4px; }
+  .tb-value { font-weight: 700; }
+  .tb-project {
+    background: #f8f7f4;
+    text-align: center;
+    font-weight: 700;
+    font-size: clamp(0.45rem, 1vw, 0.75rem);
+    padding: 4px;
+    border-bottom: 1px solid #999;
+  }
+
+  /* Vicinity map — top right */
+  .vicinity {
+    border-color: #38a169;
+    background: rgba(56, 161, 105, 0.06);
+    color: #276749;
+  }
+  .vicinity .zone-title { color: #276749; }
+  .vicinity .zone-desc { color: #38a169; }
+
+  /* Legend area */
+  .legend-zone {
+    border-color: #9f7aea;
+    background: rgba(159, 122, 234, 0.06);
+    color: #6b46c1;
+  }
+  .legend-zone .zone-title { color: #6b46c1; }
+  .legend-zone .zone-desc { color: #9f7aea; }
+
+  /* Notes area */
+  .notes-zone {
+    border-color: #f6ad55;
+    background: rgba(246, 173, 85, 0.06);
+    color: #c05621;
+  }
+  .notes-zone .zone-title { color: #c05621; }
+  .notes-zone .zone-desc { color: #dd6b20; }
+
+  /* Main site plan area */
+  .main-plan {
+    border-color: #e53e3e;
+    background: rgba(229, 62, 62, 0.04);
+    color: #c53030;
+  }
+  .main-plan .zone-title { color: #c53030; font-size: clamp(0.6rem, 1.5vw, 1rem); }
+  .main-plan .zone-desc { color: #e53e3e; }
+
+  /* Compliance table */
+  .compliance-zone {
+    border-color: #dd6b20;
+    background: rgba(221, 107, 32, 0.06);
+    color: #9c4221;
+  }
+  .compliance-zone .zone-title { color: #9c4221; }
+  .compliance-zone .zone-desc { color: #dd6b20; }
+
+  /* North arrow + scale */
+  .north-scale {
+    border-color: #2d3748;
+    background: rgba(45, 55, 72, 0.08);
+    color: #2d3748;
+  }
+
+  /* Descriptions below the sheet */
+  .description {
+    max-width: min(95vw, 1080px);
+    margin-top: 20px;
+    background: #1c1618;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+  }
+  .description h2 { font-size: 1rem; color: #d4883a; margin-bottom: 12px; }
+  .desc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .desc-card {
+    background: #2a2224;
+    border-radius: 6px;
+    padding: 12px;
+    border-left: 3px solid #4299e1;
+  }
+  .desc-card h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+  .desc-card p { font-size: 0.75rem; color: #a09080; line-height: 1.4; }
+  .desc-card.red { border-left-color: #e53e3e; }
+  .desc-card.green { border-left-color: #38a169; }
+  .desc-card.purple { border-left-color: #9f7aea; }
+  .desc-card.orange { border-left-color: #f6ad55; }
+  .desc-card.dark { border-left-color: #2d3748; }
+  .desc-card.teal { border-left-color: #dd6b20; }
+
+  .source-note {
+    max-width: min(95vw, 1080px);
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: #6b5b50;
+    text-align: center;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>24" × 36" Site Plan Sheet — Layout Draft</h1>
+<p class="draft-label">⚠ PREVIEW ONLY — NOT FOR SUBMISSION</p>
+
+<div class="sheet">
+  <div class="inner-border"></div>
+
+  <!-- MAIN SITE PLAN — center-left, largest area -->
+  <div class="zone main-plan" style="left: 2%; top: 2%; width: 68%; height: 72%;">
+    <div class="zone-title">SITE PLAN</div>
+    <div class="zone-desc">
+      survey-base.png placed here<br>
+      Property boundary with bearings & distances<br>
+      All 11 structures with dimensions<br>
+      25' & 15' setback lines (dashed)<br>
+      OSSF setback circles (50'/100')<br>
+      Driveway, parking, ADA spaces<br>
+      Drainage flow arrows<br>
+      Utility locations (water, electric, septic)<br>
+      Proposed structure relocations (if any)
+    </div>
+  </div>
+
+  <!-- VICINITY MAP — top right -->
+  <div class="zone vicinity" style="right: 2%; top: 2%; width: 26%; height: 22%;">
+    <div class="zone-title">VICINITY MAP</div>
+    <div class="zone-desc">
+      Inset showing property location<br>
+      relative to Hwy 21, SH 71, CR 329/331<br>
+      (Generated from QGIS)
+    </div>
+  </div>
+
+  <!-- NORTH ARROW + SCALE — between vicinity and legend -->
+  <div class="zone north-scale" style="right: 2%; top: 26%; width: 12%; height: 12%;">
+    <div class="zone-title">⬆ N</div>
+    <div class="zone-desc">
+      North Arrow<br>
+      Scale: 1" = 30'<br>
+      Graphic bar
+    </div>
+  </div>
+
+  <!-- LEGEND — right side middle -->
+  <div class="zone legend-zone" style="right: 16%; top: 26%; width: 12%; height: 12%;">
+    <div class="zone-title">LEGEND</div>
+    <div class="zone-desc">
+      Line types<br>
+      Symbols<br>
+      Hatch patterns
+    </div>
+  </div>
+
+  <!-- NOTES + GENERAL INFO — right column below legend -->
+  <div class="zone notes-zone" style="right: 2%; top: 40%; width: 26%; height: 20%;">
+    <div class="zone-title">GENERAL NOTES</div>
+    <div class="zone-desc">
+      Flood Zone: X (unshaded)<br>
+      ESD: BCESD #3<br>
+      Houston Toad: Not in habitat<br>
+      Lot: 14-B, Block 6, Blue Bonnet Acres<br>
+      Acreage: 1.7348 Ac (75,133 SF)<br>
+      Septic: Aerobic (JET INC)<br>
+      Water: Active meter at front gate<br>
+      Corner Lot: 2 road frontages
+    </div>
+  </div>
+
+  <!-- SETBACK COMPLIANCE TABLE — bottom left -->
+  <div class="zone compliance-zone" style="left: 2%; top: 76%; width: 42%; height: 20%;">
+    <div class="zone-title">SETBACK COMPLIANCE TABLE</div>
+    <div class="zone-desc">
+      All 11 structures listed<br>
+      Distance from property line | Required | Status<br>
+      7 violations flagged (from your existing data)<br>
+      Proposed corrections noted
+    </div>
+  </div>
+
+  <!-- IMPERVIOUS COVER + DRAINAGE SUMMARY -->
+  <div class="zone" style="left: 46%; top: 76%; width: 22%; height: 20%; border-color: #4299e1;">
+    <div class="zone-title">SITE DATA</div>
+    <div class="zone-desc">
+      Total lot area: 75,133 SF<br>
+      Impervious cover: ___ SF (___%)<br>
+      Pervious area: ___ SF<br>
+      Drainage direction: → SE<br>
+      No natural water diverted
+    </div>
+  </div>
+
+  <!-- TITLE BLOCK — bottom right -->
+  <div class="title-block">
+    <div class="tb-project">SITE PLAN<br>160 STILL FOREST DR</div>
+    <div class="tb-row" style="flex-direction:column; align-items:flex-start; gap:1px;">
+      <div><span class="tb-label">Owner:</span> <span class="tb-value">Jacqueline Giroux</span></div>
+      <div><span class="tb-label">Address:</span> 160 Still Forest Dr, Cedar Creek TX 78612</div>
+      <div><span class="tb-label">Legal:</span> Lot 14-B, Block 6, Blue Bonnet Acres</div>
+      <div><span class="tb-label">PID:</span> 44401</div>
+    </div>
+    <div class="tb-row">
+      <div><span class="tb-label">Survey:</span> 4Ward Land Surveying — Jason Ward RPLS #5811 (2/4/2021)</div>
+    </div>
+    <div class="tb-row">
+      <div><span class="tb-label">Sheet:</span> <span class="tb-value">1 of 1</span></div>
+      <div style="margin-left:auto"><span class="tb-label">Date:</span> <span class="tb-value">March 2026</span></div>
+    </div>
+    <div class="tb-row">
+      <div><span class="tb-label">Scale:</span> 1" = 30'</div>
+      <div style="margin-left:auto"><span class="tb-label">PRELIMINARY — NOT FOR CONSTRUCTION</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE DESCRIPTIONS -->
+<div class="description">
+  <h2>What Goes in Each Zone</h2>
+  <div class="desc-grid">
+    <div class="desc-card red">
+      <h3>Site Plan (Main Area)</h3>
+      <p>Your existing survey plat (survey-base.png) as the base layer. We overlay: 25' setback lines from both roads (dashed red), 15' setback lines from side/rear (dashed orange), OSSF setback circles, parking layout with ADA spaces, driveway dimensions, drainage flow arrows, and utility locations. All 11 existing structures are already on the survey.</p>
+    </div>
+    <div class="desc-card green">
+      <h3>Vicinity Map</h3>
+      <p>A small inset map from QGIS showing the property's location relative to major roads (Hwy 21, SH 71) and Cedar Creek. Star marker on the lot. This helps the county reviewer find the property quickly.</p>
+    </div>
+    <div class="desc-card dark">
+      <h3>North Arrow + Scale</h3>
+      <p>Standard north arrow pointing up-right (your property is oriented ~26° from true north per the survey bearings). Graphic scale bar showing 0-30-60-90 feet. Scale: 1" = 30' fits the 188' × 400' lot on a 24×36" sheet.</p>
+    </div>
+    <div class="desc-card purple">
+      <h3>Legend</h3>
+      <p>Line types: property boundary (solid bold), setback lines (dashed), easement (dot-dash), ROW (double line). Symbols: water meter, electric meter, septic system, power pole, pond. Hatch: impervious surfaces, proposed relocations.</p>
+    </div>
+    <div class="desc-card orange">
+      <h3>General Notes</h3>
+      <p>All the jurisdictional findings you already have: Flood Zone X, BCESD #3, not in Houston Toad habitat, corner lot with two road frontages, existing aerobic septic system, etc. Plus construction notes and disclaimers.</p>
+    </div>
+    <div class="desc-card teal">
+      <h3>Setback Compliance Table</h3>
+      <p>Directly from your existing siteplan.html data — all 11 structures, their distances from property lines, required setbacks, deficits, and status. This is already 100% done. We just format it for the drawing sheet.</p>
+    </div>
+    <div class="desc-card">
+      <h3>Site Data Summary</h3>
+      <p>Lot area, impervious cover calculation (we measure building footprints + paved areas from the survey), drainage direction, and confirmation that no natural water is being diverted.</p>
+    </div>
+    <div class="desc-card" style="border-left-color: #222;">
+      <h3>Title Block</h3>
+      <p>Standard engineering title block: owner name/address, property legal description, surveyor info (4Ward/Ward RPLS #5811), date, sheet number, scale, and "PRELIMINARY — NOT FOR CONSTRUCTION" stamp. PE stamp box left blank for the engineer.</p>
+    </div>
+  </div>
+</div>
+
+<p class="source-note">
+  All data from existing work: survey by 4Ward Land Surveying (2/4/2021), setback analysis from siteplan.html,<br>
+  jurisdictional findings from permit_tasks database. This layout follows standard 24" × 36" engineering drawing conventions.<br><br>
+  <strong>Next step:</strong> Build this in Blender using survey-base.png as the base layer, then export as PDF for county submission.
+</p>
+
+</body>
+</html>
