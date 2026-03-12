@@ -165,6 +165,18 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           View Site Plan
         </a>
+        <a href="development-description.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Development Description
+        </a>
+        <a href="development-description.pdf" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#1c1618; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </a>
+        <a href="document-review.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#16a34a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Review Documents
+        </a>
       </div>
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
@@ -308,18 +320,24 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths) : ''}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (t.task_code === 'A6' ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
       </div>`;
     }
 
-    function renderDocLinks(paths) {
-      return `<div class="doc-links">${paths.map(p => {
+    function renderDocLinks(paths, taskCode) {
+      let html = paths.map(p => {
         const name = p.split('/').pop();
         return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
-      }).join('')}</div>`;
+      }).join('');
+      // A6: add direct links to local development description files
+      if (taskCode === 'A6') {
+        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
+        html += `<a href="development-description.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
+      }
+      return `<div class="doc-links">${html}</div>`;
     }
 
     function renderCostSummary() {
@@ -374,7 +392,7 @@
               <div class="field"><label>Due Date</label><input id="modalDueDate" type="date" value="${t.due_date||''}"></div>
               <div class="field"><label>Notes</label><textarea id="modalNotes" rows="3">${esc(t.notes||'')}</textarea></div>
               <div class="field"><label>Description</label><textarea id="modalDescription" rows="3">${esc(t.description||'')}</textarea></div>
-              ${t.storage_paths?.length ? `<div class="field"><label>Stored Documents</label><div class="doc-links">${t.storage_paths.map(p => `<a href="${STORAGE_URL}/${p}" target="_blank">${p.split('/').pop()}</a>`).join('')}</div></div>` : ''}
+              ${t.storage_paths?.length || t.task_code === 'A6' ? `<div class="field"><label>Documents</label><div class="doc-links">${(t.storage_paths||[]).map(p => `<a href="${STORAGE_URL}/${p}" target="_blank">${p.split('/').pop()}</a>`).join('')}${t.task_code === 'A6' ? '<a href="development-description.html" target="_blank" style="font-weight:600">📄 View HTML</a><a href="development-description.pdf" target="_blank" style="font-weight:600">📥 Download PDF</a>' : ''}</div></div>` : ''}
             </div>
             <div class="task-modal-footer">
               <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
