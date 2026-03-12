@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Pre-Professional Checklist — 160 Still Forest Dr</title>
+  <title>Priority List — 160 Still Forest Dr</title>
   <link rel="icon" type="image/png" href="../../../favicon.png">
   <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -116,6 +116,22 @@
 
     .print-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; background: #1c1618; color: #fff; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
     .print-btn:hover { opacity: 0.9; }
+
+    /* Contacts section */
+    .contacts-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .contacts-section h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .contact-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 0.5rem; }
+    .contact-card:last-child { margin-bottom: 0; }
+    .contact-card.top-pick { border-color: #7c3aed; border-width: 2px; background: #faf5ff; }
+    .contact-card .contact-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+    .contact-card .contact-name { font-weight: 700; font-size: 0.88rem; }
+    .contact-badge { font-size: 0.6rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+    .badge-top { background: #7c3aed; color: #fff; }
+    .badge-emailed { background: #dbeafe; color: #1e40af; }
+    .badge-septic { background: #d1fae5; color: #065f46; }
+    .contact-detail { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+    .contact-detail a { color: var(--accent); text-decoration: none; }
+    .contact-detail a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -124,7 +140,7 @@
   <!-- Auth overlay -->
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-form">
-      <h2>Pre-Professional Checklist</h2>
+      <h2>Priority List</h2>
       <p>160 Still Forest Dr — Restricted Access</p>
       <div id="authError" class="auth-error"></div>
       <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
@@ -137,7 +153,7 @@
   <!-- Page content (hidden until auth) -->
   <div id="appContent" style="display:none">
     <div class="page-header">
-      <h1>Pre-Professional Checklist</h1>
+      <h1>Priority List</h1>
       <div>
         <span class="user-info" id="userDisplay"></span>
         <button class="logout-btn" onclick="doLogout()">Sign Out</button>
@@ -166,6 +182,73 @@
           <div class="pro-item">Civil Engineer</div>
           <div class="pro-item">Septic Designer</div>
           <div class="pro-item">Utility Coordinator</div>
+        </div>
+      </div>
+
+      <!-- Professionals Contacted -->
+      <div class="contacts-section">
+        <h2>Professionals Contacted</h2>
+
+        <div class="contact-card top-pick">
+          <div class="contact-header">
+            <span class="contact-name">4Ward Land Survey</span>
+            <span class="contact-badge badge-top">Top Pick</span>
+          </div>
+          <div class="contact-detail">
+            Civil Engineering &amp; Land Surveying<br>
+            <a href="https://www.4wardlandsurvey.com/contact" target="_blank">www.4wardlandsurvey.com/contact</a>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-name">South West Engineers</span>
+            <span class="contact-badge badge-emailed">Emailed</span>
+          </div>
+          <div class="contact-detail">512-985-9759</div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-name">Highland Development &amp; Engineering</span>
+            <span class="contact-badge badge-emailed">Emailed</span>
+          </div>
+          <div class="contact-detail">
+            Rachel D. Hartzler, P.E.<br>
+            111 N. Hasler Blvd, Bastrop, TX 78602<br>
+            815-674-4945 (mobile)
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-name">Cross Town Engineering</span>
+            <span class="contact-badge badge-emailed">Emailed</span>
+          </div>
+          <div class="contact-detail">
+            <a href="mailto:orders@crosstownengineering.com">orders@crosstownengineering.com</a>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-name">Steubing LLC</span>
+            <span class="contact-badge badge-emailed">Emailed</span>
+          </div>
+          <div class="contact-detail">
+            Robert Steubing<br>
+            <a href="mailto:bsteubing@aol.com">bsteubing@aol.com</a>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-name">Aerobic Services</span>
+            <span class="contact-badge badge-septic">Septic Specialist</span>
+          </div>
+          <div class="contact-detail">
+            <a href="https://www.aerobicservices.com/get-in-touch/" target="_blank">www.aerobicservices.com/get-in-touch</a>
+          </div>
         </div>
       </div>
 
