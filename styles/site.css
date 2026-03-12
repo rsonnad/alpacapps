@@ -861,6 +861,8 @@ li {
   color: rgba(250, 249, 246, 0.4);
   letter-spacing: 0.02em;
   line-height: 1.8;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* =============================================
