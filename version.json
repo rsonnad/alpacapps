@@ -1,12 +1,12 @@
 {
-  "version": "v260312.17 4:24p",
-  "release": 664,
-  "sha": "49903f95c",
-  "fullSha": "49903f95c4b5ac8b535204583773aa0dad05ee86",
+  "version": "v260312.18 5:55p",
+  "release": 665,
+  "sha": "375621b8c",
+  "fullSha": "375621b8cab228df21fc8a7b001981513f916421",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 21:24:39+00",
-  "commits": [{"sha":"316151a4a","message":"Camera infra: WebRTC live feeds + streaming clips + Cloudflare Tunnel","author":"Rahul"},{"sha":"49903f95c","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
+  "pushedAt": "2026-03-12 22:55:39+00",
+  "commits": [{"sha":"0cda4a1b3","message":"Fix missing event thumbnails: filter for motion/smartDetect events only","author":"Rahul"},{"sha":"375621b8c","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
 }
