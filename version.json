@@ -1,12 +1,12 @@
 {
-  "version": "v260311.24 11:00p",
-  "release": 647,
-  "sha": "e68ddf794",
-  "fullSha": "e68ddf7940bebd099989e6135c9e26e21d6de572",
-  "actor": "rsonnad",
+  "version": "v260312.01 10:40a",
+  "release": 648,
+  "sha": "51ac168e4",
+  "fullSha": "51ac168e4adadb021ecc6a96555c5b1bd844d4fc",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 04:00:46+00",
-  "commits": [{"sha":"e68ddf794","message":"Add screen navigation URLs to lesson JSON + fix Edge Function subscribe","author":"Rahul"}]
+  "pushedAt": "2026-03-12 15:40:42+00",
+  "commits": [{"sha":"c1296429b","message":"Update development description with guest capacities + PDF + A6 link","author":"Jacqueline Giroux"},{"sha":"51ac168e4","message":"Merge branch 'claude/admiring-chatterjee'","author":"Jacqueline Giroux"}]
 }
