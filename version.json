@@ -1,12 +1,12 @@
 {
-  "version": "v260312.07 12:56p",
-  "release": 654,
-  "sha": "d2860e34d",
-  "fullSha": "d2860e34dc64b19cfd68113d8c92788bdae3e626",
+  "version": "v260312.09 1:19p",
+  "release": 656,
+  "sha": "80d9d1048",
+  "fullSha": "80d9d1048f59e058ae25521eff5eefcdb28668fe",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 17:56:30+00",
-  "commits": [{"sha":"d2860e34d","message":"Add 24x36 engineering drawing sheet for site plan","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-12 18:19:43+00",
+  "commits": [{"sha":"80d9d1048","message":"Remove inaccurate SVG setback lines and drainage arrows from site plan","author":"Jacqueline Giroux"}]
 }
