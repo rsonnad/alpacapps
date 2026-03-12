@@ -70,14 +70,15 @@
     .pron-list { display: flex; flex-direction: column; gap: 0.4rem; }
     .pron-row {
       display: grid; grid-template-columns: 2.8rem 1fr;
-      gap: 0.5rem; align-items: baseline;
-      padding: 0.4rem 0.6rem; background: var(--surface2); border-radius: 6px;
+      gap: 0.5rem; align-items: start;
+      padding: 0.5rem 0.6rem; background: var(--surface2); border-radius: 6px;
     }
-    .pron-sound { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-    .pron-desc { font-size: 0.82rem; color: var(--text-soft); }
-    .pron-desc .eng { color: var(--accent); font-weight: 600; }
-    .pron-desc .word { font-weight: 600; }
-    .pron-desc .dim { color: var(--text-muted); }
+    .pron-sound { font-size: 1.1rem; font-weight: 700; color: var(--text); padding-top: 0.1rem; }
+    .pron-eng { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+    .pron-words { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.2rem; }
+    .pron-word { font-size: 0.82rem; color: var(--text-soft); }
+    .pron-word .w { font-weight: 600; }
+    .pron-word .dim { color: var(--text-muted); }
 
     /* ── Vocab rows ── */
     .vocab-list { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -144,7 +145,7 @@
     @media (max-width: 480px) {
       .card { padding: 0.75rem 0.8rem; }
       .vocab-row { flex-direction: column; gap: 0.1rem; }
-      .pron-row { grid-template-columns: 2.2rem 1fr; }
+      .pron-row { grid-template-columns: 2.4rem 1fr; }
       .conj-cell { padding: 0.35rem 0.2rem; }
     }
   </style>
@@ -168,47 +169,124 @@
       <div class="pron-list">
         <div class="pron-row">
           <span class="pron-sound">cz</span>
-          <span class="pron-desc"><span class="eng">ch</span> — <span class="word">Cześć</span> (hello) · like "church"</span>
+          <div>
+            <span class="pron-eng">= ch (like "church")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">Cześć</span> — hello</span>
+              <span class="pron-word"><span class="w">czas</span> — time</span>
+              <span class="pron-word"><span class="w">człowiek</span> — person <span class="dim">CHWOH-vyek</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">sz</span>
-          <span class="pron-desc"><span class="eng">sh</span> — <span class="word">Proszę</span> (please) · like "shoe"</span>
+          <div>
+            <span class="pron-eng">= sh (like "shoe")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">Proszę</span> — please</span>
+              <span class="pron-word"><span class="w">szkoła</span> — school <span class="dim">SHKOH-wah</span></span>
+              <span class="pron-word"><span class="w">masz</span> — you have</span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ż / rz</span>
-          <span class="pron-desc"><span class="eng">zh</span> — <span class="word">Dobry wiecz<u>ó</u>r</span> (good evening) · like "measure"</span>
+          <div>
+            <span class="pron-eng">= zh (like "measure")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">wieczór</span> — evening</span>
+              <span class="pron-word"><span class="w">może</span> — maybe <span class="dim">MOH-zheh</span></span>
+              <span class="pron-word"><span class="w">rzeka</span> — river <span class="dim">ZHEH-kah</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">dz</span>
-          <span class="pron-desc"><span class="eng">dz</span> — <span class="word">Do wi<u>dz</u>enia</span> (goodbye) · like end of "odds"</span>
+          <div>
+            <span class="pron-eng">= dz (like end of "odds")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">widzenia</span> — seeing (goodbye)</span>
+              <span class="pron-word"><span class="w">dzień</span> — day <span class="dim">jen</span></span>
+              <span class="pron-word"><span class="w">dziecko</span> — child <span class="dim">JETS-koh</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ś / si</span>
-          <span class="pron-desc"><span class="eng">soft sh</span> — <span class="word">je<u>ś</u>tem</span> (I am) · like "sheep" but softer</span>
+          <div>
+            <span class="pron-eng">= soft sh (like "sheep" but softer)</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">jeśtem</span> — I am</span>
+              <span class="pron-word"><span class="w">prośba</span> — request <span class="dim">PROSH-bah</span></span>
+              <span class="pron-word"><span class="w">siedem</span> — seven <span class="dim">SHEH-dem</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ć / ci</span>
-          <span class="pron-desc"><span class="eng">soft ch</span> — <span class="word">Cze<u>ść</u></span> (hi) · like "cheap" but softer</span>
+          <div>
+            <span class="pron-eng">= soft ch (like "cheap" but softer)</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">Cześć</span> — hi</span>
+              <span class="pron-word"><span class="w">pięć</span> — five <span class="dim">pyench</span></span>
+              <span class="pron-word"><span class="w">ciepło</span> — warm <span class="dim">CHEP-woh</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">j</span>
-          <span class="pron-desc"><span class="eng">y</span> — <span class="word"><u>J</u>adę</span> (I'm driving) · like "yes" — never English "j"</span>
+          <div>
+            <span class="pron-eng">= y (like "yes" — never English "j")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">jadę</span> — I'm driving</span>
+              <span class="pron-word"><span class="w">jutro</span> — tomorrow <span class="dim">YOO-troh</span></span>
+              <span class="pron-word"><span class="w">jest</span> — is</span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">w</span>
-          <span class="pron-desc"><span class="eng">v</span> — <span class="word">Do <u>w</u>idzenia</span> (goodbye) · like "vine" — never English "w"</span>
+          <div>
+            <span class="pron-eng">= v (like "vine" — never English "w")</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">widzenia</span> — goodbye</span>
+              <span class="pron-word"><span class="w">woda</span> — water <span class="dim">VOH-dah</span></span>
+              <span class="pron-word"><span class="w">wieczór</span> — evening</span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ł</span>
-          <span class="pron-desc"><span class="eng">w</span> — <span class="word">sk<u>ł</u>epu</span> (store) · like "water" — this IS the "w" sound</span>
+          <div>
+            <span class="pron-eng">= w (like "water" — this IS the "w" sound)</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">skłepu</span> — store</span>
+              <span class="pron-word"><span class="w">szkoła</span> — school <span class="dim">SHKOH-wah</span></span>
+              <span class="pron-word"><span class="w">ciepło</span> — warm <span class="dim">CHEP-woh</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ę</span>
-          <span class="pron-desc"><span class="eng">nasal en</span> — <span class="word">Jad<u>ę</u></span> (I'm driving) · say "eh" through your nose</span>
+          <div>
+            <span class="pron-eng">= nasal en (say "eh" through your nose)</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">jadę</span> — I'm driving</span>
+              <span class="pron-word"><span class="w">idę</span> — I'm walking</span>
+              <span class="pron-word"><span class="w">będę</span> — I will be <span class="dim">BEN-deh</span></span>
+            </div>
+          </div>
         </div>
         <div class="pron-row">
           <span class="pron-sound">ą</span>
-          <span class="pron-desc"><span class="eng">nasal on</span> — <span class="word">samoch<u>ó</u>d</span> <span class="dim">(ó = oo)</span> · say "oh" through your nose</span>
+          <div>
+            <span class="pron-eng">= nasal on (say "oh" through your nose)</span>
+            <div class="pron-words">
+              <span class="pron-word"><span class="w">są</span> — they are <span class="dim">sohn</span></span>
+              <span class="pron-word"><span class="w">mają</span> — they have <span class="dim">MY-ohn</span></span>
+              <span class="pron-word"><span class="w">kąpiel</span> — bath <span class="dim">KOHM-pyel</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <p style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem;">Stress is almost always on the second-to-last syllable. Every letter is pronounced — no silent letters.</p>
