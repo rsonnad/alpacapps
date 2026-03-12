@@ -279,12 +279,12 @@ function renderCameras() {
         <span class="status-dot" id="dot-${i}"></span>
         <span>${cam.name}</span>
         <div class="camera-card__controls">
-          <select class="quality-select" data-cam="${i}">
+          <span style="font-weight:700;color:var(--aap-accent, #3b82f6);font-size:0.7rem">${cam.model ? `${cam.model}` : ''}${cam.location ? ` – ${cam.location}` : ''}</span>
+          <select class="quality-select" data-cam="${i}" style="margin-left:auto">
             ${cam.streams.low ? '<option value="low">Low</option>' : ''}
             ${cam.streams.med ? '<option value="med" selected>Med</option>' : ''}
             ${cam.streams.high ? '<option value="high">High</option>' : ''}
           </select>
-          <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">${cam.location || ''}${cam.model ? ` · ${cam.model}` : ''}</span>
         </div>
       </div>
       <div class="camera-card__video" id="video-container-${i}" data-cam="${i}">
