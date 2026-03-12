@@ -1,12 +1,12 @@
 {
-  "version": "v260311.17 7:27p",
-  "release": 640,
-  "sha": "966be343f",
-  "fullSha": "966be343f3f53040c4c61d0f397d4349aa9233da",
+  "version": "v260311.18 7:34p",
+  "release": 641,
+  "sha": "b9cc5663b",
+  "fullSha": "b9cc5663bd374de4a2cf5444120f5684ae6ac67f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 00:27:27+00",
-  "commits": [{"sha":"966be343f","message":"docs: update Music Assistant setup to reflect native install (no Docker)","author":"Rahul"}]
+  "pushedAt": "2026-03-12 00:34:21+00",
+  "commits": [{"sha":"b9cc5663b","message":"Add Polish & Ukulele lesson pages for Tesla learning (#19)","author":"Rahul"}]
 }
