@@ -1,12 +1,12 @@
 {
-  "version": "v260312.18 5:55p",
-  "release": 665,
-  "sha": "375621b8c",
-  "fullSha": "375621b8cab228df21fc8a7b001981513f916421",
+  "version": "v260312.19 6:08p",
+  "release": 666,
+  "sha": "e697e3952",
+  "fullSha": "e697e395269968d763f2c920143b3adc88455fe4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 22:55:39+00",
-  "commits": [{"sha":"0cda4a1b3","message":"Fix missing event thumbnails: filter for motion/smartDetect events only","author":"Rahul"},{"sha":"375621b8c","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
+  "pushedAt": "2026-03-12 23:08:20+00",
+  "commits": [{"sha":"9cfdfa20a","message":"Rearrange camera card header: model–location (blue/bold), resolution far right","author":"Rahul"},{"sha":"e697e3952","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
 }
