@@ -1,12 +1,12 @@
 {
-  "version": "v260311.16 7:06p",
-  "release": 639,
-  "sha": "7c4d9766f",
-  "fullSha": "7c4d9766f7025fb9edd247c87f6aef1e380f885f",
+  "version": "v260311.17 7:27p",
+  "release": 640,
+  "sha": "966be343f",
+  "fullSha": "966be343f3f53040c4c61d0f397d4349aa9233da",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 00:06:27+00",
-  "commits": [{"sha":"7c4d9766f","message":"Security hardening: RLS policies, auth cache reduction, visitor PII expiry","author":"Rahul"}]
+  "pushedAt": "2026-03-12 00:27:27+00",
+  "commits": [{"sha":"966be343f","message":"docs: update Music Assistant setup to reflect native install (no Docker)","author":"Rahul"}]
 }
