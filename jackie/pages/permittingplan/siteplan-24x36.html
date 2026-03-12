@@ -12,13 +12,14 @@
   :root {
     --sheet-w: 36in;
     --sheet-h: 24in;
-    --border-margin: 0.5in;
-    --line-color: #1a1a1a;
-    --line-light: #666;
-    --setback-road: #cc2222;
-    --setback-side: #dd8800;
-    --text-color: #111;
+    --m: 0.5in;         /* border margin */
+    --line: #1a1a1a;
+    --line-lt: #888;
+    --text: #111;
     --bg: #fff;
+    /* Layout: survey image is portrait (~0.55 ratio), give it ~14in of 35in usable width */
+    --plan-w: 14in;
+    --right-w: 21in;    /* 35in - 14in */
   }
 
   body {
@@ -32,471 +33,246 @@
 
   /* Screen-only controls */
   .screen-controls {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    z-index: 100;
-    display: flex;
-    gap: 8px;
+    position: fixed; top: 12px; right: 12px; z-index: 100;
+    display: flex; gap: 8px;
   }
   .screen-controls button {
-    padding: 8px 16px;
-    background: #222;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
+    padding: 8px 16px; background: #222; color: #fff; border: none;
+    border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
   }
   .screen-controls button:hover { background: #444; }
   .screen-controls .draft-badge {
-    padding: 8px 16px;
-    background: #cc2222;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    padding: 8px 16px; background: #cc2222; color: #fff; border-radius: 6px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
   }
 
-  /* The 24×36 sheet */
+  /* ═══ THE 24×36 SHEET ═══ */
   .sheet {
-    width: var(--sheet-w);
-    height: var(--sheet-h);
-    background: var(--bg);
-    position: relative;
+    width: var(--sheet-w); height: var(--sheet-h);
+    background: var(--bg); position: relative;
     box-shadow: 0 4px 40px rgba(0,0,0,0.5);
-    overflow: hidden;
-    /* Scale down for screen viewing */
-    transform-origin: top center;
+    overflow: hidden; transform-origin: top center;
   }
 
-  /* Drawing border */
   .drawing-border {
     position: absolute;
-    left: var(--border-margin);
-    top: var(--border-margin);
-    right: var(--border-margin);
-    bottom: var(--border-margin);
-    border: 2.5pt solid var(--line-color);
+    left: var(--m); top: var(--m); right: var(--m); bottom: var(--m);
+    border: 2.5pt solid var(--line);
   }
 
-  /* ═══════════════════════════════════════
-     MAIN SITE PLAN AREA — left 70%, top 76%
-     ═══════════════════════════════════════ */
+  /* ═══ LEFT COLUMN: SURVEY IMAGE (full height) ═══ */
   .main-plan {
     position: absolute;
-    left: var(--border-margin);
-    top: var(--border-margin);
-    width: 24.5in;
-    height: 17.5in;
-    border-right: 1.5pt solid var(--line-color);
-    border-bottom: 1.5pt solid var(--line-color);
+    left: var(--m); top: var(--m);
+    width: var(--plan-w);
+    bottom: var(--m);
+    border-right: 1.5pt solid var(--line);
     overflow: hidden;
+    background: #fff;
   }
   .main-plan img {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: contain;
-    object-position: center;
+    object-position: top center;
   }
 
-  /* SVG overlay for setback lines and annotations */
-  .plan-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
+  /* ═══ RIGHT COLUMN — all info panels ═══ */
 
-  /* ═══════════════════════════════════════
-     VICINITY MAP — top right
-     ═══════════════════════════════════════ */
+  /* --- VICINITY MAP --- */
   .vicinity-map {
     position: absolute;
-    right: var(--border-margin);
-    top: var(--border-margin);
-    width: 10.5in;
-    height: 4.8in;
-    border-bottom: 1.5pt solid var(--line-color);
-    padding: 0.2in;
-    display: flex;
-    flex-direction: column;
+    left: calc(var(--m) + var(--plan-w));
+    top: var(--m);
+    width: var(--right-w);
+    height: 4.2in;
+    border-bottom: 1.5pt solid var(--line);
+    padding: 0.15in 0.2in;
+    display: flex; flex-direction: column;
   }
   .vicinity-map h3 {
-    font-size: 14pt;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 0.1in;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 13pt; font-weight: 800; text-align: center;
+    margin-bottom: 0.08in; letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .vicinity-map .map-placeholder {
-    flex: 1;
-    border: 1pt solid #999;
-    border-radius: 2pt;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f9f9f7;
-    position: relative;
-    overflow: hidden;
+  .vicinity-map .map-img-box {
+    flex: 1; border: 1pt solid #999; border-radius: 2pt;
+    overflow: hidden; background: #f9f9f7;
   }
-  .vicinity-map .map-placeholder img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  .vicinity-map .map-img-box img {
+    width: 100%; height: 100%; object-fit: contain;
   }
   .vicinity-note {
-    font-size: 7pt;
-    color: #666;
-    text-align: center;
-    margin-top: 0.05in;
+    font-size: 6.5pt; color: #666; text-align: center; margin-top: 0.04in;
   }
 
-  /* ═══════════════════════════════════════
-     NORTH ARROW + SCALE — right column
-     ═══════════════════════════════════════ */
+  /* --- NORTH ARROW + SCALE --- */
   .north-scale {
     position: absolute;
-    right: var(--border-margin);
-    top: calc(var(--border-margin) + 4.8in);
-    width: 10.5in;
-    height: 2.8in;
-    border-bottom: 1.5pt solid var(--line-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0.2in;
+    left: calc(var(--m) + var(--plan-w));
+    top: calc(var(--m) + 4.2in);
+    width: var(--right-w);
+    height: 2.2in;
+    border-bottom: 1.5pt solid var(--line);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 0.15in;
   }
-  .north-arrow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.05in;
-  }
-  .north-arrow svg { width: 1.2in; height: 1.8in; }
-  .north-arrow .n-label {
-    font-size: 18pt;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-  }
-  .scale-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.1in;
-  }
-  .scale-info .scale-text {
-    font-size: 14pt;
-    font-weight: 700;
-  }
-  .scale-bar {
-    display: flex;
-    align-items: flex-end;
-    gap: 0;
-  }
-  .scale-bar .seg {
-    width: 1in;
-    height: 0.15in;
-    border: 1.5pt solid #000;
-  }
+  .north-arrow svg { width: 0.9in; height: 1.4in; }
+  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.08in; }
+  .scale-info .scale-text { font-size: 13pt; font-weight: 700; }
+  .scale-bar { display: flex; }
+  .scale-bar .seg { width: 0.8in; height: 0.12in; border: 1.5pt solid #000; }
   .scale-bar .seg.filled { background: #000; }
   .scale-bar-labels {
-    display: flex;
-    width: 4in;
-    justify-content: space-between;
-    font-size: 8pt;
-    font-weight: 600;
-    margin-top: 0.02in;
+    display: flex; width: 3.2in; justify-content: space-between;
+    font-size: 7pt; font-weight: 600; margin-top: 0.02in;
   }
 
-  /* ═══════════════════════════════════════
-     LEGEND — right column
-     ═══════════════════════════════════════ */
+  /* --- LEGEND --- */
   .legend {
     position: absolute;
-    right: var(--border-margin);
-    top: calc(var(--border-margin) + 7.6in);
-    width: 10.5in;
-    height: 3.2in;
-    border-bottom: 1.5pt solid var(--line-color);
-    padding: 0.15in 0.25in;
+    left: calc(var(--m) + var(--plan-w));
+    top: calc(var(--m) + 6.4in);
+    width: var(--right-w);
+    height: 2.3in;
+    border-bottom: 1.5pt solid var(--line);
+    padding: 0.12in 0.2in;
   }
   .legend h3 {
-    font-size: 12pt;
-    font-weight: 800;
-    margin-bottom: 0.1in;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 11pt; font-weight: 800; margin-bottom: 0.06in;
+    text-transform: uppercase; letter-spacing: 0.06em;
   }
   .legend-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.06in 0.4in;
-    font-size: 8.5pt;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.05in 0.3in; font-size: 7.5pt;
   }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.12in;
-  }
-  .legend-line {
-    width: 0.6in;
-    height: 0;
-    flex-shrink: 0;
-  }
+  .legend-item { display: flex; align-items: center; gap: 0.1in; }
+  .legend-line { width: 0.5in; height: 0; flex-shrink: 0; }
   .legend-line.solid-heavy { border-top: 3pt solid #000; }
   .legend-line.solid-medium { border-top: 1.5pt solid #000; }
-  .legend-line.dashed-red { border-top: 2pt dashed var(--setback-road); }
-  .legend-line.dashed-orange { border-top: 2pt dashed var(--setback-side); }
   .legend-line.dotdash { border-top: 1.5pt dashed #555; }
   .legend-line.double { border-top: 2pt double #000; }
   .legend-symbol {
-    width: 0.6in;
-    height: 0.2in;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14pt;
+    width: 0.5in; height: 0.18in; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 12pt;
   }
 
-  /* ═══════════════════════════════════════
-     GENERAL NOTES — right column
-     ═══════════════════════════════════════ */
+  /* --- GENERAL NOTES --- */
   .general-notes {
     position: absolute;
-    right: var(--border-margin);
-    top: calc(var(--border-margin) + 10.8in);
-    width: 10.5in;
-    height: 6.7in;
-    border-bottom: 1.5pt solid var(--line-color);
-    padding: 0.15in 0.25in;
-    font-size: 8pt;
-    line-height: 1.45;
+    left: calc(var(--m) + var(--plan-w));
+    top: calc(var(--m) + 8.7in);
+    width: var(--right-w);
+    height: 5.8in;
+    border-bottom: 1.5pt solid var(--line);
+    padding: 0.12in 0.2in;
+    font-size: 7.5pt; line-height: 1.4;
     overflow: hidden;
   }
   .general-notes h3 {
-    font-size: 12pt;
-    font-weight: 800;
-    margin-bottom: 0.08in;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 11pt; font-weight: 800; margin-bottom: 0.06in;
+    text-transform: uppercase; letter-spacing: 0.06em;
   }
-  .general-notes ol {
-    padding-left: 0.2in;
-    margin-bottom: 0.1in;
-  }
-  .general-notes li {
-    margin-bottom: 0.04in;
-  }
+  .general-notes ol { padding-left: 0.18in; }
+  .general-notes li { margin-bottom: 0.03in; }
   .general-notes .sub-heading {
-    font-weight: 700;
-    font-size: 9pt;
-    margin-top: 0.08in;
-    margin-bottom: 0.04in;
+    font-weight: 700; font-size: 8pt; margin-top: 0.06in; margin-bottom: 0.03in;
     text-transform: uppercase;
   }
 
-  /* ═══════════════════════════════════════
-     SETBACK COMPLIANCE TABLE — bottom left
-     ═══════════════════════════════════════ */
+  /* --- SETBACK COMPLIANCE TABLE --- */
   .compliance-table-area {
     position: absolute;
-    left: var(--border-margin);
-    bottom: var(--border-margin);
-    width: 14.5in;
-    height: 5.5in;
-    border-top: 1.5pt solid var(--line-color);
-    border-right: 1.5pt solid var(--line-color);
-    padding: 0.15in 0.2in;
+    left: calc(var(--m) + var(--plan-w));
+    top: calc(var(--m) + 14.5in);
+    width: var(--right-w);
+    height: 4.5in;
+    border-bottom: 1.5pt solid var(--line);
+    padding: 0.12in 0.2in;
     overflow: hidden;
   }
   .compliance-table-area h3 {
-    font-size: 11pt;
-    font-weight: 800;
-    margin-bottom: 0.08in;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 10pt; font-weight: 800; margin-bottom: 0.04in;
+    text-transform: uppercase; letter-spacing: 0.06em;
   }
   .compliance-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 7.5pt;
+    width: 100%; border-collapse: collapse; font-size: 7pt;
   }
   .compliance-table th {
-    background: #f0f0ee;
-    font-weight: 700;
-    text-align: left;
-    padding: 0.04in 0.08in;
-    border: 0.75pt solid #999;
-    font-size: 7pt;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    background: #f0f0ee; font-weight: 700; text-align: left;
+    padding: 0.03in 0.06in; border: 0.75pt solid #999;
+    font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.03em;
   }
   .compliance-table td {
-    padding: 0.03in 0.08in;
-    border: 0.5pt solid #bbb;
-    vertical-align: top;
+    padding: 0.025in 0.06in; border: 0.5pt solid #bbb; vertical-align: top;
   }
-  .compliance-table .violation { color: var(--setback-road); font-weight: 600; }
+  .compliance-table .violation { color: #cc2222; font-weight: 600; }
   .compliance-table .ok { color: #1a7a3a; font-weight: 600; }
 
-  /* ═══════════════════════════════════════
-     SITE DATA — bottom center
-     ═══════════════════════════════════════ */
-  .site-data {
-    position: absolute;
-    left: calc(var(--border-margin) + 14.5in);
-    bottom: var(--border-margin);
-    width: 10in;
-    height: 2.5in;
-    border-top: 1.5pt solid var(--line-color);
-    border-right: 1.5pt solid var(--line-color);
-    padding: 0.12in 0.2in;
-    font-size: 8.5pt;
-  }
-  .site-data h3 {
-    font-size: 10pt;
-    font-weight: 800;
-    margin-bottom: 0.06in;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .site-data-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.03in 0.3in;
-  }
-  .site-data-grid .label { color: #555; }
-  .site-data-grid .value { font-weight: 700; }
-
-  /* ═══════════════════════════════════════
-     TITLE BLOCK — bottom right
-     ═══════════════════════════════════════ */
+  /* --- TITLE BLOCK (bottom-right) --- */
   .title-block {
     position: absolute;
-    right: var(--border-margin);
-    bottom: var(--border-margin);
-    width: 10.5in;
-    height: 5.5in;
-    border-top: 1.5pt solid var(--line-color);
+    left: calc(var(--m) + var(--plan-w));
+    bottom: var(--m);
+    width: var(--right-w);
+    height: 4in;
+    border-top: 1.5pt solid var(--line);
     display: grid;
-    grid-template-rows: auto auto 1fr auto auto auto;
+    grid-template-rows: auto auto 1fr auto auto;
     overflow: hidden;
   }
-  .tb-section {
-    border-bottom: 1pt solid #888;
-    padding: 0.08in 0.2in;
-  }
-  .tb-section:last-child { border-bottom: none; }
   .tb-project {
-    background: #f5f5f2;
-    text-align: center;
-    padding: 0.15in;
-    border-bottom: 1.5pt solid #000;
+    background: #f5f5f2; text-align: center;
+    padding: 0.12in; border-bottom: 1.5pt solid #000;
   }
   .tb-project .title {
-    font-size: 16pt;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 15pt; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
   }
   .tb-project .subtitle {
-    font-size: 11pt;
-    font-weight: 600;
-    color: #444;
-    margin-top: 0.02in;
+    font-size: 10pt; font-weight: 600; color: #444; margin-top: 0.02in;
   }
   .tb-owner {
-    display: grid;
-    grid-template-columns: 0.8in 1fr;
-    gap: 0.02in 0.1in;
-    font-size: 8.5pt;
-    padding: 0.1in 0.2in;
+    display: grid; grid-template-columns: 0.7in 1fr;
+    gap: 0.015in 0.08in; font-size: 8pt; padding: 0.08in 0.2in;
   }
   .tb-owner .label {
-    font-size: 6.5pt;
-    font-weight: 700;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    text-align: right;
-    padding-top: 0.01in;
+    font-size: 6pt; font-weight: 700; color: #888; text-transform: uppercase;
+    letter-spacing: 0.04em; text-align: right; padding-top: 0.01in;
   }
-  .tb-owner .value {
-    font-weight: 600;
-  }
+  .tb-owner .value { font-weight: 600; }
   .tb-pe-box {
-    border: 1.5pt solid #000;
-    margin: 0.1in 0.2in;
-    padding: 0.1in;
-    min-height: 1.2in;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 8pt;
-    color: #888;
+    border: 1.5pt solid #000; margin: 0.06in 0.2in; padding: 0.08in;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; font-size: 7.5pt; color: #888;
   }
   .tb-pe-box .pe-label {
-    font-size: 9pt;
-    font-weight: 700;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.05in;
+    font-size: 8pt; font-weight: 700; color: #555; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 0.03in;
   }
   .tb-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.06in 0.2in;
-    font-size: 7.5pt;
-    border-top: 1pt solid #888;
-    background: #fafaf8;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.05in 0.2in; font-size: 7pt; border-top: 1pt solid #888; background: #fafaf8;
   }
-  .tb-footer .sheet-no { font-weight: 700; font-size: 11pt; }
+  .tb-footer .sheet-no { font-weight: 700; font-size: 10pt; }
+  .tb-preliminary {
+    text-align: center; padding: 0.03in; background: #fff3f3;
+    font-size: 7.5pt; font-weight: 700; color: #cc2222;
+    letter-spacing: 0.1em; border-top: 1pt solid #cc2222;
+  }
 
-  /* ═══════════════════════════════════════
-     DRAFT WATERMARK
-     ═══════════════════════════════════════ */
+  /* ═══ DRAFT WATERMARK ═══ */
   .watermark {
-    position: absolute;
-    top: 50%;
-    left: 35%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    font-size: 180pt;
-    font-weight: 900;
-    color: rgba(200, 30, 30, 0.07);
-    letter-spacing: 0.1em;
-    pointer-events: none;
-    z-index: 10;
-    white-space: nowrap;
+    position: absolute; top: 50%; left: 25%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 140pt; font-weight: 900;
+    color: rgba(200, 30, 30, 0.06); letter-spacing: 0.1em;
+    pointer-events: none; z-index: 10; white-space: nowrap;
   }
 
-  /* ═══════════════════════════════════════
-     PRINT STYLES — exact 24×36"
-     ═══════════════════════════════════════ */
+  /* ═══ PRINT ═══ */
   @media print {
-    @page {
-      size: 36in 24in;
-      margin: 0;
-    }
-    body {
-      background: white;
-      padding: 0;
-    }
+    @page { size: 36in 24in; margin: 0; }
+    body { background: white; padding: 0; }
     .screen-controls { display: none; }
-    .sheet {
-      box-shadow: none;
-      transform: none !important;
-      width: 36in;
-      height: 24in;
-    }
+    .sheet { box-shadow: none; transform: none !important; width: 36in; height: 24in; }
     .watermark { display: none; }
   }
 
@@ -519,40 +295,27 @@
 
 <div class="sheet">
 
-  <!-- DRAFT WATERMARK -->
   <div class="watermark">PRELIMINARY</div>
-
-  <!-- DRAWING BORDER -->
   <div class="drawing-border"></div>
 
-  <!-- ════════════════════════════════════
-       MAIN SITE PLAN
-       ════════════════════════════════════ -->
+  <!-- ═══ LEFT COLUMN: FULL-HEIGHT SURVEY IMAGE ═══ -->
   <div class="main-plan">
     <img src="siteplan-professional-v7.jpg" alt="Site Plan — Lot 14-B, Block 6, Blue Bonnet Acres">
-
-    <!-- SVG overlay removed — setback lines and drainage arrows were not accurately positioned.
-         These will be added later when precise coordinates are determined from the survey data. -->
   </div>
 
-  <!-- ════════════════════════════════════
-       VICINITY MAP
-       ════════════════════════════════════ -->
+  <!-- ═══ RIGHT COLUMN: VICINITY MAP ═══ -->
   <div class="vicinity-map">
     <h3>Vicinity Map</h3>
-    <div class="map-placeholder">
+    <div class="map-img-box">
       <img src="gis-aerial-44401.png" alt="Bastrop County Development Services Viewer — PID 44401 — Aerial with parcel boundary">
     </div>
     <p class="vicinity-note">Source: Bastrop County Development Services Viewer — PID 44401 — Esri Aerial Basemap</p>
   </div>
 
-  <!-- ════════════════════════════════════
-       NORTH ARROW + SCALE
-       ════════════════════════════════════ -->
+  <!-- ═══ NORTH ARROW + SCALE ═══ -->
   <div class="north-scale">
-    <div class="north-arrow">
-      <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- North arrow -->
+    <div>
+      <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.9in;height:1.4in;">
         <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
         <polygon points="30,5 30,65 45,80" fill="#444"/>
         <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
@@ -562,79 +325,34 @@
       <div class="scale-text">SCALE: 1" = 30'</div>
       <div>
         <div class="scale-bar">
-          <div class="seg filled"></div>
-          <div class="seg"></div>
-          <div class="seg filled"></div>
-          <div class="seg"></div>
+          <div class="seg filled"></div><div class="seg"></div>
+          <div class="seg filled"></div><div class="seg"></div>
         </div>
         <div class="scale-bar-labels">
           <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
         </div>
       </div>
-      <div style="font-size: 8pt; color: #666; margin-top: 0.05in;">HORIZONTAL SCALE IN FEET</div>
+      <div style="font-size: 7pt; color: #666; margin-top: 0.03in;">HORIZONTAL SCALE IN FEET</div>
     </div>
   </div>
 
-  <!-- ════════════════════════════════════
-       LEGEND
-       ════════════════════════════════════ -->
+  <!-- ═══ LEGEND ═══ -->
   <div class="legend">
     <h3>Legend</h3>
     <div class="legend-grid">
-      <div class="legend-item">
-        <div class="legend-line solid-heavy"></div>
-        <span>Property Boundary</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line dashed-red"></div>
-        <span>25' Road Setback (from ROW)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line dashed-orange"></div>
-        <span>15' Side/Rear Setback</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line dotdash"></div>
-        <span>Easement (10' P.U.E. & B.L.)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line double"></div>
-        <span>Right-of-Way Line (60' ROW)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line solid-medium"></div>
-        <span>Existing Structure</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol">⬡</div>
-        <span>Septic System (Aerobic — JET INC)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol">◉</div>
-        <span>Water Meter</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol">⚡</div>
-        <span>Electric Meter / Power Pole</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol" style="color: #2266aa;">→</div>
-        <span>Drainage Flow Direction</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol">◆</div>
-        <span>Iron Rod Found / Set</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-symbol">△</div>
-        <span>Concrete Monument</span>
-      </div>
+      <div class="legend-item"><div class="legend-line solid-heavy"></div><span>Property Boundary</span></div>
+      <div class="legend-item"><div class="legend-line dotdash"></div><span>Easement (10' P.U.E. & B.L.)</span></div>
+      <div class="legend-item"><div class="legend-line double"></div><span>Right-of-Way Line (60' ROW)</span></div>
+      <div class="legend-item"><div class="legend-line solid-medium"></div><span>Existing Structure</span></div>
+      <div class="legend-item"><div class="legend-symbol">⬡</div><span>Septic System (Aerobic)</span></div>
+      <div class="legend-item"><div class="legend-symbol">◉</div><span>Water Meter</span></div>
+      <div class="legend-item"><div class="legend-symbol">⚡</div><span>Electric Meter / Pole</span></div>
+      <div class="legend-item"><div class="legend-symbol">◆</div><span>Iron Rod Found / Set</span></div>
+      <div class="legend-item"><div class="legend-symbol">△</div><span>Concrete Monument</span></div>
     </div>
   </div>
 
-  <!-- ════════════════════════════════════
-       GENERAL NOTES
-       ════════════════════════════════════ -->
+  <!-- ═══ GENERAL NOTES ═══ -->
   <div class="general-notes">
     <h3>General Notes</h3>
     <ol>
@@ -656,7 +374,7 @@
     </ol>
 
     <div class="sub-heading">Boundary Bearings</div>
-    <div style="font-size: 8pt; display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.3in;">
+    <div style="font-size: 7.5pt; display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.3in;">
       <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
       <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
       <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
@@ -666,179 +384,38 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════
-       SETBACK COMPLIANCE TABLE
-       ════════════════════════════════════ -->
+  <!-- ═══ SETBACK COMPLIANCE TABLE ═══ -->
   <div class="compliance-table-area">
     <h3>Setback Compliance Summary</h3>
-    <p style="font-size: 7.5pt; color: #888; margin-bottom: 0.06in;">All distances measured from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
+    <p style="font-size: 7pt; color: #888; margin-bottom: 0.04in;">All distances measured from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
     <table class="compliance-table">
       <thead>
         <tr>
-          <th style="width:18%">Structure</th>
-          <th style="width:10%">Size</th>
-          <th style="width:18%">Nearest Boundary</th>
-          <th style="width:12%">Distance</th>
-          <th style="width:10%">Required</th>
-          <th style="width:10%">Deficit</th>
-          <th style="width:8%">Status</th>
-          <th style="width:14%">Action Required</th>
+          <th>Structure</th><th>Size</th><th>Nearest Boundary</th>
+          <th>Distance</th><th>Required</th><th>Deficit</th>
+          <th>Status</th><th>Action Required</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Big Trailer</td>
-          <td>10'×42'</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>1'</td>
-          <td>25'</td>
-          <td class="violation">24'</td>
-          <td class="violation">CRITICAL</td>
-          <td>Relocate or remove</td>
-        </tr>
-        <tr>
-          <td>Red Container</td>
-          <td>40'×8'</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>~2'</td>
-          <td>25'</td>
-          <td class="violation">~23'</td>
-          <td class="violation">CRITICAL</td>
-          <td>Relocate or remove</td>
-        </tr>
-        <tr>
-          <td>Red Container (2)</td>
-          <td>40'×8'</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>~2'</td>
-          <td>25'</td>
-          <td class="violation">~23'</td>
-          <td class="violation">CRITICAL</td>
-          <td>Relocate or remove</td>
-        </tr>
-        <tr>
-          <td>Container</td>
-          <td>40'×8'</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>5'</td>
-          <td>25'</td>
-          <td class="violation">20'</td>
-          <td class="violation">CRITICAL</td>
-          <td>Relocate or remove</td>
-        </tr>
-        <tr>
-          <td>Deck</td>
-          <td>—</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>13'5"</td>
-          <td>25'</td>
-          <td class="violation">11'7"</td>
-          <td class="violation">VIOLATION</td>
-          <td>Modify or relocate</td>
-        </tr>
-        <tr>
-          <td>Beige Container</td>
-          <td>40'×8'</td>
-          <td>S (Still Forest Dr ROW)</td>
-          <td>6'</td>
-          <td>25'</td>
-          <td class="violation">19'</td>
-          <td class="violation">VIOLATION</td>
-          <td>Relocate or remove</td>
-        </tr>
-        <tr>
-          <td>Bathroom Bldg</td>
-          <td>Under const.</td>
-          <td>E (side property line)</td>
-          <td>~10'</td>
-          <td>15'</td>
-          <td class="violation">~5'</td>
-          <td class="violation">NO PERMIT</td>
-          <td>Obtain permit; may need to relocate</td>
-        </tr>
-        <tr>
-          <td>Small Trailer</td>
-          <td>7'5"×20'5"</td>
-          <td>E (side property line)</td>
-          <td>~7'</td>
-          <td>15'</td>
-          <td class="violation">~8'</td>
-          <td class="violation">VIOLATION</td>
-          <td>Relocate</td>
-        </tr>
-        <tr>
-          <td>Sauna</td>
-          <td>—</td>
-          <td>W (Leisure Ln ROW)</td>
-          <td>30'</td>
-          <td>25'</td>
-          <td class="ok">—</td>
-          <td class="ok">OK (+5')</td>
-          <td>None</td>
-        </tr>
-        <tr>
-          <td>1-Story Wood Bldg</td>
-          <td>—</td>
-          <td>N (rear property line)</td>
-          <td>~30'</td>
-          <td>15'</td>
-          <td class="ok">—</td>
-          <td class="ok">OK (+15')</td>
-          <td>None</td>
-        </tr>
-        <tr>
-          <td>Main House (2-Story)</td>
-          <td>Stone & Frame</td>
-          <td>All boundaries</td>
-          <td>Well within</td>
-          <td>All</td>
-          <td class="ok">—</td>
-          <td class="ok">OK</td>
-          <td>None</td>
-        </tr>
+        <tr><td>Big Trailer</td><td>10'×42'</td><td>W (Leisure Ln ROW)</td><td>1'</td><td>25'</td><td class="violation">24'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
+        <tr><td>Red Container</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
+        <tr><td>Red Container (2)</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
+        <tr><td>Container</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>5'</td><td>25'</td><td class="violation">20'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
+        <tr><td>Deck</td><td>—</td><td>W (Leisure Ln ROW)</td><td>13'5"</td><td>25'</td><td class="violation">11'7"</td><td class="violation">VIOLATION</td><td>Modify or relocate</td></tr>
+        <tr><td>Beige Container</td><td>40'×8'</td><td>S (Still Forest Dr ROW)</td><td>6'</td><td>25'</td><td class="violation">19'</td><td class="violation">VIOLATION</td><td>Relocate or remove</td></tr>
+        <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side property line)</td><td>~10'</td><td>15'</td><td class="violation">~5'</td><td class="violation">NO PERMIT</td><td>Obtain permit; may need to relocate</td></tr>
+        <tr><td>Small Trailer</td><td>7'5"×20'5"</td><td>E (side property line)</td><td>~7'</td><td>15'</td><td class="violation">~8'</td><td class="violation">VIOLATION</td><td>Relocate</td></tr>
+        <tr><td>Sauna</td><td>—</td><td>W (Leisure Ln ROW)</td><td>30'</td><td>25'</td><td class="ok">—</td><td class="ok">OK (+5')</td><td>None</td></tr>
+        <tr><td>1-Story Wood Bldg</td><td>—</td><td>N (rear property line)</td><td>~30'</td><td>15'</td><td class="ok">—</td><td class="ok">OK (+15')</td><td>None</td></tr>
+        <tr><td>Main House (2-Story)</td><td>Stone & Frame</td><td>All boundaries</td><td>Well within</td><td>All</td><td class="ok">—</td><td class="ok">OK</td><td>None</td></tr>
       </tbody>
     </table>
-    <p style="font-size: 7pt; color: #888; margin-top: 0.06in;">
+    <p style="font-size: 6.5pt; color: #888; margin-top: 0.04in;">
       <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 structures encroach into the 25' road setback along Leisure Lane (west) or Still Forest Dr (south).
-      The bathroom building is under construction without a development permit (Class B misdemeanor per Bastrop County regulations).
     </p>
   </div>
 
-  <!-- ════════════════════════════════════
-       SITE DATA SUMMARY
-       ════════════════════════════════════ -->
-  <div class="site-data">
-    <h3>Site Data</h3>
-    <div class="site-data-grid">
-      <div class="label">Total Lot Area:</div>
-      <div class="value">75,133 SF (1.7348 Ac)</div>
-
-      <div class="label">Existing Structures:</div>
-      <div class="value">11 structures</div>
-
-      <div class="label">Impervious Cover (est.):</div>
-      <div class="value">~8,500 SF (~11.3%)</div>
-
-      <div class="label">Pervious Area (est.):</div>
-      <div class="value">~66,633 SF (~88.7%)</div>
-
-      <div class="label">Drainage Direction:</div>
-      <div class="value">Generally SE toward Still Forest Dr</div>
-
-      <div class="label">Natural Water:</div>
-      <div class="value">Pond (center of lot) — no diversion</div>
-
-      <div class="label">Flood Zone:</div>
-      <div class="value">Zone X (unshaded) — outside 100-yr</div>
-
-      <div class="label">Permit Class:</div>
-      <div class="value">Class A (outside floodplain)</div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════
-       TITLE BLOCK
-       ════════════════════════════════════ -->
+  <!-- ═══ TITLE BLOCK ═══ -->
   <div class="title-block">
     <div class="tb-project">
       <div class="title">Site Plan</div>
@@ -846,32 +423,21 @@
     </div>
 
     <div class="tb-owner">
-      <div class="label">Owner:</div>
-      <div class="value">Revocable Trust of Subhash Sonnad</div>
-
-      <div class="label">Address:</div>
-      <div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
-
-      <div class="label">Legal:</div>
-      <div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One</div>
-
-      <div class="label">County:</div>
-      <div class="value">Bastrop County, Texas (Unincorporated)</div>
-
-      <div class="label">Prop ID:</div>
-      <div class="value">44401</div>
-
-      <div class="label">Acreage:</div>
-      <div class="value">1.7348 Acres (75,133 SF)</div>
+      <div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div>
+      <div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
+      <div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One</div>
+      <div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div>
+      <div class="label">Prop ID:</div><div class="value">44401</div>
+      <div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div>
     </div>
 
     <div class="tb-pe-box">
       <div class="pe-label">Professional Engineer Seal</div>
       <div>Reserved for PE stamp, signature, and date</div>
-      <div style="margin-top: 0.1in; font-size: 7pt;">Texas P.E. License No. ___________</div>
+      <div style="margin-top: 0.06in; font-size: 6.5pt;">Texas P.E. License No. ___________</div>
     </div>
 
-    <div class="tb-section" style="font-size: 8pt;">
+    <div style="padding: 0.05in 0.2in; font-size: 7.5pt; border-bottom: 1pt solid #888;">
       <div style="display:flex; justify-content:space-between;">
         <div><strong>Survey By:</strong> 4Ward Land Surveying</div>
         <div>Jason Ward, R.P.L.S. #5811</div>
@@ -881,24 +447,24 @@
 
     <div class="tb-footer">
       <div>
-        <div style="font-size: 7pt; color: #999;">PREPARED BY</div>
-        <div style="font-weight: 600;">Revocable Trust of Subhash Sonnad</div>
+        <div style="font-size: 6.5pt; color: #999;">PREPARED BY</div>
+        <div style="font-weight: 600; font-size: 7.5pt;">Revocable Trust of Subhash Sonnad</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 7pt; color: #999;">DATE</div>
+        <div style="font-size: 6.5pt; color: #999;">DATE</div>
         <div style="font-weight: 600;">March 2026</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 7pt; color: #999;">SCALE</div>
+        <div style="font-size: 6.5pt; color: #999;">SCALE</div>
         <div style="font-weight: 600;">1" = 30'</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 7pt; color: #999;">SHEET</div>
+        <div style="font-size: 6.5pt; color: #999;">SHEET</div>
         <div class="sheet-no">1 OF 1</div>
       </div>
     </div>
 
-    <div style="text-align: center; padding: 0.04in; background: #fff3f3; font-size: 8pt; font-weight: 700; color: #cc2222; letter-spacing: 0.1em; border-top: 1pt solid #cc2222;">
+    <div class="tb-preliminary">
       PRELIMINARY — NOT FOR CONSTRUCTION — SUBJECT TO PE REVIEW
     </div>
   </div>
