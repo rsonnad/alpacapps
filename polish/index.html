@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polish Lesson 1 — Greetings &amp; Basics</title>
+  <meta property="og:title" content="Polish Lesson 1 — Greetings & Basics">
+  <meta property="og:description" content="Interactive Polish language lesson for beginners. Greetings, polite phrases, basic verbs and conjugations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/polish/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf8f6;
+      --surface: #ffffff;
+      --surface2: #f4f1ee;
+      --border: #e2ddd8;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --accent: #dc2626;
+      --accent-soft: rgba(220, 38, 38, 0.07);
+      --blue: #2563eb;
+      --blue-soft: rgba(37, 99, 235, 0.08);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Grok instruction block ── */
+    .grok-instructions {
+      max-width: 720px;
+      margin: 1rem auto 0;
+      padding: 0 1.5rem;
+    }
+
+    .grok-instructions summary {
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.5rem 0;
+      list-style: none;
+    }
+
+    .grok-instructions summary::before {
+      content: '🤖 ';
+    }
+
+    .grok-instructions .grok-body {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .grok-instructions .grok-body p {
+      margin-bottom: 0.6rem;
+    }
+
+    .grok-instructions .grok-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .grok-instructions .grok-body strong {
+      color: var(--text-soft);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #fde8e8 0%, #f5eff6 40%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.35rem 1rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .card h2 .flag {
+      font-size: 1.4rem;
+      margin-right: 0.4rem;
+    }
+
+    /* ── Vocabulary items ── */
+    .vocab-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .vocab-item {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .vocab-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .vocab-polish {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      color: var(--text);
+      min-width: 0;
+      flex-shrink: 0;
+    }
+
+    .vocab-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+
+    .vocab-phonetic {
+      font-size: 0.95rem;
+      color: var(--accent);
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .vocab-english {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Pronunciation grid ── */
+    .pron-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .pron-item {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .pron-polish {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 2.5rem;
+    }
+
+    .pron-arrow {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .pron-english {
+      font-size: 1rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pron-example {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    /* ── Conjugation tables ── */
+    .verb-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .verb-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .verb-header {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .verb-header .infinitive {
+      font-size: 1.3rem;
+    }
+
+    .verb-header .meaning {
+      color: var(--text-dim);
+      font-weight: 400;
+      font-size: 0.95rem;
+    }
+
+    .conj-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .conj-cell {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .conj-pronoun {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .conj-word {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .conj-phonetic {
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-style: italic;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Sentences ── */
+    .sentence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .sentence-item {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sentence-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .sentence-polish {
+      font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .sentence-phonetic {
+      font-size: 0.9rem;
+      color: var(--accent);
+      font-style: italic;
+      margin-bottom: 0.15rem;
+    }
+
+    .sentence-english {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .card { padding: 1.5rem; }
+      .vocab-item { flex-direction: column; gap: 0.25rem; }
+      .pron-grid { grid-template-columns: 1fr; }
+      .conj-grid { gap: 0.35rem; }
+      .conj-cell { padding: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Grok AI Tutor Instructions ── -->
+  <details class="grok-instructions" open>
+    <summary>AI Tutor Instructions (for Grok)</summary>
+    <div class="grok-body">
+      <p><strong>Role:</strong> You are a friendly Polish language tutor giving Lesson 1 to a complete beginner. You are speaking through the Tesla car audio system (voice). The student is the driver.</p>
+      <p><strong>Context:</strong> The student can see this webpage on the Tesla center screen. It displays all the vocabulary, pronunciation guides, conjugation tables, and example sentences for this lesson. You should reference what's on screen — for example, "Look at the Greetings section on your screen — the first word is Cześć." The student responds by speaking only — they cannot type.</p>
+      <p><strong>Lesson Flow:</strong> 1) Start with the Pronunciation Key — explain the Polish sounds that are different from English. 2) Teach Greetings one by one — say each word slowly, explain pronunciation, pause for the student to repeat. 3) Move to Polite Phrases with the same pattern. 4) Introduce the four basic verbs, explaining that Polish verbs change form based on who is doing the action (conjugation). Teach each verb's ja/ty/on-ona forms. 5) Practice the example sentences — read each one, break it down word by word, have the student repeat. 6) End with a quiz — say English phrases and ask the student for the Polish translation.</p>
+      <p><strong>Teaching Style:</strong> Go slowly. Say each new word 2-3 times. Pause after each word for the student to repeat. Be encouraging and celebrate correct pronunciation. Use spaced repetition — circle back to earlier words throughout the lesson. Keep energy conversational, not lecture-style.</p>
+      <p><strong>Safety:</strong> The student is driving. Keep interactions simple — one word or short phrase at a time. Tell the student what section to glance at, but describe everything verbally so they don't need to stare at the screen. Never ask them to read long text from the screen.</p>
+      <p><strong>Detailed instructions:</strong> <a href="/polish/grok-lesson-1.json">/polish/grok-lesson-1.json</a></p>
+    </div>
+  </details>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <h1>Polish — Lesson 1</h1>
+    <p class="subtitle">Greetings, Polite Phrases &amp; Basic Verbs</p>
+    <span class="badge">Beginner</span>
+  </section>
+
+  <div class="container">
+
+    <!-- ── Pronunciation Key ── -->
+    <div class="card">
+      <h2><span class="flag">🔤</span> Pronunciation Key</h2>
+      <div class="pron-grid">
+        <div class="pron-item">
+          <span class="pron-polish">sz</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">sh</div>
+            <div class="pron-example">like "shoe"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">cz</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">ch</div>
+            <div class="pron-example">like "church"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ż / rz</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">zh</div>
+            <div class="pron-example">like "measure"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ś</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">soft sh</div>
+            <div class="pron-example">like "sheep" (softer)</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ć</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">soft ch</div>
+            <div class="pron-example">like "cheap" (softer)</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ź</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">soft zh</div>
+            <div class="pron-example">soft "vision"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">j</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">y</div>
+            <div class="pron-example">like "yes"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">w</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">v</div>
+            <div class="pron-example">like "vine"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ł</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">w</div>
+            <div class="pron-example">like "water"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ę</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">en (nasal)</div>
+            <div class="pron-example">"eh" through nose</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">ą</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">on (nasal)</div>
+            <div class="pron-example">"oh" through nose</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">dz</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">dz</div>
+            <div class="pron-example">like "odds"</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">dź</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">soft j</div>
+            <div class="pron-example">like "jeans" (softer)</div>
+          </div>
+        </div>
+        <div class="pron-item">
+          <span class="pron-polish">dż</span>
+          <span class="pron-arrow">=</span>
+          <div>
+            <div class="pron-english">hard j</div>
+            <div class="pron-example">like "jam"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Greetings ── -->
+    <div class="card">
+      <h2><span class="flag">👋</span> Greetings</h2>
+      <div class="vocab-list">
+        <div class="vocab-item">
+          <span class="vocab-polish">Cześć</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">cheshch</span>
+            <span class="vocab-english">Hi / Bye (informal)</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Dzień dobry</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">jen DOB-ry</span>
+            <span class="vocab-english">Good day (formal hello)</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Dobry wieczór</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">DOB-ry VYEH-choor</span>
+            <span class="vocab-english">Good evening</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Do widzenia</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">doh vee-DZEN-ya</span>
+            <span class="vocab-english">Goodbye (formal)</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Dobranoc</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">dob-RAH-nots</span>
+            <span class="vocab-english">Goodnight</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Polite Phrases ── -->
+    <div class="card">
+      <h2><span class="flag">🙏</span> Polite Phrases</h2>
+      <div class="vocab-list">
+        <div class="vocab-item">
+          <span class="vocab-polish">Dziękuję</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">jen-KOO-yeh</span>
+            <span class="vocab-english">Thank you</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Proszę</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">PRO-sheh</span>
+            <span class="vocab-english">Please / You're welcome</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Przepraszam</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">psheh-PRAH-shahm</span>
+            <span class="vocab-english">Sorry / Excuse me</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Tak</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">tahk</span>
+            <span class="vocab-english">Yes</span>
+          </div>
+        </div>
+        <div class="vocab-item">
+          <span class="vocab-polish">Nie</span>
+          <div class="vocab-meta">
+            <span class="vocab-phonetic">nyeh</span>
+            <span class="vocab-english">No</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Basic Verbs & Conjugation ── -->
+    <div class="card">
+      <h2><span class="flag">🔄</span> Basic Verbs — Conjugation</h2>
+
+      <div class="verb-section">
+        <div class="verb-header">
+          <span class="infinitive">być</span>
+          <span class="meaning">— to be</span>
+        </div>
+        <div class="conj-grid">
+          <div class="conj-cell">
+            <div class="conj-pronoun">ja (I)</div>
+            <div class="conj-word">jestem</div>
+            <div class="conj-phonetic">YES-tem</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">ty (you)</div>
+            <div class="conj-word">jesteś</div>
+            <div class="conj-phonetic">YES-tesh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">on/ona (he/she)</div>
+            <div class="conj-word">jest</div>
+            <div class="conj-phonetic">yest</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verb-section">
+        <div class="verb-header">
+          <span class="infinitive">mieć</span>
+          <span class="meaning">— to have</span>
+        </div>
+        <div class="conj-grid">
+          <div class="conj-cell">
+            <div class="conj-pronoun">ja (I)</div>
+            <div class="conj-word">mam</div>
+            <div class="conj-phonetic">mahm</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">ty (you)</div>
+            <div class="conj-word">masz</div>
+            <div class="conj-phonetic">mahsh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">on/ona (he/she)</div>
+            <div class="conj-word">ma</div>
+            <div class="conj-phonetic">mah</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verb-section">
+        <div class="verb-header">
+          <span class="infinitive">jechać</span>
+          <span class="meaning">— to go (by vehicle)</span>
+        </div>
+        <div class="conj-grid">
+          <div class="conj-cell">
+            <div class="conj-pronoun">ja (I)</div>
+            <div class="conj-word">jadę</div>
+            <div class="conj-phonetic">YAH-deh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">ty (you)</div>
+            <div class="conj-word">jedziesz</div>
+            <div class="conj-phonetic">YEH-jesh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">on/ona (he/she)</div>
+            <div class="conj-word">jedzie</div>
+            <div class="conj-phonetic">YEH-jeh</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verb-section">
+        <div class="verb-header">
+          <span class="infinitive">iść</span>
+          <span class="meaning">— to go (on foot)</span>
+        </div>
+        <div class="conj-grid">
+          <div class="conj-cell">
+            <div class="conj-pronoun">ja (I)</div>
+            <div class="conj-word">idę</div>
+            <div class="conj-phonetic">EE-deh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">ty (you)</div>
+            <div class="conj-word">idziesz</div>
+            <div class="conj-phonetic">EE-jesh</div>
+          </div>
+          <div class="conj-cell">
+            <div class="conj-pronoun">on/ona (he/she)</div>
+            <div class="conj-word">idzie</div>
+            <div class="conj-phonetic">EE-jeh</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Example Sentences ── -->
+    <div class="card">
+      <h2><span class="flag">💬</span> Example Sentences</h2>
+      <div class="sentence-list">
+        <div class="sentence-item">
+          <div class="sentence-polish">Jadę do sklepu.</div>
+          <div class="sentence-phonetic">YAH-deh doh SKLEH-poo</div>
+          <div class="sentence-english">I'm going to the store.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Jadę do domu.</div>
+          <div class="sentence-phonetic">YAH-deh doh DOH-moo</div>
+          <div class="sentence-english">I'm going home.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Jestem w domu.</div>
+          <div class="sentence-phonetic">YES-tem v DOH-moo</div>
+          <div class="sentence-english">I am at home.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Mam samochód.</div>
+          <div class="sentence-phonetic">mahm sah-MOH-hood</div>
+          <div class="sentence-english">I have a car.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">On jedzie do pracy.</div>
+          <div class="sentence-phonetic">on YEH-jeh doh PRAH-tsy</div>
+          <div class="sentence-english">He is going to work.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Ona jest w sklepie.</div>
+          <div class="sentence-phonetic">OH-nah yest v SKLEH-pyeh</div>
+          <div class="sentence-english">She is at the store.</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Czy masz samochód?</div>
+          <div class="sentence-phonetic">chy mahsh sah-MOH-hood</div>
+          <div class="sentence-english">Do you have a car?</div>
+        </div>
+        <div class="sentence-item">
+          <div class="sentence-polish">Idę do parku.</div>
+          <div class="sentence-phonetic">EE-deh doh PAR-koo</div>
+          <div class="sentence-english">I'm walking to the park.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <a href="/rahulio/pages/sloop/">Sloop</a> &middot;
+    <a href="/ukulele/">Ukulele Lessons</a>
+    <br>
+    <span data-site-version></span>
+  </footer>
+
+</body>
+</html>
