@@ -73,26 +73,42 @@
         </div>
       </section>
 
-      <!-- Recent Events Section -->
-      <section class="section" id="eventsSection" style="display: none;">
-        <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-          <h2 style="margin:0">Recent Events</h2>
-          <div class="event-date-filter" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem">
-            <label for="eventDateFrom" style="color:var(--text-muted)">From</label>
-            <input type="date" id="eventDateFrom" style="padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:var(--bg-card);color:var(--text)">
-            <label for="eventDateTo" style="color:var(--text-muted)">To</label>
-            <input type="date" id="eventDateTo" style="padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:var(--bg-card);color:var(--text)">
-            <button id="eventDateApply" onclick="window.__filterEventsByDate()" style="padding:0.25rem 0.75rem;border:1px solid var(--aap-accent,#3b82f6);border-radius:6px;background:var(--aap-accent,#3b82f6);color:#fff;font-size:0.8rem;cursor:pointer">Filter</button>
-            <button id="eventDateClear" onclick="window.__clearEventDateFilter()" style="padding:0.25rem 0.5rem;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;display:none">✕</button>
+      <!-- Recent Events Section — UniFi-style filmstrip -->
+      <section class="section evt-section" id="eventsSection" style="display: none;">
+        <!-- Main preview area -->
+        <div class="evt-preview" id="evtPreview">
+          <div class="evt-preview__empty" id="evtPreviewEmpty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <span>Select an event below</span>
+          </div>
+          <img class="evt-preview__img hidden" id="evtPreviewImg" alt="Event preview">
+          <div class="evt-preview__meta hidden" id="evtPreviewMeta"></div>
+          <button class="evt-preview__play hidden" id="evtPreviewPlay" title="Play clip">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="evt-filters">
+          <div class="evt-filters__date">
+            <input type="date" id="eventDatePicker" class="evt-date-input" title="Filter by date">
+            <button class="evt-date-clear hidden" id="eventDateClear" onclick="window.__clearEventDateFilter()" title="Clear date">&times;</button>
+          </div>
+          <div class="evt-filters__types" id="evtTypeFilters">
+            <button class="evt-type-btn active" data-type="all">All</button>
+            <button class="evt-type-btn" data-type="person"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg> Person</button>
+            <button class="evt-type-btn" data-type="animal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/><path d="M8 14v.5M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/><path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a13.152 13.152 0 00-.42-3.31"/></svg> Animal</button>
+            <button class="evt-type-btn" data-type="vehicle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg> Vehicle</button>
+            <button class="evt-type-btn" data-type="package"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16Z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg> Package</button>
           </div>
         </div>
-        <div class="section-body">
-          <div class="event-grid" id="eventGrid">
+
+        <!-- Filmstrip -->
+        <div class="evt-filmstrip" id="evtFilmstrip">
+          <div class="evt-filmstrip__track" id="eventGrid">
             <!-- Rendered by JS -->
           </div>
-          <div class="event-more-wrap">
-            <button id="eventsMoreBtn" class="event-more-btn" style="display:none" onclick="window.__loadMoreEvents(this)">Load More</button>
-          </div>
+          <button id="eventsMoreBtn" class="evt-filmstrip__more hidden" onclick="window.__loadMoreEvents(this)">Load More</button>
         </div>
       </section>
     </main>
