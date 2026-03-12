@@ -1,12 +1,12 @@
 {
-  "version": "v260311.19 7:40p",
-  "release": 642,
-  "sha": "6a5b3f340",
-  "fullSha": "6a5b3f34012e0add8a7201c46dd840d74cfd31fe",
+  "version": "v260311.20 7:45p",
+  "release": 643,
+  "sha": "f8746e4c3",
+  "fullSha": "f8746e4c32641b24747d1fc8e5527b80744a73e0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 00:40:22+00",
-  "commits": [{"sha":"6a5b3f340","message":"Redesign sloop page: thin nav header, compact layout, links first (#20)","author":"Rahul"}]
+  "pushedAt": "2026-03-12 00:45:59+00",
+  "commits": [{"sha":"f8746e4c3","message":"Polish lesson: add 3-pronoun examples per verb + Grok pronunciation correction (#21)","author":"Rahul"}]
 }
