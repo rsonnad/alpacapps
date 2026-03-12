@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.alpacapps.ptz-proxy</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>/Users/alpaca/ptz-proxy/ptz-proxy.js</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/alpaca/ptz-proxy</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PTZ_PORT</key>
+    <string>8901</string>
+    <key>UDM_HOST</key>
+    <string>192.168.1.1</string>
+    <key>UDM_USER</key>
+    <string>alpacaauto</string>
+    <!-- UDM_PASS loaded from .env via wrapper or set here -->
+  </dict>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/alpaca/ptz-proxy/ptz-proxy.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/alpaca/ptz-proxy/ptz-proxy.err</string>
+
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+</dict>
+</plist>

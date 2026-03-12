@@ -1,6 +1,6 @@
 /**
- * Cameras Page - Live camera feeds via go2rtc + HLS proxy
- * Loads stream config from camera_streams table, plays via HLS.js
+ * Cameras Page - Live camera feeds via go2rtc WebRTC (HLS fallback)
+ * Loads stream config from camera_streams table, plays via WebRTC or HLS.js
  * Features: quality selection, PTZ controls, snapshots, IR/LED/HDR toggles, presets, lightbox
  */
 
@@ -443,57 +443,54 @@ function renderCameras() {
 }
 
 // =============================================
-// HLS PLAYBACK
+// STREAM PLAYBACK — WebRTC (primary) + HLS (fallback)
 // =============================================
-const activeHls = {};   // track Hls instances for cleanup
-const retryCount = {};  // retry counter per camera
-const MAX_RETRIES = 8;  // ~40s of retrying (5s intervals)
+const activeStreams = {};  // track active RTCPeerConnection or Hls instances
+const activeHls = {};      // legacy alias for HLS-only cleanup paths
+const retryCount = {};     // retry counter per camera
+const MAX_RETRIES = 8;     // ~40s of retrying (5s intervals)
 
-function startStream(camIndex, quality, videoElementId) {
-  const cam = cameras[camIndex];
-  const stream = cam.streams[quality];
-  if (!stream) return;
+/**
+ * Start a WebRTC stream via go2rtc's /api/webrtc endpoint.
+ * Returns the RTCPeerConnection on success, throws on failure.
+ */
+async function startWebRTC(video, streamName, proxyBase) {
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
 
-  const videoId = videoElementId || `video-${camIndex}`;
-  const video = document.getElementById(videoId);
-  const overlayId = videoElementId ? 'lightbox-overlay-inner' : `overlay-${camIndex}`;
-  const overlay = document.getElementById(overlayId);
-  const dotId = videoElementId ? null : `dot-${camIndex}`;
-  const dot = dotId ? document.getElementById(dotId) : null;
-  if (!video) return;
+  // Receive video + audio tracks
+  pc.addTransceiver('video', { direction: 'recvonly' });
+  pc.addTransceiver('audio', { direction: 'recvonly' });
 
-  // Determine HLS tracking key (grid uses camIndex, lightbox uses 'lb')
-  const hlsKey = videoElementId ? 'lb' : camIndex;
-
-  // Clean up previous instance
-  if (activeHls[hlsKey]) {
-    activeHls[hlsKey].destroy();
-    delete activeHls[hlsKey];
-  }
-
-  // Initialize retry counter
-  if (retryCount[hlsKey] === undefined) retryCount[hlsKey] = 0;
-
-  const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}&mp4`;
-
-  if (overlay) {
-    overlay.classList.remove('hidden');
-    const retries = retryCount[hlsKey];
-    const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
-    if (loadingEl.classList) {
-      loadingEl.textContent = retries === 0 ? 'Connecting...' : `Warming up camera... (${retries}/${MAX_RETRIES})`;
+  pc.ontrack = (event) => {
+    if (video.srcObject !== event.streams[0]) {
+      video.srcObject = event.streams[0];
     }
-  }
-  if (dot) dot.className = 'status-dot status-connecting';
+  };
 
-  if (typeof Hls === 'undefined') {
-    if (overlay) {
-      const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
-      loadingEl.textContent = 'Player not available';
-    }
-    if (dot) dot.className = 'status-dot status-offline';
-    return;
-  }
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  const res = await fetch(`${proxyBase}/api/webrtc?src=${streamName}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/sdp' },
+    body: offer.sdp,
+  });
+
+  if (!res.ok) throw new Error(`WebRTC signaling failed: ${res.status}`);
+
+  const answerSdp = await res.text();
+  await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answerSdp }));
+
+  return pc;
+}
+
+/**
+ * Start an HLS stream (fallback when WebRTC fails).
+ */
+function startHLS(video, hlsUrl, hlsKey, camIndex, quality, videoElementId, overlay, dot) {
+  if (typeof Hls === 'undefined') return null;
 
   if (Hls.isSupported()) {
     const hls = new Hls({
@@ -511,6 +508,7 @@ function startStream(camIndex, quality, videoElementId) {
       fragLoadingRetryDelay: 3000,
     });
     activeHls[hlsKey] = hls;
+    activeStreams[hlsKey] = hls;
 
     hls.loadSource(hlsUrl);
     hls.attachMedia(video);
@@ -522,17 +520,18 @@ function startStream(camIndex, quality, videoElementId) {
       video.play().catch(() => {});
     });
 
-    hls.on(Hls.Events.ERROR, (event, data) => {
+    hls.on(Hls.Events.ERROR, (_event, data) => {
       if (!data.fatal) return;
 
       if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-        console.warn(`[Camera ${camIndex}] Media error, attempting recovery`);
+        console.warn(`[Camera ${camIndex}] HLS media error, attempting recovery`);
         hls.recoverMediaError();
         return;
       }
 
       hls.destroy();
       delete activeHls[hlsKey];
+      delete activeStreams[hlsKey];
 
       if (retryCount[hlsKey] < MAX_RETRIES) {
         retryCount[hlsKey]++;
@@ -548,18 +547,19 @@ function startStream(camIndex, quality, videoElementId) {
         setTimeout(() => startStream(camIndex, quality, videoElementId), 30000);
       }
     });
+    return hls;
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     // Native HLS (Safari/iOS)
     video.src = hlsUrl;
     video.addEventListener('loadedmetadata', () => {
-      retryCount[camIndex] = 0;
+      retryCount[hlsKey] = 0;
       if (overlay) overlay.classList.add('hidden');
       if (dot) dot.className = 'status-dot status-live';
       video.play().catch(() => {});
     }, { once: true });
     video.addEventListener('error', () => {
-      if (retryCount[camIndex] < MAX_RETRIES) {
-        retryCount[camIndex]++;
+      if (retryCount[hlsKey] < MAX_RETRIES) {
+        retryCount[hlsKey]++;
         setTimeout(() => startStream(camIndex, quality, videoElementId), 5000);
       } else {
         if (overlay) {
@@ -568,18 +568,119 @@ function startStream(camIndex, quality, videoElementId) {
           loadingEl.textContent = 'Stream offline';
         }
         if (dot) dot.className = 'status-dot status-offline';
-        retryCount[camIndex] = 0;
+        retryCount[hlsKey] = 0;
         setTimeout(() => startStream(camIndex, quality, videoElementId), 30000);
       }
     }, { once: true });
-  } else {
-    if (overlay) {
-      const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
-      loadingEl.textContent = 'Browser not supported';
-    }
-    if (dot) dot.className = 'status-dot status-offline';
+    return 'native';
   }
+  return null;
 }
+
+/**
+ * Clean up an active stream (WebRTC or HLS).
+ */
+function cleanupStream(key) {
+  const instance = activeStreams[key];
+  if (!instance) return;
+
+  if (instance instanceof RTCPeerConnection) {
+    instance.close();
+  } else if (instance && typeof instance.destroy === 'function') {
+    instance.destroy();
+  }
+  delete activeStreams[key];
+  delete activeHls[key];
+}
+
+function startStream(camIndex, quality, videoElementId) {
+  const cam = cameras[camIndex];
+  const stream = cam.streams[quality];
+  if (!stream) return;
+
+  const videoId = videoElementId || `video-${camIndex}`;
+  const video = document.getElementById(videoId);
+  const overlayId = videoElementId ? 'lightbox-overlay-inner' : `overlay-${camIndex}`;
+  const overlay = document.getElementById(overlayId);
+  const dotId = videoElementId ? null : `dot-${camIndex}`;
+  const dot = dotId ? document.getElementById(dotId) : null;
+  if (!video) return;
+
+  // Determine tracking key (grid uses camIndex, lightbox uses 'lb')
+  const streamKey = videoElementId ? 'lb' : camIndex;
+
+  // Clean up previous instance
+  cleanupStream(streamKey);
+
+  // Initialize retry counter
+  if (retryCount[streamKey] === undefined) retryCount[streamKey] = 0;
+
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    const retries = retryCount[streamKey];
+    const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
+    if (loadingEl.classList) {
+      loadingEl.textContent = retries === 0 ? 'Connecting...' : `Warming up camera... (${retries}/${MAX_RETRIES})`;
+    }
+  }
+  if (dot) dot.className = 'status-dot status-connecting';
+
+  // Try WebRTC first, fall back to HLS
+  startWebRTC(video, stream.stream_name, stream.proxy_base_url)
+    .then((pc) => {
+      activeStreams[streamKey] = pc;
+      retryCount[streamKey] = 0;
+      if (overlay) overlay.classList.add('hidden');
+      if (dot) dot.className = 'status-dot status-live';
+      video.play().catch(() => {});
+
+      // Monitor connection state
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+          console.warn(`[Camera ${camIndex}] WebRTC ${pc.connectionState}, retrying...`);
+          cleanupStream(streamKey);
+          if (retryCount[streamKey] < MAX_RETRIES) {
+            retryCount[streamKey]++;
+            setTimeout(() => startStream(camIndex, quality, videoElementId), 5000);
+          } else {
+            if (overlay) {
+              overlay.classList.remove('hidden');
+              const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
+              loadingEl.textContent = 'Stream offline';
+            }
+            if (dot) dot.className = 'status-dot status-offline';
+            retryCount[streamKey] = 0;
+            setTimeout(() => startStream(camIndex, quality, videoElementId), 30000);
+          }
+        }
+      };
+    })
+    .catch((err) => {
+      console.warn(`[Camera ${camIndex}] WebRTC failed, falling back to HLS:`, err.message);
+
+      // Reset video.srcObject from WebRTC attempt
+      video.srcObject = null;
+
+      const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}&mp4`;
+      const result = startHLS(video, hlsUrl, streamKey, camIndex, quality, videoElementId, overlay, dot);
+      if (!result) {
+        if (overlay) {
+          const loadingEl = overlay.querySelector('.camera-card__loading') || overlay;
+          loadingEl.textContent = 'Player not available';
+        }
+        if (dot) dot.className = 'status-dot status-offline';
+      }
+    });
+}
+
+// Clean up streams on page hide (save bandwidth)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    for (const key of Object.keys(activeStreams)) {
+      cleanupStream(key);
+    }
+  }
+});
 
 // =============================================
 // BLINK SNAPSHOT REFRESH
@@ -1336,7 +1437,7 @@ window.__loadMoreEvents = function(btn) {
   });
 };
 
-// Inline video player — fetches clip as blob with progress, then plays from memory
+// Inline video player — streams clip directly from ptz-proxy (no blob buffering)
 window.__playClip = function(btn) {
   const card = btn.closest('.event-card');
   if (!card) return;
@@ -1357,14 +1458,6 @@ window.__playClip = function(btn) {
     <div class="video-overlay__backdrop"></div>
     <div class="video-overlay__container">
       <div class="video-overlay__loading" id="videoLoading">
-        <div class="video-overlay__progress-ring">
-          <svg viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
-            <circle cx="24" cy="24" r="20" fill="none" stroke="#fff" stroke-width="3"
-              stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-linecap="round"
-              id="videoProgressCircle"/>
-          </svg>
-        </div>
         <div class="video-overlay__progress-text" id="videoProgressText">Loading clip…</div>
       </div>
       <video class="video-overlay__player" id="videoPlayer" controls playsinline style="display:none"></video>
@@ -1372,11 +1465,9 @@ window.__playClip = function(btn) {
     </div>`;
   document.body.appendChild(overlay);
 
-  let blobUrl = null;
   const close = () => {
     const v = overlay.querySelector('video');
     if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
-    if (blobUrl) URL.revokeObjectURL(blobUrl);
     overlay.remove();
   };
   overlay.querySelector('.video-overlay__backdrop').addEventListener('click', close);
@@ -1385,54 +1476,23 @@ window.__playClip = function(btn) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
   });
 
-  // Fetch clip as blob with progress
-  (async () => {
-    try {
-      const res = await fetch(src);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  // Stream directly — browser handles buffering via HTTP chunked transfer
+  const loading = document.getElementById('videoLoading');
+  const player = document.getElementById('videoPlayer');
 
-      const total = Number(res.headers.get('content-length')) || 0;
-      const reader = res.body.getReader();
-      const chunks = [];
-      let loaded = 0;
+  if (player) {
+    player.src = src;
 
-      const circle = document.getElementById('videoProgressCircle');
-      const textEl = document.getElementById('videoProgressText');
-      const circumference = 125.66; // 2 * PI * 20
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.length;
-
-        // Update progress
-        if (total > 0) {
-          const pct = Math.min(loaded / total, 1);
-          if (circle) circle.setAttribute('stroke-dashoffset', String(circumference * (1 - pct)));
-          if (textEl) textEl.textContent = `${Math.round(pct * 100)}%`;
-        } else {
-          const mb = (loaded / 1048576).toFixed(1);
-          if (textEl) textEl.textContent = `${mb} MB`;
-        }
-      }
-
-      // Build blob and play
-      const blob = new Blob(chunks, { type: 'video/mp4' });
-      blobUrl = URL.createObjectURL(blob);
-
-      const loading = document.getElementById('videoLoading');
-      const player = document.getElementById('videoPlayer');
+    player.addEventListener('canplay', () => {
       if (loading) loading.style.display = 'none';
-      if (player) {
-        player.src = blobUrl;
-        player.style.display = '';
-        player.play().catch(() => {}); // autoplay may be blocked
-      }
-    } catch (err) {
+      player.style.display = '';
+      player.play().catch(() => {});
+    }, { once: true });
+
+    player.addEventListener('error', () => {
       const textEl = document.getElementById('videoProgressText');
-      if (textEl) textEl.textContent = `Failed to load clip`;
-      console.warn('[Video] Error:', err.message);
-    }
-  })();
+      if (textEl) textEl.textContent = 'Failed to load clip';
+      console.warn('[Video] Stream error for:', src);
+    }, { once: true });
+  }
 };
