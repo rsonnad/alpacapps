@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       startSensorPolling();
       startLocalClock();
       // Load and display recent events
+      initEventFilters();
       loadEvents();
     },
   });
@@ -1349,11 +1350,13 @@ function timeAgo(ms) {
   return `${Math.floor(sec / 86400)}d ago`;
 }
 
-const EVENTS_INITIAL = 28;
-const EVENTS_MORE = 24;
+const EVENTS_INITIAL = 40;
+const EVENTS_MORE = 30;
 let allEvents = [];
 let eventsFirstLoad = true;
 let eventDateFilter = { start: null, end: null };
+let eventTypeFilter = 'all';
+let selectedEventIdx = -1;
 
 async function loadEvents(older) {
   const section = document.getElementById('eventsSection');
@@ -1365,16 +1368,13 @@ async function loadEvents(older) {
     const pageSize = eventsFirstLoad ? EVENTS_INITIAL : EVENTS_MORE;
     let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}&types[]=motion&types[]=smartDetectZone&orderDirection=desc`;
 
-    // Date filter: convert dates to ms timestamps
     if (eventDateFilter.start) {
       url += `&start=${new Date(eventDateFilter.start).getTime()}`;
     }
     if (eventDateFilter.end) {
-      // End of day
       url += `&end=${new Date(eventDateFilter.end + 'T23:59:59').getTime()}`;
     }
 
-    // Pagination: load older = events before the oldest we have (desc order)
     if (older && allEvents.length) {
       const oldest = allEvents[allEvents.length - 1];
       url += `&end=${oldest.start - 1}`;
@@ -1389,34 +1389,82 @@ async function loadEvents(older) {
 
     renderEvents();
 
-    // Show/hide Load More button
     const expectedSize = older ? EVENTS_MORE : EVENTS_INITIAL;
-    if (moreBtn) moreBtn.style.display = events.length >= expectedSize ? '' : 'none';
+    if (moreBtn) moreBtn.classList.toggle('hidden', events.length < expectedSize);
   } catch (err) {
     console.warn('[Events] Failed to load:', err.message);
   }
 }
 
-window.__filterEventsByDate = function() {
-  const from = document.getElementById('eventDateFrom')?.value;
-  const to = document.getElementById('eventDateTo')?.value;
-  eventDateFilter = { start: from || null, end: to || null };
-  const clearBtn = document.getElementById('eventDateClear');
-  if (clearBtn) clearBtn.style.display = (from || to) ? '' : 'none';
+// Date picker — single input, sets both start/end to same day
+function initEventFilters() {
+  const picker = document.getElementById('eventDatePicker');
+  if (picker) {
+    picker.addEventListener('change', () => {
+      const v = picker.value;
+      if (v) {
+        eventDateFilter = { start: v, end: v };
+        document.getElementById('eventDateClear')?.classList.remove('hidden');
+      } else {
+        eventDateFilter = { start: null, end: null };
+        document.getElementById('eventDateClear')?.classList.add('hidden');
+      }
+      allEvents = [];
+      eventsFirstLoad = true;
+      selectedEventIdx = -1;
+      loadEvents(false);
+    });
+  }
+
+  // Type filter buttons
+  const typeBtns = document.getElementById('evtTypeFilters');
+  if (typeBtns) {
+    typeBtns.addEventListener('click', (e) => {
+      const btn = e.target.closest('.evt-type-btn');
+      if (!btn) return;
+      typeBtns.querySelectorAll('.evt-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      eventTypeFilter = btn.dataset.type;
+      renderEvents();
+    });
+  }
+}
+
+window.__clearEventDateFilter = function() {
+  const picker = document.getElementById('eventDatePicker');
+  if (picker) picker.value = '';
+  eventDateFilter = { start: null, end: null };
+  document.getElementById('eventDateClear')?.classList.add('hidden');
   allEvents = [];
   eventsFirstLoad = true;
+  selectedEventIdx = -1;
   loadEvents(false);
 };
 
-window.__clearEventDateFilter = function() {
-  document.getElementById('eventDateFrom').value = '';
-  document.getElementById('eventDateTo').value = '';
-  eventDateFilter = { start: null, end: null };
-  const clearBtn = document.getElementById('eventDateClear');
-  if (clearBtn) clearBtn.style.display = 'none';
-  allEvents = [];
-  eventsFirstLoad = true;
-  loadEvents(false);
+function getFilteredEvents() {
+  if (eventTypeFilter === 'all') return allEvents;
+  return allEvents.filter(ev => {
+    const types = ev.smartDetectTypes && ev.smartDetectTypes.length ? ev.smartDetectTypes : [ev.type || 'motion'];
+    return types.includes(eventTypeFilter);
+  });
+}
+
+function formatEventTime(ms) {
+  const d = new Date(ms);
+  const mon = d.toLocaleString('en-US', { month: 'short' });
+  const day = d.getDate();
+  const h = d.getHours();
+  const m = d.getMinutes().toString().padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${mon} ${day}, ${h12}:${m} ${ampm}`;
+}
+
+const DETECT_BADGE_ICONS = {
+  person: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>',
+  animal: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/><path d="M8 14v.5M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/><path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a13.152 13.152 0 00-.42-3.31"/></svg>',
+  vehicle: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+  package: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16Z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>',
 };
 
 function renderEvents() {
@@ -1425,42 +1473,100 @@ function renderEvents() {
   if (!section || !grid || !allEvents.length) return;
 
   section.style.display = '';
-  const cameraNames = getCameraNameMap();
+  const filtered = getFilteredEvents();
 
-  grid.innerHTML = allEvents.map(ev => {
+  grid.innerHTML = filtered.map((ev, i) => {
     const types = ev.smartDetectTypes && ev.smartDetectTypes.length ? ev.smartDetectTypes : [ev.type || 'motion'];
     const mainType = types[0];
-    const cameraName = cameraNames[ev.camera] || 'Camera';
     const thumbUrl = ev.thumbnail ? `${EVENTS_PROXY_BASE}/thumbnail/${ev.thumbnail}` : '';
-    const ago = timeAgo(ev.start);
-    const score = ev.score != null ? ev.score : '';
-    const durationSec = ev.end && ev.start ? Math.round((ev.end - ev.start) / 1000) : 0;
+    const timeLabel = formatEventTime(ev.start);
 
+    const typeDots = types.filter(t => t !== 'motion').map(t =>
+      `<span class="evt-thumb__badge evt-thumb__badge--${t}" title="${t}">${DETECT_BADGE_ICONS[t] || ''}</span>`
+    ).join('');
+
+    return `<div class="evt-thumb${i === selectedEventIdx ? ' evt-thumb--active' : ''}" data-idx="${i}" data-camera="${ev.camera}" data-start="${ev.start}" data-end="${ev.end}" onclick="window.__selectEvent(${i})">
+      ${thumbUrl
+        ? `<img src="${thumbUrl}" alt="${mainType}" loading="lazy">`
+        : `<div class="evt-thumb__empty">${DETECT_ICONS[mainType] || '?'}</div>`}
+      <div class="evt-thumb__time">${timeLabel}</div>
+      ${typeDots ? `<div class="evt-thumb__badges">${typeDots}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Auto-select first if none selected
+  if (selectedEventIdx < 0 && filtered.length) {
+    window.__selectEvent(0);
+  }
+}
+
+window.__selectEvent = function(idx) {
+  const filtered = getFilteredEvents();
+  const ev = filtered[idx];
+  if (!ev) return;
+  selectedEventIdx = idx;
+
+  // Update active state
+  document.querySelectorAll('.evt-thumb').forEach((el, i) => {
+    el.classList.toggle('evt-thumb--active', i === idx);
+  });
+
+  // Scroll active into view
+  const activeEl = document.querySelector('.evt-thumb--active');
+  if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Update preview
+  const cameraNames = getCameraNameMap();
+  const cameraName = cameraNames[ev.camera] || 'Camera';
+  const types = ev.smartDetectTypes && ev.smartDetectTypes.length ? ev.smartDetectTypes : [ev.type || 'motion'];
+  const thumbUrl = ev.thumbnail ? `${EVENTS_PROXY_BASE}/thumbnail/${ev.thumbnail}` : '';
+  const score = ev.score != null ? ev.score : '';
+  const durationSec = ev.end && ev.start ? Math.round((ev.end - ev.start) / 1000) : 0;
+
+  const previewImg = document.getElementById('evtPreviewImg');
+  const previewMeta = document.getElementById('evtPreviewMeta');
+  const previewEmpty = document.getElementById('evtPreviewEmpty');
+  const previewPlay = document.getElementById('evtPreviewPlay');
+
+  if (thumbUrl && previewImg) {
+    previewImg.src = thumbUrl;
+    previewImg.classList.remove('hidden');
+    previewEmpty?.classList.add('hidden');
+  } else {
+    previewImg?.classList.add('hidden');
+    previewEmpty?.classList.remove('hidden');
+  }
+
+  if (previewMeta) {
     const typeBadges = types.map(t =>
       `<span class="event-badge event-badge--${t}">${DETECT_ICONS[t] || ''} ${t}</span>`
     ).join('');
+    previewMeta.innerHTML = `
+      <div class="evt-preview__badges">${typeBadges}</div>
+      <div class="evt-preview__details">
+        <span class="evt-preview__camera">${cameraName}</span>
+        <span class="evt-preview__time">${formatEventTime(ev.start)}</span>
+        ${durationSec ? `<span class="evt-preview__dur">${durationSec}s</span>` : ''}
+        ${score ? `<span class="evt-preview__score">${score}%</span>` : ''}
+      </div>`;
+    previewMeta.classList.remove('hidden');
+  }
 
-    return `<div class="event-card" data-camera="${ev.camera}" data-start="${ev.start}" data-end="${ev.end}">
-      <div class="event-card__thumb">
-        ${thumbUrl
-          ? `<img src="${thumbUrl}" alt="${mainType} detected" loading="lazy">`
-          : `<div class="event-card__no-thumb">${DETECT_ICONS[mainType] || '?'}</div>`}
-      </div>
-      <div class="event-card__info">
-        <div class="event-card__badges">${typeBadges}</div>
-        <div class="event-card__meta">
-          <span class="event-card__camera">${cameraName}</span>
-          <span class="event-card__time">${ago}</span>
-          ${durationSec ? `<span class="event-card__duration">${durationSec}s</span>` : ''}
-          ${score ? `<span class="event-card__score">${score}%</span>` : ''}
-        </div>
-      </div>
-      <button class="event-card__play" title="Play clip" onclick="window.__playClip(this)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-    </div>`;
-  }).join('');
-}
+  if (previewPlay) {
+    previewPlay.classList.remove('hidden');
+    previewPlay.onclick = () => {
+      // Reuse existing __playClip with a fake card element
+      const fakeCard = document.createElement('div');
+      fakeCard.className = 'event-card';
+      fakeCard.dataset.camera = ev.camera;
+      fakeCard.dataset.start = ev.start;
+      fakeCard.dataset.end = ev.end;
+      const fakeBtn = document.createElement('button');
+      fakeCard.appendChild(fakeBtn);
+      window.__playClip(fakeBtn);
+    };
+  }
+};
 
 window.__loadMoreEvents = function(btn) {
   btn.textContent = 'Loading...';
