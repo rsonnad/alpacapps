@@ -1,12 +1,12 @@
 {
-  "version": "v260312.16 3:06p",
-  "release": 663,
-  "sha": "881358772",
-  "fullSha": "8813587725b57e429b256cd0d93b41c250c02b0c",
+  "version": "v260312.17 4:24p",
+  "release": 664,
+  "sha": "49903f95c",
+  "fullSha": "49903f95c4b5ac8b535204583773aa0dad05ee86",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 20:06:13+00",
-  "commits": [{"sha":"881358772","message":"Fix weather badge showing ALL CLEAR despite elevated SPC risk (#25)","author":"Rahul"}]
+  "pushedAt": "2026-03-12 21:24:39+00",
+  "commits": [{"sha":"316151a4a","message":"Camera infra: WebRTC live feeds + streaming clips + Cloudflare Tunnel","author":"Rahul"},{"sha":"49903f95c","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
 }
