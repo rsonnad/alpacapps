@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pre-Professional Checklist — 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+      --available: #22c55e; --occupied: #ef4444;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Auth overlay */
+    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .auth-overlay.hidden { display: none; }
+    .auth-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; max-width: 360px; width: 90%; text-align: center; }
+    .auth-form h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .auth-form p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+    .auth-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; margin-bottom: 0.75rem; }
+    .auth-form button { width: 100%; padding: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .auth-form button:hover { opacity: 0.9; }
+    .auth-error { color: var(--occupied); font-size: 0.8rem; margin-bottom: 0.5rem; display: none; }
+
+    /* Page header */
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .page-header .user-info { font-size: 0.75rem; color: var(--text-muted); }
+    .page-header .logout-btn { font-size: 0.75rem; color: var(--accent); cursor: pointer; border: none; background: none; font-family: inherit; margin-left: 0.5rem; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; animation: toastIn 0.2s ease-out; }
+    .toast.success { background: #d1fae5; color: #065f46; }
+    .toast.error { background: #fee2e2; color: #991b1b; }
+    @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Content */
+    .page-content { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
+
+    /* Back link */
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--accent); text-decoration: none; font-weight: 600; margin-bottom: 1rem; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Summary bar */
+    .summary-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .summary-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem; text-align: center; }
+    .summary-stat .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+    .summary-stat .value { font-size: 1.3rem; font-weight: 800; margin-top: 0.1rem; }
+    .summary-stat .value.done { color: var(--available); }
+    .summary-stat .value.remaining { color: var(--accent); }
+
+    /* Context card */
+    .context-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .context-card h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .context-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.4rem; }
+    .context-card .pros-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; margin-top: 0.75rem; }
+    .context-card .pro-item { font-size: 0.75rem; padding: 0.4rem 0.6rem; background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 6px; text-align: center; font-weight: 600; color: #1e40af; }
+
+    /* Phase sections */
+    .phase-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; }
+    .phase-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .phase-header:hover { background: #f0efea; }
+    .phase-header h3 { font-size: 0.92rem; font-weight: 700; flex: 1; }
+    .phase-header .phase-days { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-right: 0.5rem; }
+    .phase-progress { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+    .phase-chevron { transition: transform 0.2s; }
+    .phase-section.collapsed .phase-chevron { transform: rotate(-90deg); }
+    .phase-section.collapsed .phase-body { display: none; }
+
+    /* Task items */
+    .task-item { display: flex; gap: 0.6rem; padding: 0.6rem 1rem; border-bottom: 1px solid #f3f4f6; align-items: flex-start; font-size: 0.85rem; }
+    .task-item:last-child { border-bottom: none; }
+    .task-item:hover { background: #fafaf8; }
+
+    .task-checkbox { width: 18px; height: 18px; min-width: 18px; border: 2px solid #d1d5db; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; margin-top: 2px; }
+    .task-checkbox.checked { background: var(--available); border-color: var(--available); }
+    .task-checkbox.checked svg { display: block; }
+    .task-checkbox svg { display: none; color: #fff; width: 12px; height: 12px; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-body.checked .task-text { text-decoration: line-through; color: var(--text-muted); }
+    .task-text { font-weight: 500; line-height: 1.4; }
+    .task-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+    .task-tag { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; text-transform: uppercase; white-space: nowrap; }
+    .tag-who { background: #ede9fe; color: #5b21b6; }
+    .tag-tools { background: #fef3c7; color: #92400e; }
+    .tag-measure { background: #e0f2fe; color: #0369a1; }
+    .tag-warning { background: #fee2e2; color: #991b1b; }
+
+    .task-warning { font-size: 0.75rem; color: #991b1b; background: #fef2f2; border-left: 3px solid #ef4444; padding: 0.3rem 0.5rem; margin-top: 0.3rem; border-radius: 0 4px 4px 0; line-height: 1.4; }
+
+    /* Print styles */
+    @media print {
+      .page-header, .back-link, .toast-container, .auth-overlay { display: none !important; }
+      .page-content { padding: 0; max-width: 100%; }
+      body { background: #fff; }
+      .phase-section.collapsed .phase-body { display: block !important; }
+      .task-checkbox { border: 2px solid #000; }
+    }
+
+    @media (max-width: 640px) {
+      .context-card .pros-list { grid-template-columns: 1fr; }
+      .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; margin-top: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .print-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; background: #1c1618; color: #fff; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .print-btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Auth overlay -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-form">
+      <h2>Pre-Professional Checklist</h2>
+      <p>160 Still Forest Dr — Restricted Access</p>
+      <div id="authError" class="auth-error"></div>
+      <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
+      <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+      <button id="authSubmit" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="authSpinner" class="spinner" style="display:none"></div>
+  </div>
+
+  <!-- Page content (hidden until auth) -->
+  <div id="appContent" style="display:none">
+    <div class="page-header">
+      <h1>Pre-Professional Checklist</h1>
+      <div>
+        <span class="user-info" id="userDisplay"></span>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+        <a href="index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Permitting Plan
+        </a>
+        <button class="print-btn" onclick="window.print()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Checklist
+        </button>
+      </div>
+
+      <!-- Context -->
+      <div class="context-card">
+        <h2>What This Checklist Is For</h2>
+        <p>Everything the property owner must physically do BEFORE the civil engineer, licensed septic designer, and utility coordinator arrive — so the property has <strong>zero setback violations</strong> when they walk the site.</p>
+        <p><strong>Property:</strong> 160 Still Forest Dr, Cedar Creek, TX 78612 (Lot 14-B, Block 6, Blue Bonnet Acres, PID 44401) — 1.7348 acres</p>
+        <p><strong>Timeline:</strong> 14 days from start to professionals on-site</p>
+        <div class="pros-list">
+          <div class="pro-item">Civil Engineer</div>
+          <div class="pro-item">Septic Designer</div>
+          <div class="pro-item">Utility Coordinator</div>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <!-- Phases rendered here -->
+      <div id="phasesContainer"></div>
+    </div>
+  </div>
+
+  <span data-site-version style="display:none">v260312.03 11:31a</span>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const supabase = createClient(
+      'https://aphrrfprbixmhissnjfn.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
+    );
+
+    const ALLOWED_USERS = [
+      'jackie61899280@gmail.com',
+      'sheppardsustainable@gmail.com',
+      'rahulioson@gmail.com',
+      'dpmoden8888@gmail.com',
+    ];
+
+    // ── Checklist Data ──
+    const PHASES = [
+      {
+        id: 'prep',
+        title: '1. Prep for Moves',
+        days: 'Days 1–2',
+        tasks: [
+          {
+            text: 'Gather lumber for rollers — at least 8 pieces of 4×4 or 6×6, minimum 4\' long each',
+            who: 'Owner',
+            tools: 'Truck, lumber (4×4 or 6×6 × 4\' min)',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Get tow straps/chains rated for 5,000+ lbs — you\'ll need these to connect truck to containers/trailers',
+            who: 'Owner',
+            tools: 'Tow straps or chains (5,000 lb rated), shackles',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Clear the destination area for Big Trailer (10\'×42\') — must be 15\'+ from west property line. Remove any debris, level ground if needed',
+            who: 'Owner + Helper',
+            tools: 'Rake, shovel, wheelbarrow',
+            measure: 'Measure 15\' from west PL and stake it. Trailer slides east ~14\'.',
+            warning: 'Don\'t position into the rear setback zone (10-15\' from rear/north PL). Check both side AND rear clearance.',
+          },
+          {
+            text: 'Clear the destination area for Small Trailer (7\'5"×20\'5") — must be 15\'+ from east property line',
+            who: 'Owner + Helper',
+            tools: 'Rake, shovel',
+            measure: 'Measure 15\' from east PL and stake it. Trailer slides west ~8\'.',
+            warning: 'Don\'t block the driveway or any drainage path while repositioning.',
+          },
+          {
+            text: 'Clear the destination area for Red Container West (40\'×8\') — must be 15\'+ from west property line',
+            who: 'Owner + Helper',
+            tools: 'Rake, shovel, chainsaw (if brush)',
+            measure: 'Measure 15\' from west PL and stake it. Container slides east ~13\'.',
+            warning: 'Container is 40\' long — verify the entire length clears the setback, not just one end.',
+          },
+          {
+            text: 'Clear the destination area for Red Container Front Right (40\'×8\') — must be 15\'+ from west property line',
+            who: 'Owner + Helper',
+            tools: 'Rake, shovel',
+            measure: 'Measure 15\' from west PL and stake it.',
+            warning: 'Also verify 25\' front setback from road ROW if container is near the south edge.',
+          },
+          {
+            text: 'Clear the destination area for Beige Container South (40\'×8\') — must be 25\'+ from south property line (road ROW)',
+            who: 'Owner + Helper',
+            tools: 'Rake, shovel',
+            measure: 'Measure 25\' from south PL (road ROW) and stake it. Container moves north ~19\'.',
+            warning: 'This is the biggest move (~19\'). Make sure the path is completely clear and the new position doesn\'t crowd other structures.',
+          },
+          {
+            text: 'Disconnect any electric/water hookups from all trailers and containers before moving',
+            who: 'Owner',
+            tools: 'Wrench set, wire cutters (if needed), electrical tape, bucket (catch water)',
+            measure: null,
+            warning: 'Cap any exposed water lines. Tape off any exposed wires and flip breakers OFF before disconnecting.',
+          },
+          {
+            text: 'Confirm truck is in working order — check tow hitch, fuel, tires. Test pulling with lumber rollers on flat ground.',
+            who: 'Owner',
+            tools: 'Truck with hitch',
+            measure: null,
+            warning: null,
+          },
+        ]
+      },
+      {
+        id: 'relocate',
+        title: '2. Structure Relocation',
+        days: 'Days 3–5',
+        tasks: [
+          {
+            text: 'Move Big Trailer (10\'×42\') — slide east using lumber rollers + truck pull. Currently 1\' from west PL, must reach 15\'+',
+            who: 'Owner + Helper',
+            tools: 'Lumber rollers, truck, tow straps, pry bar, level',
+            measure: 'After move: measure from west PL to nearest edge of trailer. Must be ≥ 15\'. Measure from both front and rear corners.',
+            warning: 'This is the heaviest structure. Use at least 6 rollers spaced evenly. Pull SLOWLY. Have helper watch rollers and reposition as trailer advances. Stop if it starts tracking sideways.',
+          },
+          {
+            text: 'Move Small Trailer (7\'5"×20\'5") — slide west using lumber rollers + truck pull. Currently ~7\' from east PL, must reach 15\'+',
+            who: 'Owner + Helper',
+            tools: 'Lumber rollers, truck, tow straps, pry bar',
+            measure: 'After move: measure from east PL to nearest edge. Must be ≥ 15\'. Check both ends.',
+            warning: 'Lighter than the big trailer but same process. Verify it doesn\'t end up blocking access to the well or septic system.',
+          },
+          {
+            text: 'Move Red Container West (40\'×8\') — slide east using lumber rollers + truck pull. Currently ~2\' from west PL, must reach 15\'+',
+            who: 'Owner + Helper',
+            tools: 'Lumber rollers, truck, tow straps, pry bar, level',
+            measure: 'After move: measure from west PL to container at BOTH ends (front and back). Must be ≥ 15\' at narrowest point.',
+            warning: '40\' containers can twist during dragging. Measure at BOTH ends to ensure it\'s parallel to the PL and both ends are compliant.',
+          },
+          {
+            text: 'Move Red Container Front Right (40\'×8\') — slide east using lumber rollers + truck pull. Currently ~2\' from west PL, must reach 15\'+',
+            who: 'Owner + Helper',
+            tools: 'Lumber rollers, truck, tow straps, pry bar',
+            measure: 'After move: measure from west PL at both ends. Must be ≥ 15\'.',
+            warning: 'Also check 25\' front setback from road ROW (south PL). This container sits near the front — verify it clears BOTH setback zones.',
+          },
+          {
+            text: 'Move Beige Container South (40\'×8\') — slide north using lumber rollers + truck pull. Currently 6\' from south PL, must reach 25\'+',
+            who: 'Owner + Helper',
+            tools: 'Lumber rollers, truck, tow straps, pry bar',
+            measure: 'After move: measure from south PL (road ROW) to container. Must be ≥ 25\'. This is a ~19\' move — the longest one.',
+            warning: 'Moving north could put it close to other structures. Verify minimum 10\' clearance from side property lines AND enough clearance from any other structures on the property.',
+          },
+          {
+            text: 'After all moves: walk the full perimeter and visually confirm no structure is within 10\' of any side/rear PL or 25\' of the road ROW',
+            who: 'Owner',
+            tools: '100\' tape measure, stakes, flagging tape',
+            measure: 'Record all distances. Photo-document each measurement.',
+            warning: null,
+          },
+        ]
+      },
+      {
+        id: 'verify',
+        title: '3. Post-Move Verification',
+        days: 'Day 6',
+        tasks: [
+          {
+            text: 'Measure Big Trailer to west property line — record distance at front corner and back corner',
+            who: 'Owner',
+            tools: '100\' tape measure, notebook/phone for recording',
+            measure: 'Front corner: __\' | Back corner: __\' (both must be ≥ 15\')',
+            warning: null,
+          },
+          {
+            text: 'Measure Small Trailer to east property line — record distance at front corner and back corner',
+            who: 'Owner',
+            tools: '100\' tape measure',
+            measure: 'Front corner: __\' | Back corner: __\' (both must be ≥ 15\')',
+            warning: null,
+          },
+          {
+            text: 'Measure Red Container West to west property line — record distance at both ends',
+            who: 'Owner',
+            tools: '100\' tape measure',
+            measure: 'North end: __\' | South end: __\' (both must be ≥ 15\')',
+            warning: null,
+          },
+          {
+            text: 'Measure Red Container Front Right to west property line AND south (road ROW) property line',
+            who: 'Owner',
+            tools: '100\' tape measure',
+            measure: 'West PL: __\' (≥ 15\') | South PL: __\' (≥ 25\')',
+            warning: 'This one needs to clear TWO setback zones. Double-check both.',
+          },
+          {
+            text: 'Measure Beige Container South to south property line (road ROW) — record distance at both ends',
+            who: 'Owner',
+            tools: '100\' tape measure',
+            measure: 'West end: __\' | East end: __\' (both must be ≥ 25\')',
+            warning: null,
+          },
+          {
+            text: 'Photograph each structure with measuring tape visible in frame showing the compliant distance from property line',
+            who: 'Owner',
+            tools: 'Phone camera, measuring tape (extended in frame)',
+            measure: null,
+            warning: 'Include a reference marker (like a PL stake or survey pin) in the photo so the measurement is verifiable.',
+          },
+          {
+            text: 'Verify the Deck (13\'5" from west) and Sauna (30\' from west) were NOT disturbed during container/trailer moves',
+            who: 'Owner',
+            tools: 'Visual inspection + tape measure',
+            measure: 'Deck: 13\'5" from west PL | Sauna: 30\' from west PL (both should be unchanged)',
+            warning: null,
+          },
+          {
+            text: 'Check all reconnectable utilities — cap any water lines, verify breakers are off for disconnected electric',
+            who: 'Owner',
+            tools: 'Visual inspection',
+            measure: null,
+            warning: 'Don\'t reconnect yet — professionals may need to assess current state.',
+          },
+        ]
+      },
+      {
+        id: 'cleanup',
+        title: '4. Site Cleanup',
+        days: 'Days 7–9',
+        tasks: [
+          {
+            text: 'Walk entire property and identify ALL debris: old furniture, scrap metal, broken equipment, random junk',
+            who: 'Owner',
+            tools: 'Notebook/phone for list, flagging tape to mark piles',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Haul all junk/debris to dump using truck — may take multiple loads',
+            who: 'Owner + Helper',
+            tools: 'Truck, gloves, tarps (to secure loads)',
+            measure: null,
+            warning: 'Check for hazardous materials (paint, chemicals, batteries) — these go to special disposal, not regular dump.',
+          },
+          {
+            text: 'Organize all construction materials (lumber, tools, building supplies) into one designated staging area away from structures',
+            who: 'Owner',
+            tools: 'Hand tools for stacking',
+            measure: null,
+            warning: 'Keep staging area INSIDE all setback zones (not near any property line). Don\'t block drainage paths.',
+          },
+          {
+            text: 'Clear overgrown vegetation: brush, tall grass, and low-hanging branches that block sight lines to structures or boundaries',
+            who: 'Owner + Helper',
+            tools: 'Chainsaw, weed trimmer, rake, loppers',
+            measure: null,
+            warning: 'Don\'t clear vegetation over the septic drain field — roots help with absorption. Ask septic designer where the field is if unsure.',
+          },
+          {
+            text: 'Mow all accessible lawn areas so the property looks maintained and walk-able',
+            who: 'Owner',
+            tools: 'Mower, weed trimmer',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Remove any temporary structures, tarps, or makeshift lean-tos that could be mistaken for unpermitted construction',
+            who: 'Owner',
+            tools: 'Hand tools',
+            measure: null,
+            warning: 'If something IS an intentional structure, leave it but note it for the engineer.',
+          },
+        ]
+      },
+      {
+        id: 'access',
+        title: '5. Access Preparation',
+        days: 'Days 10–12',
+        tasks: [
+          {
+            text: 'Clear path to septic system (JET INC aerobic unit) — the licensed septic designer needs full access to the unit and drain field area',
+            who: 'Owner',
+            tools: 'Weed trimmer, rake, machete if brush is thick',
+            measure: null,
+            warning: 'Don\'t drive over or place heavy items on the septic drain field. If you don\'t know exactly where the field is, wait for the septic designer.',
+          },
+          {
+            text: 'Clear path to private well — utility coordinator needs to see the wellhead and any pressure tank/controls',
+            who: 'Owner',
+            tools: 'Weed trimmer, rake',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Clear path to electrical panel and sub-panels — utility coordinator needs to see the digital meter and all distribution points',
+            who: 'Owner',
+            tools: 'Clear vegetation within 3\' on all sides of panels',
+            measure: null,
+            warning: 'Don\'t open panels yourself. Just ensure physical access is unobstructed.',
+          },
+          {
+            text: 'Walk all property boundaries with flagging tape — mark all 4 corners and any survey pins you can find',
+            who: 'Owner',
+            tools: 'Flagging tape, metal detector (for buried survey pins), 100\' tape measure',
+            measure: 'Property dims: 187.86\' wide × 399.83\' deep. Verify corner-to-corner.',
+            warning: 'Survey pins may be buried under dirt/leaves. Check carefully. If you can\'t find a pin, flag the approximate location.',
+          },
+          {
+            text: 'Stake/flag all relocated structures with visible distance markers showing setback compliance',
+            who: 'Owner',
+            tools: 'Stakes, flagging tape, permanent marker',
+            measure: 'Write the distance on each flag (e.g., "15\'3" from W PL")',
+            warning: null,
+          },
+          {
+            text: 'Mark existing drainage paths — note any standing water areas, swales, or low spots on the property',
+            who: 'Owner',
+            tools: 'Flagging tape (different color from boundary tape), stakes',
+            measure: null,
+            warning: 'Civil engineer needs to see natural drainage. Don\'t alter or fill drainage paths before their visit.',
+          },
+          {
+            text: 'Ensure driveway from Still Forest Dr is passable for a standard vehicle — clear any overhanging branches, fill major ruts',
+            who: 'Owner',
+            tools: 'Chainsaw/loppers (overhead clearance), gravel (if needed for ruts)',
+            measure: 'Minimum 10\' wide, 14\' overhead clearance',
+            warning: null,
+          },
+          {
+            text: 'Verify bathroom building (under construction) is stable, safe to walk around, and accessible for inspection',
+            who: 'Owner',
+            tools: 'Visual inspection, caution tape if needed for unsafe areas',
+            measure: null,
+            warning: 'This is the undisclosed construction. It will come up with the county. Have it accessible but don\'t try to hide it — proactive disclosure is the plan.',
+          },
+        ]
+      },
+      {
+        id: 'docs',
+        title: '6. Documentation',
+        days: 'Days 13–14',
+        tasks: [
+          {
+            text: 'Take updated photos of ALL structures in their new compliant positions — wide shots AND close-ups with measuring tape',
+            who: 'Owner',
+            tools: 'Phone camera, 100\' tape measure',
+            measure: null,
+            warning: 'Include timestamps on photos (phone settings or hold phone to show date).',
+          },
+          {
+            text: 'Compile the existing survey document (the base survey that siteplan.html is built on)',
+            who: 'Owner',
+            tools: 'Print or PDF copy of survey',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Compile the existing soil evaluation from 2000 — septic designer will want to review this before their site visit',
+            who: 'Owner',
+            tools: 'Print or PDF copy',
+            measure: null,
+            warning: 'This is 26 years old. Septic designer may require a new evaluation, but having the old one saves time and money if it\'s still usable.',
+          },
+          {
+            text: 'Compile deed/trust documents showing property ownership (Revocable Trust of Subhash Sonnad)',
+            who: 'Owner',
+            tools: 'Print or PDF copies of deed, trust certificate',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Print the site plan from siteplan.html (or use the professional v7 image) as a reference handout for each professional',
+            who: 'Owner',
+            tools: 'Color printer or office supply store print',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Print the development description from development-description.html as a project overview handout',
+            who: 'Owner',
+            tools: 'Printer',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Prepare a folder for each professional (3 total) containing: survey, site plan, development description, soil eval (septic only), structure photos with setback measurements',
+            who: 'Owner',
+            tools: '3 folders, tab dividers, printed documents',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Write down the contact info for Larry\'s Septic (512-695-6570) and Bluebonnet Electric Cooperative — have ready for the professionals',
+            who: 'Owner',
+            tools: 'Notepad or printed contact sheet',
+            measure: null,
+            warning: null,
+          },
+          {
+            text: 'Final walkthrough: walk the entire property as if you\'re the engineer/designer visiting for the first time. Note anything that looks off.',
+            who: 'Owner',
+            tools: 'Notepad, camera',
+            measure: null,
+            warning: 'If you find a new issue during the walkthrough, fix it before the professionals arrive.',
+          },
+        ]
+      },
+    ];
+
+    // ── Persistence (localStorage) ──
+    const STORAGE_KEY = 'pre-pro-checklist-160sf';
+
+    function loadChecked() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+
+    function saveChecked(checked) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(checked));
+    }
+
+    let checkedState = loadChecked();
+
+    function taskKey(phaseId, taskIdx) { return `${phaseId}-${taskIdx}`; }
+
+    // ── Auth ──
+    let currentUser = null;
+
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && ALLOWED_USERS.includes(session.user.email)) {
+        currentUser = session.user;
+        showApp();
+        return;
+      }
+      if (session) await supabase.auth.signOut();
+      document.getElementById('authOverlay').classList.remove('hidden');
+    }
+
+    window.doLogin = async function() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'none';
+      if (!email || !password) { errEl.textContent = 'Enter email and password.'; errEl.style.display = 'block'; return; }
+      document.getElementById('authSubmit').disabled = true;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById('authSubmit').disabled = false;
+      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+      if (!ALLOWED_USERS.includes(data.user.email)) {
+        errEl.textContent = 'You do not have access to this page.';
+        errEl.style.display = 'block';
+        await supabase.auth.signOut();
+        return;
+      }
+      currentUser = data.user;
+      showApp();
+    };
+
+    window.doLogout = async function() {
+      await supabase.auth.signOut();
+      document.getElementById('appContent').style.display = 'none';
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('authPassword').value = '';
+    };
+
+    async function showApp() {
+      document.getElementById('authOverlay').classList.add('hidden');
+      document.getElementById('appContent').style.display = 'block';
+      document.getElementById('userDisplay').textContent = currentUser.email;
+      renderAll();
+    }
+
+    document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+    document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
+
+    // ── Rendering ──
+    function renderAll() {
+      renderSummary();
+      renderPhases();
+    }
+
+    function renderSummary() {
+      const el = document.getElementById('summaryBar');
+      const total = PHASES.reduce((s, p) => s + p.tasks.length, 0);
+      const done = Object.values(checkedState).filter(Boolean).length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      el.innerHTML = `
+        <div class="summary-stat"><div class="label">Progress</div><div class="value">${pct}%</div></div>
+        <div class="summary-stat"><div class="label">Completed</div><div class="value done">${done}</div></div>
+        <div class="summary-stat"><div class="label">Remaining</div><div class="value remaining">${total - done}</div></div>
+        <div class="summary-stat"><div class="label">Total Items</div><div class="value">${total}</div></div>`;
+    }
+
+    function renderPhases() {
+      const el = document.getElementById('phasesContainer');
+      el.innerHTML = PHASES.map(phase => {
+        const done = phase.tasks.filter((_, i) => checkedState[taskKey(phase.id, i)]).length;
+        const collapsed = localStorage.getItem(`prepro-phase-${phase.id}`) === 'collapsed';
+        return `<div class="phase-section${collapsed ? ' collapsed' : ''}" data-phase="${phase.id}">
+          <div class="phase-header" onclick="togglePhase('${phase.id}')">
+            <svg class="phase-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            <h3>${phase.title}</h3>
+            <span class="phase-days">${phase.days}</span>
+            <span class="phase-progress">${done}/${phase.tasks.length}</span>
+          </div>
+          <div class="phase-body">${phase.tasks.map((t, i) => renderTask(phase.id, i, t)).join('')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderTask(phaseId, idx, t) {
+      const key = taskKey(phaseId, idx);
+      const isDone = !!checkedState[key];
+      return `<div class="task-item">
+        <div class="task-checkbox ${isDone ? 'checked' : ''}" onclick="toggleCheck('${key}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="task-body ${isDone ? 'checked' : ''}">
+          <div class="task-text">${esc(t.text)}</div>
+          <div class="task-meta">
+            ${t.who ? `<span class="task-tag tag-who">${esc(t.who)}</span>` : ''}
+            ${t.tools ? `<span class="task-tag tag-tools">${esc(t.tools)}</span>` : ''}
+            ${t.measure ? `<span class="task-tag tag-measure">${esc(t.measure)}</span>` : ''}
+          </div>
+          ${t.warning ? `<div class="task-warning">${esc(t.warning)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    // ── Interactions ──
+    window.togglePhase = function(phaseId) {
+      const s = document.querySelector(`.phase-section[data-phase="${phaseId}"]`);
+      if (!s) return;
+      s.classList.toggle('collapsed');
+      localStorage.setItem(`prepro-phase-${phaseId}`, s.classList.contains('collapsed') ? 'collapsed' : 'open');
+    };
+
+    window.toggleCheck = function(key) {
+      checkedState[key] = !checkedState[key];
+      saveChecked(checkedState);
+      renderAll();
+    };
+
+    // ── Helpers ──
+    function esc(str) { return str ? str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+    function showToast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    // ── Boot ──
+    checkSession();
+  </script>
+</body>
+</html>
