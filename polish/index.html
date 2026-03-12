@@ -45,14 +45,14 @@
     }
     .nav-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); }
     .nav-brand svg { width: 22px; height: 22px; }
-    .nav-brand span { font-weight: 600; font-size: 0.85rem; }
-    .nav-title { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; }
+    .nav-brand span { font-weight: 600; font-size: 1.1rem; }
+    .nav-title { font-size: 1rem; color: var(--text-dim); font-weight: 500; }
 
     /* ── Container ── */
     .container { max-width: 680px; margin: 0 auto; padding: 0.6rem 1rem 2rem; }
 
     .section-label {
-      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.08em; color: var(--text-muted); margin: 0.7rem 0 0.3rem 0.1rem;
     }
 
@@ -61,24 +61,37 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 0.9rem 1rem;
       margin-bottom: 0.5rem; box-shadow: var(--shadow);
+      transition: outline-color 0.3s ease;
     }
     .card h2 {
-      font-size: 0.88rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.01em;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.01em;
+    }
+
+    /* ── Focus highlight (LLM navigation) ── */
+    .card--focus {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      animation: focus-pulse 2s ease-out;
+    }
+    @keyframes focus-pulse {
+      0% { outline-color: transparent; outline-offset: 8px; }
+      20% { outline-color: var(--accent); outline-offset: 3px; }
+      100% { outline-color: var(--accent); outline-offset: 3px; }
     }
 
     /* ── Pronunciation through vocabulary ── */
     .pron-list { display: flex; flex-direction: column; gap: 0.4rem; }
     .pron-row {
-      display: grid; grid-template-columns: 2.8rem 1fr;
+      display: grid; grid-template-columns: 3.2rem 1fr;
       gap: 0.5rem; align-items: start;
       padding: 0.5rem 0.6rem; background: var(--surface2); border-radius: 6px;
     }
-    .pron-sound { font-size: 1.1rem; font-weight: 700; color: var(--text); padding-top: 0.1rem; }
-    .pron-eng { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+    .pron-sound { font-size: 1.5rem; font-weight: 700; color: var(--text); padding-top: 0.1rem; }
+    .pron-eng { font-size: 1rem; color: var(--accent); font-weight: 600; }
     .pron-words { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.2rem; }
-    .pron-word { font-size: 0.82rem; color: var(--text-soft); }
+    .pron-word { font-size: 1.1rem; color: var(--text-soft); }
     .pron-word .w { font-weight: 600; }
-    .pron-word .dim { color: var(--text-muted); }
+    .pron-word .dim { color: var(--text-muted); font-size: 0.9rem; }
 
     /* ── Vocab rows ── */
     .vocab-list { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -87,52 +100,55 @@
       padding: 0.3rem 0; border-bottom: 1px solid var(--border);
     }
     .vocab-row:last-child { border-bottom: none; }
-    .vocab-pl { font-size: clamp(1.2rem, 3.5vw, 1.7rem); font-weight: 700; }
+    .vocab-pl { font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 700; }
     .vocab-meta { display: flex; flex-direction: column; gap: 0.05rem; }
-    .vocab-ph { font-size: 0.82rem; color: var(--accent); font-style: italic; font-weight: 500; }
-    .vocab-en { font-size: 0.8rem; color: var(--text-dim); }
+    .vocab-ph { font-size: 1.05rem; color: var(--accent); font-style: italic; font-weight: 500; }
+    .vocab-en { font-size: 1rem; color: var(--text-dim); }
 
     /* ── Conjugation ── */
     .verb-block { margin-bottom: 0.8rem; }
     .verb-block:last-child { margin-bottom: 0; }
-    .verb-hdr { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
-    .verb-hdr .m { color: var(--text-dim); font-weight: 400; font-size: 0.85rem; }
+    .verb-hdr { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .verb-hdr .m { color: var(--text-dim); font-weight: 400; font-size: 1.1rem; }
     .conj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
     .conj-cell {
       background: var(--surface2); border-radius: 6px;
       padding: 0.45rem 0.3rem; text-align: center;
     }
-    .conj-pro { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-    .conj-w { font-size: clamp(1rem, 3vw, 1.35rem); font-weight: 700; }
-    .conj-ph { font-size: 0.7rem; color: var(--accent); font-style: italic; }
+    .conj-pro { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .conj-w { font-size: clamp(1.4rem, 4.5vw, 2rem); font-weight: 700; }
+    .conj-ph { font-size: 0.95rem; color: var(--accent); font-style: italic; }
 
     /* ── Verb examples ── */
     .verb-examples { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem; }
     .verb-ex-group {
       background: var(--accent-soft); border-radius: 6px; padding: 0.5rem 0.65rem;
     }
-    .verb-ex-en { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+    .verb-ex-en { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
     .verb-ex-row { display: flex; gap: 0.4rem; align-items: baseline; }
-    .verb-ex-pro { font-size: 0.65rem; color: var(--text-muted); min-width: 2rem; font-weight: 500; }
-    .verb-ex-pl { font-size: clamp(0.95rem, 2.8vw, 1.2rem); font-weight: 700; }
-    .verb-ex-ph { font-size: 0.72rem; color: var(--accent); font-style: italic; }
+    .verb-ex-pro { font-size: 0.85rem; color: var(--text-muted); min-width: 2rem; font-weight: 500; }
+    .verb-ex-pl { font-size: clamp(1.3rem, 4vw, 1.8rem); font-weight: 700; }
+    .verb-ex-ph { font-size: 0.95rem; color: var(--accent); font-style: italic; }
 
-    /* ── Grok (bottom) ── */
-    .grok-section { margin-top: 1rem; }
-    .grok-section summary {
+    /* ── AI Tutor Instructions (bottom) ── */
+    .tutor-section { margin-top: 1rem; }
+    .tutor-section summary {
       cursor: pointer; font-size: 0.75rem; color: var(--text-muted);
       padding: 0.4rem 0; list-style: none;
     }
-    .grok-section summary::before { content: '🤖 '; }
-    .grok-body {
+    .tutor-section summary::before { content: '🤖 '; }
+    .tutor-body {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1rem;
       font-size: 0.78rem; color: var(--text-dim); line-height: 1.65;
     }
-    .grok-body p { margin-bottom: 0.5rem; }
-    .grok-body p:last-child { margin-bottom: 0; }
-    .grok-body strong { color: var(--text-soft); }
-    .grok-body a { color: var(--accent); }
+    .tutor-body p { margin-bottom: 0.5rem; }
+    .tutor-body p:last-child { margin-bottom: 0; }
+    .tutor-body strong { color: var(--text-soft); }
+    .tutor-body a { color: var(--accent); }
+    .tutor-body code { background: rgba(0,0,0,0.06); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.72rem; }
+    .tutor-body ul { margin: 0.3rem 0 0.5rem 1.2rem; }
+    .tutor-body li { margin-bottom: 0.15rem; }
 
     /* ── Footer ── */
     .footer {
@@ -145,7 +161,7 @@
     @media (max-width: 480px) {
       .card { padding: 0.75rem 0.8rem; }
       .vocab-row { flex-direction: column; gap: 0.1rem; }
-      .pron-row { grid-template-columns: 2.4rem 1fr; }
+      .pron-row { grid-template-columns: 2.8rem 1fr; }
       .conj-cell { padding: 0.35rem 0.2rem; }
     }
   </style>
@@ -164,7 +180,7 @@
 
     <!-- ── Pronunciation Through Vocabulary ── -->
     <div class="section-label">Pronunciation Guide</div>
-    <div class="card">
+    <div id="pronunciation" class="card">
       <h2>Polish Sounds — Learn by Word</h2>
       <div class="pron-list">
         <div class="pron-row">
@@ -289,12 +305,12 @@
           </div>
         </div>
       </div>
-      <p style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem;">Stress is almost always on the second-to-last syllable. Every letter is pronounced — no silent letters.</p>
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0.5rem;">Stress is almost always on the second-to-last syllable. Every letter is pronounced — no silent letters.</p>
     </div>
 
     <!-- ── Greetings ── -->
     <div class="section-label">Greetings</div>
-    <div class="card">
+    <div id="greetings" class="card">
       <div class="vocab-list">
         <div class="vocab-row">
           <span class="vocab-pl">Cześć</span>
@@ -321,7 +337,7 @@
 
     <!-- ── Polite Phrases ── -->
     <div class="section-label">Polite Phrases</div>
-    <div class="card">
+    <div id="phrases" class="card">
       <div class="vocab-list">
         <div class="vocab-row">
           <span class="vocab-pl">Dziękuję</span>
@@ -350,7 +366,7 @@
     <div class="section-label">Verbs — Conjugation &amp; Examples</div>
 
     <!-- być — to be -->
-    <div class="card">
+    <div id="byc" class="card">
       <div class="verb-block">
         <div class="verb-hdr">być <span class="m">— to be</span></div>
         <div class="conj-grid">
@@ -382,7 +398,7 @@
     </div>
 
     <!-- mieć — to have -->
-    <div class="card">
+    <div id="miec" class="card">
       <div class="verb-block">
         <div class="verb-hdr">mieć <span class="m">— to have</span></div>
         <div class="conj-grid">
@@ -414,7 +430,7 @@
     </div>
 
     <!-- jechać — to go by vehicle -->
-    <div class="card">
+    <div id="jechac" class="card">
       <div class="verb-block">
         <div class="verb-hdr">jechać <span class="m">— to go (vehicle)</span></div>
         <div class="conj-grid">
@@ -446,7 +462,7 @@
     </div>
 
     <!-- iść — to go on foot -->
-    <div class="card">
+    <div id="isc" class="card">
       <div class="verb-block">
         <div class="verb-hdr">iść <span class="m">— to go (on foot)</span></div>
         <div class="conj-grid">
@@ -477,15 +493,33 @@
       </div>
     </div>
 
-    <!-- ── Grok Instructions (at bottom, out of the way) ── -->
-    <details class="grok-section">
-      <summary>AI Tutor Instructions (for Grok)</summary>
-      <div class="grok-body">
-        <p><strong>Role:</strong> You are a friendly Polish language tutor giving Lesson 1 to a complete beginner. You are speaking through the Tesla car audio system (voice). The student is the driver.</p>
+    <!-- ── AI Tutor Instructions (at bottom, machine-readable) ── -->
+    <details class="tutor-section">
+      <summary>AI Tutor Instructions (for Gemini / Grok)</summary>
+      <div class="tutor-body">
+        <p><strong>Role:</strong> You are a friendly Polish language tutor giving Lesson 1 to a complete beginner. You are speaking through the Tesla car audio system (voice). The student is the driver and cannot touch the screen.</p>
+
         <p><strong>Context:</strong> The student can see this webpage on the Tesla center screen. It displays vocabulary, pronunciation guides, conjugation tables, and example sentences. Reference what's on screen — e.g., "Look at the Greetings section — the first word is Cześć." The student responds by speaking only.</p>
-        <p><strong>Lesson Flow:</strong> 1) Start with the Pronunciation Guide — each sound is shown with a real word from the lesson. 2) Teach Greetings one by one — say each word slowly, pause for repeat. 3) Polite Phrases same pattern. 4) Introduce each verb with its conjugation (ja/ty/on-ona forms), then immediately practice the 3 example sentence groups for that verb — have the student say all 3 pronoun variants for each. 5) Quiz — say English, ask for Polish. Mix verbs, greetings, and phrases.</p>
+
+        <p><strong>Screen Navigation:</strong> You can control what the student sees on screen by making HTTP GET requests. When you move to a new topic, navigate the screen first so the relevant content is visible. The page will scroll to and highlight the section.</p>
+        <p>Base URL: <code>https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/lesson-nav?section=SECTION</code></p>
+        <p>Valid sections:</p>
+        <ul>
+          <li><code>pronunciation</code> — Pronunciation guide (11 Polish sounds with 3 example words each)</li>
+          <li><code>greetings</code> — Greetings (Cześć, Dzień dobry, Dobry wieczór, Do widzenia, Dobranoc)</li>
+          <li><code>phrases</code> — Polite phrases (Dziękuję, Proszę, Przepraszam, Tak, Nie)</li>
+          <li><code>byc</code> — Verb: być (to be) — jestem, jesteś, jest + 3 example groups</li>
+          <li><code>miec</code> — Verb: mieć (to have) — mam, masz, ma + 3 example groups</li>
+          <li><code>jechac</code> — Verb: jechać (to go by vehicle) — jadę, jedziesz, jedzie + 3 example groups</li>
+          <li><code>isc</code> — Verb: iść (to go on foot) — idę, idziesz, idzie + 3 example groups</li>
+        </ul>
+
+        <p><strong>Lesson Flow:</strong> 1) Navigate to <code>pronunciation</code> — teach each sound with example words. 2) Navigate to <code>greetings</code> — teach one by one, pause for repeat. 3) Navigate to <code>phrases</code> — same pattern. 4) For each verb (<code>byc</code>, <code>miec</code>, <code>jechac</code>, <code>isc</code>): navigate to that verb, teach conjugation (ja/ty/on-ona), then practice the 3 example sentence groups. 5) Quiz — say English, ask for Polish. Mix verbs, greetings, and phrases.</p>
+
         <p><strong>Teaching Style:</strong> Go slowly. Say each word 2-3 times. Pause for repetition. Be encouraging. Use spaced repetition. Conversational tone, not lecture-style. <strong>Listen carefully to the student's pronunciation and grammar — gently correct mistakes immediately.</strong> If they mispronounce a word, say the correct version slowly, explain the specific sound, and have them repeat. If they use the wrong conjugation form, explain which pronoun form they need.</p>
-        <p><strong>Safety:</strong> Student is driving. One word/phrase at a time. Tell them what section to glance at, but describe everything verbally. Never require extended screen reading.</p>
+
+        <p><strong>Safety:</strong> Student is driving. One word/phrase at a time. Navigate the screen to the relevant section before teaching it. Never require extended screen reading — describe everything verbally.</p>
+
         <p><strong>Detailed instructions:</strong> <a href="/polish/grok-lesson-1.json">/polish/grok-lesson-1.json</a></p>
       </div>
     </details>
@@ -496,8 +530,49 @@
     <a href="/rahulio/pages/sloop/">Sloop</a> &middot;
     <a href="/ukulele/">Ukulele Lessons</a>
     <br>
-    <span data-site-version>v260311.22 10:49p</span>
+    <span data-site-version></span>
   </footer>
+
+  <!-- Supabase Realtime for LLM screen navigation -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.99.1" crossorigin="anonymous"></script>
+  <script>
+  (function() {
+    var SECTIONS = ['pronunciation','greetings','phrases','byc','miec','jechac','isc'];
+
+    function focusSection(id) {
+      if (!id || SECTIONS.indexOf(id) === -1) return;
+      document.querySelectorAll('.card--focus').forEach(function(el) {
+        el.classList.remove('card--focus');
+      });
+      var el = document.getElementById(id);
+      if (el) {
+        el.classList.add('card--focus');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // Hash fallback (direct URL or manual navigation)
+    function onHash() { focusSection(location.hash.slice(1)); }
+    window.addEventListener('hashchange', onHash);
+    if (location.hash) setTimeout(onHash, 200);
+
+    // Supabase Realtime — listen for LLM navigation commands
+    try {
+      var sb = window.supabase.createClient(
+        'https://aphrrfprbixmhissnjfn.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
+      );
+      var channel = sb.channel('polish-lesson-1');
+      channel.on('broadcast', { event: 'navigate' }, function(payload) {
+        if (payload && payload.payload && payload.payload.section) {
+          focusSection(payload.payload.section);
+        }
+      }).subscribe();
+    } catch(e) {
+      console.warn('Realtime not available:', e);
+    }
+  })();
+  </script>
 
 </body>
 </html>
