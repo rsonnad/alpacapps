@@ -1,12 +1,12 @@
 {
-  "version": "v260312.03 11:31a",
-  "release": 650,
-  "sha": "5635cccbc",
-  "fullSha": "5635cccbc78dcb2850715101dbeaa1139cec1c8c",
+  "version": "v260312.04 11:46a",
+  "release": 651,
+  "sha": "2e1758f1b",
+  "fullSha": "2e1758f1b0352afd8d43f2e65b05d9ac2195ed21",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 16:31:46+00",
-  "commits": [{"sha":"fa46c870f","message":"Update site plan image to professional v7","author":"Jacqueline Giroux"},{"sha":"5635cccbc","message":"Merge remote-tracking branch 'origin/claude/competent-hellman'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-12 16:46:08+00",
+  "commits": [{"sha":"9eda5a6c1","message":"Remove Review Documents button from permit planning page","author":"Jacqueline Giroux"},{"sha":"f80114f56","message":"Remove PDF button from permit planning page","author":"Jacqueline Giroux"},{"sha":"2e1758f1b","message":"Merge pull request #26 from rsonnad/claude/musing-villani","author":"jackie61899280"}]
 }
