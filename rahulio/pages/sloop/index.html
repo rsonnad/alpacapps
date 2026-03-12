@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sloop — Tesla Model Y 2026</title>
-  <meta property="og:title" content="Sloop — Tesla Model Y 2026">
-  <meta property="og:description" content="Meet Sloop, our 2026 Tesla Model Y.">
+  <title>Sloop — Alpaca Playhouse</title>
+  <meta property="og:title" content="Sloop — Alpaca Playhouse">
+  <meta property="og:description" content="Sloop hub — learning, data & more.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/sloop/">
   <meta name="twitter:card" content="summary">
   <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #faf8f6;
@@ -27,10 +27,8 @@
       --accent-soft: rgba(37, 99, 235, 0.08);
       --green: #16a34a;
       --green-soft: rgba(22, 163, 74, 0.07);
-      --radius: 12px;
-      --radius-lg: 16px;
-      --shadow: 0 1px 4px rgba(0,0,0,0.06);
-      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,457 +37,240 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.65;
-      min-height: 100vh;
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
 
-    .hero {
-      padding: 4rem 1.5rem 3rem;
-      text-align: center;
-      background: linear-gradient(180deg, #e8f0fe 0%, #f0eff6 40%, var(--bg) 100%);
+    /* ── Thin nav header ── */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1.25rem;
+      background: var(--surface);
       border-bottom: 1px solid var(--border);
     }
-
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 0.5rem;
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--text);
     }
+    .nav-brand svg { width: 22px; height: 22px; }
+    .nav-brand span { font-weight: 600; font-size: 0.85rem; letter-spacing: -0.01em; }
+    .nav-title { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; }
 
-    .hero .subtitle {
-      font-size: 1.15rem;
-      color: var(--text-dim);
-      font-weight: 400;
-    }
-
-    .badge {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.35rem 1rem;
-      background: var(--green-soft);
-      color: var(--green);
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
+    /* ── Content ── */
     .container {
-      max-width: 720px;
+      max-width: 640px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: 0.75rem 1rem 2rem;
     }
 
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 0.75rem 0 0.35rem 0.1rem;
+    }
+
+    /* ── Link rows ── */
+    .link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: background 0.15s;
+    }
+    .link-item:hover { background: var(--surface2); }
+    .link-icon { font-size: 1.15rem; flex-shrink: 0; }
+    .link-text { font-weight: 600; font-size: 0.88rem; }
+    .link-sub { font-size: 0.72rem; color: var(--text-dim); font-weight: 400; }
+    .link-arrow { margin-left: auto; color: var(--text-muted); font-size: 0.75rem; }
+
+    /* ── Compact card ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-      margin-bottom: 1.5rem;
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      margin-top: 0.6rem;
       box-shadow: var(--shadow);
     }
-
-    .card h2 {
-      font-size: 1.25rem;
+    .card h3 {
+      font-size: 0.82rem;
       font-weight: 700;
-      margin-bottom: 1rem;
-      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
     }
 
-    .spec-grid {
+    /* ── Oil chart ── */
+    .chart-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 0.6rem;
     }
+    .cs { text-align: center; background: var(--surface2); border-radius: 6px; padding: 0.35rem 0.25rem; }
+    .cs .l { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .cs .v { font-size: 0.88rem; font-weight: 700; }
+    .cs .v.hi { color: #dc2626; }
+    .cs .v.lo { color: var(--green); }
+    .cs .v.cur { color: var(--accent); }
 
-    .spec-item {
-      background: var(--surface2);
-      border-radius: var(--radius);
-      padding: 1rem;
-      text-align: center;
-    }
+    .chart-wrap { position: relative; width: 100%; height: 260px; }
 
-    .spec-item .label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 0.25rem;
-    }
+    .events { font-size: 0.78rem; color: var(--text-soft); line-height: 1.55; }
+    .events div { margin-bottom: 0.2rem; }
 
-    .spec-item .value {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .spec-item .unit {
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      font-weight: 400;
-    }
-
-    .note {
-      background: var(--accent-soft);
-      border-left: 3px solid var(--accent);
-      padding: 1rem 1.25rem;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      font-size: 0.95rem;
-      color: var(--text-soft);
-      line-height: 1.6;
-    }
-
-    .chart-wrap {
-      position: relative;
-      width: 100%;
-      height: 380px;
-    }
-
-    .chart-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-
-    .chart-legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .chart-legend .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .chart-stat-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .chart-stat {
-      background: var(--surface2);
-      border-radius: var(--radius);
-      padding: 0.75rem;
-      text-align: center;
-    }
-
-    .chart-stat .label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 0.15rem;
-    }
-
-    .chart-stat .value {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .chart-stat .value.high { color: #dc2626; }
-    .chart-stat .value.low { color: var(--green); }
-    .chart-stat .value.current { color: var(--accent); }
-
-    @media (max-width: 480px) {
-      .chart-wrap { height: 280px; }
-      .chart-stat-row { grid-template-columns: 1fr 1fr; }
-    }
-
+    /* ── Footer ── */
     .footer {
       text-align: center;
-      padding: 2rem 1.5rem;
+      padding: 1rem;
       color: var(--text-muted);
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       border-top: 1px solid var(--border);
+      margin-top: 1.5rem;
     }
 
     @media (max-width: 480px) {
-      .spec-grid { grid-template-columns: 1fr 1fr; }
-      .card { padding: 1.5rem; }
+      .chart-stats { grid-template-columns: repeat(2, 1fr); }
+      .chart-wrap { height: 200px; }
     }
   </style>
 </head>
 <body>
 
-  <section class="hero">
-    <h1>Sloop</h1>
-    <p class="subtitle">2026 Tesla Model Y</p>
-    <span class="badge">Test Page</span>
-  </section>
+  <nav class="nav">
+    <a class="nav-brand" href="https://alpacaplayhouse.com/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Alpaca Playhouse</span>
+    </a>
+    <span class="nav-title">Sloop</span>
+  </nav>
 
   <div class="container">
 
+    <div class="section-label">Learning</div>
+    <div class="link-list">
+      <a class="link-item" href="/polish/">
+        <span class="link-icon">🇵🇱</span>
+        <div>
+          <div class="link-text">Polish Lessons</div>
+          <div class="link-sub">Greetings, verbs &amp; basic conversation</div>
+        </div>
+        <span class="link-arrow">›</span>
+      </a>
+      <a class="link-item" href="/ukulele/">
+        <span class="link-icon">🎸</span>
+        <div>
+          <div class="link-text">Ukulele Lessons</div>
+          <div class="link-sub">Chords, strumming &amp; first songs</div>
+        </div>
+        <span class="link-arrow">›</span>
+      </a>
+    </div>
+
+    <div class="section-label">Data</div>
     <div class="card">
-      <h2>Vehicle Specs</h2>
-      <div class="spec-grid">
-        <div class="spec-item">
-          <div class="label">Make</div>
-          <div class="value">Tesla</div>
-        </div>
-        <div class="spec-item">
-          <div class="label">Model</div>
-          <div class="value">Model Y</div>
-        </div>
-        <div class="spec-item">
-          <div class="label">Year</div>
-          <div class="value">2026</div>
-        </div>
-        <div class="spec-item">
-          <div class="label">Type</div>
-          <div class="value">SUV</div>
-        </div>
+      <h3>Crude Oil — 20 Year History</h3>
+      <div class="chart-stats">
+        <div class="cs"><div class="l">High</div><div class="v hi">$133.88</div></div>
+        <div class="cs"><div class="l">Low</div><div class="v lo">$16.55</div></div>
+        <div class="cs"><div class="l">Current</div><div class="v cur">$69.50</div></div>
+        <div class="cs"><div class="l">20yr Avg</div><div class="v">$68.41</div></div>
       </div>
+      <div class="chart-wrap"><canvas id="oilChart"></canvas></div>
     </div>
 
     <div class="card">
-      <h2>About</h2>
-      <p style="color: var(--text-soft); line-height: 1.7;">
-        Sloop is one of the fleet vehicles at Alpaca Playhouse. This is a test page for development and preview purposes.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2>Crude Oil Prices — 20 Year History</h2>
-      <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">WTI Crude Oil (USD per barrel), monthly averages 2005–2025</p>
-
-      <div class="chart-stat-row">
-        <div class="chart-stat">
-          <div class="label">All-Time High</div>
-          <div class="value high">$133.88</div>
-        </div>
-        <div class="chart-stat">
-          <div class="label">All-Time Low</div>
-          <div class="value low">$16.55</div>
-        </div>
-        <div class="chart-stat">
-          <div class="label">Current</div>
-          <div class="value current">$69.50</div>
-        </div>
-        <div class="chart-stat">
-          <div class="label">20yr Avg</div>
-          <div class="value">$68.41</div>
-        </div>
-      </div>
-
-      <div class="chart-wrap">
-        <canvas id="oilChart"></canvas>
-      </div>
-
-      <div class="chart-legend">
-        <span><span class="dot" style="background:#2563eb"></span> WTI Price</span>
-        <span><span class="dot" style="background:rgba(37,99,235,0.1)"></span> Range fill</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Key Events</h2>
-      <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.9rem; color:var(--text-soft);">
-        <div><strong>2008</strong> — Peak at $133/bbl before financial crisis crash to $39</div>
-        <div><strong>2011–14</strong> — Sustained $90–110 era (Arab Spring, Libya, strong demand)</div>
-        <div><strong>2014–16</strong> — US shale boom + OPEC price war → crash to $26</div>
-        <div><strong>2020</strong> — COVID demand shock → briefly negative futures, WTI avg $16</div>
-        <div><strong>2022</strong> — Russia-Ukraine war spike to $120+, then eased</div>
-        <div><strong>2024–25</strong> — Stabilized $65–80 range</div>
-      </div>
-    </div>
-
-    <div class="note">
-      This is a test page. Content is for development purposes only.
-    </div>
-
-    <div class="card">
-      <h2>Learning</h2>
-      <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.95rem; color:var(--text-soft);">
-        <a href="/polish/" style="display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem; background:var(--surface2); border-radius:var(--radius); text-decoration:none; color:var(--text);">
-          <span style="font-size:1.3rem;">🇵🇱</span>
-          <div>
-            <div style="font-weight:600;">Polish Lessons</div>
-            <div style="font-size:0.8rem; color:var(--text-dim);">Greetings, verbs &amp; basic conversation</div>
-          </div>
-        </a>
-        <a href="/ukulele/" style="display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem; background:var(--surface2); border-radius:var(--radius); text-decoration:none; color:var(--text);">
-          <span style="font-size:1.3rem;">🎸</span>
-          <div>
-            <div style="font-weight:600;">Ukulele Lessons</div>
-            <div style="font-size:0.8rem; color:var(--text-dim);">Chords, strumming &amp; first songs</div>
-          </div>
-        </a>
+      <h3>Key Events</h3>
+      <div class="events">
+        <div><strong>2008</strong> — Peak $133/bbl then crash to $39</div>
+        <div><strong>2011–14</strong> — Sustained $90–110 era</div>
+        <div><strong>2014–16</strong> — Shale boom + OPEC war → $26</div>
+        <div><strong>2020</strong> — COVID shock → WTI avg $16</div>
+        <div><strong>2022</strong> — Russia-Ukraine spike to $120+</div>
+        <div><strong>2024–25</strong> — Stabilized $65–80</div>
       </div>
     </div>
 
   </div>
 
   <footer class="footer">
-    <span data-site-version>v260311.18 7:34p</span>
+    <span data-site-version></span>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
   <script>
-    // WTI Crude Oil monthly average prices (USD/bbl) — 2005 to 2025
-    // Source: EIA / FRED historical data (approximate monthly averages)
     const oilData = [
-      // 2005
-      { date: '2005-01', price: 46.84 }, { date: '2005-04', price: 53.29 },
-      { date: '2005-07', price: 58.70 }, { date: '2005-10', price: 62.26 },
-      // 2006
-      { date: '2006-01', price: 65.49 }, { date: '2006-04', price: 69.65 },
-      { date: '2006-07', price: 74.41 }, { date: '2006-10', price: 58.89 },
-      // 2007
-      { date: '2007-01', price: 54.51 }, { date: '2007-04', price: 63.98 },
-      { date: '2007-07', price: 73.02 }, { date: '2007-10', price: 85.80 },
-      // 2008
-      { date: '2008-01', price: 92.97 }, { date: '2008-04', price: 109.74 },
-      { date: '2008-07', price: 133.88 }, { date: '2008-10', price: 76.61 },
-      { date: '2008-12', price: 41.12 },
-      // 2009
-      { date: '2009-01', price: 41.71 }, { date: '2009-04', price: 49.65 },
-      { date: '2009-07', price: 64.15 }, { date: '2009-10', price: 75.72 },
-      // 2010
-      { date: '2010-01', price: 78.33 }, { date: '2010-04', price: 84.29 },
-      { date: '2010-07', price: 76.32 }, { date: '2010-10', price: 81.89 },
-      // 2011
-      { date: '2011-01', price: 89.17 }, { date: '2011-04', price: 109.53 },
-      { date: '2011-07', price: 97.30 }, { date: '2011-10', price: 86.32 },
-      // 2012
-      { date: '2012-01', price: 100.27 }, { date: '2012-04', price: 103.32 },
-      { date: '2012-07', price: 87.90 }, { date: '2012-10', price: 89.49 },
-      // 2013
-      { date: '2013-01', price: 94.76 }, { date: '2013-04', price: 93.03 },
-      { date: '2013-07', price: 104.67 }, { date: '2013-10', price: 100.54 },
-      // 2014
-      { date: '2014-01', price: 94.62 }, { date: '2014-04', price: 102.07 },
-      { date: '2014-07', price: 103.59 }, { date: '2014-10', price: 84.40 },
-      { date: '2014-12', price: 59.29 },
-      // 2015
-      { date: '2015-01', price: 47.22 }, { date: '2015-04', price: 54.45 },
-      { date: '2015-07', price: 50.90 }, { date: '2015-10', price: 46.22 },
-      // 2016
-      { date: '2016-01', price: 31.68 }, { date: '2016-02', price: 26.21 },
-      { date: '2016-04', price: 40.75 }, { date: '2016-07', price: 44.65 },
-      { date: '2016-10', price: 49.78 },
-      // 2017
-      { date: '2017-01', price: 52.50 }, { date: '2017-04', price: 51.06 },
-      { date: '2017-07', price: 46.63 }, { date: '2017-10', price: 51.58 },
-      // 2018
-      { date: '2018-01', price: 63.70 }, { date: '2018-04', price: 66.25 },
-      { date: '2018-07', price: 70.98 }, { date: '2018-10', price: 70.75 },
-      { date: '2018-12', price: 49.52 },
-      // 2019
-      { date: '2019-01', price: 51.38 }, { date: '2019-04', price: 63.86 },
-      { date: '2019-07', price: 57.35 }, { date: '2019-10', price: 53.96 },
-      // 2020
-      { date: '2020-01', price: 57.52 }, { date: '2020-03', price: 29.21 },
-      { date: '2020-04', price: 16.55 }, { date: '2020-07', price: 40.71 },
-      { date: '2020-10', price: 39.54 },
-      // 2021
-      { date: '2021-01', price: 52.00 }, { date: '2021-04', price: 61.72 },
-      { date: '2021-07', price: 72.49 }, { date: '2021-10', price: 81.48 },
-      // 2022
-      { date: '2022-01', price: 86.55 }, { date: '2022-03', price: 108.50 },
-      { date: '2022-06', price: 114.84 }, { date: '2022-07', price: 101.62 },
-      { date: '2022-10', price: 87.55 },
-      // 2023
-      { date: '2023-01', price: 78.12 }, { date: '2023-04', price: 79.45 },
-      { date: '2023-07', price: 79.71 }, { date: '2023-09', price: 89.43 },
-      { date: '2023-12', price: 71.33 },
-      // 2024
-      { date: '2024-01', price: 73.96 }, { date: '2024-04', price: 81.91 },
-      { date: '2024-07', price: 80.72 }, { date: '2024-10', price: 70.77 },
-      // 2025
-      { date: '2025-01', price: 73.96 }, { date: '2025-03', price: 69.50 },
+      {date:'2005-01',price:46.84},{date:'2005-04',price:53.29},{date:'2005-07',price:58.70},{date:'2005-10',price:62.26},
+      {date:'2006-01',price:65.49},{date:'2006-04',price:69.65},{date:'2006-07',price:74.41},{date:'2006-10',price:58.89},
+      {date:'2007-01',price:54.51},{date:'2007-04',price:63.98},{date:'2007-07',price:73.02},{date:'2007-10',price:85.80},
+      {date:'2008-01',price:92.97},{date:'2008-04',price:109.74},{date:'2008-07',price:133.88},{date:'2008-10',price:76.61},{date:'2008-12',price:41.12},
+      {date:'2009-01',price:41.71},{date:'2009-04',price:49.65},{date:'2009-07',price:64.15},{date:'2009-10',price:75.72},
+      {date:'2010-01',price:78.33},{date:'2010-04',price:84.29},{date:'2010-07',price:76.32},{date:'2010-10',price:81.89},
+      {date:'2011-01',price:89.17},{date:'2011-04',price:109.53},{date:'2011-07',price:97.30},{date:'2011-10',price:86.32},
+      {date:'2012-01',price:100.27},{date:'2012-04',price:103.32},{date:'2012-07',price:87.90},{date:'2012-10',price:89.49},
+      {date:'2013-01',price:94.76},{date:'2013-04',price:93.03},{date:'2013-07',price:104.67},{date:'2013-10',price:100.54},
+      {date:'2014-01',price:94.62},{date:'2014-04',price:102.07},{date:'2014-07',price:103.59},{date:'2014-10',price:84.40},{date:'2014-12',price:59.29},
+      {date:'2015-01',price:47.22},{date:'2015-04',price:54.45},{date:'2015-07',price:50.90},{date:'2015-10',price:46.22},
+      {date:'2016-01',price:31.68},{date:'2016-02',price:26.21},{date:'2016-04',price:40.75},{date:'2016-07',price:44.65},{date:'2016-10',price:49.78},
+      {date:'2017-01',price:52.50},{date:'2017-04',price:51.06},{date:'2017-07',price:46.63},{date:'2017-10',price:51.58},
+      {date:'2018-01',price:63.70},{date:'2018-04',price:66.25},{date:'2018-07',price:70.98},{date:'2018-10',price:70.75},{date:'2018-12',price:49.52},
+      {date:'2019-01',price:51.38},{date:'2019-04',price:63.86},{date:'2019-07',price:57.35},{date:'2019-10',price:53.96},
+      {date:'2020-01',price:57.52},{date:'2020-03',price:29.21},{date:'2020-04',price:16.55},{date:'2020-07',price:40.71},{date:'2020-10',price:39.54},
+      {date:'2021-01',price:52.00},{date:'2021-04',price:61.72},{date:'2021-07',price:72.49},{date:'2021-10',price:81.48},
+      {date:'2022-01',price:86.55},{date:'2022-03',price:108.50},{date:'2022-06',price:114.84},{date:'2022-07',price:101.62},{date:'2022-10',price:87.55},
+      {date:'2023-01',price:78.12},{date:'2023-04',price:79.45},{date:'2023-07',price:79.71},{date:'2023-09',price:89.43},{date:'2023-12',price:71.33},
+      {date:'2024-01',price:73.96},{date:'2024-04',price:81.91},{date:'2024-07',price:80.72},{date:'2024-10',price:70.77},
+      {date:'2025-01',price:73.96},{date:'2025-03',price:69.50},
     ];
-
-    const labels = oilData.map(d => d.date);
-    const prices = oilData.map(d => d.price);
-
     const ctx = document.getElementById('oilChart').getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 380);
-    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.18)');
-    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.01)');
-
+    const grad = ctx.createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, 'rgba(37,99,235,0.15)');
+    grad.addColorStop(1, 'rgba(37,99,235,0.01)');
     new Chart(ctx, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'WTI Crude ($/bbl)',
-          data: prices,
-          borderColor: '#2563eb',
-          backgroundColor: gradient,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#2563eb',
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 2,
-          fill: true,
-          tension: 0.3,
-        }]
-      },
+      data: { labels: oilData.map(d=>d.date), datasets: [{
+        label: 'WTI ($/bbl)', data: oilData.map(d=>d.price),
+        borderColor: '#2563eb', backgroundColor: grad, borderWidth: 1.5,
+        pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#2563eb',
+        fill: true, tension: 0.3
+      }]},
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(26,26,26,0.92)',
-            titleFont: { family: 'Inter', size: 12 },
-            bodyFont: { family: 'Inter', size: 13, weight: '600' },
-            padding: 10,
-            cornerRadius: 8,
-            callbacks: {
-              title: (items) => {
-                const d = items[0].label;
-                const [y, m] = d.split('-');
-                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                return months[parseInt(m)-1] + ' ' + y;
-              },
-              label: (item) => '  $' + item.parsed.y.toFixed(2) + ' / barrel'
-            }
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: 'rgba(26,26,26,0.9)', titleFont: { family: 'Inter', size: 11 },
+          bodyFont: { family: 'Inter', size: 12, weight: '600' }, padding: 8, cornerRadius: 6,
+          callbacks: {
+            title: (items) => { const [y,m] = items[0].label.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y; },
+            label: (item) => '  $'+item.parsed.y.toFixed(2)+'/bbl'
           }
-        },
+        }},
         scales: {
-          x: {
-            grid: { display: false },
-            ticks: {
-              font: { family: 'Inter', size: 11 },
-              color: '#9a9a9a',
-              maxRotation: 0,
-              callback: function(val, i) {
-                const label = this.getLabelForValue(val);
-                if (!label) return '';
-                const [y, m] = label.split('-');
-                if (m === '01' && parseInt(y) % 2 === 0) return y;
-                return '';
-              }
-            }
-          },
-          y: {
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: {
-              font: { family: 'Inter', size: 11 },
-              color: '#9a9a9a',
-              callback: v => '$' + v
-            },
-            min: 0,
-            max: 150,
-          }
+          x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 }, color: '#9a9a9a', maxRotation: 0,
+            callback: function(v,i) { const l=this.getLabelForValue(v); if(!l) return ''; const [y,m]=l.split('-'); return m==='01'&&+y%3===0?y:''; }
+          }},
+          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Inter', size: 10 }, color: '#9a9a9a', callback: v=>'$'+v }, min: 0, max: 150 }
         }
       }
     });
   </script>
-
 </body>
 </html>
