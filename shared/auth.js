@@ -5,7 +5,7 @@ import { supabase } from './supabase.js';
 const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations
 const INIT_TIMEOUT_MS = 10000; // 10 seconds for initial auth check
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
-const CACHED_AUTH_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+const CACHED_AUTH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
  * Split a display name into first_name and last_name.
@@ -88,7 +88,6 @@ function cacheAuthState(user, appUser, role) {
       userId: user?.id,
       appUser: appUser ? { id: appUser.id, role: appUser.role, display_name: appUser.display_name, email: appUser.email, avatar_url: appUser.avatar_url, person_id: appUser.person_id, is_current_resident: appUser.is_current_resident } : null,
       role,
-      permissions: Array.from(currentPermissions),
       timestamp: Date.now(),
     };
     localStorage.setItem(CACHED_AUTH_KEY, JSON.stringify(cached));
@@ -161,7 +160,7 @@ export async function initAuth() {
       authLog.info('Using cached auth for instant access');
       currentRole = cached.role;
       currentAppUser = cached.appUser;
-      currentPermissions = new Set(cached.permissions || []);
+      currentPermissions = new Set(); // permissions fetched fresh from Supabase, not cached
       resolvedFromCache = true;
       // We still need the actual Supabase user object, so we don't set currentUser yet
       // but we resolve with a minimal user so the UI can proceed
