@@ -1,12 +1,12 @@
 {
-  "version": "v260312.04 11:46a",
-  "release": 651,
-  "sha": "2e1758f1b",
-  "fullSha": "2e1758f1b0352afd8d43f2e65b05d9ac2195ed21",
+  "version": "v260312.05 12:48p",
+  "release": 652,
+  "sha": "ca3291bef",
+  "fullSha": "ca3291befcab0112d2e676b46c50601432ddee91",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 16:46:08+00",
-  "commits": [{"sha":"9eda5a6c1","message":"Remove Review Documents button from permit planning page","author":"Jacqueline Giroux"},{"sha":"f80114f56","message":"Remove PDF button from permit planning page","author":"Jacqueline Giroux"},{"sha":"2e1758f1b","message":"Merge pull request #26 from rsonnad/claude/musing-villani","author":"jackie61899280"}]
+  "pushedAt": "2026-03-12 17:48:11+00",
+  "commits": [{"sha":"ca3291bef","message":"Add 24x36 site plan sheet layout draft preview","author":"Jacqueline Giroux"}]
 }
