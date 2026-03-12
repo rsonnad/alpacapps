@@ -1,12 +1,12 @@
 {
-  "version": "v260312.20 6:15p",
-  "release": 667,
-  "sha": "4f2d04517",
-  "fullSha": "4f2d04517577f5dc2a38c6dcea0a0a1174ef85b4",
+  "version": "v260312.21 6:28p",
+  "release": 668,
+  "sha": "570c439d7",
+  "fullSha": "570c439d7f910ba71e5e4eb71c6e82aae048416a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 23:15:52+00",
-  "commits": [{"sha":"6b3a83d4b","message":"Add reverse chronological events + date filter","author":"Rahul"},{"sha":"4f2d04517","message":"Merge branch 'compassionate-wescoff'","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-12 23:28:16+00",
+  "commits": [{"sha":"570c439d7","message":"Redesign camera events as UniFi Protect-style filmstrip","author":"Rahul"}]
 }
