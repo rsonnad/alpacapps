@@ -1,12 +1,12 @@
 {
-  "version": "v260312.05 12:48p",
-  "release": 652,
-  "sha": "ca3291bef",
-  "fullSha": "ca3291befcab0112d2e676b46c50601432ddee91",
+  "version": "v260312.06 12:52p",
+  "release": 653,
+  "sha": "a2e1ff307",
+  "fullSha": "a2e1ff3073b12b9c6bfaeba4a4d8a3b4c9998ba1",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 17:48:11+00",
-  "commits": [{"sha":"ca3291bef","message":"Add 24x36 site plan sheet layout draft preview","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-12 17:52:04+00",
+  "commits": [{"sha":"a2e1ff307","message":"Update site plan title block owner to Revocable Trust of Subhash Sonnad","author":"Jacqueline Giroux"}]
 }
