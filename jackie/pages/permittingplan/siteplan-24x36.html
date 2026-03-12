@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Plan — 160 Still Forest Dr — 24×36 Drawing Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sheet-w: 36in;
+    --sheet-h: 24in;
+    --border-margin: 0.5in;
+    --line-color: #1a1a1a;
+    --line-light: #666;
+    --setback-road: #cc2222;
+    --setback-side: #dd8800;
+    --text-color: #111;
+    --bg: #fff;
+  }
+
+  body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: #444;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Screen-only controls */
+  .screen-controls {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+  }
+  .screen-controls button {
+    padding: 8px 16px;
+    background: #222;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .screen-controls button:hover { background: #444; }
+  .screen-controls .draft-badge {
+    padding: 8px 16px;
+    background: #cc2222;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* The 24×36 sheet */
+  .sheet {
+    width: var(--sheet-w);
+    height: var(--sheet-h);
+    background: var(--bg);
+    position: relative;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+    /* Scale down for screen viewing */
+    transform-origin: top center;
+  }
+
+  /* Drawing border */
+  .drawing-border {
+    position: absolute;
+    left: var(--border-margin);
+    top: var(--border-margin);
+    right: var(--border-margin);
+    bottom: var(--border-margin);
+    border: 2.5pt solid var(--line-color);
+  }
+
+  /* ═══════════════════════════════════════
+     MAIN SITE PLAN AREA — left 70%, top 76%
+     ═══════════════════════════════════════ */
+  .main-plan {
+    position: absolute;
+    left: var(--border-margin);
+    top: var(--border-margin);
+    width: 24.5in;
+    height: 17.5in;
+    border-right: 1.5pt solid var(--line-color);
+    border-bottom: 1.5pt solid var(--line-color);
+    overflow: hidden;
+  }
+  .main-plan img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  /* SVG overlay for setback lines and annotations */
+  .plan-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* ═══════════════════════════════════════
+     VICINITY MAP — top right
+     ═══════════════════════════════════════ */
+  .vicinity-map {
+    position: absolute;
+    right: var(--border-margin);
+    top: var(--border-margin);
+    width: 10.5in;
+    height: 4.8in;
+    border-bottom: 1.5pt solid var(--line-color);
+    padding: 0.2in;
+    display: flex;
+    flex-direction: column;
+  }
+  .vicinity-map h3 {
+    font-size: 14pt;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.1in;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .vicinity-map .map-placeholder {
+    flex: 1;
+    border: 1pt solid #999;
+    border-radius: 2pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f7;
+    position: relative;
+    overflow: hidden;
+  }
+  .vicinity-map .map-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .vicinity-note {
+    font-size: 7pt;
+    color: #666;
+    text-align: center;
+    margin-top: 0.05in;
+  }
+
+  /* ═══════════════════════════════════════
+     NORTH ARROW + SCALE — right column
+     ═══════════════════════════════════════ */
+  .north-scale {
+    position: absolute;
+    right: var(--border-margin);
+    top: calc(var(--border-margin) + 4.8in);
+    width: 10.5in;
+    height: 2.8in;
+    border-bottom: 1.5pt solid var(--line-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.2in;
+  }
+  .north-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05in;
+  }
+  .north-arrow svg { width: 1.2in; height: 1.8in; }
+  .north-arrow .n-label {
+    font-size: 18pt;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+  }
+  .scale-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1in;
+  }
+  .scale-info .scale-text {
+    font-size: 14pt;
+    font-weight: 700;
+  }
+  .scale-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+  }
+  .scale-bar .seg {
+    width: 1in;
+    height: 0.15in;
+    border: 1.5pt solid #000;
+  }
+  .scale-bar .seg.filled { background: #000; }
+  .scale-bar-labels {
+    display: flex;
+    width: 4in;
+    justify-content: space-between;
+    font-size: 8pt;
+    font-weight: 600;
+    margin-top: 0.02in;
+  }
+
+  /* ═══════════════════════════════════════
+     LEGEND — right column
+     ═══════════════════════════════════════ */
+  .legend {
+    position: absolute;
+    right: var(--border-margin);
+    top: calc(var(--border-margin) + 7.6in);
+    width: 10.5in;
+    height: 3.2in;
+    border-bottom: 1.5pt solid var(--line-color);
+    padding: 0.15in 0.25in;
+  }
+  .legend h3 {
+    font-size: 12pt;
+    font-weight: 800;
+    margin-bottom: 0.1in;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.06in 0.4in;
+    font-size: 8.5pt;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.12in;
+  }
+  .legend-line {
+    width: 0.6in;
+    height: 0;
+    flex-shrink: 0;
+  }
+  .legend-line.solid-heavy { border-top: 3pt solid #000; }
+  .legend-line.solid-medium { border-top: 1.5pt solid #000; }
+  .legend-line.dashed-red { border-top: 2pt dashed var(--setback-road); }
+  .legend-line.dashed-orange { border-top: 2pt dashed var(--setback-side); }
+  .legend-line.dotdash { border-top: 1.5pt dashed #555; }
+  .legend-line.double { border-top: 2pt double #000; }
+  .legend-symbol {
+    width: 0.6in;
+    height: 0.2in;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14pt;
+  }
+
+  /* ═══════════════════════════════════════
+     GENERAL NOTES — right column
+     ═══════════════════════════════════════ */
+  .general-notes {
+    position: absolute;
+    right: var(--border-margin);
+    top: calc(var(--border-margin) + 10.8in);
+    width: 10.5in;
+    height: 6.7in;
+    border-bottom: 1.5pt solid var(--line-color);
+    padding: 0.15in 0.25in;
+    font-size: 8pt;
+    line-height: 1.45;
+    overflow: hidden;
+  }
+  .general-notes h3 {
+    font-size: 12pt;
+    font-weight: 800;
+    margin-bottom: 0.08in;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .general-notes ol {
+    padding-left: 0.2in;
+    margin-bottom: 0.1in;
+  }
+  .general-notes li {
+    margin-bottom: 0.04in;
+  }
+  .general-notes .sub-heading {
+    font-weight: 700;
+    font-size: 9pt;
+    margin-top: 0.08in;
+    margin-bottom: 0.04in;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════════════════════════════════
+     SETBACK COMPLIANCE TABLE — bottom left
+     ═══════════════════════════════════════ */
+  .compliance-table-area {
+    position: absolute;
+    left: var(--border-margin);
+    bottom: var(--border-margin);
+    width: 14.5in;
+    height: 5.5in;
+    border-top: 1.5pt solid var(--line-color);
+    border-right: 1.5pt solid var(--line-color);
+    padding: 0.15in 0.2in;
+    overflow: hidden;
+  }
+  .compliance-table-area h3 {
+    font-size: 11pt;
+    font-weight: 800;
+    margin-bottom: 0.08in;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .compliance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+  }
+  .compliance-table th {
+    background: #f0f0ee;
+    font-weight: 700;
+    text-align: left;
+    padding: 0.04in 0.08in;
+    border: 0.75pt solid #999;
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .compliance-table td {
+    padding: 0.03in 0.08in;
+    border: 0.5pt solid #bbb;
+    vertical-align: top;
+  }
+  .compliance-table .violation { color: var(--setback-road); font-weight: 600; }
+  .compliance-table .ok { color: #1a7a3a; font-weight: 600; }
+
+  /* ═══════════════════════════════════════
+     SITE DATA — bottom center
+     ═══════════════════════════════════════ */
+  .site-data {
+    position: absolute;
+    left: calc(var(--border-margin) + 14.5in);
+    bottom: var(--border-margin);
+    width: 10in;
+    height: 2.5in;
+    border-top: 1.5pt solid var(--line-color);
+    border-right: 1.5pt solid var(--line-color);
+    padding: 0.12in 0.2in;
+    font-size: 8.5pt;
+  }
+  .site-data h3 {
+    font-size: 10pt;
+    font-weight: 800;
+    margin-bottom: 0.06in;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .site-data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.03in 0.3in;
+  }
+  .site-data-grid .label { color: #555; }
+  .site-data-grid .value { font-weight: 700; }
+
+  /* ═══════════════════════════════════════
+     TITLE BLOCK — bottom right
+     ═══════════════════════════════════════ */
+  .title-block {
+    position: absolute;
+    right: var(--border-margin);
+    bottom: var(--border-margin);
+    width: 10.5in;
+    height: 5.5in;
+    border-top: 1.5pt solid var(--line-color);
+    display: grid;
+    grid-template-rows: auto auto 1fr auto auto auto;
+    overflow: hidden;
+  }
+  .tb-section {
+    border-bottom: 1pt solid #888;
+    padding: 0.08in 0.2in;
+  }
+  .tb-section:last-child { border-bottom: none; }
+  .tb-project {
+    background: #f5f5f2;
+    text-align: center;
+    padding: 0.15in;
+    border-bottom: 1.5pt solid #000;
+  }
+  .tb-project .title {
+    font-size: 16pt;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tb-project .subtitle {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #444;
+    margin-top: 0.02in;
+  }
+  .tb-owner {
+    display: grid;
+    grid-template-columns: 0.8in 1fr;
+    gap: 0.02in 0.1in;
+    font-size: 8.5pt;
+    padding: 0.1in 0.2in;
+  }
+  .tb-owner .label {
+    font-size: 6.5pt;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: right;
+    padding-top: 0.01in;
+  }
+  .tb-owner .value {
+    font-weight: 600;
+  }
+  .tb-pe-box {
+    border: 1.5pt solid #000;
+    margin: 0.1in 0.2in;
+    padding: 0.1in;
+    min-height: 1.2in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 8pt;
+    color: #888;
+  }
+  .tb-pe-box .pe-label {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.05in;
+  }
+  .tb-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.06in 0.2in;
+    font-size: 7.5pt;
+    border-top: 1pt solid #888;
+    background: #fafaf8;
+  }
+  .tb-footer .sheet-no { font-weight: 700; font-size: 11pt; }
+
+  /* ═══════════════════════════════════════
+     DRAFT WATERMARK
+     ═══════════════════════════════════════ */
+  .watermark {
+    position: absolute;
+    top: 50%;
+    left: 35%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 180pt;
+    font-weight: 900;
+    color: rgba(200, 30, 30, 0.07);
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  /* ═══════════════════════════════════════
+     PRINT STYLES — exact 24×36"
+     ═══════════════════════════════════════ */
+  @media print {
+    @page {
+      size: 36in 24in;
+      margin: 0;
+    }
+    body {
+      background: white;
+      padding: 0;
+    }
+    .screen-controls { display: none; }
+    .sheet {
+      box-shadow: none;
+      transform: none !important;
+      width: 36in;
+      height: 24in;
+    }
+    .watermark { display: none; }
+  }
+
+  /* Screen scaling */
+  @media screen and (max-width: 2600px) {
+    .sheet { transform: scale(0.35); margin-bottom: -15in; }
+  }
+  @media screen and (min-width: 2601px) {
+    .sheet { transform: scale(0.5); margin-bottom: -12in; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-controls">
+  <span class="draft-badge">DRAFT — NOT FOR SUBMISSION</span>
+  <button onclick="window.print()">🖨 Print / Save PDF (24×36")</button>
+  <button onclick="document.querySelector('.sheet').style.transform = 'scale(' + (parseFloat(prompt('Scale (0.2–1.0):','0.35')) || 0.35) + ')'">🔍 Zoom</button>
+</div>
+
+<div class="sheet">
+
+  <!-- DRAFT WATERMARK -->
+  <div class="watermark">PRELIMINARY</div>
+
+  <!-- DRAWING BORDER -->
+  <div class="drawing-border"></div>
+
+  <!-- ════════════════════════════════════
+       MAIN SITE PLAN
+       ════════════════════════════════════ -->
+  <div class="main-plan">
+    <img src="siteplan-professional-v7.jpg" alt="Site Plan — Lot 14-B, Block 6, Blue Bonnet Acres">
+
+    <!-- SVG Overlay for setback lines and annotations -->
+    <svg class="plan-overlay" viewBox="0 0 1000 1400" xmlns="http://www.w3.org/2000/svg">
+      <!-- 25' Road Setback — West (Leisure Lane) -->
+      <line x1="115" y1="20" x2="115" y2="1350" stroke="#cc2222" stroke-width="2.5" stroke-dasharray="12,6" opacity="0.7"/>
+      <text x="118" y="700" fill="#cc2222" font-size="11" font-weight="700" transform="rotate(90,118,700)" text-anchor="middle">25' ROAD SETBACK (LEISURE LN)</text>
+
+      <!-- 25' Road Setback — South (Still Forest Dr) -->
+      <line x1="20" y1="1310" x2="980" y2="1310" stroke="#cc2222" stroke-width="2.5" stroke-dasharray="12,6" opacity="0.7"/>
+      <text x="500" y="1302" fill="#cc2222" font-size="11" font-weight="700" text-anchor="middle">25' ROAD SETBACK (STILL FOREST DR)</text>
+
+      <!-- 15' Side Setback — East -->
+      <line x1="935" y1="20" x2="935" y2="1350" stroke="#dd8800" stroke-width="2" stroke-dasharray="8,5" opacity="0.6"/>
+      <text x="930" y="700" fill="#dd8800" font-size="10" font-weight="600" transform="rotate(-90,930,700)" text-anchor="middle">15' SIDE SETBACK (EAST)</text>
+
+      <!-- 15' Rear Setback — North -->
+      <line x1="20" y1="55" x2="980" y2="55" stroke="#dd8800" stroke-width="2" stroke-dasharray="8,5" opacity="0.6"/>
+      <text x="500" y="48" fill="#dd8800" font-size="10" font-weight="600" text-anchor="middle">15' REAR SETBACK (NORTH)</text>
+
+      <!-- Drainage flow arrows -->
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#2266aa"/>
+        </marker>
+      </defs>
+      <!-- Arrow 1: NW to SE -->
+      <line x1="200" y1="300" x2="500" y2="600" stroke="#2266aa" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.5"/>
+      <!-- Arrow 2: Center to SE -->
+      <line x1="500" y1="500" x2="700" y2="800" stroke="#2266aa" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.5"/>
+      <!-- Arrow 3: SW to SE -->
+      <line x1="200" y1="900" x2="500" y2="1100" stroke="#2266aa" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.5"/>
+      <text x="650" y="820" fill="#2266aa" font-size="9" font-weight="600" opacity="0.6">DRAINAGE →</text>
+
+    </svg>
+  </div>
+
+  <!-- ════════════════════════════════════
+       VICINITY MAP
+       ════════════════════════════════════ -->
+  <div class="vicinity-map">
+    <h3>Vicinity Map</h3>
+    <div class="map-placeholder">
+      <!-- Cropped from survey-base.png top-left corner which already has a vicinity map -->
+      <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+        <!-- Simplified vicinity showing major roads -->
+        <rect x="0" y="0" width="400" height="250" fill="#f9f9f7"/>
+
+        <!-- SH 71 -->
+        <line x1="0" y1="60" x2="400" y2="40" stroke="#666" stroke-width="4"/>
+        <text x="350" y="35" font-size="10" font-weight="700" fill="#333" text-anchor="end">SH 71</text>
+
+        <!-- Hwy 21 -->
+        <line x1="60" y1="0" x2="100" y2="250" stroke="#666" stroke-width="4"/>
+        <text x="65" y="15" font-size="10" font-weight="700" fill="#333">HWY 21</text>
+
+        <!-- CR 329 (Still Forest Dr) -->
+        <line x1="120" y1="160" x2="380" y2="160" stroke="#999" stroke-width="2"/>
+        <text x="250" y="155" font-size="8" fill="#555" text-anchor="middle">CR 329 (STILL FOREST DR)</text>
+
+        <!-- CR 331 (Leisure Ln) -->
+        <line x1="180" y1="90" x2="180" y2="220" stroke="#999" stroke-width="2"/>
+        <text x="173" y="130" font-size="8" fill="#555" transform="rotate(-90,173,130)" text-anchor="middle">CR 331 (LEISURE LN)</text>
+
+        <!-- Property marker -->
+        <polygon points="195,145 205,145 200,138" fill="#cc2222"/>
+        <rect x="188" y="147" width="24" height="18" fill="none" stroke="#cc2222" stroke-width="2"/>
+        <text x="200" y="180" font-size="8" font-weight="700" fill="#cc2222" text-anchor="middle">SITE</text>
+
+        <!-- Colorado River -->
+        <path d="M0,200 Q100,210 200,195 Q300,180 400,200" fill="none" stroke="#4488cc" stroke-width="2" stroke-dasharray="4,2"/>
+        <text x="320" y="210" font-size="8" fill="#4488cc">Colorado River</text>
+
+        <!-- Bastrop -->
+        <circle cx="80" cy="80" r="4" fill="#333"/>
+        <text x="88" y="84" font-size="9" font-weight="600" fill="#333">Bastrop</text>
+
+        <!-- Cedar Creek -->
+        <circle cx="260" cy="120" r="3" fill="#555"/>
+        <text x="268" y="124" font-size="8" fill="#555">Cedar Creek</text>
+
+        <!-- Scale note -->
+        <text x="380" y="245" font-size="7" fill="#888" text-anchor="end">NOT TO SCALE</text>
+      </svg>
+    </div>
+    <p class="vicinity-note">Bastrop County, Texas — Unincorporated Area — Cedar Creek</p>
+  </div>
+
+  <!-- ════════════════════════════════════
+       NORTH ARROW + SCALE
+       ════════════════════════════════════ -->
+  <div class="north-scale">
+    <div class="north-arrow">
+      <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- North arrow -->
+        <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
+        <polygon points="30,5 30,65 45,80" fill="#444"/>
+        <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
+      </svg>
+    </div>
+    <div class="scale-info">
+      <div class="scale-text">SCALE: 1" = 30'</div>
+      <div>
+        <div class="scale-bar">
+          <div class="seg filled"></div>
+          <div class="seg"></div>
+          <div class="seg filled"></div>
+          <div class="seg"></div>
+        </div>
+        <div class="scale-bar-labels">
+          <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
+        </div>
+      </div>
+      <div style="font-size: 8pt; color: #666; margin-top: 0.05in;">HORIZONTAL SCALE IN FEET</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       LEGEND
+       ════════════════════════════════════ -->
+  <div class="legend">
+    <h3>Legend</h3>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="legend-line solid-heavy"></div>
+        <span>Property Boundary</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed-red"></div>
+        <span>25' Road Setback (from ROW)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed-orange"></div>
+        <span>15' Side/Rear Setback</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dotdash"></div>
+        <span>Easement (10' P.U.E. & B.L.)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line double"></div>
+        <span>Right-of-Way Line (60' ROW)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line solid-medium"></div>
+        <span>Existing Structure</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol">⬡</div>
+        <span>Septic System (Aerobic — JET INC)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol">◉</div>
+        <span>Water Meter</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol">⚡</div>
+        <span>Electric Meter / Power Pole</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol" style="color: #2266aa;">→</div>
+        <span>Drainage Flow Direction</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol">◆</div>
+        <span>Iron Rod Found / Set</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-symbol">△</div>
+        <span>Concrete Monument</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       GENERAL NOTES
+       ════════════════════════════════════ -->
+  <div class="general-notes">
+    <h3>General Notes</h3>
+    <ol>
+      <li><strong>Legal Description:</strong> Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One, Bastrop County, Texas. Doc. No. 202005552, O.P.R.B.C.T. PID: 44401.</li>
+      <li><strong>Owner:</strong> Revocable Trust of Subhash Sonnad.</li>
+      <li><strong>Total Area:</strong> 1.7348 acres (75,133 square feet).</li>
+      <li><strong>Corner Lot:</strong> Two road frontages — Still Forest Drive (CR 329) to the south and Leisure Lane (CR 331) to the west. Both are 60' right-of-way county roads.</li>
+      <li><strong>Setbacks:</strong> 25' from road right-of-way (both roads), 15' from side and rear property lines per Blue Bonnet Acres plat restrictions.</li>
+      <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain per FEMA FIRM panels. No elevation certificate required.</li>
+      <li><strong>Emergency Services District:</strong> BCESD #3 (Bastrop County Emergency Services District No. 3).</li>
+      <li><strong>Houston Toad Habitat:</strong> Property is NOT within the Lost Pines Habitat Conservation Plan area. No LPHCP declination required.</li>
+      <li><strong>Existing Septic:</strong> Aerobic system (JET INC), serviced by Larry's Septic (512-695-6570). OSSF permit required for any modifications.</li>
+      <li><strong>Water:</strong> Active water meter at front gate (Still Forest Dr).</li>
+      <li><strong>Electric:</strong> Digital electric meter with sub-panels. Power pole with transformer on west side (Leisure Ln).</li>
+      <li><strong>Gas:</strong> No natural gas service observed.</li>
+      <li><strong>Survey Basis:</strong> Land Title Survey by 4Ward Land Surveying, Jason Ward R.P.L.S. #5811, dated February 4, 2021.</li>
+      <li><strong>Bearings:</strong> Based on the recorded plat of Blue Bonnet Acres, Corrected Plat Section One.</li>
+      <li><strong>Jurisdiction:</strong> Unincorporated Bastrop County. No county zoning. Development permit required per Bastrop County Flood Damage Prevention Order (May 2023) and Subdivision Regulations (April 2017).</li>
+    </ol>
+
+    <div class="sub-heading">Boundary Bearings</div>
+    <div style="font-size: 8pt; display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.3in;">
+      <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
+      <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
+      <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
+      <div><strong>South:</strong> S26°23'31"W — 187.86' along Still Forest Dr</div>
+      <div><strong>West:</strong> S20°17'19"W — 328.51' along Leisure Lane</div>
+      <div><strong>SW Corner:</strong> 14' P.U.E. along Still Forest Dr</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SETBACK COMPLIANCE TABLE
+       ════════════════════════════════════ -->
+  <div class="compliance-table-area">
+    <h3>Setback Compliance Summary</h3>
+    <p style="font-size: 7.5pt; color: #888; margin-bottom: 0.06in;">All distances measured from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
+    <table class="compliance-table">
+      <thead>
+        <tr>
+          <th style="width:18%">Structure</th>
+          <th style="width:10%">Size</th>
+          <th style="width:18%">Nearest Boundary</th>
+          <th style="width:12%">Distance</th>
+          <th style="width:10%">Required</th>
+          <th style="width:10%">Deficit</th>
+          <th style="width:8%">Status</th>
+          <th style="width:14%">Action Required</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Big Trailer</td>
+          <td>10'×42'</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>1'</td>
+          <td>25'</td>
+          <td class="violation">24'</td>
+          <td class="violation">CRITICAL</td>
+          <td>Relocate or remove</td>
+        </tr>
+        <tr>
+          <td>Red Container</td>
+          <td>40'×8'</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>~2'</td>
+          <td>25'</td>
+          <td class="violation">~23'</td>
+          <td class="violation">CRITICAL</td>
+          <td>Relocate or remove</td>
+        </tr>
+        <tr>
+          <td>Red Container (2)</td>
+          <td>40'×8'</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>~2'</td>
+          <td>25'</td>
+          <td class="violation">~23'</td>
+          <td class="violation">CRITICAL</td>
+          <td>Relocate or remove</td>
+        </tr>
+        <tr>
+          <td>Container</td>
+          <td>40'×8'</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>5'</td>
+          <td>25'</td>
+          <td class="violation">20'</td>
+          <td class="violation">CRITICAL</td>
+          <td>Relocate or remove</td>
+        </tr>
+        <tr>
+          <td>Deck</td>
+          <td>—</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>13'5"</td>
+          <td>25'</td>
+          <td class="violation">11'7"</td>
+          <td class="violation">VIOLATION</td>
+          <td>Modify or relocate</td>
+        </tr>
+        <tr>
+          <td>Beige Container</td>
+          <td>40'×8'</td>
+          <td>S (Still Forest Dr ROW)</td>
+          <td>6'</td>
+          <td>25'</td>
+          <td class="violation">19'</td>
+          <td class="violation">VIOLATION</td>
+          <td>Relocate or remove</td>
+        </tr>
+        <tr>
+          <td>Bathroom Bldg</td>
+          <td>Under const.</td>
+          <td>E (side property line)</td>
+          <td>~10'</td>
+          <td>15'</td>
+          <td class="violation">~5'</td>
+          <td class="violation">NO PERMIT</td>
+          <td>Obtain permit; may need to relocate</td>
+        </tr>
+        <tr>
+          <td>Small Trailer</td>
+          <td>7'5"×20'5"</td>
+          <td>E (side property line)</td>
+          <td>~7'</td>
+          <td>15'</td>
+          <td class="violation">~8'</td>
+          <td class="violation">VIOLATION</td>
+          <td>Relocate</td>
+        </tr>
+        <tr>
+          <td>Sauna</td>
+          <td>—</td>
+          <td>W (Leisure Ln ROW)</td>
+          <td>30'</td>
+          <td>25'</td>
+          <td class="ok">—</td>
+          <td class="ok">OK (+5')</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>1-Story Wood Bldg</td>
+          <td>—</td>
+          <td>N (rear property line)</td>
+          <td>~30'</td>
+          <td>15'</td>
+          <td class="ok">—</td>
+          <td class="ok">OK (+15')</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Main House (2-Story)</td>
+          <td>Stone & Frame</td>
+          <td>All boundaries</td>
+          <td>Well within</td>
+          <td>All</td>
+          <td class="ok">—</td>
+          <td class="ok">OK</td>
+          <td>None</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size: 7pt; color: #888; margin-top: 0.06in;">
+      <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 structures encroach into the 25' road setback along Leisure Lane (west) or Still Forest Dr (south).
+      The bathroom building is under construction without a development permit (Class B misdemeanor per Bastrop County regulations).
+    </p>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SITE DATA SUMMARY
+       ════════════════════════════════════ -->
+  <div class="site-data">
+    <h3>Site Data</h3>
+    <div class="site-data-grid">
+      <div class="label">Total Lot Area:</div>
+      <div class="value">75,133 SF (1.7348 Ac)</div>
+
+      <div class="label">Existing Structures:</div>
+      <div class="value">11 structures</div>
+
+      <div class="label">Impervious Cover (est.):</div>
+      <div class="value">~8,500 SF (~11.3%)</div>
+
+      <div class="label">Pervious Area (est.):</div>
+      <div class="value">~66,633 SF (~88.7%)</div>
+
+      <div class="label">Drainage Direction:</div>
+      <div class="value">Generally SE toward Still Forest Dr</div>
+
+      <div class="label">Natural Water:</div>
+      <div class="value">Pond (center of lot) — no diversion</div>
+
+      <div class="label">Flood Zone:</div>
+      <div class="value">Zone X (unshaded) — outside 100-yr</div>
+
+      <div class="label">Permit Class:</div>
+      <div class="value">Class A (outside floodplain)</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       TITLE BLOCK
+       ════════════════════════════════════ -->
+  <div class="title-block">
+    <div class="tb-project">
+      <div class="title">Site Plan</div>
+      <div class="subtitle">160 Still Forest Drive, Cedar Creek, Texas 78612</div>
+    </div>
+
+    <div class="tb-owner">
+      <div class="label">Owner:</div>
+      <div class="value">Revocable Trust of Subhash Sonnad</div>
+
+      <div class="label">Address:</div>
+      <div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
+
+      <div class="label">Legal:</div>
+      <div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One</div>
+
+      <div class="label">County:</div>
+      <div class="value">Bastrop County, Texas (Unincorporated)</div>
+
+      <div class="label">Prop ID:</div>
+      <div class="value">44401</div>
+
+      <div class="label">Acreage:</div>
+      <div class="value">1.7348 Acres (75,133 SF)</div>
+    </div>
+
+    <div class="tb-pe-box">
+      <div class="pe-label">Professional Engineer Seal</div>
+      <div>Reserved for PE stamp, signature, and date</div>
+      <div style="margin-top: 0.1in; font-size: 7pt;">Texas P.E. License No. ___________</div>
+    </div>
+
+    <div class="tb-section" style="font-size: 8pt;">
+      <div style="display:flex; justify-content:space-between;">
+        <div><strong>Survey By:</strong> 4Ward Land Surveying</div>
+        <div>Jason Ward, R.P.L.S. #5811</div>
+      </div>
+      <div style="color:#666; margin-top: 0.02in;">Survey Date: February 4, 2021</div>
+    </div>
+
+    <div class="tb-footer">
+      <div>
+        <div style="font-size: 7pt; color: #999;">PREPARED BY</div>
+        <div style="font-weight: 600;">Revocable Trust of Subhash Sonnad</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 7pt; color: #999;">DATE</div>
+        <div style="font-weight: 600;">March 2026</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 7pt; color: #999;">SCALE</div>
+        <div style="font-weight: 600;">1" = 30'</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 7pt; color: #999;">SHEET</div>
+        <div class="sheet-no">1 OF 1</div>
+      </div>
+    </div>
+
+    <div style="text-align: center; padding: 0.04in; background: #fff3f3; font-size: 8pt; font-weight: 700; color: #cc2222; letter-spacing: 0.1em; border-top: 1pt solid #cc2222;">
+      PRELIMINARY — NOT FOR CONSTRUCTION — SUBJECT TO PE REVIEW
+    </div>
+  </div>
+
+</div><!-- end .sheet -->
+
+</body>
+</html>
