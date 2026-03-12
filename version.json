@@ -1,12 +1,12 @@
 {
-  "version": "v260311.15 7:02p",
-  "release": 638,
-  "sha": "78a4e6784",
-  "fullSha": "78a4e67843e127bd82633262d0d6fbf5fc841e72",
+  "version": "v260311.16 7:06p",
+  "release": 639,
+  "sha": "7c4d9766f",
+  "fullSha": "7c4d9766f7025fb9edd247c87f6aef1e380f885f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 00:02:48+00",
-  "commits": [{"sha":"9965bb698","message":"Security: add SRI integrity attributes to all external CDN scripts","author":"Rahul"},{"sha":"78a4e6784","message":"Merge branch 'gallant-hertz'","author":"Rahul"}]
+  "pushedAt": "2026-03-12 00:06:27+00",
+  "commits": [{"sha":"7c4d9766f","message":"Security hardening: RLS policies, auth cache reduction, visitor PII expiry","author":"Rahul"}]
 }
