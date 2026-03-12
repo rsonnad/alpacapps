@@ -1,12 +1,12 @@
 {
-  "version": "v260312.21 6:28p",
-  "release": 668,
-  "sha": "570c439d7",
-  "fullSha": "570c439d7f910ba71e5e4eb71c6e82aae048416a",
+  "version": "v260312.22 6:41p",
+  "release": 669,
+  "sha": "287ea7a03",
+  "fullSha": "287ea7a03f6ad479f46166600c9afecd4eab302f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-12 23:28:16+00",
-  "commits": [{"sha":"570c439d7","message":"Redesign camera events as UniFi Protect-style filmstrip","author":"Rahul"}]
+  "pushedAt": "2026-03-12 23:41:42+00",
+  "commits": [{"sha":"287ea7a03","message":"Redesign events UI to match UniFi Protect layout (#30)","author":"Rahul"}]
 }
