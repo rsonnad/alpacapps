@@ -1,12 +1,12 @@
 {
-  "version": "v260311.22 10:49p",
-  "release": 645,
-  "sha": "8ef12d1a2",
-  "fullSha": "8ef12d1a2970182c11a9e8c93bac98b31ecfc8ff",
+  "version": "v260311.23 10:52p",
+  "release": 646,
+  "sha": "5c123616e",
+  "fullSha": "5c123616e052b11439e9ede3c9683a39487764bd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-12 03:49:34+00",
-  "commits": [{"sha":"8ef12d1a2","message":"docs: add DO droplet → Hostinger VPS migration plan (#23)","author":"Rahul"}]
+  "pushedAt": "2026-03-12 03:52:51+00",
+  "commits": [{"sha":"5c123616e","message":"Bigger fonts for driver readability + LLM screen navigation (#24)","author":"Rahul"}]
 }
