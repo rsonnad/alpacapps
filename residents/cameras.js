@@ -1353,6 +1353,7 @@ const EVENTS_INITIAL = 28;
 const EVENTS_MORE = 24;
 let allEvents = [];
 let eventsFirstLoad = true;
+let eventDateFilter = { start: null, end: null };
 
 async function loadEvents(older) {
   const section = document.getElementById('eventsSection');
@@ -1362,7 +1363,18 @@ async function loadEvents(older) {
 
   try {
     const pageSize = eventsFirstLoad ? EVENTS_INITIAL : EVENTS_MORE;
-    let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}&types[]=motion&types[]=smartDetectZone`;
+    let url = `${EVENTS_PROXY_BASE}/events?limit=${pageSize}&types[]=motion&types[]=smartDetectZone&orderDirection=desc`;
+
+    // Date filter: convert dates to ms timestamps
+    if (eventDateFilter.start) {
+      url += `&start=${new Date(eventDateFilter.start).getTime()}`;
+    }
+    if (eventDateFilter.end) {
+      // End of day
+      url += `&end=${new Date(eventDateFilter.end + 'T23:59:59').getTime()}`;
+    }
+
+    // Pagination: load older = events before the oldest we have (desc order)
     if (older && allEvents.length) {
       const oldest = allEvents[allEvents.length - 1];
       url += `&end=${oldest.start - 1}`;
@@ -1384,6 +1396,28 @@ async function loadEvents(older) {
     console.warn('[Events] Failed to load:', err.message);
   }
 }
+
+window.__filterEventsByDate = function() {
+  const from = document.getElementById('eventDateFrom')?.value;
+  const to = document.getElementById('eventDateTo')?.value;
+  eventDateFilter = { start: from || null, end: to || null };
+  const clearBtn = document.getElementById('eventDateClear');
+  if (clearBtn) clearBtn.style.display = (from || to) ? '' : 'none';
+  allEvents = [];
+  eventsFirstLoad = true;
+  loadEvents(false);
+};
+
+window.__clearEventDateFilter = function() {
+  document.getElementById('eventDateFrom').value = '';
+  document.getElementById('eventDateTo').value = '';
+  eventDateFilter = { start: null, end: null };
+  const clearBtn = document.getElementById('eventDateClear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  allEvents = [];
+  eventsFirstLoad = true;
+  loadEvents(false);
+};
 
 function renderEvents() {
   const section = document.getElementById('eventsSection');
