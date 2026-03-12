@@ -1308,13 +1308,26 @@
     }
 
     // ─── Determine overall severity ──────────────────────────────
-    function overallSeverity(alerts) {
-        if (!alerts.length) return 'clear';
+    // Considers both NWS alerts AND analyzed threat levels (SPC, shear, etc.)
+    function overallSeverity(alerts, threats) {
         let max = 0;
+        // Factor in NWS alerts
         for (const a of alerts) {
             const s = SEVERITY_ORDER[a.severity] || 0;
             if (s > max) max = s;
         }
+        // Factor in threat risk percentages (tornado, hail, wind, etc.)
+        if (threats) {
+            let highestPct = 0;
+            for (const key of Object.keys(threats)) {
+                if (threats[key].pct > highestPct) highestPct = threats[key].pct;
+            }
+            // Map threat pct to severity: ≥70% → warning, ≥35% → watch, ≥10% → advisory
+            if (highestPct >= 70 && max < 3) max = 3;
+            else if (highestPct >= 35 && max < 2) max = 2;
+            else if (highestPct >= 10 && max < 1) max = 1;
+        }
+        if (max === 0) return 'clear';
         if (max >= 4) return 'extreme';
         if (max >= 3) return 'warning';
         if (max >= 2) return 'watch';
@@ -1486,7 +1499,7 @@ Rules:
             const d = locData[loc.id];
             if (!d) continue;
             totalAlerts += d.alerts.length;
-            const sev = overallSeverity(d.alerts);
+            const sev = overallSeverity(d.alerts, d.threats);
             const score = { clear: 0, advisory: 1, watch: 2, warning: 3, extreme: 4 }[sev] || 0;
             if (score > worstScore) { worstScore = score; worstSev = sev; }
         }
@@ -1504,14 +1517,14 @@ Rules:
             container.innerHTML = `
                 <div class="status-banner ${colors[worstSev] || 'warning'}">
                     <span class="pulse-dot ${dots[worstSev] || 'yellow'}"></span>
-                    ${labels[worstSev] || 'Alert'} — ${totalAlerts} active alert${totalAlerts !== 1 ? 's' : ''} across monitored properties.
+                    ${labels[worstSev] || 'Alert'} — ${totalAlerts > 0 ? `${totalAlerts} active alert${totalAlerts !== 1 ? 's' : ''}` : 'elevated threat risk'} across monitored properties.
                 </div>`;
         }
     }
 
     function renderLocationCard(loc, data) {
         const { alerts, nws, openMeteo, threats, spcRisk, windShear } = data;
-        const sev = overallSeverity(alerts);
+        const sev = overallSeverity(alerts, threats);
 
         // Current conditions
         let temp = '—', humidity = '—', wind = '—';
