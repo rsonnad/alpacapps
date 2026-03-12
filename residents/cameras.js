@@ -1396,17 +1396,32 @@ async function loadEvents(older) {
   }
 }
 
-// Date picker — single input, sets both start/end to same day
+// Date picker — chip triggers hidden native date input
 function initEventFilters() {
   const picker = document.getElementById('eventDatePicker');
+  const chip = document.getElementById('eventDateChip');
+  const label = document.getElementById('eventDateLabel');
   if (picker) {
+    // Clicking chip opens native date picker
+    if (chip) {
+      chip.addEventListener('click', () => {
+        try { picker.showPicker(); } catch { picker.focus(); picker.click(); }
+      });
+    }
     picker.addEventListener('change', () => {
       const v = picker.value;
       if (v) {
         eventDateFilter = { start: v, end: v };
+        // Format as "Mar 10, 2026"
+        const d = new Date(v + 'T12:00:00');
+        const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        if (label) label.textContent = formatted;
+        chip?.classList.add('has-date');
         document.getElementById('eventDateClear')?.classList.remove('hidden');
       } else {
         eventDateFilter = { start: null, end: null };
+        if (label) label.textContent = 'Date';
+        chip?.classList.remove('has-date');
         document.getElementById('eventDateClear')?.classList.add('hidden');
       }
       allEvents = [];
@@ -1434,6 +1449,9 @@ window.__clearEventDateFilter = function() {
   const picker = document.getElementById('eventDatePicker');
   if (picker) picker.value = '';
   eventDateFilter = { start: null, end: null };
+  const label = document.getElementById('eventDateLabel');
+  if (label) label.textContent = 'Date';
+  document.getElementById('eventDateChip')?.classList.remove('has-date');
   document.getElementById('eventDateClear')?.classList.add('hidden');
   allEvents = [];
   eventsFirstLoad = true;
@@ -1511,9 +1529,9 @@ window.__selectEvent = function(idx) {
     el.classList.toggle('evt-thumb--active', i === idx);
   });
 
-  // Scroll active into view
+  // Scroll active into view in the grid
   const activeEl = document.querySelector('.evt-thumb--active');
-  if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   // Update preview
   const cameraNames = getCameraNameMap();
