@@ -598,7 +598,7 @@ img {
 }
 
 .mistiq-video-testimonial {
-  max-width: 640px;
+  max-width: 256px;
   margin: var(--mistiq-space-lg) auto 0;
   text-align: center;
 }
