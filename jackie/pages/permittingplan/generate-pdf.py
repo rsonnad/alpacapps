@@ -90,7 +90,7 @@ def build_pdf():
         ("Property ID (PID):", "44401"),
         ("Legal Description:", "Lot 14-B, Block 6, Replat of Lots 14 &amp; 15, Blue Bonnet Acres, Corrected Plat, Section One, O.P.R.B.C.T."),
         ("Acreage:", "1.7348 acres (75,133 SF)"),
-        ("Property Owner:", "Nicole D. Reeves (Doc. No. 202005552)"),
+        ("Property Owner:", "Revocable Trust of Subhash Sonnad (Revocable Transfer on Death Deed, Feb 21, 2021, Bastrop County)"),
         ("Owner Address:", "160 Still Forest Dr, Cedar Creek, TX 78612"),
         ("Owner Phone:", "+1 (424) 234-1750"),
         ("Owner Email:", "rahulioson@gmail.com"),
@@ -409,7 +409,7 @@ def build_pdf():
     story.append(Paragraph(
         "<b>Date:</b> ________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
         "<b>Signature:</b> ___________________________<br/>"
-        "Nicole D. Reeves, Property Owner", small_style))
+        "Rahul Sonnad, Trustee — Revocable Trust of Subhash Sonnad", small_style))
 
     doc.build(story)
     print(f"PDF created: {OUTPUT}")
