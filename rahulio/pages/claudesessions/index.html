@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claude Sessions</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -181,6 +184,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
   <div class="container">
     <div class="header">
       <h1>Claude Sessions</h1>
@@ -402,6 +406,10 @@
     // Init
     loadStats();
     loadSessions();
+  </script>
+  <script type="module">
+    import { initPublicPage } from '/shared/public-shell.js';
+    initPublicPage({ transparent: true, light: true });
   </script>
 </body>
 </html>
