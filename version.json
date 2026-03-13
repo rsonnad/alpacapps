@@ -1,12 +1,12 @@
 {
-  "version": "v260313.25 1:25p",
-  "release": 699,
-  "sha": "c9433263b",
-  "fullSha": "c9433263b9db970a825a98df54948f7713db8857",
+  "version": "v260313.26 1:39p",
+  "release": 700,
+  "sha": "c7fd77a7b",
+  "fullSha": "c7fd77a7b6096b79c46385b7fe1e0c09b33498dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 18:25:51+00",
-  "commits": [{"sha":"c9433263b","message":"Add Mistiq hand signals page with zen art illustrations","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 18:39:09+00",
+  "commits": [{"sha":"c7fd77a7b","message":"Add screenshot setup step to infra getting started guide","author":"Rahul"}]
 }
