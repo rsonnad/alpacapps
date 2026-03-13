@@ -5949,20 +5949,27 @@ span.sonos-library-item__star.starred {
 .evt-section {
   border-radius: 0.75rem;
   overflow: hidden;
-  background: var(--surface-bg, #fff);
-  border: 1px solid var(--border-subtle, #e5e3de);
+  background: #1a1a1e;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* Preview area */
+/* Preview area — large, centered */
 .evt-preview {
   position: relative;
-  background: #1a1a1e;
+  background: #111114;
   aspect-ratio: 16 / 9;
-  max-height: 380px;
+  max-height: 600px;
+  max-width: 900px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+.evt-preview__divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 0;
 }
 .evt-preview__empty {
   display: flex;
