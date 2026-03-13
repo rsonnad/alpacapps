@@ -37,7 +37,7 @@
 
   <!-- Hero image — bleeds to all edges of canvas top -->
   <g clip-path="url(#heroClip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg"
+    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/windingdown.jpg"
            x="0" y="-100" width="787.5" height="637.5" preserveAspectRatio="xMidYMid slice"/>
   </g>
 
