@@ -1,6 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="750" height="1200" viewBox="0 0 750 1200">
-  <!-- 2.5" x 4" at 300 DPI = 750 x 1200px -->
+     width="787.5" height="1237.5" viewBox="0 0 787.5 1237.5">
+  <!--
+    GotPrint Print-Ready Business Card (Vertical)
+    Final trim size:  2.5" x 4"    = 750 x 1200 px  @ 300 DPI
+    Bleed size:       2.625" x 4.125" = 787.5 x 1237.5 px @ 300 DPI
+    Bleed zone:       0.125" = 37.5 px on each side
+    Safe zone:        ~0.25" = ~75 px from trim edge (keep critical text/logos inside)
+
+    Trim box origin: (37.5, 18.75) — offset by bleed on each side
+    Note: GotPrint vertical cards have 0.125" bleed all around
+  -->
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&amp;family=Lato:wght@300;400;700&amp;display=swap');
@@ -9,108 +18,130 @@
       <stop offset="0%" stop-color="#f9f6f1" stop-opacity="0"/>
       <stop offset="100%" stop-color="#f9f6f1" stop-opacity="1"/>
     </linearGradient>
+    <!-- Hero clip extends into bleed area (full width of canvas) -->
     <clipPath id="heroClip">
-      <rect width="750" height="400"/>
+      <rect x="0" y="0" width="787.5" height="437.5"/>
     </clipPath>
-    <clipPath id="img1clip"><rect x="60" y="670" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img2clip"><rect x="188" y="670" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img3clip"><rect x="316" y="670" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img4clip"><rect x="444" y="670" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img5clip"><rect x="572" y="670" width="118" height="88" rx="4"/></clipPath>
+    <!-- Image strip clips (offset by 37.5px bleed) -->
+    <clipPath id="img1clip"><rect x="97.5"  y="688.75" width="118" height="88" rx="4"/></clipPath>
+    <clipPath id="img2clip"><rect x="225.5" y="688.75" width="118" height="88" rx="4"/></clipPath>
+    <clipPath id="img3clip"><rect x="353.5" y="688.75" width="118" height="88" rx="4"/></clipPath>
+    <clipPath id="img4clip"><rect x="481.5" y="688.75" width="118" height="88" rx="4"/></clipPath>
+    <clipPath id="img5clip"><rect x="609.5" y="688.75" width="118" height="88" rx="4"/></clipPath>
   </defs>
 
-  <!-- Background -->
-  <rect width="750" height="1200" fill="#f9f6f1"/>
+  <!-- Full bleed background -->
+  <rect width="787.5" height="1237.5" fill="#f9f6f1"/>
 
-  <!-- Hero image -->
+  <!-- ==================== BLEED AREA CONTENT ==================== -->
+
+  <!-- Hero image — bleeds to all edges of canvas top -->
   <g clip-path="url(#heroClip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg"
-           x="0" y="-100" width="750" height="600" preserveAspectRatio="xMidYMid slice"/>
+           x="0" y="-100" width="787.5" height="637.5" preserveAspectRatio="xMidYMid slice"/>
   </g>
 
-  <!-- Gradient fade -->
-  <rect x="0" y="300" width="750" height="100" fill="url(#fadeToCard)"/>
+  <!-- Gradient fade (full bleed width) -->
+  <rect x="0" y="318.75" width="787.5" height="118.75" fill="url(#fadeToCard)"/>
+
+  <!-- ==================== TRIM AREA CONTENT ==================== -->
+  <!-- All coordinates below are offset by 37.5px (bleed) from original -->
+  <!-- Center X = 393.75 (was 375) -->
 
   <!-- Name -->
-  <text x="375" y="460" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="478.75" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="48" font-weight="700" fill="#2a1f23">Rahul Lio</text>
 
   <!-- Brand -->
-  <text x="375" y="510" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="528.75" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="38" font-weight="600" fill="#8b7355" letter-spacing="2">Mistique Journey</text>
 
   <!-- Tagline -->
-  <text x="375" y="548" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="566.75" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="18" font-weight="300" font-style="italic" fill="#7d6f74" letter-spacing="1">a thermal breath &amp; body experience</text>
 
   <!-- Divider -->
-  <line x1="335" y1="580" x2="415" y2="580" stroke="#c4a77d" stroke-width="1"/>
+  <line x1="372.5" y1="598.75" x2="452.5" y2="598.75" stroke="#c4a77d" stroke-width="1"/>
 
   <!-- Small image strip: 5 images -->
   <!-- Image 1: Breathwork -->
   <g clip-path="url(#img1clip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg"
-           x="60" y="660" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
+           x="97.5" y="678.75" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <rect x="60" y="670" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
+  <rect x="97.5" y="688.75" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
 
   <!-- Image 2: Sauna -->
   <g clip-path="url(#img2clip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg"
-           x="188" y="660" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
+           x="225.5" y="678.75" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <rect x="188" y="670" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
+  <rect x="225.5" y="688.75" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
 
   <!-- Image 3: Ice Bath -->
   <g clip-path="url(#img3clip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg"
-           x="316" y="660" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
+           x="353.5" y="678.75" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <rect x="316" y="670" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
+  <rect x="353.5" y="688.75" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
 
   <!-- Image 4: Thai Massage -->
   <g clip-path="url(#img4clip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg"
-           x="444" y="660" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
+           x="481.5" y="678.75" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <rect x="444" y="670" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
+  <rect x="481.5" y="688.75" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
 
   <!-- Image 5: Oil Massage -->
   <g clip-path="url(#img5clip)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg"
-           x="572" y="660" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
+           x="609.5" y="678.75" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <rect x="572" y="670" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
+  <rect x="609.5" y="688.75" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
 
   <!-- Location -->
-  <text x="375" y="810" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="828.75" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="22" font-weight="600" fill="#8b7355">@ the Alpaca Playhouse Austin</text>
 
   <!-- URL -->
-  <text x="375" y="840" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="858.75" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="14" fill="#7d6f74" letter-spacing="0.5">alpacaplayhouse.com/mistiq</text>
 
   <!-- Promo code box -->
-  <rect x="120" y="890" width="510" height="90" rx="8" fill="none" stroke="#c4a77d"
+  <rect x="157.5" y="908.75" width="510" height="90" rx="8" fill="none" stroke="#c4a77d"
         stroke-width="2" stroke-dasharray="8,4"/>
 
-  <text x="375" y="918" text-anchor="middle" font-family="'Lato', sans-serif"
-        font-size="11" fill="#8b7355" letter-spacing="2" text-transform="uppercase">YOUR PROMO CODE</text>
+  <text x="393.75" y="936.75" text-anchor="middle" font-family="'Lato', sans-serif"
+        font-size="11" fill="#8b7355" letter-spacing="2">YOUR PROMO CODE</text>
 
   <!-- Write-in line -->
-  <line x1="200" y1="958" x2="550" y2="958" stroke="#c4a77d" stroke-width="1"/>
+  <line x1="237.5" y1="976.75" x2="587.5" y2="976.75" stroke="#c4a77d" stroke-width="1"/>
 
   <!-- Bottom decorative element -->
-  <line x1="325" y1="1030" x2="425" y2="1030" stroke="#c4a77d" stroke-width="0.5"/>
+  <line x1="362.5" y1="1048.75" x2="462.5" y2="1048.75" stroke="#c4a77d" stroke-width="0.5"/>
 
-  <!-- Pricing info at bottom -->
-  <text x="375" y="1070" text-anchor="middle" font-family="'Lato', sans-serif"
+  <!-- Pricing info -->
+  <text x="393.75" y="1088.75" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="13" fill="#7d6f74">Solo Journey $395  ·  Duo Journey $495</text>
 
-  <text x="375" y="1095" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="1113.75" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="12" fill="#7d6f74">Book online with your promo code</text>
 
   <!-- Footer -->
-  <text x="375" y="1165" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="1183.75" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="10" fill="#b0a69a">team@alpacaplayhouse.com</text>
+
+  <!-- ==================== TRIM MARKS ==================== -->
+  <!-- Top-left -->
+  <line x1="37.5"  y1="0"     x2="37.5"  y2="15"    stroke="#000" stroke-width="0.5"/>
+  <line x1="0"     y1="18.75" x2="15"    y2="18.75" stroke="#000" stroke-width="0.5"/>
+  <!-- Top-right -->
+  <line x1="750"   y1="0"     x2="750"   y2="15"    stroke="#000" stroke-width="0.5"/>
+  <line x1="772.5" y1="18.75" x2="787.5" y2="18.75" stroke="#000" stroke-width="0.5"/>
+  <!-- Bottom-left -->
+  <line x1="37.5"  y1="1222.5" x2="37.5"  y2="1237.5" stroke="#000" stroke-width="0.5"/>
+  <line x1="0"     y1="1218.75" x2="15"   y2="1218.75" stroke="#000" stroke-width="0.5"/>
+  <!-- Bottom-right -->
+  <line x1="750"   y1="1222.5" x2="750"   y2="1237.5" stroke="#000" stroke-width="0.5"/>
+  <line x1="772.5" y1="1218.75" x2="787.5" y2="1218.75" stroke="#000" stroke-width="0.5"/>
 </svg>

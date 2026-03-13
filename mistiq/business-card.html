@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mistique Journey — Business Card (2.5" x 4")</title>
+  <title>Mistique Journey — Business Card (GotPrint 2.5" x 4")</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
     }
 
     .print-instructions {
-      max-width: 500px;
+      max-width: 560px;
       text-align: center;
       margin-bottom: 2rem;
       color: #555;
@@ -34,23 +34,59 @@
       margin-bottom: 0.5rem;
       color: #333;
     }
+    .print-instructions .specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.25rem 1rem;
+      text-align: left;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #777;
+    }
+    .print-instructions .specs strong { color: #555; }
 
-    /* Card: 2.5" x 4" at 300 DPI = 750px x 1200px */
-    .card {
-      width: 750px;
-      height: 1200px;
+    /*
+      GotPrint Specs:
+      Final size:  2.5" x 4"      = 750 x 1200 px @ 300 DPI
+      Bleed size:  2.625" x 4.125" = 787.5 x 1237.5 px @ 300 DPI
+      Bleed zone:  0.125" = 37.5px on each side
+      Safe zone:   ~0.25" from trim edge
+    */
+    .card-bleed {
+      width: 787.5px;
+      height: 1237.5px;
       background: #f9f6f1;
-      border-radius: 0;
       overflow: hidden;
       position: relative;
       box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+
+    /* Trim area indicator (dashed border showing where card gets cut) */
+    .card-trim {
+      position: absolute;
+      top: 18.75px;
+      left: 37.5px;
+      width: 750px;
+      height: 1200px;
+      border: 0.5px dashed rgba(0,0,0,0.15);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Content container — positioned within trim area */
+    .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 787.5px;
+      height: 1237.5px;
       display: flex;
       flex-direction: column;
     }
 
-    /* Top image area */
+    /* Top image area — bleeds to edges */
     .card-hero {
-      height: 400px;
+      height: 437.5px;
       background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg');
       background-size: cover;
       background-position: center;
@@ -63,14 +99,14 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 100px;
+      height: 118.75px;
       background: linear-gradient(to top, #f9f6f1, transparent);
     }
 
     /* Content area */
     .card-content {
       flex: 1;
-      padding: 30px 45px;
+      padding: 30px 82.5px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -120,15 +156,15 @@
     }
 
     .card-images img {
-      width: 100px;
-      height: 75px;
+      width: 118px;
+      height: 88px;
       object-fit: cover;
       border-radius: 4px;
     }
 
     .card-location {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 600;
       color: #8b7355;
       margin-bottom: 8px;
@@ -147,7 +183,7 @@
       border: 2px dashed #c4a77d;
       border-radius: 8px;
       padding: 12px 24px;
-      width: 85%;
+      width: 510px;
       text-align: center;
     }
 
@@ -166,45 +202,105 @@
       margin-top: 4px;
     }
 
+    .card-bottom {
+      text-align: center;
+      margin-top: auto;
+      padding-bottom: 50px;
+    }
+
+    .card-bottom__divider {
+      width: 100px;
+      height: 0.5px;
+      background: #c4a77d;
+      margin: 0 auto 20px;
+    }
+
+    .card-bottom__pricing {
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      color: #7d6f74;
+      margin-bottom: 6px;
+    }
+
+    .card-bottom__cta {
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      color: #7d6f74;
+      margin-bottom: 30px;
+    }
+
+    .card-bottom__email {
+      font-family: 'Lato', sans-serif;
+      font-size: 10px;
+      color: #b0a69a;
+    }
+
+    /* Print: hide UI chrome, use exact dimensions */
     @media print {
       body { background: none; padding: 0; }
       .print-instructions { display: none; }
-      .card { box-shadow: none; }
-      @page { size: 2.5in 4in; margin: 0; }
+      .card-bleed { box-shadow: none; }
+      .card-trim { display: none; }
+      @page { size: 2.625in 4.125in; margin: 0; }
     }
+
+    /* Toggle trim guides */
+    .hide-guides .card-trim { display: none; }
   </style>
 </head>
 <body>
 
   <div class="print-instructions">
     <h1>Mistique Journey Business Card</h1>
-    <p>2.5" x 4" — Designed at 300 DPI (750 x 1200px). Use Ctrl+P / Cmd+P to print.</p>
+    <p>GotPrint-ready template with bleed, trim marks, and safe zone.</p>
+    <div class="specs">
+      <span><strong>Final size:</strong> 2.5" x 4"</span>
+      <span><strong>With bleed:</strong> 2.625" x 4.125"</span>
+      <span><strong>Bleed zone:</strong> 0.125" each side</span>
+      <span><strong>Resolution:</strong> 300 DPI</span>
+    </div>
+    <p style="margin-top: 0.75rem;">
+      <label><input type="checkbox" onchange="document.querySelector('.card-bleed').classList.toggle('hide-guides')"> Hide trim guides</label>
+      &nbsp;·&nbsp; Use Ctrl+P / Cmd+P to print.
+    </p>
   </div>
 
-  <div class="card">
-    <div class="card-hero"></div>
+  <div class="card-bleed">
+    <!-- Trim line indicator (won't print) -->
+    <div class="card-trim"></div>
 
-    <div class="card-content">
-      <div class="card-name">Rahul Lio</div>
-      <div class="card-brand">Mistique Journey</div>
-      <div class="card-tagline">a thermal breath & body experience</div>
+    <div class="card">
+      <div class="card-hero"></div>
 
-      <div class="card-divider"></div>
+      <div class="card-content">
+        <div class="card-name">Rahul Lio</div>
+        <div class="card-brand">Mistique Journey</div>
+        <div class="card-tagline">a thermal breath & body experience</div>
 
-      <div class="card-images">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg" alt="Breathwork">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg" alt="Sauna">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg" alt="Ice Bath">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg" alt="Thai Massage">
-        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg" alt="Oil Massage">
-      </div>
+        <div class="card-divider"></div>
 
-      <div class="card-location">@ the Alpaca Playhouse Austin</div>
-      <div class="card-url">alpacaplayhouse.com/mistiq</div>
+        <div class="card-images">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg" alt="Breathwork">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg" alt="Sauna">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg" alt="Ice Bath">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg" alt="Thai Massage">
+          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg" alt="Oil Massage">
+        </div>
 
-      <div class="card-promo">
-        <div class="card-promo__label">Your Promo Code</div>
-        <div class="card-promo__box"></div>
+        <div class="card-location">@ the Alpaca Playhouse Austin</div>
+        <div class="card-url">alpacaplayhouse.com/mistiq</div>
+
+        <div class="card-promo">
+          <div class="card-promo__label">Your Promo Code</div>
+          <div class="card-promo__box"></div>
+        </div>
+
+        <div class="card-bottom">
+          <div class="card-bottom__divider"></div>
+          <div class="card-bottom__pricing">Solo Journey $395  ·  Duo Journey $495</div>
+          <div class="card-bottom__cta">Book online with your promo code</div>
+          <div class="card-bottom__email">team@alpacaplayhouse.com</div>
+        </div>
       </div>
     </div>
   </div>
