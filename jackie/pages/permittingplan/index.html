@@ -290,7 +290,7 @@
         <div class="permit-stat"><div class="label">Pending</div><div class="value pending">${pending}</div></div>
         <div class="permit-stat"><div class="label">In Progress</div><div class="value" style="color:#b45309">${inProg}</div></div>
         <div class="permit-stat"><div class="label">Blocked</div><div class="value blocked">${blocked}</div></div>
-        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value">$${est.toLocaleString()}</div></div>`;
+        <div class="permit-stat" style="cursor:pointer" onclick="window.open('cost-estimate-breakdown.pdf','_blank')" title="Click for detailed breakdown"><div class="label">Est. Cost</div><div class="value" style="text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px">$${est.toLocaleString()}</div></div>`;
     }
 
     function renderPhases() {
@@ -354,7 +354,7 @@
       const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
       const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
       el.innerHTML = `<div class="cost-summary">
-        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value">$${est.toLocaleString()}</span></div>
+        <div class="cost-item" style="cursor:pointer" onclick="window.open('cost-estimate-breakdown.pdf','_blank')" title="Click for detailed breakdown"><span class="cost-label">Estimated Total:</span><span class="cost-value" style="text-decoration:underline;text-decoration-color:var(--accent)">$${est.toLocaleString()}</span></div>
         <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
       </div>`;
     }
