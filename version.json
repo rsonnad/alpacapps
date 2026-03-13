@@ -1,12 +1,12 @@
 {
-  "version": "v260313.15 12:28p",
-  "release": 689,
-  "sha": "b45822771",
-  "fullSha": "b45822771c4554c4846f8d357c556bb882d18c6a",
+  "version": "v260313.17 12:30p",
+  "release": 691,
+  "sha": "fd0e37d3c",
+  "fullSha": "fd0e37d3caff1602f03daae1d840176ec8688b4f",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 17:28:21+00",
-  "commits": [{"sha":"b45822771","message":"Reclassify site plan violations using actual Bastrop County Lodging/RV regs","author":"Jacqueline Giroux"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 17:30:07+00",
+  "commits": [{"sha":"fd0e37d3c","message":"Restructure 24x36 site plan: two-column layout with info panels left, survey image right","author":"Jacqueline Giroux"}]
 }
