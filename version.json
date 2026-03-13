@@ -1,12 +1,12 @@
 {
-  "version": "v260313.36 2:19p",
-  "release": 710,
-  "sha": "7a7ddf904",
-  "fullSha": "7a7ddf904c606ff8a8aa06253647955d1cb4cc0d",
+  "version": "v260313.37 2:20p",
+  "release": 711,
+  "sha": "7fefeadca",
+  "fullSha": "7fefeadca5a711a12cd4a05273c85596ab03fbee",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 19:19:13+00",
-  "commits": [{"sha":"7a7ddf904","message":"Add Priority List link under A8 and A9 task cards","author":"Jacqueline Giroux"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 19:20:18+00",
+  "commits": [{"sha":"7fefeadca","message":"Add property intelligence panel and link 26 scanned documents to permit tasks","author":"Jacqueline Giroux"}]
 }
