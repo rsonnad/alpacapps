@@ -679,7 +679,7 @@ img {
   max-width: var(--mistiq-content-width);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--mistiq-space-md);
 }
 
