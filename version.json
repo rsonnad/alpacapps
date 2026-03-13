@@ -1,12 +1,12 @@
 {
-  "version": "v260313.13 12:17p",
-  "release": 687,
-  "sha": "863796547",
-  "fullSha": "863796547c1ad1415fd3d5d2c91b40e063f4a46c",
+  "version": "v260313.14 12:25p",
+  "release": 688,
+  "sha": "9a79a7ccf",
+  "fullSha": "9a79a7ccfdbca8fece3af49be6bfbd98f1a00731",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 17:17:22+00",
-  "commits": [{"sha":"863796547","message":"Add warning banner explaining why a CE can't sign off on a DIY survey","author":"Jacqueline Giroux"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 17:25:42+00",
+  "commits": [{"sha":"bcd156692","message":"Fix property owner from Nicole D. Reeves to Revocable Trust of Subhash Sonnad","author":"Jacqueline Giroux"},{"sha":"9a79a7ccf","message":"Merge branch 'claude/intelligent-bhaskara'","author":"Jacqueline Giroux"}]
 }
