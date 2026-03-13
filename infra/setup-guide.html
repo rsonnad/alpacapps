@@ -216,6 +216,7 @@
           <li><strong>SignWell</strong> (e-signatures) &mdash; Free, 3&ndash;25 docs/month</li>
           <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
           <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees</li>
+          <li><strong>Cloudflare D1</strong> (session archive) &mdash; Free, auto-saves Claude Code transcripts</li>
         </ul>
       </li>
     </ol>
@@ -457,6 +458,16 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li>Create R2 bucket, enable Public Development URL</li>
       <li>Create API token with Object Read &amp; Write permissions</li>
       <li>User provides: Account ID, Access Key ID, Secret Access Key, bucket name</li>
+    </ul>
+
+    <h3>Cloudflare D1 &mdash; Session Archive (Claude Code transcripts)</h3>
+    <ul>
+      <li>Requires Wrangler CLI: <code>npm install -g wrangler</code>, then <code>wrangler login</code></li>
+      <li>Create D1 database: <code>npx wrangler d1 create claude-sessions</code></li>
+      <li>Source files in <code>cloudflare/claude-sessions/</code> &mdash; edit <code>wrangler.jsonc</code> with the database ID, set auth token in <code>src/index.js</code></li>
+      <li>Deploy: <code>cd cloudflare/claude-sessions && npx wrangler d1 execute claude-sessions --file=schema.sql --remote && npx wrangler deploy</code></li>
+      <li>Install hook: copy <code>hooks/save-session.sh</code> to <code>~/.claude/hooks/</code>, add <code>SessionEnd</code> hook to <code>~/.claude/settings.json</code></li>
+      <li>User provides: Worker URL, auth token</li>
     </ul>
   </div>
 
