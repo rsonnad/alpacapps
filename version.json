@@ -1,12 +1,12 @@
 {
-  "version": "v260312.26 11:32p",
-  "release": 673,
-  "sha": "b98caca44",
-  "fullSha": "b98caca44afb04da60ccbe3629ea6e4d4db0f789",
+  "version": "v260312.27 11:54p",
+  "release": 674,
+  "sha": "d997d1db2",
+  "fullSha": "d997d1db2f00053bb3f933d082a8e6c06e81294f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 04:32:32+00",
-  "commits": [{"sha":"b98caca44","message":"Restore original Mistiq hero image from Supabase (#34)","author":"Rahul"}]
+  "pushedAt": "2026-03-13 04:54:41+00",
+  "commits": [{"sha":"d997d1db2","message":"Add Mistiq booking page with Google Calendar integration (#35)","author":"Rahul"}]
 }
