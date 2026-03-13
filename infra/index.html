@@ -797,6 +797,10 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
       <span class="cost-badge cost-free">Free</span>
     </div>
     <div class="svc-card">
+      <div class="svc-info"><span class="svc-name">Cloudflare D1</span><span class="svc-desc">Session archive (Claude Code transcripts)</span></div>
+      <span class="cost-badge cost-free">Free</span>
+    </div>
+    <div class="svc-card">
       <div class="svc-info"><span class="svc-name">Custom Domain</span><span class="svc-desc">Your own branded URL</span></div>
       <span class="cost-badge cost-payg">~$10/yr</span>
     </div>
@@ -875,6 +879,12 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
         <input type="checkbox" data-svc="cloudflare-r2" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare R2</span><span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span></span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="cloudflare-d1" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc">
@@ -981,6 +991,7 @@ function recalcCost() {
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
+    'cloudflare-d1': { basic: 0, complicated: 0, hyper: 0 },
     'workers':     { basic: 0, complicated: 144, hyper: 384 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
@@ -992,7 +1003,7 @@ function recalcCost() {
     'github': 'GitHub Pages', 'supabase': 'Supabase', 'claude': 'Claude Code',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
-    'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)',
+    'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
     'workers': 'Background Workers (cloud VM)', 'domain': 'Custom domain',
     'iphone': 'iPhone App (Apple Developer)', 'android': 'Android App (Google Play)',
     'homeserver': 'Home Server (used Mac)'
@@ -1003,6 +1014,7 @@ function recalcCost() {
     'supabase': { hyper: 'May need Pro ($25/mo) for storage/bandwidth' },
     'gemini':   { complicated: '~$10/mo for AI chat, matching, image gen', hyper: '~$50/mo for heavy AI usage' },
     'cloudflare-r2': { basic: '10 GB free, zero egress fees, 10M reads/mo', complicated: '10 GB free, zero egress fees, 10M reads/mo', hyper: '10 GB free; $0.015/GB-mo beyond that, zero egress' },
+    'cloudflare-d1': { basic: '5M reads/day, 100K writes/day, 5 GB free', complicated: '5M reads/day, 100K writes/day, 5 GB free', hyper: '5M reads/day, 100K writes/day, 5 GB free' },
     'telnyx':   { complicated: '~$5/mo: phone number + ~1,000 SMS', hyper: '~$15/mo: higher volume SMS' },
     'square':   { complicated: '2.9% + 30\u00a2 per transaction (no flat fee)', hyper: '2.9% + 30\u00a2 per transaction (no flat fee)' },
     'stripe':   { complicated: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout', hyper: 'ACH 0.8% capped at $5; Cards 2.9% + 30\u00a2; Connect $0.25/payout' },

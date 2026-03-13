@@ -1935,6 +1935,46 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
+  <!-- 11b. Cloudflare D1 — Session Archive -->
+  <details class="section" id="cloudflare-d1-setup">
+      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11b. Cloudflare D1 &mdash; Session Archive <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
+    <p>Optional. Auto-saves every Claude Code session transcript to Cloudflare D1 (serverless SQLite). A hook fires when each session ends, reads the JSONL from disk, and posts it to a Worker. Browse sessions at <code>/rahulio/pages/claudesessions/</code>.</p>
+
+    <h3><span class="step-label step-you">You do (in your terminal)</span></h3>
+    <ol>
+      <li>Install Wrangler (Cloudflare CLI) if you don&rsquo;t have it: <code>npm install -g wrangler</code></li>
+      <li>Authenticate: <code>wrangler login</code></li>
+      <li>Create the D1 database:
+        <pre><code>npx wrangler d1 create claude-sessions</code></pre>
+        Copy the <strong>database_id</strong> from the output.
+      </li>
+      <li>Edit <code>cloudflare/claude-sessions/wrangler.jsonc</code> &mdash; replace <code>YOUR_DATABASE_ID_HERE</code> with your database ID</li>
+      <li>Run the schema:
+        <pre><code>cd cloudflare/claude-sessions
+npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
+      </li>
+      <li>Choose an auth token (any secret string) and edit <code>src/index.js</code> &mdash; set <code>AUTH_TOKEN</code></li>
+      <li>Deploy the Worker:
+        <pre><code>npx wrangler deploy</code></pre>
+        Note the Worker URL from the output.
+      </li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
+    <pre data-lang="markdown"><code>### Cloudflare D1 Session Archive
+- Worker URL: `https://claude-sessions.YOUR-SUBDOMAIN.workers.dev`
+- Auth token: `your-chosen-token`</code></pre>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>&ldquo;Install the Claude session archive hook. Copy the hook script from cloudflare/claude-sessions/hooks/save-session.sh, configure it with my Worker URL and token, and add it to my Claude settings.&rdquo;</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will copy <code>save-session.sh</code> to <code>~/.claude/hooks/</code>, set the API URL and token, and add a <code>SessionEnd</code> hook entry to <code>~/.claude/settings.json</code>. Every session that ends will auto-archive its transcript.</span>
+    </div>
+  </div>
+  </details>
+
   <!-- 12. Background Workers -->
   <details class="section" id="workers">
       <summary><h2>12. Background Workers (Optional)</h2></summary>
