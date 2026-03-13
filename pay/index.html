@@ -914,6 +914,16 @@
     // Check if returning from redirect
     if (params.get('success') === 'true' || params.get('redirect_status') === 'succeeded') {
       document.addEventListener('DOMContentLoaded', function() {
+        // If a redirect URL was specified, go there after a brief delay
+        var redirectUrl = params.get('redirect');
+        if (redirectUrl) {
+          document.getElementById('paymentForm').style.display = 'none';
+          document.getElementById('successState').classList.add('visible');
+          document.getElementById('successMessage').textContent = 'Payment received! Redirecting...';
+          document.title = 'Payment Received - Alpaca Playhouse';
+          setTimeout(function() { window.location.href = decodeURIComponent(redirectUrl); }, 2000);
+          return;
+        }
         document.getElementById('paymentForm').style.display = 'none';
         document.getElementById('successState').classList.add('visible');
         document.getElementById('successMessage').textContent = 'Your payment has been received. A confirmation email will be sent shortly.';
