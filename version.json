@@ -1,12 +1,12 @@
 {
-  "version": "v260313.38 2:23p",
-  "release": 712,
-  "sha": "bcfea8091",
-  "fullSha": "bcfea8091160a247504462890fe8d500e9bc5606",
-  "actor": "rsonnad",
+  "version": "v260313.39 2:27p",
+  "release": 713,
+  "sha": "abbf1871d",
+  "fullSha": "abbf1871dcdd7e608656d74881385f6b68eaa5be",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 19:23:11+00",
-  "commits": [{"sha":"bcfea8091","message":"Add Rachel Wen combined rental accounting statement","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 19:27:11+00",
+  "commits": [{"sha":"abbf1871d","message":"Add expandable detail panels to site plan structure rows","author":"Jacqueline Giroux"}]
 }
