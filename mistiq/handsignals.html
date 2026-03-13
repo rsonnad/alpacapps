@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <title>Hand Signals — Mistique Journey</title>
+  <meta name="description" content="Non-verbal hand signals used during the Mistique Journey experience for seamless communication between practitioner and guest.">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/mistiq/styles.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <script type="module" src="/shared/version-info.js"></script>
+
+  <style>
+    .handsignals-hero {
+      padding: 8rem 0 3rem;
+      text-align: center;
+      background: linear-gradient(135deg, var(--mistiq-bg-alt), var(--mistiq-warm));
+    }
+
+    .handsignals-hero__title {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .handsignals-hero__subtitle {
+      font-size: 1.2rem;
+      color: var(--mistiq-text-light);
+      margin: 0;
+    }
+
+    .handsignals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--mistiq-space-lg);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .handsignal-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .handsignal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .handsignal-card__image {
+      width: 100%;
+      height: 220px;
+      object-fit: contain;
+      background: #fafafa;
+      padding: 1rem;
+    }
+
+    .handsignal-card__title {
+      font-family: var(--mistiq-font-heading);
+      font-size: 1.25rem;
+      color: var(--mistiq-accent);
+      padding: var(--mistiq-space-sm) var(--mistiq-space-sm) 0;
+      margin-bottom: 0.25rem;
+    }
+
+    .handsignal-card__desc {
+      padding: 0 var(--mistiq-space-sm) var(--mistiq-space-md);
+      color: var(--mistiq-text-light);
+      font-size: 0.95rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .handsignals-section-label {
+      font-family: var(--mistiq-font-heading);
+      font-size: 2rem;
+      text-align: center;
+      color: var(--mistiq-text);
+      margin-bottom: var(--mistiq-space-sm);
+    }
+
+    .handsignals-section-desc {
+      text-align: center;
+      color: var(--mistiq-text-light);
+      max-width: 600px;
+      margin: 0 auto var(--mistiq-space-md);
+      font-size: 1.05rem;
+    }
+
+    /* Zen art section */
+    .handsignal-card--zen .handsignal-card__image {
+      background: #f5f0e8;
+    }
+
+    @media (max-width: 768px) {
+      .handsignals-hero__title { font-size: 2.25rem; }
+      .handsignals-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+      .handsignals-grid { grid-template-columns: 1fr 1fr; gap: var(--mistiq-space-md); }
+      .handsignal-card__image { height: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="mistiq-header mistiq-header--scrolled" id="mistiq-header">
+    <div class="mistiq-header__inner">
+      <a href="/mistiq/" class="mistiq-header__logo">
+        <span class="mistiq-header__logo-text" style="color: var(--mistiq-text)">Mistique Journey</span>
+      </a>
+      <nav class="mistiq-nav" id="mistiq-nav">
+        <ul class="mistiq-nav__list">
+          <li><a href="/mistiq/book/" class="mistiq-nav__link mistiq-nav__link--cta">Book</a></li>
+          <li><a href="/mistiq/" class="mistiq-nav__link" style="color: var(--mistiq-text)">Home</a></li>
+        </ul>
+      </nav>
+      <div class="mistiq-header__controls">
+        <button class="mistiq-menu-toggle" id="mistiq-menu-toggle" aria-label="Toggle menu">
+          <span class="mistiq-menu-toggle__bar" style="background: var(--mistiq-text)"></span>
+          <span class="mistiq-menu-toggle__bar" style="background: var(--mistiq-text)"></span>
+          <span class="mistiq-menu-toggle__bar" style="background: var(--mistiq-text)"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="handsignals-hero">
+    <div class="mistiq-container">
+      <h1 class="handsignals-hero__title">Hand Signals</h1>
+      <p class="handsignals-hero__subtitle">Silent communication during your Mistique Journey</p>
+    </div>
+  </section>
+
+  <!-- Original Photos -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <h2 class="handsignals-section-label">Reference Photos</h2>
+      <p class="handsignals-section-desc">Use these hand signals during the session to communicate without words.</p>
+
+      <div class="handsignals-grid">
+        <div class="handsignal-card">
+          <img src="/mistiq/hand-signals/thumbs-up.jpg" alt="Thumbs up — Good" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Thumbs Up</h3>
+          <p class="handsignal-card__desc">Everything feels good. Keep going.</p>
+        </div>
+
+        <div class="handsignal-card">
+          <img src="/mistiq/hand-signals/perfect-place.jpg" alt="OK sign — Perfect place" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Perfect Place</h3>
+          <p class="handsignal-card__desc">That's the right spot. Stay there.</p>
+        </div>
+
+        <div class="handsignal-card">
+          <img src="/mistiq/hand-signals/more-pressure.jpg" alt="Beckoning — More pressure" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">More Pressure</h3>
+          <p class="handsignal-card__desc">Please apply more pressure here.</p>
+        </div>
+
+        <div class="handsignal-card">
+          <img src="/mistiq/hand-signals/closed-hand.jpg" alt="Closed fist — Stop / ease up" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Stop / Ease Up</h3>
+          <p class="handsignal-card__desc">Pause or reduce pressure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Zen Art Versions (placeholder — images to be added) -->
+  <section class="mistiq-section mistiq-section--alt" id="zen-art">
+    <div class="mistiq-container">
+      <h2 class="handsignals-section-label">Zen Art Illustrations</h2>
+      <p class="handsignals-section-desc">Artistic interpretations in a minimalist zen drawing style.</p>
+
+      <div class="handsignals-grid">
+        <div class="handsignal-card handsignal-card--zen">
+          <img src="/mistiq/hand-signals/zen-thumbs-up.png" alt="Zen thumbs up" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Thumbs Up</h3>
+          <p class="handsignal-card__desc">Everything feels good.</p>
+        </div>
+
+        <div class="handsignal-card handsignal-card--zen">
+          <img src="/mistiq/hand-signals/zen-perfect-place.png" alt="Zen perfect place" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Perfect Place</h3>
+          <p class="handsignal-card__desc">That's the right spot.</p>
+        </div>
+
+        <div class="handsignal-card handsignal-card--zen">
+          <img src="/mistiq/hand-signals/zen-more-pressure.png" alt="Zen more pressure" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">More Pressure</h3>
+          <p class="handsignal-card__desc">Apply more pressure.</p>
+        </div>
+
+        <div class="handsignal-card handsignal-card--zen">
+          <img src="/mistiq/hand-signals/zen-closed-hand.png" alt="Zen closed fist" class="handsignal-card__image">
+          <h3 class="handsignal-card__title">Stop / Ease Up</h3>
+          <p class="handsignal-card__desc">Pause or reduce.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mistiq-footer">
+    <h3 class="mistiq-footer__brand">Mistique Journey</h3>
+    <p class="mistiq-footer__location">Austin, Texas</p>
+    <a href="/mistiq/" class="mistiq-footer__link">Back to Home</a>
+    <p class="mistiq-footer__copyright">&copy; 2025 Mistique Journey. All rights reserved.</p>
+  </footer>
+</body>
+</html>
