@@ -17,9 +17,10 @@
     --line-lt: #888;
     --text: #111;
     --bg: #fff;
-    /* Layout: landscape survey image on top, info panels below */
-    --plan-h: 15in;      /* survey image height */
-    --bottom-h: 8in;     /* remaining height for panels: 23in - 15in */
+    /* Two-column layout: info panels left, survey image right */
+    --left-col: 8in;     /* info panels column width */
+    --right-col: 27in;   /* survey image column: 35in - 8in */
+    --inner-h: 23in;     /* usable height: 24in - 2×0.5in */
   }
 
   body {
@@ -60,46 +61,47 @@
     border: 2.5pt solid var(--line);
   }
 
-  /* ═══ TOP: FULL-WIDTH SURVEY IMAGE ═══ */
-  .main-plan {
+  /* ═══ LEFT COLUMN: INFO PANELS (8in wide, full height) ═══ */
+  .left-col {
     position: absolute;
     left: var(--m); top: var(--m);
-    right: var(--m);
-    height: var(--plan-h);
-    border-bottom: 1.5pt solid var(--line);
+    width: var(--left-col);
+    height: var(--inner-h);
+    border-right: 1.5pt solid var(--line);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ═══ RIGHT COLUMN: SURVEY IMAGE (27in wide, full height) ═══ */
+  .right-col {
+    position: absolute;
+    left: calc(var(--m) + var(--left-col));
+    top: var(--m);
+    width: var(--right-col);
+    height: var(--inner-h);
     overflow: hidden;
     background: #fff;
   }
-  .main-plan img {
+  .right-col img {
     width: 100%; height: 100%;
     object-fit: contain;
     object-position: center center;
   }
 
-  /* ═══ BOTTOM ROW — 4 columns of info panels ═══ */
+  /* ═══ LEFT COLUMN PANELS ═══ */
 
-  /* Column positions for the bottom area */
-  /* Col 1: Vicinity Map + North Arrow (7in wide) */
-  /* Col 2: Legend + General Notes (10in wide) */
-  /* Col 3: Setback Compliance (10in wide) */
-  /* Col 4: Title Block (8in wide) */
-  /* Total: 35in usable */
-
-  /* --- COLUMN 1: VICINITY MAP + NORTH ARROW (7in) --- */
+  /* --- VICINITY MAP --- */
   .vicinity-map {
-    position: absolute;
-    left: var(--m);
-    top: calc(var(--m) + var(--plan-h));
-    width: 7in;
-    height: 5in;
+    width: 100%;
+    height: 4in;
     border-bottom: 1pt solid var(--line-lt);
-    border-right: 1.5pt solid var(--line);
-    padding: 0.1in 0.15in;
+    padding: 0.1in 0.12in;
     display: flex; flex-direction: column;
+    flex-shrink: 0;
   }
   .vicinity-map h3 {
-    font-size: 9pt; font-weight: 800; text-align: center;
-    margin-bottom: 0.04in; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 8pt; font-weight: 800; text-align: center;
+    margin-bottom: 0.03in; letter-spacing: 0.06em; text-transform: uppercase;
   }
   .vicinity-map .map-img-box {
     flex: 1; border: 1pt solid #999; border-radius: 2pt;
@@ -109,177 +111,160 @@
     width: 100%; height: 100%; object-fit: contain;
   }
   .vicinity-note {
-    font-size: 5.5pt; color: #666; text-align: center; margin-top: 0.03in;
+    font-size: 4.5pt; color: #666; text-align: center; margin-top: 0.02in;
   }
 
+  /* --- NORTH ARROW + SCALE --- */
   .north-scale {
-    position: absolute;
-    left: var(--m);
-    top: calc(var(--m) + var(--plan-h) + 5in);
-    width: 7in;
-    height: 3in;
-    border-right: 1.5pt solid var(--line);
-    display: flex; align-items: center; justify-content: space-around;
-    padding: 0.1in;
-  }
-  .north-arrow svg { width: 0.7in; height: 1.1in; }
-  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
-  .scale-info .scale-text { font-size: 11pt; font-weight: 700; }
-  .scale-bar { display: flex; }
-  .scale-bar .seg { width: 0.6in; height: 0.1in; border: 1.5pt solid #000; }
-  .scale-bar .seg.filled { background: #000; }
-  .scale-bar-labels {
-    display: flex; width: 2.4in; justify-content: space-between;
-    font-size: 6pt; font-weight: 600; margin-top: 0.02in;
-  }
-
-  /* --- COLUMN 2: LEGEND + GENERAL NOTES (10in) --- */
-  .legend {
-    position: absolute;
-    left: calc(var(--m) + 7in);
-    top: calc(var(--m) + var(--plan-h));
-    width: 10in;
+    width: 100%;
     height: 2in;
     border-bottom: 1pt solid var(--line-lt);
-    border-right: 1.5pt solid var(--line);
-    padding: 0.08in 0.15in;
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 0.08in;
+    flex-shrink: 0;
+  }
+  .north-arrow svg { width: 0.55in; height: 0.9in; }
+  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.04in; }
+  .scale-info .scale-text { font-size: 9pt; font-weight: 700; }
+  .scale-bar { display: flex; }
+  .scale-bar .seg { width: 0.45in; height: 0.08in; border: 1.5pt solid #000; }
+  .scale-bar .seg.filled { background: #000; }
+  .scale-bar-labels {
+    display: flex; width: 1.8in; justify-content: space-between;
+    font-size: 5pt; font-weight: 600; margin-top: 0.02in;
+  }
+
+  /* --- LEGEND --- */
+  .legend {
+    width: 100%;
+    height: 2.2in;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.06in 0.1in;
+    flex-shrink: 0;
   }
   .legend h3 {
-    font-size: 9pt; font-weight: 800; margin-bottom: 0.04in;
+    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
   .legend-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.03in 0.2in; font-size: 6.5pt;
+    display: grid; grid-template-columns: 1fr;
+    gap: 0.02in; font-size: 5.5pt;
   }
-  .legend-item { display: flex; align-items: center; gap: 0.08in; }
-  .legend-line { width: 0.4in; height: 0; flex-shrink: 0; }
+  .legend-item { display: flex; align-items: center; gap: 0.06in; }
+  .legend-line { width: 0.35in; height: 0; flex-shrink: 0; }
   .legend-line.solid-heavy { border-top: 3pt solid #000; }
   .legend-line.solid-medium { border-top: 1.5pt solid #000; }
   .legend-line.dotdash { border-top: 1.5pt dashed #555; }
   .legend-line.double { border-top: 2pt double #000; }
   .legend-symbol {
-    width: 0.4in; height: 0.16in; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 10pt;
+    width: 0.35in; height: 0.14in; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 9pt;
   }
 
+  /* --- GENERAL NOTES --- */
   .general-notes {
-    position: absolute;
-    left: calc(var(--m) + 7in);
-    top: calc(var(--m) + var(--plan-h) + 2in);
-    width: 10in;
-    height: 6in;
-    border-right: 1.5pt solid var(--line);
-    padding: 0.08in 0.15in;
-    font-size: 6.5pt; line-height: 1.35;
+    width: 100%;
+    flex: 1;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.06in 0.1in;
+    font-size: 5pt; line-height: 1.3;
     overflow: hidden;
   }
   .general-notes h3 {
-    font-size: 9pt; font-weight: 800; margin-bottom: 0.04in;
+    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
-  .general-notes ol { padding-left: 0.15in; }
-  .general-notes li { margin-bottom: 0.02in; }
+  .general-notes ol { padding-left: 0.12in; }
+  .general-notes li { margin-bottom: 0.01in; }
   .general-notes .sub-heading {
-    font-weight: 700; font-size: 7pt; margin-top: 0.04in; margin-bottom: 0.02in;
+    font-weight: 700; font-size: 5.5pt; margin-top: 0.03in; margin-bottom: 0.01in;
     text-transform: uppercase;
   }
 
-  /* --- COLUMN 3: SETBACK COMPLIANCE (10in) --- */
+  /* --- SETBACK COMPLIANCE TABLE --- */
   .compliance-table-area {
-    position: absolute;
-    left: calc(var(--m) + 17in);
-    top: calc(var(--m) + var(--plan-h));
-    width: 10in;
+    width: 100%;
     height: 4.5in;
     border-bottom: 1pt solid var(--line-lt);
-    border-right: 1.5pt solid var(--line);
-    padding: 0.08in 0.15in;
+    padding: 0.06in 0.08in;
     overflow: hidden;
+    flex-shrink: 0;
   }
   .compliance-table-area h3 {
-    font-size: 9pt; font-weight: 800; margin-bottom: 0.03in;
+    font-size: 7pt; font-weight: 800; margin-bottom: 0.02in;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
   .compliance-table {
-    width: 100%; border-collapse: collapse; font-size: 6pt;
+    width: 100%; border-collapse: collapse; font-size: 4.5pt;
   }
   .compliance-table th {
     background: #f0f0ee; font-weight: 700; text-align: left;
-    padding: 0.02in 0.04in; border: 0.75pt solid #999;
-    font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.03em;
+    padding: 0.015in 0.02in; border: 0.75pt solid #999;
+    font-size: 4pt; text-transform: uppercase; letter-spacing: 0.03em;
   }
   .compliance-table td {
-    padding: 0.02in 0.04in; border: 0.5pt solid #bbb; vertical-align: top;
+    padding: 0.015in 0.02in; border: 0.5pt solid #bbb; vertical-align: top;
   }
   .compliance-table .violation { color: #cc2222; font-weight: 600; }
   .compliance-table .ok { color: #1a7a3a; font-weight: 600; }
 
-  /* --- TITLE BLOCK (bottom-right, under compliance) --- */
+  /* --- TITLE BLOCK (anchored to bottom of left column) --- */
   .title-block {
-    position: absolute;
-    left: calc(var(--m) + 17in);
-    top: calc(var(--m) + var(--plan-h) + 4.5in);
-    width: 18in;
-    height: 3.5in;
-    display: grid;
-    grid-template-columns: 10in 8in;
-    grid-template-rows: 1fr;
+    width: 100%;
+    height: 3.8in;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
-  }
-
-  .tb-left {
-    border-right: 1.5pt solid var(--line);
-    display: flex; flex-direction: column;
   }
 
   .tb-project {
     background: #f5f5f2; text-align: center;
-    padding: 0.08in; border-bottom: 1.5pt solid #000;
+    padding: 0.06in; border-bottom: 1.5pt solid #000;
   }
   .tb-project .title {
-    font-size: 13pt; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 11pt; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
   }
   .tb-project .subtitle {
-    font-size: 8pt; font-weight: 600; color: #444; margin-top: 0.02in;
+    font-size: 6.5pt; font-weight: 600; color: #444; margin-top: 0.02in;
   }
   .tb-owner {
-    display: grid; grid-template-columns: 0.6in 1fr;
-    gap: 0.01in 0.06in; font-size: 7pt; padding: 0.06in 0.15in;
+    display: grid; grid-template-columns: 0.55in 1fr;
+    gap: 0.01in 0.04in; font-size: 5.5pt; padding: 0.05in 0.1in;
   }
   .tb-owner .label {
-    font-size: 5.5pt; font-weight: 700; color: #888; text-transform: uppercase;
+    font-size: 4.5pt; font-weight: 700; color: #888; text-transform: uppercase;
     letter-spacing: 0.04em; text-align: right; padding-top: 0.01in;
   }
   .tb-owner .value { font-weight: 600; }
-  .tb-preliminary {
-    text-align: center; padding: 0.03in; background: #fff3f3;
-    font-size: 6.5pt; font-weight: 700; color: #cc2222;
-    letter-spacing: 0.1em; border-top: 1pt solid #cc2222;
-    margin-top: auto;
-  }
 
-  .tb-right {
-    display: flex; flex-direction: column;
-  }
   .tb-pe-box {
-    border-bottom: 1.5pt solid #000; flex: 1;
-    padding: 0.08in;
+    border-top: 1.5pt solid #000; border-bottom: 1pt solid #888;
+    flex: 1;
+    padding: 0.06in;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; font-size: 7pt; color: #888;
+    text-align: center; font-size: 6pt; color: #888;
   }
   .tb-pe-box .pe-label {
-    font-size: 7pt; font-weight: 700; color: #555; text-transform: uppercase;
-    letter-spacing: 0.05em; margin-bottom: 0.03in;
+    font-size: 6pt; font-weight: 700; color: #555; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 0.02in;
   }
+
   .tb-survey-info {
-    padding: 0.04in 0.15in; font-size: 6.5pt; border-bottom: 1pt solid #888;
+    padding: 0.03in 0.1in; font-size: 5pt; border-bottom: 1pt solid #888;
   }
+
   .tb-footer {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0.04in 0.15in; font-size: 6.5pt; background: #fafaf8;
+    padding: 0.03in 0.1in; font-size: 5pt; background: #fafaf8;
   }
-  .tb-footer .sheet-no { font-weight: 700; font-size: 9pt; }
+  .tb-footer .sheet-no { font-weight: 700; font-size: 8pt; }
+
+  .tb-preliminary {
+    text-align: center; padding: 0.03in; background: #fff3f3;
+    font-size: 5.5pt; font-weight: 700; color: #cc2222;
+    letter-spacing: 0.1em; border-top: 1pt solid #cc2222;
+  }
 
   /* ═══ DRAFT WATERMARK ═══ */
   .watermark {
@@ -321,126 +306,123 @@
   <div class="watermark">PRELIMINARY</div>
   <div class="drawing-border"></div>
 
-  <!-- ═══ TOP: FULL-WIDTH SURVEY IMAGE ═══ -->
-  <div class="main-plan">
-    <img src="survey-ward-2025.png" alt="Land Title Survey — Lot 14-B, Block 6, Blue Bonnet Acres — 4Ward Land Surveying">
-  </div>
+  <!-- ═══ LEFT COLUMN: INFO PANELS ═══ -->
+  <div class="left-col">
 
-  <!-- ═══ BOTTOM ROW: COL 1 — VICINITY MAP ═══ -->
-  <div class="vicinity-map">
-    <h3>Vicinity Map</h3>
-    <div class="map-img-box">
-      <img src="gis-aerial-44401.png" alt="Bastrop County Development Services Viewer — PID 44401 — Aerial with parcel boundary">
-    </div>
-    <p class="vicinity-note">Source: Bastrop County Development Services Viewer — PID 44401 — Esri Aerial Basemap</p>
-  </div>
-
-  <!-- ═══ BOTTOM ROW: COL 1 — NORTH ARROW + SCALE ═══ -->
-  <div class="north-scale">
-    <div>
-      <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.7in;height:1.1in;">
-        <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
-        <polygon points="30,5 30,65 45,80" fill="#444"/>
-        <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
-      </svg>
-    </div>
-    <div class="scale-info">
-      <div class="scale-text">SCALE: 1" = 30'</div>
-      <div>
-        <div class="scale-bar">
-          <div class="seg filled"></div><div class="seg"></div>
-          <div class="seg filled"></div><div class="seg"></div>
-        </div>
-        <div class="scale-bar-labels">
-          <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
-        </div>
+    <!-- VICINITY MAP -->
+    <div class="vicinity-map">
+      <h3>Vicinity Map</h3>
+      <div class="map-img-box">
+        <img src="gis-aerial-44401.png" alt="Bastrop County Development Services Viewer — PID 44401 — Aerial with parcel boundary">
       </div>
-      <div style="font-size: 6pt; color: #666; margin-top: 0.02in;">HORIZONTAL SCALE IN FEET</div>
+      <p class="vicinity-note">Source: Bastrop County Development Services Viewer — PID 44401 — Esri Aerial Basemap</p>
     </div>
-  </div>
 
-  <!-- ═══ BOTTOM ROW: COL 2 — LEGEND ═══ -->
-  <div class="legend">
-    <h3>Legend</h3>
-    <div class="legend-grid">
-      <div class="legend-item"><div class="legend-line solid-heavy"></div><span>Property Boundary</span></div>
-      <div class="legend-item"><div class="legend-line dotdash"></div><span>Easement (10' P.U.E. & B.L.)</span></div>
-      <div class="legend-item"><div class="legend-line double"></div><span>Right-of-Way Line (60' ROW)</span></div>
-      <div class="legend-item"><div class="legend-line solid-medium"></div><span>Existing Structure</span></div>
-      <div class="legend-item"><div class="legend-symbol">⬡</div><span>Septic System (Aerobic)</span></div>
-      <div class="legend-item"><div class="legend-symbol">◉</div><span>Water Meter</span></div>
-      <div class="legend-item"><div class="legend-symbol">⚡</div><span>Electric Meter / Pole</span></div>
-      <div class="legend-item"><div class="legend-symbol">◆</div><span>Iron Rod Found / Set</span></div>
-      <div class="legend-item"><div class="legend-symbol">△</div><span>Concrete Monument</span></div>
+    <!-- NORTH ARROW + SCALE -->
+    <div class="north-scale">
+      <div>
+        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.55in;height:0.9in;">
+          <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
+          <polygon points="30,5 30,65 45,80" fill="#444"/>
+          <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
+        </svg>
+      </div>
+      <div class="scale-info">
+        <div class="scale-text">SCALE: 1" = 30'</div>
+        <div>
+          <div class="scale-bar">
+            <div class="seg filled"></div><div class="seg"></div>
+            <div class="seg filled"></div><div class="seg"></div>
+          </div>
+          <div class="scale-bar-labels">
+            <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
+          </div>
+        </div>
+        <div style="font-size: 5pt; color: #666; margin-top: 0.02in;">HORIZONTAL SCALE IN FEET</div>
+      </div>
     </div>
-  </div>
 
-  <!-- ═══ BOTTOM ROW: COL 2 — GENERAL NOTES ═══ -->
-  <div class="general-notes">
-    <h3>General Notes</h3>
-    <ol>
-      <li><strong>Legal Description:</strong> Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One, Bastrop County, Texas. Doc. No. 202005552, O.P.R.B.C.T. PID: 44401.</li>
-      <li><strong>Owner:</strong> Revocable Trust of Subhash Sonnad.</li>
-      <li><strong>Total Area:</strong> 1.7348 acres (75,133 square feet).</li>
-      <li><strong>Corner Lot:</strong> Two road frontages — Still Forest Drive (CR 329) to the south and Leisure Lane (CR 331) to the west. Both are 60' right-of-way county roads.</li>
-      <li><strong>Setbacks:</strong> 25' from road right-of-way (both roads), 15' from side and rear property lines per Blue Bonnet Acres plat restrictions.</li>
-      <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain per FEMA FIRM panels. No elevation certificate required.</li>
-      <li><strong>Emergency Services District:</strong> BCESD #3 (Bastrop County Emergency Services District No. 3).</li>
-      <li><strong>Houston Toad Habitat:</strong> Property is NOT within the Lost Pines Habitat Conservation Plan area. No LPHCP declination required.</li>
-      <li><strong>Existing Septic:</strong> Aerobic system (JET INC), serviced by Larry's Septic (512-695-6570). OSSF permit required for any modifications.</li>
-      <li><strong>Water:</strong> Active water meter at front gate (Still Forest Dr).</li>
-      <li><strong>Electric:</strong> Digital electric meter with sub-panels. Power pole with transformer on west side (Leisure Ln).</li>
-      <li><strong>Gas:</strong> No natural gas service observed.</li>
-      <li><strong>Survey Basis:</strong> Land Title Survey by 4Ward Land Surveying, Jason Ward R.P.L.S. #5811, dated February 4, 2021.</li>
-      <li><strong>Bearings:</strong> Based on the recorded plat of Blue Bonnet Acres, Corrected Plat Section One.</li>
-      <li><strong>Jurisdiction:</strong> Unincorporated Bastrop County. No county zoning. Development permit required per Bastrop County Flood Damage Prevention Order (May 2023) and Subdivision Regulations (April 2017).</li>
-    </ol>
-
-    <div class="sub-heading">Boundary Bearings</div>
-    <div style="font-size: 6.5pt; display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.2in;">
-      <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
-      <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
-      <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
-      <div><strong>South:</strong> S26°23'31"W — 187.86' along Still Forest Dr</div>
-      <div><strong>West:</strong> S20°17'19"W — 328.51' along Leisure Lane</div>
-      <div><strong>SW Corner:</strong> 14' P.U.E. along Still Forest Dr</div>
+    <!-- LEGEND -->
+    <div class="legend">
+      <h3>Legend</h3>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-line solid-heavy"></div><span>Property Boundary</span></div>
+        <div class="legend-item"><div class="legend-line dotdash"></div><span>Easement (10' P.U.E. & B.L.)</span></div>
+        <div class="legend-item"><div class="legend-line double"></div><span>Right-of-Way Line (60' ROW)</span></div>
+        <div class="legend-item"><div class="legend-line solid-medium"></div><span>Existing Structure</span></div>
+        <div class="legend-item"><div class="legend-symbol">⬡</div><span>Septic System (Aerobic)</span></div>
+        <div class="legend-item"><div class="legend-symbol">◉</div><span>Water Meter</span></div>
+        <div class="legend-item"><div class="legend-symbol">⚡</div><span>Electric Meter / Pole</span></div>
+        <div class="legend-item"><div class="legend-symbol">◆</div><span>Iron Rod Found / Set</span></div>
+        <div class="legend-item"><div class="legend-symbol">△</div><span>Concrete Monument</span></div>
+      </div>
     </div>
-  </div>
 
-  <!-- ═══ BOTTOM ROW: COL 3 — SETBACK COMPLIANCE TABLE ═══ -->
-  <div class="compliance-table-area">
-    <h3>Setback Compliance Summary</h3>
-    <p style="font-size: 6pt; color: #888; margin-bottom: 0.03in;">All distances measured from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
-    <table class="compliance-table">
-      <thead>
-        <tr>
-          <th>Structure</th><th>Size</th><th>Nearest Boundary</th>
-          <th>Distance</th><th>Required</th><th>Deficit</th>
-          <th>Status</th><th>Action Required</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Big Trailer</td><td>10'×42'</td><td>W (Leisure Ln ROW)</td><td>1'</td><td>25'</td><td class="violation">24'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
-        <tr><td>Red Container</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
-        <tr><td>Red Container (2)</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
-        <tr><td>Container</td><td>40'×8'</td><td>W (Leisure Ln ROW)</td><td>5'</td><td>25'</td><td class="violation">20'</td><td class="violation">CRITICAL</td><td>Relocate or remove</td></tr>
-        <tr><td>Deck</td><td>—</td><td>W (Leisure Ln ROW)</td><td>13'5"</td><td>25'</td><td class="violation">11'7"</td><td class="violation">VIOLATION</td><td>Modify or relocate</td></tr>
-        <tr><td>Beige Container</td><td>40'×8'</td><td>S (Still Forest Dr ROW)</td><td>6'</td><td>25'</td><td class="violation">19'</td><td class="violation">VIOLATION</td><td>Relocate or remove</td></tr>
-        <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side property line)</td><td>~10'</td><td>15'</td><td class="violation">~5'</td><td class="violation">NO PERMIT</td><td>Obtain permit; may need to relocate</td></tr>
-        <tr><td>Small Trailer</td><td>7'5"×20'5"</td><td>E (side property line)</td><td>~7'</td><td>15'</td><td class="violation">~8'</td><td class="violation">VIOLATION</td><td>Relocate</td></tr>
-        <tr><td>Sauna</td><td>—</td><td>W (Leisure Ln ROW)</td><td>30'</td><td>25'</td><td class="ok">—</td><td class="ok">OK (+5')</td><td>None</td></tr>
-        <tr><td>1-Story Wood Bldg</td><td>—</td><td>N (rear property line)</td><td>~30'</td><td>15'</td><td class="ok">—</td><td class="ok">OK (+15')</td><td>None</td></tr>
-        <tr><td>Main House (2-Story)</td><td>Stone & Frame</td><td>All boundaries</td><td>Well within</td><td>All</td><td class="ok">—</td><td class="ok">OK</td><td>None</td></tr>
-      </tbody>
-    </table>
-    <p style="font-size: 5.5pt; color: #888; margin-top: 0.03in;">
-      <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 structures encroach into the 25' road setback along Leisure Lane (west) or Still Forest Dr (south).
-    </p>
-  </div>
+    <!-- GENERAL NOTES -->
+    <div class="general-notes">
+      <h3>General Notes</h3>
+      <ol>
+        <li><strong>Legal Description:</strong> Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One, Bastrop County, Texas. Doc. No. 202005552, O.P.R.B.C.T. PID: 44401.</li>
+        <li><strong>Owner:</strong> Revocable Trust of Subhash Sonnad.</li>
+        <li><strong>Total Area:</strong> 1.7348 acres (75,133 square feet).</li>
+        <li><strong>Corner Lot:</strong> Two road frontages — Still Forest Drive (CR 329) to the south and Leisure Lane (CR 331) to the west. Both are 60' right-of-way county roads.</li>
+        <li><strong>Setbacks:</strong> 25' from road right-of-way (both roads), 15' from side and rear property lines per Blue Bonnet Acres plat restrictions.</li>
+        <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain per FEMA FIRM panels.</li>
+        <li><strong>Emergency Services District:</strong> BCESD #3.</li>
+        <li><strong>Houston Toad Habitat:</strong> NOT within the Lost Pines Habitat Conservation Plan area.</li>
+        <li><strong>Existing Septic:</strong> Aerobic system (JET INC), serviced by Larry's Septic (512-695-6570).</li>
+        <li><strong>Water:</strong> Active water meter at front gate (Still Forest Dr).</li>
+        <li><strong>Electric:</strong> Digital electric meter with sub-panels. Power pole with transformer on west side (Leisure Ln).</li>
+        <li><strong>Gas:</strong> No natural gas service observed.</li>
+        <li><strong>Survey Basis:</strong> Land Title Survey by 4Ward Land Surveying, Jason Ward R.P.L.S. #5811, dated February 4, 2021.</li>
+        <li><strong>Bearings:</strong> Based on the recorded plat of Blue Bonnet Acres, Corrected Plat Section One.</li>
+        <li><strong>Jurisdiction:</strong> Unincorporated Bastrop County. No county zoning. Development permit required per Bastrop County Flood Damage Prevention Order (May 2023).</li>
+      </ol>
 
-  <!-- ═══ TITLE BLOCK (bottom-right) ═══ -->
-  <div class="title-block">
-    <div class="tb-left">
+      <div class="sub-heading">Boundary Bearings</div>
+      <div style="font-size: 5pt; display: grid; grid-template-columns: 1fr; gap: 0.01in;">
+        <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
+        <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
+        <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
+        <div><strong>South:</strong> S26°23'31"W — 187.86' along Still Forest Dr</div>
+        <div><strong>West:</strong> S20°17'19"W — 328.51' along Leisure Lane</div>
+        <div><strong>SW Corner:</strong> 14' P.U.E. along Still Forest Dr</div>
+      </div>
+    </div>
+
+    <!-- SETBACK COMPLIANCE TABLE -->
+    <div class="compliance-table-area">
+      <h3>Setback Compliance</h3>
+      <p style="font-size: 4.5pt; color: #888; margin-bottom: 0.02in;">All distances from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
+      <table class="compliance-table">
+        <thead>
+          <tr>
+            <th>Structure</th><th>Size</th><th>Boundary</th>
+            <th>Dist</th><th>Req</th><th>Deficit</th>
+            <th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Big Trailer</td><td>10'×42'</td><td>W (Leisure)</td><td>1'</td><td>25'</td><td class="violation">24'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Red Container</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Red Container (2)</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Container</td><td>40'×8'</td><td>W (Leisure)</td><td>5'</td><td>25'</td><td class="violation">20'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Deck</td><td>—</td><td>W (Leisure)</td><td>13'5"</td><td>25'</td><td class="violation">11'7"</td><td class="violation">VIOL</td><td>Modify/relocate</td></tr>
+          <tr><td>Beige Container</td><td>40'×8'</td><td>S (Still For.)</td><td>6'</td><td>25'</td><td class="violation">19'</td><td class="violation">VIOL</td><td>Relocate/remove</td></tr>
+          <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side)</td><td>~10'</td><td>15'</td><td class="violation">~5'</td><td class="violation">NO PMT</td><td>Permit; may relocate</td></tr>
+          <tr><td>Small Trailer</td><td>7'5"×20'5"</td><td>E (side)</td><td>~7'</td><td>15'</td><td class="violation">~8'</td><td class="violation">VIOL</td><td>Relocate</td></tr>
+          <tr><td>Sauna</td><td>—</td><td>W (Leisure)</td><td>30'</td><td>25'</td><td class="ok">—</td><td class="ok">OK +5'</td><td>None</td></tr>
+          <tr><td>1-Story Wood</td><td>—</td><td>N (rear)</td><td>~30'</td><td>15'</td><td class="ok">—</td><td class="ok">OK +15'</td><td>None</td></tr>
+          <tr><td>Main House</td><td>Stone/Frame</td><td>All</td><td>Well within</td><td>All</td><td class="ok">—</td><td class="ok">OK</td><td>None</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 4pt; color: #888; margin-top: 0.02in;">
+        <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 encroach into the 25' road setback along Leisure Lane (W) or Still Forest Dr (S).
+      </p>
+    </div>
+
+    <!-- TITLE BLOCK (anchored to bottom) -->
+    <div class="title-block">
       <div class="tb-project">
         <div class="title">Site Plan</div>
         <div class="subtitle">160 Still Forest Drive, Cedar Creek, Texas 78612</div>
@@ -448,47 +430,47 @@
       <div class="tb-owner">
         <div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div>
         <div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
-        <div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One</div>
+        <div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Sec. One</div>
         <div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div>
         <div class="label">Prop ID:</div><div class="value">44401</div>
         <div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div>
+      </div>
+      <div class="tb-pe-box">
+        <div class="pe-label">Professional Engineer Seal</div>
+        <div>Reserved for PE stamp, signature, and date</div>
+        <div style="margin-top: 0.03in; font-size: 5pt;">Texas P.E. License No. ___________</div>
+      </div>
+      <div class="tb-survey-info">
+        <div><strong>Survey:</strong> 4Ward Land Surveying — Jason Ward, R.P.L.S. #5811 — Feb 4, 2021</div>
+      </div>
+      <div class="tb-footer">
+        <div>
+          <div style="font-size: 4.5pt; color: #999;">PREPARED BY</div>
+          <div style="font-weight: 600; font-size: 5.5pt;">Rev. Trust of Subhash Sonnad</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 4.5pt; color: #999;">DATE</div>
+          <div style="font-weight: 600;">March 2026</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 4.5pt; color: #999;">SCALE</div>
+          <div style="font-weight: 600;">1" = 30'</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 4.5pt; color: #999;">SHEET</div>
+          <div class="sheet-no">1 OF 1</div>
+        </div>
       </div>
       <div class="tb-preliminary">
         PRELIMINARY — NOT FOR CONSTRUCTION — SUBJECT TO PE REVIEW
       </div>
     </div>
-    <div class="tb-right">
-      <div class="tb-pe-box">
-        <div class="pe-label">Professional Engineer Seal</div>
-        <div>Reserved for PE stamp, signature, and date</div>
-        <div style="margin-top: 0.04in; font-size: 6pt;">Texas P.E. License No. ___________</div>
-      </div>
-      <div class="tb-survey-info">
-        <div style="display:flex; justify-content:space-between;">
-          <div><strong>Survey By:</strong> 4Ward Land Surveying</div>
-          <div>Jason Ward, R.P.L.S. #5811</div>
-        </div>
-        <div style="color:#666; margin-top: 0.02in;">Survey Date: February 4, 2021</div>
-      </div>
-      <div class="tb-footer">
-        <div>
-          <div style="font-size: 5.5pt; color: #999;">PREPARED BY</div>
-          <div style="font-weight: 600; font-size: 6.5pt;">Revocable Trust of Subhash Sonnad</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 5.5pt; color: #999;">DATE</div>
-          <div style="font-weight: 600;">March 2026</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 5.5pt; color: #999;">SCALE</div>
-          <div style="font-weight: 600;">1" = 30'</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 5.5pt; color: #999;">SHEET</div>
-          <div class="sheet-no">1 OF 1</div>
-        </div>
-      </div>
-    </div>
+
+  </div><!-- end .left-col -->
+
+  <!-- ═══ RIGHT COLUMN: FULL-HEIGHT SURVEY IMAGE ═══ -->
+  <div class="right-col">
+    <img src="survey-ward-2025.png" alt="Land Title Survey — Lot 14-B, Block 6, Blue Bonnet Acres — 4Ward Land Surveying">
   </div>
 
 </div><!-- end .sheet -->
