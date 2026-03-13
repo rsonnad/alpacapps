@@ -1,12 +1,12 @@
 {
-  "version": "v260313.12 11:45a",
-  "release": 686,
-  "sha": "626708263",
-  "fullSha": "626708263c717eeea32a002e15a002762c9270ef",
+  "version": "v260313.13 12:17p",
+  "release": 687,
+  "sha": "863796547",
+  "fullSha": "863796547c1ad1415fd3d5d2c91b40e063f4a46c",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 16:45:24+00",
-  "commits": [{"sha":"626708263","message":"Replace survey image with new 4Ward Land Surveying scan, restructure 24x36 layout","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 17:17:22+00",
+  "commits": [{"sha":"863796547","message":"Add warning banner explaining why a CE can't sign off on a DIY survey","author":"Jacqueline Giroux"}]
 }
