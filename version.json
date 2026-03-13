@@ -1,12 +1,12 @@
 {
-  "version": "v260313.41 2:38p",
-  "release": 715,
-  "sha": "6659b2dd5",
-  "fullSha": "6659b2dd5582bc3cc27c7d72a7e56e807c9b19bd",
+  "version": "v260313.42 2:43p",
+  "release": 716,
+  "sha": "b84b9c3e6",
+  "fullSha": "b84b9c3e6a7c840a94869a5e79afed4a296ed93f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 19:38:21+00",
-  "commits": [{"sha":"8823d34e9","message":"Add Rachel Wen combined rental accounting statement","author":"Rahul"},{"sha":"2b7f83a55","message":"Add payment links to Rachel Wen rental statement","author":"Rahul"},{"sha":"6659b2dd5","message":"Merge: Add payment links to Rachel rental statement","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 19:43:42+00",
+  "commits": [{"sha":"e1c111eca","message":"Add toll & supercharging detail addendums to Rachel statement","author":"Rahul"},{"sha":"b84b9c3e6","message":"Merge branch 'inspiring-jepsen'","author":"Rahul"}]
 }
