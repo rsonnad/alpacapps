@@ -1,12 +1,12 @@
 {
-  "version": "v260313.44 3:00p",
-  "release": 718,
-  "sha": "ccd4b210f",
-  "fullSha": "ccd4b210f062cc100e101f88cfeb07ad9ec08fde",
-  "actor": "jackie61899280",
+  "version": "v260313.45 3:09p",
+  "release": 719,
+  "sha": "60c85c34a",
+  "fullSha": "60c85c34ae41787007f7b252ca3489c9ccfafad3",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 20:00:13+00",
-  "commits": [{"sha":"ccd4b210f","message":"Add document links under every pending permit task","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 20:09:34+00",
+  "commits": [{"sha":"ba5f7ea62","message":"Fix email footer always showing same image — randomize selection","author":"Rahul"},{"sha":"60c85c34a","message":"Randomize email footer image selection","author":"Rahul"}]
 }
