@@ -1,12 +1,12 @@
 {
-  "version": "v260312.25 11:26p",
-  "release": 672,
-  "sha": "82937ccef",
-  "fullSha": "82937ccefdff8f204f140c340b0c0334836b9a6a",
+  "version": "v260312.26 11:32p",
+  "release": 673,
+  "sha": "b98caca44",
+  "fullSha": "b98caca44afb04da60ccbe3629ea6e4d4db0f789",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 04:26:49+00",
-  "commits": [{"sha":"82937ccef","message":"Mistiq: video testimonial, contrast fixes, Cold Plunge rename (#33)","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 04:32:32+00",
+  "commits": [{"sha":"b98caca44","message":"Restore original Mistiq hero image from Supabase (#34)","author":"Rahul"}]
 }
