@@ -67,6 +67,8 @@ type EmailType =
   | "work_photo_reminder"
   // Work checkout summary
   | "work_checkout_summary"
+  // Associate payout
+  | "associate_payout_sent"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly

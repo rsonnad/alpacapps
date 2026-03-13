@@ -301,6 +301,47 @@ Deno.serve(async (req) => {
       metadata: { transfer_id: transfer.id, associate_id }
     });
 
+    // Send payout notification email (fire-and-forget, goes through approval workflow)
+    try {
+      // Look up associate's email from people table
+      let recipientEmail = associate.payment_handle;
+      if (personId) {
+        const { data: person } = await supabase
+          .from('people')
+          .select('email')
+          .eq('id', personId)
+          .single();
+        if (person?.email) recipientEmail = person.email;
+      }
+      if (recipientEmail) {
+        const firstName = associate.app_user?.first_name || personName.split(' ')[0] || 'there';
+        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+        await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`
+          },
+          body: JSON.stringify({
+            type: 'associate_payout_sent',
+            to: recipientEmail,
+            data: {
+              first_name: firstName,
+              amount: amount.toFixed(2),
+              payment_method: 'Stripe (ACH)',
+              payout_date: today,
+              hours: associate.hourly_rate && amount > 0 ? (amount / parseFloat(associate.hourly_rate)).toFixed(1) : null,
+              hourly_rate: associate.hourly_rate || null,
+              notes: notes || null
+            }
+          })
+        });
+        console.log('Payout notification email queued for', recipientEmail);
+      }
+    } catch (emailErr) {
+      console.error('Non-fatal: payout email failed:', emailErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

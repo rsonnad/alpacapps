@@ -40,6 +40,8 @@ export const EMAIL_TYPES = {
   PAYMENT_STATEMENT: 'payment_statement',
   // Work checkout summary
   WORK_CHECKOUT_SUMMARY: 'work_checkout_summary',
+  // Associate payout
+  ASSOCIATE_PAYOUT_SENT: 'associate_payout_sent',
 };
 
 /**
@@ -425,6 +427,25 @@ export const emailService = {
   async sendWorkCheckoutSummary(data) {
     const recipients = [data.associate_email, 'alpacaplayhouse@gmail.com'].filter(Boolean);
     return sendEmail(EMAIL_TYPES.WORK_CHECKOUT_SUMMARY, recipients, data);
+  },
+
+  // ===== ASSOCIATE PAYOUTS =====
+
+  /**
+   * Send payout notification to associate
+   * @param {string} email - Associate email
+   * @param {object} data - Payout data
+   * @param {string} data.first_name - Associate first name
+   * @param {string} data.amount - Formatted amount (e.g. "251.50")
+   * @param {string} data.payment_method - Method (e.g. "Stripe", "PayPal")
+   * @param {string} data.payout_date - Formatted date
+   * @param {string} [data.period] - Pay period description
+   * @param {string} [data.hours] - Total hours
+   * @param {string} [data.hourly_rate] - Hourly rate
+   * @param {string} [data.notes] - Additional notes
+   */
+  async sendPayoutNotification(email, data) {
+    return sendEmail(EMAIL_TYPES.ASSOCIATE_PAYOUT_SENT, email, data);
   },
 
   /**
