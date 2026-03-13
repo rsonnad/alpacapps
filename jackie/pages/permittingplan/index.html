@@ -410,7 +410,7 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A6','A8','A9','B1','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A5','A6','A7','A8','A9','B1','B4','B5','B10','B11','B14','B16','B22','B23','B24','B25','B26','B27','C1','C2','C3','C6','C7'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
@@ -449,6 +449,109 @@
       if (taskCode === 'B16') {
         html += `<a href="operator-information.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
         html += `<a href="operator-information.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
+      }
+      // A7: Pre-dev meeting email — meeting guide + prior permit + attachments to prepare
+      if (taskCode === 'A7') {
+        html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
+        html += `<a href="${STORAGE_URL}/permitting-activity/french-drain/French Drain County Development Permit.pdf" target="_blank" onclick="event.stopPropagation()">Prior Permit (French Drain)</a>`;
+        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()">📄 Dev Description</a>`;
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+      }
+      // A5: Attend pre-dev meeting — guide + lodging reqs + priority list
+      if (taskCode === 'A5') {
+        html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="priority-list.html" target="_blank" onclick="event.stopPropagation()">📋 Priority List</a>`;
+      }
+      // A8: Engineer site visit — add site plan + lodging reqs (Priority List already linked above)
+      if (taskCode === 'A8') {
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // A9: Septic specialist visit — add existing OSSF docs (Priority List already linked above)
+      if (taskCode === 'A9') {
+        html += `<a href="${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf" target="_blank" onclick="event.stopPropagation()">Jet J-500 Specs</a>`;
+        html += `<a href="${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf" target="_blank" onclick="event.stopPropagation()">OSSF Site Plan</a>`;
+        html += `<a href="${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf" target="_blank" onclick="event.stopPropagation()">System Design</a>`;
+        html += `<a href="${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf" target="_blank" onclick="event.stopPropagation()">Original Septic Info</a>`;
+      }
+      // B1: Fill Development Application — supplemental page, online guide, platting exemption, appraisal
+      if (taskCode === 'B1') {
+        html += `<a href="${STORAGE_URL}/county-forms/Development Application Supplemental Page.pdf" target="_blank" onclick="event.stopPropagation()">Supplemental Page</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/MyGovernmentOnline Step-by-Step Guide.pdf" target="_blank" onclick="event.stopPropagation()">Online Submission Guide</a>`;
+        html += `<a href="${STORAGE_URL}/property-docs/Platting Exemption Status - 160 Still Forest Dr - PID 44401.pdf" target="_blank" onclick="event.stopPropagation()">Platting Exemption</a>`;
+        html += `<a href="${STORAGE_URL}/appraisal/bastrop-cad-appraisal-2022-pid44401.pdf" target="_blank" onclick="event.stopPropagation()">Appraisal (for fee calc)</a>`;
+      }
+      // B4: PE-signed Site Plan
+      if (taskCode === 'B4') {
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Draft Site Plan</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B5: Drainage Study
+      if (taskCode === 'B5') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B10: Fire Suppression Plan
+      if (taskCode === 'B10') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="${STORAGE_URL}/property-docs/2020.08.24 Court Appd Lodging-RV Park Requirements.pdf" target="_blank" onclick="event.stopPropagation()">Court Approved Requirements</a>`;
+      }
+      // B11: OSSF Permit Application — add aerobic affidavit
+      if (taskCode === 'B11') {
+        html += `<a href="${STORAGE_URL}/county-forms/Affidavit for Aerobic OSSF Systems.pdf" target="_blank" onclick="event.stopPropagation()">Aerobic OSSF Affidavit</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/OSSF Application.pdf" target="_blank" onclick="event.stopPropagation()">OSSF Application Form</a>`;
+      }
+      // B14: Internal Roads Plan
+      if (taskCode === 'B14') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B22: Parking Plan
+      if (taskCode === 'B22') {
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B23: Development Signage Plan
+      if (taskCode === 'B23') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B24: Trash & Waste Collection Plan
+      if (taskCode === 'B24') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B25: Application Fee Payment — fee schedule + cost breakdown
+      if (taskCode === 'B25') {
+        html += `<a href="${STORAGE_URL}/county-forms/Fee Schedule (June 2025).pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">💰 Fee Schedule (June 2025)</a>`;
+        html += `<a href="cost-estimate-breakdown.pdf" target="_blank" onclick="event.stopPropagation()">📊 Cost Estimate Breakdown</a>`;
+      }
+      // B26: Bathroom Building Compliance — add prior sauna/hottub permit application
+      if (taskCode === 'B26') {
+        html += `<a href="${STORAGE_URL}/permitting-activity/outdoor-bathroom-sauna-hottub/Permit Application for Sauna, Hot Tub, and Concrete Pads.jpg" target="_blank" onclick="event.stopPropagation()">Prior Permit App (Sauna/HotTub)</a>`;
+      }
+      // B27: Survey Update — survey update request letter + site plan
+      if (taskCode === 'B27') {
+        html += `<a href="survey-update-request.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 Survey Update Request Letter</a>`;
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+      }
+      // C1: Relocate structures — priority list + site plan
+      if (taskCode === 'C1') {
+        html += `<a href="priority-list.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Priority List</a>`;
+        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+      }
+      // C2: Road improvements
+      if (taskCode === 'C2') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // C3: Fire tank installation
+      if (taskCode === 'C3') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // C6: Final inspection
+      if (taskCode === 'C6') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // C7: Certificate of Compliance
+      if (taskCode === 'C7') {
+        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
       }
       return `<div class="doc-links">${html}</div>`;
     }
