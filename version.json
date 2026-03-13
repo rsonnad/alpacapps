@@ -1,12 +1,12 @@
 {
-  "version": "v260313.17 12:30p",
-  "release": 691,
-  "sha": "fd0e37d3c",
-  "fullSha": "fd0e37d3caff1602f03daae1d840176ec8688b4f",
+  "version": "v260313.18 12:31p",
+  "release": 692,
+  "sha": "a593d9eb4",
+  "fullSha": "a593d9eb46185ad1329765d78848d5f8dfba9d55",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 17:30:07+00",
-  "commits": [{"sha":"fd0e37d3c","message":"Restructure 24x36 site plan: two-column layout with info panels left, survey image right","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 17:31:19+00",
+  "commits": [{"sha":"a593d9eb4","message":"Add cost estimate breakdown PDF with clickable links from permitting page","author":"Jacqueline Giroux"}]
 }
