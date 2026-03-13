@@ -1,12 +1,12 @@
 {
-  "version": "v260313.53 4:29p",
-  "release": 727,
-  "sha": "1cf02802d",
-  "fullSha": "1cf02802d10d01cb0a5afcbe3265fb9baf079f05",
+  "version": "v260313.54 4:51p",
+  "release": 728,
+  "sha": "7587c34fc",
+  "fullSha": "7587c34fc4c7977ddb40e4e302ca576e36e5f77d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 21:29:19+00",
-  "commits": [{"sha":"1cf02802d","message":"Redesign promo/QR layout + switch body text to Playfair Display","author":"Rahul"}]
+  "pushedAt": "2026-03-13 21:51:37+00",
+  "commits": [{"sha":"fbc87a6c2","message":"Add standard header to Claude Sessions page","author":"Rahul"},{"sha":"7587c34fc","message":"Merge branch 'romantic-poitras'","author":"Rahul"}]
 }
