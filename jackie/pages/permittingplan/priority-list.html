@@ -117,6 +117,22 @@
     .print-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; background: #1c1618; color: #fff; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
     .print-btn:hover { opacity: 0.9; }
 
+    /* Warning banner */
+    .warning-banner { background: #fef2f2; border: 2px solid #ef4444; border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem; }
+    .warning-banner .warning-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 800; color: #991b1b; margin-bottom: 0.75rem; }
+    .warning-banner .warning-subtitle { font-size: 0.88rem; font-weight: 700; color: #991b1b; margin-top: 1rem; margin-bottom: 0.4rem; }
+    .warning-banner p { font-size: 0.82rem; color: #7f1d1d; line-height: 1.55; margin-bottom: 0.4rem; }
+    .warning-banner ul { font-size: 0.82rem; color: #7f1d1d; line-height: 1.55; margin: 0.3rem 0 0.5rem 1.25rem; }
+    .warning-banner ul li { margin-bottom: 0.25rem; }
+    .warning-banner .scenario-grid { display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-top: 0.5rem; }
+    .warning-banner .scenario-item { background: #fff; border: 1px solid #fca5a5; border-radius: 6px; padding: 0.6rem 0.75rem; }
+    .warning-banner .scenario-item strong { font-size: 0.78rem; color: #991b1b; display: block; margin-bottom: 0.15rem; }
+    .warning-banner .scenario-item span { font-size: 0.75rem; color: #7f1d1d; line-height: 1.4; }
+    .warning-banner .silent-risk { background: #fef9c3; border: 1px solid #facc15; border-radius: 6px; padding: 0.6rem 0.75rem; margin-top: 0.75rem; }
+    .warning-banner .silent-risk strong { font-size: 0.78rem; color: #854d0e; }
+    .warning-banner .silent-risk span { font-size: 0.75rem; color: #854d0e; line-height: 1.4; }
+    .warning-toggle { font-size: 0.75rem; color: #991b1b; cursor: pointer; border: none; background: none; font-family: inherit; font-weight: 700; text-decoration: underline; padding: 0; }
+
     /* Contacts section */
     .contacts-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
     .contacts-section h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
@@ -182,6 +198,57 @@
           <div class="pro-item">Civil Engineer</div>
           <div class="pro-item">Septic Designer</div>
           <div class="pro-item">Utility Coordinator</div>
+        </div>
+      </div>
+
+      <!-- Warning: Why a CE Can't Sign Off on a DIY Survey -->
+      <div class="warning-banner">
+        <div class="warning-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Why a Civil Engineer Cannot Sign Off on a DIY Survey
+        </div>
+        <p>While it might seem like a simple matter of drawing lines on a map, the distinction between a <strong>Civil Engineer (CE)</strong> and a <strong>Registered Professional Land Surveyor (RPLS)</strong> is a matter of strict legal licensing and high-stakes liability. Here is why a CE cannot&mdash;and will not&mdash;simply sign off on a DIY survey, and what can go wrong if boundary lines are handled incorrectly.</p>
+
+        <div class="warning-subtitle">1. The Licensing Wall</div>
+        <p>Civil Engineering and Land Surveying are <strong>distinct professional licenses</strong> in most jurisdictions.</p>
+        <ul>
+          <li><strong>Civil Engineers</strong> design what goes <em>on</em> the land (roads, drainage, structures).</li>
+          <li><strong>Land Surveyors</strong> define the <em>legal boundaries</em> of the land itself.</li>
+        </ul>
+        <p>A CE signing a survey is often practicing outside their licensed scope&mdash;a professional ethics violation that can cost them their license. Professionals must have &ldquo;responsible charge&rdquo; over the work, meaning they personally supervise the data collection. They <strong>cannot legally &ldquo;bless&rdquo; a document they didn&rsquo;t create or verify from scratch</strong>.</p>
+
+        <div class="warning-subtitle">2. The Accuracy Gap</div>
+        <p>A DIY drawing usually lacks the three pillars of a legal survey:</p>
+        <ul>
+          <li><strong>The Paper Trail</strong> &mdash; A surveyor researches historical deeds, adjoining property records, and &ldquo;junior/senior&rdquo; rights to determine who actually owns what.</li>
+          <li><strong>The Hardware</strong> &mdash; Consumer-grade GPS or measuring tapes have huge margins of error. Professional surveyors use $20,000+ total stations and RTK GPS kits that provide sub-centimeter accuracy.</li>
+          <li><strong>Monumentation</strong> &mdash; A legal survey requires finding or setting &ldquo;monuments&rdquo; (iron rods/markers in the ground) tied to the state plane coordinate system.</li>
+        </ul>
+
+        <div class="warning-subtitle">3. The &ldquo;Worst Case&rdquo; Scenarios</div>
+        <p>If a &ldquo;survey&rdquo; is wrong and a professional signs off anyway, the consequences are severe:</p>
+        <div class="scenario-grid">
+          <div class="scenario-item">
+            <strong>The &ldquo;Teardown&rdquo; Order</strong>
+            <span>You build a $100K garage or $50K retaining wall based on your drawing. A neighbor&rsquo;s professional survey later proves you&rsquo;re 2 feet over the line. A court can order you to <strong>demolish the structure at your own expense</strong>.</span>
+          </div>
+          <div class="scenario-item">
+            <strong>Title Deadlock</strong>
+            <span>When you sell, the buyer&rsquo;s title company finds the discrepancy. This &ldquo;clouds the title,&rdquo; making the property <strong>un-sellable and un-insurable</strong> until a corrected survey is filed.</span>
+          </div>
+          <div class="scenario-item">
+            <strong>Easement Infringement</strong>
+            <span>You draw your plan over a buried utility easement. If the city needs to access a pipe, they can <strong>rip up your work without compensating you</strong> because it was built on a protected zone you didn&rsquo;t account for.</span>
+          </div>
+          <div class="scenario-item">
+            <strong>Professional Ruin</strong>
+            <span>The engineer who signed the DIY plan faces <strong>massive lawsuits and permanent loss of their career</strong> for rubber-stamping unverified data.</span>
+          </div>
+        </div>
+
+        <div class="silent-risk">
+          <strong>The &ldquo;Silent&rdquo; Risk: Adverse Possession</strong><br>
+          <span>If you build a fence or structure based on a bad survey and it stays for years, your neighbor may gain a legal claim to that part of your land&mdash;or vice versa&mdash;leading to a decade-long, six-figure legal battle.</span>
         </div>
       </div>
 
