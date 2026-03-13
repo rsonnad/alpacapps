@@ -1,12 +1,12 @@
 {
-  "version": "v260313.33 2:04p",
-  "release": 707,
-  "sha": "e0afe372d",
-  "fullSha": "e0afe372db53a2b6b8dac6dc35344e6e7abb1b0d",
-  "actor": "rsonnad",
+  "version": "v260313.34 2:05p",
+  "release": 708,
+  "sha": "c629b5c2e",
+  "fullSha": "c629b5c2ee7fd811b32b3fa8dc134ed5b159ce41",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 19:04:11+00",
-  "commits": [{"sha":"e0afe372d","message":"Add associate payout email notification with approval workflow","author":"Rahul"}]
+  "pushedAt": "2026-03-13 19:05:02+00",
+  "commits": [{"sha":"c629b5c2e","message":"Remove Development Description, PDF, County Application buttons from top nav","author":"Jacqueline Giroux"}]
 }
