@@ -1,12 +1,12 @@
 {
-  "version": "v260313.14 12:25p",
-  "release": 688,
-  "sha": "9a79a7ccf",
-  "fullSha": "9a79a7ccfdbca8fece3af49be6bfbd98f1a00731",
+  "version": "v260313.15 12:28p",
+  "release": 689,
+  "sha": "b45822771",
+  "fullSha": "b45822771c4554c4846f8d357c556bb882d18c6a",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 17:25:42+00",
-  "commits": [{"sha":"bcd156692","message":"Fix property owner from Nicole D. Reeves to Revocable Trust of Subhash Sonnad","author":"Jacqueline Giroux"},{"sha":"9a79a7ccf","message":"Merge branch 'claude/intelligent-bhaskara'","author":"Jacqueline Giroux"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 17:28:21+00",
+  "commits": [{"sha":"b45822771","message":"Reclassify site plan violations using actual Bastrop County Lodging/RV regs","author":"Jacqueline Giroux"}]
 }
