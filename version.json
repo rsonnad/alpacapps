@@ -1,12 +1,12 @@
 {
-  "version": "v260313.07 12:42a",
-  "release": 681,
-  "sha": "e64808666",
-  "fullSha": "e6480866660422e7585122f21fb858e77fbea81a",
+  "version": "v260313.09 12:47a",
+  "release": 683,
+  "sha": "32ef55375",
+  "fullSha": "32ef5537548d71dfbf58885ac05039fd72b2b4cf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:42:15+00",
-  "commits": [{"sha":"e64808666","message":"Move Darsy video below text testimonials","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 05:47:51+00",
+  "commits": [{"sha":"32ef55375","message":"Stack Treatment Overview list and note vertically instead of side-by-side","author":"Rahul"}]
 }
