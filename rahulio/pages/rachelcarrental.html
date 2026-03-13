@@ -244,6 +244,35 @@
       color: var(--text-muted);
     }
 
+    /* ── Payment rows ── */
+    .pay-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #f0ece8;
+      font-size: 0.88rem;
+    }
+    .pay-row:last-child { border-bottom: none; }
+    .pay-row a { color: var(--blue); text-decoration: none; }
+    .pay-row a:hover { text-decoration: underline; }
+    .pay-badge {
+      display: inline-block;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      min-width: 60px;
+      text-align: center;
+    }
+    .pay-free {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+
     @media print {
       body { background: #fff; }
       .container { max-width: 100%; }
@@ -449,6 +478,37 @@
       <h4>Contract Reference</h4>
       <p><strong>Space:</strong> Pequeno Largo Suite, $1,100/mo, $1,100 security deposit. Tenancy Dec 7, 2025 &ndash; Feb 12, 2026.</p>
       <p><strong>Vehicle:</strong> 2026 Tesla Model Y (VIN 7SAYGDED2TA496393), $495/mo base + $99/mo FSD = $594/mo, $1,000 deposit, $234 first-month insurance. 1,000 mi/mo included, $0.15/mi overage. Supercharging &amp; tolls renter's responsibility. Contract signed 12/12/2025 (renter) / 12/15/2025 (owner). Initial term Dec 10, 2025 &ndash; Feb 9, 2026, auto-renewed monthly, vehicle returned Mar 3, 2026.</p>
+    </div>
+
+    <!-- ══ PAYMENT LINKS ══ -->
+    <div class="section">
+      <div class="section-title">
+        <span class="badge badge-payment">Pay</span>
+        Send Payment &mdash; $35.93
+      </div>
+      <div class="card" style="padding: 1.25rem;">
+        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1rem;">Include "Rachel Wen final settlement" in the memo.</p>
+        <div class="pay-row">
+          <span class="pay-badge" style="background:#6c1cd3;">Zelle</span>
+          <span>rahulioson@gmail.com</span>
+          <span class="pay-free">No fee</span>
+        </div>
+        <div class="pay-row">
+          <span class="pay-badge" style="background:#3d95ce;">Venmo</span>
+          <a href="https://venmo.com/rahuliox" target="_blank" rel="noopener">@rahuliox</a>
+          <span class="pay-free">No fee</span>
+        </div>
+        <div class="pay-row">
+          <span class="pay-badge" style="background:#00D632;">Cash App</span>
+          <a href="https://cash.app/$rahuliox" target="_blank" rel="noopener">$rahuliox</a>
+          <span class="pay-free">No fee</span>
+        </div>
+        <div class="pay-row">
+          <span class="pay-badge" style="background:#003087;">PayPal</span>
+          <span>rahulioson@gmail.com</span>
+          <span style="font-size:0.75rem; color:var(--text-dim);">Friends &amp; Family only</span>
+        </div>
+      </div>
     </div>
 
     <div class="footer">
