@@ -66,6 +66,46 @@ function formatCurrency(amount: number): string {
   return `$${amount.toFixed(2).replace(/\.00$/, '')}`;
 }
 
+/** Infer which rent period a payment date falls into based on assignment schedule */
+function inferPeriodFromDate(
+  txDate: string,
+  assignment: { start_date: string; end_date: string | null; rate_term: string }
+): { start: string; end: string } | null {
+  const pd = new Date(txDate + 'T12:00:00');
+  const start = new Date(assignment.start_date + 'T12:00:00');
+  if (pd < start) return null;
+
+  if (assignment.rate_term === 'monthly') {
+    const year = pd.getFullYear();
+    const month = pd.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    return {
+      start: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+      end: `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+    };
+  }
+
+  if (assignment.rate_term === 'weekly' || assignment.rate_term === 'biweekly') {
+    const intervalDays = assignment.rate_term === 'weekly' ? 7 : 14;
+    const cursor = new Date(start);
+    while (cursor <= pd) {
+      const next = new Date(cursor);
+      next.setDate(next.getDate() + intervalDays);
+      if (pd < next) {
+        const endD = new Date(next);
+        endD.setDate(endD.getDate() - 1);
+        return {
+          start: cursor.toISOString().split('T')[0],
+          end: endD.toISOString().split('T')[0],
+        };
+      }
+      cursor.setDate(cursor.getDate() + intervalDays);
+    }
+  }
+
+  return null;
+}
+
 /** Compute current rent due dates for an assignment */
 function computeRentDueDates(assignment: {
   start_date: string;
@@ -426,6 +466,9 @@ Deno.serve(async (req) => {
           .gte('period_end', due.periodStart)
           .lte('period_start', due.periodEnd);
 
+        // Also check unlinked payments (no period_start). For these, infer which
+        // rent period they cover based on the assignment schedule, not just the
+        // transaction_date falling within the due period window.
         const { data: unlinkedPayments } = await supabase
           .from('ledger')
           .select('id, amount, transaction_date')
@@ -433,17 +476,23 @@ Deno.serve(async (req) => {
           .eq('status', 'completed')
           .eq('is_test', false)
           .eq('person_id', person.id)
-          .is('period_start', null)
-          .gte('transaction_date', due.periodStart)
-          .lte('transaction_date', due.periodEnd);
+          .is('period_start', null);
+
+        // Filter unlinked payments: infer their period from transaction_date + assignment schedule
+        const matchedUnlinked = (unlinkedPayments || []).filter((p: { transaction_date: string }) => {
+          const inferredPeriod = inferPeriodFromDate(p.transaction_date, assignment);
+          if (!inferredPeriod) return false;
+          // Check if inferred period overlaps the due period
+          return inferredPeriod.start <= due.periodEnd && inferredPeriod.end >= due.periodStart;
+        });
 
         // Sum all payments found for this period (partial or full)
         let totalPaid = 0;
         if (payments && payments.length > 0) {
           totalPaid += payments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
         }
-        if (unlinkedPayments && unlinkedPayments.length > 0) {
-          totalPaid += unlinkedPayments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
+        if (matchedUnlinked.length > 0) {
+          totalPaid += matchedUnlinked.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
         }
 
         const netRemaining = Math.round((due.amount - totalPaid) * 100) / 100;
