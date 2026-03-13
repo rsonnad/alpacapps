@@ -1,12 +1,12 @@
 {
-  "version": "v260313.21 1:06p",
-  "release": 695,
-  "sha": "3a6e7adcf",
-  "fullSha": "3a6e7adcf0a930c19548d27be5f8110e7c764812",
+  "version": "v260313.22 1:08p",
+  "release": 696,
+  "sha": "ad1789ee7",
+  "fullSha": "ad1789ee70875e3f66b72e20230f00b885e33de9",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 18:06:57+00",
-  "commits": [{"sha":"3a6e7adcf","message":"Reorder permitting checklist: engineer → septic → county meeting","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 18:08:48+00",
+  "commits": [{"sha":"27214c357","message":"Reclassify site plan violations using actual Bastrop County Lodging/RV regs","author":"Jacqueline Giroux"},{"sha":"0693db10c","message":"Reclassify all 4 containers as storage-only, not regulated under IV.8","author":"Jacqueline Giroux"},{"sha":"53ec78d3a","message":"Fix bathroom building: remove setback violation, keep permit-only issue","author":"Jacqueline Giroux"},{"sha":"ad1789ee7","message":"Merge: Fix bathroom building setback classification","author":"Jacqueline Giroux"}]
 }
