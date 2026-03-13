@@ -1,12 +1,12 @@
 {
-  "version": "v260313.48 4:12p",
-  "release": 722,
-  "sha": "8c8a2eb14",
-  "fullSha": "8c8a2eb144dd171f43f3da2d0bd31a33a2f0d448",
+  "version": "v260313.50 4:13p",
+  "release": 724,
+  "sha": "6334891cb",
+  "fullSha": "6334891cba94873fba8465f25a9249d056dcdd6b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 21:12:05+00",
-  "commits": [{"sha":"8c8a2eb14","message":"Fix overdue checker missing payments without period dates","author":"Rahul"}]
+  "pushedAt": "2026-03-13 21:13:51+00",
+  "commits": [{"sha":"6334891cb","message":"Rename /kiosk to /kioskhall for front hall tablet","author":"Rahul"}]
 }
