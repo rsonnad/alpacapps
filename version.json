@@ -1,12 +1,12 @@
 {
-  "version": "v260313.22 1:08p",
-  "release": 696,
-  "sha": "ad1789ee7",
-  "fullSha": "ad1789ee70875e3f66b72e20230f00b885e33de9",
+  "version": "v260313.23 1:11p",
+  "release": 697,
+  "sha": "84160af4d",
+  "fullSha": "84160af4dce22cd64eecab8ff0f9716b5d79a6ab",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 18:08:48+00",
-  "commits": [{"sha":"27214c357","message":"Reclassify site plan violations using actual Bastrop County Lodging/RV regs","author":"Jacqueline Giroux"},{"sha":"0693db10c","message":"Reclassify all 4 containers as storage-only, not regulated under IV.8","author":"Jacqueline Giroux"},{"sha":"53ec78d3a","message":"Fix bathroom building: remove setback violation, keep permit-only issue","author":"Jacqueline Giroux"},{"sha":"ad1789ee7","message":"Merge: Fix bathroom building setback classification","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 18:11:33+00",
+  "commits": [{"sha":"84160af4d","message":"Make professional contacts section collapsible on priority list","author":"Jacqueline Giroux"}]
 }
