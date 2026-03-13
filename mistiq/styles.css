@@ -799,4 +799,161 @@ img {
   .mistiq-hero__title {
     font-size: 2rem;
   }
+
+  .mistiq-booking__packages {
+    flex-direction: column;
+  }
+}
+
+/* =============================================
+   BOOKING SECTION
+   ============================================= */
+
+.mistiq-booking {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mistiq-booking__packages {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.mistiq-package {
+  flex: 1;
+  cursor: pointer;
+  display: block;
+}
+
+.mistiq-package input[type="radio"] {
+  display: none;
+}
+
+.mistiq-package__content {
+  border: 2px solid var(--mistiq-border, #e6e2d9);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.mistiq-package input:checked + .mistiq-package__content {
+  border-color: var(--mistiq-accent);
+  background: rgba(139, 115, 85, 0.04);
+  box-shadow: 0 0 0 1px var(--mistiq-accent);
+}
+
+.mistiq-package__title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--mistiq-text);
+}
+
+.mistiq-package__desc {
+  font-size: 0.9rem;
+  color: var(--mistiq-text-muted, #7d6f74);
+  margin: 0 0 1rem;
+}
+
+.mistiq-package__price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-package__price s {
+  color: var(--mistiq-text-muted, #7d6f74);
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.mistiq-booking__promo {
+  margin-bottom: 1.5rem;
+}
+
+.mistiq-booking__promo label {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--mistiq-text);
+}
+
+.mistiq-booking__promo-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.mistiq-booking__promo-row input {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--mistiq-border, #e6e2d9);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Lato', sans-serif;
+  background: white;
+}
+
+.mistiq-booking__promo-row input:focus {
+  outline: none;
+  border-color: var(--mistiq-accent);
+}
+
+.mistiq-btn--secondary {
+  background: transparent;
+  color: var(--mistiq-accent);
+  border: 1px solid var(--mistiq-accent);
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Lato', sans-serif;
+}
+
+.mistiq-btn--secondary:hover {
+  background: var(--mistiq-accent);
+  color: white;
+}
+
+.mistiq-booking__promo-msg {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+.mistiq-booking__promo-msg.success {
+  color: #2d7a3a;
+}
+
+.mistiq-booking__promo-msg.error {
+  color: #c44;
+}
+
+.mistiq-booking__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--mistiq-border, #e6e2d9);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.mistiq-booking__total-price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-booking__note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--mistiq-text-muted, #7d6f74);
+  margin-top: 1rem;
 }
