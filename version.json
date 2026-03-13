@@ -1,12 +1,12 @@
 {
-  "version": "v260313.19 12:40p",
-  "release": 693,
-  "sha": "c7350f256",
-  "fullSha": "c7350f25640ad8ab3c6afffabcdb9cd6e38890dc",
+  "version": "v260313.20 12:58p",
+  "release": 694,
+  "sha": "19a1d33be",
+  "fullSha": "19a1d33beaba0ada13995d4e1cd92e88c5ed59b3",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 17:40:53+00",
-  "commits": [{"sha":"c7350f256","message":"Add Bastrop County GIS Viewer link to A2 and A3 permit tasks","author":"Jacqueline Giroux"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 17:58:46+00",
+  "commits": [{"sha":"19a1d33be","message":"Reclassify all 4 containers as storage-only, not regulated under IV.8","author":"Jacqueline Giroux"}]
 }
