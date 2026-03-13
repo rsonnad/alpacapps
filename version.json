@@ -1,12 +1,12 @@
 {
-  "version": "v260312.24 10:00p",
-  "release": 671,
-  "sha": "7e74a580d",
-  "fullSha": "7e74a580df1c53cdc9f8634380c0667659f5bafd",
+  "version": "v260312.25 11:26p",
+  "release": 672,
+  "sha": "82937ccef",
+  "fullSha": "82937ccefdff8f204f140c340b0c0334836b9a6a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 03:00:05+00",
-  "commits": [{"sha":"351d698d8","message":"Add Mistiq booking system, promo codes, and business card","author":"Rahul"},{"sha":"7e74a580d","message":"Merge pull request #32 from rsonnad/heuristic-poincare","author":"Rahul"}]
+  "pushedAt": "2026-03-13 04:26:49+00",
+  "commits": [{"sha":"82937ccef","message":"Mistiq: video testimonial, contrast fixes, Cold Plunge rename (#33)","author":"Rahul"}]
 }
