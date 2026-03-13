@@ -1,12 +1,12 @@
 {
-  "version": "v260313.06 12:40a",
-  "release": 680,
-  "sha": "9169f119a",
-  "fullSha": "9169f119a850e2fb8ef6cac7a1a0ec63dac71ca9",
+  "version": "v260313.07 12:42a",
+  "release": 681,
+  "sha": "e64808666",
+  "fullSha": "e6480866660422e7585122f21fb858e77fbea81a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:40:27+00",
-  "commits": [{"sha":"9169f119a","message":"Reduce Darsy video testimonial to 40% size (256px max-width)","author":"Rahul"}]
+  "pushedAt": "2026-03-13 05:42:15+00",
+  "commits": [{"sha":"e64808666","message":"Move Darsy video below text testimonials","author":"Rahul"}]
 }
