@@ -141,9 +141,14 @@
     .warning-banner .silent-risk strong { font-size: 0.78rem; color: #854d0e; }
     .warning-banner .silent-risk span { font-size: 0.75rem; color: #854d0e; line-height: 1.4; }
 
-    /* Contacts section */
-    .contacts-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
-    .contacts-section h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
+    /* Contacts section (collapsible) */
+    .contacts-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.5rem; }
+    .contacts-toggle { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; cursor: pointer; list-style: none; font-size: 0.88rem; font-weight: 700; color: var(--text); user-select: none; }
+    .contacts-toggle::-webkit-details-marker { display: none; }
+    .contacts-toggle::before { content: '▸'; margin-right: 0.5rem; font-size: 0.8rem; transition: transform 0.15s; }
+    details.contacts-section[open] .contacts-toggle::before { transform: rotate(90deg); }
+    .contacts-count { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); background: var(--bg-alt); padding: 0.15rem 0.5rem; border-radius: 10px; }
+    .contacts-list { padding: 0 1.25rem 1rem; }
     .contact-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 0.5rem; }
     .contact-card:last-child { margin-bottom: 0; }
     .contact-card.top-pick { border-color: #7c3aed; border-width: 2px; background: #faf5ff; }
@@ -266,9 +271,13 @@
         </div>
       </div>
 
-      <!-- Professionals Contacted -->
-      <div class="contacts-section">
-        <h2>Professionals Contacted</h2>
+      <!-- Professionals Contacted (collapsible) -->
+      <details class="contacts-section">
+        <summary class="contacts-toggle">
+          <span>Professionals Contacted</span>
+          <span class="contacts-count">6 contacts</span>
+        </summary>
+        <div class="contacts-list">
 
         <div class="contact-card top-pick">
           <div class="contact-header">
@@ -335,7 +344,8 @@
             <a href="https://www.aerobicservices.com/get-in-touch/" target="_blank">www.aerobicservices.com/get-in-touch</a>
           </div>
         </div>
-      </div>
+        </div>
+      </details>
 
       <!-- Summary stats -->
       <div class="summary-bar" id="summaryBar"></div>
