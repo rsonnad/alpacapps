@@ -70,7 +70,19 @@
   .notes h2 { font-size: 1rem; color: #d4883a; margin-bottom: 8px; }
   .notes ul { padding-left: 20px; }
   .notes li { margin-bottom: 4px; }
+  .back-btn {
+    position: fixed; top: 16px; left: 16px; z-index: 100;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #2a2224; border: 1px solid #3a2a2e;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: #d4883a;
+    font-size: 1.3rem; line-height: 1;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .back-btn:hover { background: #3a2a2e; transform: scale(1.1); }
   @media print {
+    .back-btn { display: none; }
     body { background: white; color: black; padding: 10px; }
     .legend-card { background: #f5f5f5; border: 1px solid #ccc; }
     .legend-card h3, .legend-card p { color: #333; }
@@ -81,6 +93,8 @@
 </style>
 </head>
 <body>
+
+<a href="index.html" class="back-btn" title="Back to Permitting Checklist">&#8592;</a>
 
 <h1>Preliminary Site Plan — 160 Still Forest Dr</h1>
 <p class="subtitle">Cedar Creek, TX 78612 &bull; PID 44401 &bull; Lot 14-B, Block 6, Blue Bonnet Acres &bull; 1.7348 Ac (75,133 SF) &bull; ONE ROAD FRONTAGE (Still Forest Dr) &bull; NOT TO SCALE &bull; March 2026</p>
