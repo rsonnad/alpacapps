@@ -1,12 +1,12 @@
 {
-  "version": "v260313.47 4:09p",
-  "release": 721,
-  "sha": "ce869510d",
-  "fullSha": "ce869510d33f3266e8520bfe6d64bde73f7b515a",
+  "version": "v260313.48 4:12p",
+  "release": 722,
+  "sha": "8c8a2eb14",
+  "fullSha": "8c8a2eb144dd171f43f3da2d0bd31a33a2f0d448",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 21:09:13+00",
-  "commits": [{"sha":"45cc531c8","message":"Update business card to GotPrint print specs","author":"Rahul"},{"sha":"a8c41898c","message":"Add phone number to business card","author":"Rahul"},{"sha":"2e81d0f7b","message":"Switch business card hero to windingdown.jpg","author":"Rahul"},{"sha":"1799563a9","message":"Mistique Journey business card: QR beside promo box, card-style back grid","author":"Rahul"},{"sha":"be291c109","message":"Mistiq business card: rebrand, design tweaks, 1200 DPI print files","author":"Rahul"},{"sha":"5ae2d9826","message":"Mistiq card: smaller QR, uniform contact text font/size","author":"Rahul"},{"sha":"2b2d18074","message":"Mistiq card: show alpaca legs, add spacing above address block","author":"Rahul"},{"sha":"f499f8537","message":"Mistiq card: @ prefix, smaller directions, code label, image positioning","author":"Rahul"},{"sha":"2b204329a","message":"Mistiq card: bottom images show full scene, bolder back text, sans-serif titles","author":"Rahul"},{"sha":"98f3be90f","message":"Mistiq card: back alpaca image shows heads+legs, feet cropped","author":"Rahul"},{"sha":"2fb6ea3fe","message":"Mistiq card: back alpaca image closer to grid, shifted up","author":"Rahul"},{"sha":"395ecc646","message":"Fix bottom images: taller (300px) with center positioning for visible subjects","author":"Rahul"},{"sha":"ce869510d","message":"Regenerate 1200 DPI CMYK print files with updated bottom images","author":"Rahul"}]
+  "pushedAt": "2026-03-13 21:12:05+00",
+  "commits": [{"sha":"8c8a2eb14","message":"Fix overdue checker missing payments without period dates","author":"Rahul"}]
 }
