@@ -1,12 +1,12 @@
 {
-  "version": "v260313.20 12:58p",
-  "release": 694,
-  "sha": "19a1d33be",
-  "fullSha": "19a1d33beaba0ada13995d4e1cd92e88c5ed59b3",
+  "version": "v260313.21 1:06p",
+  "release": 695,
+  "sha": "3a6e7adcf",
+  "fullSha": "3a6e7adcf0a930c19548d27be5f8110e7c764812",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 17:58:46+00",
-  "commits": [{"sha":"19a1d33be","message":"Reclassify all 4 containers as storage-only, not regulated under IV.8","author":"Jacqueline Giroux"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 18:06:57+00",
+  "commits": [{"sha":"3a6e7adcf","message":"Reorder permitting checklist: engineer → septic → county meeting","author":"Jacqueline Giroux"}]
 }
