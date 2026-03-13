@@ -1644,7 +1644,7 @@ async function loadDisplays() {
     container.innerHTML = allDisplays.map(d => {
       const modeLabels = { dashboard: 'Dashboard', cameras: 'Cameras', signage: 'Signage', slideshow: 'Slideshow' };
       const typeLabels = { tv: 'TV', tablet: 'Tablet' };
-      const url = d.display_type === 'tablet' ? '/kiosk/' : `/kiosk/tv.html?display=${d.id}`;
+      const url = d.display_type === 'tablet' ? '/kioskhall/' : `/kioskhall/tv.html?display=${d.id}`;
       return `<div class="forwarding-rule-item" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
         <div style="flex:1;">
           <strong>${escapeHtml(d.name)}</strong>
@@ -1675,7 +1675,7 @@ function renderTvDisplayLinks(displays) {
     return;
   }
   container.innerHTML = tvDisplays.map(d => {
-    const url = `/kiosk/tv.html?display=${d.id}`;
+    const url = `/kioskhall/tv.html?display=${d.id}`;
     return `<div><strong>${escapeHtml(d.name)}:</strong> <a href="${url}" target="_blank">${url}</a></div>`;
   }).join('');
 }
