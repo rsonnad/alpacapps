@@ -1,12 +1,12 @@
 {
-  "version": "v260313.45 3:09p",
-  "release": 719,
-  "sha": "60c85c34a",
-  "fullSha": "60c85c34ae41787007f7b252ca3489c9ccfafad3",
+  "version": "v260313.46 4:02p",
+  "release": 720,
+  "sha": "1c823a244",
+  "fullSha": "1c823a2441e6cb03e448717817d71c109ba020c1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 20:09:34+00",
-  "commits": [{"sha":"ba5f7ea62","message":"Fix email footer always showing same image — randomize selection","author":"Rahul"},{"sha":"60c85c34a","message":"Randomize email footer image selection","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 21:02:27+00",
+  "commits": [{"sha":"1c823a244","message":"Link \"hand signals\" text to handsignals.html in Treatment Overview","author":"Rahul"}]
 }
