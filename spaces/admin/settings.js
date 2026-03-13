@@ -15,6 +15,7 @@ let authState = null;
 let allPaymentMethods = [];
 let bulkSmsRecipients = [];
 let editingFeeCodeId = null;
+let editingMistiqCodeId = null;
 let editingPaymentMethodId = null;
 let editingForwardingRuleId = null;
 let allForwardingRules = [];
@@ -59,6 +60,7 @@ async function loadSettingsPanel() {
     loadPaymentMethods(),
     loadFeeSettings(),
     loadFeeCodes(),
+    loadMistiqCodes(),
     loadSquareConfig(),
     loadPayPalConfig(),
     loadStripeConfig(),
@@ -448,6 +450,188 @@ async function deleteFeeCode(codeId, codeName) {
   } catch (error) {
     console.error('Error deleting fee code:', error);
     showToast('Failed to delete fee code', 'error');
+  }
+}
+
+// =============================================
+// MISTIQ CODES
+// =============================================
+
+async function loadMistiqCodes() {
+  const grid = document.getElementById('mistiqCodesGrid');
+  if (!grid) return;
+
+  try {
+    const { data: codes, error } = await supabase
+      .from('mistiq_codes')
+      .select('*')
+      .order('code');
+
+    if (error) throw error;
+
+    if (!codes || codes.length === 0) {
+      grid.innerHTML = '<div class="fee-codes-empty">No Mistiq codes configured. Click "Add Code" to create one.</div>';
+      return;
+    }
+
+    grid.innerHTML = `<div class="fee-codes-header" style="grid-template-columns: 1fr 1fr 1.5fr 0.8fr auto;"><span>Code</span><span>Discount</span><span>Description</span><span>Usage</span><span></span></div>` + codes.map(code => {
+      const discountText = code.discount_type === 'percent'
+        ? `${code.discount_value}% off`
+        : `$${parseFloat(code.discount_value).toFixed(2)} off`;
+      const usageText = code.usage_limit
+        ? `${code.times_used}/${code.usage_limit}`
+        : `${code.times_used}`;
+      const expiredClass = code.expires_at && new Date(code.expires_at) < new Date() ? 'expired' : '';
+      const inactiveClass = !code.is_active ? 'inactive' : '';
+
+      return `
+        <div class="fee-code-row ${expiredClass} ${inactiveClass}" style="grid-template-columns: 1fr 1fr 1.5fr 0.8fr auto;">
+          <span class="code-name">${code.code}</span>
+          <span class="code-type">${discountText}</span>
+          ${code.description ? `<span class="code-desc">${code.description}</span>` : '<span class="code-desc"></span>'}
+          <span class="code-usage">${usageText} used</span>
+          <span class="code-actions">
+            <button class="btn-small btn-secondary" data-action="edit-mistiq-code" data-id="${code.id}">Edit</button>
+            <button class="btn-small btn-danger" data-action="delete-mistiq-code" data-id="${code.id}" data-code="${code.code}">Delete</button>
+          </span>
+        </div>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('[data-action="edit-mistiq-code"]').forEach(btn => {
+      btn.addEventListener('click', () => openMistiqCodeModal(btn.dataset.id));
+    });
+    grid.querySelectorAll('[data-action="delete-mistiq-code"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteMistiqCode(btn.dataset.id, btn.dataset.code));
+    });
+
+  } catch (error) {
+    console.error('Error loading mistiq codes:', error);
+    grid.innerHTML = '<div class="fee-codes-empty">Error loading Mistiq codes.</div>';
+  }
+}
+
+function openMistiqCodeModal(codeId = null) {
+  editingMistiqCodeId = codeId;
+  const modal = document.getElementById('mistiqCodeModal');
+  const form = document.getElementById('mistiqCodeForm');
+  const title = document.getElementById('mistiqCodeModalTitle');
+
+  if (codeId) {
+    title.textContent = 'Edit Mistiq Code';
+    loadMistiqCodeForEdit(codeId);
+  } else {
+    title.textContent = 'Add Mistiq Code';
+    form.reset();
+    document.getElementById('mistiqCodeId').value = '';
+    document.getElementById('mistiqCodeActive').checked = true;
+    updateMistiqDiscountHint();
+  }
+
+  modal.classList.remove('hidden');
+}
+
+async function loadMistiqCodeForEdit(codeId) {
+  try {
+    const { data: code, error } = await supabase
+      .from('mistiq_codes')
+      .select('*')
+      .eq('id', codeId)
+      .single();
+
+    if (error) throw error;
+
+    document.getElementById('mistiqCodeId').value = code.id;
+    document.getElementById('mistiqCodeCode').value = code.code;
+    document.getElementById('mistiqDiscountType').value = code.discount_type;
+    document.getElementById('mistiqDiscountValue').value = code.discount_value;
+    document.getElementById('mistiqCodeDescription').value = code.description || '';
+    document.getElementById('mistiqCodeUsageLimit').value = code.usage_limit || '';
+    document.getElementById('mistiqCodeExpires').value = code.expires_at ? code.expires_at.split('T')[0] : '';
+    document.getElementById('mistiqCodeActive').checked = code.is_active;
+    updateMistiqDiscountHint();
+
+  } catch (error) {
+    console.error('Error loading mistiq code:', error);
+    showToast('Failed to load Mistiq code', 'error');
+  }
+}
+
+function closeMistiqCodeModal() {
+  document.getElementById('mistiqCodeModal').classList.add('hidden');
+  editingMistiqCodeId = null;
+}
+
+function updateMistiqDiscountHint() {
+  const type = document.getElementById('mistiqDiscountType')?.value;
+  const hint = document.getElementById('mistiqDiscountHint');
+  if (hint) {
+    hint.textContent = type === 'percent' ? 'e.g., 20 for 20% off' : 'e.g., 50 for $50 off';
+  }
+}
+
+async function saveMistiqCode() {
+  const codeId = document.getElementById('mistiqCodeId').value;
+  const codeData = {
+    code: document.getElementById('mistiqCodeCode').value.toUpperCase().trim(),
+    discount_type: document.getElementById('mistiqDiscountType').value,
+    discount_value: parseFloat(document.getElementById('mistiqDiscountValue').value),
+    description: document.getElementById('mistiqCodeDescription').value.trim() || null,
+    usage_limit: parseInt(document.getElementById('mistiqCodeUsageLimit').value) || null,
+    expires_at: document.getElementById('mistiqCodeExpires').value || null,
+    is_active: document.getElementById('mistiqCodeActive').checked,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!codeData.discount_value || codeData.discount_value <= 0) {
+    showToast('Discount value must be greater than 0', 'error');
+    return;
+  }
+
+  try {
+    if (codeId) {
+      const { error } = await supabase
+        .from('mistiq_codes')
+        .update(codeData)
+        .eq('id', codeId);
+      if (error) throw error;
+      showToast('Mistiq code updated', 'success');
+    } else {
+      const { error } = await supabase
+        .from('mistiq_codes')
+        .insert(codeData);
+      if (error) throw error;
+      showToast('Mistiq code created', 'success');
+    }
+
+    closeMistiqCodeModal();
+    await loadMistiqCodes();
+
+  } catch (error) {
+    console.error('Error saving mistiq code:', error);
+    if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
+      showToast('This code already exists', 'error');
+    } else {
+      showToast('Failed to save Mistiq code', 'error');
+    }
+  }
+}
+
+async function deleteMistiqCode(codeId, codeName) {
+  if (!confirm(`Delete Mistiq code "${codeName}"? This cannot be undone.`)) return;
+
+  try {
+    const { error } = await supabase
+      .from('mistiq_codes')
+      .delete()
+      .eq('id', codeId);
+
+    if (error) throw error;
+    showToast('Mistiq code deleted', 'success');
+    await loadMistiqCodes();
+  } catch (error) {
+    console.error('Error deleting mistiq code:', error);
+    showToast('Failed to delete Mistiq code', 'error');
   }
 }
 
@@ -1229,6 +1413,13 @@ function setupEventListeners() {
   document.getElementById('closeFeeCodeModal')?.addEventListener('click', closeFeeCodeModal);
   document.getElementById('cancelFeeCodeBtn')?.addEventListener('click', closeFeeCodeModal);
   document.getElementById('saveFeeCodeBtn')?.addEventListener('click', saveFeeCode);
+
+  // Mistiq codes
+  document.getElementById('addMistiqCodeBtn')?.addEventListener('click', () => openMistiqCodeModal());
+  document.getElementById('closeMistiqCodeModal')?.addEventListener('click', closeMistiqCodeModal);
+  document.getElementById('cancelMistiqCodeBtn')?.addEventListener('click', closeMistiqCodeModal);
+  document.getElementById('saveMistiqCodeBtn')?.addEventListener('click', saveMistiqCode);
+  document.getElementById('mistiqDiscountType')?.addEventListener('change', updateMistiqDiscountHint);
 
   // Square test mode toggle
   document.getElementById('squareTestMode')?.addEventListener('change', (e) => {

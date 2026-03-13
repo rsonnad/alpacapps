@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mistique Journey — Business Card (2.5" x 4")</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #e8e4dd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Lato', sans-serif;
+      padding: 2rem;
+    }
+
+    .print-instructions {
+      max-width: 500px;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .print-instructions h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    /* Card: 2.5" x 4" at 300 DPI = 750px x 1200px */
+    .card {
+      width: 750px;
+      height: 1200px;
+      background: #f9f6f1;
+      border-radius: 0;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top image area */
+    .card-hero {
+      height: 400px;
+      background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .card-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: linear-gradient(to top, #f9f6f1, transparent);
+    }
+
+    /* Content area */
+    .card-content {
+      flex: 1;
+      padding: 30px 45px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: #2a1f23;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .card-brand {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 38px;
+      font-weight: 600;
+      color: #8b7355;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .card-tagline {
+      font-family: 'Lato', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      font-style: italic;
+      color: #7d6f74;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .card-divider {
+      width: 80px;
+      height: 1px;
+      background: #c4a77d;
+      margin-bottom: 24px;
+    }
+
+    /* Image strip */
+    .card-images {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .card-images img {
+      width: 100px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .card-location {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #8b7355;
+      margin-bottom: 8px;
+    }
+
+    .card-url {
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      color: #7d6f74;
+      letter-spacing: 0.5px;
+      margin-bottom: 28px;
+    }
+
+    /* Promo code box */
+    .card-promo {
+      border: 2px dashed #c4a77d;
+      border-radius: 8px;
+      padding: 12px 24px;
+      width: 85%;
+      text-align: center;
+    }
+
+    .card-promo__label {
+      font-family: 'Lato', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #8b7355;
+      margin-bottom: 6px;
+    }
+
+    .card-promo__box {
+      height: 36px;
+      border-bottom: 1px solid #c4a77d;
+      margin-top: 4px;
+    }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .print-instructions { display: none; }
+      .card { box-shadow: none; }
+      @page { size: 2.5in 4in; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-instructions">
+    <h1>Mistique Journey Business Card</h1>
+    <p>2.5" x 4" — Designed at 300 DPI (750 x 1200px). Use Ctrl+P / Cmd+P to print.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-hero"></div>
+
+    <div class="card-content">
+      <div class="card-name">Rahul Lio</div>
+      <div class="card-brand">Mistique Journey</div>
+      <div class="card-tagline">a thermal breath & body experience</div>
+
+      <div class="card-divider"></div>
+
+      <div class="card-images">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg" alt="Breathwork">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg" alt="Sauna">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg" alt="Ice Bath">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg" alt="Thai Massage">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg" alt="Oil Massage">
+      </div>
+
+      <div class="card-location">@ the Alpaca Playhouse Austin</div>
+      <div class="card-url">alpacaplayhouse.com/mistiq</div>
+
+      <div class="card-promo">
+        <div class="card-promo__label">Your Promo Code</div>
+        <div class="card-promo__box"></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
