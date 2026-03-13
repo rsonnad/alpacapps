@@ -1,12 +1,12 @@
 {
-  "version": "v260313.40 2:32p",
-  "release": 714,
-  "sha": "74c4e8704",
-  "fullSha": "74c4e8704cfcfd088d5b26f63554d19a17a1e24d",
-  "actor": "jackie61899280",
+  "version": "v260313.41 2:38p",
+  "release": 715,
+  "sha": "6659b2dd5",
+  "fullSha": "6659b2dd5582bc3cc27c7d72a7e56e807c9b19bd",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 19:32:54+00",
-  "commits": [{"sha":"74c4e8704","message":"Add editable structure compliance checker to site plan","author":"Jacqueline Giroux"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 19:38:21+00",
+  "commits": [{"sha":"8823d34e9","message":"Add Rachel Wen combined rental accounting statement","author":"Rahul"},{"sha":"2b7f83a55","message":"Add payment links to Rachel Wen rental statement","author":"Rahul"},{"sha":"6659b2dd5","message":"Merge: Add payment links to Rachel rental statement","author":"Rahul"}]
 }
