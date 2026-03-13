@@ -62,6 +62,25 @@
   .badge-ok { background: #38a16922; color: #68d391; border: 1px solid #38a16944; }
   .badge-na { background: #4299e122; color: #90cdf4; border: 1px solid #4299e144; }
   .setback-table .na-row td { color: #90cdf4; }
+  .setback-table .clickable-row { cursor: pointer; transition: background 0.15s; }
+  .setback-table .clickable-row:hover { background: rgba(255,255,255,0.04); }
+  .setback-table .clickable-row td:first-child::before {
+    content: '\25B6'; font-size: 0.6rem; margin-right: 6px; display: inline-block;
+    transition: transform 0.2s; vertical-align: middle;
+  }
+  .setback-table .clickable-row.expanded td:first-child::before { transform: rotate(90deg); }
+  .detail-row { display: none; }
+  .detail-row.show { display: table-row; }
+  .detail-row td {
+    padding: 10px 12px 14px 28px !important;
+    border-bottom: 2px solid #3a2a2e !important;
+    background: #221c1e;
+  }
+  .detail-content { font-size: 0.78rem; line-height: 1.55; color: #c0b0a0; }
+  .detail-content .detail-label { color: #a09080; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .detail-content .detail-section { margin-bottom: 8px; }
+  .detail-content .detail-section:last-child { margin-bottom: 0; }
+  .detail-content .remedy { color: #f6ad55; font-weight: 500; }
   .notes {
     max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px; font-size: 0.82rem;
@@ -89,6 +108,12 @@
     .setback-summary, .notes { background: #f5f5f5; color: #333; }
     .setback-summary h2, .notes h2 { color: #333; }
     .setback-table th, .setback-table td { color: #333; }
+    .detail-row { display: table-row !important; }
+    .detail-row td { background: #f0f0f0 !important; }
+    .detail-content { color: #333; }
+    .detail-content .detail-label { color: #555; }
+    .detail-content .remedy { color: #b45309; }
+    .clickable-row td:first-child::before { display: none !important; }
   }
 </style>
 </head>
@@ -130,83 +155,194 @@
       </tr>
     </thead>
     <tbody>
-      <tr class="violation-row">
+      <!-- BIG TRAILER -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Big Trailer</strong> (10'×42') — RV/Lodging Unit</td>
         <td>1' from W property line</td>
         <td>10' (property line)</td>
         <td>9' short</td>
         <td><span class="badge badge-violation">VIOLATION</span></td>
       </tr>
-      <tr class="violation-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a violation</div>
+        This RV/lodging unit is only <strong>1 foot</strong> from the west property line. The west boundary adjoins a neighboring property (not a road), so the required setback is <strong>10 feet</strong> per County Development Services. It is <strong>9 feet short</strong> of the minimum.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Lodging/RV Regs Section IV.8(b): lodging units must be 10' from property lines. Also subject to general county subdivision setback of 10' from non-road property lines.</div>
+        <div class="detail-section"><div class="detail-label">Additional issues</div>
+        As a lodging unit, it must also maintain 20' separation from other units (Section IV.8(d)).</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 9 feet inward (east) from west property line, or remove from site.</span></div>
+      </div></td></tr>
+
+      <!-- RED CONTAINER 1 -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Red Container</strong> (40'×8' = 320 SF) — permanent structure</td>
         <td>~2' from W property line</td>
         <td>10' (property line)</td>
         <td>~8' short</td>
         <td><span class="badge badge-violation">VIOLATION</span></td>
       </tr>
-      <tr class="violation-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a violation</div>
+        This 40'×8' shipping container (320 SF) is approximately <strong>2 feet</strong> from the west property line. At 320 SF, it exceeds the <strong>25 SF exemption</strong> for unincorporated Bastrop County and is legally classified as a <strong>permanent structure</strong>. Required setback is <strong>10 feet</strong>.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Subdivision Regulations: 10' setback from non-road property lines. Bastrop Development Code: structures over 25 SF in unincorporated county are permanent structures requiring Development Permit.</div>
+        <div class="detail-section"><div class="detail-label">Additional issues</div>
+        Must be positioned <strong>behind the primary building</strong> (not in front/side yard). If visible from road or residential neighbor, requires <strong>opaque screening</strong> (6' fence or dense landscaping). Adds 320 SF impervious cover. Fire Marshal may require 10–30' separation from main building.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 8 feet inward from west property line, position behind main house, add screening if visible. Obtain Development Permit.</span></div>
+      </div></td></tr>
+
+      <!-- RED CONTAINER 2 -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Red Container</strong> (40'×8' = 320 SF) — permanent structure</td>
         <td>~2' from W property line</td>
         <td>10' (property line)</td>
         <td>~8' short</td>
         <td><span class="badge badge-violation">VIOLATION</span></td>
       </tr>
-      <tr class="violation-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a violation</div>
+        Same as the other Red Container — 320 SF permanent structure approximately <strong>2 feet</strong> from the west property line, <strong>8 feet short</strong> of the required 10' setback.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Subdivision Regulations: 10' from non-road property lines. Over 25 SF = permanent structure requiring Development Permit.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 8 feet inward from west property line, position behind main house, add screening. Obtain Development Permit.</span></div>
+      </div></td></tr>
+
+      <!-- CONTAINER (GRAY/OTHER) -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Container</strong> (40'×8' = 320 SF) — permanent structure</td>
         <td>5' from W property line</td>
         <td>10' (property line)</td>
         <td>5' short</td>
         <td><span class="badge badge-violation">VIOLATION</span></td>
       </tr>
-      <tr class="ok-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a violation</div>
+        This container is <strong>5 feet</strong> from the west property line — closer than the P.U.E. allows on the east side. At 320 SF, it's a permanent structure requiring a 10' setback. It is <strong>5 feet short</strong>.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Subdivision Regulations: 10' from non-road property lines. Over 25 SF = permanent structure.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 5 feet inward from west property line. Obtain Development Permit. Add screening if visible.</span></div>
+      </div></td></tr>
+
+      <!-- DECK -->
+      <tr class="ok-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Deck</strong> (attached to main house)</td>
         <td>13'5" from W property line</td>
         <td>10' (property line)</td>
         <td>—</td>
         <td><span class="badge badge-ok">OK (+3'5")</span></td>
       </tr>
-      <tr class="violation-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's compliant</div>
+        The deck is <strong>13 feet 5 inches</strong> from the west property line, exceeding the 10' required setback by <strong>3 feet 5 inches</strong>. It is attached to the main house and is not a lodging unit, RV, or tiny house.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        10' property line setback per County Development Services. Not subject to the more restrictive Lodging/RV Section IV.8 setbacks since it is not a lodging unit.</div>
+      </div></td></tr>
+
+      <!-- BEIGE CONTAINER -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Beige Container</strong> (40'×8' = 320 SF) — permanent structure</td>
         <td>6' from south (Still Forest Dr)</td>
         <td>20' (Local Rural Road)</td>
         <td>14' short</td>
         <td><span class="badge badge-violation">CRITICAL</span></td>
       </tr>
-      <tr class="na-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a critical violation</div>
+        This container is only <strong>6 feet</strong> from Still Forest Dr (CR 329), a Local Rural Road. The Bastrop County Subdivision Regulations require a <strong>20-foot setback</strong> from Local Rural Road property lines. It is <strong>14 feet short</strong> — the largest deficit on the property.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Subdivision Regulations: 20' setback from Local Rural Road. Also a 320 SF permanent structure (exceeds 25 SF exemption) requiring Development Permit.</div>
+        <div class="detail-section"><div class="detail-label">Additional issues</div>
+        Located in the <strong>front yard</strong> area — containers must be positioned behind the primary building. Directly visible from the public road, so <strong>screening</strong> (6' fence or dense landscaping) would be required even if setback were met. Adds 320 SF impervious cover.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 14 feet north (away from road) and position behind the main house. Obtain Development Permit. Install screening.</span></div>
+      </div></td></tr>
+
+      <!-- BATHROOM BLDG -->
+      <tr class="na-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Bathroom Bldg</strong> (service building, under construction)</td>
         <td>~10' from east property line</td>
         <td>10' (property line)</td>
         <td>—</td>
         <td><span class="badge badge-violation">NO PERMIT</span></td>
       </tr>
-      <tr class="violation-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's flagged</div>
+        The bathroom building <strong>meets the 10' setback</strong> from the east property line, but it was built <strong>without a Development Permit</strong>. It was constructed after the 2021 survey and is still under construction.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Lodging/RV Regs Section IV.5.a: Development Permits are required for <strong>all permanent structures</strong> in the development. Section IV.11: classified as a service building.</div>
+        <div class="detail-section"><div class="detail-label">Additional issues</div>
+        At exactly ~10' from the east property line, it is right at the edge of the <strong>10' P.U.E.</strong> (Public Utility Easement). Confirm it does not encroach into the easement — any encroachment would require relocation.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Apply for a Bastrop County Development Permit retroactively. Verify it does not encroach into the 10' P.U.E. on the east boundary.</span></div>
+      </div></td></tr>
+
+      <!-- SMALL TRAILER -->
+      <tr class="violation-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Small Trailer</strong> (7'5"×20'5") — RV/Lodging Unit</td>
         <td>~7' from east property line</td>
         <td>10' (property line)</td>
         <td>~3' short</td>
         <td><span class="badge badge-violation">VIOLATION</span></td>
       </tr>
-      <tr class="ok-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's a violation</div>
+        This RV/lodging unit is approximately <strong>7 feet</strong> from the east property line, <strong>3 feet short</strong> of the required 10' setback. It is also within the <strong>10' P.U.E.</strong> on the east side, which prohibits permanent structures.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Lodging/RV Regs Section IV.8(b): lodging units must be 10' from property lines. The east boundary also has a 10' P.U.E. &amp; B.L. per the survey — no permanent structures allowed in this zone.</div>
+        <div class="detail-section"><div class="detail-label">Additional issues</div>
+        Must also maintain 20' separation from other lodging units (Section IV.8(d)). Being inside the P.U.E. means utility companies have the right to remove or damage the structure during maintenance.</div>
+        <div class="detail-section"><div class="detail-label">Remedy</div>
+        <span class="remedy">Relocate at least 3 feet west (away from east property line) to clear both the 10' setback and the P.U.E.</span></div>
+      </div></td></tr>
+
+      <!-- SAUNA -->
+      <tr class="ok-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Sauna</strong></td>
         <td>30' from W property line</td>
         <td>10' (property line)</td>
         <td>—</td>
         <td><span class="badge badge-ok">OK (+20')</span></td>
       </tr>
-      <tr class="ok-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's compliant</div>
+        The sauna is <strong>30 feet</strong> from the west property line — well beyond the 10' required setback with a <strong>20-foot margin</strong>.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        10' property line setback per County Development Services. The sauna is not a lodging unit, so Section IV.8 lodging-specific setbacks don't apply.</div>
+      </div></td></tr>
+
+      <!-- 1-STORY WOOD BLDG -->
+      <tr class="ok-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>1-Story Wood Bldg</strong></td>
         <td>~30' from north property line</td>
         <td>10' (property line)</td>
         <td>—</td>
         <td><span class="badge badge-ok">OK (+20')</span></td>
       </tr>
-      <tr class="ok-row">
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's compliant</div>
+        This building is approximately <strong>30 feet</strong> from the north property line, exceeding the 10' setback by <strong>20 feet</strong>.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        10' property line setback per County Development Services. North boundary is a rear/side property line with no road frontage.</div>
+      </div></td></tr>
+
+      <!-- MAIN HOUSE -->
+      <tr class="ok-row clickable-row" onclick="toggleDetail(this)">
         <td><strong>Main House</strong></td>
         <td>Well within all setbacks</td>
         <td>All setbacks</td>
         <td>—</td>
         <td><span class="badge badge-ok">OK</span></td>
       </tr>
+      <tr class="detail-row"><td colspan="5"><div class="detail-content">
+        <div class="detail-section"><div class="detail-label">Why it's compliant</div>
+        The main house is centrally positioned on the lot and meets all required setbacks — 20' from the south (Still Forest Dr) and 10' from all other property lines.</div>
+        <div class="detail-section"><div class="detail-label">Applicable regulation</div>
+        Bastrop County Subdivision Regulations: 20' from Local Rural Road (south). 10' from property lines (west, east, north).</div>
+      </div></td></tr>
     </tbody>
   </table>
 </div>
@@ -277,5 +413,22 @@
   </ul>
 </div>
 
+<script>
+function toggleDetail(row) {
+  const detail = row.nextElementSibling;
+  if (!detail || !detail.classList.contains('detail-row')) return;
+  const isOpen = detail.classList.contains('show');
+  // Close all open details first
+  document.querySelectorAll('.detail-row.show').forEach(d => {
+    d.classList.remove('show');
+    d.previousElementSibling.classList.remove('expanded');
+  });
+  // Toggle the clicked one (if it wasn't already open)
+  if (!isOpen) {
+    detail.classList.add('show');
+    row.classList.add('expanded');
+  }
+}
+</script>
 </body>
 </html>
