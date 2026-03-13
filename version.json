@@ -1,12 +1,12 @@
 {
-  "version": "v260313.50 4:13p",
-  "release": 724,
-  "sha": "6334891cb",
-  "fullSha": "6334891cba94873fba8465f25a9249d056dcdd6b",
+  "version": "v260313.51 4:22p",
+  "release": 725,
+  "sha": "9f63287f0",
+  "fullSha": "9f63287f00108a4a339d491d62803e9cdf785aad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 21:13:51+00",
-  "commits": [{"sha":"6334891cb","message":"Rename /kiosk to /kioskhall for front hall tablet","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 21:22:57+00",
+  "commits": [{"sha":"9f63287f0","message":"Increase title text 20%: Mistiq Journey 52→62px, Elements of the Journey 42→50px","author":"Rahul"}]
 }
