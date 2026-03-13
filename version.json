@@ -1,12 +1,12 @@
 {
-  "version": "v260313.34 2:05p",
-  "release": 708,
-  "sha": "c629b5c2e",
-  "fullSha": "c629b5c2ee7fd811b32b3fa8dc134ed5b159ce41",
+  "version": "v260313.35 2:11p",
+  "release": 709,
+  "sha": "efd1dc0d2",
+  "fullSha": "efd1dc0d2b3cebbe5eb6b1335aabb779d230ebda",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 19:05:02+00",
-  "commits": [{"sha":"c629b5c2e","message":"Remove Development Description, PDF, County Application buttons from top nav","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 19:11:46+00",
+  "commits": [{"sha":"efd1dc0d2","message":"Add container permanent structure classification and regulations","author":"Jacqueline Giroux"}]
 }
