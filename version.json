@@ -1,12 +1,12 @@
 {
-  "version": "v260313.01 12:05a",
-  "release": 675,
-  "sha": "aa785df79",
-  "fullSha": "aa785df797a2be9b61d822f51b0bb6736b21a706",
+  "version": "v260313.02 12:27a",
+  "release": 676,
+  "sha": "cbc4e8321",
+  "fullSha": "cbc4e8321411ea743584b43bd4d5c1bc4839749d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:05:30+00",
-  "commits": [{"sha":"aa785df79","message":"Update \"mental transformation\" to \"emotional transformation\" on Mistiq page","author":"Rahul"}]
+  "pushedAt": "2026-03-13 05:27:24+00",
+  "commits": [{"sha":"cbc4e8321","message":"Change \"Shamanic Breath\" to \"Thermal Breath\" across Mistiq English pages","author":"Rahul"}]
 }
