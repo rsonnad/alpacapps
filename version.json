@@ -1,12 +1,12 @@
 {
-  "version": "v260313.51 4:22p",
-  "release": 725,
-  "sha": "9f63287f0",
-  "fullSha": "9f63287f00108a4a339d491d62803e9cdf785aad",
+  "version": "v260313.53 4:29p",
+  "release": 727,
+  "sha": "1cf02802d",
+  "fullSha": "1cf02802d10d01cb0a5afcbe3265fb9baf079f05",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 21:22:57+00",
-  "commits": [{"sha":"9f63287f0","message":"Increase title text 20%: Mistiq Journey 52→62px, Elements of the Journey 42→50px","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 21:29:19+00",
+  "commits": [{"sha":"1cf02802d","message":"Redesign promo/QR layout + switch body text to Playfair Display","author":"Rahul"}]
 }
