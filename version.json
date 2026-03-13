@@ -1,12 +1,12 @@
 {
-  "version": "v260313.05 12:37a",
-  "release": 679,
-  "sha": "13bd08215",
-  "fullSha": "13bd08215720342fade0e1bbf61915c0a99e6df5",
+  "version": "v260313.06 12:40a",
+  "release": 680,
+  "sha": "9169f119a",
+  "fullSha": "9169f119a850e2fb8ef6cac7a1a0ec63dac71ca9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:37:51+00",
-  "commits": [{"sha":"13bd08215","message":"Fix testimonials and Phase 2 duration on Mistiq page","author":"Rahul"}]
+  "pushedAt": "2026-03-13 05:40:27+00",
+  "commits": [{"sha":"9169f119a","message":"Reduce Darsy video testimonial to 40% size (256px max-width)","author":"Rahul"}]
 }
