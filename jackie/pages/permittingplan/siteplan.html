@@ -62,6 +62,23 @@
   .badge-ok { background: #38a16922; color: #68d391; border: 1px solid #38a16944; }
   .badge-na { background: #4299e122; color: #90cdf4; border: 1px solid #4299e144; }
   .setback-table .na-row td { color: #90cdf4; }
+  .edit-input {
+    background: #1c1618; border: 1px solid #3a2a2e; color: inherit;
+    border-radius: 4px; padding: 4px 6px; font-family: inherit; font-size: 0.8rem;
+    transition: border-color 0.2s;
+  }
+  .edit-input:focus { border-color: #d4883a; outline: none; }
+  .edit-name { width: 100%; }
+  .edit-dist { width: 70px; text-align: center; }
+  .edit-side { width: 80px; cursor: pointer; }
+  .del-btn {
+    background: none; border: none; color: #e53e3e88; font-size: 1.1rem;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: color 0.2s, background 0.2s;
+  }
+  .del-btn:hover { color: #e53e3e; background: #e53e3e22; }
+  #add-structure-btn:hover { background: #e09a4a; }
+  #reset-btn:hover { background: #4a3a3e; color: #d0c0b0; }
+  @media print { .edit-input { border: none; background: transparent; padding: 0; } .del-btn, #add-structure-btn, #reset-btn, #score-bar { display: none !important; } }
   .notes {
     max-width: 1200px; margin: 16px auto 0; background: #2a2224;
     border-radius: 8px; padding: 16px 20px; font-size: 0.82rem;
@@ -104,11 +121,11 @@
   <img src="survey-ward-2025.png" alt="Land Title Survey — Lot 14-B, Block 6, Blue Bonnet Acres — 160 Still Forest Dr, Cedar Creek TX — 4Ward Land Surveying"/>
 </div>
 
-<!-- SETBACK COMPLIANCE TABLE -->
+<!-- SETBACK COMPLIANCE TABLE — EDITABLE -->
 <div class="setback-summary">
-  <h2>Setback Compliance Summary</h2>
+  <h2>Setback Compliance Checker</h2>
   <p style="font-size:0.8rem; color:#f6ad55; margin-bottom:8px; font-weight:600;">
-    ONE ROAD FRONTAGE: South (Still Forest Dr / CR 329 — Local Rural Road). West boundary adjoins neighboring property.
+    Edit distances below to check compliance. ONE ROAD FRONTAGE: South (Still Forest Dr / CR 329 — Local Rural Road). West boundary adjoins neighboring property.
   </p>
   <p style="font-size:0.75rem; color:#a09080; margin-bottom:10px;">
     <strong>Bastrop County Subdivision Regulations</strong> — setback by road classification:<br>
@@ -119,97 +136,227 @@
     <em>South side uses 20' (Local Rural Road). West/north/east sides use 10' (property line, per County Development Services). East side also has 10' P.U.E.</em><br>
     All distances from the survey plat by 4Ward Land Surveying (2/4/2021).
   </p>
-  <table class="setback-table">
+
+  <!-- Score bar -->
+  <div id="score-bar" style="margin-bottom:14px; padding:10px 14px; border-radius:8px; background:#2e2226; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+    <div style="font-size:0.85rem; font-weight:600; color:#d4883a;">Compliance Score:</div>
+    <div style="flex:1; min-width:120px; height:10px; background:#3a2a2e; border-radius:5px; overflow:hidden;">
+      <div id="score-fill" style="height:100%; width:0%; border-radius:5px; transition:width 0.4s, background 0.4s;"></div>
+    </div>
+    <div id="score-text" style="font-size:0.82rem; font-weight:600; color:#a09080;"></div>
+  </div>
+
+  <table class="setback-table" id="structure-table">
     <thead>
       <tr>
-        <th>Structure</th>
-        <th>Distance from Property Line</th>
-        <th>Required</th>
-        <th>Deficit</th>
-        <th>Status</th>
+        <th style="width:25%;">Structure</th>
+        <th style="width:10%;">Distance (ft)</th>
+        <th style="width:12%;">Side</th>
+        <th style="width:12%;">Required (ft)</th>
+        <th style="width:12%;">Deficit</th>
+        <th style="width:12%;">Status</th>
+        <th style="width:5%;"></th>
       </tr>
     </thead>
-    <tbody>
-      <tr class="violation-row">
-        <td><strong>Big Trailer</strong> (10'×42') — RV/Lodging Unit</td>
-        <td>1' from W property line</td>
-        <td>10' (property line)</td>
-        <td>9' short</td>
-        <td><span class="badge badge-violation">VIOLATION</span></td>
-      </tr>
-      <tr class="violation-row">
-        <td><strong>Red Container</strong> (40'×8' = 320 SF) — permanent structure</td>
-        <td>~2' from W property line</td>
-        <td>10' (property line)</td>
-        <td>~8' short</td>
-        <td><span class="badge badge-violation">VIOLATION</span></td>
-      </tr>
-      <tr class="violation-row">
-        <td><strong>Red Container</strong> (40'×8' = 320 SF) — permanent structure</td>
-        <td>~2' from W property line</td>
-        <td>10' (property line)</td>
-        <td>~8' short</td>
-        <td><span class="badge badge-violation">VIOLATION</span></td>
-      </tr>
-      <tr class="violation-row">
-        <td><strong>Container</strong> (40'×8' = 320 SF) — permanent structure</td>
-        <td>5' from W property line</td>
-        <td>10' (property line)</td>
-        <td>5' short</td>
-        <td><span class="badge badge-violation">VIOLATION</span></td>
-      </tr>
-      <tr class="ok-row">
-        <td><strong>Deck</strong> (attached to main house)</td>
-        <td>13'5" from W property line</td>
-        <td>10' (property line)</td>
-        <td>—</td>
-        <td><span class="badge badge-ok">OK (+3'5")</span></td>
-      </tr>
-      <tr class="violation-row">
-        <td><strong>Beige Container</strong> (40'×8' = 320 SF) — permanent structure</td>
-        <td>6' from south (Still Forest Dr)</td>
-        <td>20' (Local Rural Road)</td>
-        <td>14' short</td>
-        <td><span class="badge badge-violation">CRITICAL</span></td>
-      </tr>
-      <tr class="na-row">
-        <td><strong>Bathroom Bldg</strong> (service building, under construction)</td>
-        <td>~10' from east property line</td>
-        <td>10' (property line)</td>
-        <td>—</td>
-        <td><span class="badge badge-violation">NO PERMIT</span></td>
-      </tr>
-      <tr class="violation-row">
-        <td><strong>Small Trailer</strong> (7'5"×20'5") — RV/Lodging Unit</td>
-        <td>~7' from east property line</td>
-        <td>10' (property line)</td>
-        <td>~3' short</td>
-        <td><span class="badge badge-violation">VIOLATION</span></td>
-      </tr>
-      <tr class="ok-row">
-        <td><strong>Sauna</strong></td>
-        <td>30' from W property line</td>
-        <td>10' (property line)</td>
-        <td>—</td>
-        <td><span class="badge badge-ok">OK (+20')</span></td>
-      </tr>
-      <tr class="ok-row">
-        <td><strong>1-Story Wood Bldg</strong></td>
-        <td>~30' from north property line</td>
-        <td>10' (property line)</td>
-        <td>—</td>
-        <td><span class="badge badge-ok">OK (+20')</span></td>
-      </tr>
-      <tr class="ok-row">
-        <td><strong>Main House</strong></td>
-        <td>Well within all setbacks</td>
-        <td>All setbacks</td>
-        <td>—</td>
-        <td><span class="badge badge-ok">OK</span></td>
-      </tr>
-    </tbody>
+    <tbody id="structure-tbody"></tbody>
   </table>
+
+  <button id="add-structure-btn" style="margin-top:10px; padding:8px 16px; background:#d4883a; color:#1c1618; border:none; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer; font-family:inherit;">+ Add Structure</button>
+  <button id="reset-btn" style="margin-top:10px; margin-left:8px; padding:8px 16px; background:#3a2a2e; color:#a09080; border:1px solid #4a3a3e; border-radius:6px; font-size:0.82rem; font-weight:500; cursor:pointer; font-family:inherit;">Reset to Original</button>
 </div>
+
+<script>
+(function() {
+  // Setback rules: side → required distance in feet
+  const SETBACK_RULES = {
+    'W':  { required: 10, label: 'property line' },
+    'E':  { required: 10, label: 'property line + P.U.E.' },
+    'N':  { required: 10, label: 'property line' },
+    'S':  { required: 20, label: 'Local Rural Road' }
+  };
+
+  const SIDE_LABELS = { W: 'West', E: 'East', N: 'North', S: 'South' };
+
+  // Original structures data
+  const ORIGINAL_STRUCTURES = [
+    { name: 'Big Trailer (10\'×42\') — RV/Lodging', distance: 1, side: 'W', noPermit: false },
+    { name: 'Red Container #1 (40\'×8\' = 320 SF)', distance: 2, side: 'W', noPermit: false },
+    { name: 'Red Container #2 (40\'×8\' = 320 SF)', distance: 2, side: 'W', noPermit: false },
+    { name: 'Container #3 (40\'×8\' = 320 SF)', distance: 5, side: 'W', noPermit: false },
+    { name: 'Deck (attached to main house)', distance: 13.4, side: 'W', noPermit: false },
+    { name: 'Beige Container (40\'×8\' = 320 SF)', distance: 6, side: 'S', noPermit: false },
+    { name: 'Bathroom Bldg (service building)', distance: 10, side: 'E', noPermit: true },
+    { name: 'Small Trailer (7\'5\"×20\'5\") — RV', distance: 7, side: 'E', noPermit: false },
+    { name: 'Sauna', distance: 30, side: 'W', noPermit: false },
+    { name: '1-Story Wood Bldg', distance: 30, side: 'N', noPermit: false },
+    { name: 'Main House', distance: 50, side: 'S', noPermit: false }
+  ];
+
+  let structures = JSON.parse(JSON.stringify(ORIGINAL_STRUCTURES));
+
+  // Try to load saved data
+  try {
+    const saved = localStorage.getItem('siteplan_structures');
+    if (saved) structures = JSON.parse(saved);
+  } catch(e) {}
+
+  function save() {
+    try { localStorage.setItem('siteplan_structures', JSON.stringify(structures)); } catch(e) {}
+  }
+
+  function evaluate(distance, side) {
+    const rule = SETBACK_RULES[side];
+    if (!rule) return { status: 'unknown', deficit: 0, required: 0 };
+    const deficit = rule.required - distance;
+    return {
+      status: deficit > 0 ? 'violation' : 'ok',
+      deficit: deficit,
+      required: rule.required,
+      label: rule.label
+    };
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('structure-tbody');
+    tbody.innerHTML = '';
+    let okCount = 0, totalCount = structures.length;
+
+    structures.forEach(function(s, i) {
+      const result = evaluate(s.distance, s.side);
+      const isViolation = result.status === 'violation';
+      const isCritical = result.deficit >= 10;
+      if (!isViolation && !s.noPermit) okCount++;
+
+      const tr = document.createElement('tr');
+      tr.className = s.noPermit ? 'na-row' : (isViolation ? 'violation-row' : 'ok-row');
+
+      // Name cell — editable
+      const tdName = document.createElement('td');
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = s.name;
+      nameInput.className = 'edit-input edit-name';
+      nameInput.setAttribute('data-index', i);
+      nameInput.addEventListener('change', function() {
+        structures[i].name = this.value;
+        save();
+      });
+      tdName.appendChild(nameInput);
+      tr.appendChild(tdName);
+
+      // Distance cell — editable
+      const tdDist = document.createElement('td');
+      const distInput = document.createElement('input');
+      distInput.type = 'number';
+      distInput.value = s.distance;
+      distInput.min = '0';
+      distInput.step = '0.5';
+      distInput.className = 'edit-input edit-dist';
+      distInput.setAttribute('data-index', i);
+      distInput.addEventListener('input', function() {
+        structures[i].distance = parseFloat(this.value) || 0;
+        save();
+        renderTable();
+      });
+      tdDist.appendChild(distInput);
+      tr.appendChild(tdDist);
+
+      // Side selector
+      const tdSide = document.createElement('td');
+      const sideSelect = document.createElement('select');
+      sideSelect.className = 'edit-input edit-side';
+      ['W','E','N','S'].forEach(function(dir) {
+        const opt = document.createElement('option');
+        opt.value = dir;
+        opt.textContent = SIDE_LABELS[dir];
+        if (dir === s.side) opt.selected = true;
+        sideSelect.appendChild(opt);
+      });
+      sideSelect.addEventListener('change', function() {
+        structures[i].side = this.value;
+        save();
+        renderTable();
+      });
+      tdSide.appendChild(sideSelect);
+      tr.appendChild(tdSide);
+
+      // Required
+      const tdReq = document.createElement('td');
+      tdReq.innerHTML = result.required + '\' <span style="font-size:0.7rem;color:#807060;">(' + result.label + ')</span>';
+      tr.appendChild(tdReq);
+
+      // Deficit
+      const tdDef = document.createElement('td');
+      if (isViolation) {
+        tdDef.innerHTML = '<strong>' + result.deficit.toFixed(1).replace(/\.0$/, '') + '\' short</strong>';
+      } else {
+        tdDef.textContent = '—';
+      }
+      tr.appendChild(tdDef);
+
+      // Status badge
+      const tdStatus = document.createElement('td');
+      if (s.noPermit) {
+        tdStatus.innerHTML = '<span class="badge badge-violation">NO PERMIT</span>';
+      } else if (isViolation && isCritical) {
+        tdStatus.innerHTML = '<span class="badge badge-violation">CRITICAL</span>';
+      } else if (isViolation) {
+        tdStatus.innerHTML = '<span class="badge badge-violation">VIOLATION</span>';
+      } else {
+        const surplus = Math.abs(result.deficit).toFixed(1).replace(/\.0$/, '');
+        tdStatus.innerHTML = '<span class="badge badge-ok">OK (+' + surplus + '\')</span>';
+      }
+      tr.appendChild(tdStatus);
+
+      // Delete button
+      const tdDel = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '×';
+      delBtn.className = 'del-btn';
+      delBtn.title = 'Remove structure';
+      delBtn.addEventListener('click', function() {
+        structures.splice(i, 1);
+        save();
+        renderTable();
+      });
+      tdDel.appendChild(delBtn);
+      tr.appendChild(tdDel);
+
+      tbody.appendChild(tr);
+    });
+
+    // Update score bar
+    const pct = totalCount > 0 ? Math.round((okCount / totalCount) * 100) : 0;
+    const fill = document.getElementById('score-fill');
+    const text = document.getElementById('score-text');
+    fill.style.width = pct + '%';
+    fill.style.background = pct === 100 ? '#38a169' : pct >= 60 ? '#d4883a' : '#e53e3e';
+    text.textContent = okCount + ' / ' + totalCount + ' compliant (' + pct + '%)';
+    text.style.color = pct === 100 ? '#68d391' : pct >= 60 ? '#d4883a' : '#fc8181';
+  }
+
+  // Add structure
+  document.getElementById('add-structure-btn').addEventListener('click', function() {
+    structures.push({ name: 'New Structure', distance: 0, side: 'W', noPermit: false });
+    save();
+    renderTable();
+    // Focus the new name input
+    var inputs = document.querySelectorAll('.edit-name');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+
+  // Reset
+  document.getElementById('reset-btn').addEventListener('click', function() {
+    if (confirm('Reset all structures to original measurements?')) {
+      structures = JSON.parse(JSON.stringify(ORIGINAL_STRUCTURES));
+      save();
+      renderTable();
+    }
+  });
+
+  renderTable();
+})();
+</script>
 
 <!-- LEGEND -->
 <div class="legend">
