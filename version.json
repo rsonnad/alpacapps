@@ -1,12 +1,12 @@
 {
-  "version": "v260313.02 12:27a",
-  "release": 676,
-  "sha": "cbc4e8321",
-  "fullSha": "cbc4e8321411ea743584b43bd4d5c1bc4839749d",
+  "version": "v260313.03 12:29a",
+  "release": 677,
+  "sha": "e560f24bb",
+  "fullSha": "e560f24bb6849da7db385ad783e05f9165dfbe5d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:27:24+00",
-  "commits": [{"sha":"cbc4e8321","message":"Change \"Shamanic Breath\" to \"Thermal Breath\" across Mistiq English pages","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 05:29:36+00",
+  "commits": [{"sha":"e560f24bb","message":"Update Mistiq testimonials with full-length reviews","author":"Rahul"}]
 }
