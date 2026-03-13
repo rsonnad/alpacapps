@@ -332,7 +332,7 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A6','B1','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A6','B1','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
@@ -348,6 +348,10 @@
       if (taskCode === 'A6') {
         html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
         html += `<a href="development-description.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
+      }
+      // A2 & A3: link to Bastrop County GIS Viewer
+      if (taskCode === 'A2' || taskCode === 'A3') {
+        html += `<a href="https://maps.co.bastrop.tx.us/Public_GIS_Viewer/" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Bastrop County GIS Viewer</a>`;
       }
       // B1: add direct link to filled application PDF
       if (taskCode === 'B1') {
