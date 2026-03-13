@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /login/
-Disallow: /kiosk/
+Disallow: /kioskhall/
 Disallow: /mobile/
 Disallow: /spaces/admin/
 Disallow: /mistiq/
