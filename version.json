@@ -1,12 +1,12 @@
 {
-  "version": "v260313.35 2:11p",
-  "release": 709,
-  "sha": "efd1dc0d2",
-  "fullSha": "efd1dc0d2b3cebbe5eb6b1335aabb779d230ebda",
+  "version": "v260313.36 2:19p",
+  "release": 710,
+  "sha": "7a7ddf904",
+  "fullSha": "7a7ddf904c606ff8a8aa06253647955d1cb4cc0d",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 19:11:46+00",
-  "commits": [{"sha":"efd1dc0d2","message":"Add container permanent structure classification and regulations","author":"Jacqueline Giroux"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-13 19:19:13+00",
+  "commits": [{"sha":"7a7ddf904","message":"Add Priority List link under A8 and A9 task cards","author":"Jacqueline Giroux"}]
 }
