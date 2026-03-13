@@ -1,12 +1,12 @@
 {
-  "version": "v260312.22 6:41p",
-  "release": 669,
-  "sha": "287ea7a03",
-  "fullSha": "287ea7a03f6ad479f46166600c9afecd4eab302f",
+  "version": "v260312.23 9:23p",
+  "release": 670,
+  "sha": "904044d7b",
+  "fullSha": "904044d7b0cd03df5428ac36738daaf52a607bab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-12 23:41:42+00",
-  "commits": [{"sha":"287ea7a03","message":"Redesign events UI to match UniFi Protect layout (#30)","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 02:23:04+00",
+  "commits": [{"sha":"904044d7b","message":"Make event preview 2x bigger, centered, with divider (#31)","author":"Rahul"}]
 }
