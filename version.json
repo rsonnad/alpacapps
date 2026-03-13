@@ -1,12 +1,12 @@
 {
-  "version": "v260313.46 4:02p",
-  "release": 720,
-  "sha": "1c823a244",
-  "fullSha": "1c823a2441e6cb03e448717817d71c109ba020c1",
+  "version": "v260313.47 4:09p",
+  "release": 721,
+  "sha": "ce869510d",
+  "fullSha": "ce869510d33f3266e8520bfe6d64bde73f7b515a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-13 21:02:27+00",
-  "commits": [{"sha":"1c823a244","message":"Link \"hand signals\" text to handsignals.html in Treatment Overview","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-13 21:09:13+00",
+  "commits": [{"sha":"45cc531c8","message":"Update business card to GotPrint print specs","author":"Rahul"},{"sha":"a8c41898c","message":"Add phone number to business card","author":"Rahul"},{"sha":"2e81d0f7b","message":"Switch business card hero to windingdown.jpg","author":"Rahul"},{"sha":"1799563a9","message":"Mistique Journey business card: QR beside promo box, card-style back grid","author":"Rahul"},{"sha":"be291c109","message":"Mistiq business card: rebrand, design tweaks, 1200 DPI print files","author":"Rahul"},{"sha":"5ae2d9826","message":"Mistiq card: smaller QR, uniform contact text font/size","author":"Rahul"},{"sha":"2b2d18074","message":"Mistiq card: show alpaca legs, add spacing above address block","author":"Rahul"},{"sha":"f499f8537","message":"Mistiq card: @ prefix, smaller directions, code label, image positioning","author":"Rahul"},{"sha":"2b204329a","message":"Mistiq card: bottom images show full scene, bolder back text, sans-serif titles","author":"Rahul"},{"sha":"98f3be90f","message":"Mistiq card: back alpaca image shows heads+legs, feet cropped","author":"Rahul"},{"sha":"2fb6ea3fe","message":"Mistiq card: back alpaca image closer to grid, shifted up","author":"Rahul"},{"sha":"395ecc646","message":"Fix bottom images: taller (300px) with center positioning for visible subjects","author":"Rahul"},{"sha":"ce869510d","message":"Regenerate 1200 DPI CMYK print files with updated bottom images","author":"Rahul"}]
 }
