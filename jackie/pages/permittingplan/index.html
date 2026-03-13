@@ -169,6 +169,18 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Site Plan #2
         </a>
+        <a href="development-description.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Development Description
+        </a>
+        <a href="development-description.pdf" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#1c1618; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </a>
+        <a href="bastrop-county-application-filled.pdf" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#1c1618; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          County Application
+        </a>
         <a href="document-review.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#16a34a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
           Review Documents
@@ -186,7 +198,7 @@
 
   <div id="taskModalContainer"></div>
 
-  <span data-site-version style="display:none">v260313.20 12:58p</span>
+  <span data-site-version style="display:none">v260313.10 11:37a</span>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -203,7 +215,7 @@
       'dpmoden8888@gmail.com',
     ];
 
-    const PHASE_LABELS = { A: 'Phase A: Pre-Development Meeting', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Physical Infrastructure' };
+    const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection' };
     const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
     const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
 
@@ -290,7 +302,7 @@
         <div class="permit-stat"><div class="label">Pending</div><div class="value pending">${pending}</div></div>
         <div class="permit-stat"><div class="label">In Progress</div><div class="value" style="color:#b45309">${inProg}</div></div>
         <div class="permit-stat"><div class="label">Blocked</div><div class="value blocked">${blocked}</div></div>
-        <div class="permit-stat" style="cursor:pointer" onclick="window.open('cost-estimate-breakdown.pdf','_blank')" title="Click for detailed breakdown"><div class="label">Est. Cost</div><div class="value" style="text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px">$${est.toLocaleString()}</div></div>`;
+        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value">$${est.toLocaleString()}</div></div>`;
     }
 
     function renderPhases() {
@@ -320,7 +332,7 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A6','B1','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A6','B1','B16'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
@@ -341,10 +353,6 @@
       if (taskCode === 'B1') {
         html += `<a href="bastrop-county-application-filled.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download Application PDF</a>`;
       }
-      // A2 & A3: link to Bastrop County GIS Viewer
-      if (taskCode === 'A2' || taskCode === 'A3') {
-        html += `<a href="https://maps.co.bastrop.tx.us/Public_GIS_Viewer/" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Bastrop County GIS Viewer</a>`;
-      }
       // B16: add direct links to local operator information files
       if (taskCode === 'B16') {
         html += `<a href="operator-information.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
@@ -358,7 +366,7 @@
       const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
       const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
       el.innerHTML = `<div class="cost-summary">
-        <div class="cost-item" style="cursor:pointer" onclick="window.open('cost-estimate-breakdown.pdf','_blank')" title="Click for detailed breakdown"><span class="cost-label">Estimated Total:</span><span class="cost-value" style="text-decoration:underline;text-decoration-color:var(--accent)">$${est.toLocaleString()}</span></div>
+        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value">$${est.toLocaleString()}</span></div>
         <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
       </div>`;
     }
