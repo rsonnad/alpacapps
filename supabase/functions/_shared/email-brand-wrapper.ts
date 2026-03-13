@@ -16,7 +16,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 // In-memory cache for brand config + gallery images
 let _brandCache: { config: any; fetchedAt: number } | null = null;
-let _galleryCache: { images: string[]; fetchedAt: number } | null = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
 
 // Hardcoded fallback (matches DB seed)
@@ -91,20 +90,16 @@ async function loadBrandConfig(): Promise<any> {
 }
 
 /**
- * Load 1 latest alpaca image for email footer (cached).
+ * Load 1 random alpaca image for email footer (no cache — pick fresh each call).
  * Prefers images tagged "email footer"; falls back to any mktg image.
  */
 async function loadGalleryImages(): Promise<string[]> {
-  if (_galleryCache && Date.now() - _galleryCache.fetchedAt < CACHE_TTL) {
-    return _galleryCache.images;
-  }
-
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // First: try to find the most recent image tagged "email footer"
+    // First: try images tagged "email footer"
     const { data: tagRow } = await sb
       .from("media_tags")
       .select("id")
@@ -117,39 +112,34 @@ async function loadGalleryImages(): Promise<string[]> {
         .from("media_tag_assignments")
         .select("media:media_id(url, uploaded_at, is_archived)")
         .eq("tag_id", tagRow.id)
-        .limit(10);
+        .limit(50);
 
-      const match = taggedMedia
+      const candidates = taggedMedia
         ?.map((r: any) => r.media)
-        .filter((m: any) => m?.url && !m.is_archived)
-        .sort((a: any, b: any) => (b.uploaded_at || '').localeCompare(a.uploaded_at || ''))
-        ?.[0];
+        .filter((m: any) => m?.url && !m.is_archived) ?? [];
 
-      if (match?.url) {
-        _galleryCache = { images: [match.url], fetchedAt: Date.now() };
-        return [match.url];
+      if (candidates.length > 0) {
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        return [pick.url];
       }
     }
 
-    // Fallback: most recent mktg category image
+    // Fallback: random mktg category image
     const { data, error } = await sb
       .from("media")
       .select("url")
       .eq("category", "mktg")
       .eq("is_archived", false)
-      .order("uploaded_at", { ascending: false })
-      .limit(1);
+      .limit(50);
 
     if (data && !error && data.length > 0) {
-      const urls = [data[0].url];
-      _galleryCache = { images: urls, fetchedAt: Date.now() };
-      return urls;
+      const pick = data[Math.floor(Math.random() * data.length)];
+      return [pick.url];
     }
   } catch (e) {
     console.warn("Failed to load gallery images:", e);
   }
 
-  _galleryCache = { images: [], fetchedAt: Date.now() };
   return [];
 }
 
