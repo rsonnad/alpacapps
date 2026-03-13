@@ -20,11 +20,6 @@
     <clipPath id="heroClip">
       <rect x="0" y="0" width="787.5" height="437.5"/>
     </clipPath>
-    <clipPath id="img1clip"><rect x="97.5"  y="580" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img2clip"><rect x="225.5" y="580" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img3clip"><rect x="353.5" y="580" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img4clip"><rect x="481.5" y="580" width="118" height="88" rx="4"/></clipPath>
-    <clipPath id="img5clip"><rect x="609.5" y="580" width="118" height="88" rx="4"/></clipPath>
   </defs>
 
   <!-- Full bleed background -->
@@ -55,73 +50,42 @@
   <!-- Divider -->
   <line x1="353.75" y1="548" x2="433.75" y2="548" stroke="#c4a77d" stroke-width="1"/>
 
-  <!-- Small image strip: 5 images -->
-  <g clip-path="url(#img1clip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg"
-           x="97.5" y="570" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
-  </g>
-  <rect x="97.5" y="580" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
-
-  <g clip-path="url(#img2clip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg"
-           x="225.5" y="570" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
-  </g>
-  <rect x="225.5" y="580" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
-
-  <g clip-path="url(#img3clip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg"
-           x="353.5" y="570" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
-  </g>
-  <rect x="353.5" y="580" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
-
-  <g clip-path="url(#img4clip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg"
-           x="481.5" y="570" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
-  </g>
-  <rect x="481.5" y="580" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
-
-  <g clip-path="url(#img5clip)">
-    <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg"
-           x="609.5" y="570" width="118" height="100" preserveAspectRatio="xMidYMid slice"/>
-  </g>
-  <rect x="609.5" y="580" width="118" height="88" rx="4" fill="none" stroke="#e6e2d9" stroke-width="0.5"/>
-
   <!-- Contact info -->
-  <text x="393.75" y="706" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="596" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="18" font-weight="400" fill="#2a1f23">Rahul Lio</text>
 
-  <text x="393.75" y="732" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="622" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="20" font-weight="600" fill="#8b7355">@ the Alpaca Playhouse Austin</text>
 
-  <text x="393.75" y="756" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="646" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="13" fill="#7d6f74" letter-spacing="0.5">alpacaplayhouse.com/mistiq</text>
 
-  <text x="393.75" y="776" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="666" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="13" fill="#7d6f74" letter-spacing="0.5">pai@alpacaplayhouse.com</text>
 
-  <text x="393.75" y="796" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="686" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="13" fill="#7d6f74" letter-spacing="0.5">TEXT: # (737) 747-4737</text>
 
   <!-- QR Code + Promo Code (side by side) -->
   <!-- QR on the left -->
-  <g transform="translate(120, 898) scale(2.273)">
+  <g transform="translate(120, 788) scale(2.273)">
     <path stroke="#2a1f23" fill="none" d="M0 0.5h7m3 0h1m3 0h2m1 0h5m1 0h2m1 0h7m-33 1h1m5 0h1m2 0h2m1 0h2m1 0h4m1 0h1m2 0h1m2 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m2 0h2m1 0h3m2 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h2m2 0h1m2 0h3m3 0h3m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m2 0h3m1 0h2m1 0h2m1 0h1m1 0h1m4 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m4 0h5m5 0h2m-23 1h2m2 0h4m1 0h2m3 0h2m1 0h3m3 0h2m1 0h1m-29 1h4m3 0h2m1 0h2m4 0h1m1 0h1m1 0h1m2 0h4m5 0h1m-32 1h2m2 0h5m1 0h1m2 0h2m2 0h2m3 0h2m1 0h1m4 0h2m-31 1h4m2 0h4m2 0h3m1 0h1m1 0h1m3 0h1m2 0h3m-30 1h4m2 0h1m1 0h1m1 0h2m1 0h1m1 0h2m5 0h1m2 0h1m1 0h2m-29 1h5m3 0h5m3 0h3m1 0h3m1 0h1m2 0h1m2 0h1m-29 1h1m1 0h1m1 0h1m2 0h1m3 0h1m1 0h1m2 0h1m2 0h1m2 0h1m2 0h3m-29 1h4m2 0h1m2 0h2m1 0h1m4 0h5m1 0h2m2 0h1m1 0h1m1 0h1m-33 1h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h4m2 0h3m1 0h8m1 0h1m-33 1h2m1 0h1m4 0h1m1 0h3m2 0h2m4 0h3m2 0h3m1 0h3m-33 1h2m1 0h1m1 0h2m2 0h3m4 0h7m3 0h1m1 0h1m1 0h2m-32 1h2m6 0h1m2 0h1m1 0h2m2 0h1m2 0h1m4 0h4m2 0h1m-32 1h1m1 0h1m1 0h3m1 0h1m1 0h1m3 0h2m5 0h1m2 0h1m4 0h2m1 0h1m-33 1h1m2 0h2m3 0h1m1 0h1m1 0h1m1 0h1m6 0h1m1 0h1m1 0h2m2 0h1m1 0h2m-30 1h1m1 0h4m7 0h1m3 0h2m1 0h2m1 0h1m2 0h1m1 0h2m-32 1h5m2 0h1m1 0h3m1 0h4m1 0h2m2 0h1m1 0h1m2 0h2m-30 1h1m5 0h3m1 0h1m2 0h2m1 0h2m1 0h2m1 0h1m1 0h6m-22 1h1m1 0h1m1 0h4m1 0h1m2 0h1m2 0h2m3 0h3m-31 1h7m1 0h3m2 0h1m1 0h2m2 0h1m2 0h3m1 0h1m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h2m1 0h1m1 0h9m3 0h5m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m2 0h1m2 0h9m-32 1h1m1 0h3m1 0h1m1 0h3m1 0h5m1 0h1m3 0h3m2 0h1m1 0h4m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h1m1 0h1m4 0h1m1 0h3m2 0h1m-30 1h1m5 0h1m2 0h1m1 0h3m3 0h1m5 0h2m1 0h1m5 0h1m-33 1h7m2 0h2m1 0h1m1 0h1m1 0h1m4 0h1m1 0h1m2 0h3m1 0h1"/>
   </g>
 
   <!-- Promo code box (right of QR) -->
-  <rect x="210" y="900" width="460" height="80" rx="8" fill="none" stroke="#c4a77d"
+  <rect x="210" y="790" width="460" height="80" rx="8" fill="none" stroke="#c4a77d"
         stroke-width="2" stroke-dasharray="8,4"/>
 
-  <text x="440" y="930" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="440" y="820" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="11" fill="#8b7355" letter-spacing="2">YOUR PROMO CODE</text>
 
   <!-- Write-in line -->
-  <line x1="270" y1="960" x2="610" y2="960" stroke="#c4a77d" stroke-width="1"/>
+  <line x1="270" y1="850" x2="610" y2="850" stroke="#c4a77d" stroke-width="1"/>
 
   <!-- Bottom section -->
-  <line x1="343.75" y1="1016" x2="443.75" y2="1016" stroke="#c4a77d" stroke-width="0.5"/>
+  <line x1="343.75" y1="906" x2="443.75" y2="906" stroke="#c4a77d" stroke-width="0.5"/>
 
-  <text x="393.75" y="1050" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="940" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="13" fill="#7d6f74">Solo Journey $395  ·  Duo Journey $495</text>
 
   <!-- ==================== TRIM MARKS ==================== -->

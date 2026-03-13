@@ -5,25 +5,25 @@
     Final trim size:  2.5" x 4"    = 750 x 1200 px  @ 300 DPI
     Bleed size:       2.625" x 4.125" = 787.5 x 1237.5 px @ 300 DPI
     Bleed zone:       0.125" = 37.5 px on each side
-    Safe zone:        ~0.25" = ~75 px from trim edge
+    Safe zone:        ~0.25" = ~75 px from trim edge (~112.5 px from bleed edge)
+    Grid:             3 cols x 3 rows, 170px images, 182px card bgs, 8.25px gaps
+    Columns (card bg): 112.5, 302.75, 493  |  Images: 118.5, 308.75, 499
+    Text centers:      203.5, 393.75, 584
   -->
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&amp;family=Lato:wght@300;400;700&amp;display=swap');
     </style>
-    <!-- 9 image clips: 3x3 grid -->
-    <!-- Grid: 3 columns, each ~200px wide, 10px gaps, centered -->
-    <!-- Col starts: 97.5, 317.5, 537.5 (each 190px wide) -->
-    <!-- Row starts: row1=200, row2=460, row3=720 (each image 110px tall) -->
-    <clipPath id="g1"><rect x="97.5"  y="200" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g2"><rect x="297.5" y="200" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g3"><rect x="497.5" y="200" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g4"><rect x="97.5"  y="460" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g5"><rect x="297.5" y="460" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g6"><rect x="497.5" y="460" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g7"><rect x="97.5"  y="720" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g8"><rect x="297.5" y="720" width="190" height="110" rx="6"/></clipPath>
-    <clipPath id="g9"><rect x="497.5" y="720" width="190" height="110" rx="6"/></clipPath>
+    <!-- 9 image clips: 3x3 grid — 170px wide, 110px tall -->
+    <clipPath id="g1"><rect x="118.5"  y="200" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g2"><rect x="308.75" y="200" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g3"><rect x="499"    y="200" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g4"><rect x="118.5"  y="460" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g5"><rect x="308.75" y="460" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g6"><rect x="499"    y="460" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g7"><rect x="118.5"  y="720" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g8"><rect x="308.75" y="720" width="170" height="110" rx="6"/></clipPath>
+    <clipPath id="g9"><rect x="499"    y="720" width="170" height="110" rx="6"/></clipPath>
   </defs>
 
   <!-- Full bleed background -->
@@ -43,126 +43,126 @@
   <!-- ===== ROW 1 ===== -->
 
   <!-- Card backgrounds — Row 1 -->
-  <rect x="91.5"  y="194" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="291.5" y="194" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="491.5" y="194" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="112.5"  y="194" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="302.75" y="194" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="493"    y="194" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
 
   <!-- 1. Online Intake Survey -->
   <g clip-path="url(#g1)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Survey.jpg"
-           x="97.5" y="185" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="118.5" y="185" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="192.5" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="203.5" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Online Intake Survey</text>
-  <text x="192.5" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="203.5" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Personalized preparation</text>
-  <text x="192.5" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="203.5" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">for your journey</text>
 
   <!-- 2. Greeting & Meditations -->
   <g clip-path="url(#g2)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/greetings.jpg"
-           x="297.5" y="185" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="308.75" y="185" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="392.5" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Greeting &amp; Meditations</text>
-  <text x="392.5" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Centering practices to</text>
-  <text x="392.5" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">begin your journey</text>
 
   <!-- 3. Breathwork Meditation -->
   <g clip-path="url(#g3)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/breathwork.jpg"
-           x="497.5" y="185" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="499" y="185" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="592.5" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="584" y="330" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Breathwork Meditation</text>
-  <text x="592.5" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="584" y="346" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Guided breathing techniques</text>
-  <text x="592.5" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="584" y="358" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">for transformation</text>
 
   <!-- ===== ROW 2 ===== -->
 
   <!-- Card backgrounds — Row 2 -->
-  <rect x="91.5"  y="454" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="291.5" y="454" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="491.5" y="454" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="112.5"  y="454" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="302.75" y="454" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="493"    y="454" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
 
   <!-- 4. Assisted Yoga -->
   <g clip-path="url(#g4)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Thai_Yoga_Massage.jpg"
-           x="97.5" y="445" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="118.5" y="445" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="192.5" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="203.5" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Assisted Yoga</text>
-  <text x="192.5" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="203.5" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Gentle guidance through</text>
-  <text x="192.5" y="618" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="203.5" y="618" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">beneficial postures</text>
 
   <!-- 5. Traditional Thai Massage -->
   <g clip-path="url(#g5)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg"
-           x="297.5" y="445" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="308.75" y="445" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="392.5" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Traditional Thai Massage</text>
-  <text x="392.5" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Ancient healing techniques</text>
-  <text x="392.5" y="618" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="618" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">for releasing tension</text>
 
   <!-- 6. Sauna -->
   <g clip-path="url(#g6)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Sauna_Sit.jpg"
-           x="497.5" y="445" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="499" y="445" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="592.5" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="584" y="590" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Sauna</text>
-  <text x="592.5" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="584" y="606" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Detoxifying heat therapy</text>
 
   <!-- ===== ROW 3 ===== -->
 
   <!-- Card backgrounds — Row 3 -->
-  <rect x="91.5"  y="714" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="291.5" y="714" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
-  <rect x="491.5" y="714" width="202" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="112.5"  y="714" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="302.75" y="714" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
+  <rect x="493"    y="714" width="182" height="172" rx="8" fill="#fff" stroke="#e6e2d9" stroke-width="1"/>
 
   <!-- 7. Cold Plunge -->
   <g clip-path="url(#g7)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/Icebath.jpg"
-           x="97.5" y="705" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="118.5" y="705" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="192.5" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="203.5" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Cold Plunge</text>
-  <text x="192.5" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="203.5" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Invigorating cold immersion</text>
 
   <!-- 8. Oil Massage -->
   <g clip-path="url(#g8)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/oil_massage.jpg"
-           x="297.5" y="705" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="308.75" y="705" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="392.5" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="393.75" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Oil Massage</text>
-  <text x="392.5" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Relaxing bodywork with</text>
-  <text x="392.5" y="878" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="393.75" y="878" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">therapeutic oils</text>
 
   <!-- 9. Resting & Integration -->
   <g clip-path="url(#g9)">
     <image href="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/cross_legged_zen.jpg"
-           x="497.5" y="705" width="190" height="140" preserveAspectRatio="xMidYMid slice"/>
+           x="499" y="705" width="170" height="140" preserveAspectRatio="xMidYMid slice"/>
   </g>
-  <text x="592.5" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
+  <text x="584" y="850" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif"
         font-size="14" font-weight="600" fill="#2a1f23">Resting &amp; Integration</text>
-  <text x="592.5" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="584" y="866" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">Peaceful completion</text>
-  <text x="592.5" y="878" text-anchor="middle" font-family="'Lato', sans-serif"
+  <text x="584" y="878" text-anchor="middle" font-family="'Lato', sans-serif"
         font-size="9" fill="#7d6f74">of your journey</text>
 
   <!-- Bottom brand -->
