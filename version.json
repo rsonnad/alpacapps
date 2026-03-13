@@ -1,12 +1,12 @@
 {
-  "version": "v260313.31 2:01p",
-  "release": 705,
-  "sha": "ef182e430",
-  "fullSha": "ef182e43099b5026b67236e239fdedc2b0403f6f",
+  "version": "v260313.32 2:02p",
+  "release": 706,
+  "sha": "ae54712d5",
+  "fullSha": "ae54712d58f735c58a130da96558a6eceaaffa03",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 19:01:19+00",
-  "commits": [{"sha":"ef182e430","message":"Update site plan: one road frontage, correct setbacks per county subdivision regs","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-13 19:02:17+00",
+  "commits": [{"sha":"ae54712d5","message":"Add back arrow button to site plan page","author":"Jacqueline Giroux"}]
 }
