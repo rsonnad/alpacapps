@@ -160,6 +160,95 @@
         </div>
       </div>
 
+      <!-- Property Intelligence Panel (extracted from scanned documents) -->
+      <div id="propertyIntel" style="margin-bottom:1.25rem;">
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; background:var(--bg); border-bottom:1px solid var(--border); cursor:pointer; user-select:none;" onclick="document.getElementById('intelBody').style.display=document.getElementById('intelBody').style.display==='none'?'block':'none'; this.querySelector('.intel-chev').style.transform=document.getElementById('intelBody').style.display==='none'?'rotate(-90deg)':'rotate(0)'">
+            <svg class="intel-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
+            <h3 style="font-size:0.95rem; font-weight:700; margin:0; flex:1;">Property Intelligence <span style="font-size:0.7rem; font-weight:500; color:var(--text-muted); margin-left:0.5rem;">(from scanned documents)</span></h3>
+          </div>
+          <div id="intelBody" style="padding:1rem; display:block;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+
+              <!-- Ownership -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Ownership Chain</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Current:</strong> Revocable Trust of Subhash Sonnad<br>
+                  <span style="color:var(--text-muted);">Deed: Feb 2021, $470,400 (Correction Warranty w/ Vendor's Lien)</span><br>
+                  <strong>Previous:</strong> Nicole Shook / Nicole D. Reeves &amp; Shelton W. Reeves<br>
+                  <strong>Original builder:</strong> Patrick Jaehne (built house + septic ~2002)
+                </div>
+              </div>
+
+              <!-- Existing Septic System -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Existing Septic (OSSF #18725)</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>System:</strong> Jet J-500 aerobic, 300 GPD, spray irrigation<br>
+                  <strong>Tanks:</strong> J-500 treatment + 750 gal pump tank<br>
+                  <strong>Spray area:</strong> 5,024 sq ft, K-Rain propulsion sprinklers<br>
+                  <strong>Final inspection:</strong> Passed 6/20/2004, LTO issued<br>
+                  <span style="color:#991b1b; font-weight:600;">Maintenance contract expired Dec 2004</span>
+                </div>
+              </div>
+
+              <!-- Soil Profile -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Soil Profile</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>0-6":</strong> Class II — Sandy loam (unstructured)<br>
+                  <strong>6-20":</strong> Class I-a — Sandy gravel, 40% gravel<br>
+                  <strong>20-28":</strong> Class IV — Gravelly clay, 20% gravel<br>
+                  <strong>28"+:</strong> Class IV — Clay (mottled)<br>
+                  <span style="color:#991b1b; font-weight:600;">NOT suitable for conventional drainfield</span><br>
+                  <span style="color:var(--text-muted);">Axtell-Tabor complex, 1-8% slopes. Percs slowly.</span>
+                </div>
+              </div>
+
+              <!-- Appraisal History -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Appraisal History</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>2022 Market:</strong> $488,828 (Land: $100,625 + Improvements: $388,203)<br>
+                  <strong>2006 Assessed:</strong> $273,207 (Land: $17,500 + Improvements: $255,707)<br>
+                  <strong>PID:</strong> 44401 &nbsp; <strong>Lot:</strong> 14-B, Block 6, Bluebonnet Acres<br>
+                  <strong>Acreage:</strong> 1.7500 (1.725 per survey)
+                </div>
+              </div>
+
+              <!-- Key Contacts (from documents) -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Key Contacts (from original permits)</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Septic designer:</strong> Edgar Bolch, RS #2552 (Bryan, TX)<br>
+                  <strong>Installer:</strong> Everard Droemer, #4222 (Giddings, TX)<br>
+                  <strong>Maintenance:</strong> Lee County Ace Hardware (Giddings)<br>
+                  <strong>Inspector (final):</strong> Philip Murie #058696<br>
+                  <strong>Water:</strong> Aqua Water (public rural system)
+                </div>
+              </div>
+
+              <!-- Architectural Plans -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Existing Architectural Plans</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Project:</strong> Outdoor Bathroom &amp; Roof Terrace<br>
+                  <strong>Sheets:</strong> A-1 (Floor Plan), A-2 (Bath/Terrace), A-3 (Elevations)<br>
+                  <strong>Rooms:</strong> 2 toilets, shower, changing room, covered porch, storage, roof terrace<br>
+                  <strong>Status:</strong> "For Review" (02/04/2025)<br>
+                  <span style="color:var(--text-muted);">Construction photos show wood frame in progress</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:0.75rem; font-size:0.7rem; color:var(--text-muted); text-align:right;">
+              26 documents uploaded to Supabase storage — click any task to view linked documents
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
         <a href="siteplan.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
@@ -329,10 +418,16 @@
     }
 
     function renderDocLinks(paths, taskCode) {
-      let html = paths.map(p => {
-        const name = p.split('/').pop();
-        return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
-      }).join('');
+      const count = paths.length;
+      let html = count > 3
+        ? `<span style="font-size:0.7rem;color:var(--accent);font-weight:600;margin-right:0.5rem;">${count} docs</span>` + paths.slice(0,2).map(p => {
+            const name = prettyDocName(p);
+            return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
+          }).join('') + `<span style="font-size:0.7rem;color:var(--text-muted);">+${count-2} more</span>`
+        : paths.map(p => {
+            const name = prettyDocName(p);
+            return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
+          }).join('');
       // A6: add direct links to local development description files
       if (taskCode === 'A6') {
         html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
@@ -446,6 +541,11 @@
     };
 
     // ── Helpers ──
+    function prettyDocName(path) {
+      let name = path.split('/').pop().replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
+      if (name.length > 35) name = name.slice(0, 32) + '...';
+      return name;
+    }
     function esc(str) { return str ? str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
     function showToast(msg, type = 'success') {
       const el = document.createElement('div');
