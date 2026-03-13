@@ -100,6 +100,22 @@
           </div>
         </div>
 
+        <!-- Mistiq Codes -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div>
+              <h3>Mistiq Codes</h3>
+              <p>Promo codes for Mistique Journey bookings. Codes give a % or $ discount off the session price.</p>
+            </div>
+            <button class="btn-small btn-primary" id="addMistiqCodeBtn">+ Add Code</button>
+          </div>
+          <div class="settings-card-body">
+            <div id="mistiqCodesGrid" class="fee-codes-grid">
+              <!-- Mistiq codes loaded by JS -->
+            </div>
+          </div>
+        </div>
+
         <!-- Square Config -->
         <div class="settings-card">
           <div class="settings-card-header">
@@ -509,6 +525,59 @@
       <div class="modal-footer">
         <button class="btn-secondary" id="cancelFeeCodeBtn">Cancel</button>
         <button class="btn-primary" id="saveFeeCodeBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mistiq Code Modal -->
+  <div id="mistiqCodeModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="mistiqCodeModalTitle">Add Mistiq Code</h2>
+        <button class="modal-close" id="closeMistiqCodeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="mistiqCodeForm" onsubmit="return false;">
+          <input type="hidden" id="mistiqCodeId">
+          <div class="form-group">
+            <label for="mistiqCodeCode">Code</label>
+            <input type="text" id="mistiqCodeCode" placeholder="e.g., BREATHE20" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label for="mistiqDiscountType">Discount Type</label>
+            <select id="mistiqDiscountType" required>
+              <option value="percent">Percentage (%)</option>
+              <option value="dollar">Dollar ($)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mistiqDiscountValue">Discount Value</label>
+            <input type="number" id="mistiqDiscountValue" min="0.01" step="0.01" required>
+            <p class="form-hint" id="mistiqDiscountHint">e.g., 20 for 20% off</p>
+          </div>
+          <div class="form-group">
+            <label for="mistiqCodeDescription">Description (optional)</label>
+            <input type="text" id="mistiqCodeDescription" placeholder="e.g., Business card promo">
+          </div>
+          <div class="form-group">
+            <label for="mistiqCodeUsageLimit">Usage Limit (optional)</label>
+            <input type="number" id="mistiqCodeUsageLimit" min="1" placeholder="Unlimited">
+          </div>
+          <div class="form-group">
+            <label for="mistiqCodeExpires">Expires (optional)</label>
+            <input type="date" id="mistiqCodeExpires">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="mistiqCodeActive" checked>
+              Active
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelMistiqCodeBtn">Cancel</button>
+        <button class="btn-primary" id="saveMistiqCodeBtn">Save</button>
       </div>
     </div>
   </div>
