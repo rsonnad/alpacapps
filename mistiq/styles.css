@@ -1013,3 +1013,230 @@ img {
 .mistiq-section--cta .mistiq-booking__promo-msg.error {
   color: #ffa0a0;
 }
+
+/* =============================================
+   BOOKING PAGE
+   ============================================= */
+
+.mistiq-book-hero {
+  padding: 8rem 0 3rem;
+  text-align: center;
+  background: linear-gradient(135deg, var(--mistiq-bg-alt), var(--mistiq-warm));
+}
+
+.mistiq-book-hero__title {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-hero__subtitle {
+  font-size: 1.2rem;
+  color: var(--mistiq-text-light);
+  margin: 0;
+}
+
+/* Info cards */
+.mistiq-book-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mistiq-space-md);
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mistiq-book-info__card {
+  padding: var(--mistiq-space-md);
+}
+
+.mistiq-book-info__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--mistiq-gold);
+}
+
+.mistiq-book-info__card h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.mistiq-book-info__card p {
+  color: var(--mistiq-text-light);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Calendar embed */
+.mistiq-book-calendar {
+  max-width: 900px;
+  margin: 0 auto var(--mistiq-space-md);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.mistiq-book-calendar__iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+.mistiq-book-calendar__hint {
+  text-align: center;
+  color: var(--mistiq-text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Booking form */
+.mistiq-book-form-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.mistiq-book-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mistiq-space-md);
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.mistiq-book-form__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.mistiq-book-form__field--full {
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.mistiq-book-form__field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--mistiq-text);
+  margin-bottom: 0.35rem;
+}
+
+.mistiq-book-form__field input,
+.mistiq-book-form__field select,
+.mistiq-book-form__field textarea {
+  font-family: var(--mistiq-font-body);
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--mistiq-warm);
+  border-radius: 8px;
+  background: white;
+  color: var(--mistiq-text);
+  transition: border-color 0.2s;
+}
+
+.mistiq-book-form__field input:focus,
+.mistiq-book-form__field select:focus,
+.mistiq-book-form__field textarea:focus {
+  outline: none;
+  border-color: var(--mistiq-gold);
+}
+
+.mistiq-book-form__field textarea {
+  resize: vertical;
+}
+
+.mistiq-btn--book {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--mistiq-accent);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mistiq-btn--book:hover {
+  background: var(--mistiq-accent-dark);
+}
+
+/* Confirmation */
+.mistiq-book-confirm {
+  text-align: center;
+  padding: var(--mistiq-space-xl) 0;
+}
+
+.mistiq-book-confirm__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: white;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--mistiq-space-md);
+}
+
+.mistiq-book-confirm h3 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-confirm p {
+  color: var(--mistiq-text-light);
+  margin-bottom: var(--mistiq-space-md);
+}
+
+/* Preparation grid */
+.mistiq-book-prep {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mistiq-space-md);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mistiq-book-prep__item {
+  background: white;
+  padding: var(--mistiq-space-md);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mistiq-book-prep__item h3 {
+  font-size: 1.1rem;
+  color: var(--mistiq-accent);
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-prep__item p {
+  color: var(--mistiq-text-light);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .mistiq-book-hero__title {
+    font-size: 2.25rem;
+  }
+
+  .mistiq-book-info {
+    grid-template-columns: 1fr;
+    gap: var(--mistiq-space-sm);
+  }
+
+  .mistiq-book-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .mistiq-book-calendar__iframe {
+    height: 450px;
+  }
+
+  .mistiq-book-prep {
+    grid-template-columns: 1fr;
+  }
+}

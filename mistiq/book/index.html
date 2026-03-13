@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Book a Session — Mistique Journey</title>
+  <meta name="description" content="Book your Mistique Journey session. View availability and schedule your shamanic breath and body experience in Austin, Texas.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Book a Session — Mistique Journey">
+  <meta property="og:description" content="View availability and schedule your Mistique Journey session. A 3-hour shamanic breath and body experience in Austin, Texas.">
+  <meta property="og:image" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/sky_treatment.jpg">
+  <meta property="og:url" content="https://alpacaplayhouse.com/mistiq/book/">
+
+  <link rel="stylesheet" href="/mistiq/styles.css">
+  <script type="module" src="/shared/version-info.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="mistiq-header mistiq-header--scrolled" id="mistiq-header">
+    <div class="mistiq-header__inner">
+      <a href="/mistiq/" class="mistiq-header__logo">
+        <span class="mistiq-header__logo-text">Mistique Journey</span>
+        <span title="Site version" class="mistiq-header__version"></span>
+      </a>
+
+      <nav class="mistiq-nav" id="mistiq-nav">
+        <ul class="mistiq-nav__list">
+          <li><a href="/mistiq/book/" class="mistiq-nav__link" style="color: var(--mistiq-accent); font-weight: 600;">Book</a></li>
+          <li><a href="/mistiq/jobs/" class="mistiq-nav__link">Jobs</a></li>
+          <li><a href="/visiting/" class="mistiq-nav__link">Visiting</a></li>
+          <li><a href="/spaces/" class="mistiq-nav__link">Rentals</a></li>
+          <li><a href="/events/" class="mistiq-nav__link">Events</a></li>
+          <li><a href="/contact/" class="mistiq-nav__link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="mistiq-header__controls">
+        <a href="/mistiq/book/" class="mistiq-header__jobs-link" style="color: var(--mistiq-accent); font-weight: 600;">Book</a>
+        <button class="mistiq-menu-toggle" id="mistiq-menu-toggle" aria-label="Toggle menu">
+          <span class="mistiq-menu-toggle__bar"></span>
+          <span class="mistiq-menu-toggle__bar"></span>
+          <span class="mistiq-menu-toggle__bar"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation -->
+  <div class="mistiq-mobile-nav" id="mistiq-mobile-nav">
+    <button class="mistiq-mobile-nav__close" id="mistiq-mobile-nav-close" aria-label="Close menu">&times;</button>
+    <ul class="mistiq-mobile-nav__list">
+      <li class="mistiq-mobile-nav__item"><a href="/mistiq/book/" class="mistiq-mobile-nav__link" style="color: var(--mistiq-accent);">Book a Session</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/mistiq/jobs/" class="mistiq-mobile-nav__link">Jobs</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/visiting/" class="mistiq-mobile-nav__link">Visiting</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/spaces/" class="mistiq-mobile-nav__link">Rentals</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/events/" class="mistiq-mobile-nav__link">Events</a></li>
+      <li class="mistiq-mobile-nav__item"><a href="/contact/" class="mistiq-mobile-nav__link">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- Page Header -->
+  <section class="mistiq-book-hero">
+    <div class="mistiq-container">
+      <h1 class="mistiq-book-hero__title">Book Your Journey</h1>
+      <p class="mistiq-book-hero__subtitle">Select an available time to begin your transformative experience</p>
+    </div>
+  </section>
+
+  <!-- Session Info -->
+  <section class="mistiq-section">
+    <div class="mistiq-container">
+      <div class="mistiq-book-info">
+        <div class="mistiq-book-info__card">
+          <div class="mistiq-book-info__icon">&#9201;</div>
+          <h3>Duration</h3>
+          <p>~3 hours</p>
+        </div>
+        <div class="mistiq-book-info__card">
+          <div class="mistiq-book-info__icon">&#9883;</div>
+          <h3>Location</h3>
+          <p>Austin, Texas</p>
+        </div>
+        <div class="mistiq-book-info__card">
+          <div class="mistiq-book-info__icon">&#10022;</div>
+          <h3>Experience</h3>
+          <p>Breath, Body & Sauna</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendar Section -->
+  <section class="mistiq-section mistiq-section--alt" id="calendar">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Availability</h2>
+      <p class="mistiq-section__subtitle">Browse the calendar below to find an open time, then request your booking</p>
+
+      <div class="mistiq-book-calendar">
+        <iframe
+          src="https://calendar.google.com/calendar/embed?src=journeymistique%40gmail.com&ctz=America%2FChicago&mode=WEEK&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=1&bgcolor=%23f9f6f1"
+          class="mistiq-book-calendar__iframe"
+          frameborder="0"
+          scrolling="no"
+          title="Mistique Journey Availability"
+        ></iframe>
+      </div>
+
+      <p class="mistiq-book-calendar__hint">Shaded blocks indicate booked sessions. Open slots are available.</p>
+    </div>
+  </section>
+
+  <!-- Booking Request -->
+  <section class="mistiq-section" id="request">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Request a Booking</h2>
+      <p class="mistiq-section__subtitle">Found a time that works? Send a booking request and we'll confirm within 24 hours.</p>
+
+      <div class="mistiq-book-form-wrapper">
+        <form class="mistiq-book-form" id="booking-form">
+          <div class="mistiq-book-form__row">
+            <div class="mistiq-book-form__field">
+              <label for="book-name">Your Name</label>
+              <input type="text" id="book-name" name="name" required placeholder="Full name">
+            </div>
+            <div class="mistiq-book-form__field">
+              <label for="book-email">Email</label>
+              <input type="email" id="book-email" name="email" required placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="mistiq-book-form__row">
+            <div class="mistiq-book-form__field">
+              <label for="book-phone">Phone (optional)</label>
+              <input type="tel" id="book-phone" name="phone" placeholder="(512) 555-0123">
+            </div>
+            <div class="mistiq-book-form__field">
+              <label for="book-date">Preferred Date</label>
+              <input type="date" id="book-date" name="date" required>
+            </div>
+          </div>
+
+          <div class="mistiq-book-form__row">
+            <div class="mistiq-book-form__field">
+              <label for="book-time">Preferred Time</label>
+              <select id="book-time" name="time" required>
+                <option value="">Select a time...</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="17:00">5:00 PM</option>
+              </select>
+            </div>
+            <div class="mistiq-book-form__field">
+              <label for="book-experience">Previous Experience</label>
+              <select id="book-experience" name="experience">
+                <option value="first-time">First time</option>
+                <option value="returning">Returning client</option>
+                <option value="bodywork">Experience with bodywork</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mistiq-book-form__field mistiq-book-form__field--full">
+            <label for="book-notes">Notes or intentions (optional)</label>
+            <textarea id="book-notes" name="notes" rows="3" placeholder="Any specific areas of focus, injuries, or intentions for your session..."></textarea>
+          </div>
+
+          <button type="submit" class="mistiq-btn mistiq-btn--book">Request Booking</button>
+        </form>
+
+        <div class="mistiq-book-confirm" id="booking-confirm" style="display: none;">
+          <div class="mistiq-book-confirm__icon">&#10003;</div>
+          <h3>Booking Request Sent</h3>
+          <p>Thank you! We'll review your request and confirm via email within 24 hours.</p>
+          <a href="/mistiq/" class="mistiq-btn mistiq-btn--primary">Back to Mistique Journey</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What to Expect -->
+  <section class="mistiq-section mistiq-section--alt">
+    <div class="mistiq-container">
+      <h2 class="mistiq-section__title">Before Your Session</h2>
+      <div class="mistiq-book-prep">
+        <div class="mistiq-book-prep__item">
+          <h3>Intake Survey</h3>
+          <p>After booking confirmation, you'll receive a personalized intake survey to help tailor your experience.</p>
+        </div>
+        <div class="mistiq-book-prep__item">
+          <h3>What to Wear</h3>
+          <p>Comfortable, loose-fitting clothing. A change of clothes is recommended for sauna and cold bath elements.</p>
+        </div>
+        <div class="mistiq-book-prep__item">
+          <h3>Hydration</h3>
+          <p>Drink plenty of water before your session. Avoid heavy meals 2 hours prior.</p>
+        </div>
+        <div class="mistiq-book-prep__item">
+          <h3>Arrival</h3>
+          <p>Please arrive 10 minutes early to settle in. The full address will be sent with your confirmation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mistiq-footer">
+    <div class="mistiq-footer__content">
+      <p class="mistiq-footer__brand">Mistique Journey</p>
+      <p class="mistiq-footer__location">at The Austin Alpaca Playhouse</p>
+      <a href="/" class="mistiq-footer__link">Visit The Austin Alpaca Playhouse</a>
+      <p class="mistiq-footer__copyright">&copy; 2025 Mistique Journey. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('mistiq-menu-toggle');
+    const mobileNav = document.getElementById('mistiq-mobile-nav');
+    const mobileNavClose = document.getElementById('mistiq-mobile-nav-close');
+
+    menuToggle.addEventListener('click', () => {
+      mobileNav.classList.add('mistiq-mobile-nav--open');
+      document.body.style.overflow = 'hidden';
+    });
+
+    mobileNavClose.addEventListener('click', () => {
+      mobileNav.classList.remove('mistiq-mobile-nav--open');
+      document.body.style.overflow = '';
+    });
+
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileNav.classList.remove('mistiq-mobile-nav--open');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // Set min date to today
+    const dateInput = document.getElementById('book-date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+
+    // Form submission — sends email via mailto as fallback (static site)
+    const form = document.getElementById('booking-form');
+    const confirm = document.getElementById('booking-confirm');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('book-name').value;
+      const email = document.getElementById('book-email').value;
+      const phone = document.getElementById('book-phone').value;
+      const date = document.getElementById('book-date').value;
+      const time = document.getElementById('book-time').value;
+      const experience = document.getElementById('book-experience').value;
+      const notes = document.getElementById('book-notes').value;
+
+      const timeLabel = document.querySelector(`#book-time option[value="${time}"]`).textContent;
+      const dateObj = new Date(date + 'T12:00:00');
+      const dateLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+      const subject = `Mistique Journey Booking Request — ${dateLabel}`;
+      const body = [
+        `New booking request from ${name}`,
+        '',
+        `Name: ${name}`,
+        `Email: ${email}`,
+        phone ? `Phone: ${phone}` : '',
+        `Date: ${dateLabel}`,
+        `Time: ${timeLabel}`,
+        `Experience: ${experience}`,
+        notes ? `Notes: ${notes}` : '',
+        '',
+        'Sent from alpacaplayhouse.com/mistiq/book/'
+      ].filter(Boolean).join('\n');
+
+      // Open mailto to journeymistique@gmail.com
+      const mailto = `mailto:journeymistique@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailto, '_blank');
+
+      // Show confirmation
+      form.style.display = 'none';
+      confirm.style.display = 'block';
+    });
+  </script>
+  <script src="/mistiq/lang-picker.js"></script>
+</body>
+</html>
