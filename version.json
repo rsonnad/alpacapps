@@ -1,12 +1,12 @@
 {
-  "version": "v260313.04 12:34a",
-  "release": 678,
-  "sha": "d06f380a1",
-  "fullSha": "d06f380a12d0adbed602b1791abe4db0b09f3e96",
+  "version": "v260313.05 12:37a",
+  "release": 679,
+  "sha": "13bd08215",
+  "fullSha": "13bd08215720342fade0e1bbf61915c0a99e6df5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 05:34:32+00",
-  "commits": [{"sha":"d06f380a1","message":"Restore Darsy video testimonial embed from R2","author":"Rahul"}]
+  "pushedAt": "2026-03-13 05:37:51+00",
+  "commits": [{"sha":"13bd08215","message":"Fix testimonials and Phase 2 duration on Mistiq page","author":"Rahul"}]
 }
