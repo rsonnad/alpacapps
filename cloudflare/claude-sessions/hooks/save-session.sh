@@ -1,25 +1,25 @@
 #!/bin/bash
 # Claude Code SessionEnd hook — saves full transcript to Cloudflare D1
 # Reads session JSONL from disk, extracts conversation, posts to Worker
-#
-# Installation:
-#   1. Copy this file to ~/.claude/hooks/save-session.sh
-#   2. chmod +x ~/.claude/hooks/save-session.sh
-#   3. Add to ~/.claude/settings.json:
-#      "hooks": {
-#        "SessionEnd": [{ "type": "command", "command": "bash ~/.claude/hooks/save-session.sh" }]
-#      }
-#   4. Update API_URL and API_TOKEN below with your Worker URL and token.
+
+# Log immediately before anything can fail
+echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') HOOK FIRED" >> "$HOME/.claude/hooks/save-session.log" 2>/dev/null
 
 set -euo pipefail
 
-API_URL="https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/sessions"
-API_TOKEN="YOUR_AUTH_TOKEN"
+API_URL="https://claude-sessions.alpacapps.workers.dev/sessions"
+API_TOKEN="alpaca-sessions-2026"
 
 # Read hook input from stdin
 INPUT=$(cat)
+
+# Debug: log what we receive
+echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') INPUT: $INPUT" >> "$HOME/.claude/hooks/save-session.log"
+
 SESSION_ID=$(echo "$INPUT" | /usr/bin/python3 -c "import sys,json; print(json.load(sys.stdin).get('session_id',''))" 2>/dev/null)
 CWD=$(echo "$INPUT" | /usr/bin/python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null)
+
+echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') SESSION_ID=$SESSION_ID CWD=$CWD" >> "$HOME/.claude/hooks/save-session.log"
 
 if [ -z "$SESSION_ID" ]; then
   exit 0
@@ -45,6 +45,9 @@ fi
 PROJECT_DIR=$(dirname "$JSONL_FILE")
 PROJECT_NAME=$(basename "$PROJECT_DIR" | sed 's/^-Users-[^-]*-//' | sed 's/-/\//g')
 
+# Export variables so the Python heredoc can access them via os.environ
+export JSONL_FILE SESSION_ID PROJECT_NAME API_URL API_TOKEN
+
 # Extract conversation data using Python (handles JSON properly)
 /usr/bin/python3 << 'PYEOF'
 import json, sys, os, subprocess
@@ -62,6 +65,7 @@ if not jsonl_file or not os.path.exists(jsonl_file):
 messages = []
 model = None
 started_at = None
+ended_at = None
 total_tokens = 0
 
 with open(jsonl_file) as f:
@@ -79,6 +83,8 @@ with open(jsonl_file) as f:
 
         if not started_at and timestamp:
             started_at = timestamp
+        if timestamp:
+            ended_at = timestamp
 
         if msg_type == "user":
             content = entry.get("message", {}).get("content", "")
@@ -108,12 +114,13 @@ with open(jsonl_file) as f:
 
 transcript = "\n\n---\n\n".join(messages)
 
-# Calculate duration
+# Calculate duration from actual timestamps
 duration_mins = None
-if started_at:
+if started_at and ended_at:
     try:
         start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
-        duration_mins = int((datetime.now(start.tzinfo) - start).total_seconds() / 60)
+        end = datetime.fromisoformat(ended_at.replace("Z", "+00:00"))
+        duration_mins = max(1, int((end - start).total_seconds() / 60))
     except Exception:
         pass
 
@@ -129,6 +136,7 @@ payload = json.dumps({
     "project": project_name,
     "model": model,
     "started_at": started_at,
+    "ended_at": ended_at,
     "duration_mins": duration_mins,
     "summary": summary,
     "transcript": transcript,

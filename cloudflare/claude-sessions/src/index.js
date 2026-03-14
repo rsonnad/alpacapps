@@ -101,6 +101,34 @@ export default {
       return json(result);
     }
 
+    // POST /fix-timestamps — fix bulk-imported sessions with wrong ended_at
+    // Sets ended_at = started_at + duration_mins for sessions where ended_at was the import time
+    if (request.method === 'POST' && url.pathname === '/fix-timestamps') {
+      const body = await request.json();
+      const importTime = body.import_time || '2026-03-13 21:48:00';
+      const importEnd = body.import_end || '2026-03-13 21:54:00';
+
+      // For sessions with real duration: ended_at = started_at + duration
+      const r1 = await env.DB.prepare(`
+        UPDATE sessions
+        SET ended_at = datetime(started_at, '+' || duration_mins || ' minutes')
+        WHERE ended_at >= ? AND ended_at <= ?
+          AND started_at IS NOT NULL
+          AND duration_mins IS NOT NULL AND duration_mins > 0
+      `).bind(importTime, importEnd).run();
+
+      // For sessions without duration: set ended_at = started_at (midnight marker)
+      const r2 = await env.DB.prepare(`
+        UPDATE sessions
+        SET ended_at = started_at
+        WHERE ended_at >= ? AND ended_at <= ?
+          AND started_at IS NOT NULL
+          AND (duration_mins IS NULL OR duration_mins <= 0)
+      `).bind(importTime, importEnd).run();
+
+      return json({ ok: true, with_duration: r1.meta?.changes, without_duration: r2.meta?.changes });
+    }
+
     // GET /stats — aggregate stats (only count reasonable durations < 24h)
     if (request.method === 'GET' && url.pathname === '/stats') {
       const result = await env.DB.prepare(`
