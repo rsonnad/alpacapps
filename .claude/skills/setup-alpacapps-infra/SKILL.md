@@ -26,8 +26,8 @@ You are an expert infrastructure setup assistant. You help users build full-stac
    - `docs/CHANGELOG.md` (checked in): recent changes log
    - After each service: append to the **appropriate doc file** (not CLAUDE.md), commit, push.
    - **Why this pattern:** CLAUDE.md is always loaded into context. By keeping it slim (~30 lines) and splitting heavy content into on-demand docs, Claude only loads what it needs per task — saving thousands of tokens per conversation.
-   - **Profile-aware generation:** Use `docs/CLAUDE-TEMPLATE.md` as the base. For the **General AI Enablement** profile, use the `## General AI Enablement Profile` section (4 doc refs, 3 code guards, no property-specific content). For the **Property Management** profile, use the `## Property Management Profile` section (all 7 doc refs, all code guards). See `docs/CLAUDE-TEMPLATE.md` for both templates.
-   - **Profile-aware docs:** Only generate docs relevant to the profile and selected services. For General AI Enablement, skip `docs/KEY-FILES.md`, `docs/INTEGRATIONS.md`, and `docs/CHANGELOG.md` unless the user specifically asks for them. Start `docs/SCHEMA.md` with only core tables. Do NOT copy over `PRODUCTDESIGN.md` or `docs/CHANGELOG.md` from the template — start fresh.
+   - **Feature-aware generation:** Use `docs/CLAUDE-TEMPLATE.md` as the base. Generate `CLAUDE.md` with on-demand doc references only for docs that are actually generated. Generate `docs/SCHEMA.md` with only tables from core + enabled features (read `dbTables` from `feature-manifest.json`). Generate `docs/KEY-FILES.md` with only files from enabled features. Generate `docs/INTEGRATIONS.md` with only configured services. Generate `docs/PATTERNS.md` with base patterns always, plus device-proxy and polling patterns only if any smart_home/vehicles features are enabled, plus pipeline patterns only if rentals or events are enabled. Do NOT copy over `PRODUCTDESIGN.md` or `docs/CHANGELOG.md` from the template — start fresh.
+   - **Minimal projects:** If the user selected 3 or fewer features beyond core, skip generating `docs/KEY-FILES.md` and `docs/CHANGELOG.md` (they add overhead without value for small projects). Only reference existing docs in `CLAUDE.md`.
 7. **Validate before proceeding.** Test every credential and connection before moving on.
 8. **Construct webhook URLs yourself.** Once you have the Supabase project ref, build all webhook URLs as copy-paste-ready values.
 9. **Derive everything you can.** Don't ask for things you can compute (project URL from ref, pooler string from ref + password, etc.).
@@ -35,12 +35,39 @@ You are an expert infrastructure setup assistant. You help users build full-stac
 
 ## Setup Flow
 
-### Step 1: Feature Selection
+### Step 0: Detect Setup Mode
 
-Ask two things in one message:
+Before anything else, check if this is a **new setup** or an **add-service-later** invocation:
 
-1. **"What are you building?"** — One-sentence description + main entities.
-2. **"Which optional capabilities do you need?"** — Present this list:
+1. Check if `supabase/config.toml` exists (Supabase already set up)
+2. Check if `.git/config` has a remote (GitHub already set up)
+3. Check if `.setup-state.json` exists (previous wizard run)
+
+**If all three exist → enter Add Mode** (see "Add Mode" section below).
+**Otherwise → continue with Step 1 (new setup).**
+
+### Step 1: Persona & Feature Selection
+
+Ask in one message:
+
+**"What are you building?"** — One-sentence description + main entities.
+
+Then suggest the **best-fit persona** from the list below. Read `feature-manifest.json` → `personas` for the full definitions. Present the options:
+
+| # | Persona | Best for | Key features |
+|---|---------|----------|--------------|
+| 1 | **Vacation Rental Manager** | Short-term rentals, Airbnb hosts | Airbnb sync, rentals, events, cameras, smart home |
+| 2 | **Long-term Landlord** | Apartment/house leasing | Leases, rent collection, tenant portal |
+| 3 | **Event Venue** | Event spaces, conference centers | Event pipeline, contracts, payments |
+| 4 | **Hostel / Co-living** | Shared living, work-trade | Mixed rooms, associates, orientation, amenities |
+| 5 | **Personal AI Hub** | Smart home, AI assistant | PAI, lighting, music, cameras, climate, voice |
+| 6 | **Small Business** | CRM, invoicing, campaigns | Email, SMS, payments, documents |
+| 7 | **Developer Portfolio / SaaS** | Minimal web app | Auth, email, payments |
+| 8 | **Custom** | Pick features individually | Full feature grid |
+
+After the user picks a persona (or Custom), show the **feature grid** grouped by category with the persona's features pre-checked. The user can add or remove features.
+
+**Feature grid by category:**
 
 **Always included (core):**
 - Website + Admin Dashboard (GitHub Pages) — Free
@@ -48,37 +75,67 @@ Ask two things in one message:
 - Tailwind CSS v4 (utility-class styling) — Free
 - AI Developer (Claude Code) — you're already here
 
-**Pick any you need:**
-- User login / Google Sign-In (Google OAuth via Supabase) — Free
-- Email notifications (Resend) — Free, 3,000/month
-- SMS messaging (Telnyx) — ~$0.004/message
-- Payment processing (Square) — 2.9% + 30¢
-- Stripe payments + ACH (Stripe) — ACH: 0.8% capped at $5; Cards: 2.9% + 30¢
-- E-signatures (SignWell) — Free, 3–25 docs/month
-- AI-powered features (Google Gemini) — Free
-- Object storage / file hosting (Cloudflare R2) — Free, 10 GB
-- DigitalOcean Droplet (bots, workers) — ~$12/mo
-- Oracle Cloud ARM instance (free tier) — Always Free (4 cores, 24 GB RAM, 200 GB)
+**Communication:**
+- [ ] Email notifications (Resend) — Free, 3,000/month
+- [ ] SMS messaging (Telnyx) — ~$1/mo + $0.004/message
+- [ ] WhatsApp (Meta Business) — requires verification
 
-Remember their choices and skip everything they don't need.
+**Payments:**
+- [ ] Stripe payments + ACH — ACH: 0.8% capped $5; Cards: 2.9% + 30¢
+- [ ] Square payments — 2.6% + 10¢
+- [ ] PayPal payments — 3.49% + 49¢
 
-### Step 1b: Profile Selection & Project Pruning
+**Documents:**
+- [ ] E-signatures (SignWell) — Free, 3–25 docs/month
+- [ ] Document templates — Free (markdown with placeholders)
 
-Based on the user's answer to "What are you building?", determine which profile applies:
+**Smart Home (requires hardware):**
+- [ ] Smart lighting (Govee) — Free API
+- [ ] Security cameras (UniFi/IP) — Free (needs go2rtc + home server)
+- [ ] Music system (Sonos) — Free (needs Sonos HTTP API + home server)
+- [ ] Climate control (Nest) — Free (needs Google Cloud project)
+- [ ] Laundry monitoring (LG ThinQ) — Free
+- [ ] Precision oven (Anova) — Free
 
-**Profile A — Property Management:**
-User is building something that manages physical spaces, renters/tenants, bookings, events, or smart home devices. Keep all property-management directories and features. Only remove AlpacApps Playhouse-specific content (listed in `feature-manifest.json` → `_alpacapps_specific`).
+**Maker Tools (requires hardware):**
+- [ ] 3D printer (FlashForge) — Free (needs TCP proxy + home server)
+- [ ] Laser cutter (Glowforge) — Free (read-only status)
 
-**Profile B — General Personal/Business AI Enablement Platform:**
-User is building anything else — a SaaS app, personal tool, booking system, CRM, portfolio, etc. They want the core framework (auth, payments, email, web pages, permissions) but NOT property-management overhead.
+**Vehicles:**
+- [ ] Tesla Fleet API — Free (needs Tesla developer account)
 
-**After determining the profile, ask General AI Enablement users (AskUserQuestion):**
+**Property Operations:**
+- [ ] Rental pipeline (inquiry → sign → move-in) — Free
+- [ ] Event hosting (inquiry → contract → payment) — Free
+- [ ] Associate/staff management (hours, payouts) — Free
+- [ ] Resident portal (profiles, devices, orientation) — Free
+- [ ] Airbnb calendar sync (iCal) — Free
 
-> Your project doesn't need the property management modules (renters, devices, events, etc.). How should I handle them?
+**AI & Voice:**
+- [ ] AI assistant (PAI + Gemini) — Free tier: 1,000 req/day
+- [ ] Voice calling (Vapi) — ~$0.10-0.30/min
+- [ ] Alexa skill — Free
 
-Options:
-- **Full prune (Recommended)** — Delete property-management directories and files. Cleaner project, no dead code.
-- **Soft hide** — Keep files on disk but configure `.claudeignore` so Claude Code ignores them. Reversible if you change your mind.
+**Infrastructure:**
+- [ ] User login / Google Sign-In — Free
+- [ ] Object storage (Cloudflare R2) — Free, 10 GB
+- [ ] DigitalOcean Droplet (workers) — ~$12/mo
+- [ ] Oracle Cloud ARM (free tier) — Always Free
+
+After the user confirms their feature set:
+1. Show estimated monthly cost based on `setup_cost` and `setup_cost_note` from the manifest
+2. Note any suggested companion features (from `suggested_with` in the manifest) — e.g., "Rental pipeline works best with E-signatures and Stripe. Want to add those?"
+3. Note any dependencies (from `dependencies` in the manifest) — e.g., "Voice calling requires PAI. Adding it automatically."
+
+### Step 1b: Project Pruning
+
+Determine which features are NOT selected. These will be pruned or hidden.
+
+**Ask the user (AskUserQuestion):**
+
+> Features you didn't select can be handled two ways:
+> - **Full prune (Recommended)** — Delete unused directories and files. Cleaner project, no dead code.
+> - **Soft hide** — Keep files on disk but add to `.claudeignore` so Claude Code ignores them. Reversible.
 
 **Then execute the following:**
 
@@ -86,16 +143,28 @@ Options:
 
 2. **Generate `.claudeignore`:**
    - Always include base exclusions: `_alpacapps_specific.dirs` and `_alpacapps_specific.docs` from the manifest, plus `package-lock.json` and `styles/tailwind.out.css`.
-   - For General AI Enablement profile, also add exclusions for every feature where `"profile": "property_management"` in the manifest. Include their `dirs`, `pages`, `pollers`, `shared` files, and the `shared/services/` directory.
+   - For every feature NOT in the user's selected set, add its `dirs`, `pages`, `pollers`, `shared` files to `.claudeignore`.
    - Write the generated `.claudeignore` file.
 
 3. **If "Full prune" was selected**, physically delete the excluded directories and files:
    ```bash
-   rm -rf <dirs from manifest where profile = property_management>
+   rm -rf <dirs and pages from unselected features>
    ```
-   Also remove property-specific shared modules listed in the manifest.
+   Also remove unselected shared modules listed in the manifest.
 
-4. **Commit and push** the `.claudeignore` (and deletions if pruned).
+4. **Write `.setup-state.json`** (gitignored) to track the setup:
+   ```json
+   {
+     "persona": "<selected persona or 'custom'>",
+     "enabled_features": ["email", "sms", ...],
+     "prune_mode": "full|soft",
+     "services_configured": [],
+     "setup_started_at": "<ISO timestamp>"
+   }
+   ```
+   Add `.setup-state.json` to `.gitignore`.
+
+5. **Commit and push** the `.claudeignore` (and deletions if pruned).
 
 **Important:** The `.claudeignore` is generated BEFORE any other setup steps, so Claude Code immediately benefits from the reduced search scope for the rest of the wizard.
 
@@ -202,6 +271,19 @@ For each selected service, follow the detailed instructions in the appropriate r
 - **DigitalOcean** → `references/server-setup.md` → "DigitalOcean"
 - **Oracle Cloud** → `references/server-setup.md` → "Oracle Cloud"
 
+If any device features are enabled that need background workers (vehicles, laundry, cameras), also set up the workers:
+- See `references/worker-setup.md` for the poller pattern and systemd service template
+
+### Step 11b: Mobile App — if requested
+
+Ask: "Do you want a native mobile app (iOS/Android)?"
+
+If yes, follow `references/mobile-setup.md` for:
+1. Capacitor 8 initialization
+2. Feature-aware tab configuration
+3. Platform setup (iOS/Android)
+4. OTA updates via Capgo (optional)
+
 ### Step 12: Claude Code Permissions
 
 **Silently (no user action):**
@@ -231,39 +313,96 @@ See `references/validation-checklist.md` for the full checklist and summary temp
 6. Verify CLAUDE.md tracked, CLAUDE.local.md gitignored
 7. Show final summary with all services, URLs, and pending actions
 
+## Add Mode (Incremental Feature Addition)
+
+When Step 0 detects an existing setup, enter Add Mode instead of starting fresh.
+
+**Flow:**
+
+1. **Read `.setup-state.json`** to get current persona, enabled features, and configured services.
+2. **Show current state:**
+   > Your project was set up as a **[persona]** with these features: [list].
+   > Services configured: [list].
+3. **Ask: "What would you like to add?"** — Present only features NOT already enabled, grouped by category.
+4. **For each newly selected feature:**
+   - Deploy its DB tables (from `dbTables` in manifest)
+   - Deploy its edge functions (from `edgeFunctions` in manifest)
+   - Create its client-side service modules (from `shared` in manifest)
+   - If the feature requires a third-party service (e.g., Telnyx for SMS), run that service's setup from `references/optional-services.md`
+5. **If prune_mode was "full"**, restore files for newly added features from the template repo:
+   ```bash
+   # Fetch just the needed dirs from the template
+   git archive --remote=https://github.com/rsonnad/alpacapps-infra.git main -- <dirs> | tar -x
+   ```
+6. **If prune_mode was "soft"**, remove newly added feature paths from `.claudeignore`.
+7. **Update `.setup-state.json`:**
+   - Add new features to `enabled_features`
+   - Add new services to `services_configured`
+8. **Update docs:** Append new tables to `docs/SCHEMA.md`, new files to `docs/KEY-FILES.md`, new services to `docs/INTEGRATIONS.md`.
+9. **Commit and push.**
+
 ## Examples
 
-### Example 1: Full Stack Project
+### Example 1: Small Business with Payments
 User says: "I'm building a salon booking system with services, stylists, and appointments. I need email, payments, and Google Sign-In."
 
 Actions:
-1. Feature Selection → Email (Resend), Payments (Stripe or Square), Google OAuth
-2. GitHub repo + Pages
-3. Supabase with tables: `services`, `stylists`, `appointments`, `clients`
-4. Google OAuth setup
-5. Resend email setup
-6. Payment setup (Square or Stripe based on preference)
+1. Persona suggestion → **Small Business** (closest fit). User customizes: adds Google Sign-In.
+2. Feature set: email, payments_stripe, esignatures, documents + Google OAuth
+3. Prune: full prune of all property_ops, smart_home, vehicles, maker_tools, ai features
+4. GitHub repo + Pages
+5. Supabase with tables: `services`, `stylists`, `appointments`, `clients`
+6. Google OAuth, Resend, Stripe setup
 7. Claude Code permissions
 8. Final validation + summary
 
-### Example 2: Minimal Setup
+### Example 2: Vacation Rental
+User says: "I manage 3 vacation rental properties on Airbnb and want to automate guest communication and smart home controls."
+
+Actions:
+1. Persona suggestion → **Vacation Rental Manager**
+2. Feature set: email, sms, payments_stripe, esignatures, documents, airbnb, rentals, events, residents, cameras, lighting, climate, music
+3. Prune: full prune of vehicles, maker_tools, laundry, oven, associates, pai, voice, alexa
+4. GitHub repo + Pages
+5. Supabase with full property management schema
+6. Service setup for each selected integration
+7. Final validation + summary
+
+### Example 3: Minimal Setup
 User says: "I just need a database and a website for a personal project tracker."
 
 Actions:
-1. Feature Selection → Core only (no optional services)
-2. GitHub repo + Pages
-3. Supabase with tables: `projects`, `tasks`
-4. Claude Code permissions
-5. Final validation + summary
+1. Persona suggestion → **Developer Portfolio / SaaS Starter**. User removes email + stripe.
+2. Feature set: core only
+3. Prune: full prune of everything except core
+4. GitHub repo + Pages
+5. Supabase with tables: `projects`, `tasks`
+6. Claude Code permissions
+7. Final validation + summary
 
-### Example 3: Adding a Service Later
+### Example 4: Adding a Service Later
 User says: "Add SMS to my existing project."
 
 Actions:
-1. Check existing Supabase link (should already be configured)
-2. Extract project ref from existing config
-3. Follow Telnyx setup from `references/optional-services.md`
-4. Update appropriate docs/ files (CREDENTIALS.md, INTEGRATIONS.md, SCHEMA.md, KEY-FILES.md)
+1. Step 0 detects existing setup → enters Add Mode
+2. Reads `.setup-state.json`: persona=small_business, features=[email, payments_stripe]
+3. User selects: SMS (Telnyx)
+4. Deploys sms_messages + telnyx_config tables, send-sms + telnyx-webhook edge functions, sms-service.js
+5. Runs Telnyx credential setup
+6. Updates .setup-state.json, docs, .claudeignore
+7. Commits and pushes
+
+### Example 5: Personal AI Hub
+User says: "I want a smart home dashboard with AI assistant for my house. I have Govee lights, Nest thermostats, Sonos speakers, and cameras."
+
+Actions:
+1. Persona suggestion → **Personal AI Hub**
+2. Feature set: pai, lighting, music, climate, cameras, residents, voice
+3. Prune: full prune of property_ops (rentals, events, associates, airbnb), payments, documents, esignatures, vehicles, maker_tools
+4. GitHub repo + Pages
+5. Supabase with device tables + PAI config
+6. Gemini API setup, device config setup
+7. Final validation + summary
 
 ## Common Issues
 

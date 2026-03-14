@@ -1,13 +1,19 @@
 # CLAUDE.md Templates
 
-The setup wizard uses one of these templates based on the selected profile.
-Replace all `{PLACEHOLDERS}` with actual values during setup.
+The setup wizard generates CLAUDE.md based on the user's selected persona and features. Use `references/doc-templates.md` for feature-specific documentation sections. Replace all `{PLACEHOLDERS}` with actual values during setup.
+
+**Doc generation rules:**
+- `docs/CREDENTIALS.md`, `docs/SCHEMA.md`, `docs/PATTERNS.md`, `docs/DEPLOY.md` — always generated
+- `docs/KEY-FILES.md` — only if 4+ features enabled
+- `docs/INTEGRATIONS.md` — only if any external service configured
+- `docs/CHANGELOG.md` — only if 6+ features enabled
+- Only list generated docs in the `CLAUDE.md` on-demand index
 
 ---
 
-## General AI Enablement Profile
+## Minimal Profile (Developer Portfolio, Small Business, or few features)
 
-Use this for projects that are NOT property management — SaaS apps, personal tools, booking systems, CRMs, portfolios, etc. Minimal context, no property-specific overhead.
+Use for projects with 3 or fewer features beyond core.
 
 ```markdown
 # {PROJECT_NAME} — Project Directives
@@ -39,9 +45,9 @@ Use this for projects that are NOT property management — SaaS apps, personal t
 
 ---
 
-## Property Management Profile
+## Full Profile (Property Management, Hostel, Personal AI Hub, or many features)
 
-Use this for projects that manage physical spaces, tenants, bookings, devices, events, etc. Full context with all doc references and code guards.
+Use for projects with 4+ features. Include all relevant doc references and code guards based on enabled features.
 
 ```markdown
 # {PROJECT_NAME} — Project Directives

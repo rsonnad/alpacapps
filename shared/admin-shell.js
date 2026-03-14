@@ -10,6 +10,7 @@ import { supabaseHealth } from './supabase-health.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
 import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
+import { getEnabledFeatures } from './feature-registry.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -50,18 +51,22 @@ const TAB_ICONS = {
   openclaw:   _i('<path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/>'),
 };
 
+// Tab definitions with optional `feature` key for config-driven visibility.
+// Tabs without a `feature` key are always shown (core admin tabs).
+// When property_config.features exists, tabs whose feature is disabled are hidden.
+// When property_config.features is NOT set, all tabs show (backward compatible).
 const ALL_ADMIN_TABS = [
   // Staff section
   { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'staff' },
-  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff' },
-  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff' },
+  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff', feature: 'rentals' },
+  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff', feature: 'events' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff' },
-  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff' },
+  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff', feature: 'pai' },
+  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff', feature: 'sms' },
   { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
-  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff' },
-  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff' },
-  { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff' },
+  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
+  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff', feature: 'pai' },
+  { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff', feature: 'voice' },
   { id: 'todo', label: 'Todo', href: 'todo.html', permission: 'view_todo', section: 'staff' },
   { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
   // Admin section
@@ -69,12 +74,12 @@ const ALL_ADMIN_TABS = [
   { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
   { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
   { id: 'releases', label: 'Releases', href: 'releases.html', permission: 'view_settings', section: 'admin' },
-  { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin' },
+  { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin', feature: 'documents' },
   { id: 'brand', label: 'Brand', href: 'brand.html', permission: 'view_settings', section: 'admin' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
-  { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin' },
-  { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin' },
+  { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin', feature: 'pai' },
+  { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin', feature: 'pai' },
 ];
 
 // =============================================
@@ -113,7 +118,7 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-export function renderTabNav(activeTab, authState, section = 'staff') {
+export async function renderTabNav(activeTab, authState, section = 'staff') {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
@@ -127,9 +132,11 @@ export function renderTabNav(activeTab, authState, section = 'staff') {
     }
   }
 
-  // Filter tabs by section AND permission
+  // Filter tabs by section, permission, AND enabled features
+  const enabledFeatures = await getEnabledFeatures();
   const tabs = ALL_ADMIN_TABS
     .filter(tab => tab.section === section)
+    .filter(tab => !tab.feature || enabledFeatures[tab.feature])
     .filter(tab => authState.hasPermission?.(tab.permission));
 
   tabsContainer.innerHTML = tabs.map(tab => {
@@ -198,7 +205,7 @@ function escapeHtml(s) {
 // =============================================
 // CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
 // =============================================
-function renderContextSwitcher(userRole, activeSection = 'staff') {
+async function renderContextSwitcher(userRole, activeSection = 'staff') {
   const switcher = document.getElementById('contextSwitcher');
   if (!switcher) return;
 
@@ -211,8 +218,10 @@ function renderContextSwitcher(userRole, activeSection = 'staff') {
   }
 
   // Resolve Staff/Admin hrefs to the first page the user actually has permission for
-  const firstStaffTab = ALL_ADMIN_TABS.find(t => t.section === 'staff' && hasAnyPermission(t.permission));
-  const firstAdminTab = ALL_ADMIN_TABS.find(t => t.section === 'admin' && hasAnyPermission(t.permission));
+  // Feature filtering uses the cached result from getEnabledFeatures (already loaded by renderTabNav)
+  const enabledFeatures = await getEnabledFeatures();
+  const firstStaffTab = ALL_ADMIN_TABS.find(t => t.section === 'staff' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission));
+  const firstAdminTab = ALL_ADMIN_TABS.find(t => t.section === 'admin' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission));
   const staffHref = firstStaffTab ? (firstStaffTab.href.startsWith('/') ? firstStaffTab.href : `/spaces/admin/${firstStaffTab.href}`) : '/spaces/admin/';
   const adminHref = firstAdminTab ? (firstAdminTab.href.startsWith('/') ? firstAdminTab.href : `/spaces/admin/${firstAdminTab.href}`) : '/spaces/admin/users.html';
 
@@ -526,8 +535,8 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       const isDemo = state.appUser.role === 'demo';
       const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
 
-      renderContextSwitcher(state.appUser?.role, resolvedSection);
-      renderTabNav(activeTab, state, resolvedSection);
+      await renderTabNav(activeTab, state, resolvedSection);
+      await renderContextSwitcher(state.appUser?.role, resolvedSection);
 
       let demoBanner = document.getElementById('demoModeBanner');
       if (isDemo && document.getElementById('appContent')) {
