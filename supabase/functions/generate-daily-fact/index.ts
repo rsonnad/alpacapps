@@ -16,7 +16,8 @@ const corsHeaders = {
 };
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 function getAustinToday(): string {
   const now = new Date();
@@ -72,15 +73,31 @@ serve(async (req) => {
             text: 'Generate one fun, interesting, or surprising fact about alpacas. Keep it to 1-2 sentences. Be creative and varied. Do not start with "Did you know". Just state the fact directly.'
           }]
         }],
-        generationConfig: { temperature: 0.95, maxOutputTokens: 200 },
+        generationConfig: { temperature: 0.95, maxOutputTokens: 1024 },
       }),
     });
 
     if (!geminiResp.ok) {
       const errText = await geminiResp.text();
-      console.error('Gemini API error:', errText);
+      console.error('Gemini API error:', geminiResp.status, errText);
+
+      // If API key or model issue, try to return cached fact from any date
+      const { data: fallback } = await supabase
+        .from('kiosk_facts')
+        .select('fact_text')
+        .order('generated_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (fallback?.fact_text) {
+        return new Response(
+          JSON.stringify({ fact: fallback.fact_text, cached: true, stale: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ error: 'Failed to generate fact' }),
+        JSON.stringify({ error: 'Failed to generate fact', detail: `Gemini ${geminiResp.status}: ${errText.slice(0, 200)}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
