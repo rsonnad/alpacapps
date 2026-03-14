@@ -1,12 +1,12 @@
 {
-  "version": "v260313.63 11:08p",
-  "release": 737,
-  "sha": "41e6ffed0",
-  "fullSha": "41e6ffed0c351949f271e85374283477952c4479",
+  "version": "v260313.64 11:27p",
+  "release": 738,
+  "sha": "b4bed4145",
+  "fullSha": "b4bed4145cb27bbb9e7631f0deb4bbe42ff51d0d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 04:08:55+00",
-  "commits": [{"sha":"41e6ffed0","message":"Fix version display + move session hook to Stop event","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 04:27:47+00",
+  "commits": [{"sha":"b4bed4145","message":"Add Alpaca Kiosk Android app (Phase 1 + 2)","author":"Rahul"}]
 }
