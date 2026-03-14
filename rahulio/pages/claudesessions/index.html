@@ -293,12 +293,15 @@
       }
 
       container.innerHTML = '<div class="sessions-list">' + sessions.map(s => {
-        const date = s.ended_at ? new Date(s.ended_at + 'Z') : null;
-        const dateStr = date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown';
-        const timeStr = date ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+        // Prefer started_at for display; fall back to ended_at
+        const rawDate = s.started_at || s.ended_at;
+        const date = rawDate ? new Date(rawDate.includes('Z') || rawDate.includes('+') ? rawDate : rawDate + 'Z') : null;
+        const dateStr = date && !isNaN(date) ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date unknown';
+        const timeStr = date && !isNaN(date) ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
         const project = s.project || 'unknown';
         const model = s.model ? s.model.replace('claude-', '').split('-202')[0] : '';
-        const duration = s.duration_mins ? s.duration_mins + 'm' : '';
+        // Only show duration if it looks reasonable (< 24 hours = 1440 mins)
+        const duration = s.duration_mins && s.duration_mins < 1440 ? s.duration_mins + 'm' : '';
         const tokens = s.token_count ? (s.token_count / 1000).toFixed(0) + 'k' : '';
         const summary = (s.summary || '').substring(0, 120);
         const isExpanded = expandedId === s.id;

@@ -26,12 +26,13 @@ export default {
 
       await env.DB.prepare(`
         INSERT OR REPLACE INTO sessions (id, project, model, started_at, ended_at, duration_mins, summary, transcript, token_count, cost_usd, tags)
-        VALUES (?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, COALESCE(?, datetime('now')), ?, ?, ?, ?, ?, ?)
       `).bind(
         id,
         body.project || null,
         body.model || null,
         body.started_at || null,
+        body.ended_at || null,
         body.duration_mins || null,
         body.summary || null,
         body.transcript || null,
@@ -43,7 +44,7 @@ export default {
       return json({ ok: true, id });
     }
 
-    // GET /sessions — list sessions
+    // GET /sessions — list sessions (sorted by started_at, falling back to ended_at)
     if (request.method === 'GET' && url.pathname === '/sessions') {
       const limit = parseInt(url.searchParams.get('limit') || '50');
       const offset = parseInt(url.searchParams.get('offset') || '0');
@@ -69,18 +70,18 @@ export default {
         countParams.push(`%${search}%`, `%${search}%`);
       }
       if (dateFrom) {
-        conditions.push("ended_at >= ?");
+        conditions.push("COALESCE(started_at, ended_at) >= ?");
         params.push(dateFrom);
         countParams.push(dateFrom);
       }
       if (dateTo) {
-        conditions.push("ended_at <= ?");
+        conditions.push("COALESCE(started_at, ended_at) <= ?");
         params.push(dateTo + ' 23:59:59');
         countParams.push(dateTo + ' 23:59:59');
       }
 
       const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
-      query += where + ' ORDER BY ended_at DESC LIMIT ? OFFSET ?';
+      query += where + ' ORDER BY COALESCE(started_at, ended_at) DESC LIMIT ? OFFSET ?';
       params.push(limit, offset);
       countQuery += where;
 
@@ -100,16 +101,16 @@ export default {
       return json(result);
     }
 
-    // GET /stats — aggregate stats
+    // GET /stats — aggregate stats (only count reasonable durations < 24h)
     if (request.method === 'GET' && url.pathname === '/stats') {
       const result = await env.DB.prepare(`
         SELECT
           COUNT(*) as total_sessions,
           SUM(token_count) as total_tokens,
           SUM(cost_usd) as total_cost,
-          SUM(duration_mins) as total_minutes,
+          SUM(CASE WHEN duration_mins IS NOT NULL AND duration_mins < 1440 THEN duration_mins ELSE 0 END) as total_minutes,
           AVG(token_count) as avg_tokens,
-          AVG(duration_mins) as avg_duration
+          AVG(CASE WHEN duration_mins IS NOT NULL AND duration_mins < 1440 THEN duration_mins ELSE NULL END) as avg_duration
         FROM sessions
       `).first();
       return json(result);
