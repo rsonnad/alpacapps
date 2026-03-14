@@ -583,6 +583,36 @@ async function checkVersion() {
 }
 
 // =============================================
+// NETWORK PANEL
+// =============================================
+function initNetworkPanel() {
+  const iframe = document.getElementById('networkFrame');
+  const fallback = document.getElementById('networkFallback');
+  if (!iframe || !fallback) return;
+
+  // Give the iframe a few seconds to load; if it errors, show fallback
+  iframe.addEventListener('error', () => {
+    iframe.style.display = 'none';
+    fallback.style.display = '';
+  });
+
+  // Fallback check after timeout — if iframe loaded but content might be blocked (X-Frame-Options)
+  setTimeout(() => {
+    try {
+      // Try to access iframe content — will throw if cross-origin blocked
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc || !doc.body || doc.body.innerHTML === '') {
+        throw new Error('blocked');
+      }
+    } catch (_) {
+      // iframe is blocked — keep it visible (it may show the UniFi login which is fine)
+      // Only hide if it's totally blank
+      console.log('Network iframe may be cross-origin restricted — keeping visible');
+    }
+  }, 5000);
+}
+
+// =============================================
 // REFRESH & INIT
 // =============================================
 async function refreshAll() {
@@ -631,6 +661,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('recordAudioBtn')?.addEventListener('click', () => showRecorder('audio'));
   document.getElementById('recorderStartStop')?.addEventListener('click', toggleRecording);
   document.getElementById('recorderCancel')?.addEventListener('click', hideRecorder);
+
+  // Network iframe — detect if blocked and show fallback
+  initNetworkPanel();
 
   // Load dynamic data
   await refreshAll();
