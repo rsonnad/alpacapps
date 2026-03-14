@@ -1,12 +1,12 @@
 {
-  "version": "v260314.07 1:41a",
-  "release": 749,
-  "sha": "615e84f8e",
-  "fullSha": "615e84f8e590987a482228dc12417d3b32564753",
+  "version": "v260314.10 1:47a",
+  "release": 752,
+  "sha": "3adf8c8b5",
+  "fullSha": "3adf8c8b589675aa48e928ec4590d21b4bc2bfaf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 06:41:44+00",
-  "commits": [{"sha":"615e84f8e","message":"Add OpenRouter as future LLM gateway vendor","author":"Rahul"}]
+  "pushedAt": "2026-03-14 06:47:18+00",
+  "commits": [{"sha":"3adf8c8b5","message":"CTA text: lowercase with line breaks (learn / more & / sign up)","author":"Rahul"}]
 }
