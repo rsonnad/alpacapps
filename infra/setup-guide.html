@@ -220,6 +220,7 @@
           <li><strong>SignWell</strong> (e-signatures) &mdash; Free, 3&ndash;25 docs/month</li>
           <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
           <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees</li>
+          <li><strong>Open Brain</strong> (shared AI memory) &mdash; Free (pgvector + ~$0.10–0.30/mo OpenRouter API)</li>
           <li><strong>Cloudflare D1</strong> (session archive) &mdash; Free, auto-saves Claude Code transcripts</li>
         </ul>
       </li>
@@ -463,6 +464,19 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li>Create API token with Object Read &amp; Write permissions</li>
       <li>User provides: Account ID, Access Key ID, Secret Access Key, bucket name</li>
     </ul>
+
+    <h3>Open Brain (Shared AI Memory)</h3>
+    <p>A semantic search system that captures thoughts from Slack (and any MCP client), stores them as vector embeddings in Supabase pgvector, and exposes retrieval via an MCP server that any AI tool can connect to.</p>
+    <ol>
+      <li><strong>Database setup:</strong> Claude Code enables pgvector, creates the <code>thoughts</code> table with vector embeddings (1536 dims), and deploys the <code>match_thoughts()</code> search function</li>
+      <li><strong>OpenRouter API key:</strong> Sign up at <a href="https://openrouter.ai/">openrouter.ai</a> and create an API key (used for embeddings and metadata extraction)</li>
+      <li><strong>Capture pipeline:</strong> Claude Code deploys an <code>ingest-thought</code> edge function that receives Slack webhooks, generates embeddings, and extracts metadata</li>
+      <li><strong>Slack app (optional):</strong> Create a Slack app at <a href="https://api.slack.com/apps">api.slack.com/apps</a> with <code>channels:history</code> and <code>chat:write</code> scopes. Point Event Subscriptions to the ingest function URL</li>
+      <li><strong>MCP server:</strong> Claude Code deploys an <code>open-brain-mcp</code> edge function with tools: <code>search_thoughts</code>, <code>browse_recent</code>, <code>stats</code>, <code>capture_thought</code></li>
+      <li><strong>Connect AI clients:</strong> Add the MCP server to Claude Code, Claude Desktop, ChatGPT, or Cursor using the URL and access key</li>
+    </ol>
+    <p><strong>Cost:</strong> ~$0.10&ndash;0.30/month at 20 captures/day (OpenRouter API). Storage uses existing Supabase free tier.</p>
+    <p>User provides: <strong>OpenRouter API key</strong>, optionally <strong>Slack bot token</strong> and <strong>capture channel ID</strong></p>
 
     <h3>Cloudflare D1 &mdash; Session Archive (Claude Code transcripts)</h3>
     <p>Automatically saves every Claude Code session (project, model, duration, transcript summary) to a serverless SQLite database via Cloudflare D1. Sessions are captured in real-time using a <code>Stop</code> hook that fires on every agent response.</p>

@@ -41,7 +41,7 @@
     "personal_ai_hub": {
       "label": "Personal AI Hub",
       "description": "AI assistant with smart home control — lights, music, cameras, climate. Voice calling and chat interface. No property management.",
-      "features": ["pai", "lighting", "music", "climate", "cameras", "voice", "residents"],
+      "features": ["pai", "open_brain", "lighting", "music", "climate", "cameras", "voice", "residents"],
       "suggested_services": []
     },
     "small_business": {
@@ -384,6 +384,17 @@
     "dependencies": ["pai"],
     "edgeFunctions": ["alexa-room-control"],
     "dbTables": []
+  },
+
+  "open_brain": {
+    "label": "Open Brain (Shared AI Memory)",
+    "category": "ai",
+    "setup_cost": "freemium",
+    "setup_cost_note": "pgvector in Supabase free tier. ~$0.10-0.30/mo OpenRouter API for embeddings",
+    "dependencies": [],
+    "shared": [],
+    "edgeFunctions": ["ingest-thought", "open-brain-mcp"],
+    "dbTables": ["thoughts"]
   },
 
   "airbnb": {

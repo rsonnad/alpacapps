@@ -114,6 +114,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 
 **AI & Voice:**
 - [ ] AI assistant (PAI + Gemini) — Free tier: 1,000 req/day
+- [ ] Open Brain (shared AI memory) — Free (pgvector + ~$0.10–0.30/mo OpenRouter)
 - [ ] Voice calling (Vapi) — ~$0.10-0.30/min
 - [ ] Alexa skill — Free
 
@@ -258,6 +259,7 @@ For each selected service, follow the detailed instructions in the appropriate r
 - **SignWell (E-Signatures)** → `references/optional-services.md` → "SignWell"
 - **Google Gemini (AI)** → `references/optional-services.md` → "Gemini"
 - **Cloudflare R2 (Storage)** → `references/optional-services.md` → "Cloudflare R2"
+- **Open Brain (AI Memory)** → `references/optional-services.md` → "Open Brain"
 
 **Pattern for each service:**
 1. Ask user for credentials/config in a single message with all URLs
