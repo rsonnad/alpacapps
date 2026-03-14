@@ -1,12 +1,12 @@
 {
-  "version": "v260313.66 11:37p",
-  "release": 740,
-  "sha": "2c4faa3ee",
-  "fullSha": "2c4faa3ee14266afb24b8cfcba127b80c60aaacc",
+  "version": "v260313.67 11:39p",
+  "release": 741,
+  "sha": "cfdd9ec80",
+  "fullSha": "cfdd9ec8033966d17d56939b63b6418ae76f63c7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 04:37:35+00",
-  "commits": [{"sha":"2c4faa3ee","message":"Add Alpaca Kiosk Android app + update infra setup guide","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 04:39:42+00",
+  "commits": [{"sha":"cfdd9ec80","message":"Update kiosk app icon to alpaca head logo","author":"Rahul"}]
 }
