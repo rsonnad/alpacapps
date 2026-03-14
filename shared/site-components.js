@@ -84,7 +84,7 @@ function renderHeader(options = {}) {
         <a href="${BASE_PATH}/" class="aap-header__logo">
           <img src="${light ? IMAGES.iconInverted : IMAGES.icon}" alt="Alpaca Playhouse Austin" class="aap-header__icon" width="21" height="30" data-light-src="${IMAGES.iconInverted}" data-dark-src="${IMAGES.icon}" onerror="this.onerror=null;this.src='${ALPACA_ICON_FALLBACK}'">
           <img src="${light ? IMAGES.wordmarkInverted : IMAGES.wordmark}" alt="Alpaca Playhouse Austin" class="aap-header__wordmark" width="22" height="22" data-light-src="${IMAGES.wordmarkInverted}" data-dark-src="${IMAGES.wordmark}" onerror="this.onerror=null;this.src='${ALPACA_WORDMARK_FALLBACK}'">
-          ${version ? `<span title="Site version" class="aap-header__version">${version}</span>` : ''}
+          <span title="Site version" class="aap-header__version">${version || ''}</span>
         </a>
         <nav class="aap-nav" id="aap-nav">
           <ul class="aap-nav__list">
