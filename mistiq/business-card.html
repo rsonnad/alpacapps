@@ -193,10 +193,29 @@
       width: auto;
     }
 
-    .card-promo-logo {
-      height: 70px;
+    .card-contact-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    .card-contact-logo {
+      height: 110px;
       width: auto;
-      align-self: center;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    .card-contact-lines {
+      text-align: left;
+    }
+
+    .card-contact-lines .card-detail {
+      margin-bottom: 3px;
+      text-align: left;
     }
 
     .card-detail {
@@ -471,7 +490,6 @@
             <div class="card-divider"></div>
 
             <div class="card-qr-promo">
-              <img src="../assets/branding/alpaca-head-black-transparent.png" alt="logo" class="card-promo-logo">
               <div class="card-promo">
                 <div class="card-promo__label">code</div>
                 <div class="card-promo__box"></div>
@@ -484,9 +502,15 @@
 
             <div class="card-location">@ <img src="../assets/branding/wordmark-black-transparent.png" alt="alpaca playhouse austin"></div>
             <div class="card-directions">13 minutes east of the airport on hwy 71</div>
-            <div class="card-detail">alpacaplayhouse.com/mistiq</div>
-            <div class="card-detail">pai@alpacaplayhouse.com</div>
-            <div class="card-detail">text/whatsapp +1-424-234-1750</div>
+
+            <div class="card-contact-block">
+              <img src="../assets/branding/alpaca-head-black-transparent.png" alt="logo" class="card-contact-logo">
+              <div class="card-contact-lines">
+                <div class="card-detail">alpacaplayhouse.com/mistiq</div>
+                <div class="card-detail">pai@alpacaplayhouse.com</div>
+                <div class="card-detail">text/whatsapp +1-424-234-1750</div>
+              </div>
+            </div>
             <div class="card-detail">Offered with: Rahul Lio</div>
           </div>
 
