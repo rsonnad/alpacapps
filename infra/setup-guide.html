@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlpacApps Setup Guide — Instructions for Claude</title>
-  <meta name="description" content="Step-by-step setup instructions for Claude to guide users through AlpacApps infrastructure setup.">
+  <title>AlpacApps Setup Guide — Instructions for Claude Chat</title>
+  <meta name="description" content="Step-by-step setup instructions for Claude Chat to guide users through AlpacApps infrastructure setup.">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
@@ -189,8 +189,12 @@
 <div class="container">
 
   <div class="guide-note">
-    <strong>Instructions for Claude</strong>
-    Walk the user through each step below, one at a time. At each step that requires the user to interact with a vendor website (GitHub, Supabase, Google Cloud), ask them to paste a screenshot so you can verify they're on the right page and guide them to the correct buttons/fields. Adapt to their OS (Mac, Windows, Linux) and what they already have installed. Skip steps for things they've already completed.
+    <strong>Instructions for Claude Chat</strong>
+    <p>Walk the user through each numbered step below in order. Do not skip ahead.</p>
+    <p><strong>Checkpoint rule:</strong> Do not move to Step N+1 until every item in Step N is explicitly confirmed by the user. If the user says they've already completed something, still confirm it — ask them to verify (run a command, paste a screenshot, or state the result). "I already did that" requires a quick proof before proceeding.</p>
+    <p><strong>Screenshot dependency:</strong> Step 2 includes setting up one-click screenshots. This is required infrastructure, not optional — all subsequent steps depend on the user being able to paste screenshots for you to verify their progress. Do not skip or deprioritize it.</p>
+    <p><strong>Screenshot verification:</strong> At each step that requires the user to interact with a website or application (GitHub, Supabase, Google Cloud, Cloudflare, etc.), ask them to paste a screenshot so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
+    <p><strong>Adapting to the user:</strong> Adapt commands and instructions to their OS (Mac, Windows, Linux). If they've already completed a full step (e.g., "I already have a Supabase project"), confirm the key details you'll need (project ref, password, etc.) and move on — but still follow step order.</p>
   </div>
 
   <!-- Step 1 -->
