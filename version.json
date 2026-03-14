@@ -1,12 +1,12 @@
 {
-  "version": "v260313.65 11:30p",
-  "release": 739,
-  "sha": "45807da1d",
-  "fullSha": "45807da1dda4111374ed8ad47696f9bf47eda542",
+  "version": "v260313.66 11:37p",
+  "release": 740,
+  "sha": "2c4faa3ee",
+  "fullSha": "2c4faa3ee14266afb24b8cfcba127b80c60aaacc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 04:30:37+00",
-  "commits": [{"sha":"45807da1d","message":"Fix Claude Sessions setup guide: use Stop hook instead of SessionEnd","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 04:37:35+00",
+  "commits": [{"sha":"2c4faa3ee","message":"Add Alpaca Kiosk Android app + update infra setup guide","author":"Rahul"}]
 }
