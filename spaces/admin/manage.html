@@ -3,171 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>AlpacAPPs - Page Not Found</title>
+  <title>AlpacAPPs Admin - Redirecting...</title>
   <link rel="icon" type="image/png" href="../../favicon.png">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <script type="module" src="../../shared/version-info.js"></script>
-  <style>
-    :root {
-      --bg: #110e10;
-      --card: #1e1a1c;
-      --card-border: #2e282b;
-      --text: #f5f4ed;
-      --text-secondary: #c4b8bc;
-      --text-muted: #8a7e82;
-      --accent: #e99c48;
-      --accent-soft: rgba(233, 156, 72, 0.15);
-      --radius: 14px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2rem;
-      max-width: 520px;
-      width: 100%;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-    }
-
-    .header h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    /* 404 */
-    .code {
-      font-size: 5rem;
-      font-weight: 800;
-      color: var(--accent);
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-
-    .message {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      text-align: center;
-    }
-
-    /* Fact card */
-    .fact-card {
-      background: linear-gradient(135deg, var(--card) 0%, rgba(233, 156, 72, 0.06) 100%);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 1.5rem 1.75rem;
-      text-align: center;
-      width: 100%;
-    }
-
-    .fact-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--accent);
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    .fact-text {
-      font-size: 1.05rem;
-      line-height: 1.5;
-      color: var(--text-secondary);
-      font-style: italic;
-    }
-
-    /* Nav link */
-    .nav-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: var(--accent-soft);
-      border: 1px solid rgba(233, 156, 72, 0.25);
-      border-radius: 20px;
-      padding: 0.5rem 1.25rem;
-      font-size: 0.95rem;
-      color: var(--accent);
-      font-weight: 500;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .nav-link:hover {
-      background: rgba(233, 156, 72, 0.25);
-    }
-
-    /* Footer */
-    .footer {
-      font-size: 0.6rem;
-      color: var(--text-muted);
-    }
-  </style>
+  <script>
+    // manage.html has been split into individual pages
+    // Redirect to spaces.html (the admin panel), preserving any query parameters
+    const params = window.location.search;
+    window.location.replace('./spaces.html' + params);
+  </script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
-           alt="" class="logo">
-      <h1>Alpaca Playhouse</h1>
-    </div>
-
-    <div class="code">404</div>
-    <p class="message">This page could not be found.</p>
-
-    <div class="fact-card">
-      <div class="fact-label">Alpaca Fact</div>
-      <p class="fact-text" id="factText">Alpacas hum to communicate with each other. A mother alpaca hums to her baby (called a cria) almost constantly.</p>
-    </div>
-
-    <a href="./spaces.html" class="nav-link">Go to Admin Dashboard</a>
-
-    <div class="footer">
-      <span class="kiosk-version"></span>
-    </div>
-  </div>
-
-  <script>
-    const facts = [
-      "Alpacas hum to communicate with each other. A mother alpaca hums to her baby (called a cria) almost constantly.",
-      "Alpaca fiber comes in over 22 natural colors, more than any other fiber-producing animal.",
-      "Alpacas are gentle on the environment \u2014 their padded feet don\u2019t tear up the ground like hooves do.",
-      "A group of alpacas is called a herd, and they are very social animals that get stressed when alone.",
-      "Alpacas can live at altitudes over 15,000 feet in the Andes mountains of South America.",
-      "Unlike llamas, alpacas rarely spit at humans \u2014 they mostly spit at each other over food.",
-      "Alpacas have been domesticated for over 6,000 years, originally by the Inca civilization.",
-      "Baby alpacas (crias) can stand and walk within an hour of being born.",
-      "Alpacas have excellent memory and can remember other alpacas they haven\u2019t seen in years.",
-      "Alpaca fiber is naturally hypoallergenic because it contains no lanolin.",
-      "Alpacas use a communal dung pile, which makes them easy to house-train \u2014 yes, really.",
-      "An alpaca\u2019s top speed is about 35 mph, surprisingly fast for such fluffy creatures.",
-    ];
-    document.getElementById('factText').textContent = facts[Math.floor(Math.random() * facts.length)];
-  </script>
+  <p>Redirecting to admin dashboard...</p>
+  <p>If you are not redirected, <a href="./spaces.html">click here</a>.</p>
 </body>
 </html>
