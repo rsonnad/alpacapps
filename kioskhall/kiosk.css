@@ -60,6 +60,7 @@ body {
 .kiosk-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--kiosk-card-border);
@@ -67,22 +68,24 @@ body {
 }
 
 .kiosk-logo {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
-.kiosk-title h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--kiosk-text);
+.kiosk-wordmark {
+  height: 36px;
+  object-fit: contain;
+  flex: 1;
+  min-width: 0;
 }
 
 .kiosk-datetime {
   font-size: 0.85rem;
   color: var(--kiosk-text-secondary);
-  margin-top: 0.1rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* ---- Main: two-column layout ---- */
