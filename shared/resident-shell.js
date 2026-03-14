@@ -12,6 +12,7 @@ import { initPaiWidget } from './pai-widget.js';
 import { setupVersionInfo } from './version-info.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
+import { getEnabledFeatures } from './feature-registry.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -60,28 +61,28 @@ const TAB_ICONS = {
 
 const DEVICE_SUBTABS = [
   { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
-  { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting' },
-  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music' },
-  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras' },
-  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate' },
-  { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry' },
-  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars' },
-  { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras' },
-  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer' },
+  { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting', feature: 'lighting' },
+  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music', feature: 'music' },
+  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras', feature: 'cameras' },
+  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate', feature: 'climate' },
+  { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry', feature: 'oven' },
+  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars', feature: 'vehicles' },
+  { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras', feature: 'cameras' },
+  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer', feature: 'printer_3d' },
 ];
 
 const RESIDENT_CORE_TABS = [
   { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
   { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
   { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
-  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile' },
+  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },
 ];
 
 const RESIDENT_STAFF_TABS = [
   { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
   { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
   { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
-  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile' },
+  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },
 ];
 
 // =============================================
@@ -120,7 +121,7 @@ export function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // TAB NAVIGATION
 // =============================================
-function renderResidentTabNav(activeTab, authState) {
+async function renderResidentTabNav(activeTab, authState) {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
@@ -148,17 +149,20 @@ function renderResidentTabNav(activeTab, authState) {
   if (isDevicePage) {
     tabsContainer.innerHTML = '';
     tabsContainer.style.display = 'none';
-    renderDeviceSubTabNav(activeTab, authState);
+    await renderDeviceSubTabNav(activeTab, authState);
     return;
   }
 
-  // Filter tabs by permission
-  const tabs = availableTabs.filter((tab) => {
-    if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
-      return tab.permissionsAny.some((perm) => authState.hasPermission?.(perm));
-    }
-    return authState.hasPermission?.(tab.permission);
-  });
+  // Filter tabs by enabled features AND permission
+  const enabledFeatures = await getEnabledFeatures();
+  const tabs = availableTabs
+    .filter(tab => !tab.feature || enabledFeatures[tab.feature])
+    .filter((tab) => {
+      if (Array.isArray(tab.permissionsAny) && tab.permissionsAny.length > 0) {
+        return tab.permissionsAny.some((perm) => authState.hasPermission?.(perm));
+      }
+      return authState.hasPermission?.(tab.permission);
+    });
 
   tabsContainer.innerHTML = tabs.map(tab => {
     const isActive = tab.id === activeTab;
@@ -183,7 +187,7 @@ function hasTabAccess(tab, authState) {
   return authState.hasPermission?.(tab.permission);
 }
 
-function renderDeviceSubTabNav(activeTab, authState) {
+async function renderDeviceSubTabNav(activeTab, authState) {
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
   const devicePageToTab = {
     'devices.html': 'list',
@@ -216,7 +220,10 @@ function renderDeviceSubTabNav(activeTab, authState) {
     return;
   }
 
-  const visibleSubtabs = DEVICE_SUBTABS.filter((tab) => hasTabAccess(tab, authState));
+  const enabledFeatures = await getEnabledFeatures();
+  const visibleSubtabs = DEVICE_SUBTABS
+    .filter(tab => !tab.feature || enabledFeatures[tab.feature])
+    .filter((tab) => hasTabAccess(tab, authState));
   if (visibleSubtabs.length === 0) {
     if (subTabContainer) subTabContainer.remove();
     return;
@@ -640,7 +647,7 @@ export async function initResidentPage({ activeTab, requiredRole = 'resident', r
 
       renderContextSwitcher(state);
       // Render tab navigation (pass full auth state for permission checks)
-      renderResidentTabNav(activeTab, state);
+      await renderResidentTabNav(activeTab, state);
 
       // Sign out handlers + PAI widget + version info (only bind once). Use delegation on userInfo so header dropdown Sign Out is reliable.
       if (!pageContentShown) {
