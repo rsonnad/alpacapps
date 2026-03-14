@@ -275,7 +275,7 @@ const ALLOWED_EMAIL = 'rahulioson@gmail.com';
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 60;
 let currentOffset = 0;
 let currentTotal = 0;
 let currentResults = [];
@@ -606,8 +606,8 @@ function escHtml(s) {
 }
 
 // ── Thumbnails via <img> tags with URL-based auth (no CORS preflight) ───
-function thumbSrc(fileId) {
-  return `${API_BASE}/thumbnail/${fileId}?key=${API_SECRET}`;
+function thumbSrc(fileId, size = 'sm') {
+  return `${API_BASE}/thumbnail/${fileId}?key=${API_SECRET}&size=${size}`;
 }
 
 function thumbError(img) {
@@ -646,15 +646,10 @@ function openImageLightbox(index) {
   document.body.style.overflow = 'hidden';
   updateLightboxNav();
 
-  // Fetch with auth
-  fetch(`${API_BASE}/preview/${f.id}`, {
-    headers: { 'Authorization': `Bearer ${API_SECRET}` }
-  }).then(r => r.blob()).then(blob => {
-    const url = URL.createObjectURL(blob);
-    contentEl.innerHTML = `<img src="${url}" alt="${escHtml(f.name)}">`;
-  }).catch(e => {
-    contentEl.innerHTML = `<div style="color:#fff">Failed to load: ${e.message}</div>`;
-  });
+  // Use medium thumbnail (pre-generated, fast) with full-res on click
+  const mdUrl = thumbSrc(f.id, 'md');
+  contentEl.innerHTML = `<img src="${mdUrl}" alt="${escHtml(f.name)}" style="cursor:zoom-in" onclick="loadFullRes(${f.id}, this)" title="Click for full resolution">`;
+
 
   // EXIF
   const exifEl = document.getElementById('lightboxExif');
@@ -667,6 +662,22 @@ function openImageLightbox(index) {
     }).then(r => r.json()).then(data => showExif(exifEl, data)).catch(() => {});
   }
 }
+
+window.loadFullRes = function(fileId, imgEl) {
+  imgEl.style.cursor = 'wait';
+  imgEl.title = 'Loading full resolution...';
+  fetch(`${API_BASE}/preview/${fileId}`, {
+    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+  }).then(r => r.blob()).then(blob => {
+    imgEl.src = URL.createObjectURL(blob);
+    imgEl.style.cursor = 'default';
+    imgEl.title = 'Full resolution';
+    imgEl.onclick = null;
+  }).catch(() => {
+    imgEl.style.cursor = 'default';
+    imgEl.title = 'Full resolution unavailable';
+  });
+};
 
 function showExif(el, data) {
   const parts = [];
