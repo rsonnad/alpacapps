@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Vault</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/site.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #faf9f6; color: #1a1a1a; min-height: 100vh; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* Auth gate */
+    .auth-gate { text-align: center; padding: 4rem 1rem; }
+    .auth-gate h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .auth-gate button {
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+      padding: 0.75rem 2rem; border: none; border-radius: 10px;
+      background: #c68b3f; color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .auth-gate button:hover { background: #b07a35; }
+
+    /* Header */
+    .page-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+    .page-header .subtitle { color: #888; font-size: 0.85rem; }
+
+    /* Stats bar */
+    .stats-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat { background: #fff; border: 1px solid #e8e5e0; border-radius: 10px; padding: 0.75rem 1rem; min-width: 120px; }
+    .stat .label { font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat .val { font-size: 1.25rem; font-weight: 700; }
+
+    /* Search bar */
+    .search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-bar input[type="text"] {
+      flex: 1; min-width: 200px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      padding: 0.65rem 1rem; border: 1px solid #d4d0c8; border-radius: 10px;
+      background: #fff; outline: none; transition: border-color 0.15s;
+    }
+    .search-bar input:focus { border-color: #c68b3f; }
+    .search-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+      padding: 0.65rem 1.25rem; border: none; border-radius: 10px;
+      background: #c68b3f; color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .search-btn:hover { background: #b07a35; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+    .filters select, .filters input {
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+      padding: 0.45rem 0.7rem; border: 1px solid #d4d0c8; border-radius: 8px;
+      background: #fff; outline: none;
+    }
+    .filters label { font-size: 0.8rem; color: #666; }
+    .pill-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 500;
+      padding: 0.35rem 0.75rem; border: 1px solid #d4d0c8; border-radius: 20px;
+      background: #fff; cursor: pointer; transition: all 0.15s;
+    }
+    .pill-btn:hover, .pill-btn.active { background: #c68b3f; color: #fff; border-color: #c68b3f; }
+
+    /* Results info */
+    .results-info { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
+
+    /* View modes */
+    .view-toggle { display: flex; gap: 0.25rem; margin-left: auto; }
+    .view-toggle button {
+      font-size: 1rem; padding: 0.3rem 0.5rem; border: 1px solid #d4d0c8;
+      background: #fff; cursor: pointer; border-radius: 6px;
+    }
+    .view-toggle button.active { background: #c68b3f; color: #fff; border-color: #c68b3f; }
+
+    /* Grid view */
+    .results-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .file-card {
+      background: #fff; border: 1px solid #e8e5e0; border-radius: 10px;
+      overflow: hidden; cursor: pointer; transition: all 0.15s;
+    }
+    .file-card:hover { border-color: #c68b3f; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .file-card .thumb {
+      width: 100%; height: 140px; object-fit: cover; background: #f0ede8; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .file-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .file-card .icon-placeholder {
+      width: 100%; height: 140px; display: flex; align-items: center; justify-content: center;
+      background: #f5f3ef; font-size: 2.5rem; color: #bbb;
+    }
+    .file-card .info { padding: 0.6rem 0.75rem; }
+    .file-card .fname { font-size: 0.78rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-card .fmeta { font-size: 0.68rem; color: #999; margin-top: 0.2rem; }
+    .file-card .ext-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
+      background: #f0ede8; color: #888; padding: 0.1rem 0.4rem; border-radius: 4px;
+    }
+
+    /* List view */
+    .results-list { margin-bottom: 1.5rem; }
+    .list-row {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem;
+      background: #fff; border: 1px solid #e8e5e0; border-radius: 8px;
+      margin-bottom: 0.4rem; cursor: pointer; transition: border-color 0.15s;
+    }
+    .list-row:hover { border-color: #c68b3f; }
+    .list-row .list-icon { font-size: 1.4rem; width: 2rem; text-align: center; flex-shrink: 0; }
+    .list-row .list-name { flex: 1; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list-row .list-path { flex: 2; font-size: 0.75rem; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list-row .list-size { font-size: 0.78rem; color: #666; white-space: nowrap; min-width: 60px; text-align: right; }
+    .list-row .list-ext {
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      background: #f0ede8; color: #888; padding: 0.15rem 0.45rem; border-radius: 4px;
+    }
+
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; gap: 0.5rem; align-items: center; margin-bottom: 2rem; }
+    .pagination button {
+      font-family: 'DM Sans', sans-serif; font-size: 0.85rem; padding: 0.4rem 0.9rem;
+      border: 1px solid #d4d0c8; border-radius: 8px; background: #fff; cursor: pointer;
+    }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .pagination button:not(:disabled):hover { background: #f0ede8; }
+    .pagination .page-info { font-size: 0.8rem; color: #888; }
+
+    /* Lightbox */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-close {
+      position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; color: #fff;
+      cursor: pointer; background: none; border: none; z-index: 1001;
+    }
+    .lightbox-content {
+      max-width: 95vw; max-height: 85vh; display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-content img { max-width: 100%; max-height: 85vh; border-radius: 4px; }
+    .lightbox-content iframe { width: 90vw; height: 85vh; border: none; border-radius: 4px; background: #fff; }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%); font-size: 2.5rem;
+      color: #fff; cursor: pointer; background: none; border: none; padding: 1rem;
+      opacity: 0.7; transition: opacity 0.15s;
+    }
+    .lightbox-nav:hover { opacity: 1; }
+    .lightbox-nav.prev { left: 0.5rem; }
+    .lightbox-nav.next { right: 0.5rem; }
+    .lightbox-info {
+      color: #ccc; font-size: 0.8rem; margin-top: 0.75rem; text-align: center;
+      max-width: 90vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .lightbox-exif {
+      color: #aaa; font-size: 0.72rem; margin-top: 0.25rem; text-align: center;
+    }
+
+    /* Drive status banner */
+    .drive-banner {
+      background: #fef3cd; border: 1px solid #ffc107; border-radius: 10px;
+      padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem;
+      display: none; align-items: center; gap: 0.5rem;
+    }
+    .drive-banner.offline { background: #f8d7da; border-color: #f5c6cb; }
+    .drive-banner.online { background: #d4edda; border-color: #c3e6cb; display: none !important; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 3rem; color: #999; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e8e5e0; border-top-color: #c68b3f; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Breadcrumbs */
+    .breadcrumbs { display: flex; gap: 0.25rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+    .breadcrumbs a { font-size: 0.8rem; color: #c68b3f; text-decoration: none; }
+    .breadcrumbs a:hover { text-decoration: underline; }
+    .breadcrumbs span { font-size: 0.8rem; color: #999; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #999; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+
+    @media (max-width: 640px) {
+      .results-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .list-row .list-path { display: none; }
+      .filters { gap: 0.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="siteHeader"></div>
+
+<!-- Auth Gate -->
+<div id="authGate" class="auth-gate" style="display:none">
+  <h2>File Vault</h2>
+  <p style="color:#666;margin-bottom:1.5rem">Sign in with your Google account to access files.</p>
+  <button onclick="doGoogleSignIn()">Sign in with Google</button>
+</div>
+
+<!-- Main App (hidden until auth) -->
+<div id="mainApp" class="container" style="display:none">
+
+  <div class="page-header">
+    <h1>File Vault</h1>
+    <span class="subtitle" id="indexInfo"></span>
+    <div class="view-toggle">
+      <button onclick="setView('grid')" id="viewGrid" class="active" title="Grid view">&#9638;</button>
+      <button onclick="setView('list')" id="viewList" title="List view">&#9776;</button>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="drive-banner" id="driveBanner">
+    <span id="driveIcon">&#9888;</span>
+    <span id="driveMsg">External drive is offline — search works but thumbnails and file previews are unavailable.</span>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search files by name..." autofocus>
+    <button class="search-btn" onclick="doSearch()">Search</button>
+  </div>
+
+  <div class="filters">
+    <select id="filterExt" onchange="doSearch()">
+      <option value="">All types</option>
+      <option value="jpg,jpeg,png,gif,bmp,tiff,webp,heic">Photos</option>
+      <option value="mp4,mov,avi,mkv,wmv,flv">Videos</option>
+      <option value="pdf">PDFs</option>
+      <option value="doc,docx,xls,xlsx,ppt,pptx,txt,csv">Documents</option>
+      <option value="mp3,flac,wma,aac,wav,ogg,m4a">Audio</option>
+      <option value="zip,rar,7z,tgz,gz,tar">Archives</option>
+    </select>
+    <select id="filterSort" onchange="doSearch()">
+      <option value="">Relevance</option>
+      <option value="size">Size</option>
+      <option value="mtime">Date modified</option>
+      <option value="name">Name</option>
+    </select>
+    <select id="filterOrder" onchange="doSearch()">
+      <option value="desc">Descending</option>
+      <option value="asc">Ascending</option>
+    </select>
+    <label><input type="checkbox" id="filterExif" onchange="doSearch()"> EXIF data</label>
+  </div>
+
+  <div id="breadcrumbs" class="breadcrumbs" style="display:none"></div>
+  <div class="results-info" id="resultsInfo"></div>
+  <div id="resultsContainer"></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+  <button class="lightbox-nav prev" onclick="navLightbox(-1)">&#8249;</button>
+  <button class="lightbox-nav next" onclick="navLightbox(1)">&#8250;</button>
+  <div class="lightbox-content" id="lightboxContent"></div>
+  <div class="lightbox-info" id="lightboxInfo"></div>
+  <div class="lightbox-exif" id="lightboxExif"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage();
+</script>
+<script>
+const API_BASE = 'https://files.alpacaplayhouse.com';
+const API_SECRET = 'fsapi_a7c3e9b2d1f0485e9c6a8d3b7e2f1c0d';
+const ALLOWED_EMAIL = 'rahulioson@gmail.com';
+const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+
+const PAGE_SIZE = 20;
+let currentOffset = 0;
+let currentTotal = 0;
+let currentResults = [];
+let currentView = 'grid';
+let lightboxIndex = 0;
+let sb;
+
+// ── Auth ──────────────────────────────────────────────
+
+async function initAuth() {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user?.email === ALLOWED_EMAIL) {
+    showApp();
+    return;
+  }
+  // Check URL for auth callback
+  const hash = window.location.hash;
+  if (hash.includes('access_token')) {
+    const { data: { session: newSession } } = await sb.auth.getSession();
+    if (newSession?.user?.email === ALLOWED_EMAIL) {
+      window.location.hash = '';
+      showApp();
+      return;
+    }
+  }
+  document.getElementById('authGate').style.display = '';
+}
+
+window.doGoogleSignIn = async function() {
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+};
+
+function showApp() {
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('mainApp').style.display = '';
+  loadStats();
+  // Auto-search if URL has params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('q')) {
+    document.getElementById('searchInput').value = params.get('q');
+    doSearch();
+  }
+}
+
+// ── API ───────────────────────────────────────────────
+
+async function api(path, params = {}) {
+  const url = new URL(API_BASE + path);
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== '' && v !== null && v !== undefined) url.searchParams.set(k, v);
+  }
+  const res = await fetch(url, { headers: { 'Authorization': `Bearer ${API_SECRET}` } });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+function thumbUrl(fileId) {
+  return `${API_BASE}/thumbnail/${fileId}?_k=${API_SECRET}`;
+}
+
+function previewUrl(fileId) {
+  return `${API_BASE}/preview/${fileId}`;
+}
+
+// ── Stats ─────────────────────────────────────────────
+
+let driveOnline = false;
+
+async function loadStats() {
+  try {
+    const stats = await api('/stats');
+    const bar = document.getElementById('statsBar');
+    bar.innerHTML = `
+      <div class="stat"><div class="label">Files</div><div class="val">${Number(stats.total_files || 0).toLocaleString()}</div></div>
+      <div class="stat"><div class="label">Total Size</div><div class="val">${stats.total_size_tb || '?'} TB</div></div>
+      <div class="stat"><div class="label">Photos</div><div class="val">${Number(stats.total_photos || 0).toLocaleString()}</div></div>
+      <div class="stat"><div class="label">With GPS</div><div class="val">${Number(stats.photos_with_gps || 0).toLocaleString()}</div></div>
+    `;
+    document.getElementById('indexInfo').textContent =
+      `Indexed ${stats.indexed_at?.split('T')[0] || 'unknown'}`;
+
+    // Check drive status
+    checkDriveStatus();
+  } catch (e) { console.error('Stats error:', e); }
+}
+
+async function checkDriveStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    const data = await res.json();
+    driveOnline = data.drive_mounted === true;
+    const banner = document.getElementById('driveBanner');
+    if (!driveOnline) {
+      banner.style.display = 'flex';
+      banner.className = 'drive-banner offline';
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch(e) {
+    // If health check fails, assume drive is offline
+    const banner = document.getElementById('driveBanner');
+    banner.style.display = 'flex';
+    banner.className = 'drive-banner offline';
+  }
+}
+
+// ── Search ────────────────────────────────────────────
+
+window.doSearch = async function(offset = 0) {
+  const q = document.getElementById('searchInput').value.trim();
+  const ext = document.getElementById('filterExt').value;
+  const sort = document.getElementById('filterSort').value;
+  const order = document.getElementById('filterOrder').value;
+  const exif = document.getElementById('filterExif').checked ? '1' : '';
+
+  currentOffset = offset;
+  document.getElementById('resultsContainer').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('resultsInfo').textContent = 'Searching...';
+
+  try {
+    const data = await api('/search', {
+      q, ext, sort, order, exif,
+      limit: PAGE_SIZE,
+      offset
+    });
+
+    currentResults = data.results;
+    currentTotal = data.total;
+
+    renderResults();
+    renderPagination();
+
+    const from = offset + 1;
+    const to = Math.min(offset + PAGE_SIZE, currentTotal);
+    document.getElementById('resultsInfo').textContent =
+      currentTotal > 0
+        ? `${from}-${to} of ${currentTotal.toLocaleString()} results${q ? ` for "${q}"` : ''}`
+        : `No results${q ? ` for "${q}"` : ''}`;
+  } catch (e) {
+    console.error('Search error:', e);
+    document.getElementById('resultsContainer').innerHTML =
+      `<div class="empty-state"><div class="icon">&#9888;</div><p>Search failed: ${e.message}</p></div>`;
+    document.getElementById('resultsInfo').textContent = '';
+  }
+};
+
+// ── Render ────────────────────────────────────────────
+
+const IMG_EXTS = new Set(['jpg','jpeg','png','gif','bmp','tiff','tif','webp','heic']);
+const VIDEO_EXTS = new Set(['mp4','mov','avi','mkv','wmv','flv','m4v']);
+const AUDIO_EXTS = new Set(['mp3','flac','wma','aac','wav','ogg','m4a']);
+const DOC_EXTS = new Set(['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','csv','rtf']);
+
+function fileIcon(ext) {
+  ext = (ext || '').toLowerCase();
+  if (IMG_EXTS.has(ext)) return '\ud83d\uddbc\ufe0f';
+  if (VIDEO_EXTS.has(ext)) return '\ud83c\udfa5';
+  if (AUDIO_EXTS.has(ext)) return '\ud83c\udfa7';
+  if (ext === 'pdf') return '\ud83d\udcc4';
+  if (DOC_EXTS.has(ext)) return '\ud83d\udcc3';
+  if (ext === 'zip' || ext === 'rar' || ext === '7z' || ext === 'tgz') return '\ud83d\udce6';
+  return '\ud83d\udcc1';
+}
+
+function formatSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+}
+
+function renderResults() {
+  const container = document.getElementById('resultsContainer');
+  if (!currentResults.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">\ud83d\udd0d</div><p>No files found. Try a different search.</p></div>';
+    return;
+  }
+  if (currentView === 'grid') renderGrid(container);
+  else renderList(container);
+}
+
+// renderGrid is defined below with thumbSrc + proper error handling
+
+function renderList(container) {
+  container.innerHTML = `<div class="results-list">${currentResults.map((f, i) => {
+    const ext = (f.ext || '').toLowerCase();
+    const dirShort = (f.dir || '').replace('/Volumes/rvault20/', '');
+    return `<div class="list-row" onclick="openFile(${i})">
+      <div class="list-icon">${fileIcon(ext)}</div>
+      <div class="list-name">${escHtml(f.name)}</div>
+      <div class="list-path" title="${escHtml(f.path)}">${escHtml(dirShort)}</div>
+      <span class="list-ext">${ext || '?'}</span>
+      <div class="list-size">${formatSize(f.size)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderPagination() {
+  const pg = document.getElementById('pagination');
+  if (currentTotal <= PAGE_SIZE) { pg.innerHTML = ''; return; }
+  const page = Math.floor(currentOffset / PAGE_SIZE) + 1;
+  const totalPages = Math.ceil(currentTotal / PAGE_SIZE);
+  pg.innerHTML = `
+    <button onclick="doSearch(${currentOffset - PAGE_SIZE})" ${currentOffset === 0 ? 'disabled' : ''}>Prev</button>
+    <span class="page-info">Page ${page} of ${totalPages}</span>
+    <button onclick="doSearch(${currentOffset + PAGE_SIZE})" ${currentOffset + PAGE_SIZE >= currentTotal ? 'disabled' : ''}>Next</button>
+  `;
+}
+
+// ── View toggle ───────────────────────────────────────
+
+window.setView = function(mode) {
+  currentView = mode;
+  document.getElementById('viewGrid').classList.toggle('active', mode === 'grid');
+  document.getElementById('viewList').classList.toggle('active', mode === 'list');
+  if (currentResults.length) renderResults();
+};
+
+// ── Lightbox ──────────────────────────────────────────
+
+window.openFile = function(index) {
+  const f = currentResults[index];
+  if (!f) return;
+  const ext = (f.ext || '').toLowerCase();
+
+  if (IMG_EXTS.has(ext)) {
+    openImageLightbox(index);
+  } else if (ext === 'pdf') {
+    openPdfViewer(f);
+  } else if (VIDEO_EXTS.has(ext)) {
+    openVideoPlayer(f);
+  } else if (AUDIO_EXTS.has(ext)) {
+    openAudioPlayer(f);
+  } else {
+    // For other files, show info
+    openFileInfo(f);
+  }
+};
+
+// openImageLightbox is defined below with fetch+blob auth pattern
+
+function updateLightboxNav() {
+  const prevBtn = document.querySelector('.lightbox-nav.prev');
+  const nextBtn = document.querySelector('.lightbox-nav.next');
+  const hasPrev = findAdjacentImage(-1) !== null;
+  const hasNext = findAdjacentImage(1) !== null;
+  prevBtn.style.display = hasPrev ? '' : 'none';
+  nextBtn.style.display = hasNext ? '' : 'none';
+}
+
+function findAdjacentImage(dir) {
+  let i = lightboxIndex + dir;
+  while (i >= 0 && i < currentResults.length) {
+    const ext = (currentResults[i].ext || '').toLowerCase();
+    if (IMG_EXTS.has(ext)) return i;
+    i += dir;
+  }
+  return null;
+}
+
+window.navLightbox = function(dir) {
+  const next = findAdjacentImage(dir);
+  if (next !== null) openImageLightbox(next);
+};
+
+// openPdfViewer, openVideoPlayer, openAudioPlayer are defined below with fetch+blob auth pattern
+
+function openFileInfo(f) {
+  const dirShort = (f.dir || '').replace('/Volumes/rvault20/', '');
+  document.getElementById('lightboxContent').innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:2rem;max-width:500px;width:90vw;text-align:left">
+      <div style="font-size:3rem;text-align:center;margin-bottom:1rem">${fileIcon(f.ext)}</div>
+      <h3 style="margin-bottom:1rem;word-break:break-all">${escHtml(f.name)}</h3>
+      <table style="width:100%;font-size:0.85rem">
+        <tr><td style="color:#888;padding:0.3rem 0">Path</td><td style="word-break:break-all">${escHtml(dirShort)}</td></tr>
+        <tr><td style="color:#888;padding:0.3rem 0">Size</td><td>${formatSize(f.size)}</td></tr>
+        <tr><td style="color:#888;padding:0.3rem 0">Type</td><td>${(f.ext || 'unknown').toUpperCase()}</td></tr>
+        <tr><td style="color:#888;padding:0.3rem 0">Modified</td><td>${f.mtime_str || 'unknown'}</td></tr>
+      </table>
+    </div>
+  `;
+  document.getElementById('lightboxInfo').textContent = '';
+  document.getElementById('lightboxExif').textContent = '';
+  document.querySelector('.lightbox-nav.prev').style.display = 'none';
+  document.querySelector('.lightbox-nav.next').style.display = 'none';
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+window.closeLightbox = function() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+  // Stop any playing media
+  const video = document.querySelector('.lightbox-content video');
+  if (video) video.pause();
+  const audio = document.querySelector('.lightbox-content audio');
+  if (audio) audio.pause();
+};
+
+// ── Keyboard shortcuts ───────────────────────────────
+
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('lightbox').classList.contains('active')) {
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') navLightbox(-1);
+    else if (e.key === 'ArrowRight') navLightbox(1);
+    return;
+  }
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('searchInput')) {
+    doSearch();
+  }
+});
+
+// Close lightbox on click outside content
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
+
+function escHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s || '';
+  return div.innerHTML;
+}
+
+// ── Thumbnails via <img> tags with URL-based auth (no CORS preflight) ───
+function thumbSrc(fileId) {
+  return `${API_BASE}/thumbnail/${fileId}?key=${API_SECRET}`;
+}
+
+function thumbError(img) {
+  // Replace failed thumbnail with file icon
+  const card = img.closest('.file-card');
+  const ext = (card?.dataset.ext || '').toLowerCase();
+  const icon = fileIcon(ext);
+  img.parentElement.outerHTML = `<div class="icon-placeholder">${icon}</div>`;
+}
+
+function renderGrid(container) {
+  container.innerHTML = `<div class="results-grid">${currentResults.map((f, i) => {
+    const ext = (f.ext || '').toLowerCase();
+    const isImg = IMG_EXTS.has(ext);
+    const thumbHtml = isImg
+      ? `<div class="thumb"><img src="${thumbSrc(f.id)}" loading="lazy" onerror="thumbError(this)"></div>`
+      : `<div class="icon-placeholder">${fileIcon(ext)}</div>`;
+    return `<div class="file-card" data-ext="${ext}" onclick="openFile(${i})" title="${escHtml(f.path)}">
+      ${thumbHtml}
+      <div class="info">
+        <div class="fname">${escHtml(f.name)}</div>
+        <div class="fmeta"><span class="ext-badge">${ext || '?'}</span> ${formatSize(f.size)}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Fix preview URLs to use auth headers ─────────────
+function openImageLightbox(index) {
+  lightboxIndex = index;
+  const f = currentResults[index];
+  const contentEl = document.getElementById('lightboxContent');
+  contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('lightboxInfo').textContent = f.name + ' \u2014 ' + formatSize(f.size);
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  updateLightboxNav();
+
+  // Fetch with auth
+  fetch(`${API_BASE}/preview/${f.id}`, {
+    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+  }).then(r => r.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    contentEl.innerHTML = `<img src="${url}" alt="${escHtml(f.name)}">`;
+  }).catch(e => {
+    contentEl.innerHTML = `<div style="color:#fff">Failed to load: ${e.message}</div>`;
+  });
+
+  // EXIF
+  const exifEl = document.getElementById('lightboxExif');
+  if (f.exif) {
+    showExif(exifEl, f.exif);
+  } else {
+    exifEl.textContent = '';
+    fetch(`${API_BASE}/photo-exif/${f.id}`, {
+      headers: { 'Authorization': `Bearer ${API_SECRET}` }
+    }).then(r => r.json()).then(data => showExif(exifEl, data)).catch(() => {});
+  }
+}
+
+function showExif(el, data) {
+  const parts = [];
+  if (data.camera_model) parts.push(data.camera_model);
+  if (data.date_taken) parts.push(data.date_taken);
+  if (data.focal_length) parts.push(data.focal_length);
+  if (data.aperture) parts.push('f/' + data.aperture);
+  if (data.iso) parts.push('ISO ' + data.iso);
+  if (data.width && data.height) parts.push(data.width + '\u00d7' + data.height);
+  el.textContent = parts.join(' \u2022 ');
+}
+
+function openPdfViewer(f) {
+  const contentEl = document.getElementById('lightboxContent');
+  contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('lightboxInfo').textContent = f.name + ' \u2014 ' + formatSize(f.size);
+  document.getElementById('lightboxExif').textContent = '';
+  document.querySelector('.lightbox-nav.prev').style.display = 'none';
+  document.querySelector('.lightbox-nav.next').style.display = 'none';
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  fetch(`${API_BASE}/preview/${f.id}`, {
+    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+  }).then(r => r.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    contentEl.innerHTML = `<iframe src="${url}#toolbar=1" title="${escHtml(f.name)}"></iframe>`;
+  }).catch(e => {
+    contentEl.innerHTML = `<div style="color:#fff">Failed to load: ${e.message}</div>`;
+  });
+}
+
+function openVideoPlayer(f) {
+  const contentEl = document.getElementById('lightboxContent');
+  contentEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('lightboxInfo').textContent = f.name + ' \u2014 ' + formatSize(f.size);
+  document.getElementById('lightboxExif').textContent = '';
+  document.querySelector('.lightbox-nav.prev').style.display = 'none';
+  document.querySelector('.lightbox-nav.next').style.display = 'none';
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  fetch(`${API_BASE}/preview/${f.id}`, {
+    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+  }).then(r => r.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    contentEl.innerHTML = `<video controls autoplay style="max-width:90vw;max-height:80vh;border-radius:4px"><source src="${url}"></video>`;
+  }).catch(e => {
+    contentEl.innerHTML = `<div style="color:#fff">Failed to load: ${e.message}</div>`;
+  });
+}
+
+function openAudioPlayer(f) {
+  const contentEl = document.getElementById('lightboxContent');
+  document.getElementById('lightboxInfo').textContent = f.name + ' \u2014 ' + formatSize(f.size);
+  document.getElementById('lightboxExif').textContent = '';
+  document.querySelector('.lightbox-nav.prev').style.display = 'none';
+  document.querySelector('.lightbox-nav.next').style.display = 'none';
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  fetch(`${API_BASE}/preview/${f.id}`, {
+    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+  }).then(r => r.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    contentEl.innerHTML = `<div style="text-align:center"><div style="font-size:4rem;margin-bottom:1rem">\ud83c\udfa7</div><audio controls autoplay style="width:400px;max-width:90vw"><source src="${url}"></audio></div>`;
+  }).catch(e => {
+    contentEl.innerHTML = `<div style="color:#fff">Failed to load: ${e.message}</div>`;
+  });
+}
+
+// ── Init ──────────────────────────────────────────────
+// Wait for Supabase library to load
+function waitForSupabase() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (window.supabase?.createClient) resolve();
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+waitForSupabase().then(() => initAuth());
+</script>
+</body>
+</html>
