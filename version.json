@@ -1,12 +1,12 @@
 {
-  "version": "v260313.60 10:46p",
-  "release": 734,
-  "sha": "4f3b8e26a",
-  "fullSha": "4f3b8e26ac0af04d004c2a1191b60eedfde93628",
+  "version": "v260313.61 10:54p",
+  "release": 735,
+  "sha": "e72878342",
+  "fullSha": "e728783428a22e5f2c9fa1a56955ceb4bf0b2eac",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 03:46:44+00",
-  "commits": [{"sha":"4f3b8e26a","message":"Add Zelle rent-fallback when name matches but no deposit app","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 03:54:01+00",
+  "commits": [{"sha":"e72878342","message":"Add nav header + Supabase dep to Claude Sessions page","author":"Rahul"}]
 }
