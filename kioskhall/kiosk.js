@@ -306,7 +306,7 @@ let recordTimerInterval = null;
 let recordStartTime = null;
 let mediaStream = null;
 
-function showRecorder(type) {
+async function showRecorder(type) {
   recordingType = type;
   const ui = document.getElementById('recorderUI');
   const preview = document.getElementById('recorderPreview');
@@ -314,7 +314,9 @@ function showRecorder(type) {
   const timerEl = document.getElementById('recorderTimer');
 
   ui.style.display = '';
-  startStopBtn.textContent = 'Start Recording';
+  startStopBtn.textContent = 'Connecting...';
+  startStopBtn.disabled = true;
+  delete startStopBtn.dataset.retry;
   timerEl.textContent = '0:00';
   recordedChunks = [];
 
@@ -326,22 +328,40 @@ function showRecorder(type) {
     preview.style.display = '';
   }
 
-  // Request media
+  // Check API availability
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    timerEl.textContent = 'Recording not supported on this browser';
+    startStopBtn.textContent = 'Unavailable';
+    console.error('getUserMedia not available — requires HTTPS');
+    return;
+  }
+
   const constraints = type === 'video'
     ? { video: { facingMode: 'user', width: 640, height: 480 }, audio: true }
     : { audio: true };
 
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
-      mediaStream = stream;
-      if (type === 'video') {
-        preview.srcObject = stream;
-      }
-    })
-    .catch(err => {
-      console.error('Camera/mic access denied:', err);
-      hideRecorder();
-    });
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    mediaStream = stream;
+    if (type === 'video') {
+      preview.srcObject = stream;
+    }
+    startStopBtn.textContent = 'Start Recording';
+    startStopBtn.disabled = false;
+  } catch (err) {
+    console.error('Camera/mic access denied:', err);
+    const reason = err.name === 'NotAllowedError'
+      ? 'Permission denied — tap Allow when prompted'
+      : err.name === 'NotFoundError'
+      ? `No ${type === 'video' ? 'camera' : 'microphone'} found`
+      : err.name === 'NotReadableError'
+      ? 'Device busy — close other apps using camera/mic'
+      : `Error: ${err.message}`;
+    timerEl.textContent = reason;
+    startStopBtn.textContent = 'Retry';
+    startStopBtn.disabled = false;
+    startStopBtn.dataset.retry = type;
+  }
 }
 
 function hideRecorder() {
@@ -371,6 +391,14 @@ function stopMediaStream() {
 function toggleRecording() {
   const btn = document.getElementById('recorderStartStop');
   const timerEl = document.getElementById('recorderTimer');
+
+  // Retry state — re-attempt getUserMedia
+  if (btn.dataset.retry) {
+    const retryType = btn.dataset.retry;
+    delete btn.dataset.retry;
+    showRecorder(retryType);
+    return;
+  }
 
   if (!mediaRecorder || mediaRecorder.state === 'inactive') {
     // Start recording
