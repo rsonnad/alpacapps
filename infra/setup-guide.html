@@ -461,14 +461,42 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     </ul>
 
     <h3>Cloudflare D1 &mdash; Session Archive (Claude Code transcripts)</h3>
-    <ul>
-      <li>Requires Wrangler CLI: <code>npm install -g wrangler</code>, then <code>wrangler login</code></li>
-      <li>Create D1 database: <code>npx wrangler d1 create claude-sessions</code></li>
-      <li>Source files in <code>cloudflare/claude-sessions/</code> &mdash; edit <code>wrangler.jsonc</code> with the database ID, set auth token in <code>src/index.js</code></li>
-      <li>Deploy: <code>cd cloudflare/claude-sessions && npx wrangler d1 execute claude-sessions --file=schema.sql --remote && npx wrangler deploy</code></li>
-      <li>Install hook: copy <code>hooks/save-session.sh</code> to <code>~/.claude/hooks/</code>, add <code>SessionEnd</code> hook to <code>~/.claude/settings.json</code></li>
-      <li>User provides: Worker URL, auth token</li>
-    </ul>
+    <p>Automatically saves every Claude Code session (project, model, duration, transcript summary) to a serverless SQLite database via Cloudflare D1. Sessions are captured in real-time using a <code>Stop</code> hook that fires on every agent response.</p>
+    <ol>
+      <li><strong>Install Wrangler CLI:</strong> <code>npm install -g wrangler</code>, then <code>wrangler login</code></li>
+      <li><strong>Create D1 database:</strong>
+        <pre><code>npx wrangler d1 create claude-sessions</code></pre>
+        Copy the <code>database_id</code> from the output.
+      </li>
+      <li><strong>Configure:</strong> Edit <code>cloudflare/claude-sessions/wrangler.jsonc</code> &mdash; paste your <code>database_id</code>. Edit <code>src/index.js</code> &mdash; set a unique <code>AUTH_TOKEN</code>.</li>
+      <li><strong>Deploy schema + Worker:</strong>
+        <pre><code>cd cloudflare/claude-sessions
+npx wrangler d1 execute claude-sessions --file=schema.sql --remote
+npx wrangler deploy</code></pre>
+        Note the Worker URL (e.g. <code>https://claude-sessions.your-subdomain.workers.dev</code>).
+      </li>
+      <li><strong>Install the hook:</strong>
+        <pre><code>cp cloudflare/claude-sessions/hooks/save-session.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/save-session.sh</code></pre>
+        Edit the script: set <code>WORKER_URL</code> and <code>AUTH_TOKEN</code> to match your Worker.
+      </li>
+      <li><strong>Register the hook</strong> in <code>~/.claude/settings.json</code>:
+        <pre><code>"hooks": {
+  "Stop": [{
+    "hooks": [{
+      "type": "command",
+      "command": "$HOME/.claude/hooks/save-session.sh",
+      "timeout": 15
+    }]
+  }]
+}</code></pre>
+        <strong>Important:</strong> Use the <code>Stop</code> event, NOT <code>SessionEnd</code>. The <code>SessionEnd</code> event does not fire for worktree/subagent sessions. <code>Stop</code> fires on every agent response and includes built-in rate-limiting (5-minute cooldown per session).
+      </li>
+      <li><strong>Verify:</strong> Start a new Claude Code session, send a message, then check:
+        <pre><code>curl -H "Authorization: Bearer YOUR_TOKEN" https://YOUR_WORKER_URL/sessions</code></pre>
+      </li>
+    </ol>
+    <p><strong>Note:</strong> Running sessions won't pick up new <code>settings.json</code> hooks &mdash; only sessions started after the config change will auto-save. To backfill existing sessions, use the Worker's <code>POST /sessions</code> endpoint.</p>
   </div>
 
 </div>
