@@ -1,12 +1,12 @@
 {
-  "version": "v260314.02 12:03a",
-  "release": 744,
-  "sha": "d876dce6c",
-  "fullSha": "d876dce6c1d36943edccb3869ae58e14fd65f050",
+  "version": "v260314.03 1:17a",
+  "release": 745,
+  "sha": "c0004a6e8",
+  "fullSha": "c0004a6e837212738ebecd1bf2798dbc4636c3db",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 05:03:37+00",
-  "commits": [{"sha":"d876dce6c","message":"Add kiosk app architecture guide with credentials","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 06:17:56+00",
+  "commits": [{"sha":"c0004a6e8","message":"Add Open Brain setup instructions for Supabase pgvector implementation","author":"Rahul"}]
 }
