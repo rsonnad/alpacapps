@@ -1,12 +1,12 @@
 {
-  "version": "v260314.41 6:13p",
-  "release": 783,
-  "sha": "a8a749a1d",
-  "fullSha": "a8a749a1d6980dcc5cd33c9aca308bf236a3f022",
+  "version": "v260314.42 6:35p",
+  "release": 784,
+  "sha": "9176f2abc",
+  "fullSha": "9176f2abcb71a663755a3be7b3ebae54a33da6bd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 23:13:01+00",
-  "commits": [{"sha":"a8a749a1d","message":"Fix session duration data: backfill endpoint + client-side fallback","author":"Rahul"}]
+  "pushedAt": "2026-03-14 23:35:14+00",
+  "commits": [{"sha":"9176f2abc","message":"Add Gmail API OAuth setup and management scripts","author":"Rahul"}]
 }
