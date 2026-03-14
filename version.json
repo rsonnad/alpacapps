@@ -1,12 +1,12 @@
 {
-  "version": "v260313.54 4:51p",
-  "release": 728,
-  "sha": "7587c34fc",
-  "fullSha": "7587c34fc4c7977ddb40e4e302ca576e36e5f77d",
+  "version": "v260313.55 7:24p",
+  "release": 729,
+  "sha": "7311b1367",
+  "fullSha": "7311b13670787db568e3884dab9e41bd7c32c48b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-13 21:51:37+00",
-  "commits": [{"sha":"fbc87a6c2","message":"Add standard header to Claude Sessions page","author":"Rahul"},{"sha":"7587c34fc","message":"Merge branch 'romantic-poitras'","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 00:24:30+00",
+  "commits": [{"sha":"7311b1367","message":"Fix session dates and sync worker source to repo","author":"Rahul"}]
 }
