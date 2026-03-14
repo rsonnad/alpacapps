@@ -1,12 +1,12 @@
 {
-  "version": "v260314.05 1:27a",
-  "release": 747,
-  "sha": "e6fdb890b",
-  "fullSha": "e6fdb890ba8edd5f63fefc9f63fb9c11ff8b5774",
+  "version": "v260314.06 1:34a",
+  "release": 748,
+  "sha": "896c6590f",
+  "fullSha": "896c6590f74465afb425337fb0ac4ead68e7d0be",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 06:27:14+00",
-  "commits": [{"sha":"e6fdb890b","message":"Front card: wordmark with @, sans-serif CTA, \"Offered with: Rahul Lio\"","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 06:34:31+00",
+  "commits": [{"sha":"896c6590f","message":"Add kiosk wordmark, guestbook, landscape layout, and auto-reload","author":"Rahul"}]
 }
