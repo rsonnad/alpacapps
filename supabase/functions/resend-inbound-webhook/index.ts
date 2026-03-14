@@ -8,6 +8,12 @@ import {
   upsertVendor,
   createPurchase,
 } from "../_shared/receipt-processor.ts";
+import {
+  classifyEmail,
+  logClassificationCost,
+  type ClassificationResult,
+  type EmailAction,
+} from "../_shared/email-classifier.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -226,9 +232,187 @@ async function handleSpecialLogic(
     await handleAlpaclawEmail(emailRecord, supabase, resendApiKey);
   } else if (type === "guestbook") {
     await handleGuestbookEmail(emailRecord, supabase);
+  } else if (type === "herd") {
+    await handleHerdEmail(emailRecord, supabase, resendApiKey);
   }
+}
 
-  // herd@ - not yet implemented
+// =============================================
+// HERD EMAIL HANDLER (universal classifier)
+// =============================================
+
+/**
+ * Handle inbound emails to herd@alpacaplayhouse.com.
+ * Uses the dual-model classifier to determine what to do with the email,
+ * then routes accordingly.
+ */
+async function handleHerdEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+  const hasAttachments = (emailRecord.attachments || []).length > 0;
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+
+  console.log(`Herd email from ${senderEmail}: subject="${subject}"`);
+
+  // Classify with dual-model consensus
+  const classification = await classifyEmail(subject, bodyText || bodyHtml, hasAttachments, from);
+  console.log(`Herd classification: category=${classification.category}, confidence=${classification.confidence}, consensus=${classification.consensus}, action=${classification.action}`);
+
+  // Store classification in the inbound_emails record
+  await supabase
+    .from("inbound_emails")
+    .update({
+      classification: {
+        category: classification.category,
+        confidence: classification.confidence,
+        summary: classification.summary,
+        consensus: classification.consensus,
+        primary_model: classification.primaryModel,
+        secondary_category: classification.secondaryCategory,
+        secondary_model: classification.secondaryModel,
+      },
+      classification_consensus: classification.consensus,
+      classification_action: classification.action,
+    })
+    .eq("id", emailRecord.id);
+
+  // Log classification costs
+  await logClassificationCost(supabase, classification, emailRecord.id, senderEmail);
+
+  // Route based on classification action
+  await routeByClassification(classification, emailRecord, supabase, resendApiKey);
+}
+
+/**
+ * Route an email based on its classification action.
+ * This is shared between herd@ and catch-all routing.
+ */
+async function routeByClassification(
+  classification: ClassificationResult,
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+  const senderName = (from.match(/^([^<]+)/)?.[1] || "").trim() || from.split("@")[0];
+
+  switch (classification.action) {
+    case "drop_spam":
+      console.log(`Dropping spam email: "${classification.summary}"`);
+      await supabase
+        .from("inbound_emails")
+        .update({ route_action: "spam_blocked" })
+        .eq("id", emailRecord.id);
+      break;
+
+    case "process_payment":
+      // Re-route to the payments handler
+      console.log("Re-routing to payment handler");
+      await handlePaymentEmail(emailRecord, supabase, resendApiKey);
+      break;
+
+    case "process_receipt":
+      // Re-route to PAI for receipt processing
+      console.log("Re-routing to PAI for receipt processing");
+      await handlePaiEmail(emailRecord, supabase, resendApiKey);
+      break;
+
+    case "process_guestbook":
+      console.log("Re-routing to guestbook handler");
+      await handleGuestbookEmail(emailRecord, supabase);
+      break;
+
+    case "process_document":
+      // Re-route to PAI for document processing
+      console.log("Re-routing to PAI for document processing");
+      await handlePaiEmail(emailRecord, supabase, resendApiKey);
+      break;
+
+    case "process_command":
+      // Forward to PAI for smart home command
+      console.log("Re-routing to PAI for command processing");
+      await handlePaiEmail(emailRecord, supabase, resendApiKey);
+      break;
+
+    case "auto_reply":
+      // Forward to PAI for question answering
+      console.log("Re-routing to PAI for auto-reply");
+      await handlePaiEmail(emailRecord, supabase, resendApiKey);
+      break;
+
+    case "forward_person": {
+      // Forward to the person it's addressed to
+      // Try to find the person by the to-address prefix
+      const prefix = extractPrefix(emailRecord.to_address || "");
+      const forwardingRules = await loadForwardingRules(supabase);
+      const targets = forwardingRules[prefix] || ["alpacaplayhouse@gmail.com"];
+
+      for (const target of targets) {
+        await forwardEmail(resendApiKey, target, from, subject, bodyHtml, bodyText);
+      }
+
+      await supabase
+        .from("inbound_emails")
+        .update({
+          route_action: "forward",
+          forwarded_to: targets[0],
+          forwarded_at: new Date().toISOString(),
+        })
+        .eq("id", emailRecord.id);
+      break;
+    }
+
+    case "flag_review":
+      // Disputed classification — forward to admin with classification context
+      console.log(`Flagging for review: ${classification.summary}`);
+      const flagSubject = `[Review Needed] ${subject}`;
+      const flagHtml = `
+        <div style="background:#fff8e1;border:1px solid #f9a825;border-radius:8px;padding:16px;margin-bottom:16px;">
+          <p style="margin:0 0 8px;font-weight:600;color:#f57f17;">Classification Needs Review</p>
+          <p style="margin:0;font-size:13px;color:#555;">${classification.summary}</p>
+          <p style="margin:8px 0 0;font-size:12px;color:#888;">Confidence: ${(classification.confidence * 100).toFixed(0)}% | Consensus: ${classification.consensus ? 'Yes' : 'No'}</p>
+        </div>
+        <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+        <p><strong>From:</strong> ${from}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <div>${bodyHtml || `<pre>${bodyText}</pre>`}</div>
+      `;
+
+      await forwardEmail(resendApiKey, "alpacaplayhouse@gmail.com", from, flagSubject, flagHtml, bodyText);
+      await supabase
+        .from("inbound_emails")
+        .update({
+          route_action: "flagged_review",
+          forwarded_to: "alpacaplayhouse@gmail.com",
+          forwarded_at: new Date().toISOString(),
+        })
+        .eq("id", emailRecord.id);
+      break;
+
+    case "forward_admin":
+    default:
+      // Forward to admin
+      await forwardEmail(resendApiKey, "alpacaplayhouse@gmail.com", from, subject, bodyHtml, bodyText);
+      await supabase
+        .from("inbound_emails")
+        .update({
+          route_action: "forward",
+          forwarded_to: "alpacaplayhouse@gmail.com",
+          forwarded_at: new Date().toISOString(),
+        })
+        .eq("id", emailRecord.id);
+      break;
+  }
 }
 
 // =============================================
@@ -3280,6 +3464,54 @@ serve(async (req) => {
           .from("inbound_emails")
           .update({ processed_at: new Date().toISOString() })
           .eq("id", record.id);
+      }
+
+      // For emails going to DEFAULT_FORWARD_TO (unknown prefixes with no explicit rule),
+      // run the universal classifier to enrich the record and potentially reroute
+      if (!specialLogic && forwardTargets.length === 1 && forwardTargets[0] === DEFAULT_FORWARD_TO && !forwardingRules[prefix]) {
+        try {
+          const classification = await classifyEmail(
+            subject,
+            text || html,
+            attachments.length > 0,
+            from
+          );
+
+          // Store classification metadata
+          await supabase
+            .from("inbound_emails")
+            .update({
+              classification: {
+                category: classification.category,
+                confidence: classification.confidence,
+                summary: classification.summary,
+                consensus: classification.consensus,
+                primary_model: classification.primaryModel,
+                secondary_category: classification.secondaryCategory,
+                secondary_model: classification.secondaryModel,
+              },
+              classification_consensus: classification.consensus,
+              classification_action: classification.action,
+              processed_at: new Date().toISOString(),
+            })
+            .eq("id", record.id);
+
+          // Log costs
+          await logClassificationCost(supabase, classification, record.id, from);
+
+          // If classifier identified spam, mark it and don't forward
+          if (classification.action === "drop_spam" && classification.consensus) {
+            console.log(`Catch-all email classified as consensus spam, dropping: ${classification.summary}`);
+            await supabase
+              .from("inbound_emails")
+              .update({ route_action: "spam_blocked" })
+              .eq("id", record.id);
+          }
+
+          console.log(`Catch-all classified: ${classification.category} (${classification.action}), consensus=${classification.consensus}`);
+        } catch (classifyErr) {
+          console.error("Catch-all classification error:", classifyErr.message);
+        }
       }
     }
 

@@ -125,7 +125,7 @@ async function getTemplateVersions(templateKey) {
 /**
  * Save a new version of an email template.
  */
-async function saveTemplate(templateKey, templateData, makeActive = true) {
+async function saveTemplate(templateKey, templateData, makeActive = true, userId = null, changeSummary = null) {
   // Deactivate existing versions if making active
   if (makeActive) {
     await supabase
@@ -145,20 +145,32 @@ async function saveTemplate(templateKey, templateData, makeActive = true) {
 
   const newVersion = existing && existing.length > 0 ? existing[0].version + 1 : 1;
 
+  const insertData = {
+    template_key: templateKey,
+    version: newVersion,
+    is_active: makeActive,
+    category: templateData.category,
+    description: templateData.description,
+    sender_type: templateData.sender_type,
+    subject_template: templateData.subject_template,
+    html_template: templateData.html_template,
+    text_template: templateData.text_template,
+    placeholders: templateData.placeholders || [],
+    image_template: templateData.image_template || 'random_alpaca',
+  };
+
+  // Add audit trail fields if provided
+  if (userId) {
+    insertData.created_by = userId;
+    insertData.updated_by = userId;
+  }
+  if (changeSummary) {
+    insertData.change_summary = changeSummary;
+  }
+
   const { data, error } = await supabase
     .from('email_templates')
-    .insert({
-      template_key: templateKey,
-      version: newVersion,
-      is_active: makeActive,
-      category: templateData.category,
-      description: templateData.description,
-      sender_type: templateData.sender_type,
-      subject_template: templateData.subject_template,
-      html_template: templateData.html_template,
-      text_template: templateData.text_template,
-      placeholders: templateData.placeholders || [],
-    })
+    .insert(insertData)
     .select()
     .single();
 
@@ -172,7 +184,7 @@ async function saveTemplate(templateKey, templateData, makeActive = true) {
 /**
  * Set a specific version as active (deactivates others for same key).
  */
-async function setActiveVersion(templateId, templateKey) {
+async function setActiveVersion(templateId, templateKey, userId = null) {
   // Deactivate all versions for this key
   await supabase
     .from('email_templates')
@@ -181,9 +193,12 @@ async function setActiveVersion(templateId, templateKey) {
     .eq('is_active', true);
 
   // Activate selected version
+  const updateData = { is_active: true, updated_at: new Date().toISOString() };
+  if (userId) updateData.updated_by = userId;
+
   const { data, error } = await supabase
     .from('email_templates')
-    .update({ is_active: true, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq('id', templateId)
     .select()
     .single();
@@ -245,6 +260,29 @@ function validateTemplate(content, placeholders) {
   return { isValid: errors.length === 0, errors, warnings, foundPlaceholders: [...found] };
 }
 
+/**
+ * Get full audit history for a template key, including who made each change.
+ * Joins with app_users to get display names.
+ */
+async function getTemplateHistory(templateKey) {
+  const { data, error } = await supabase
+    .from('email_templates')
+    .select(`
+      id, version, is_active, category, description, change_summary,
+      image_template, created_at, updated_at,
+      created_by_user:created_by(id, display_name, email),
+      updated_by_user:updated_by(id, display_name, email)
+    `)
+    .eq('template_key', templateKey)
+    .order('version', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching template history:', error);
+    throw error;
+  }
+  return data || [];
+}
+
 // =============================================
 // EXPORTS
 // =============================================
@@ -253,6 +291,7 @@ export const emailTemplateService = {
   getAllTemplates,
   getActiveTemplate,
   getTemplateVersions,
+  getTemplateHistory,
   saveTemplate,
   setActiveVersion,
   renderPreview,

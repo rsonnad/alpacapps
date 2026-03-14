@@ -2,6 +2,18 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { renderTemplate, SENDER_MAP } from "../_shared/template-engine.ts";
 import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
+import {
+  paymentMethodsBlock,
+  paymentMethodsText,
+  dataTable,
+  dataTableText,
+  ledgerTable,
+  balanceBox,
+  calloutBox,
+  B,
+  type DataRow,
+  type PaymentMethod,
+} from "../_shared/email-components.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -305,16 +317,14 @@ Alpaca Playhouse`
           <h2>Lease Signing Complete!</h2>
           <p>Hi ${data.first_name},</p>
           <p>Your lease agreement has been successfully signed. A copy will be provided for your records.</p>
-          <p><strong>Next Steps:</strong></p>
-          <ul>
-            <li>Submit your move-in deposit: <strong>$${data.move_in_deposit || data.monthly_rate}</strong></li>
-            ${data.security_deposit ? `<li>Submit your security deposit: <strong>$${data.security_deposit}</strong></li>` : ''}
-          </ul>
-          <p><strong>Pay with no fees:</strong></p>
-          <ul style="list-style:none;padding-left:0;">
-            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-          </ul>
-          <p style="font-size:13px;color:#666;">Please include your name and &quot;deposit&quot; in the payment memo.</p>
+          ${calloutBox(`
+            <p style="margin:0 0 12px;font-weight:700;color:${B.text};font-size:15px;">Next Steps</p>
+            <ul style="margin:0;padding-left:20px;color:${B.text};line-height:1.8;">
+              <li>Submit your move-in deposit: <strong>$${data.move_in_deposit || data.monthly_rate}</strong></li>
+              ${data.security_deposit ? `<li>Submit your security deposit: <strong>$${data.security_deposit}</strong></li>` : ''}
+            </ul>
+          `)}
+          ${paymentMethodsBlock(data._payment_methods_raw, { heading: 'Pay with no fees', memoText: 'deposit' })}
           <p>Once deposits are received, we'll confirm your move-in date.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -328,10 +338,7 @@ Next Steps:
 - Submit your move-in deposit: $${data.move_in_deposit || data.monthly_rate}
 ${data.security_deposit ? `- Submit your security deposit: $${data.security_deposit}` : ''}
 
-Pay with no fees:
-${data._payment_methods_text || '- Contact us for payment options'}
-
-Please include your name and "deposit" in the payment memo.
+${paymentMethodsText(data._payment_methods_raw, { memoText: 'deposit' })}
 
 Once deposits are received, we'll confirm your move-in date.
 
@@ -339,66 +346,44 @@ Best regards,
 Alpaca Playhouse`
       };
 
-    case "deposit_requested":
+    case "deposit_requested": {
+      const depositRows: DataRow[] = [];
+      if (data.move_in_deposit) depositRows.push({ label: 'Move-in Deposit', value: `$${data.move_in_deposit}` });
+      if (data.security_deposit) depositRows.push({ label: 'Security Deposit', value: `$${data.security_deposit}` });
+      depositRows.push({ label: 'Total Due', value: `$${data.total_due}`, valueStyle: 'font-weight:700;font-size:18px;' });
+      if (data.due_date) depositRows.push({ label: 'Due Date', value: data.due_date, valueStyle: 'font-weight:600;' });
+
       return {
         subject: "Deposit Request - Alpaca Playhouse",
         html: `
           <h2>Deposit Payment Request</h2>
           <p>Hi ${data.first_name},</p>
           <p>Please submit the following deposits to secure your rental:</p>
-          <table style="border-collapse: collapse; width: 100%; max-width: 400px; margin: 20px 0;">
-            ${data.move_in_deposit ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Move-in Deposit:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.move_in_deposit}</td></tr>` : ''}
-            ${data.security_deposit ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Security Deposit:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.security_deposit}</td></tr>` : ''}
-            <tr><td style="padding: 8px; font-weight: bold;"><strong>Total Due:</strong></td><td style="padding: 8px; font-weight: bold;">$${data.total_due}</td></tr>
-          </table>
-          ${data.due_date ? `<p><strong>Due Date:</strong> ${data.due_date}</p>` : ''}
-          <p><strong>Pay with no fees:</strong></p>
-          <ul style="list-style:none;padding-left:0;">
-            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-          </ul>
-          <p style="font-size:13px;color:#666;">Please include your name and &quot;deposit&quot; in the payment memo.</p>
-          ${data.pay_url ? `
-          <div style="text-align:center;color:#888;font-size:13px;margin:20px 0;border-top:1px solid #eee;padding-top:20px;">or pay online</div>
-          <div style="text-align:center;margin-bottom:16px;">
-            <a href="${data.pay_url}" style="display:inline-block;background:#d4883a;color:white;padding:14px 40px;text-decoration:none;border-radius:8px;font-size:17px;font-weight:700;">Pay $${data.total_due} Online</a>
-            <p style="color:#888;font-size:12px;margin-top:8px;">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
-          </div>
-          ` : ''}
-          ${data.needs_id_verification ? `
-          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
-            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
-            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.</p>
+          ${dataTable(depositRows, { heading: 'Deposits' })}
+          ${paymentMethodsBlock(data._payment_methods_raw, { heading: 'Pay with no fees', payUrl: data.pay_url, memoText: 'deposit' })}
+          ${data.needs_id_verification ? calloutBox(`
+            <p style="margin:0 0 8px;font-weight:bold;color:#333;">ID Verification Required</p>
+            <p style="margin:0;color:#555;">We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.</p>
             ${data.id_upload_url
-              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
-              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
-          </div>
-          ` : ''}
+              ? `<p style="margin:12px 0 0;"><a href="${data.id_upload_url}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
+              : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
+          `, 'warning') : ''}
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Deposit Payment Request
 
 Hi ${data.first_name},
 
-Please submit the following deposits to secure your rental:
+${dataTableText(depositRows)}
 
-${data.move_in_deposit ? `Move-in Deposit: $${data.move_in_deposit}` : ''}
-${data.security_deposit ? `Security Deposit: $${data.security_deposit}` : ''}
-Total Due: $${data.total_due}
-${data.due_date ? `Due Date: ${data.due_date}` : ''}
-
-Pay with no fees:
-${data._payment_methods_text || '- Contact us for payment options'}
-
-Please include your name and "deposit" in the payment memo.
+${paymentMethodsText(data._payment_methods_raw, { memoText: 'deposit' })}
 ${data.pay_url ? `\nOr pay online (0.8% processing fee, max $5): ${data.pay_url}\n` : ''}
-${data.needs_id_verification ? `
-ID VERIFICATION REQUIRED
-We also need a copy of your government-issued photo ID (driver's license or passport) to complete your rental setup.
-${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
-` : ''}
+${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\nWe also need a copy of your government-issued photo ID.\n${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}` : ''}
+
 Best regards,
 Alpaca Playhouse`
       };
+    }
 
     case "deposit_received":
       return {
@@ -453,7 +438,7 @@ Alpaca Playhouse`
       };
 
     case "move_in_confirmed": {
-      const isMonthly = data.is_monthly !== false; // default true for backwards compat
+      const isMonthly = data.is_monthly !== false;
       const isPaid = Number(data.monthly_rate) > 0;
       const miRateDisplay = !isPaid ? 'Complimentary' : (isMonthly ? `$${Number(data.monthly_rate).toLocaleString()}/mo` : `$${Number(data.monthly_rate).toLocaleString()}`);
       const checkInDisplay = data.check_in_time === 'flexible' ? 'Flexible (no set time)' : (data.check_in_time || null);
@@ -461,77 +446,27 @@ Alpaca Playhouse`
       const showRentDue = isPaid && isMonthly;
       const showPaymentMethods = isPaid;
 
-      // Brand style tokens
-      const B = {
-        bg: '#faf9f6', bgMuted: '#f2f0e8', dark: '#1c1618',
-        text: '#2a1f23', textMuted: '#7d6f74', accent: '#d4883a',
-        border: '#e6e2d9', success: '#54a326',
-      };
-
-      // Space link: link space name to public listing if space_id is provided
+      // Space link
       const spaceLink = data.space_id
         ? `<a href="https://alpacaplayhouse.com/spaces/?id=${data.space_id}" style="color:${B.accent};font-weight:600;text-decoration:none;">${data.space_name}</a>`
         : `<strong>${data.space_name}</strong>`;
 
-      // Build detail rows with alternating shading
-      const detailRowData: { label: string; value: string; valueStyle?: string }[] = [];
-      detailRowData.push({ label: 'Space', value: spaceLink, valueStyle: `font-weight:600;` });
-      detailRowData.push({ label: 'Move-in', value: data.move_in_date, valueStyle: `font-weight:600;` });
+      // Build detail rows using shared dataTable component
+      const detailRowData: DataRow[] = [];
+      detailRowData.push({ label: 'Space', value: spaceLink, valueStyle: 'font-weight:600;' });
+      detailRowData.push({ label: 'Move-in', value: data.move_in_date, valueStyle: 'font-weight:600;' });
       if (checkInDisplay) detailRowData.push({ label: 'Check-in', value: checkInDisplay });
-      if (data.lease_end_date) detailRowData.push({ label: 'Check-out', value: data.lease_end_date, valueStyle: `font-weight:600;` });
+      if (data.lease_end_date) detailRowData.push({ label: 'Check-out', value: data.lease_end_date, valueStyle: 'font-weight:600;' });
       if (checkOutDisplay) detailRowData.push({ label: 'Check-out Time', value: checkOutDisplay });
-      detailRowData.push({ label: 'Rate', value: miRateDisplay, valueStyle: `font-weight:600;` });
+      detailRowData.push({ label: 'Rate', value: miRateDisplay, valueStyle: 'font-weight:600;' });
       if (showRentDue) detailRowData.push({ label: 'Rent Due', value: `${data.rent_due_day || '1st'} of each month` });
-      const detailRows = detailRowData.map((row, i) => {
-        const rowBg = i % 2 === 0 ? B.bg : B.bgMuted;
-        return `<tr style="background:${rowBg};">
-            <td style="padding:10px 12px;color:${B.textMuted};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;width:120px;vertical-align:top;">${row.label}</td>
-            <td style="padding:10px 12px;color:${B.text};font-size:15px;${row.valueStyle || ''}">${row.value}</td>
-          </tr>`;
-      });
 
-      // Payment methods with branded badges
-      const methodBadges: Record<string, { bg: string; label: string }> = {
-        venmo: { bg: '#3d95ce', label: 'Venmo' },
-        zelle: { bg: '#6c1cd3', label: 'Zelle' },
-        cashapp: { bg: '#00D632', label: 'Cash App' },
-        paypal: { bg: '#003087', label: 'PayPal' },
-        bank_ach: { bg: '#333333', label: 'Bank' },
-        stripe: { bg: '#635bff', label: 'Stripe' },
-      };
-
-      let miPaymentMethodsHtml = '';
-      if (showPaymentMethods && data._payment_methods_raw && Array.isArray(data._payment_methods_raw)) {
-        miPaymentMethodsHtml = data._payment_methods_raw.map((m: any) => {
-          const badge = methodBadges[m.method_type] || { bg: '#888', label: m.name || 'Other' };
-          const id = m.account_identifier ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>` : '';
-          const instr = m.instructions ? `<span style="color:${B.textMuted};font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
-          return `<tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
-                <span style="display:inline-block;background:${badge.bg};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">${badge.label}</span>
-                ${id}${instr}
-              </td></tr>`;
-        }).join("\n");
-      } else if (showPaymentMethods) {
-        miPaymentMethodsHtml = `
-          <tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
-            <span style="display:inline-block;background:#3d95ce;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Venmo</span>
-            <strong style="margin-left:8px;">@AlpacaPlayhouse</strong>
-          </td></tr>
-          <tr><td style="padding:6px 0;border-bottom:1px solid ${B.border};">
-            <span style="display:inline-block;background:#6c1cd3;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">Zelle</span>
-            <strong style="margin-left:8px;">alpacaplayhouse@gmail.com</strong>
-          </td></tr>`;
-      }
-
-      const miPaymentSection = showPaymentMethods && miPaymentMethodsHtml
-        ? `<div style="background:${B.bgMuted};border:1px solid ${B.border};border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="margin:0 0 8px;font-weight:600;color:${B.text};font-size:14px;">Payment Methods</p>
-              <table style="width:100%;border-collapse:collapse;font-size:14px;">${miPaymentMethodsHtml}</table>
-              ${data.pay_url ? `<div style="text-align:center;margin-top:12px;">
-                <a href="${data.pay_url}" style="display:inline-block;background:${B.accent};color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:0.3px;">Pay Online</a>
-                <p style="margin:6px 0 0;font-size:12px;color:${B.textMuted};">Credit card, debit card, or bank transfer (ACH) &mdash; 0.8% processing fee, max $5</p>
-              </div>` : ''}
-            </div>`
+      // Use shared payment methods block
+      const miPaymentSection = showPaymentMethods
+        ? paymentMethodsBlock(data._payment_methods_raw, {
+            payUrl: data.pay_url,
+            memoText: 'rent',
+          })
         : '';
 
       // Pass space image as extraImages for the brand wrapper gallery
@@ -545,26 +480,13 @@ Alpaca Playhouse`
           <p style="color:${B.text};font-size:15px;line-height:1.5;margin:0 0 8px;">Hi ${data.first_name},</p>
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 16px;">We're excited that you have chosen to come to the Alpaca Playhouse. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
 
-          <table style="border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px;border:1px solid ${B.border};border-radius:8px;overflow:hidden;">
-            <thead>
-              <tr style="background:${B.dark};">
-                <th colspan="2" style="padding:10px 12px;text-align:left;color:#faf9f6;font-weight:600;font-size:14px;letter-spacing:0.3px;">Reservation Details</th>
-              </tr>
-            </thead>
-            <tbody>
-            ${detailRows.join('\n')}
-            </tbody>
-          </table>
+          ${dataTable(detailRowData, { heading: 'Reservation Details' })}
 
           ${miPaymentSection}
 
-          <div style="background:${B.bgMuted};border-left:3px solid ${B.accent};padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0;">
-            <span style="font-size:13px;color:${B.text};line-height:1.5;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>
-          </div>
+          ${calloutBox(`<span style="font-size:13px;color:${B.text};line-height:1.5;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>`)}
 
-          <div style="background:#fdf1e0;border-left:3px solid ${B.accent};padding:10px 16px;margin:0 0 14px;border-radius:0 8px 8px 0;">
-            <p style="margin:0;color:${B.textMuted};font-size:12px;line-height:1.5;"><strong style="color:${B.text};">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>
-          </div>
+          ${calloutBox(`<p style="margin:0;color:${B.textMuted};font-size:12px;line-height:1.5;"><strong style="color:${B.text};">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>`, 'warning')}
 
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
           <p style="color:${B.textMuted};font-size:14px;margin:0;">Best regards,<br><strong style="color:${B.text};">Alpaca Playhouse</strong></p>
@@ -573,26 +495,15 @@ Alpaca Playhouse`
 
 Hi ${data.first_name},
 
-We're excited that you have chosen to come to the Alpaca Playhouse. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.
+We're excited that you have chosen to come to the Alpaca Playhouse.
 
-Your Details:
-- Space: ${data.space_name}
-- Move-in: ${data.move_in_date}
-${checkInDisplay ? `- Check-in: ${checkInDisplay}` : ''}
-${data.lease_end_date ? `- Check-out: ${data.lease_end_date}` : ''}
-${checkOutDisplay ? `- Check-out Time: ${checkOutDisplay}` : ''}
-- Rate: ${miRateDisplay}
-${showRentDue ? `- Rent Due: ${data.rent_due_day || '1st'} of each month` : ''}
+${dataTableText(detailRowData)}
 
-${showPaymentMethods ? `Payment Methods:
-- Venmo: @AlpacaPlayhouse
-- Zelle: alpacaplayhouse@gmail.com` : ''}
+${showPaymentMethods ? paymentMethodsText(data._payment_methods_raw, { memoText: 'rent' }) : ''}
 
-Please re-familiarize yourself with our operational guidelines: https://alpacaplayhouse.com/visiting — which also has a map link to the property.
+Please re-familiarize yourself with our operational guidelines: https://alpacaplayhouse.com/visiting
 
 Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
-
-If you have any questions or need anything, don't hesitate to reach out!
 
 Best regards,
 Alpaca Playhouse`
@@ -607,20 +518,14 @@ Alpaca Playhouse`
           <h2>Friendly Rent Reminder</h2>
           <p>Hi ${data.first_name},</p>
           <p>This is a friendly reminder that your rent payment of <strong>$${data.amount}</strong> is due on <strong>${data.due_date}</strong>.</p>
-          <p><strong>Payment Methods:</strong></p>
-          <ul style="list-style:none;padding-left:0;">
-            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-          </ul>
-          <p>Please include your name and "${data.period || 'rent'}" in the payment memo.</p>
-          ${data.needs_id_verification ? `
-          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
-            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
-            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+          ${paymentMethodsBlock(data._payment_methods_raw, { memoText: data.period || 'rent' })}
+          ${data.needs_id_verification ? calloutBox(`
+            <p style="margin:0 0 8px;font-weight:bold;color:#333;">ID Verification Required</p>
+            <p style="margin:0;color:#555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
             ${data.id_upload_url
-              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
-              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
-          </div>
-          ` : ''}
+              ? `<p style="margin:12px 0 0;"><a href="${data.id_upload_url}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
+              : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
+          `, 'warning') : ''}
           <p>Thank you!</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -630,15 +535,9 @@ Hi ${data.first_name},
 
 This is a friendly reminder that your rent payment of $${data.amount} is due on ${data.due_date}.
 
-Payment Methods:
-${data._payment_methods_text || '- Contact us for payment options'}
+${paymentMethodsText(data._payment_methods_raw, { memoText: data.period || 'rent' })}
+${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\n${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply with a photo of your ID.'}` : ''}
 
-Please include your name and "${data.period || 'rent'}" in the payment memo.
-${data.needs_id_verification ? `
-ID VERIFICATION REQUIRED
-We also need a copy of your government-issued photo ID to complete your rental setup.
-${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
-` : ''}
 Thank you!
 
 Best regards,
@@ -649,24 +548,22 @@ Alpaca Playhouse`
       return {
         subject: `URGENT: Rent Payment Overdue - Alpaca Playhouse`,
         html: `
-          <h2 style="color: #c00;">Rent Payment Overdue</h2>
+          <h2 style="color:${B.danger};">Rent Payment Overdue</h2>
           <p>Hi ${data.first_name},</p>
           <p>Your rent payment of <strong>$${data.amount}</strong> was due on <strong>${data.due_date}</strong> and is now <strong>${data.days_overdue} day${data.days_overdue > 1 ? 's' : ''} overdue</strong>.</p>
-          ${data.late_fee ? `<p><strong>Late Fee:</strong> $${data.late_fee}</p><p><strong>Total Due:</strong> $${data.total_due}</p>` : ''}
+          ${data.late_fee ? `${dataTable([
+            { label: 'Late Fee', value: `$${data.late_fee}`, valueStyle: `color:${B.danger};` },
+            { label: 'Total Due', value: `$${data.total_due}`, valueStyle: `font-weight:700;font-size:18px;color:${B.danger};` },
+          ])}` : ''}
           <p>Please submit payment as soon as possible to avoid any additional fees or action.</p>
-          <p><strong>Payment Methods:</strong></p>
-          <ul style="list-style:none;padding-left:0;">
-            ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-          </ul>
-          ${data.needs_id_verification ? `
-          <div style="margin: 20px 0; padding: 16px; background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 4px;">
-            <p style="margin: 0 0 8px; font-weight: bold; color: #333;">ID Verification Required</p>
-            <p style="margin: 0; color: #555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
+          ${paymentMethodsBlock(data._payment_methods_raw)}
+          ${data.needs_id_verification ? calloutBox(`
+            <p style="margin:0 0 8px;font-weight:bold;color:#333;">ID Verification Required</p>
+            <p style="margin:0;color:#555;">We also need a copy of your government-issued photo ID to complete your rental setup.</p>
             ${data.id_upload_url
-              ? `<p style="margin: 12px 0 0;"><a href="${data.id_upload_url}" style="display: inline-block; padding: 10px 20px; background: #f9a825; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Upload Your ID</a></p>`
-              : `<p style="margin: 8px 0 0; color: #555;">Please reply to this email with a photo of your ID.</p>`}
-          </div>
-          ` : ''}
+              ? `<p style="margin:12px 0 0;"><a href="${data.id_upload_url}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
+              : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
+          `, 'warning') : ''}
           <p>If you're experiencing difficulties, please reach out to discuss options.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -677,15 +574,11 @@ Hi ${data.first_name},
 Your rent payment of $${data.amount} was due on ${data.due_date} and is now ${data.days_overdue} day${data.days_overdue > 1 ? 's' : ''} overdue.
 ${data.late_fee ? `\nLate Fee: $${data.late_fee}\nTotal Due: $${data.total_due}` : ''}
 
-Please submit payment as soon as possible to avoid any additional fees or action.
+Please submit payment as soon as possible.
 
-Payment Methods:
-${data._payment_methods_text || '- Contact us for payment options'}
-${data.needs_id_verification ? `
-ID VERIFICATION REQUIRED
-We also need a copy of your government-issued photo ID to complete your rental setup.
-${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}
-` : ''}
+${paymentMethodsText(data._payment_methods_raw)}
+${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\n${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply with a photo of your ID.'}` : ''}
+
 If you're experiencing difficulties, please reach out to discuss options.
 
 Best regards,
@@ -719,39 +612,11 @@ Alpaca Playhouse`
       // balance_due, upcoming_amount, upcoming_date, space_name, pay_now_url
       const items = data.line_items || [];
 
-      const rowsHtml = items.map((item: any) => {
-        const isPaid = item.status === 'Paid';
-        const isOverdue = item.status === 'Overdue';
-        const isDue = !isPaid && !isOverdue;
-        const statusBg = isPaid ? '#e8f5e9' : isOverdue ? '#ffebee' : '#fff3e0';
-        const statusColor = isPaid ? '#2e7d32' : isOverdue ? '#c62828' : '#e65100';
-        const rowBg = isOverdue ? 'background:#fff8f8;' : '';
-        const amtColor = isOverdue ? 'color:#c62828;font-weight:600;' : isDue ? 'color:#888;' : 'color:#333;';
-        const txtColor = isDue ? 'color:#888;' : 'color:#333;';
-        const bold = isOverdue ? 'font-weight:600;' : '';
-        return `<tr style="${rowBg}">
-              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;${txtColor}${bold}">${item.date}</td>
-              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;${txtColor}${bold}">${item.description}</td>
-              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:right;${amtColor}">$${Number(item.amount).toFixed(2)}</td>
-              <td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">${item.status}</span></td>
-            </tr>`;
-      }).join("\n");
-
       const rowsText = items.map((item: any) =>
         `  ${item.date}  |  ${item.description}  |  $${Number(item.amount).toFixed(2)}  |  ${item.status}`
       ).join("\n");
 
       const hasDue = data.balance_due && Number(data.balance_due) > 0;
-
-      const balanceSection = hasDue
-        ? `<div style="background:linear-gradient(135deg,#fff3e0 0%,#ffe0b2 100%);border-left:4px solid #e65100;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <div style="font-size:13px;color:#e65100;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Outstanding Balance</div>
-              <div style="font-size:28px;font-weight:700;color:#bf360c;">$${Number(data.balance_due).toFixed(2)}</div>
-              ${data.overdue_since ? `<div style="font-size:13px;color:#e65100;margin-top:4px;">Overdue since ${data.overdue_since}</div>` : ''}
-            </div>`
-        : `<div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:20px;margin:24px 0;border-radius:0 8px 8px 0;">
-              <strong style="color:#2e7d32;font-size:16px;">&#10003; All caught up! No outstanding balance.</strong>
-            </div>`;
 
       const upcomingSection = data.upcoming_amount
         ? `<div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:16px 20px;margin:0 0 24px;border-radius:0 8px 8px 0;">
@@ -759,7 +624,7 @@ Alpaca Playhouse`
             </div>`
         : '';
 
-      // CTA button — links to Stripe checkout if URL provided, otherwise generic
+      // CTA button
       const ctaSection = hasDue && data.pay_now_url
         ? `<div style="text-align:center;margin:32px 0;">
               <a href="${data.pay_now_url}" style="display:inline-block;background:linear-gradient(135deg,#e65100 0%,#bf360c 100%);color:white;padding:16px 48px;text-decoration:none;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">Pay $${Number(data.balance_due).toFixed(2)} Now</a>
@@ -767,50 +632,14 @@ Alpaca Playhouse`
             </div>`
         : hasDue
         ? `<div style="text-align:center;margin:32px 0;">
-              <p style="font-size:16px;font-weight:600;color:#e65100;">Please send $${Number(data.balance_due).toFixed(2)} using one of the methods below</p>
+              <p style="font-size:16px;font-weight:600;color:${B.warning};">Please send $${Number(data.balance_due).toFixed(2)} using one of the methods below</p>
             </div>`
         : '';
 
-      // Payment methods with branded badges
-      const methodBadges: Record<string, { bg: string; label: string }> = {
-        venmo: { bg: '#3d95ce', label: 'Venmo' },
-        zelle: { bg: '#6c1cd3', label: 'Zelle' },
-        cashapp: { bg: '#00D632', label: 'Cash App' },
-        paypal: { bg: '#003087', label: 'PayPal' },
-        bank_ach: { bg: '#333333', label: 'Bank' },
-        square: { bg: '#1a1a1a', label: 'Square' },
-        stripe: { bg: '#635bff', label: 'Stripe' },
-        cash: { bg: '#2e7d32', label: 'Cash' },
-        check: { bg: '#555', label: 'Check' },
-        other: { bg: '#888', label: 'Other' },
-      };
-
-      // Build branded payment methods HTML from data injected by getPaymentMethodsForEmail
-      // We also build our own branded version using _payment_methods_raw if available
-      let paymentMethodsHtml = '';
-      if (data._payment_methods_raw && Array.isArray(data._payment_methods_raw)) {
-        paymentMethodsHtml = data._payment_methods_raw.map((m: any) => {
-          const badge = methodBadges[m.method_type] || methodBadges.other;
-          const id = m.account_identifier ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>` : '';
-          const instr = m.instructions ? `<span style="color:#888;font-size:12px;margin-left:4px;">(${m.instructions.split('\\n')[0]})</span>` : '';
-          return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
-                <span style="display:inline-block;background:${badge.bg};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;width:55px;text-align:center;">${badge.label}</span>
-                ${id}${instr}
-              </td></tr>`;
-        }).join("\n");
-      }
-
-      const paymentMethodsSection = paymentMethodsHtml
-        ? `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
-              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">${data.pay_now_url ? 'Other Payment Methods:' : 'Payment Methods:'}</p>
-              <table style="width:100%;border-collapse:collapse;font-size:14px;">${paymentMethodsHtml}</table>
-            </div>`
-        : `<div style="background:#fafafa;border-radius:8px;padding:20px;margin:24px 0;">
-              <p style="margin:0 0 12px;font-weight:600;color:#333;font-size:14px;">${data.pay_now_url ? 'Other Payment Methods:' : 'Payment Methods:'}</p>
-              <ul style="list-style:none;padding-left:0;">
-                ${data._payment_methods_html || '<li>Contact us for payment options</li>'}
-              </ul>
-            </div>`;
+      // Use shared components
+      const ledgerHtml = ledgerTable(items);
+      const balanceSectionHtml = balanceBox(data.balance_due, data.overdue_since);
+      const pmBlock = paymentMethodsBlock(data._payment_methods_raw, data.pay_now_url);
 
       return {
         subject: `Payment Statement - ${data.space_name || 'Alpaca Playhouse'}`,
@@ -824,24 +653,11 @@ Alpaca Playhouse`
               <p style="color:#333;font-size:16px;">Hi ${data.first_name},</p>
               <p style="color:#555;font-size:15px;">Here's your payment summary for <strong>${data.space_name || 'Alpaca Playhouse'}</strong>.</p>
 
-              <table style="border-collapse:collapse;width:100%;margin:24px 0;font-size:14px;">
-                <thead>
-                  <tr>
-                    <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</th>
-                    <th style="padding:12px 8px;text-align:left;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Description</th>
-                    <th style="padding:12px 8px;text-align:right;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Amount</th>
-                    <th style="padding:12px 8px;text-align:center;border-bottom:2px solid #e0e0e0;color:#888;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                ${rowsHtml}
-                </tbody>
-              </table>
-
-              ${balanceSection}
+              ${ledgerHtml}
+              ${balanceSectionHtml}
               ${upcomingSection}
               ${ctaSection}
-              ${paymentMethodsSection}
+              ${pmBlock}
 
               <p style="font-size:13px;color:#999;margin-top:16px;">Please include your name and &quot;rent&quot; in the payment memo so we can match your payment.</p>
               <p style="color:#555;font-size:15px;">If you have any questions about your statement, just reply to this email.</p>
@@ -863,8 +679,7 @@ ${rowsText}
 ${hasDue ? `Outstanding Balance: $${Number(data.balance_due).toFixed(2)}${data.overdue_since ? ` (overdue since ${data.overdue_since})` : ''}` : 'All caught up! No outstanding balance.'}
 ${data.upcoming_amount ? `Next payment: $${Number(data.upcoming_amount).toFixed(2)} due ${data.upcoming_date}` : ''}
 ${data.pay_now_url ? `\nPay now: ${data.pay_now_url}\n` : ''}
-Payment Methods:
-${data._payment_methods_text || '- Contact us for payment options'}
+${paymentMethodsText(data._payment_methods_raw)}
 
 Please include your name and "rent" in the payment memo.
 
@@ -883,13 +698,13 @@ Alpaca Playhouse`
           <h2>You're Invited!</h2>
           <p>Hi ${data.first_name},</p>
           <p>You're invited to <strong>${data.event_name}</strong> at Alpaca Playhouse!</p>
-          <table style="border-collapse: collapse; width: 100%; max-width: 400px; margin: 20px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Date:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_date}</td></tr>
-            ${data.event_time ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Time:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_time}</td></tr>` : ''}
-            ${data.location ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Location:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.location}</td></tr>` : ''}
-          </table>
+          ${dataTable([
+            { label: 'Date', value: data.event_date },
+            ...(data.event_time ? [{ label: 'Time', value: data.event_time }] : []),
+            ...(data.location ? [{ label: 'Location', value: data.location }] : []),
+          ])}
           ${data.description ? `<p>${data.description}</p>` : ''}
-          ${data.rsvp_link ? `<p><a href="${data.rsvp_link}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">RSVP Now</a></p>` : ''}
+          ${data.rsvp_link ? `<p><a href="${data.rsvp_link}" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">RSVP Now</a></p>` : ''}
           <p>We hope to see you there!</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
         `,
@@ -1036,7 +851,7 @@ Alpaca Playhouse • 160 Still Forest Dr, Cedar Creek, TX 78612`
           <p>You've been invited to browse available spaces at <strong>Alpaca Playhouse</strong>, a unique co-living community in Cedar Creek, Texas.</p>
           <p>No account or login is needed — just click the button below to start browsing. You'll be able to see photos, amenities, pricing, and availability for all of our spaces.</p>
           <p style="margin: 30px 0; text-align: center;">
-            <a href="${data.access_url}" style="background: #c2410c; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Browse Available Spaces</a>
+            <a href="${data.access_url}" style="background:${B.accent}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Browse Available Spaces</a>
           </p>
           <p style="color: #666; font-size: 14px;">This link is personal to you and will expire in 14 days.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -1079,7 +894,7 @@ The Alpaca Playhouse Community Team`
           <p>Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and feel you would be a great fit for the Alpaca Playhouse community. We would love to invite you to apply for a rental space when you are ready and have clarity on your dates.</p>
           <p>Please review the <a href="https://rsonnad.github.io/alpacapps/spaces/">available spaces here</a> or click the button below to finish your application.</p>
           <p style="margin: 30px 0; text-align: center;">
-            <a href="${data.continue_url}" style="background: #3b8132; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
+            <a href="${data.continue_url}" style="background:${B.accent}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
           </p>
           <p>We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
           <p>Yours,<br>The Alpaca Playhouse Community Team</p>
@@ -1107,37 +922,34 @@ The Alpaca Playhouse Community Team`
           <p>A new event hosting request has been submitted.</p>
 
           <p style="margin: 20px 0;">
-            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Events Pipeline</a>
+            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Events Pipeline</a>
           </p>
 
-          <h3>Host Information</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.first_name} ${data.last_name}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}">${data.email}</a></td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}">${data.phone}</a></td></tr>
-            ${data.organization_name ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Organization:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.organization_name}</td></tr>` : ''}
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Hosted Before:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.has_hosted_before ? 'Yes' : 'No'}</td></tr>
-          </table>
+          ${dataTable([
+            { label: 'Name', value: `${data.first_name} ${data.last_name}` },
+            { label: 'Email', value: `<a href="mailto:${data.email}">${data.email}</a>` },
+            { label: 'Phone', value: `<a href="tel:${data.phone}">${data.phone}</a>` },
+            ...(data.organization_name ? [{ label: 'Organization', value: data.organization_name }] : []),
+            { label: 'Hosted Before', value: data.has_hosted_before ? 'Yes' : 'No' },
+          ], { heading: 'Host Information' })}
 
-          <h3>Event Details</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Event Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_name}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Event Type:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_type}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Date:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_date}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Time:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.event_start_time} - ${data.event_end_time}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Expected Guests:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.expected_guests}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Ticketed Event:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.is_ticketed ? 'Yes' : 'No'}</td></tr>
-          </table>
+          ${dataTable([
+            { label: 'Event Name', value: data.event_name },
+            { label: 'Event Type', value: data.event_type },
+            { label: 'Date', value: data.event_date },
+            { label: 'Time', value: `${data.event_start_time} - ${data.event_end_time}` },
+            { label: 'Guests', value: String(data.expected_guests) },
+            { label: 'Ticketed', value: data.is_ticketed ? 'Yes' : 'No' },
+          ], { heading: 'Event Details' })}
 
           <h3>Event Description</h3>
           <p style="background: #f5f5f5; padding: 15px; border-radius: 4px;">${data.event_description}</p>
 
-          <h3>Staffing Contacts</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Setup:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.setup_staff_name} - <a href="tel:${data.setup_staff_phone}">${data.setup_staff_phone}</a></td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Cleanup:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.cleanup_staff_name} - <a href="tel:${data.cleanup_staff_phone}">${data.cleanup_staff_phone}</a></td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Parking:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.parking_manager_name} - <a href="tel:${data.parking_manager_phone}">${data.parking_manager_phone}</a></td></tr>
-          </table>
+          ${dataTable([
+            { label: 'Setup', value: `${data.setup_staff_name} - <a href="tel:${data.setup_staff_phone}">${data.setup_staff_phone}</a>` },
+            { label: 'Cleanup', value: `${data.cleanup_staff_name} - <a href="tel:${data.cleanup_staff_phone}">${data.cleanup_staff_phone}</a>` },
+            { label: 'Parking', value: `${data.parking_manager_name} - <a href="tel:${data.parking_manager_phone}">${data.parking_manager_phone}</a>` },
+          ], { heading: 'Staffing Contacts' })}
 
           ${data.marketing_materials_link ? `<p><strong>Marketing Materials:</strong> <a href="${data.marketing_materials_link}">${data.marketing_materials_link}</a></p>` : ''}
           ${data.special_requests ? `<h3>Special Requests</h3><p style="background: #f5f5f5; padding: 15px; border-radius: 4px;">${data.special_requests}</p>` : ''}
@@ -1185,47 +997,39 @@ All required acknowledgments have been confirmed by the applicant.`
           <p>A new rental application has been submitted.</p>
 
           <p style="margin: 20px 0;">
-            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Rentals Pipeline</a>
+            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Rentals Pipeline</a>
           </p>
 
-          <h3>Applicant Information</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.first_name} ${data.last_name}</td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}">${data.email}</a></td></tr>
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}">${data.phone}</a></td></tr>
-            ${data.current_location ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Current Location:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.current_location}</td></tr>` : ''}
-          </table>
+          ${dataTable([
+            { label: 'Name', value: `${data.first_name} ${data.last_name}` },
+            { label: 'Email', value: `<a href="mailto:${data.email}">${data.email}</a>` },
+            { label: 'Phone', value: `<a href="tel:${data.phone}">${data.phone}</a>` },
+            ...(data.current_location ? [{ label: 'Current Location', value: data.current_location }] : []),
+          ], { heading: 'Applicant Information' })}
 
-          <h3>Rental Details</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            ${data.space_name ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Space:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.space_name}</td></tr>` : ''}
-            ${data.desired_move_in ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Desired Move-in:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.desired_move_in}</td></tr>` : ''}
-            ${data.desired_lease_length ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Lease Length:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.desired_lease_length}</td></tr>` : ''}
-            ${data.budget ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Budget:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.budget}/month</td></tr>` : ''}
-          </table>
+          ${dataTable([
+            ...(data.space_name ? [{ label: 'Space', value: data.space_name }] : []),
+            ...(data.desired_move_in ? [{ label: 'Desired Move-in', value: data.desired_move_in }] : []),
+            ...(data.desired_lease_length ? [{ label: 'Lease Length', value: data.desired_lease_length }] : []),
+            ...(data.budget ? [{ label: 'Budget', value: `$${data.budget}/month` }] : []),
+          ], { heading: 'Rental Details' })}
 
-          ${data.employment_status || data.occupation ? `
-          <h3>Employment</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            ${data.employment_status ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Status:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.employment_status}</td></tr>` : ''}
-            ${data.occupation ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Occupation:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.occupation}</td></tr>` : ''}
-            ${data.employer ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Employer:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.employer}</td></tr>` : ''}
-            ${data.monthly_income ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Monthly Income:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${data.monthly_income}</td></tr>` : ''}
-          </table>
-          ` : ''}
+          ${data.employment_status || data.occupation ? dataTable([
+            ...(data.employment_status ? [{ label: 'Status', value: data.employment_status }] : []),
+            ...(data.occupation ? [{ label: 'Occupation', value: data.occupation }] : []),
+            ...(data.employer ? [{ label: 'Employer', value: data.employer }] : []),
+            ...(data.monthly_income ? [{ label: 'Monthly Income', value: `$${data.monthly_income}` }] : []),
+          ], { heading: 'Employment' }) : ''}
 
           ${data.about_yourself ? `<h3>About Themselves</h3><p style="background: #f5f5f5; padding: 15px; border-radius: 4px;">${data.about_yourself}</p>` : ''}
           ${data.why_interested ? `<h3>Why Interested</h3><p style="background: #f5f5f5; padding: 15px; border-radius: 4px;">${data.why_interested}</p>` : ''}
           ${data.additional_notes ? `<h3>Additional Notes</h3><p style="background: #f5f5f5; padding: 15px; border-radius: 4px;">${data.additional_notes}</p>` : ''}
 
-          ${data.emergency_contact_name ? `
-          <h3>Emergency Contact</h3>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 10px 0;">
-            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; width: 150px;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.emergency_contact_name}</td></tr>
-            ${data.emergency_contact_phone ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="tel:${data.emergency_contact_phone}">${data.emergency_contact_phone}</a></td></tr>` : ''}
-            ${data.emergency_contact_relationship ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Relationship:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.emergency_contact_relationship}</td></tr>` : ''}
-          </table>
-          ` : ''}
+          ${data.emergency_contact_name ? dataTable([
+            { label: 'Name', value: data.emergency_contact_name },
+            ...(data.emergency_contact_phone ? [{ label: 'Phone', value: `<a href="tel:${data.emergency_contact_phone}">${data.emergency_contact_phone}</a>` }] : []),
+            ...(data.emergency_contact_relationship ? [{ label: 'Relationship', value: data.emergency_contact_relationship }] : []),
+          ], { heading: 'Emergency Contact' }) : ''}
         `,
         text: `New Rental Application
 
@@ -1298,11 +1102,11 @@ After answering, remember to recompile the context so future visitors get better
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #333; margin-bottom: 4px;">${data.name || 'Someone'} submitted a message from alpacaplayhouse.com</h2>
             <p style="color: #888; font-size: 13px; margin-top: 0;">${data.subject || 'General Inquiry'}</p>
-            <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 80px; vertical-align: top;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
-              ${data.email ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>` : ''}
-              ${data.phone ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Phone</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>` : ''}
-            </table>
+            ${dataTable([
+              { label: 'Name', value: data.name || 'Not provided' },
+              ...(data.email ? [{ label: 'Email', value: `<a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a>` }] : []),
+              ...(data.phone ? [{ label: 'Phone', value: `<a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a>` }] : []),
+            ])}
             ${data.message ? `
             <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 16px 0; white-space: pre-wrap; line-height: 1.5; color: #333;">${data.message}</div>
             ` : ''}
@@ -1327,12 +1131,12 @@ ${data.message || 'No message'}`
         html: `
           <h2 style="color: #333;">Access Request</h2>
           <p><strong>${data.user_name}</strong> (${data.user_role}) is requesting access to a page they can't reach.</p>
-          <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
-            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 80px;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.user_name}</td></tr>
-            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.user_email}">${data.user_email}</a></td></tr>
-            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Role</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.user_role}</td></tr>
-            <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888;">Page</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="${data.page_url}">${data.page_name}</a></td></tr>
-          </table>
+          ${dataTable([
+            { label: 'Name', value: data.user_name },
+            { label: 'Email', value: `<a href="mailto:${data.user_email}">${data.user_email}</a>` },
+            { label: 'Role', value: data.user_role },
+            { label: 'Page', value: `<a href="${data.page_url}">${data.page_name}</a>` },
+          ])}
           ${data.message ? `<div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #d4883a; margin: 16px 0; white-space: pre-wrap;">${data.message}</div>` : ''}
           <p style="margin-top: 20px;"><a href="https://alpacaplayhouse.com/spaces/admin/users.html" style="background: #d4883a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Manage Users</a></p>
         `,
@@ -1359,16 +1163,16 @@ Manage users: https://alpacaplayhouse.com/spaces/admin/users.html`
             <h2 style="color: #333; margin-bottom: 4px;">${data.name || 'Someone'} submitted an inquiry from alpacaplayhouse.com</h2>
             <p style="color: #888; font-size: 13px; margin-top: 0;">Community Fit Inquiry</p>
 
-            <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; width: 110px; vertical-align: top;">Name</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.name || 'Not provided'}</td></tr>
-              ${data.email ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Email</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>` : ''}
-              ${data.phone ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Phone</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>` : ''}
-              ${data.dob ? `<tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">DOB</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.dob}</td></tr>` : ''}
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Accommodation</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.accommodation || 'Not specified'}</td></tr>
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Timeframe</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.timeframe || 'Not specified'}</td></tr>
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Volunteer</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.volunteer || 'Not specified'}</td></tr>
-              <tr><td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #888; vertical-align: top;">Referral</td><td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${data.referral || 'Not specified'}</td></tr>
-            </table>
+            ${dataTable([
+              { label: 'Name', value: data.name || 'Not provided' },
+              ...(data.email ? [{ label: 'Email', value: `<a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a>` }] : []),
+              ...(data.phone ? [{ label: 'Phone', value: `<a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a>` }] : []),
+              ...(data.dob ? [{ label: 'DOB', value: data.dob }] : []),
+              { label: 'Accommodation', value: data.accommodation || 'Not specified' },
+              { label: 'Timeframe', value: data.timeframe || 'Not specified' },
+              { label: 'Volunteer', value: data.volunteer || 'Not specified' },
+              { label: 'Referral', value: data.referral || 'Not specified' },
+            ])}
 
             ${data.coliving_experience ? `
             <h3 style="color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px;">Co-living Experience</h3>
@@ -1590,13 +1394,12 @@ If the fix doesn't look right, submit another bug report and we'll take another 
           ${filesModStr ? `<p><strong>Files modified:</strong> <span style="color: #e74c3c;">${filesModStr}</span></p>` : ''}
           ${data.branch_name ? `<p><strong>Branch:</strong> <code>${data.branch_name}</code></p>` : ''}
 
-          <h3>Risk Assessment</h3>
-          <table style="border-collapse: collapse; width: 100%; margin: 10px 0;">
-            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Reason</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.reason || 'N/A'}</td></tr>
-            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Touches existing functionality</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.touches_existing_functionality ? 'Yes' : 'No'}</td></tr>
-            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Could confuse users</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.could_confuse_users ? 'Yes' : 'No'}</td></tr>
-            <tr><td style="padding: 6px 12px; border: 1px solid #ddd;"><strong>Removes or changes features</strong></td><td style="padding: 6px 12px; border: 1px solid #ddd;">${riskAss.removes_or_changes_features ? 'Yes' : 'No'}</td></tr>
-          </table>
+          ${dataTable([
+            { label: 'Reason', value: riskAss.reason || 'N/A' },
+            { label: 'Touches existing functionality', value: riskAss.touches_existing_functionality ? 'Yes' : 'No' },
+            { label: 'Could confuse users', value: riskAss.could_confuse_users ? 'Yes' : 'No' },
+            { label: 'Removes or changes features', value: riskAss.removes_or_changes_features ? 'Yes' : 'No' },
+          ], { heading: 'Risk Assessment' })}
 
           ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
 
@@ -1806,23 +1609,12 @@ Alpaca Playhouse`
         html: `
           <h2 style="color: #e67e22;">Identity Verification Flagged</h2>
           <p>An identity verification needs your review.</p>
-          <div style="background: #fef9e7; border-radius: 8px; padding: 15px; margin: 15px 0;">
-            <table style="border-collapse: collapse; width: 100%;">
-              <tr>
-                <td style="padding: 6px 0;"><strong>Application Name:</strong></td>
-                <td style="padding: 6px 0;">${data.applicant_name}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0;"><strong>Name on ID:</strong></td>
-                <td style="padding: 6px 0;">${data.extracted_name || 'Could not extract'}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0;"><strong>Match Score:</strong></td>
-                <td style="padding: 6px 0;">${data.match_score}%</td>
-              </tr>
-              ${data.is_expired ? '<tr><td style="padding: 6px 0;"><strong>Note:</strong></td><td style="padding: 6px 0; color: #c0392b;">ID appears to be expired</td></tr>' : ''}
-            </table>
-          </div>
+          ${dataTable([
+            { label: 'Application Name', value: data.applicant_name },
+            { label: 'Name on ID', value: data.extracted_name || 'Could not extract' },
+            { label: 'Match Score', value: `${data.match_score}%` },
+            ...(data.is_expired ? [{ label: 'Note', value: 'ID appears to be expired', valueStyle: `color:${B.danger}` }] : []),
+          ])}
           <p><a href="${data.admin_url}" style="background: #3d8b7a; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Review in Admin</a></p>
         `,
         text: `Identity Verification Flagged
