@@ -1,9 +1,7 @@
 #!/bin/bash
-# Claude Code SessionEnd hook — saves full transcript to Cloudflare D1
+# Claude Code Stop/SessionEnd hook — saves full transcript to Cloudflare D1
 # Reads session JSONL from disk, extracts conversation, posts to Worker
-
-# Log immediately before anything can fail
-echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') HOOK FIRED" >> "$HOME/.claude/hooks/save-session.log" 2>/dev/null
+# Rate-limited: only saves once per 5 minutes per session to avoid excessive API calls
 
 set -euo pipefail
 
@@ -13,20 +11,25 @@ API_TOKEN="alpaca-sessions-2026"
 # Read hook input from stdin
 INPUT=$(cat)
 
-# Debug: log what we receive
-echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') INPUT: $INPUT" >> "$HOME/.claude/hooks/save-session.log"
-
 SESSION_ID=$(echo "$INPUT" | /usr/bin/python3 -c "import sys,json; print(json.load(sys.stdin).get('session_id',''))" 2>/dev/null)
-CWD=$(echo "$INPUT" | /usr/bin/python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null)
-
-echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') SESSION_ID=$SESSION_ID CWD=$CWD" >> "$HOME/.claude/hooks/save-session.log"
 
 if [ -z "$SESSION_ID" ]; then
   exit 0
 fi
 
+# Rate limit: only save once every 5 minutes per session
+LOCK_DIR="$HOME/.claude/hooks/.session-locks"
+mkdir -p "$LOCK_DIR" 2>/dev/null
+LOCK_FILE="$LOCK_DIR/$SESSION_ID"
+if [ -f "$LOCK_FILE" ]; then
+  LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$LOCK_FILE" 2>/dev/null || echo 0) ))
+  if [ "$LOCK_AGE" -lt 300 ]; then
+    exit 0
+  fi
+fi
+touch "$LOCK_FILE"
+
 # Find the session JSONL file
-# Claude stores sessions in ~/.claude/projects/<encoded-cwd>/<session-id>.jsonl
 PROJECTS_DIR="$HOME/.claude/projects"
 JSONL_FILE=""
 for dir in "$PROJECTS_DIR"/*/; do
@@ -144,7 +147,7 @@ payload = json.dumps({
     "tags": None
 })
 
-# Post to Cloudflare Worker
+# Post to Cloudflare Worker (INSERT OR REPLACE — idempotent)
 try:
     subprocess.run(
         ["curl", "-s", "--tlsv1.2", "-X", "POST", api_url,
