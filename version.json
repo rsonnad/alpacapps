@@ -1,12 +1,12 @@
 {
-  "version": "v260314.22 3:39a",
-  "release": 764,
-  "sha": "716abcbc5",
-  "fullSha": "716abcbc53b8745d89afc18e22e20a45acc90c93",
+  "version": "v260314.23 3:41a",
+  "release": 765,
+  "sha": "9ebfcbe15",
+  "fullSha": "9ebfcbe15b78d8579027a7f0c8bf17f02a71a7a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 08:39:38+00",
-  "commits": [{"sha":"716abcbc5","message":"More gap between logo and contact lines, lowercase offered/rahul, bigger wordmark","author":"Rahul"}]
+  "pushedAt": "2026-03-14 08:41:15+00",
+  "commits": [{"sha":"9ebfcbe15","message":"Add WebView camera/mic permissions for guestbook recording","author":"Rahul"}]
 }
