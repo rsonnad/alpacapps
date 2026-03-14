@@ -244,7 +244,7 @@ async function handleGuestbookEmail(
   supabase: any
 ): Promise<void> {
   const fromName = emailRecord.from_name || emailRecord.from_address?.split("@")[0] || "Email Guest";
-  const message = (emailRecord.text_body || emailRecord.subject || "").trim().slice(0, 1000);
+  const message = (emailRecord.body_text || emailRecord.subject || "").trim().slice(0, 1000);
 
   if (!message) {
     console.log("Guestbook email had no message body, skipping");
