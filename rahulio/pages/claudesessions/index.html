@@ -87,11 +87,31 @@
     }
     .session-card:hover { border-color: #c8c4bc; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
     .session-card.expanded { border-color: #b8a88a; }
+    .session-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .session-header .share-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0.3rem 0.45rem;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 0.85rem;
+      line-height: 1;
+      transition: all 0.15s;
+    }
+    .session-header .share-btn:hover { color: #555; border-color: #d4d0c8; background: #f5f3ef; }
     .session-meta {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       flex-wrap: wrap;
+      flex: 1;
     }
     .session-meta .date { font-weight: 600; font-size: 0.875rem; }
     .session-meta .pill {
@@ -202,6 +222,71 @@
       margin-bottom: 0.5rem;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Full session view */
+    .full-session-view .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: color 0.15s;
+    }
+    .full-session-view .back-link:hover { color: #1a1a1a; }
+    .full-session-view .session-info {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e8e5e0;
+    }
+    .full-session-view .session-info h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .full-session-view .full-transcript .msg {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+    .full-session-view .full-transcript .msg.user {
+      background: #f0ede8;
+      border-left: 3px solid #b8a88a;
+    }
+    .full-session-view .full-transcript .msg.assistant {
+      background: #f7f7f7;
+      border-left: 3px solid #ccc;
+    }
+    .full-session-view .full-transcript .msg .role {
+      font-weight: 700;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+      display: block;
+    }
+    .full-session-view .msg.user .role { color: #8a7a5a; }
+    .full-session-view .msg.assistant .role { color: #888; }
+    .full-session-view .msg .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid #d4d0c8;
+      border-radius: 5px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.65rem;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+      color: #555;
+    }
+    .full-session-view .msg:hover .copy-btn { opacity: 1; }
+    .full-session-view .msg .copy-btn:hover { background: #fff; border-color: #b8a88a; }
+    .full-session-view .msg .copy-btn.copied { background: #e8f0e8; border-color: #3a6b3a; color: #3a6b3a; }
 
     @media (max-width: 600px) {
       .filter-bar { flex-direction: column; }
@@ -346,12 +431,15 @@
         const isExpanded = expandedId === s.id;
 
         return `<div class="session-card ${isExpanded ? 'expanded' : ''}">
-          <div class="session-meta" onclick="toggleSession('${s.id}')" style="cursor:pointer;">
-            <span class="date">${dateStr} ${timeStr}</span>
-            <span class="pill">${project}</span>
-            ${model ? `<span class="pill model">${model}</span>` : ''}
-            ${duration ? `<span class="pill duration">${duration}</span>` : ''}
-            ${tokens ? `<span class="pill tokens">${tokens} tokens</span>` : ''}
+          <div class="session-header">
+            <div class="session-meta" onclick="toggleSession('${s.id}')" style="cursor:pointer;">
+              <span class="date">${dateStr} ${timeStr}</span>
+              <span class="pill">${project}</span>
+              ${model ? `<span class="pill model">${model}</span>` : ''}
+              ${duration ? `<span class="pill duration">${duration}</span>` : ''}
+              ${tokens ? `<span class="pill tokens">${tokens} tokens</span>` : ''}
+            </div>
+            <button class="share-btn" onclick="event.stopPropagation(); openSessionView('${s.id}')" title="Open full session">&#x2197;</button>
           </div>
           ${summary ? `<div class="session-summary" onclick="toggleSession('${s.id}')" style="cursor:pointer;">${escHtml(summary)}</div>` : ''}
           ${isExpanded ? `<div class="transcript-container" id="transcript-${s.id}"><div class="loading"><div class="spinner"></div></div></div>` : ''}
@@ -456,6 +544,61 @@
       });
     }
 
+    function openSessionView(id) {
+      window.location.href = '?session=' + id;
+    }
+
+    async function showFullSessionView(id) {
+      const container = document.querySelector('.container');
+      container.innerHTML = `<div class="full-session-view">
+        <a href="?" class="back-link">&larr; All sessions</a>
+        <div id="full-session-content"><div class="loading"><div class="spinner"></div><br>Loading session...</div></div>
+      </div>`;
+      document.title = 'Claude Session';
+
+      try {
+        const data = await api('/sessions/' + id);
+        const t = data.transcript || '';
+        transcriptCache[id] = t;
+        const session = data;
+
+        const rawDate = session.started_at || session.ended_at;
+        const date = rawDate ? new Date(rawDate.includes('Z') || rawDate.includes('+') ? rawDate : rawDate + 'Z') : null;
+        const dateStr = date && !isNaN(date) ? date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+        const model = session.model ? session.model.replace('claude-', '').split('-202')[0] : '';
+        const project = session.project || '';
+        const tokens = session.token_count ? (session.token_count / 1000).toFixed(0) + 'k tokens' : '';
+        const duration = session.duration_mins && session.duration_mins < 1440 ? session.duration_mins + 'm' : '';
+        const pills = [project, model, duration, tokens].filter(Boolean).map(p => `<span class="pill" style="font-size:0.72rem;padding:0.2rem 0.55rem;border-radius:20px;background:#f0ede8;color:#666;margin-right:0.35rem;">${escHtml(p)}</span>`).join('');
+
+        const parts = t.split(/\n---\n/);
+        let msgIdx = 0;
+        const msgs = parts.map(part => {
+          part = part.trim();
+          if (!part) return '';
+          const isUser = part.startsWith('## User');
+          const role = isUser ? 'user' : 'assistant';
+          const content = part.replace(/^## (User|Assistant)\n?/, '').trim();
+          const idx = msgIdx++;
+          return `<div class="msg ${role}"><span class="role">${role}</span><button class="copy-btn" onclick="event.stopPropagation(); copyMsg(this, '${id}', ${idx})">Copy</button>${escHtml(content)}</div>`;
+        }).filter(Boolean).join('');
+
+        document.getElementById('full-session-content').innerHTML = `
+          <div class="session-info">
+            <h2>${dateStr}</h2>
+            <div>${pills}</div>
+            ${session.summary ? `<p style="margin-top:0.5rem;font-size:0.85rem;color:#555;">${escHtml(session.summary)}</p>` : ''}
+            <div class="transcript-actions" style="margin-top:0.75rem;">
+              <button class="btn btn-secondary" onclick="copyFullSession('${id}')">Copy Full Session</button>
+            </div>
+          </div>
+          <div class="full-transcript">${msgs || '<div class="empty">No transcript available.</div>'}</div>`;
+        document.title = 'Session — ' + (dateStr || id);
+      } catch (e) {
+        document.getElementById('full-session-content').innerHTML = `<div class="empty">Failed to load session.<br><span style="font-size:0.82rem;color:#999;">${escHtml(e.message)}</span></div>`;
+      }
+    }
+
     function escHtml(s) {
       const d = document.createElement('div');
       d.textContent = s;
@@ -486,9 +629,15 @@
       if (e.key === 'Enter') applyFilters();
     });
 
-    // Init
-    loadStats();
-    loadSessions();
+    // Init — check for single session view
+    const urlParams = new URLSearchParams(window.location.search);
+    const singleSessionId = urlParams.get('session');
+    if (singleSessionId) {
+      showFullSessionView(singleSessionId);
+    } else {
+      loadStats();
+      loadSessions();
+    }
   </script>
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module">
