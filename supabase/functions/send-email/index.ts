@@ -2233,15 +2233,15 @@ serve(async (req) => {
       }
     }
 
-    // === ALWAYS BCC pai@alpacaplayhouse.com ===
-    const PAI_BCC = "pai@alpacaplayhouse.com";
+    // === ALWAYS BCC alpacaplayhouse@gmail.com ===
+    const ARCHIVE_BCC = "alpacaplayhouse@gmail.com";
     const toArray = Array.isArray(to) ? to : [to];
     const ccArray = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
     const userBcc = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
-    // Always include PAI in BCC (deduplicate if already present)
-    const bccSet = new Set([...userBcc, PAI_BCC]);
-    // Don't BCC pai if pai is already the sender or a recipient
-    if (toArray.includes(PAI_BCC) || (from || "").includes("pai@")) bccSet.delete(PAI_BCC);
+    // Always include archive BCC (deduplicate if already present)
+    const bccSet = new Set([...userBcc, ARCHIVE_BCC]);
+    // Don't BCC if it's already a recipient
+    if (toArray.includes(ARCHIVE_BCC)) bccSet.delete(ARCHIVE_BCC);
     const bccArray = [...bccSet];
 
     // === INJECT HIDDEN METADATA for reply context ===
