@@ -1,12 +1,12 @@
 {
-  "version": "v260314.19 2:41a",
-  "release": 761,
-  "sha": "d3a394e2c",
-  "fullSha": "d3a394e2ccefd8c32ac249edbe52bc9ceb0f0989",
+  "version": "v260314.21 3:21a",
+  "release": 763,
+  "sha": "bfb986f43",
+  "fullSha": "bfb986f43164babb1286c3d46e2c1628e8b77529",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 07:41:31+00",
-  "commits": [{"sha":"d3a394e2c","message":"Alt layout: alpaca logo left of contact lines, full-width code box","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 08:21:21+00",
+  "commits": [{"sha":"bfb986f43","message":"Fix video/audio recorder: show error + retry instead of flashing away","author":"Rahul"}]
 }
