@@ -7,7 +7,7 @@ import { initResidentPage } from '../shared/resident-shell.js';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 
 const PAI_URL = `${SUPABASE_URL}/functions/v1/alpaca-pai`;
-const MAX_HISTORY = 12;
+const MAX_HISTORY = 24;
 
 let conversationHistory = [];
 let isProcessing = false;
