@@ -16,26 +16,49 @@ export const FEATURES = {
   people:     { label: 'People',     core: true,  description: 'Tenant & guest records' },
   assignments:{ label: 'Assignments',core: true,  description: 'Booking & lease assignments' },
   media:      { label: 'Media',      core: true,  description: 'Photo & media library' },
-  payments:   { label: 'Payments',   core: true,  description: 'Payment processing & ledger' },
   auth:       { label: 'Auth',       core: true,  description: 'User authentication & roles' },
-  documents:  { label: 'Documents',  core: true,  description: 'Lease templates & e-signatures' },
-  email:      { label: 'Email',      core: true,  description: 'Email notifications' },
 
-  // Optional — property-specific or hardware-dependent
+  // Optional — toggled per-deployment via property_config.features JSONB
+  // Communication
+  email:      { label: 'Email',      core: false, description: 'Email notifications (Resend)' },
+  sms:        { label: 'SMS',        core: false, description: 'SMS notifications (Telnyx)' },
+  whatsapp:   { label: 'WhatsApp',   core: false, description: 'WhatsApp messaging' },
+  voice:      { label: 'Voice',      core: false, description: 'Vapi voice calling' },
+
+  // Payments
+  payments_stripe: { label: 'Stripe',    core: false, description: 'Stripe payments + ACH' },
+  payments_square: { label: 'Square',    core: false, description: 'Square payment processing' },
+  payments_paypal: { label: 'PayPal',    core: false, description: 'PayPal payments & payouts' },
+
+  // Documents
+  esignatures:{ label: 'E-Signatures',core: false, description: 'SignWell e-signature integration' },
+  documents:  { label: 'Documents',  core: false, description: 'Lease & event agreement templates' },
+
+  // Smart home
   lighting:   { label: 'Lighting',   core: false, description: 'Govee / smart light control' },
   cameras:    { label: 'Cameras',    core: false, description: 'Security camera feeds & PTZ' },
   music:      { label: 'Music',      core: false, description: 'Sonos / Music Assistant control' },
   climate:    { label: 'Climate',    core: false, description: 'Nest thermostat control' },
-  vehicles:   { label: 'Vehicles',   core: false, description: 'Tesla Fleet API integration' },
   laundry:    { label: 'Laundry',    core: false, description: 'LG ThinQ washer/dryer monitoring' },
   oven:       { label: 'Oven',       core: false, description: 'Anova precision oven control' },
+
+  // Maker tools
   printer_3d: { label: '3D Printer', core: false, description: 'FlashForge 3D printer control' },
   glowforge:  { label: 'Glowforge',  core: false, description: 'Glowforge laser cutter status' },
-  pai:        { label: 'PAI',        core: false, description: 'AI assistant (chat, voice, email)' },
-  sms:        { label: 'SMS',        core: false, description: 'Telnyx SMS notifications' },
-  voice:      { label: 'Voice',      core: false, description: 'Vapi voice calling' },
-  alexa:      { label: 'Alexa',      core: false, description: 'Alexa skill integration' },
+
+  // Vehicles
+  vehicles:   { label: 'Vehicles',   core: false, description: 'Tesla Fleet API integration' },
+
+  // Property operations
+  rentals:    { label: 'Rentals',    core: false, description: 'Rental application pipeline' },
+  events:     { label: 'Events',     core: false, description: 'Event hosting pipeline' },
+  associates: { label: 'Associates', core: false, description: 'Associate/staff hour tracking' },
+  residents:  { label: 'Residents',  core: false, description: 'Resident portal & orientation' },
   airbnb:     { label: 'Airbnb',     core: false, description: 'Airbnb iCal calendar sync' },
+
+  // AI
+  pai:        { label: 'PAI',        core: false, description: 'AI assistant (chat, voice, email)' },
+  alexa:      { label: 'Alexa',      core: false, description: 'Alexa skill integration' },
 };
 
 let _enabledCache = null;
