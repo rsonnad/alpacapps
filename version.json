@@ -1,12 +1,12 @@
 {
-  "version": "v260313.61 10:54p",
-  "release": 735,
-  "sha": "e72878342",
-  "fullSha": "e728783428a22e5f2c9fa1a56955ceb4bf0b2eac",
+  "version": "v260313.62 10:57p",
+  "release": 736,
+  "sha": "112aca664",
+  "fullSha": "112aca6643693e9265cd498c230d983a257af3d6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 03:54:01+00",
-  "commits": [{"sha":"e72878342","message":"Add nav header + Supabase dep to Claude Sessions page","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 03:57:20+00",
+  "commits": [{"sha":"d4f62c615","message":"Persona-based infra cloning with granular feature selection","author":"Rahul"},{"sha":"112aca664","message":"Merge branch 'great-maxwell'","author":"Rahul"}]
 }
