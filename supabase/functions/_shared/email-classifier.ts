@@ -430,6 +430,65 @@ function heuristicClassify(
 }
 
 // =============================================
+// REPLY METADATA EXTRACTION
+// =============================================
+
+/**
+ * Metadata embedded in outbound emails by send-email function.
+ * Extracted from `<!--[ALPACAPPS_META:{...}:ALPACAPPS_META]-->` comments.
+ */
+export interface OutboundEmailMeta {
+  /** Unique email ID */
+  eid: string;
+  /** Email template type (e.g. "payment_reminder", "lease_signed") */
+  type: string;
+  /** Original recipients */
+  to: string[];
+  /** Sender address */
+  from: string;
+  /** Reply-to address */
+  reply_to?: string;
+  /** Timestamp of original send */
+  ts: string;
+  /** Space name if applicable */
+  space?: string;
+  /** Person ID if applicable */
+  pid?: string;
+  /** Assignment ID if applicable */
+  aid?: string;
+}
+
+/**
+ * Extract AlpacApps metadata from an email body (HTML).
+ * Returns null if no metadata found (not a reply to our email).
+ */
+export function extractReplyMetadata(htmlBody: string): OutboundEmailMeta | null {
+  const match = htmlBody.match(/<!--\[ALPACAPPS_META:(.*?):ALPACAPPS_META\]-->/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1]) as OutboundEmailMeta;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if an email is a reply to one of our outbound emails.
+ * Checks both the HTML body for metadata and the subject for "Re:" patterns.
+ */
+export function isReplyToOurEmail(
+  subject: string,
+  htmlBody: string
+): { isReply: boolean; meta: OutboundEmailMeta | null } {
+  const meta = extractReplyMetadata(htmlBody);
+  if (meta) return { isReply: true, meta };
+
+  // Fallback: check subject for "Re:" pattern matching our known subjects
+  const isSubjectReply = /^re:\s/i.test(subject);
+  return { isReply: isSubjectReply, meta: null };
+}
+
+// =============================================
 // COST TRACKING
 // =============================================
 

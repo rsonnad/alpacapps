@@ -11,8 +11,10 @@ import {
 import {
   classifyEmail,
   logClassificationCost,
+  isReplyToOurEmail,
   type ClassificationResult,
   type EmailAction,
+  type OutboundEmailMeta,
 } from "../_shared/email-classifier.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
@@ -259,6 +261,20 @@ async function handleHerdEmail(
   const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
 
   console.log(`Herd email from ${senderEmail}: subject="${subject}"`);
+
+  // Check if this is a reply to one of our outbound emails
+  const { isReply, meta: replyMeta } = isReplyToOurEmail(subject, bodyHtml);
+  if (isReply && replyMeta) {
+    console.log(`Herd reply detected: original type=${replyMeta.type}, eid=${replyMeta.eid}`);
+    // Store reply context in the email record
+    await supabase
+      .from("inbound_emails")
+      .update({
+        reply_to_email_id: replyMeta.eid,
+        reply_context: replyMeta,
+      })
+      .eq("id", emailRecord.id);
+  }
 
   // Classify with dual-model consensus
   const classification = await classifyEmail(subject, bodyText || bodyHtml, hasAttachments, from);
@@ -1247,6 +1263,22 @@ async function handlePaiEmail(
   const hasAttachments = attachmentsMetadata.length > 0;
 
   console.log(`PAI email from ${senderEmail}: subject="${subject}", attachments=${attachmentsMetadata.length}`);
+
+  // Check if this is a reply to one of our outbound emails (has hidden metadata)
+  const { isReply: isPaiReply, meta: paiReplyMeta } = isReplyToOurEmail(subject, bodyHtml);
+  if (isPaiReply && paiReplyMeta) {
+    console.log(`PAI reply detected: original type=${paiReplyMeta.type}, eid=${paiReplyMeta.eid}, to=[${paiReplyMeta.to}]`);
+    // Store reply context for downstream handlers
+    await supabase
+      .from("inbound_emails")
+      .update({
+        reply_to_email_id: paiReplyMeta.eid,
+        reply_context: paiReplyMeta,
+      })
+      .eq("id", emailRecord.id);
+    // Enrich the email record so handlers can use it
+    emailRecord.reply_context = paiReplyMeta;
+  }
 
   // Classify the email
   const classification = await classifyPaiEmail(subject, bodyText || bodyHtml, hasAttachments);

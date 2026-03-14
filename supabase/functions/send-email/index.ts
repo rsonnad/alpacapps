@@ -2105,13 +2105,15 @@ async function checkApprovalRequired(emailType: string): Promise<boolean> {
   try {
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data } = await sb.from("email_type_approval_config").select("requires_approval").eq("email_type", emailType).maybeSingle();
-    const req = data?.requires_approval === true;
+    // Default: require approval unless explicitly set to false (approved template)
+    const req = data ? data.requires_approval !== false : true;
     approvalConfigCache.set(emailType, { requiresApproval: req, fetchedAt: Date.now() });
     return req;
   } catch (e) {
     console.warn("Approval config lookup failed:", e);
-    approvalConfigCache.set(emailType, { requiresApproval: false, fetchedAt: Date.now() });
-    return false;
+    // On error, default to requiring approval (safe-by-default)
+    approvalConfigCache.set(emailType, { requiresApproval: true, fetchedAt: Date.now() });
+    return true;
   }
 }
 
@@ -2231,12 +2233,37 @@ serve(async (req) => {
       }
     }
 
+    // === ALWAYS BCC pai@alpacaplayhouse.com ===
+    const PAI_BCC = "pai@alpacaplayhouse.com";
+    const toArray = Array.isArray(to) ? to : [to];
+    const ccArray = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
+    const userBcc = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
+    // Always include PAI in BCC (deduplicate if already present)
+    const bccSet = new Set([...userBcc, PAI_BCC]);
+    // Don't BCC pai if pai is already the sender or a recipient
+    if (toArray.includes(PAI_BCC) || (from || "").includes("pai@")) bccSet.delete(PAI_BCC);
+    const bccArray = [...bccSet];
+
+    // === INJECT HIDDEN METADATA for reply context ===
+    // This invisible block lets PAI understand replies: what email type triggered
+    // the conversation, who the original recipient was, and routing context.
+    const emailId = crypto.randomUUID();
+    const metadataBlock = `<!--[ALPACAPPS_META:${JSON.stringify({
+      eid: emailId,
+      type: type,
+      to: toArray,
+      from: from || sender.from,
+      reply_to: reply_to || sender.reply_to,
+      ts: new Date().toISOString(),
+      ...(data.space_name ? { space: data.space_name } : {}),
+      ...(data.person_id ? { pid: data.person_id } : {}),
+      ...(data.assignment_id ? { aid: data.assignment_id } : {}),
+    })}:ALPACAPPS_META]-->`;
+    finalHtml = finalHtml + metadataBlock;
+
     // === APPROVAL GATE ===
     const needsApproval = await checkApprovalRequired(type);
     if (needsApproval) {
-      const toArray = Array.isArray(to) ? to : [to];
-      const ccArray = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
-      const bccArray = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : undefined;
       const { approvalId } = await holdForApproval(
         type, toArray, from || sender.from, reply_to || sender.reply_to,
         ccArray, bccArray, customSubject || rendered.subject,
@@ -2258,9 +2285,9 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: from || sender.from,
-        to: Array.isArray(to) ? to : [to],
-        ...(cc ? { cc: Array.isArray(cc) ? cc : [cc] } : {}),
-        ...(bcc ? { bcc: Array.isArray(bcc) ? bcc : [bcc] } : {}),
+        to: toArray,
+        ...(ccArray ? { cc: ccArray } : {}),
+        ...(bccArray.length > 0 ? { bcc: bccArray } : {}),
         reply_to: reply_to || sender.reply_to,
         subject: customSubject || rendered.subject,
         html: finalHtml,
