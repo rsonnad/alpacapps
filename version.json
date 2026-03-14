@@ -1,12 +1,12 @@
 {
-  "version": "v260314.34 4:54a",
-  "release": 776,
-  "sha": "c9b8cb90f",
-  "fullSha": "c9b8cb90f5a82ecab3d6ea9ec33cb59e38529b35",
+  "version": "v260314.35 5:19a",
+  "release": 777,
+  "sha": "d128ad5e2",
+  "fullSha": "d128ad5e23ee135de1a879ab98c8a660067b6f5a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 09:54:57+00",
-  "commits": [{"sha":"c9b8cb90f","message":"Replace broken network iframe with compact UniFi link widget","author":"Rahul"}]
+  "pushedAt": "2026-03-14 10:19:01+00",
+  "commits": [{"sha":"0d924ecd8","message":"Standardize email system: shared components, dual-model classifier, audit trail","author":"Rahul"},{"sha":"d128ad5e2","message":"Merge branch 'ecstatic-swirles'","author":"Rahul"}]
 }
