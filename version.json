@@ -1,12 +1,12 @@
 {
-  "version": "v260314.25 3:49a",
-  "release": 767,
-  "sha": "27cbec2f9",
-  "fullSha": "27cbec2f9baaadb9ba6a5f9f444c058c019d9410",
+  "version": "v260314.26 3:51a",
+  "release": 768,
+  "sha": "059b6da74",
+  "fullSha": "059b6da749f8dca03d1a484ac98bd23e1a06f550",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 08:49:58+00",
-  "commits": [{"sha":"27cbec2f9","message":"Add playback controls to guestbook video entries","author":"Rahul"}]
+  "pushedAt": "2026-03-14 08:51:13+00",
+  "commits": [{"sha":"059b6da74","message":"Add video/audio guestbook recording, 3x bigger fact, email guestbook","author":"Rahul"}]
 }
