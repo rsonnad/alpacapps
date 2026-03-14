@@ -230,9 +230,18 @@
     const headers = { 'Authorization': `Bearer ${TOKEN}` };
 
     async function api(path) {
-      const res = await fetch(`${API}${path}`, { headers });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      try {
+        const res = await fetch(`${API}${path}`, { headers, signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        return res.json();
+      } catch (e) {
+        clearTimeout(timeout);
+        if (e.name === 'AbortError') throw new Error('Request timed out — the API may be blocked by a browser extension. Try disabling your ad blocker.');
+        throw e;
+      }
     }
 
     // Stats
@@ -279,7 +288,10 @@
         currentOffset = sessions.length;
         renderSessions();
       } catch (e) {
-        container.innerHTML = '<div class="empty">Failed to load sessions. Check console.</div>';
+        container.innerHTML = `<div class="empty" style="white-space:normal;max-width:500px;margin:0 auto;">
+          <strong>Failed to load sessions</strong><br>
+          <span style="font-size:0.82rem;color:#999;">${escHtml(e.message)}</span>
+        </div>`;
         console.error(e);
       }
     }
