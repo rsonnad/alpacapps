@@ -1,12 +1,12 @@
 {
-  "version": "v260314.12 1:51a",
-  "release": 754,
-  "sha": "1ddfa6b89",
-  "fullSha": "1ddfa6b899cde76bff44c582f097d9e50955c7c0",
+  "version": "v260314.13 2:00a",
+  "release": 755,
+  "sha": "160e443eb",
+  "fullSha": "160e443eb31e8473c8e46643a6244b9e0692b291",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 06:51:36+00",
-  "commits": [{"sha":"1ddfa6b89","message":"Extend hero image taller (380px), reduce fade, shift content down","author":"Rahul"}]
+  "pushedAt": "2026-03-14 07:00:36+00",
+  "commits": [{"sha":"160e443eb","message":"Align all images exactly to trim lines (18.75px from edges)","author":"Rahul"}]
 }
