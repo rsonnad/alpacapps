@@ -215,8 +215,7 @@ async function loadGuestbook() {
       if (entry.video_url) {
         mediaHtml = `<div class="guestbook-entry-media">
           <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}"
-                 onclick="this.paused ? this.play() : this.pause()"
-                 playsinline preload="metadata"></video>
+                 controls playsinline preload="metadata"></video>
         </div>`;
       } else if (entry.audio_url) {
         mediaHtml = `<div class="guestbook-entry-media">
