@@ -1,12 +1,12 @@
 {
-  "version": "v260313.68 11:59p",
-  "release": 742,
-  "sha": "f316d63ea",
-  "fullSha": "f316d63eaa6ff06c8dbca8632e42de84ae1a161c",
+  "version": "v260314.01 12:01a",
+  "release": 743,
+  "sha": "200004848",
+  "fullSha": "20000484804d6d67ccfc111654516bc57bc63703",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 04:59:11+00",
-  "commits": [{"sha":"f316d63ea","message":"Add checkpoint rule to setup-alpacapps-infra skill","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 05:01:11+00",
+  "commits": [{"sha":"200004848","message":"Fix kiosk app not showing in app drawer","author":"Rahul"}]
 }
