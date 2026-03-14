@@ -529,7 +529,10 @@ async function checkVersion() {
     const data = await resp.json();
     const ver = data.version || data.sha;
     const versionEl = document.querySelector('.kiosk-version');
-    if (versionEl) versionEl.textContent = data.version || '';
+    const appVer = (typeof AlpacaKiosk !== 'undefined' && AlpacaKiosk.getAppVersion)
+      ? AlpacaKiosk.getAppVersion() : null;
+    const label = (data.version || '') + (appVer ? ` | app ${appVer}` : '');
+    if (versionEl) versionEl.textContent = label;
     if (!currentVersion) {
       currentVersion = ver;
       return;

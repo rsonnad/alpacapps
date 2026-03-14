@@ -3,6 +3,16 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// Auto-version: YYMMDD as versionCode, vYYMMDD.HHmm as versionName
+import java.text.SimpleDateFormat
+import java.util.Date
+
+val now = Date()
+val buildDate: String = SimpleDateFormat("yyMMdd").format(now)
+val buildTime: String = SimpleDateFormat("HHmm").format(now)
+val autoVersionCode: Int = buildDate.toInt()
+val autoVersionName: String = "v${buildDate}.${buildTime}"
+
 android {
     namespace = "com.alpacaplayhouse.kiosk"
     compileSdk = 36
@@ -11,8 +21,13 @@ android {
         applicationId = "com.alpacaplayhouse.kiosk"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = autoVersionCode
+        versionName = autoVersionName
+        buildConfigField("String", "BUILD_VERSION", "\"${autoVersionName}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
