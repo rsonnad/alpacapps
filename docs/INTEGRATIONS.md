@@ -51,6 +51,7 @@ Use these exact vendor strings:
 | `supabase` | Supabase platform (storage, edge function invocations) |
 | `cloudflare_r2` | Cloudflare R2 object storage |
 | `brave` | Brave Search API (web search for PAI) |
+| `openrouter` | OpenRouter multi-model gateway (future Gemini alternative) |
 
 ### Categories (Granular)
 
@@ -156,6 +157,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 | PayPal Payouts | $0.25/payout (US) |
 | Glowforge | $0 (undocumented API, free) |
 | Brave Search | Free: 2,000 queries/mo; Base: $5/mo for 20,000; $0.003/query overage |
+| OpenRouter | Pass-through pricing per model — see https://openrouter.ai/models |
 
 
 ## External Systems
@@ -289,6 +291,22 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Pricing**: Free tier: 2,000 queries/month; Base: $5/mo for 20,000 queries; $0.003/query overage
 - **Response**: JSON with `web.results[]` containing `title`, `url`, `description`, `age` (freshness)
 - **Cost tracking**: Logged to `api_usage_log` with vendor `brave`, category `pai_web_search`
+
+### OpenRouter (Multi-Model LLM Gateway)
+- **API**: OpenAI-compatible REST API (`https://openrouter.ai/api/v1`)
+- **Auth**: `Authorization: Bearer sk-or-v1-...` header
+- **Dashboard**: https://openrouter.ai/settings/keys
+- **Status**: Not yet integrated — stored for future use as Gemini alternative
+- **Why OpenRouter**: Access to 200+ models (MiniMax-M1, DeepSeek R1, Qwen, Llama, Mistral, etc.) through a single API key with OpenAI-compatible interface
+- **Notable models for our use case**:
+  - `minimax/minimax-m1` — MiniMax-M1 reasoning model, competitive pricing
+  - `deepseek/deepseek-r1` — strong reasoning, very cheap
+  - `google/gemini-2.5-flash` — same Gemini Flash we use now, but via OpenRouter
+  - `qwen/qwen-2.5-72b-instruct` — strong open-source alternative
+- **Integration pattern**: Drop-in replacement for Gemini in edge functions — same chat completion API shape as OpenAI
+- **Supabase Secret (when ready)**: `OPENROUTER_API_KEY`
+- **Cost tracking**: Will use vendor `openrouter` in `api_usage_log`
+- **Pricing**: Pass-through per model — see https://openrouter.ai/models
 
 ### AI Image Generation (Gemini)
 - **Worker:** `/opt/image-gen/worker.js` on DO droplet (systemd: `image-gen.service`)
