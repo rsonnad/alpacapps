@@ -79,7 +79,7 @@ class JsBridge(private val activity: MainActivity) {
         activity.runOnUiThread {
             val resId = when (name) {
                 "shutter" -> android.media.MediaActionSound.SHUTTER_CLICK
-                "focus" -> android.media.MediaActionSound.AUTO_FOCUS
+                "focus" -> android.media.MediaActionSound.FOCUS_COMPLETE
                 else -> android.media.MediaActionSound.SHUTTER_CLICK
             }
             val sound = android.media.MediaActionSound()

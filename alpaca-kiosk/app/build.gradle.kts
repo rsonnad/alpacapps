@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.alpacaplayhouse.kiosk"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.alpacaplayhouse.kiosk"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -48,8 +48,5 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
 
-    // Phase 2: Supabase for guest book uploads
-    implementation("io.github.jan-tennert.supabase:storage-kt:3.0.3")
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.3")
-    implementation("io.ktor:ktor-client-okhttp:3.0.3")
+    // Phase 2: Guest book uses raw HTTP (GuestBookManager.kt) — no SDK needed
 }
