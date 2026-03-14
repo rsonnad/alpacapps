@@ -23,32 +23,47 @@
       </div>
     </header>
 
-    <!-- Current Herd -->
-    <section class="kiosk-section" id="occupantsSection">
-      <h2 class="kiosk-section-title">Current Herd</h2>
-      <div class="kiosk-occupants" id="occupantsGrid">
-        <div class="kiosk-loading">Loading...</div>
+    <!-- Main content: two-column in landscape -->
+    <div class="kiosk-main">
+      <!-- Left column -->
+      <div class="kiosk-col kiosk-col-left">
+        <!-- Guestbook -->
+        <section class="kiosk-section kiosk-guestbook-section" id="guestbookSection">
+          <h2 class="kiosk-section-title">Guestbook</h2>
+          <div class="guestbook-input">
+            <input type="text" id="guestName" placeholder="Your name" class="guestbook-field" maxlength="50">
+            <textarea id="guestMessage" placeholder="Leave a message for the house..." class="guestbook-field guestbook-textarea" maxlength="280"></textarea>
+            <button id="guestSubmit" class="guestbook-btn">Sign Guestbook</button>
+          </div>
+          <div class="guestbook-entries" id="guestbookEntries">
+            <div class="kiosk-loading">Loading...</div>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <!-- Upcoming Events -->
-    <section class="kiosk-section" id="eventsSection" style="display:none">
-      <h2 class="kiosk-section-title">Upcoming</h2>
-      <div class="kiosk-events" id="eventsList"></div>
-    </section>
+      <!-- Right column -->
+      <div class="kiosk-col kiosk-col-right">
+        <!-- Current Herd -->
+        <section class="kiosk-section" id="occupantsSection">
+          <h2 class="kiosk-section-title">Current Herd</h2>
+          <div class="kiosk-occupants" id="occupantsGrid">
+            <div class="kiosk-loading">Loading...</div>
+          </div>
+        </section>
 
-    <!-- Weather -->
-    <section class="kiosk-section kiosk-weather-section" id="weatherSection">
-      <div class="weather-row" id="weatherSummary">
-        <div class="kiosk-loading">Loading weather...</div>
+        <!-- Upcoming Events -->
+        <section class="kiosk-section" id="eventsSection" style="display:none">
+          <h2 class="kiosk-section-title">Upcoming</h2>
+          <div class="kiosk-events" id="eventsList"></div>
+        </section>
+
+        <!-- Alpaca Fact of the Day -->
+        <section class="kiosk-section kiosk-fact-section" id="factSection">
+          <div class="fact-label">Alpaca Fact of the Day</div>
+          <p class="fact-text" id="factText">Loading...</p>
+        </section>
       </div>
-    </section>
-
-    <!-- Alpaca Fact of the Day -->
-    <section class="kiosk-section kiosk-fact-section" id="factSection">
-      <div class="fact-label">Alpaca Fact of the Day</div>
-      <p class="fact-text" id="factText">Loading...</p>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="kiosk-footer">

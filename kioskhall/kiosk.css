@@ -1,6 +1,6 @@
 /* =============================================
    KIOSK DISPLAY - Samsung Galaxy Tab A9
-   Portrait: 800x1340 logical
+   Landscape-first: two-column layout
    Dark theme, no scroll, anti-burn-in
    ============================================= */
 
@@ -51,8 +51,8 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 1.25rem 1.5rem;
-  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  gap: 0.6rem;
   animation: anti-burn 120s ease-in-out infinite;
 }
 
@@ -60,28 +60,53 @@ body {
 .kiosk-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding-bottom: 0.5rem;
+  gap: 0.75rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--kiosk-card-border);
+  flex-shrink: 0;
 }
 
 .kiosk-logo {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
 .kiosk-title h1 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--kiosk-text);
 }
 
 .kiosk-datetime {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--kiosk-text-secondary);
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
+}
+
+/* ---- Main: two-column layout ---- */
+.kiosk-main {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.kiosk-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+}
+
+.kiosk-col-left {
+  flex: 1;
+}
+
+.kiosk-col-right {
+  flex: 1;
 }
 
 /* ---- Sections ---- */
@@ -89,40 +114,156 @@ body {
   background: var(--kiosk-card);
   border: 1px solid var(--kiosk-card-border);
   border-radius: var(--kiosk-radius);
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
 }
 
 .kiosk-section-title {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--kiosk-text-muted);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
   font-weight: 600;
+}
+
+/* ---- Guestbook ---- */
+.kiosk-guestbook-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.guestbook-input {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  flex-shrink: 0;
+}
+
+.guestbook-field {
+  background: var(--kiosk-bg);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius-sm);
+  color: var(--kiosk-text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.5rem 0.6rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.guestbook-field:focus {
+  border-color: var(--kiosk-accent);
+}
+
+.guestbook-field::placeholder {
+  color: var(--kiosk-text-muted);
+}
+
+#guestName {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.guestbook-textarea {
+  flex: 1;
+  resize: none;
+  min-height: 36px;
+  max-height: 36px;
+}
+
+.guestbook-btn {
+  background: var(--kiosk-accent);
+  color: var(--kiosk-bg);
+  border: none;
+  border-radius: var(--kiosk-radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.guestbook-btn:hover {
+  opacity: 0.9;
+}
+
+.guestbook-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.guestbook-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+  /* Hide scrollbar but allow scroll */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.guestbook-entries::-webkit-scrollbar {
+  display: none;
+}
+
+.guestbook-entry {
+  background: var(--kiosk-bg);
+  border-radius: var(--kiosk-radius-sm);
+  padding: 0.5rem 0.65rem;
+}
+
+.guestbook-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.2rem;
+}
+
+.guestbook-entry-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--kiosk-accent);
+}
+
+.guestbook-entry-time {
+  font-size: 0.65rem;
+  color: var(--kiosk-text-muted);
+}
+
+.guestbook-entry-msg {
+  font-size: 0.8rem;
+  color: var(--kiosk-text-secondary);
+  line-height: 1.35;
 }
 
 /* ---- Occupants ---- */
 .kiosk-occupants {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .occupant-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
   background: var(--kiosk-accent-soft);
   border: 1px solid rgba(233, 156, 72, 0.25);
   border-radius: 20px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.9rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
   color: var(--kiosk-accent);
   font-weight: 500;
 }
 
 .occupant-pill .occupant-space {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--kiosk-text-muted);
   font-weight: 400;
 }
@@ -133,12 +274,12 @@ body {
 
 .occupant-new::after {
   content: 'NEW';
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   font-weight: 700;
   color: var(--kiosk-green);
   position: absolute;
-  top: -0.3rem;
-  right: -0.2rem;
+  top: -0.25rem;
+  right: -0.15rem;
   letter-spacing: 0.05em;
 }
 
@@ -146,24 +287,24 @@ body {
 .kiosk-events {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .event-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
+  gap: 0.5rem;
+  font-size: 0.8rem;
 }
 
 .event-date {
   background: var(--kiosk-accent-soft);
   color: var(--kiosk-accent);
   font-weight: 600;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
   border-radius: var(--kiosk-radius-sm);
-  min-width: 3.5rem;
+  min-width: 3rem;
   text-align: center;
   white-space: nowrap;
 }
@@ -175,42 +316,7 @@ body {
 
 .event-time {
   color: var(--kiosk-text-muted);
-  font-size: 0.8rem;
-}
-
-/* ---- Weather ---- */
-.kiosk-weather-section {
-  padding: 0.75rem 1.25rem;
-}
-
-.weather-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.weather-temp {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--kiosk-text);
-  line-height: 1;
-}
-
-.weather-icon {
-  width: 48px;
-  height: 48px;
-}
-
-.weather-desc {
-  font-size: 0.9rem;
-  color: var(--kiosk-text-secondary);
-  flex: 1;
-}
-
-.weather-detail {
-  font-size: 0.8rem;
-  color: var(--kiosk-text-muted);
-  text-align: right;
+  font-size: 0.75rem;
 }
 
 /* ---- Fact ---- */
@@ -225,20 +331,20 @@ body {
 }
 
 .fact-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: var(--kiosk-accent);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   font-weight: 600;
 }
 
 .fact-text {
-  font-size: 1.05rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.45;
   color: var(--kiosk-text-secondary);
   font-style: italic;
-  max-width: 90%;
+  max-width: 95%;
 }
 
 /* ---- Footer ---- */
@@ -246,63 +352,76 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.25rem;
+  flex-shrink: 0;
 }
 
 .kiosk-pai-count {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--kiosk-text-muted);
 }
 
 .kiosk-version {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: var(--kiosk-text-muted);
 }
 
 /* ---- Utility ---- */
 .kiosk-loading {
   color: var(--kiosk-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-style: italic;
 }
 
 .kiosk-empty {
   color: var(--kiosk-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
-/* ---- Responsive: larger tablets / landscape ---- */
-@media (min-width: 1024px) {
-  .kiosk-container {
-    max-width: 800px;
-    margin: 0 auto;
+/* ---- Portrait mode (phone / portrait tablet) ---- */
+@media (orientation: portrait) {
+  .kiosk-main {
+    flex-direction: column;
+  }
+
+  .kiosk-col-left,
+  .kiosk-col-right {
+    flex: none;
+  }
+
+  .kiosk-guestbook-section {
+    max-height: 40vh;
+  }
+
+  .guestbook-input {
+    flex-wrap: wrap;
+  }
+
+  #guestName {
+    width: 100%;
+  }
+
+  .guestbook-textarea {
+    width: 100%;
   }
 }
 
-/* ---- Landscape mode for tablet ---- */
-@media (orientation: landscape) and (max-height: 900px) {
+/* ---- Very small landscape (phone) ---- */
+@media (orientation: landscape) and (max-height: 500px) {
   .kiosk-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
+    gap: 0.3rem;
   }
 
   .kiosk-header {
-    width: 100%;
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.2rem;
   }
 
-  .kiosk-section {
-    flex: 1 1 45%;
-    min-width: 0;
+  .kiosk-logo {
+    width: 32px;
+    height: 32px;
   }
 
-  .kiosk-fact-section {
-    flex: 1 1 100%;
-  }
-
-  .kiosk-footer {
-    width: 100%;
+  .kiosk-title h1 {
+    font-size: 1rem;
   }
 }
