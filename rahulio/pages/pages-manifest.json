@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-03-14T07:01:21.936Z",
+  "generatedAt": "2026-03-14T07:09:51.964Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "files/index.html",
+      "title": "File Vault",
+      "section": null,
+      "modifiedAt": "2026-03-14T07:07:57.000Z"
+    },
     {
       "path": "claudesessions/index.html",
       "title": "Claude Sessions",
