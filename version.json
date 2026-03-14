@@ -1,12 +1,12 @@
 {
-  "version": "v260314.39 6:15a",
-  "release": 781,
-  "sha": "2b3854f80",
-  "fullSha": "2b3854f80532c8649aafcb21f20f9960903d630b",
+  "version": "v260314.40 6:08p",
+  "release": 782,
+  "sha": "9a888fd28",
+  "fullSha": "9a888fd288c7d0805f1346ef64901eb50d2196c0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 11:15:12+00",
-  "commits": [{"sha":"2b3854f80","message":"Optimize PAI quality: deeper thinking, more context, new data tools","author":"Rahul"}]
+  "pushedAt": "2026-03-14 23:08:15+00",
+  "commits": [{"sha":"906f4f827","message":"Fix BCC: use alpacaplayhouse@gmail.com instead of pai@ (prevents loop)","author":"Rahul"},{"sha":"9a888fd28","message":"Merge branch 'ecstatic-swirles'","author":"Rahul"}]
 }
