@@ -424,8 +424,12 @@
         const timeStr = date && !isNaN(date) ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
         const project = s.project || 'unknown';
         const model = s.model ? s.model.replace('claude-', '').split('-202')[0] : '';
-        // Only show duration if it looks reasonable (< 24 hours = 1440 mins)
-        const duration = s.duration_mins && s.duration_mins < 1440 ? s.duration_mins + 'm' : '';
+        // Compute duration from timestamps if missing
+        let durMins = s.duration_mins;
+        if (!durMins && s.started_at && s.ended_at) {
+          durMins = Math.max(1, Math.round((new Date(s.ended_at) - new Date(s.started_at)) / 60000));
+        }
+        const duration = durMins && durMins < 1440 ? durMins + 'm' : '';
         const tokens = s.token_count ? (s.token_count / 1000).toFixed(0) + 'k' : '';
         const summary = (s.summary || '').substring(0, 120);
         const isExpanded = expandedId === s.id;
@@ -568,7 +572,11 @@
         const model = session.model ? session.model.replace('claude-', '').split('-202')[0] : '';
         const project = session.project || '';
         const tokens = session.token_count ? (session.token_count / 1000).toFixed(0) + 'k tokens' : '';
-        const duration = session.duration_mins && session.duration_mins < 1440 ? session.duration_mins + 'm' : '';
+        let durMinsF = session.duration_mins;
+        if (!durMinsF && session.started_at && session.ended_at) {
+          durMinsF = Math.max(1, Math.round((new Date(session.ended_at) - new Date(session.started_at)) / 60000));
+        }
+        const duration = durMinsF && durMinsF < 1440 ? durMinsF + 'm' : '';
         const pills = [project, model, duration, tokens].filter(Boolean).map(p => `<span class="pill" style="font-size:0.72rem;padding:0.2rem 0.55rem;border-radius:20px;background:#f0ede8;color:#666;margin-right:0.35rem;">${escHtml(p)}</span>`).join('');
 
         const parts = t.split(/\n---\n/);

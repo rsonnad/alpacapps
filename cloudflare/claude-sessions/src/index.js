@@ -129,6 +129,32 @@ export default {
       return json({ ok: true, with_duration: r1.meta?.changes, without_duration: r2.meta?.changes });
     }
 
+    // POST /fix-durations — backfill duration_mins from started_at/ended_at
+    if (request.method === 'POST' && url.pathname === '/fix-durations') {
+      const result = await env.DB.prepare(`
+        UPDATE sessions
+        SET duration_mins = MAX(1, CAST((julianday(ended_at) - julianday(started_at)) * 1440 AS INTEGER))
+        WHERE duration_mins IS NULL
+          AND started_at IS NOT NULL
+          AND ended_at IS NOT NULL
+          AND julianday(ended_at) >= julianday(started_at)
+      `).run();
+      return json({ ok: true, fixed: result.meta?.changes || 0 });
+    }
+
+    // POST /fix-bulk-import — null out bogus durations for bulk-imported sessions
+    // whose ended_at was the import time, not the real session end
+    if (request.method === 'POST' && url.pathname === '/fix-bulk-import') {
+      // Step 1: Set ended_at = started_at and duration = NULL for sessions with unreasonable durations (>24h)
+      const r1 = await env.DB.prepare(`
+        UPDATE sessions
+        SET ended_at = started_at, duration_mins = NULL
+        WHERE duration_mins IS NOT NULL AND duration_mins >= 1440
+          AND started_at IS NOT NULL
+      `).run();
+      return json({ ok: true, reset: r1.meta?.changes || 0 });
+    }
+
     // GET /stats — aggregate stats (only count reasonable durations < 24h)
     if (request.method === 'GET' && url.pathname === '/stats') {
       const result = await env.DB.prepare(`
