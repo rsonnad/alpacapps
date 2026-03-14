@@ -1,12 +1,12 @@
 {
-  "version": "v260314.37 5:44a",
-  "release": 779,
-  "sha": "1fbd29eac",
-  "fullSha": "1fbd29eac980f6318ee6501badc2a4ab56c4e66b",
+  "version": "v260314.38 5:45a",
+  "release": 780,
+  "sha": "ef79b4e55",
+  "fullSha": "ef79b4e55ac531e2068fc17c74bbd69d5322786f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 10:44:08+00",
-  "commits": [{"sha":"dde690fb2","message":"Add email approval gate, BCC PAI on all emails, reply metadata tracking","author":"Rahul"},{"sha":"1fbd29eac","message":"Merge branch 'ecstatic-swirles'","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 10:45:21+00",
+  "commits": [{"sha":"ef79b4e55","message":"Add share button and full-window session view (#40)","author":"Rahul"}]
 }
