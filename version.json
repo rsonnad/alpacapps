@@ -1,12 +1,12 @@
 {
-  "version": "v260314.01 12:01a",
-  "release": 743,
-  "sha": "200004848",
-  "fullSha": "20000484804d6d67ccfc111654516bc57bc63703",
+  "version": "v260314.02 12:03a",
+  "release": 744,
+  "sha": "d876dce6c",
+  "fullSha": "d876dce6c1d36943edccb3869ae58e14fd65f050",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 05:01:11+00",
-  "commits": [{"sha":"200004848","message":"Fix kiosk app not showing in app drawer","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 05:03:37+00",
+  "commits": [{"sha":"d876dce6c","message":"Add kiosk app architecture guide with credentials","author":"Rahul"}]
 }
