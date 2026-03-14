@@ -404,12 +404,15 @@ body {
 }
 
 .guestbook-thumb {
-  width: 80px;
-  height: 52px;
-  border-radius: 4px;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  aspect-ratio: 16/9;
+  border-radius: var(--kiosk-radius-sm);
   object-fit: cover;
   cursor: pointer;
   border: 1px solid var(--kiosk-card-border);
+  background: var(--kiosk-card);
 }
 
 .guestbook-audio-player {
@@ -534,6 +537,7 @@ body {
   color: var(--kiosk-text-secondary);
   font-style: italic;
   max-width: 95%;
+  transition: opacity 0.4s ease;
 }
 
 /* ---- Footer ---- */

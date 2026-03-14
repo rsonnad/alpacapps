@@ -155,12 +155,26 @@ function formatTime(timeStr) {
 }
 
 // =============================================
-// ALPACA FACT
+// ALPACA FACT OF THE MOMENT (rotates through facts)
 // =============================================
-async function loadFact() {
-  const el = document.getElementById('factText');
+const FACT_ROTATE_INTERVAL = 30_000; // 30s per fact
+let allFacts = [...FALLBACK_FACTS];
+let currentFactIndex = 0;
 
-  // 1. Try edge function
+async function loadFacts() {
+  // Try to fetch recent facts from DB
+  try {
+    const { data } = await supabase
+      .from('kiosk_facts')
+      .select('fact_text')
+      .order('generated_date', { ascending: false })
+      .limit(10);
+    if (data && data.length > 0) {
+      allFacts = data.map(d => d.fact_text);
+    }
+  } catch (_) { /* use fallback array */ }
+
+  // Also try to get today's fresh fact from edge function
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-daily-fact`, {
       method: 'POST',
@@ -168,24 +182,28 @@ async function loadFact() {
     });
     if (resp.ok) {
       const { fact } = await resp.json();
-      if (fact) { el.textContent = fact; return; }
+      if (fact && !allFacts.includes(fact)) {
+        allFacts.unshift(fact); // add to front
+        if (allFacts.length > 10) allFacts.length = 10;
+      }
     }
-  } catch (_) { /* fall through */ }
+  } catch (_) { /* ignore */ }
 
-  // 2. Try most recent fact from DB
-  try {
-    const { data } = await supabase
-      .from('kiosk_facts')
-      .select('fact_text')
-      .order('generated_date', { ascending: false })
-      .limit(1)
-      .single();
-    if (data?.fact_text) { el.textContent = data.fact_text; return; }
-  } catch (_) { /* fall through */ }
+  // Show the first fact
+  showNextFact();
+  // Rotate every 30s
+  setInterval(showNextFact, FACT_ROTATE_INTERVAL);
+}
 
-  // 3. Use a deterministic fallback based on day of year
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  el.textContent = FALLBACK_FACTS[dayOfYear % FALLBACK_FACTS.length];
+function showNextFact() {
+  const el = document.getElementById('factText');
+  if (!el || allFacts.length === 0) return;
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = allFacts[currentFactIndex % allFacts.length];
+    el.style.opacity = '1';
+    currentFactIndex++;
+  }, 400);
 }
 
 // =============================================
@@ -215,6 +233,7 @@ async function loadGuestbook() {
       if (entry.video_url) {
         mediaHtml = `<div class="guestbook-entry-media">
           <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}"
+                 poster="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
                  controls playsinline preload="metadata"></video>
         </div>`;
       } else if (entry.audio_url) {
@@ -570,7 +589,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(updateClock, 1000);
 
   // Load fact once (doesn't change during the day)
-  loadFact();
+  loadFacts();
 
   // Version check + auto-reload every 5 min
   checkVersion();
