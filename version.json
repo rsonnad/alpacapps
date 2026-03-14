@@ -1,12 +1,12 @@
 {
-  "version": "v260314.42 6:35p",
-  "release": 784,
-  "sha": "9176f2abc",
-  "fullSha": "9176f2abcb71a663755a3be7b3ebae54a33da6bd",
+  "version": "v260314.43 6:37p",
+  "release": 785,
+  "sha": "fd3a8e478",
+  "fullSha": "fd3a8e478bf8bbf273be19508ba67c87c571cfdd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 23:35:14+00",
-  "commits": [{"sha":"9176f2abc","message":"Add Gmail API OAuth setup and management scripts","author":"Rahul"}]
+  "pushedAt": "2026-03-14 23:37:01+00",
+  "commits": [{"sha":"b8bf95422","message":"Replace manage.html redirect with kiosk-style 404 page","author":"Rahul"},{"sha":"fd3a8e478","message":"Merge branch 'great-maxwell'","author":"Rahul"}]
 }
