@@ -1,5 +1,6 @@
 package com.alpacaplayhouse.kiosk
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
@@ -7,6 +8,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -22,6 +26,8 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -85,6 +91,8 @@ class MainActivity : AppCompatActivity() {
         )
         wakeLock.acquire()
 
+        requestMediaPermissions()
+
         if (isNetworkAvailable()) {
             webView.loadUrl(prefs.startUrl)
         } else {
@@ -132,6 +140,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.webViewClient = KioskWebViewClient(this)
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                // Auto-grant camera and microphone for guestbook recording
+                runOnUiThread {
+                    request.grant(request.resources)
+                }
+            }
+        }
         webView.addJavascriptInterface(JsBridge(this), "AlpacaKiosk")
     }
 
@@ -293,6 +309,21 @@ class MainActivity : AppCompatActivity() {
         screenTimeoutRunnable?.let { handler.removeCallbacks(it) }
         autoRestartRunnable?.let { handler.removeCallbacks(it) }
         super.onDestroy()
+    }
+
+    private fun requestMediaPermissions() {
+        val needed = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            needed.add(Manifest.permission.CAMERA)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            needed.add(Manifest.permission.RECORD_AUDIO)
+        }
+        if (needed.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, needed.toTypedArray(), 1001)
+        }
     }
 
     fun reloadWebView() {
