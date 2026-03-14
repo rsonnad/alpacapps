@@ -1,12 +1,12 @@
 {
-  "version": "v260314.24 3:48a",
-  "release": 766,
-  "sha": "2e60749f8",
-  "fullSha": "2e60749f8c82f755854af123d05fe5561eae85d5",
+  "version": "v260314.25 3:49a",
+  "release": 767,
+  "sha": "27cbec2f9",
+  "fullSha": "27cbec2f9baaadb9ba6a5f9f444c058c019d9410",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 08:48:56+00",
-  "commits": [{"sha":"2e60749f8","message":"Add auto-versioning for kiosk APK, show app version in footer","author":"Rahul"}]
+  "pushedAt": "2026-03-14 08:49:58+00",
+  "commits": [{"sha":"27cbec2f9","message":"Add playback controls to guestbook video entries","author":"Rahul"}]
 }
