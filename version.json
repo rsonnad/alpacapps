@@ -1,12 +1,12 @@
 {
-  "version": "v260314.11 1:49a",
-  "release": 753,
-  "sha": "2c9d79b25",
-  "fullSha": "2c9d79b254a5403025d257083ccf30e8b56f1f20",
+  "version": "v260314.12 1:51a",
+  "release": 754,
+  "sha": "1ddfa6b89",
+  "fullSha": "1ddfa6b899cde76bff44c582f097d9e50955c7c0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 06:49:43+00",
-  "commits": [{"sha":"2c9d79b25","message":"Switch directions line to Lato sans-serif for clearly non-italic look","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 06:51:36+00",
+  "commits": [{"sha":"1ddfa6b89","message":"Extend hero image taller (380px), reduce fade, shift content down","author":"Rahul"}]
 }
