@@ -1,12 +1,12 @@
 {
-  "version": "v260313.56 8:08p",
-  "release": 730,
-  "sha": "06a3d2342",
-  "fullSha": "06a3d2342c0cef0768b39ad478352f2f37897d33",
+  "version": "v260313.57 8:36p",
+  "release": 731,
+  "sha": "ef6b9656d",
+  "fullSha": "ef6b9656d803fed2bee309d9f364448ce39d671d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 01:08:12+00",
-  "commits": [{"sha":"06a3d2342","message":"Fix: \"mental transformation\" → \"emotional transformation\" on back card","author":"Rahul"}]
+  "pushedAt": "2026-03-14 01:36:00+00",
+  "commits": [{"sha":"1ea48f0b6","message":"Add fetch timeout + better error messages to Claude Sessions page","author":"Rahul"},{"sha":"ef6b9656d","message":"Merge pull request #38 from rsonnad/romantic-poitras","author":"Rahul"}]
 }
