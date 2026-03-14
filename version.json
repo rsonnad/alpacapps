@@ -1,12 +1,12 @@
 {
-  "version": "v260313.59 10:31p",
-  "release": 733,
-  "sha": "6cb92fccb",
-  "fullSha": "6cb92fccbc1e1b87be59c2712c705d802eaee712",
+  "version": "v260313.60 10:46p",
+  "release": 734,
+  "sha": "4f3b8e26a",
+  "fullSha": "4f3b8e26ac0af04d004c2a1191b60eedfde93628",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 03:31:27+00",
-  "commits": [{"sha":"6cb92fccb","message":"Add detailed plan for custom Android kiosk app","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 03:46:44+00",
+  "commits": [{"sha":"4f3b8e26a","message":"Add Zelle rent-fallback when name matches but no deposit app","author":"Rahul"}]
 }
