@@ -1,12 +1,12 @@
 {
-  "version": "v260314.28 4:22a",
-  "release": 770,
-  "sha": "e79ce9d3d",
-  "fullSha": "e79ce9d3debf69728f13599c4ffb31a408158444",
+  "version": "v260314.29 4:23a",
+  "release": 771,
+  "sha": "b1833aa46",
+  "fullSha": "b1833aa460bd53584f414cbf39361b1a487961b0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 09:22:06+00",
-  "commits": [{"sha":"e79ce9d3d","message":"Fix guestbook email: entry_type constraint + field name typo","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 09:23:33+00",
+  "commits": [{"sha":"b1833aa46","message":"Regenerate print files from latest card design","author":"Rahul"}]
 }
