@@ -1,12 +1,12 @@
 {
-  "version": "v260314.04 1:21a",
-  "release": 746,
-  "sha": "b65640dc7",
-  "fullSha": "b65640dc7a64e31d092c39b37e93918c1222ed5f",
+  "version": "v260314.05 1:27a",
+  "release": 747,
+  "sha": "e6fdb890b",
+  "fullSha": "e6fdb890ba8edd5f63fefc9f63fb9c11ff8b5774",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 06:21:27+00",
-  "commits": [{"sha":"b65640dc7","message":"Fix alpaca fact generation + optimize kiosk landscape layout","author":"Rahul"}]
+  "pushedAt": "2026-03-14 06:27:14+00",
+  "commits": [{"sha":"e6fdb890b","message":"Front card: wordmark with @, sans-serif CTA, \"Offered with: Rahul Lio\"","author":"Rahul"}]
 }
