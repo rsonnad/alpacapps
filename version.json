@@ -1,12 +1,12 @@
 {
-  "version": "v260314.33 4:45a",
-  "release": 775,
-  "sha": "8a07f7808",
-  "fullSha": "8a07f78081ccfc04c7e86a2094928eb2d755b801",
+  "version": "v260314.34 4:54a",
+  "release": 776,
+  "sha": "c9b8cb90f",
+  "fullSha": "c9b8cb90f5a82ecab3d6ea9ec33cb59e38529b35",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 09:45:47+00",
-  "commits": [{"sha":"8a07f7808","message":"Add UniFi network dashboard iframe to kiosk, compact alpaca fact","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 09:54:57+00",
+  "commits": [{"sha":"c9b8cb90f","message":"Replace broken network iframe with compact UniFi link widget","author":"Rahul"}]
 }
