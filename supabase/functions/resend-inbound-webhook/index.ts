@@ -2660,6 +2660,42 @@ async function handlePaymentEmail(
       return;
     }
     console.log(`Name matched ${nameMatch.name} but no pending deposit application found`);
+
+    // Fallback: check for active assignment (likely rent payment)
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, rate_amount")
+      .eq("person_id", nameMatch.person_id)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("start_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    const category = assignment ? "rent" : "other";
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category,
+      amount: parsed.amount,
+      payment_method: "zelle",
+      transaction_date: new Date().toISOString().split("T")[0],
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      assignment_id: assignment?.id || null,
+      confirmation_number: parsed.confirmationNumber || null,
+      status: "completed",
+      description: `Zelle payment from ${nameMatch.name} (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
+      recorded_by: "system:zelle-email",
+      is_test: false,
+    });
+
+    console.log(`Recorded Zelle payment as ${category}: $${parsed.amount} from ${nameMatch.name}`);
+    await sendPaymentNotification(resendApiKey, "auto_recorded", {
+      parsed,
+      personName: nameMatch.name,
+      applicationId: "",
+      category,
+    });
+    return;
   }
 
   // 3. Tier 2: Amount match
