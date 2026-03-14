@@ -1,12 +1,12 @@
 {
-  "version": "v260314.36 5:34a",
-  "release": 778,
-  "sha": "efce155db",
-  "fullSha": "efce155db40f0b3fedee95ad31d4fec56bd13e58",
+  "version": "v260314.37 5:44a",
+  "release": 779,
+  "sha": "1fbd29eac",
+  "fullSha": "1fbd29eac980f6318ee6501badc2a4ab56c4e66b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 10:34:29+00",
-  "commits": [{"sha":"efce155db","message":"Fix session page: stop collapse on text select, add copy buttons (#39)","author":"Rahul"}]
+  "pushedAt": "2026-03-14 10:44:08+00",
+  "commits": [{"sha":"dde690fb2","message":"Add email approval gate, BCC PAI on all emails, reply metadata tracking","author":"Rahul"},{"sha":"1fbd29eac","message":"Merge branch 'ecstatic-swirles'","author":"Rahul"}]
 }
