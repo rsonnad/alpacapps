@@ -1,12 +1,12 @@
 {
-  "version": "v260313.62 10:57p",
-  "release": 736,
-  "sha": "112aca664",
-  "fullSha": "112aca6643693e9265cd498c230d983a257af3d6",
+  "version": "v260313.63 11:08p",
+  "release": 737,
+  "sha": "41e6ffed0",
+  "fullSha": "41e6ffed0c351949f271e85374283477952c4479",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-14 03:57:20+00",
-  "commits": [{"sha":"d4f62c615","message":"Persona-based infra cloning with granular feature selection","author":"Rahul"},{"sha":"112aca664","message":"Merge branch 'great-maxwell'","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-14 04:08:55+00",
+  "commits": [{"sha":"41e6ffed0","message":"Fix version display + move session hook to Stop event","author":"Rahul"}]
 }
