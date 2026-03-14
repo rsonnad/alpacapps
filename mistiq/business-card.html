@@ -102,7 +102,7 @@
     /* ===== FRONT SIDE ===== */
     .card-hero {
       height: 380px;
-      margin-top: 0;
+      margin-top: 18.75px;
       background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/windingdown.jpg');
       background-size: cover;
       background-position: center;
@@ -193,6 +193,11 @@
       width: auto;
     }
 
+    .card-location-logo {
+      height: 32px !important;
+      width: auto;
+    }
+
     .card-detail {
       font-family: 'Playfair Display', serif;
       font-size: 28px;
@@ -268,9 +273,9 @@
 
     .card-bottom-image {
       margin-top: auto;
-      margin-bottom: 30px;
+      margin-bottom: 18.75px;
       width: 100%;
-      height: 270px;
+      height: 280px;
       background-image: url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/trancemode.jpg');
       background-size: cover;
       background-position: center center;
@@ -398,7 +403,10 @@
 
     .card-back .back-bottom-image {
       margin-top: 10px;
-      width: 100%;
+      margin-bottom: -21.25px;
+      margin-left: -60px;
+      margin-right: -60px;
+      width: calc(100% + 120px);
       height: 300px;
       background-image: url('alpacas-illustrated.jpg');
       background-size: cover;
@@ -472,7 +480,7 @@
               <div class="card-qr-cta">learn<br>more &amp;<br>sign up</div>
             </div>
 
-            <div class="card-location">@ <img src="../assets/branding/wordmark-black-transparent.png" alt="alpaca playhouse austin"></div>
+            <div class="card-location">@ <img src="../assets/branding/wordmark-black-transparent.png" alt="alpaca playhouse austin"> <img src="../assets/branding/alpaca-head-black-transparent.png" alt="logo" class="card-location-logo"></div>
             <div class="card-directions">13 minutes east of the airport on hwy 71</div>
             <div class="card-detail">alpacaplayhouse.com/mistiq</div>
             <div class="card-detail">pai@alpacaplayhouse.com</div>
