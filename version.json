@@ -1,12 +1,12 @@
 {
-  "version": "v260314.23 3:41a",
-  "release": 765,
-  "sha": "9ebfcbe15",
-  "fullSha": "9ebfcbe15b78d8579027a7f0c8bf17f02a71a7a0",
+  "version": "v260314.24 3:48a",
+  "release": 766,
+  "sha": "2e60749f8",
+  "fullSha": "2e60749f8c82f755854af123d05fe5561eae85d5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 08:41:15+00",
-  "commits": [{"sha":"9ebfcbe15","message":"Add WebView camera/mic permissions for guestbook recording","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-14 08:48:56+00",
+  "commits": [{"sha":"2e60749f8","message":"Add auto-versioning for kiosk APK, show app version in footer","author":"Rahul"}]
 }
