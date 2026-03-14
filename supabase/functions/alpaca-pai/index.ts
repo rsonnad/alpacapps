@@ -699,6 +699,56 @@ The link supports credit/debit cards, ACH bank transfers, and Apple Pay/Google P
 After creating the link, you can share it via send_notification or send_link (in voice mode).`);
   }
 
+  // Data catalog — tells PAI what information exists and how to find it
+  parts.push(`\nDATA CATALOG — WHAT YOU CAN LOOK UP:
+You have access to a rich property management database. Use query_property_data or manage_data to answer ANY question about the property's data. Here is what's available:
+
+| Question about... | Use tool | Resource/table | Key fields |
+|---|---|---|---|
+| Door codes, WiFi, passwords, PINs, logins | lookup_codes | password_vault | category, service, password, notes, space_id |
+| Room info, rates, availability, amenities | search_spaces | spaces | name, type, rate, beds, baths, amenities, availability |
+| Tenants, guests, contacts, people | manage_data or query_property_data | people | first_name, last_name, email, phone, type (owner/staff/tenant/associate/prospect) |
+| Bookings, stays, move-in/out dates | manage_data or query_property_data | assignments | person_id, start_date, end_date, status, space_ids |
+| Thermostats, temperature, HVAC | get_device_status or query_property_data | nest_devices | room_name, last_state (currentTempF, mode, hvacStatus) |
+| Vehicles, Tesla, battery, location | get_device_status or query_property_data | vehicles | name, vehicle_make, vehicle_model, last_state (battery_level, locked, location) |
+| Cameras, security | take_snapshot or query_property_data | camera_streams | camera_name, location, is_active |
+| Payments, rent, ledger | query_property_data | stripe_payments, ledger | amount, status, person_id, description, created_at |
+| Smart lights | control_room_lights / control_lights | govee_devices, lighting_groups | name, area, space_id |
+| Laundry, washer, dryer | get_laundry_status | lg_appliances | name, device_type, last_state |
+| SMS messages, texts sent/received | query_property_data | sms_messages | to_number, from_number, body, direction, created_at |
+| Emails, inbound mail | query_property_data | inbound_emails | from_address, subject, classification, created_at |
+| Tasks, to-dos, work orders | manage_data | tasks | title, status, priority, assigned_to, space_id |
+| Events | manage_data | events | title, date, space_id, status |
+| Documents, manuals | lookup_document | documents | title, slug, content_type |
+| Property settings | query_property_data | property_config | address, timezone, settings (singleton, id=1) |
+| Brand colors, logos | query_property_data | brand_config | colors, logos (singleton, id=1) |
+| Bug reports | manage_data | bug_reports | title, description, severity, status |
+| Feature requests | manage_data | feature_requests | title, description, status |
+| Voice calls | query_property_data | voice_calls | caller_phone, duration, summary, transcript |
+| API usage, costs | query_property_data | api_usage_log | vendor, category, estimated_cost_usd |
+
+IMPORTANT: When someone asks a question that involves data, ALWAYS use the appropriate tool to look it up. Never guess or say "I don't have access to that" — you likely DO have access via query_property_data or manage_data. Try looking it up first.`);
+
+  // Reasoning instructions for complex questions
+  parts.push(`\nREASONING INSTRUCTIONS (for complex or multi-part questions):
+When answering complex questions, follow this approach:
+1. IDENTIFY what information you need — break the question into parts
+2. GATHER data — use multiple tools if needed (they run in parallel for speed)
+3. SYNTHESIZE — combine the information into a clear, complete answer
+4. VERIFY — double-check your answer makes sense given what you found
+
+For multi-part questions (e.g. "what's the status of everything?"), call multiple tools simultaneously:
+- get_device_status for thermostats + get_laundry_status + get_weather + get_oven_status
+- This gives a complete picture in one round instead of multiple back-and-forth rounds
+
+For questions you're unsure about:
+- Use query_property_data to search the database directly
+- Use lookup_document to check property manuals
+- Use web_search for external/technical questions
+- Combine multiple sources for the best answer
+
+NEVER say "I don't know" without first trying to look up the answer using your tools.`);
+
   return parts.join("\n");
 }
 
@@ -1313,6 +1363,73 @@ const TOOL_DECLARATIONS = [
           description: "Filter by recipient email address. Optional.",
         },
       },
+    },
+  },
+  {
+    name: "query_property_data",
+    description:
+      "Flexible database query tool for looking up ANY property data. Use this when manage_data doesn't cover the table you need, or when you need more complex queries (joins, aggregations, date ranges). Supports all tables in the data catalog. This is your most powerful research tool — use it whenever you need to find information.",
+    parameters: {
+      type: "object",
+      properties: {
+        table: {
+          type: "string",
+          enum: [
+            "people", "assignments", "assignment_spaces", "spaces", "password_vault",
+            "govee_devices", "nest_devices", "vehicles", "camera_streams",
+            "lg_appliances", "anova_ovens", "inbound_emails", "voice_calls",
+            "sms_messages", "tasks", "events", "documents", "stripe_payments",
+            "ledger", "api_usage_log", "property_config", "brand_config",
+            "app_users", "pai_interactions", "bug_reports", "feature_requests",
+            "faq_entries", "faq_context_entries",
+          ],
+          description: "The database table to query",
+        },
+        select: {
+          type: "string",
+          description: "Comma-separated columns to return (e.g. 'first_name, last_name, email, phone'). Use '*' for all columns. Can include joins using Supabase syntax (e.g. 'id, name, assignments(start_date, end_date)').",
+        },
+        filters: {
+          type: "object",
+          description: "Key-value filter pairs. Keys are column names, values are what to match. Special prefixes: 'gte_' for >=, 'lte_' for <=, 'like_' for ILIKE, 'not_' for !=, 'is_null_' for IS NULL check. Examples: { status: 'active' }, { gte_created_at: '2026-01-01' }, { like_first_name: 'Jon' }",
+        },
+        order_by: {
+          type: "string",
+          description: "Column to sort by (e.g. 'created_at'). Prefix with '-' for descending (e.g. '-created_at').",
+        },
+        limit: {
+          type: "number",
+          description: "Max rows to return (default 25, max 100)",
+        },
+      },
+      required: ["table"],
+    },
+  },
+  {
+    name: "get_person_context",
+    description:
+      "Get comprehensive context about a person — their profile, current/past assignments, recent payments, recent interactions, tasks, and contact info. Use this when you need a full picture of someone (e.g. 'tell me about John', 'what's John's situation?', 'when does Sarah's lease end?'). Much more thorough than individual manage_data calls.",
+    parameters: {
+      type: "object",
+      properties: {
+        person_name: {
+          type: "string",
+          description: "First name, last name, or full name to search for",
+        },
+        person_id: {
+          type: "string",
+          description: "Person UUID if known (more precise than name search)",
+        },
+        include: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["assignments", "payments", "tasks", "interactions", "emails", "sms"],
+          },
+          description: "What context to include. Default: all. Specify a subset for faster results.",
+        },
+      },
+      required: [],
     },
   },
 ];
@@ -2633,6 +2750,240 @@ async function executeToolCall(
         return `Found ${data.length} email(s):\n${lines.join("\n")}`;
       }
 
+      case "query_property_data": {
+        if (scope.userLevel < 1) {
+          return "Permission denied: you need at least resident role to query property data.";
+        }
+
+        const table = args.table;
+        if (!table) return "Error: table is required.";
+
+        // Restrict sensitive tables to staff+
+        const staffOnlyTables = ["app_users", "api_usage_log", "stripe_payments", "ledger", "password_vault", "inbound_emails", "voice_calls"];
+        if (staffOnlyTables.includes(table) && scope.userLevel < 2) {
+          return `Permission denied: querying ${table} requires staff role or higher.`;
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const selectCols = args.select || "*";
+        const limit = Math.min(args.limit || 25, 100);
+
+        let query = supabaseAdmin.from(table).select(selectCols).limit(limit);
+
+        // Apply filters
+        const filters = args.filters || {};
+        for (const [key, value] of Object.entries(filters)) {
+          if (key.startsWith("gte_")) {
+            query = query.gte(key.slice(4), value);
+          } else if (key.startsWith("lte_")) {
+            query = query.lte(key.slice(4), value);
+          } else if (key.startsWith("like_")) {
+            query = query.ilike(key.slice(5), `%${value}%`);
+          } else if (key.startsWith("not_")) {
+            query = query.neq(key.slice(4), value);
+          } else if (key.startsWith("is_null_")) {
+            if (value) {
+              query = query.is(key.slice(8), null);
+            } else {
+              query = query.not(key.slice(8), "is", null);
+            }
+          } else {
+            query = query.eq(key, value);
+          }
+        }
+
+        // Order by
+        if (args.order_by) {
+          const desc = args.order_by.startsWith("-");
+          const col = desc ? args.order_by.slice(1) : args.order_by;
+          query = query.order(col, { ascending: !desc });
+        }
+
+        const { data, error } = await query;
+        if (error) return `Error querying ${table}: ${error.message}`;
+        if (!data || data.length === 0) return `No results found in ${table} with the given filters.`;
+
+        // For residents, filter out other people's personal info from certain tables
+        if (scope.userLevel < 2 && table === "people") {
+          // Only show their own person record or basic public info
+          const filtered = (data as any[]).map((p: any) => ({
+            first_name: p.first_name,
+            type: p.type,
+            ...(p.id === scope.appUserId ? p : {}),
+          }));
+          return `Found ${filtered.length} result(s) in ${table}:\n${JSON.stringify(filtered, null, 2)}`;
+        }
+
+        return `Found ${data.length} result(s) in ${table}:\n${JSON.stringify(data, null, 2)}`;
+      }
+
+      case "get_person_context": {
+        if (scope.userLevel < 2) {
+          return "Permission denied: only staff and admin users can look up person context.";
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        let person: any = null;
+
+        if (args.person_id) {
+          const { data } = await supabaseAdmin
+            .from("people")
+            .select("*")
+            .eq("id", args.person_id)
+            .single();
+          person = data;
+        } else if (args.person_name) {
+          const searchName = args.person_name.trim().toLowerCase();
+          const nameParts = searchName.split(/\s+/);
+
+          let query = supabaseAdmin.from("people").select("*");
+          if (nameParts.length >= 2) {
+            query = query.ilike("first_name", `%${nameParts[0]}%`).ilike("last_name", `%${nameParts.slice(1).join(" ")}%`);
+          } else {
+            query = query.or(`first_name.ilike.%${nameParts[0]}%,last_name.ilike.%${nameParts[0]}%`);
+          }
+          const { data } = await query.limit(1);
+          person = data?.[0];
+        }
+
+        if (!person) return `No person found matching "${args.person_name || args.person_id}".`;
+
+        const sections = args.include || ["assignments", "payments", "tasks", "interactions", "emails", "sms"];
+        const results: string[] = [];
+
+        results.push(`PERSON: ${person.first_name} ${person.last_name || ""}
+  Type: ${person.type || "unknown"}
+  Email: ${person.email || "none"}
+  Phone: ${person.phone || "none"}
+  Phone 2: ${person.phone2 || "none"}
+  Created: ${person.created_at || "unknown"}`);
+
+        // Parallel data fetching for all requested sections
+        const fetches: Promise<void>[] = [];
+
+        if (sections.includes("assignments")) {
+          fetches.push((async () => {
+            const { data } = await supabaseAdmin
+              .from("assignments")
+              .select("id, start_date, end_date, status, rate, rate_type, assignment_spaces(space_id, spaces(name, type))")
+              .eq("person_id", person.id)
+              .order("start_date", { ascending: false })
+              .limit(10);
+            if (data?.length) {
+              results.push(`\nASSIGNMENTS (${data.length}):`);
+              for (const a of data) {
+                const spaces = (a as any).assignment_spaces?.map((as: any) => as.spaces?.name).filter(Boolean).join(", ") || "none";
+                results.push(`  • ${a.start_date} → ${a.end_date || "ongoing"} | Status: ${a.status} | Rate: $${a.rate}/${a.rate_type} | Spaces: ${spaces}`);
+              }
+            } else {
+              results.push("\nASSIGNMENTS: None found");
+            }
+          })());
+        }
+
+        if (sections.includes("payments")) {
+          fetches.push((async () => {
+            const { data } = await supabaseAdmin
+              .from("stripe_payments")
+              .select("id, amount, status, description, created_at")
+              .eq("person_id", person.id)
+              .order("created_at", { ascending: false })
+              .limit(10);
+            if (data?.length) {
+              results.push(`\nPAYMENTS (last ${data.length}):`);
+              for (const p of data) {
+                results.push(`  • $${(p.amount / 100).toFixed(2)} — ${p.status} — "${p.description}" (${new Date(p.created_at).toLocaleDateString()})`);
+              }
+            } else {
+              results.push("\nPAYMENTS: None found");
+            }
+          })());
+        }
+
+        if (sections.includes("tasks")) {
+          fetches.push((async () => {
+            const { data } = await supabaseAdmin
+              .from("tasks")
+              .select("id, title, status, priority, created_at")
+              .eq("assigned_to_person_id", person.id)
+              .order("created_at", { ascending: false })
+              .limit(10);
+            if (data?.length) {
+              results.push(`\nTASKS (${data.length}):`);
+              for (const t of data) {
+                results.push(`  • [${t.status}] P${t.priority}: ${t.title}`);
+              }
+            } else {
+              results.push("\nTASKS: None assigned");
+            }
+          })());
+        }
+
+        if (sections.includes("interactions")) {
+          fetches.push((async () => {
+            // Find app_user linked to this person
+            const { data: appUser } = await supabaseAdmin
+              .from("app_users")
+              .select("id")
+              .eq("person_id", person.id)
+              .limit(1)
+              .maybeSingle();
+            if (appUser) {
+              const { data } = await supabaseAdmin
+                .from("pai_interactions")
+                .select("source, message_preview, created_at")
+                .eq("app_user_id", appUser.id)
+                .order("created_at", { ascending: false })
+                .limit(5);
+              if (data?.length) {
+                results.push(`\nRECENT PAI INTERACTIONS (${data.length}):`);
+                for (const i of data) {
+                  results.push(`  • [${i.source}] "${i.message_preview}" (${new Date(i.created_at).toLocaleDateString()})`);
+                }
+              }
+            }
+          })());
+        }
+
+        if (sections.includes("emails") && person.email) {
+          fetches.push((async () => {
+            const { data } = await supabaseAdmin
+              .from("inbound_emails")
+              .select("from_address, subject, classification, created_at")
+              .ilike("from_address", `%${person.email}%`)
+              .order("created_at", { ascending: false })
+              .limit(5);
+            if (data?.length) {
+              results.push(`\nRECENT EMAILS FROM (${data.length}):`);
+              for (const e of data) {
+                results.push(`  • "${e.subject}" [${e.classification}] (${new Date(e.created_at).toLocaleDateString()})`);
+              }
+            }
+          })());
+        }
+
+        if (sections.includes("sms") && person.phone) {
+          fetches.push((async () => {
+            const phoneDigits = person.phone.replace(/\D/g, "").slice(-10);
+            const { data } = await supabaseAdmin
+              .from("sms_messages")
+              .select("direction, body, created_at")
+              .or(`to_number.like.%${phoneDigits},from_number.like.%${phoneDigits}`)
+              .order("created_at", { ascending: false })
+              .limit(5);
+            if (data?.length) {
+              results.push(`\nRECENT SMS (${data.length}):`);
+              for (const s of data) {
+                results.push(`  • [${s.direction}] "${(s.body || "").substring(0, 80)}" (${new Date(s.created_at).toLocaleDateString()})`);
+              }
+            }
+          })());
+        }
+
+        await Promise.all(fetches);
+        return results.join("\n");
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -2656,9 +3007,9 @@ async function callGemini(
   const body: any = {
     contents,
     generationConfig: {
-      temperature: 0.4,
-      maxOutputTokens: 2048,
-      thinkingConfig: { thinkingBudget: 1024 },
+      temperature: 0.3,
+      maxOutputTokens: 8192,
+      thinkingConfig: { thinkingBudget: 8192 },
     },
   };
   if (systemInstruction) {
@@ -2826,12 +3177,15 @@ function buildVapiToolsList(scope: UserScope): any[] {
   if (scope.cameras.some((c) => c.protectId)) tools.push(vapiToolWrapper(findTool("take_snapshot")));
   // Voice callers can have links texted to them
   if (scope.callerPhone) tools.push(vapiToolWrapper(findTool("send_link")));
-  // Staff+ can build features, send notifications, create payment links via voice too
+  // Data query available to all authenticated users
+  tools.push(vapiToolWrapper(findTool("query_property_data")));
+  // Staff+ can build features, send notifications, create payment links, look up person context via voice too
   if (scope.userLevel >= 2) {
     tools.push(vapiToolWrapper(findTool("build_feature")));
     tools.push(vapiToolWrapper(findTool("check_feature_status")));
     tools.push(vapiToolWrapper(findTool("send_notification")));
     tools.push(vapiToolWrapper(findTool("create_payment_link")));
+    tools.push(vapiToolWrapper(findTool("get_person_context")));
   }
   return tools;
 }
@@ -3262,7 +3616,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   // 5. Build Gemini conversation
   const contents: any[] = [];
 
-  const recentHistory = conversationHistory.slice(-12);
+  const recentHistory = conversationHistory.slice(-24);
   for (const msg of recentHistory) {
     contents.push({
       role: msg.role === "user" ? "user" : "model",
@@ -3297,33 +3651,31 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   }
   if (geminiResult.candidates?.[0]?.groundingMetadata) usedGoogleSearch = true;
 
-  // 7. Process function calls (max 3 rounds)
+  // 7. Process function calls (max 6 rounds for complex multi-step research)
   const actionsTaken: Array<{
     type: string;
     target: string;
     result: string;
   }> = [];
 
-  for (let round = 0; round < 3; round++) {
+  for (let round = 0; round < 6; round++) {
     const candidate = geminiResult.candidates?.[0];
     const parts = candidate?.content?.parts || [];
     const functionCalls = parts.filter((p: any) => p.functionCall);
 
     if (!functionCalls.length) break;
 
-    const functionResponses: any[] = [];
-    for (const part of functionCalls) {
+    // Execute all tool calls in parallel for faster responses
+    const toolCallPromises = functionCalls.map(async (part: any) => {
       const fc = part.functionCall;
       console.log(`PAI tool call: ${fc.name}`, JSON.stringify(fc.args));
+      const result = await executeToolCall(fc, scope, token, supabaseUrl, goveeApiKey);
+      return { fc, result };
+    });
+    const toolResults = await Promise.all(toolCallPromises);
 
-      const result = await executeToolCall(
-        fc,
-        scope,
-        token,
-        supabaseUrl,
-        goveeApiKey
-      );
-
+    const functionResponses: any[] = [];
+    for (const { fc, result } of toolResults) {
       actionsTaken.push({
         type: fc.name,
         target:
@@ -3336,7 +3688,6 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
         result,
         args: fc.args,
       });
-
       functionResponses.push({
         functionResponse: {
           name: fc.name,
