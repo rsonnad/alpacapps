@@ -157,7 +157,7 @@ function formatTime(timeStr) {
 // =============================================
 // ALPACA FACT OF THE MOMENT (rotates through facts)
 // =============================================
-const FACT_ROTATE_INTERVAL = 30_000; // 30s per fact
+const FACT_ROTATE_INTERVAL = 60_000; // 60s per fact
 let allFacts = [...FALLBACK_FACTS];
 let currentFactIndex = 0;
 
