@@ -1,12 +1,12 @@
 {
-  "version": "v260314.32 4:40a",
-  "release": 774,
-  "sha": "8a12fcac3",
-  "fullSha": "8a12fcac3333a6fc39a381e23f334cd6cf875d76",
+  "version": "v260314.33 4:45a",
+  "release": 775,
+  "sha": "8a07f7808",
+  "fullSha": "8a07f78081ccfc04c7e86a2094928eb2d755b801",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 09:40:38+00",
-  "commits": [{"sha":"8a12fcac3","message":"Move print files to Cloudflare R2, remove from git","author":"Rahul"}]
+  "pushedAt": "2026-03-14 09:45:47+00",
+  "commits": [{"sha":"8a07f7808","message":"Add UniFi network dashboard iframe to kiosk, compact alpaca fact","author":"Rahul"}]
 }
