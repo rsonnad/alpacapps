@@ -1,12 +1,12 @@
 {
-  "version": "v260314.43 6:37p",
-  "release": 785,
-  "sha": "fd3a8e478",
-  "fullSha": "fd3a8e478bf8bbf273be19508ba67c87c571cfdd",
+  "version": "v260314.44 6:56p",
+  "release": 786,
+  "sha": "dd7bbc013",
+  "fullSha": "dd7bbc0133516ddb2e017d1ff513e5c612685f78",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-14 23:37:01+00",
-  "commits": [{"sha":"b8bf95422","message":"Replace manage.html redirect with kiosk-style 404 page","author":"Rahul"},{"sha":"fd3a8e478","message":"Merge branch 'great-maxwell'","author":"Rahul"}]
+  "pushedAt": "2026-03-14 23:56:00+00",
+  "commits": [{"sha":"de078f06d","message":"Move alpaca-fact 404 page to site-wide 404.html, restore manage.html redirect","author":"Rahul"},{"sha":"dd7bbc013","message":"Merge branch 'great-maxwell'","author":"Rahul"}]
 }
