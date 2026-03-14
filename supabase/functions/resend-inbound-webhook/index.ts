@@ -22,6 +22,7 @@ const SPECIAL_PREFIXES: Record<string, string> = {
   "pai": "pai",
   "claudero": "claudero",
   "alpaclaw": "alpaclaw",
+  "guestbook": "guestbook",
 };
 
 /**
@@ -223,9 +224,48 @@ async function handleSpecialLogic(
     await handleClauderoEmail(emailRecord, supabase, resendApiKey);
   } else if (type === "alpaclaw") {
     await handleAlpaclawEmail(emailRecord, supabase, resendApiKey);
+  } else if (type === "guestbook") {
+    await handleGuestbookEmail(emailRecord, supabase);
   }
 
   // herd@ - not yet implemented
+}
+
+// =============================================
+// GUESTBOOK EMAIL HANDLER
+// =============================================
+
+/**
+ * Handle inbound emails to guestbook@alpacaplayhouse.com.
+ * Extracts sender name and message body, inserts into guestbook_entries.
+ */
+async function handleGuestbookEmail(
+  emailRecord: any,
+  supabase: any
+): Promise<void> {
+  const fromName = emailRecord.from_name || emailRecord.from_address?.split("@")[0] || "Email Guest";
+  const message = (emailRecord.text_body || emailRecord.subject || "").trim().slice(0, 1000);
+
+  if (!message) {
+    console.log("Guestbook email had no message body, skipping");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("guestbook_entries")
+    .insert({
+      guest_name: fromName,
+      message,
+      entry_type: "email",
+      media_type: "email",
+      source: "email",
+    });
+
+  if (error) {
+    console.error("Failed to insert guestbook email entry:", error);
+  } else {
+    console.log(`Guestbook email entry created from ${fromName}`);
+  }
 }
 
 // =============================================

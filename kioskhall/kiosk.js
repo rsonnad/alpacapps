@@ -2,6 +2,7 @@
  * Kiosk Display - Hallway Tablet
  * No auth required. Polls data every 60s.
  * Landscape-optimized two-column layout.
+ * Video/audio guestbook recording with R2 upload.
  */
 
 import { supabase, SUPABASE_URL } from '../shared/supabase.js';
@@ -9,6 +10,7 @@ import { supabase, SUPABASE_URL } from '../shared/supabase.js';
 const POLL_INTERVAL = 60_000;        // 60s data refresh
 const VERSION_CHECK_INTERVAL = 300_000; // 5min version check
 const AUSTIN_TZ = 'America/Chicago';
+const MAX_RECORD_SECONDS = 60;
 let currentVersion = null;
 
 // Hardcoded alpaca facts as fallback when edge function + DB both fail
@@ -193,10 +195,9 @@ async function loadGuestbook() {
   try {
     const { data } = await supabase
       .from('guestbook_entries')
-      .select('guest_name, message, created_at')
-      .not('message', 'is', null)
+      .select('guest_name, message, video_url, audio_url, media_type, created_at')
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(8);
 
     const container = document.getElementById('guestbookEntries');
     if (!data || data.length === 0) {
@@ -207,12 +208,34 @@ async function loadGuestbook() {
     container.innerHTML = data.map(entry => {
       const ago = timeAgo(new Date(entry.created_at));
       const name = entry.guest_name || 'Anonymous';
+      const type = entry.media_type || 'text';
+      const badge = type !== 'text' ? `<span class="entry-type-badge">${type}</span>` : '';
+
+      let mediaHtml = '';
+      if (entry.video_url) {
+        mediaHtml = `<div class="guestbook-entry-media">
+          <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}"
+                 onclick="this.paused ? this.play() : this.pause()"
+                 playsinline preload="metadata"></video>
+        </div>`;
+      } else if (entry.audio_url) {
+        mediaHtml = `<div class="guestbook-entry-media">
+          <audio class="guestbook-audio-player" src="${escapeHtml(entry.audio_url)}"
+                 controls preload="metadata"></audio>
+        </div>`;
+      }
+
+      const msgHtml = entry.message
+        ? `<p class="guestbook-entry-msg">${escapeHtml(entry.message)}</p>`
+        : '';
+
       return `<div class="guestbook-entry">
         <div class="guestbook-entry-header">
-          <span class="guestbook-entry-name">${escapeHtml(name)}</span>
+          <span class="guestbook-entry-name">${escapeHtml(name)}${badge}</span>
           <span class="guestbook-entry-time">${ago}</span>
         </div>
-        <p class="guestbook-entry-msg">${escapeHtml(entry.message)}</p>
+        ${msgHtml}
+        ${mediaHtml}
       </div>`;
     }).join('');
   } catch (err) {
@@ -255,6 +278,8 @@ async function submitGuestbookEntry() {
         guest_name: nameEl.value.trim() || null,
         message,
         entry_type: 'text',
+        media_type: 'text',
+        source: 'kiosk',
       });
 
     if (error) throw error;
@@ -262,12 +287,185 @@ async function submitGuestbookEntry() {
     nameEl.value = '';
     msgEl.value = '';
     btn.textContent = 'Signed!';
-    setTimeout(() => { btn.textContent = 'Sign Guestbook'; btn.disabled = false; }, 2000);
+    setTimeout(() => { btn.textContent = 'Sign'; btn.disabled = false; }, 2000);
     loadGuestbook();
   } catch (err) {
     console.error('Failed to submit guestbook entry:', err);
     btn.textContent = 'Error — try again';
-    setTimeout(() => { btn.textContent = 'Sign Guestbook'; btn.disabled = false; }, 2000);
+    setTimeout(() => { btn.textContent = 'Sign'; btn.disabled = false; }, 2000);
+  }
+}
+
+// =============================================
+// MEDIA RECORDING (Video / Audio)
+// =============================================
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingType = null; // 'video' or 'audio'
+let recordTimerInterval = null;
+let recordStartTime = null;
+let mediaStream = null;
+
+function showRecorder(type) {
+  recordingType = type;
+  const ui = document.getElementById('recorderUI');
+  const preview = document.getElementById('recorderPreview');
+  const startStopBtn = document.getElementById('recorderStartStop');
+  const timerEl = document.getElementById('recorderTimer');
+
+  ui.style.display = '';
+  startStopBtn.textContent = 'Start Recording';
+  timerEl.textContent = '0:00';
+  recordedChunks = [];
+
+  if (type === 'audio') {
+    preview.classList.add('audio-only');
+    preview.style.display = 'none';
+  } else {
+    preview.classList.remove('audio-only');
+    preview.style.display = '';
+  }
+
+  // Request media
+  const constraints = type === 'video'
+    ? { video: { facingMode: 'user', width: 640, height: 480 }, audio: true }
+    : { audio: true };
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      mediaStream = stream;
+      if (type === 'video') {
+        preview.srcObject = stream;
+      }
+    })
+    .catch(err => {
+      console.error('Camera/mic access denied:', err);
+      hideRecorder();
+    });
+}
+
+function hideRecorder() {
+  const ui = document.getElementById('recorderUI');
+  ui.style.display = 'none';
+  stopMediaStream();
+  if (recordTimerInterval) {
+    clearInterval(recordTimerInterval);
+    recordTimerInterval = null;
+  }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  mediaRecorder = null;
+  recordedChunks = [];
+}
+
+function stopMediaStream() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+  }
+  const preview = document.getElementById('recorderPreview');
+  if (preview) preview.srcObject = null;
+}
+
+function toggleRecording() {
+  const btn = document.getElementById('recorderStartStop');
+  const timerEl = document.getElementById('recorderTimer');
+
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+    // Start recording
+    if (!mediaStream) return;
+
+    const mimeType = recordingType === 'video'
+      ? (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm')
+      : (MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm');
+
+    mediaRecorder = new MediaRecorder(mediaStream, { mimeType });
+    recordedChunks = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      clearInterval(recordTimerInterval);
+      stopMediaStream();
+      if (recordedChunks.length > 0) {
+        const blob = new Blob(recordedChunks, { type: mimeType });
+        uploadMediaEntry(blob, recordingType);
+      }
+    };
+
+    mediaRecorder.start(1000); // collect every 1s
+    recordStartTime = Date.now();
+    btn.textContent = 'Stop';
+    btn.style.background = 'var(--kiosk-red)';
+
+    recordTimerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+      const mins = Math.floor(elapsed / 60);
+      const secs = elapsed % 60;
+      timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      if (elapsed >= MAX_RECORD_SECONDS) {
+        mediaRecorder.stop();
+      }
+    }, 500);
+
+  } else if (mediaRecorder.state === 'recording') {
+    // Stop recording
+    mediaRecorder.stop();
+    btn.textContent = 'Processing...';
+    btn.style.background = '';
+  }
+}
+
+async function uploadMediaEntry(blob, type) {
+  const uploadUI = document.getElementById('uploadUI');
+  const uploadFill = document.getElementById('uploadFill');
+  const uploadLabel = document.getElementById('uploadLabel');
+  const recorderUI = document.getElementById('recorderUI');
+
+  recorderUI.style.display = 'none';
+  uploadUI.style.display = '';
+  uploadFill.style.width = '10%';
+  uploadLabel.textContent = 'Uploading...';
+
+  try {
+    const guestName = document.getElementById('guestName').value.trim() || null;
+    const ext = type === 'video' ? 'webm' : 'webm';
+    const filename = `guestbook/${type}/${Date.now()}.${ext}`;
+
+    // Upload to R2 via edge function
+    uploadFill.style.width = '30%';
+
+    const formData = new FormData();
+    formData.append('file', blob, `recording.${ext}`);
+    formData.append('key', filename);
+    formData.append('guest_name', guestName || '');
+    formData.append('media_type', type);
+    formData.append('content_type', blob.type);
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/guestbook-upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    uploadFill.style.width = '90%';
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`Upload failed: ${errText}`);
+    }
+
+    uploadFill.style.width = '100%';
+    uploadLabel.textContent = 'Posted!';
+    setTimeout(() => { uploadUI.style.display = 'none'; }, 2000);
+    loadGuestbook();
+
+  } catch (err) {
+    console.error('Upload failed:', err);
+    uploadLabel.textContent = 'Upload failed — try again';
+    setTimeout(() => { uploadUI.style.display = 'none'; }, 3000);
   }
 }
 
@@ -348,7 +546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkVersion();
   setInterval(checkVersion, VERSION_CHECK_INTERVAL);
 
-  // Guestbook submit
+  // Guestbook text submit
   document.getElementById('guestSubmit')?.addEventListener('click', submitGuestbookEntry);
 
   // Allow Enter in message textarea to submit (Shift+Enter for newline)
@@ -358,6 +556,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       submitGuestbookEntry();
     }
   });
+
+  // Media recording buttons
+  document.getElementById('recordVideoBtn')?.addEventListener('click', () => showRecorder('video'));
+  document.getElementById('recordAudioBtn')?.addEventListener('click', () => showRecorder('audio'));
+  document.getElementById('recorderStartStop')?.addEventListener('click', toggleRecording);
+  document.getElementById('recorderCancel')?.addEventListener('click', hideRecorder);
 
   // Load dynamic data
   await refreshAll();

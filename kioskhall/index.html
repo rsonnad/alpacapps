@@ -15,10 +15,12 @@
   <div class="kiosk-container">
     <!-- Header -->
     <header class="kiosk-header">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
-           alt="" class="kiosk-logo">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png"
-           alt="Alpaca Playhouse Austin" class="kiosk-wordmark">
+      <div class="kiosk-brand">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
+             alt="" class="kiosk-logo">
+        <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png"
+             alt="Alpaca Playhouse Austin" class="kiosk-wordmark">
+      </div>
       <div class="kiosk-datetime" id="datetime"></div>
     </header>
 
@@ -29,11 +31,37 @@
         <!-- Guestbook -->
         <section class="kiosk-section kiosk-guestbook-section" id="guestbookSection">
           <h2 class="kiosk-section-title">Guestbook</h2>
+          <!-- Text input -->
           <div class="guestbook-input">
             <input type="text" id="guestName" placeholder="Your name" class="guestbook-field" maxlength="50">
             <textarea id="guestMessage" placeholder="Leave a message for the house..." class="guestbook-field guestbook-textarea" maxlength="280"></textarea>
-            <button id="guestSubmit" class="guestbook-btn">Sign Guestbook</button>
+            <button id="guestSubmit" class="guestbook-btn">Sign</button>
           </div>
+          <!-- Media record buttons -->
+          <div class="guestbook-media-bar">
+            <button id="recordVideoBtn" class="guestbook-media-btn" title="Record a video message">
+              <span class="media-icon">&#9654;</span> Video
+            </button>
+            <button id="recordAudioBtn" class="guestbook-media-btn" title="Record an audio message">
+              <span class="media-icon">&#9835;</span> Audio
+            </button>
+            <span class="guestbook-email-hint">or email <strong>guestbook@alpacaplayhouse.com</strong></span>
+          </div>
+          <!-- Recording UI (hidden by default) -->
+          <div class="guestbook-recorder" id="recorderUI" style="display:none">
+            <video id="recorderPreview" class="recorder-preview" autoplay muted playsinline></video>
+            <div class="recorder-controls">
+              <span class="recorder-timer" id="recorderTimer">0:00</span>
+              <button id="recorderStartStop" class="guestbook-btn recorder-btn">Start Recording</button>
+              <button id="recorderCancel" class="guestbook-btn recorder-btn-cancel">Cancel</button>
+            </div>
+          </div>
+          <!-- Upload progress -->
+          <div class="guestbook-upload" id="uploadUI" style="display:none">
+            <div class="upload-bar"><div class="upload-bar-fill" id="uploadFill"></div></div>
+            <span class="upload-label" id="uploadLabel">Uploading...</span>
+          </div>
+          <!-- Entries -->
           <div class="guestbook-entries" id="guestbookEntries">
             <div class="kiosk-loading">Loading...</div>
           </div>
