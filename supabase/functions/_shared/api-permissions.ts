@@ -38,8 +38,15 @@ export interface PermissionEntry {
 }
 
 // ─── Master permission matrix ───────────────────────────────────────
+// Resources are grouped by feature category for the setup wizard.
+// When generating a template for cloners, only include resources
+// for enabled features. See feature-manifest.json for mappings.
 
 export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
+
+  // ══════════════════════════════════════════════════════════════════
+  // CORE — always included regardless of feature selection
+  // ══════════════════════════════════════════════════════════════════
 
   // ── spaces ──────────────────────────────────────────────────────
   spaces: {
@@ -95,6 +102,10 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     update: { minLevel: 1 },
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: vehicles — Tesla Fleet API integration
+  // ══════════════════════════════════════════════════════════════════
+
   // ── vehicles ────────────────────────────────────────────────────
   vehicles: {
     list:   { minLevel: 1 },
@@ -131,6 +142,10 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     delete: { minLevel: 3 },
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: associates — Staff/associate hour tracking & payouts
+  // ══════════════════════════════════════════════════════════════════
+
   // ── time_entries ────────────────────────────────────────────────
   time_entries: {
     list:   { minLevel: 1, rowScoped: true },
@@ -139,6 +154,10 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     update: { minLevel: 1, rowScoped: true },
     delete: { minLevel: 2 },
   },
+
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: events — Event hosting pipeline
+  // ══════════════════════════════════════════════════════════════════
 
   // ── events (event_hosting_requests) ─────────────────────────────
   events: {
@@ -158,12 +177,20 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     delete: { minLevel: 3 },
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: sms — Telnyx SMS messaging
+  // ══════════════════════════════════════════════════════════════════
+
   // ── sms (sms_messages) ──────────────────────────────────────────
   sms: {
     list:   { minLevel: 2 },
     get:    { minLevel: 2 },
     create: { minLevel: 2 },
   },
+
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: pai — AI assistant (PAI)
+  // ══════════════════════════════════════════════════════════════════
 
   // ── faq (faq_context_entries) ───────────────────────────────────
   faq: {
@@ -206,6 +233,10 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     get:    { minLevel: 3 },
     update: { minLevel: 3 },
   },
+
+  // ══════════════════════════════════════════════════════════════════
+  // FEATURE: vehicles — Tesla account management
+  // ══════════════════════════════════════════════════════════════════
 
   // ── tesla_accounts ──────────────────────────────────────────────
   tesla_accounts: {
