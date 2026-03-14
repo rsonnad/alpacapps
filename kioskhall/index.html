@@ -90,22 +90,14 @@
           <p class="fact-text" id="factText">Loading...</p>
         </section>
 
-        <!-- Network Dashboard -->
-        <section class="kiosk-section kiosk-network-section" id="networkSection">
-          <h2 class="kiosk-section-title">Network</h2>
-          <iframe id="networkFrame"
-                  src="https://192.168.1.1/network/default/dashboard"
-                  class="network-iframe"
-                  frameborder="0"
-                  allowtransparency="true"
-                  loading="lazy"></iframe>
-          <div class="network-fallback" id="networkFallback" style="display:none">
-            <div class="net-stat-row"><span class="net-label">Status</span><span class="net-value" id="netStatus">--</span></div>
-            <div class="net-stat-row"><span class="net-label">WAN IP</span><span class="net-value" id="netWanIp">--</span></div>
-            <div class="net-stat-row"><span class="net-label">Throughput</span><span class="net-value" id="netThroughput">--</span></div>
-            <div class="net-stat-row"><span class="net-label">Devices</span><span class="net-value" id="netDevices">--</span></div>
+        <!-- Network Status (bottom-right corner) -->
+        <a href="https://192.168.1.1" target="_blank" class="kiosk-network-link" id="networkLink">
+          <span class="net-icon">&#9678;</span>
+          <div class="net-info">
+            <span class="net-title">Network</span>
+            <span class="net-subtitle" id="netSubtitle">Tap to open UniFi</span>
           </div>
-        </section>
+        </a>
       </div>
     </div>
 
