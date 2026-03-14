@@ -25,6 +25,26 @@ const FALLBACK_FACTS = [
   "Alpacas originated in the Andes Mountains of South America and were domesticated over 6,000 years ago.",
   "Alpacas have a communal dung pile — the whole herd uses the same spot, making cleanup easy.",
   "Alpacas can recognize individual humans and other animals by sight and sound.",
+  "Alpacas have three stomach compartments, not four like cows, making them very efficient at digesting tough grasses.",
+  "A single alpaca produces enough fleece each year to make several sweaters — about 5 to 10 pounds per shearing.",
+  "Alpacas come in two breeds: Huacaya (fluffy, teddy bear-like) and Suri (long, silky dreadlocks).",
+  "Alpacas can run up to 35 mph — fast enough to outrun most predators over short distances.",
+  "The Incas considered alpaca fiber the 'fiber of the gods' and reserved the finest fleece for royalty.",
+  "Alpacas rarely bite, kick, or charge — they're one of the gentlest domesticated animals on the planet.",
+  "Alpacas communicate through body language, ear position, tail height, and over a dozen distinct vocalizations.",
+  "Alpaca fleece is naturally hypoallergenic because it contains no lanolin, unlike sheep's wool.",
+  "Alpacas have excellent memory and can remember routes, faces, and other alpacas for years.",
+  "A group of alpacas is sometimes called a herd, but breeders often call them a 'string' of alpacas.",
+  "Alpacas are incredibly curious — they'll investigate anything new in their environment by sniffing and staring.",
+  "Alpacas sunbathe by lying flat on their sides with their legs stretched out, which can alarm new owners.",
+  "Alpacas have been used as therapy animals because of their calm, gentle nature and soft fleece.",
+  "The world alpaca population is about 3.5 million, with most still living in Peru, Bolivia, and Chile.",
+  "Alpacas can live at altitudes above 15,000 feet — their blood is specially adapted to carry oxygen in thin air.",
+  "Alpacas have a split upper lip that lets them nibble grass close to the ground without pulling out the roots.",
+  "Male alpacas make a unique 'orgling' sound during mating that sounds like a cross between humming and gargling.",
+  "Alpacas can crossbreed with llamas to produce a hybrid called a 'huarizo' — but this is rare in practice.",
+  "Alpaca manure is so nutrient-rich and low in nitrogen that it can be used directly as garden fertilizer without composting.",
+  "Alpacas have been guarding chickens and smaller livestock for centuries — their alert nature scares off foxes and hawks.",
 ];
 
 let pollTimer = null;
@@ -157,7 +177,7 @@ function formatTime(timeStr) {
 // =============================================
 // ALPACA FACT OF THE MOMENT (rotates through facts)
 // =============================================
-const FACT_ROTATE_INTERVAL = 60_000; // 60s per fact
+const FACT_ROTATE_INTERVAL = 20_000; // 20s per fact
 let allFacts = [...FALLBACK_FACTS];
 let currentFactIndex = 0;
 
