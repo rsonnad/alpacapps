@@ -83,7 +83,6 @@
       border: 1px solid #e8e5e0;
       border-radius: 10px;
       padding: 1rem 1.25rem;
-      cursor: pointer;
       transition: all 0.15s;
     }
     .session-card:hover { border-color: #c8c4bc; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
@@ -124,6 +123,15 @@
       max-height: 600px;
       overflow-y: auto;
     }
+    .transcript-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .transcript-actions .btn {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.85rem;
+    }
     .transcript-container .msg {
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
@@ -132,6 +140,7 @@
       line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
+      position: relative;
     }
     .transcript-container .msg.user {
       background: #f0ede8;
@@ -151,6 +160,24 @@
     }
     .msg.user .role { color: #8a7a5a; }
     .msg.assistant .role { color: #888; }
+    .msg .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid #d4d0c8;
+      border-radius: 5px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.65rem;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+      color: #555;
+    }
+    .msg:hover .copy-btn { opacity: 1; }
+    .msg .copy-btn:hover { background: #fff; border-color: #b8a88a; }
+    .msg .copy-btn.copied { background: #e8f0e8; border-color: #3a6b3a; color: #3a6b3a; }
 
     /* Load more */
     .load-more {
@@ -318,15 +345,15 @@
         const summary = (s.summary || '').substring(0, 120);
         const isExpanded = expandedId === s.id;
 
-        return `<div class="session-card ${isExpanded ? 'expanded' : ''}" onclick="toggleSession('${s.id}')">
-          <div class="session-meta">
+        return `<div class="session-card ${isExpanded ? 'expanded' : ''}">
+          <div class="session-meta" onclick="toggleSession('${s.id}')" style="cursor:pointer;">
             <span class="date">${dateStr} ${timeStr}</span>
             <span class="pill">${project}</span>
             ${model ? `<span class="pill model">${model}</span>` : ''}
             ${duration ? `<span class="pill duration">${duration}</span>` : ''}
             ${tokens ? `<span class="pill tokens">${tokens} tokens</span>` : ''}
           </div>
-          ${summary ? `<div class="session-summary">${escHtml(summary)}</div>` : ''}
+          ${summary ? `<div class="session-summary" onclick="toggleSession('${s.id}')" style="cursor:pointer;">${escHtml(summary)}</div>` : ''}
           ${isExpanded ? `<div class="transcript-container" id="transcript-${s.id}"><div class="loading"><div class="spinner"></div></div></div>` : ''}
         </div>`;
       }).join('') + '</div>';
@@ -358,24 +385,28 @@
       if (!el) return;
 
       if (transcriptCache[id]) {
-        el.innerHTML = renderTranscript(transcriptCache[id]);
+        el.innerHTML = renderTranscript(transcriptCache[id], id);
         return;
       }
 
       try {
         const data = await api('/sessions/' + id);
         transcriptCache[id] = data.transcript || '';
-        el.innerHTML = renderTranscript(data.transcript || '');
+        el.innerHTML = renderTranscript(data.transcript || '', id);
       } catch (e) {
         el.innerHTML = '<div class="empty">Failed to load transcript.</div>';
       }
     }
 
-    function renderTranscript(text) {
+    function renderTranscript(text, sessionId) {
       if (!text) return '<div class="empty">No transcript available.</div>';
+      const actions = `<div class="transcript-actions">
+        <button class="btn btn-secondary" onclick="event.stopPropagation(); copyFullSession('${sessionId}')">Copy Full Session</button>
+      </div>`;
       // Split on the --- separator between messages
       const parts = text.split(/\n---\n/);
-      return parts.map(part => {
+      let msgIndex = 0;
+      const msgs = parts.map(part => {
         part = part.trim();
         if (!part) return '';
         const isUser = part.startsWith('## User');
@@ -384,8 +415,45 @@
         const content = part.replace(/^## (User|Assistant)\n?/, '').trim();
         // Truncate very long assistant messages (tool outputs etc)
         const display = content.length > 3000 ? content.substring(0, 3000) + '\n\n... [truncated]' : content;
-        return `<div class="msg ${role}"><span class="role">${role}</span>${escHtml(display)}</div>`;
+        const idx = msgIndex++;
+        return `<div class="msg ${role}"><span class="role">${role}</span><button class="copy-btn" onclick="event.stopPropagation(); copyMsg(this, '${sessionId}', ${idx})">Copy</button>${escHtml(display)}</div>`;
       }).filter(Boolean).join('');
+      return actions + msgs;
+    }
+
+    // Store parsed messages for copy
+    function getMessages(sessionId) {
+      const text = transcriptCache[sessionId];
+      if (!text) return [];
+      return text.split(/\n---\n/).map(part => {
+        part = part.trim();
+        if (!part) return null;
+        const isUser = part.startsWith('## User');
+        const role = isUser ? 'User' : 'Assistant';
+        const content = part.replace(/^## (User|Assistant)\n?/, '').trim();
+        return { role, content };
+      }).filter(Boolean);
+    }
+
+    function copyMsg(btn, sessionId, idx) {
+      const msgs = getMessages(sessionId);
+      if (!msgs[idx]) return;
+      navigator.clipboard.writeText(msgs[idx].content).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    }
+
+    function copyFullSession(sessionId) {
+      const msgs = getMessages(sessionId);
+      if (!msgs.length) return;
+      const full = msgs.map(m => `### ${m.role}\n\n${m.content}`).join('\n\n---\n\n');
+      navigator.clipboard.writeText(full).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Full Session'; }, 1500);
+      });
     }
 
     function escHtml(s) {
