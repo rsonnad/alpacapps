@@ -1,12 +1,12 @@
 {
-  "version": "v260314.48 7:44p",
-  "release": 790,
-  "sha": "b11128029",
-  "fullSha": "b111280294d709478a1059c1ce1d3f08cb44bc86",
+  "version": "v260314.49 8:14p",
+  "release": 791,
+  "sha": "35b6bf45b",
+  "fullSha": "35b6bf45b891f1a185d5cfd3845c7ff66dce2fff",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 00:44:13+00",
-  "commits": [{"sha":"b11128029","message":"Fix File Vault header overlap — add body padding-top for fixed nav","author":"Rahul"}]
+  "pushedAt": "2026-03-15 01:14:25+00",
+  "commits": [{"sha":"35b6bf45b","message":"docs: add Open Brain reference URL to updates page and manifest","author":"Rahul"}]
 }
