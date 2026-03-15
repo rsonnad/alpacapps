@@ -1,12 +1,12 @@
 {
-  "version": "v260315.01 2:03p",
-  "release": 793,
-  "sha": "586fde23a",
-  "fullSha": "586fde23a81864ade87ea7622293311cc7c32aae",
+  "version": "v260315.02 2:24p",
+  "release": 794,
+  "sha": "447fdaf69",
+  "fullSha": "447fdaf69e9dd178b9191cd44409f5175373d6fd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 19:03:16+00",
-  "commits": [{"sha":"aa56f6c41","message":"Fix directory page spinning forever on invalid slugs","author":"Rahul"},{"sha":"586fde23a","message":"Merge branch 'trusting-blackwell'","author":"Rahul"}]
+  "pushedAt": "2026-03-15 19:24:07+00",
+  "commits": [{"sha":"3c88eb9ac","message":"Add /clauded/ admin hub — config overview, sessions, architecture pages","author":"Rahul"},{"sha":"447fdaf69","message":"Merge branch 'amazing-yonath'","author":"Rahul"}]
 }
