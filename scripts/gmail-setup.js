@@ -82,7 +82,13 @@ async function authorize() {
     process.exit(1);
   }
 
-  const REDIRECT_URI = 'http://localhost:3847/oauth2callback';
+  // Desktop apps: use http://localhost (no port) as redirect_uri for Google's
+  // validation, but listen on an ephemeral port. Google will redirect to
+  // http://localhost?code=... and the browser will fail to connect (port 80),
+  // so we use the OOB-style manual code paste as fallback.
+  const PORT = 3847;
+  // Use exact redirect_uri from credentials file
+  const REDIRECT_URI = 'http://localhost';
   const oauth2Client = new google.auth.OAuth2(
     creds.client_id,
     creds.client_secret,
@@ -116,62 +122,40 @@ async function authorize() {
   console.log('Open this URL in your browser:\n');
   console.log(authUrl);
   console.log('');
+  console.log('After authorizing, the browser will redirect to http://localhost/?code=...');
+  console.log('The page will fail to load (that\'s OK). Copy the FULL URL from your');
+  console.log('browser\'s address bar and paste it below.\n');
 
-  // Start local server to receive callback
-  return new Promise((resolve, reject) => {
-    const server = http.createServer(async (req, res) => {
-      try {
-        const url = new URL(req.url, 'http://localhost:3847');
-        if (url.pathname !== '/oauth2callback') {
-          res.writeHead(404);
-          res.end('Not found');
-          return;
-        }
-
-        const code = url.searchParams.get('code');
-        if (!code) {
-          res.writeHead(400);
-          res.end('No code received');
-          return;
-        }
-
-        const { tokens } = await oauth2Client.getToken(code);
-        oauth2Client.setCredentials(tokens);
-        saveTokens(tokens);
-
-        // Verify
-        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-        const profile = await gmail.users.getProfile({ userId: 'me' });
-
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-          <html><body style="font-family:system-ui;text-align:center;padding:60px">
-            <h1>✅ Gmail API Authorized</h1>
-            <p>Account: <strong>${profile.data.emailAddress}</strong></p>
-            <p>You can close this tab.</p>
-          </body></html>
-        `);
-
-        console.log(`\nAuthorized as: ${profile.data.emailAddress}`);
-        server.close();
-        resolve(oauth2Client);
-      } catch (err) {
-        res.writeHead(500);
-        res.end('Error: ' + err.message);
-        reject(err);
-      }
-    });
-
-    server.listen(3847, () => {
-      console.log('Waiting for OAuth callback on http://localhost:3847 ...');
-    });
-
-    // Timeout after 5 minutes
-    setTimeout(() => {
-      server.close();
-      reject(new Error('OAuth timeout — no callback received within 5 minutes'));
-    }, 300000);
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise((resolve) => {
+    rl.question('Paste the redirect URL here: ', resolve);
   });
+  rl.close();
+
+  // Extract code from the pasted URL
+  let code;
+  try {
+    const redirectUrl = new URL(answer.trim());
+    code = redirectUrl.searchParams.get('code');
+  } catch {
+    // Maybe they pasted just the code
+    code = answer.trim();
+  }
+
+  if (!code) {
+    throw new Error('No authorization code found in the pasted URL');
+  }
+
+  const { tokens } = await oauth2Client.getToken(code);
+  oauth2Client.setCredentials(tokens);
+  saveTokens(tokens);
+
+  // Verify
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+  const profile = await gmail.users.getProfile({ userId: 'me' });
+  console.log(`\n✅ Authorized as: ${profile.data.emailAddress}`);
+  console.log(`Messages total: ${profile.data.messagesTotal}`);
+  return oauth2Client;
 }
 
 async function checkStatus() {
