@@ -23,6 +23,7 @@
     {
       "id": "open-brain",
       "name": "Open Brain — Session Transparency Dashboard",
+      "reference": "https://natesnewsletter.substack.com/p/every-ai-you-use-forgets-you-heres",
       "date": "2026-03-10",
       "description": "View Claude Code session history, search transcripts, track costs. Radical transparency for AI usage.",
       "requires": ["d1-session-logging"],
