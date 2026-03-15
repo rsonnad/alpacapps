@@ -78,7 +78,7 @@ export async function getEnabledFeatures() {
     if (def.core) {
       enabled[key] = true;
     } else {
-      enabled[key] = overrides[key] !== undefined ? !!overrides[key] : true;
+      enabled[key] = overrides[key] !== undefined ? !!overrides[key] : false;
     }
   }
 
