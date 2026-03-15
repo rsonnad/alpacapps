@@ -46,85 +46,90 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Try to init auth (non-blocking, for determining viewer identity)
-  let viewer = null;
   try {
-    await Promise.race([
-      initAuth().then(() => { viewer = getAuthState(); }),
-      new Promise(resolve => setTimeout(resolve, 5000))
-    ]);
-  } catch (e) {
-    // Proceed without auth — anonymous viewer
-  }
-
-  // Query user by slug
-  const { data: profileUser, error } = await supabase
-    .from('app_users')
-    .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, is_current_resident, person_id, slug')
-    .eq('slug', slug)
-    .maybeSingle();
-
-  if (error || !profileUser) {
-    showNotFound();
-    return;
-  }
-
-  // Set page title
-  const displayName = profileUser.display_name || profileUser.first_name || 'Profile';
-  document.title = `${displayName} — Alpaca Playhouse`;
-
-  // Determine viewer relationship
-  const isSelf = viewer?.appUser?.id === profileUser.id;
-  const isResident = viewer?.isResident === true;
-
-  // Load related data in parallel
-  const [assignmentResult, ownedVehiclesResult, drivenVehiclesResult] = await Promise.all([
-    // Current assignment (via person_id)
-    profileUser.person_id
-      ? supabase
-          .from('assignments')
-          .select('id, start_date, end_date, status, assignment_spaces(space_id, spaces:space_id(name))')
-          .eq('person_id', profileUser.person_id)
-          .in('status', ['active', 'pending_contract', 'contract_sent'])
-          .limit(1)
-      : { data: null },
-    // Owned vehicles
-    supabase
-      .from('vehicles')
-      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, image_url')
-      .eq('owner_id', profileUser.id)
-      .eq('is_active', true)
-      .order('display_order'),
-    // Driven vehicles (via junction)
-    supabase
-      .from('vehicle_drivers')
-      .select('vehicles:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, color_hex, image_url)')
-      .eq('app_user_id', profileUser.id)
-  ]);
-
-  const currentAssignment = assignmentResult.data?.[0] || null;
-
-  // Merge owned + driven vehicles, dedup
-  const vehicles = [...(ownedVehiclesResult.data || [])];
-  const seen = new Set(vehicles.map(v => v.id));
-  for (const d of (drivenVehiclesResult.data || [])) {
-    if (d.vehicles && !seen.has(d.vehicles.id)) {
-      vehicles.push(d.vehicles);
-      seen.add(d.vehicles.id);
+    // Try to init auth (non-blocking, for determining viewer identity)
+    let viewer = null;
+    try {
+      await Promise.race([
+        initAuth().then(() => { viewer = getAuthState(); }),
+        new Promise(resolve => setTimeout(resolve, 5000))
+      ]);
+    } catch (e) {
+      // Proceed without auth — anonymous viewer
     }
+
+    // Query user by slug
+    const { data: profileUser, error } = await supabase
+      .from('app_users')
+      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, is_current_resident, person_id, slug')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error || !profileUser) {
+      showNotFound();
+      return;
+    }
+
+    // Set page title
+    const displayName = profileUser.display_name || profileUser.first_name || 'Profile';
+    document.title = `${displayName} — Alpaca Playhouse`;
+
+    // Determine viewer relationship
+    const isSelf = viewer?.appUser?.id === profileUser.id;
+    const isResident = viewer?.isResident === true;
+
+    // Load related data in parallel
+    const [assignmentResult, ownedVehiclesResult, drivenVehiclesResult] = await Promise.all([
+      // Current assignment (via person_id)
+      profileUser.person_id
+        ? supabase
+            .from('assignments')
+            .select('id, start_date, end_date, status, assignment_spaces(space_id, spaces:space_id(name))')
+            .eq('person_id', profileUser.person_id)
+            .in('status', ['active', 'pending_contract', 'contract_sent'])
+            .limit(1)
+        : { data: null },
+      // Owned vehicles
+      supabase
+        .from('vehicles')
+        .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, image_url')
+        .eq('owner_id', profileUser.id)
+        .eq('is_active', true)
+        .order('display_order'),
+      // Driven vehicles (via junction)
+      supabase
+        .from('vehicle_drivers')
+        .select('vehicles:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, color_hex, image_url)')
+        .eq('app_user_id', profileUser.id)
+    ]);
+
+    const currentAssignment = assignmentResult.data?.[0] || null;
+
+    // Merge owned + driven vehicles, dedup
+    const vehicles = [...(ownedVehiclesResult.data || [])];
+    const seen = new Set(vehicles.map(v => v.id));
+    for (const d of (drivenVehiclesResult.data || [])) {
+      if (d.vehicles && !seen.has(d.vehicles.id)) {
+        vehicles.push(d.vehicles);
+        seen.add(d.vehicles.id);
+      }
+    }
+
+    // Check if associate
+    const isAssociate = ['associate'].includes(profileUser.role);
+
+    // Render
+    renderProfile(profileUser, {
+      isSelf,
+      isResident,
+      currentAssignment,
+      vehicles,
+      isAssociate
+    });
+  } catch (err) {
+    console.error('[directory] Failed to load profile:', err);
+    showNotFound();
   }
-
-  // Check if associate
-  const isAssociate = ['associate'].includes(profileUser.role);
-
-  // Render
-  renderProfile(profileUser, {
-    isSelf,
-    isResident,
-    currentAssignment,
-    vehicles,
-    isAssociate
-  });
 });
 
 // =============================================
