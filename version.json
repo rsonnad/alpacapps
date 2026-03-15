@@ -1,12 +1,12 @@
 {
-  "version": "v260314.50 10:20p",
-  "release": 792,
-  "sha": "c9ffcbe49",
-  "fullSha": "c9ffcbe49bb84e790bfbd6eb36d80283fa4d21c8",
+  "version": "v260315.01 2:03p",
+  "release": 793,
+  "sha": "586fde23a",
+  "fullSha": "586fde23a81864ade87ea7622293311cc7c32aae",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 03:20:04+00",
-  "commits": [{"sha":"c9ffcbe49","message":"Fix optional features defaulting to enabled on cloned projects (#42)","author":"Rahul"}]
+  "pushedAt": "2026-03-15 19:03:16+00",
+  "commits": [{"sha":"aa56f6c41","message":"Fix directory page spinning forever on invalid slugs","author":"Rahul"},{"sha":"586fde23a","message":"Merge branch 'trusting-blackwell'","author":"Rahul"}]
 }
