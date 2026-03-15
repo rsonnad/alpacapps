@@ -1,12 +1,12 @@
 {
-  "version": "v260314.46 7:11p",
-  "release": 788,
-  "sha": "fe7ca18c2",
-  "fullSha": "fe7ca18c2e3195c1b964007ec4304879012a6949",
+  "version": "v260314.47 7:31p",
+  "release": 789,
+  "sha": "6c6c09b80",
+  "fullSha": "6c6c09b80352650f7b4b081b7ecb8f22a213af25",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 00:11:46+00",
-  "commits": [{"sha":"fe7ca18c2","message":"feat: add updates page and manifest for template feature sync","author":"Rahul"}]
+  "pushedAt": "2026-03-15 00:31:19+00",
+  "commits": [{"sha":"6c6c09b80","message":"Fix Gmail OAuth flow: use http://localhost redirect with manual code paste","author":"Rahul"}]
 }
