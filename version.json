@@ -1,12 +1,12 @@
 {
-  "version": "v260314.49 8:14p",
-  "release": 791,
-  "sha": "35b6bf45b",
-  "fullSha": "35b6bf45b891f1a185d5cfd3845c7ff66dce2fff",
+  "version": "v260314.50 10:20p",
+  "release": 792,
+  "sha": "c9ffcbe49",
+  "fullSha": "c9ffcbe49bb84e790bfbd6eb36d80283fa4d21c8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 01:14:25+00",
-  "commits": [{"sha":"35b6bf45b","message":"docs: add Open Brain reference URL to updates page and manifest","author":"Rahul"}]
+  "pushedAt": "2026-03-15 03:20:04+00",
+  "commits": [{"sha":"c9ffcbe49","message":"Fix optional features defaulting to enabled on cloned projects (#42)","author":"Rahul"}]
 }
