@@ -1,12 +1,12 @@
 {
-  "version": "v260315.02 2:24p",
-  "release": 794,
-  "sha": "447fdaf69",
-  "fullSha": "447fdaf69e9dd178b9191cd44409f5175373d6fd",
+  "version": "v260315.03 2:33p",
+  "release": 795,
+  "sha": "abc6d26e4",
+  "fullSha": "abc6d26e4857f807da9ff990c4c6360ade166f24",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 19:24:07+00",
-  "commits": [{"sha":"3c88eb9ac","message":"Add /clauded/ admin hub — config overview, sessions, architecture pages","author":"Rahul"},{"sha":"447fdaf69","message":"Merge branch 'amazing-yonath'","author":"Rahul"}]
+  "pushedAt": "2026-03-15 19:33:32+00",
+  "commits": [{"sha":"fe4bf6ea7","message":"Fix nav overlap on clauded pages — add body padding-top: 52px","author":"Rahul"},{"sha":"abc6d26e4","message":"Merge branch 'amazing-yonath'","author":"Rahul"}]
 }
