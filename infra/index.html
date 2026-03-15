@@ -978,16 +978,36 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
     </div>
   </div>
 
+  <!-- Stay Updated -->
+  <div class="section" style="margin-top:3rem;">
+    <h2>&#x1F504; Stay Updated</h2>
+    <p>Already set up? New features get added to the template regularly. Run this prompt once a month to see what's new and adopt features you want:</p>
+    <div class="prompt-block" id="update-prompt"><button class="copy-btn" onclick="copyUpdatePrompt()">Copy</button>Read https://alpacaplayhouse.com/infra/updates.html and help me adopt any new features that have been added since I last set up my project. Check what I already have and only offer what's new.</div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">Or browse the <a href="/infra/updates.html">updates page</a> directly to pick and choose.</p>
+  </div>
+
   <!-- Footer links -->
   <div class="footer-links">
     <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
     <a href="/docs/getting-started.html">Quick start reference</a>
+    <a href="/infra/updates.html">Sync new features</a>
     <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
   </div>
 
 </div>
 
 <script>
+// Copy update prompt
+function copyUpdatePrompt() {
+  var el = document.getElementById('update-prompt');
+  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = el.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
 // Copy setup prompt
 function copyPrompt() {
   var el = document.getElementById('setup-prompt');

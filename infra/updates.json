@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "lastUpdated": "2026-03-14",
+  "templateRepo": "https://github.com/rsonnad/alpacapps-infra",
+  "updatesPage": "https://alpacaplayhouse.com/infra/updates.html",
+  "features": [
+    {
+      "id": "d1-session-logging",
+      "name": "Session Logging to Cloudflare D1",
+      "date": "2026-03-08",
+      "description": "Auto-save Claude Code session transcripts to Cloudflare D1. Search past sessions, track tokens and costs.",
+      "requires": ["cloudflare-account"],
+      "detects": ["cloudflare/claude-sessions/src/index.js"]
+    },
+    {
+      "id": "on-demand-context",
+      "name": "On-Demand Context System",
+      "date": "2026-03-08",
+      "description": "Split CLAUDE.md into slim index + on-demand docs/ files. Saves thousands of tokens per conversation.",
+      "requires": [],
+      "detects": ["docs/SCHEMA.md", "docs/PATTERNS.md", "docs/KEY-FILES.md"]
+    },
+    {
+      "id": "open-brain",
+      "name": "Open Brain — Session Transparency Dashboard",
+      "date": "2026-03-10",
+      "description": "View Claude Code session history, search transcripts, track costs. Radical transparency for AI usage.",
+      "requires": ["d1-session-logging"],
+      "detects": ["open-brain/index.html"]
+    },
+    {
+      "id": "poll-manager",
+      "name": "Smart Polling with Circuit Breaker",
+      "date": "2026-03-09",
+      "description": "Intelligent data refresh — pauses on hidden tabs, exponential backoff on failures, auto-recovery.",
+      "requires": ["supabase"],
+      "detects": ["shared/services/poll-manager.js"]
+    },
+    {
+      "id": "tab-visibility",
+      "name": "Intranet Tab Visibility Config",
+      "date": "2026-03-09",
+      "description": "Database-driven tab show/hide. Toggle intranet sections without code changes.",
+      "requires": ["supabase"],
+      "detects": ["supabase/migrations/001_page_display_config.sql"]
+    },
+    {
+      "id": "error-logger",
+      "name": "Centralized Error Logger",
+      "date": "2026-03-08",
+      "description": "Standardized error capture and formatting utility for consistent error handling.",
+      "requires": [],
+      "detects": ["shared/error-logger.js"]
+    },
+    {
+      "id": "stop-hook-upgrade",
+      "name": "Stop Hook Upgrade (replaces SessionEnd)",
+      "date": "2026-03-12",
+      "description": "Captures worktree and subagent sessions. Rate-limited to prevent duplicate saves.",
+      "requires": ["d1-session-logging"],
+      "detects": []
+    },
+    {
+      "id": "update-checker",
+      "name": "Auto Update Checker",
+      "date": "2026-03-14",
+      "description": "Admin notification when new template features are available. Checks monthly against the template repo.",
+      "requires": [],
+      "detects": ["shared/update-checker.js"]
+    }
+  ]
+}
