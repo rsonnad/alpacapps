@@ -1,12 +1,12 @@
 {
-  "version": "v260316.02 10:31a",
-  "release": 804,
-  "sha": "0380275a4",
-  "fullSha": "0380275a45cf7834b738b3fa9b77266f0eee2d6f",
+  "version": "v260316.03 11:09a",
+  "release": 805,
+  "sha": "b5e8cc17b",
+  "fullSha": "b5e8cc17be2a8c25cadad1747099fad2d30cecb4",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-16 15:31:59+00",
-  "commits": [{"sha":"bdad4c24e","message":"Add sonia245g@gmail.com to community fit inquiry email recipients","author":"Sonia Wendorff"},{"sha":"0380275a4","message":"Merge branch 'claude/awesome-lewin'","author":"Sonia Wendorff"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-16 16:09:42+00",
+  "commits": [{"sha":"b5e8cc17b","message":"Add social profiles section to apply form (no Optional label)","author":"Sonia Wendorff"}]
 }
