@@ -342,12 +342,13 @@ function bindEvents() {
 // =============================================
 // INIT
 // =============================================
+// Render immediately — account data is static, no Supabase queries needed.
+bindEvents();
+render();
+
+// Init admin shell for tab nav, auth UI, version info (runs async).
 initAdminPage({
   activeTab: 'accounts',
   requiredRole: 'admin',
   section: 'admin',
-  onReady: () => {
-    bindEvents();
-    render();
-  },
 });
