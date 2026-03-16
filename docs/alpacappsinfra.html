@@ -1975,6 +1975,48 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
+  <!-- 11c. gstack — Claude Code Skills & Headless Browser -->
+  <details class="section" id="gstack-setup">
+      <summary><h2><img src="https://cdn.simpleicons.org/github" alt="gstack" class="service-icon">11c. gstack &mdash; Claude Code Skills &amp; Headless Browser <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
+    <p>Optional. Open-source CLI that supercharges Claude Code with powerful skills: headless browser for QA testing (~100ms per command), code review, ship workflow, engineering retrospectives, and more. By <a href="https://github.com/garrytan/gstack">Garry Tan</a>, MIT licensed.</p>
+
+    <h3>Skills included</h3>
+    <ul>
+      <li><strong>/browse</strong> &mdash; Headless browser for QA testing and site dogfooding</li>
+      <li><strong>/review</strong> &mdash; Pre-landing code review with production risk detection</li>
+      <li><strong>/ship</strong> &mdash; Ship workflow: sync base, test, review diff, bump version, push, create PR</li>
+      <li><strong>/qa</strong> &mdash; Systematic QA testing with auto-fix (Quick / Standard / Exhaustive)</li>
+      <li><strong>/qa-only</strong> &mdash; QA report without fixes</li>
+      <li><strong>/retro</strong> &mdash; Engineering retrospectives with per-person commit analysis</li>
+      <li><strong>/plan-ceo-review</strong> &mdash; CEO/founder-mode plan review</li>
+      <li><strong>/plan-eng-review</strong> &mdash; Engineering manager plan review</li>
+      <li><strong>/document-release</strong> &mdash; Post-ship documentation updates</li>
+    </ul>
+
+    <h3><span class="step-label step-you">You do (in your terminal)</span></h3>
+    <ol>
+      <li>Install gstack:
+        <pre><code>curl -fsSL https://raw.githubusercontent.com/garrytan/gstack/main/install.sh | bash</code></pre>
+      </li>
+      <li>Verify:
+        <pre><code>ls ~/.claude/skills/gstack/SKILL.md</code></pre>
+        If the file exists, you&rsquo;re set. Claude Code auto-detects the skills.
+      </li>
+    </ol>
+
+    <h3><span class="step-label step-claude">Then tell Claude</span></h3>
+    <div class="callout claude" style="position: relative;">
+      <strong>&ldquo;Run /browse to verify gstack is working. Navigate to my site and take a screenshot.&rdquo;</strong>
+      <button onclick="copyPrompt(this)" class="copy-prompt">Copy</button>
+      <span class="claude-detail">Claude will launch the headless browser daemon, navigate to your site, and return a screenshot &mdash; confirming everything works.</span>
+    </div>
+
+    <p><strong>Updating:</strong> Run <code>/gstack-upgrade</code> inside Claude Code, or re-run the install script.</p>
+    <p><strong>Source:</strong> <a href="https://github.com/garrytan/gstack">github.com/garrytan/gstack</a></p>
+  </div>
+  </details>
+
   <!-- 12. Background Workers -->
   <details class="section" id="workers">
       <summary><h2>12. Background Workers (Optional)</h2></summary>

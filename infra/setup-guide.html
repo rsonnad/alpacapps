@@ -221,6 +221,7 @@
           <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
           <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees</li>
           <li><strong>Cloudflare D1</strong> (session archive) &mdash; Free, auto-saves Claude Code transcripts</li>
+          <li><strong>gstack</strong> (QA &amp; developer skills) &mdash; Free, open-source headless browser + Claude Code skills for code review, shipping, QA testing</li>
         </ul>
       </li>
     </ol>
@@ -501,6 +502,35 @@ chmod +x ~/.claude/hooks/save-session.sh</code></pre>
       </li>
     </ol>
     <p><strong>Note:</strong> Running sessions won't pick up new <code>settings.json</code> hooks &mdash; only sessions started after the config change will auto-save. To backfill existing sessions, use the Worker's <code>POST /sessions</code> endpoint.</p>
+  </div>
+
+  <!-- gstack -->
+  <div class="guide-step">
+    <h3>gstack &mdash; Claude Code Skills &amp; Headless Browser</h3>
+    <p>Open-source CLI that adds powerful skills to Claude Code: headless browser for QA testing, code review, ship workflow, engineering retrospectives, and more. Sub-second commands with zero token overhead.</p>
+    <ol>
+      <li><strong>Install:</strong>
+        <pre><code>curl -fsSL https://raw.githubusercontent.com/garrytan/gstack/main/install.sh | bash</code></pre>
+        This installs the <code>gstack</code> binary and skill definitions to <code>~/.claude/skills/gstack/</code>.
+      </li>
+      <li><strong>Verify installation:</strong>
+        <pre><code>ls ~/.claude/skills/gstack/SKILL.md</code></pre>
+        If the file exists, gstack is installed and Claude Code will automatically detect the skills.
+      </li>
+      <li><strong>Available skills:</strong>
+        <ul>
+          <li><code>/browse</code> &mdash; Headless browser for QA testing and site dogfooding (~100ms per command)</li>
+          <li><code>/review</code> &mdash; Pre-landing code review with production risk detection</li>
+          <li><code>/ship</code> &mdash; Ship workflow: merge base, test, review, bump, push, create PR</li>
+          <li><code>/qa</code> &mdash; Systematic QA testing with auto-fix (Quick/Standard/Exhaustive tiers)</li>
+          <li><code>/retro</code> &mdash; Engineering retrospectives with commit analysis and trend tracking</li>
+          <li><code>/plan-ceo-review</code> &mdash; CEO/founder-mode plan review</li>
+          <li><code>/plan-eng-review</code> &mdash; Engineering manager plan review</li>
+        </ul>
+      </li>
+      <li><strong>Update later:</strong> Run <code>/gstack-upgrade</code> inside Claude Code, or re-run the install script.</li>
+    </ol>
+    <p><strong>Source:</strong> <a href="https://github.com/garrytan/gstack">github.com/garrytan/gstack</a> (MIT license)</p>
   </div>
 
 </div>

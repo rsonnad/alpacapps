@@ -750,8 +750,9 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
           <span>Payments</span>
           <span>E-Signatures</span>
           <span>AI Features</span>
+          <span>QA Testing</span>
         </div>
-        <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini</div>
+        <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini &bull; gstack</div>
       </div>
       <div class="stack-layer layer-crm">
         <div class="layer-label">Your Business</div>
@@ -825,6 +826,10 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
     </div>
     <div class="svc-card">
       <div class="svc-info"><span class="svc-name">Cloudflare D1</span><span class="svc-desc">Session archive (Claude Code transcripts)</span></div>
+      <span class="cost-badge cost-free">Free</span>
+    </div>
+    <div class="svc-card">
+      <div class="svc-info"><span class="svc-name">gstack</span><span class="svc-desc">Open-source Claude Code skills &amp; headless browser for QA</span></div>
       <span class="cost-badge cost-free">Free</span>
     </div>
     <div class="svc-card">
@@ -912,6 +917,12 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
         <input type="checkbox" data-svc="cloudflare-d1" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc">
+        <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc">
@@ -1039,6 +1050,7 @@ function recalcCost() {
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
     'cloudflare-d1': { basic: 0, complicated: 0, hyper: 0 },
+    'gstack':      { basic: 0, complicated: 0, hyper: 0 },
     'workers':     { basic: 0, complicated: 144, hyper: 384 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
@@ -1051,7 +1063,7 @@ function recalcCost() {
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
-    'workers': 'Background Workers (cloud VM)', 'domain': 'Custom domain',
+    'gstack': 'gstack (QA & skills)', 'workers': 'Background Workers (cloud VM)', 'domain': 'Custom domain',
     'iphone': 'iPhone App (Apple Developer)', 'android': 'Android App (Google Play)',
     'homeserver': 'Home Server (used Mac)'
   };
