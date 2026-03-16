@@ -1045,6 +1045,25 @@
               </div>
             </div>
           </div>
+
+          <!-- Social Profiles (Step 1) -->
+          <div class="form-section">
+            <h2>Social Profiles</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="s1_instagram">Instagram</label>
+                <input type="text" id="s1_instagram" name="s1_instagram" placeholder="@username">
+              </div>
+              <div class="form-group">
+                <label for="s1_facebook">Facebook</label>
+                <input type="text" id="s1_facebook" name="s1_facebook" placeholder="Profile URL or name">
+              </div>
+              <div class="form-group">
+                <label for="s1_x_handle">X (Twitter)</label>
+                <input type="text" id="s1_x_handle" name="s1_x_handle" placeholder="@handle">
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ============================== -->
@@ -1798,6 +1817,9 @@
           volunteer_interest: getValue('volunteer_interest') || null,
           photo_url: photoUrl,
           referral_source: getValue('referral_source'),
+          instagram: getValue('s1_instagram') || null,
+          facebook: getValue('s1_facebook') || null,
+          x_handle: getValue('s1_x_handle') || null,
           status: 'candidate'
         };
 
