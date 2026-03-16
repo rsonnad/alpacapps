@@ -1,12 +1,12 @@
 {
-  "version": "v260315.07 10:29p",
-  "release": 799,
-  "sha": "ea3a1fc09",
-  "fullSha": "ea3a1fc092ee56c4cff69600b3c0609001dc77b1",
+  "version": "v260315.08 10:35p",
+  "release": 800,
+  "sha": "c800aaf88",
+  "fullSha": "c800aaf8865f119e6f3e7b139b56ba37720b2466",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-16 03:29:19+00",
-  "commits": [{"sha":"ea3a1fc09","message":"Fix accounts page: render immediately instead of waiting for auth","author":"Rahul"}]
+  "pushedAt": "2026-03-16 03:35:46+00",
+  "commits": [{"sha":"c800aaf88","message":"Fix accounts page: add missing Supabase client library script tag","author":"Rahul"}]
 }
