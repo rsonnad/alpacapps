@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Claude Dev — AlpacApps Admin</title>
+  <title>Claude Dev — Admin</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
-  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <script>try{var c=localStorage.getItem(location.hostname+'-auth');if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}</style>
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
@@ -35,6 +35,7 @@
     .clauded-card .pill.green { background: #e8f0e8; color: #3a6b3a; }
     .clauded-card .pill.blue { background: #e8e8f0; color: #3a3a6b; }
     .clauded-card .pill.amber { background: #f0ede8; color: #8a7a5a; }
+    .clauded-card .pill.dim { opacity: 0.5; }
     .icon-circle { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
     .icon-sessions { background: #e8f0e8; }
     .icon-config { background: #e8e8f0; }
@@ -46,10 +47,6 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-overlay__logo">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
-    </div>
     <div class="spinner spinner--sm"></div>
   </div>
 
@@ -57,7 +54,7 @@
 
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
-    <span data-site-version style="display:none">v260315.10 11:19p</span>
+    <span data-site-version style="display:none"></span>
 
     <div class="clauded-container">
       <div class="clauded-header">
@@ -65,8 +62,8 @@
         <p>Developer tools, session history, and system configuration reference for Claude Code</p>
       </div>
 
-      <div class="clauded-grid">
-        <a href="/clauded/sessions.html" class="clauded-card">
+      <div class="clauded-grid" id="clauded-grid">
+        <a href="/clauded/sessions.html" class="clauded-card" id="card-sessions">
           <h2><span class="icon-circle icon-sessions">&#x1f4ac;</span> Claude Sessions</h2>
           <p>Browse and search past Claude Code conversations. View session transcripts, token usage, duration, and model information.</p>
           <div class="card-meta">
@@ -77,16 +74,16 @@
 
         <a href="/clauded/config-overview.html" class="clauded-card">
           <h2><span class="icon-circle icon-config">&#x2699;&#xfe0f;</span> Configuration Overview</h2>
-          <p>Human-readable summary of all environment files, .md configuration, memory files, and how they relate to each other. Includes file sizes, context loading rules, and a dependency diagram.</p>
+          <p>Human-readable summary of all environment files, .md configuration, memory files, and how they relate to each other. Includes context loading rules and a dependency diagram.</p>
           <div class="card-meta">
-            <span class="pill blue">14 config files</span>
-            <span class="pill">Static reference</span>
+            <span class="pill blue">Config files</span>
+            <span class="pill">Reference</span>
           </div>
         </a>
 
         <a href="/clauded/architecture.html" class="clauded-card">
           <h2><span class="icon-circle icon-arch">&#x1f3d7;&#xfe0f;</span> Architecture Diagram</h2>
-          <p>Visual diagram of the AlpacApps infrastructure — five services, zero backend code. Shows how Claude Code, GitHub Pages, Supabase, Alpaca Mac, and Hostinger connect.</p>
+          <p>Visual diagram of your project infrastructure &mdash; how Claude Code, GitHub Pages, Supabase, and optional services connect.</p>
           <div class="card-meta">
             <span class="pill amber">Infra overview</span>
             <span class="pill">Interactive diagram</span>
@@ -106,7 +103,23 @@
         activeTab: null,
         requiredRole: 'admin',
         section: 'admin',
-        onReady: () => {},
+        onReady: () => {
+          // Check if sessions API is configured — dim the card if not
+          if (typeof CLAUDED_SESSIONS_API === 'undefined' || !CLAUDED_SESSIONS_API) {
+            const card = document.getElementById('card-sessions');
+            if (card) {
+              const pills = card.querySelectorAll('.pill');
+              pills.forEach(p => p.classList.add('dim'));
+              const meta = card.querySelector('.card-meta');
+              if (meta) {
+                const hint = document.createElement('span');
+                hint.className = 'pill';
+                hint.textContent = 'Not configured';
+                meta.prepend(hint);
+              }
+            }
+          }
+        },
       });
     });
   </script>

@@ -473,6 +473,17 @@
     "dbTables": []
   },
 
+  "clauded": {
+    "label": "Developer Dashboard (Claude Dev)",
+    "category": "core",
+    "setup_cost": "free",
+    "setup_cost_note": "Admin-only dev tools. Session logging requires Cloudflare D1 (free tier)",
+    "dependencies": [],
+    "suggested_with": ["d1-session-logging"],
+    "dirs": ["clauded/"],
+    "dbTables": []
+  },
+
   "_alpacapps_specific": {
     "_note": "AlpacApps Playhouse content — always excluded from template clones",
     "dirs": [

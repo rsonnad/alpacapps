@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Architecture Diagram — AlpacApps Admin</title>
+  <title>Architecture Diagram — Admin</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
-  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <script>try{var c=localStorage.getItem(location.hostname+'-auth');if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}</style>
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
@@ -64,10 +64,6 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-overlay__logo">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
-    </div>
     <div class="spinner spinner--sm"></div>
   </div>
 
@@ -75,28 +71,30 @@
 
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
-    <span data-site-version style="display:none">v260315.10 11:19p</span>
+    <span data-site-version style="display:none"></span>
 
     <div class="arch-container">
       <div class="breadcrumb"><a href="/clauded/">Claude Dev</a> &rsaquo; Architecture Diagram</div>
       <div class="arch-header">
         <h1>Architecture Diagram</h1>
-        <p>Visual overview of the AlpacApps infrastructure — five services, zero backend code.</p>
+        <p>Visual overview of your project infrastructure — static frontend, Supabase backend, zero server code.</p>
       </div>
 
       <div class="arch-links">
         <a href="/infra/" class="arch-link">Full Infra Setup Guide &rarr;</a>
-        <a href="/docs/alpacappsinfra.html" class="arch-link">Infra Documentation &rarr;</a>
       </div>
 
       <div class="svg-diagram-card">
-        <h2>AlpacApps Architecture</h2>
-        <p>Five services, zero backend code</p>
+        <h2>Project Architecture</h2>
+        <p>Three-tier architecture: static hosting, backend-as-a-service, external integrations</p>
 
-        <svg viewBox="0 0 860 520" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+        <svg viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
           <defs>
             <marker id="arw" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
               <path d="M0,0 L8,3 L0,6 Z" fill="#999"/>
+            </marker>
+            <marker id="arw-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#d4883a"/>
             </marker>
             <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
               <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.08"/>
@@ -106,128 +104,114 @@
           <!-- Legend -->
           <circle cx="20" cy="15" r="6" fill="#d4883a"/>
           <text x="32" y="19" font-size="10" fill="#666">Claude Code</text>
-          <circle cx="130" cy="15" r="6" fill="#4caf50"/>
-          <text x="142" y="19" font-size="10" fill="#666">Supabase</text>
-          <circle cx="220" cy="15" r="6" fill="#333"/>
-          <text x="232" y="19" font-size="10" fill="#666">GitHub Pages</text>
-          <circle cx="340" cy="15" r="6" fill="#2196f3"/>
-          <text x="352" y="19" font-size="10" fill="#666">Alpaca Mac</text>
-          <circle cx="450" cy="15" r="6" fill="#f44336"/>
-          <text x="462" y="19" font-size="10" fill="#666">Hostinger</text>
+          <circle cx="130" cy="15" r="6" fill="#333"/>
+          <text x="142" y="19" font-size="10" fill="#666">GitHub Pages</text>
+          <circle cx="250" cy="15" r="6" fill="#4caf50"/>
+          <text x="262" y="19" font-size="10" fill="#666">Supabase</text>
+          <circle cx="340" cy="15" r="6" fill="#9e9e9e"/>
+          <text x="352" y="19" font-size="10" fill="#666">External APIs</text>
+          <rect x="450" y="9" width="12" height="12" rx="2" fill="none" stroke="#999" stroke-dasharray="3,2"/>
+          <text x="468" y="19" font-size="10" fill="#666">Optional</text>
 
-          <!-- Users -->
-          <rect x="310" y="45" width="240" height="40" rx="20" fill="#f5f3ef" stroke="#d4d0c8" filter="url(#shadow)"/>
-          <text x="430" y="70" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Residents / Admins / Public</text>
-
-          <!-- Arrows from users -->
-          <line x1="370" y1="85" x2="200" y2="130" stroke="#999" stroke-width="1.5" marker-end="url(#arw)"/>
-          <line x1="430" y1="85" x2="430" y2="130" stroke="#999" stroke-width="1.5" marker-end="url(#arw)"/>
+          <!-- ===== TIER 1: Claude Code + GitHub Pages ===== -->
 
           <!-- Claude Code -->
-          <rect x="60" y="130" width="200" height="65" rx="10" fill="#fff3e0" stroke="#d4883a" stroke-width="2" filter="url(#shadow)"/>
-          <text x="160" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#d4883a">Claude Code</text>
-          <text x="160" y="172" text-anchor="middle" font-size="10" fill="#666">AI dev agent writes code,</text>
-          <text x="160" y="184" text-anchor="middle" font-size="10" fill="#666">runs tests, deploys to GH</text>
+          <rect x="100" y="55" width="200" height="60" rx="10" fill="#fff3e0" stroke="#d4883a" stroke-width="2" filter="url(#shadow)"/>
+          <text x="200" y="80" text-anchor="middle" font-size="13" font-weight="bold" fill="#d4883a">Claude Code</text>
+          <text x="200" y="96" text-anchor="middle" font-size="10" fill="#666">AI dev agent — writes &amp; deploys code</text>
 
           <!-- GitHub Pages -->
-          <rect x="330" y="130" width="200" height="65" rx="10" fill="#f5f5f5" stroke="#333" stroke-width="2" filter="url(#shadow)"/>
-          <text x="430" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">GitHub Pages</text>
-          <text x="430" y="172" text-anchor="middle" font-size="10" fill="#666">Static HTML/JS/CSS hosting</text>
-          <text x="430" y="184" text-anchor="middle" font-size="10" fill="#666">alpacaplayhouse.com</text>
+          <rect x="430" y="55" width="220" height="60" rx="10" fill="#f5f5f5" stroke="#333" stroke-width="2" filter="url(#shadow)"/>
+          <text x="540" y="80" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">GitHub Pages</text>
+          <text x="540" y="96" text-anchor="middle" font-size="10" fill="#666">Static HTML / JS / CSS hosting</text>
 
-          <!-- Arrow: Claude -> GitHub -->
-          <line x1="260" y1="162" x2="328" y2="162" stroke="#d4883a" stroke-width="1.5" marker-end="url(#arw)"/>
-          <text x="294" y="155" text-anchor="middle" font-size="9" fill="#d4883a">git push</text>
+          <!-- Arrow: Claude Code -> GitHub Pages -->
+          <line x1="300" y1="85" x2="428" y2="85" stroke="#d4883a" stroke-width="1.5" marker-end="url(#arw-orange)"/>
+          <text x="364" y="78" text-anchor="middle" font-size="9" fill="#d4883a">git push</text>
 
-          <!-- Zero server callout -->
-          <rect x="600" y="130" width="230" height="50" rx="8" fill="#fff9c4" stroke="#f9a825" stroke-dasharray="4,4"/>
-          <text x="715" y="152" text-anchor="middle" font-size="11" font-weight="bold" fill="#f57f17">ZERO SERVER ARCHITECTURE</text>
-          <text x="715" y="167" text-anchor="middle" font-size="10" fill="#666">No runtime servers at all</text>
+          <!-- ===== TIER 2: Supabase ===== -->
 
           <!-- Supabase -->
-          <rect x="260" y="240" width="340" height="65" rx="10" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" filter="url(#shadow)"/>
-          <text x="430" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Supabase</text>
-          <text x="430" y="278" text-anchor="middle" font-size="10" fill="#666">Backend as a Service (database, auth, storage, edge functions)</text>
+          <rect x="260" y="175" width="340" height="75" rx="10" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" filter="url(#shadow)"/>
+          <text x="430" y="197" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Supabase</text>
+          <text x="430" y="213" text-anchor="middle" font-size="10" fill="#666">Backend as a Service</text>
           <!-- Sub-services -->
-          <rect x="275" y="285" width="65" height="18" rx="4" fill="#c8e6c9"/>
-          <text x="307" y="297" text-anchor="middle" font-size="9" fill="#2e7d32">PostgreSQL</text>
-          <rect x="345" y="285" width="40" height="18" rx="4" fill="#c8e6c9"/>
-          <text x="365" y="297" text-anchor="middle" font-size="9" fill="#2e7d32">Auth</text>
-          <rect x="390" y="285" width="55" height="18" rx="4" fill="#c8e6c9"/>
-          <text x="417" y="297" text-anchor="middle" font-size="9" fill="#2e7d32">Storage</text>
-          <rect x="450" y="285" width="80" height="18" rx="4" fill="#c8e6c9"/>
-          <text x="490" y="297" text-anchor="middle" font-size="9" fill="#2e7d32">Edge Functions</text>
+          <rect x="275" y="222" width="65" height="18" rx="4" fill="#c8e6c9"/>
+          <text x="307" y="234" text-anchor="middle" font-size="9" fill="#2e7d32">PostgreSQL</text>
+          <rect x="347" y="222" width="40" height="18" rx="4" fill="#c8e6c9"/>
+          <text x="367" y="234" text-anchor="middle" font-size="9" fill="#2e7d32">Auth</text>
+          <rect x="394" y="222" width="55" height="18" rx="4" fill="#c8e6c9"/>
+          <text x="421" y="234" text-anchor="middle" font-size="9" fill="#2e7d32">Storage</text>
+          <rect x="456" y="222" width="80" height="18" rx="4" fill="#c8e6c9"/>
+          <text x="496" y="234" text-anchor="middle" font-size="9" fill="#2e7d32">Edge Functions</text>
 
-          <!-- Arrow: GitHub -> Supabase -->
-          <line x1="430" y1="195" x2="430" y2="238" stroke="#999" stroke-width="1.5" marker-end="url(#arw)"/>
-          <text x="445" y="218" font-size="9" fill="#999">API calls</text>
+          <!-- Arrow: GitHub Pages -> Supabase -->
+          <line x1="540" y1="115" x2="475" y2="173" stroke="#999" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="525" y="148" font-size="9" fill="#999">API calls</text>
+
+          <!-- ===== TIER 3: External APIs ===== -->
 
           <!-- External APIs -->
-          <rect x="650" y="240" width="190" height="65" rx="10" fill="#fff" stroke="#e0e0e0" filter="url(#shadow)"/>
-          <text x="745" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#666">External APIs</text>
-          <text x="745" y="278" text-anchor="middle" font-size="9" fill="#999">Stripe, Square, PayPal, Telnyx,</text>
-          <text x="745" y="290" text-anchor="middle" font-size="9" fill="#999">Resend, Vapi, SignWell, Gemini</text>
+          <rect x="310" y="310" width="240" height="65" rx="10" fill="#fff" stroke="#bdbdbd" stroke-width="1.5" filter="url(#shadow)"/>
+          <text x="430" y="332" text-anchor="middle" font-size="12" font-weight="bold" fill="#666">External APIs</text>
+          <text x="430" y="348" text-anchor="middle" font-size="9" fill="#999">Stripe, Resend, Telnyx, SignWell,</text>
+          <text x="430" y="360" text-anchor="middle" font-size="9" fill="#999">Gemini, Twilio, SendGrid...</text>
 
-          <!-- Arrow: Supabase -> External -->
-          <line x1="600" y1="272" x2="648" y2="272" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arw)"/>
+          <!-- Arrow: Supabase -> External APIs -->
+          <line x1="430" y1="250" x2="430" y2="308" stroke="#999" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="445" y="283" font-size="9" fill="#999">webhooks</text>
 
-          <!-- Alpaca Mac -->
-          <rect x="60" y="370" width="200" height="65" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" filter="url(#shadow)"/>
-          <text x="160" y="395" text-anchor="middle" font-size="13" font-weight="bold" fill="#1565c0">Alpaca Mac</text>
-          <text x="160" y="410" text-anchor="middle" font-size="10" fill="#666">On-prem home server (bridge)</text>
-          <text x="160" y="422" text-anchor="middle" font-size="10" fill="#666">LAN-only smart home control</text>
-          <!-- Sub-services -->
-          <rect x="70" y="437" width="45" height="16" rx="4" fill="#bbdefb"/>
-          <text x="92" y="448" text-anchor="middle" font-size="8" fill="#1565c0">Sonos</text>
-          <rect x="120" y="437" width="40" height="16" rx="4" fill="#bbdefb"/>
-          <text x="140" y="448" text-anchor="middle" font-size="8" fill="#1565c0">MQTT</text>
-          <rect x="165" y="437" width="40" height="16" rx="4" fill="#bbdefb"/>
-          <text x="185" y="448" text-anchor="middle" font-size="8" fill="#1565c0">Kuma</text>
-          <rect x="210" y="437" width="40" height="16" rx="4" fill="#bbdefb"/>
-          <text x="230" y="448" text-anchor="middle" font-size="8" fill="#1565c0">Record</text>
+          <!-- ===== OPTIONAL: Home Server ===== -->
 
-          <!-- Arrow: Supabase -> Alpaca Mac -->
-          <line x1="350" y1="305" x2="220" y2="370" stroke="#999" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arw)"/>
-          <text x="270" y="335" font-size="9" fill="#999">Tailscale VPN</text>
+          <!-- Dotted outline box for Home Server -->
+          <rect x="40" y="290" width="210" height="95" rx="10" fill="#f9f9ff" stroke="#7986cb" stroke-width="1.5" stroke-dasharray="6,4" filter="url(#shadow)"/>
+          <text x="145" y="315" text-anchor="middle" font-size="12" font-weight="bold" fill="#5c6bc0">Home Server</text>
+          <text x="145" y="332" text-anchor="middle" font-size="10" fill="#666">Smart home bridge / LAN control</text>
+          <text x="145" y="348" text-anchor="middle" font-size="9" fill="#999" font-style="italic">(if configured)</text>
+          <!-- Sub-services hint -->
+          <rect x="60" y="356" width="50" height="16" rx="4" fill="#e8eaf6"/>
+          <text x="85" y="367" text-anchor="middle" font-size="8" fill="#5c6bc0">IoT</text>
+          <rect x="115" y="356" width="55" height="16" rx="4" fill="#e8eaf6"/>
+          <text x="142" y="367" text-anchor="middle" font-size="8" fill="#5c6bc0">Monitor</text>
+          <rect x="175" y="356" width="55" height="16" rx="4" fill="#e8eaf6"/>
+          <text x="202" y="367" text-anchor="middle" font-size="8" fill="#5c6bc0">Automate</text>
 
-          <!-- Hostinger VPS -->
-          <rect x="350" y="370" width="200" height="65" rx="10" fill="#ffebee" stroke="#f44336" stroke-width="2" filter="url(#shadow)"/>
-          <text x="450" y="395" text-anchor="middle" font-size="13" font-weight="bold" fill="#c62828">Hostinger VPS</text>
-          <text x="450" y="410" text-anchor="middle" font-size="10" fill="#666">Reverse proxy + tunneling</text>
-          <text x="450" y="422" text-anchor="middle" font-size="10" fill="#666">Routes cloudflared traffic</text>
-          <!-- Sub-services -->
-          <rect x="365" y="437" width="50" height="16" rx="4" fill="#ffcdd2"/>
-          <text x="390" y="448" text-anchor="middle" font-size="8" fill="#c62828">Caddy</text>
-          <rect x="420" y="437" width="65" height="16" rx="4" fill="#ffcdd2"/>
-          <text x="452" y="448" text-anchor="middle" font-size="8" fill="#c62828">Cloudflared</text>
-          <rect x="490" y="437" width="50" height="16" rx="4" fill="#ffcdd2"/>
-          <text x="515" y="448" text-anchor="middle" font-size="8" fill="#c62828">PAI Chat</text>
+          <!-- Arrow: Supabase -> Home Server -->
+          <line x1="310" y1="235" x2="220" y2="295" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arw)"/>
+          <text x="250" y="260" font-size="9" fill="#999">Tailscale VPN</text>
 
-          <!-- Arrow: Hostinger -> Alpaca Mac -->
-          <line x1="350" y1="402" x2="262" y2="402" stroke="#999" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arw)"/>
-          <text x="306" y="396" font-size="9" fill="#999">Tailscale</text>
+          <!-- ===== OPTIONAL: VPS / Worker Server ===== -->
 
-          <!-- Request flow -->
-          <text x="430" y="490" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">How a request flows</text>
-          <g transform="translate(60,500)">
-            <rect width="130" height="16" rx="4" fill="#f5f3ef" stroke="#d4d0c8"/>
-            <text x="65" y="12" text-anchor="middle" font-size="9" fill="#666">1. Browser loads from GH Pages</text>
+          <!-- Dotted outline box for VPS -->
+          <rect x="610" y="290" width="210" height="95" rx="10" fill="#fff8f8" stroke="#e57373" stroke-width="1.5" stroke-dasharray="6,4" filter="url(#shadow)"/>
+          <text x="715" y="315" text-anchor="middle" font-size="12" font-weight="bold" fill="#c62828">VPS / Worker Server</text>
+          <text x="715" y="332" text-anchor="middle" font-size="10" fill="#666">Background jobs / cron / proxy</text>
+          <text x="715" y="348" text-anchor="middle" font-size="9" fill="#999" font-style="italic">(if configured)</text>
+          <!-- Sub-services hint -->
+          <rect x="630" y="356" width="45" height="16" rx="4" fill="#ffebee"/>
+          <text x="652" y="367" text-anchor="middle" font-size="8" fill="#c62828">Cron</text>
+          <rect x="680" y="356" width="50" height="16" rx="4" fill="#ffebee"/>
+          <text x="705" y="367" text-anchor="middle" font-size="8" fill="#c62828">Workers</text>
+          <rect x="735" y="356" width="55" height="16" rx="4" fill="#ffebee"/>
+          <text x="762" y="367" text-anchor="middle" font-size="8" fill="#c62828">Proxy</text>
+
+          <!-- Arrow: Supabase -> VPS -->
+          <line x1="555" y1="235" x2="640" y2="295" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arw)"/>
+          <text x="615" y="260" font-size="9" fill="#999">Tailscale VPN</text>
+
+          <!-- ===== Request flow footer ===== -->
+          <text x="430" y="430" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">How a request flows</text>
+          <g transform="translate(140,445)">
+            <rect width="150" height="18" rx="4" fill="#f5f3ef" stroke="#d4d0c8"/>
+            <text x="75" y="13" text-anchor="middle" font-size="9" fill="#666">1. Browser loads from GitHub Pages</text>
           </g>
-          <g transform="translate(205,500)">
-            <rect width="130" height="16" rx="4" fill="#e8f5e9" stroke="#4caf50"/>
-            <text x="65" y="12" text-anchor="middle" font-size="9" fill="#2e7d32">2. JS calls Supabase API</text>
+          <g transform="translate(310,445)">
+            <rect width="130" height="18" rx="4" fill="#e8f5e9" stroke="#4caf50"/>
+            <text x="65" y="13" text-anchor="middle" font-size="9" fill="#2e7d32">2. JS calls Supabase API</text>
           </g>
-          <g transform="translate(350,500)">
-            <rect width="140" height="16" rx="4" fill="#e8f5e9" stroke="#4caf50"/>
-            <text x="70" y="12" text-anchor="middle" font-size="9" fill="#2e7d32">3. Edge functions run server-side</text>
-          </g>
-          <g transform="translate(505,500)">
-            <rect width="130" height="16" rx="4" fill="#ffebee" stroke="#f44336"/>
-            <text x="65" y="12" text-anchor="middle" font-size="9" fill="#c62828">4. Hostinger proxies to LAN</text>
-          </g>
-          <g transform="translate(650,500)">
-            <rect width="140" height="16" rx="4" fill="#e3f2fd" stroke="#2196f3"/>
-            <text x="70" y="12" text-anchor="middle" font-size="9" fill="#1565c0">5. Alpaca Mac controls devices</text>
+          <g transform="translate(460,445)">
+            <rect width="170" height="18" rx="4" fill="#e8f5e9" stroke="#4caf50"/>
+            <text x="85" y="13" text-anchor="middle" font-size="9" fill="#2e7d32">3. Edge functions call external APIs</text>
           </g>
         </svg>
       </div>

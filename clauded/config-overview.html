@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Configuration Overview — AlpacApps Admin</title>
+  <title>Configuration Overview — Admin</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
-  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <script>try{var c=localStorage.getItem(location.hostname+'-auth');if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}</style>
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
   <style>
@@ -83,7 +83,7 @@
     .context-budget .subtitle { font-size: 0.84rem; color: #666; margin-bottom: 1.25rem; }
     .budget-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 0.75rem;
       margin-bottom: 1.25rem;
     }
@@ -95,18 +95,12 @@
     }
     .budget-stat .val { font-size: 1.4rem; font-weight: 700; }
     .budget-stat .lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.15rem; }
-    .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
-    .bar-row { display: flex; align-items: center; gap: 0.75rem; }
-    .bar-label { font-size: 0.78rem; color: #555; width: 160px; flex-shrink: 0; text-align: right; }
-    .bar-track { flex: 1; height: 22px; background: #f0ede8; border-radius: 6px; overflow: hidden; position: relative; }
-    .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding: 0 0.5rem; min-width: 24px; }
-    .bar-fill span { font-size: 0.65rem; font-weight: 600; color: #fff; white-space: nowrap; }
-    .bar-value { font-size: 0.72rem; color: #888; width: 50px; flex-shrink: 0; }
-    .bar-green { background: #6b8e5a; }
-    .bar-blue { background: #5a6b8e; }
-    .bar-purple { background: #8e5a8e; }
-    .bar-gold { background: #8e7a5a; }
     .context-note { font-size: 0.78rem; color: #999; margin-top: 1rem; line-height: 1.5; }
+    .context-explanation {
+      font-size: 0.84rem; color: #555; line-height: 1.65;
+      background: #faf8f5; border-radius: 8px; padding: 1rem 1.25rem;
+    }
+    .context-explanation code { font-size: 0.8rem; background: #eee; padding: 0.1rem 0.35rem; border-radius: 3px; }
 
     /* Diagram */
     .diagram-section { margin-top: 3rem; }
@@ -130,10 +124,6 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-overlay__logo">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
-      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
-    </div>
     <div class="spinner spinner--sm"></div>
   </div>
 
@@ -141,7 +131,7 @@
 
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
-    <span data-site-version style="display:none">v260315.10 11:19p</span>
+    <span data-site-version style="display:none"></span>
 
     <div class="config-container">
       <div class="breadcrumb"><a href="/clauded/">Claude Dev</a> &rsaquo; Configuration Overview</div>
@@ -157,100 +147,27 @@
 
         <div class="budget-stats">
           <div class="budget-stat">
-            <div class="val">~13 KB</div>
+            <div class="val">~5&ndash;15 KB</div>
             <div class="lbl">Always Loaded</div>
           </div>
           <div class="budget-stat">
-            <div class="val">~160 KB</div>
+            <div class="val">~50&ndash;200 KB</div>
             <div class="lbl">All Docs Total</div>
           </div>
           <div class="budget-stat">
-            <div class="val">14</div>
+            <div class="val">varies</div>
             <div class="lbl">Config Files</div>
-          </div>
-          <div class="budget-stat">
-            <div class="val">~1,600</div>
-            <div class="lbl">Total Lines</div>
           </div>
         </div>
 
-        <div class="bar-chart">
-          <div class="bar-row">
-            <div class="bar-label">CLAUDE.md</div>
-            <div class="bar-track"><div class="bar-fill bar-green" style="width:2.5%"><span></span></div></div>
-            <div class="bar-value">4 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">CLAUDE.local.md</div>
-            <div class="bar-track"><div class="bar-fill bar-green" style="width:1%"><span></span></div></div>
-            <div class="bar-value">~1 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">MEMORY.md</div>
-            <div class="bar-track"><div class="bar-fill bar-purple" style="width:2.5%"><span></span></div></div>
-            <div class="bar-value">~4 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">version.json</div>
-            <div class="bar-track"><div class="bar-fill bar-green" style="width:2.5%"><span></span></div></div>
-            <div class="bar-value">4 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label" style="font-weight:600;color:#333;">Subtotal: always loaded</div>
-            <div class="bar-track"><div class="bar-fill bar-green" style="width:8%"><span>~13 KB</span></div></div>
-            <div class="bar-value" style="font-weight:600;">~13 KB</div>
-          </div>
-          <div style="height:0.5rem"></div>
-          <div class="bar-row">
-            <div class="bar-label">docs/CREDENTIALS.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:5%"><span></span></div></div>
-            <div class="bar-value">~8 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/SCHEMA.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:12.5%"><span></span></div></div>
-            <div class="bar-value">20 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/PATTERNS.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:5%"><span></span></div></div>
-            <div class="bar-value">8 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/KEY-FILES.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:10%"><span></span></div></div>
-            <div class="bar-value">16 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/DEPLOY.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:2.5%"><span></span></div></div>
-            <div class="bar-value">4 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/INTEGRATIONS.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:20%"><span></span></div></div>
-            <div class="bar-value">32 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">docs/CHANGELOG.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:20%"><span></span></div></div>
-            <div class="bar-value">32 KB</div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label">PRODUCTDESIGN.md</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:25%"><span></span></div></div>
-            <div class="bar-value">40 KB</div>
-          </div>
-          <div style="height:0.5rem"></div>
-          <div class="bar-row">
-            <div class="bar-label" style="font-weight:600;color:#333;">Total (all files)</div>
-            <div class="bar-track"><div class="bar-fill bar-blue" style="width:100%"><span>~160 KB</span></div></div>
-            <div class="bar-value" style="font-weight:600;">~160 KB</div>
-          </div>
+        <div class="context-explanation">
+          <code>CLAUDE.md</code> is always loaded (~30 lines). On-demand docs are loaded only when the task matches their trigger. This saves thousands of tokens per conversation.
+          <br><br>
+          For example, a database task might add <code>SCHEMA.md</code> and <code>CREDENTIALS.md</code>, while a styling task would load <code>PATTERNS.md</code> instead. The full doc set is rarely loaded at once.
         </div>
 
         <p class="context-note">
-          A typical conversation loads ~13 KB of always-loaded files. On-demand docs are added only when needed — a database task might add SCHEMA.md (+20 KB) and CREDENTIALS.md (+8 KB), bringing the total to ~41 KB. The maximum possible context from all config files is ~160 KB, but this rarely happens in practice.
+          Actual sizes depend on your project. A small project might use 50 KB total across all docs; a large one with many integrations could reach 200 KB+. The on-demand system ensures only relevant context is loaded per conversation.
         </p>
       </div>
 
@@ -263,16 +180,14 @@
           <div class="file-card-header">
             <h3>CLAUDE.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">4 KB</span>
-              <span class="meta-pill pill-lines">39 lines</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Project directives</strong> — the primary instruction file for Claude Code. Defines mandatory behaviors (version reporting, push workflow, decision logging), code guards (naming conventions, UI patterns, Tailwind tokens), and pointers to on-demand documentation. Acts as the root of the configuration tree.
+            <strong>Project directives</strong> — the root of the configuration tree. Contains mandatory behaviors, code guards, and pointers to on-demand docs. Defines naming conventions, UI patterns, push workflow, and all rules Claude Code must follow.
           </div>
           <div class="file-card-pointers">
-            <strong>Points to:</strong> docs/CREDENTIALS.md, docs/SCHEMA.md, docs/PATTERNS.md, docs/KEY-FILES.md, docs/DEPLOY.md, docs/INTEGRATIONS.md, docs/CHANGELOG.md, PRODUCTDESIGN.md
+            <strong>Points to:</strong> docs/CREDENTIALS.md, docs/SCHEMA.md, docs/PATTERNS.md, docs/KEY-FILES.md, docs/DEPLOY.md, docs/INTEGRATIONS.md, docs/CHANGELOG.md
           </div>
         </div>
 
@@ -280,13 +195,11 @@
           <div class="file-card-header">
             <h3>CLAUDE.local.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">~1 KB</span>
-              <span class="meta-pill pill-lines">~20 lines</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Operator directives</strong> — private, not checked into git. Contains DB access shortcuts (Supabase Management API bearer token pattern), push workflow overrides (always push immediately, CI bumps version), SQL migration instructions, and live URLs for the production site.
+            <strong>Operator directives</strong> — private, not checked into git. Contains DB access shortcuts, push workflow overrides, live URLs, and any operator-specific instructions.
           </div>
           <div class="file-card-pointers">
             <strong>Points to:</strong> docs/CREDENTIALS.md (for DB access), version.json
@@ -297,13 +210,11 @@
           <div class="file-card-header">
             <h3>version.json</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">4 KB</span>
-              <span class="meta-pill pill-lines">12 lines</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Release metadata</strong> — CI-generated file updated on every push to main. Contains the current version string (vYYMMDD.NN H:MMa format), release sequence number, Git SHA, actor, source, and commit messages. Read after every push to report the deployed version.
+            <strong>CI-generated release metadata</strong> — updated on every push to main. Contains the current version string, Git SHA, and commit messages. Read after every push to report the deployed version.
           </div>
         </div>
       </div>
@@ -317,12 +228,11 @@
           <div class="file-card-header">
             <h3>docs/CREDENTIALS.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">~8 KB</span>
               <span class="meta-pill pill-no-context">On-demand</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Secrets &amp; access</strong> — Supabase project keys (anon + service role), Management API token, edge function deploy commands, SSH credentials for Hostinger VPS and Alpaca Mac, and external API keys. Loaded when running SQL, deploying functions, SSH-ing, or making API calls.
+            <strong>Secrets &amp; access keys</strong> — gitignored. Contains Supabase project keys, API tokens, SSH credentials, and any other secrets Claude Code needs. Loaded when running SQL, deploying functions, SSH-ing, or making API calls.
           </div>
         </div>
 
@@ -330,13 +240,11 @@
           <div class="file-card-header">
             <h3>docs/SCHEMA.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">20 KB</span>
-              <span class="meta-pill pill-lines">347 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Database schema</strong> — complete Supabase/PostgreSQL table definitions. Core tables (spaces, people, assignments), media system, SMS, email, payments (Stripe, Square, PayPal), smart home devices (Nest, Tesla, Govee, LG, Sonos), PAI configuration, and more. Loaded when writing queries, modifying tables, or debugging data.
+            <strong>Database schema</strong> — table definitions for all enabled features. Covers core tables, relationships, and column types. Loaded when writing queries, modifying tables, or debugging data.
           </div>
         </div>
 
@@ -344,13 +252,11 @@
           <div class="file-card-header">
             <h3>docs/PATTERNS.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">8 KB</span>
-              <span class="meta-pill pill-lines">118 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>UI conventions</strong> — Tailwind CSS design tokens (aap-* naming), Supabase query patterns for fetching spaces with media, computing availability, and standard code snippets. Loaded when writing UI code, styling with Tailwind, or during code review.
+            <strong>UI conventions</strong> — Tailwind CSS design tokens, Supabase query patterns, and reusable component snippets. Loaded when writing UI code, styling with Tailwind, or during code review.
           </div>
         </div>
 
@@ -358,13 +264,12 @@
           <div class="file-card-header">
             <h3>docs/KEY-FILES.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">16 KB</span>
-              <span class="meta-pill pill-lines">181 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
+              <span class="meta-pill pill-size">4+ features</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>File directory</strong> — comprehensive listing of every significant file in the project, organized by module: shared modules, mobile app, payment page, consumer view, admin view, resident view, associate view, PAI Discord bot, and all Supabase edge functions with their deploy flags.
+            <strong>File directory</strong> — organized listing of project files by module. Only generated for projects with 4 or more features. Helps Claude Code navigate large codebases without scanning the filesystem.
           </div>
         </div>
 
@@ -372,13 +277,11 @@
           <div class="file-card-header">
             <h3>docs/DEPLOY.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">4 KB</span>
-              <span class="meta-pill pill-lines">40 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Deployment workflow</strong> — GitHub Pages push workflow (git add, commit, push), post-push verification steps, version format (vYYMMDD.NN H:MMa), live URL table (custom domain, GitHub Pages, resident portal, admin, public spaces, payments), and Tailwind CSS build command.
+            <strong>Deployment workflow</strong> — push steps, version format, live URLs, and post-deploy verification. Loaded when pushing, deploying, or answering version questions.
           </div>
         </div>
 
@@ -386,13 +289,12 @@
           <div class="file-card-header">
             <h3>docs/INTEGRATIONS.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">32 KB</span>
-              <span class="meta-pill pill-lines">496 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
+              <span class="meta-pill pill-size">If services configured</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>External APIs &amp; cost accounting</strong> — API usage logging requirements, vendor list (Google, Telnyx, Resend, Vapi, SignWell, Stripe, Square, PayPal, Tesla, LG, Govee, Anova, Glowforge, FlashForge), cost-per-unit tables, and integration setup instructions for each external service.
+            <strong>External APIs</strong> — only generated if external services are configured. Contains vendor details, cost tiers, API usage logging requirements, and integration setup instructions.
           </div>
         </div>
 
@@ -400,30 +302,12 @@
           <div class="file-card-header">
             <h3>docs/CHANGELOG.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">32 KB</span>
-              <span class="meta-pill pill-lines">368 lines</span>
               <span class="meta-pill pill-no-context">On-demand</span>
+              <span class="meta-pill pill-size">6+ features</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Recent changes</strong> — chronological log of significant platform changes: hero banner redesign, consumer availability, media migration, space archiving, rental pipeline, SMS integration, payment processing, AI features, and more. Loaded for understanding migration context or recent architectural decisions.
-          </div>
-        </div>
-
-        <div class="file-card">
-          <div class="file-card-header">
-            <h3>PRODUCTDESIGN.md</h3>
-            <div class="file-card-meta">
-              <span class="meta-pill pill-size">40 KB</span>
-              <span class="meta-pill pill-lines">511 lines</span>
-              <span class="meta-pill pill-no-context">On-demand</span>
-            </div>
-          </div>
-          <div class="file-card-body">
-            <strong>Product design decisions</strong> — the "why" behind AlpacApps. Covers the no-framework philosophy, business model, financial reasoning, UX tradeoffs, and architectural decisions. Captures every significant decision with rationale. Updated whenever Claude makes significant choices. The largest documentation file.
-          </div>
-          <div class="file-card-pointers">
-            <strong>Updated by:</strong> Claude Code (mandatory behavior #2 — log decisions with "Decision" and "Why")
+            <strong>Recent changes</strong> — only generated for projects with 6 or more features. Chronological log of significant changes, useful for understanding migration context or recent architectural decisions.
           </div>
         </div>
       </div>
@@ -437,13 +321,11 @@
           <div class="file-card-header">
             <h3>.claude/settings.json</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">4 KB</span>
-              <span class="meta-pill pill-lines">5 lines</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Environment settings</strong> — sets <code>ENABLE_LSP_TOOL=1</code> to enable TypeScript Language Server Protocol support in Claude Code for better code intelligence.
+            <strong>Environment settings</strong> — enables TypeScript Language Server Protocol support (<code>ENABLE_LSP_TOOL=1</code>) for better code intelligence in Claude Code.
           </div>
         </div>
 
@@ -451,12 +333,11 @@
           <div class="file-card-header">
             <h3>.claude/settings.local.json</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">~2 KB</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Local settings</strong> — private, not checked into git. Contains user-specific Claude Code preferences, permission rules, and MCP server configurations.
+            <strong>Local permissions</strong> — private, not checked into git. Contains user-specific Claude Code preferences, permission rules, and MCP server configurations.
           </div>
         </div>
 
@@ -464,13 +345,11 @@
           <div class="file-card-header">
             <h3>.claude/launch.json</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">4 KB</span>
-              <span class="meta-pill pill-lines">24 lines</span>
               <span class="meta-pill pill-context">Always loaded</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Dev server configurations</strong> — defines local development servers: alpacapps (Python HTTP server on port 8090), mistiq-cards (port 8092), and finleg (npm dev on port 3001). Used by Claude Code's preview tools for local development.
+            <strong>Dev server configurations</strong> — defines local development servers for Claude Code's preview tools. Each entry specifies the command, port, and working directory for a dev server.
           </div>
         </div>
       </div>
@@ -484,27 +363,26 @@
           <div class="file-card-header">
             <h3>MEMORY.md</h3>
             <div class="file-card-meta">
-              <span class="meta-pill pill-size">~4 KB</span>
-              <span class="meta-pill pill-context">Always loaded</span>
+              <span class="meta-pill pill-context">Always loaded (first 200 lines)</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Memory index</strong> — always loaded into context (first 200 lines). Contains the master index of all memory files, data lookup routing tables (which Supabase table to query for what question), quick DB query template, and important gotchas (SSH access, Hostinger workarounds, Uptime Kuma constraints).
+            <strong>Memory index</strong> — always loaded into context. Contains the master index of all memory files, data lookup routing tables, quick query templates, and important gotchas discovered across sessions.
           </div>
           <div class="file-card-pointers">
-            <strong>Points to:</strong> memory/sessions.md, memory/service-access.md, memory/cloud-infra.md, memory/session-archive.md
+            <strong>Points to:</strong> memory/*.md (session summaries, user preferences, etc.)
           </div>
         </div>
 
         <div class="file-card">
           <div class="file-card-header">
-            <h3>memory/sessions.md</h3>
+            <h3>memory/*.md</h3>
             <div class="file-card-meta">
               <span class="meta-pill pill-no-context">On-demand</span>
             </div>
           </div>
           <div class="file-card-body">
-            <strong>Session summaries</strong> — log of significant Claude Code sessions with what was accomplished, decisions made, and context for future conversations.
+            <strong>Individual memory files</strong> — session summaries, service access details, infrastructure notes, user preferences, and other persistent knowledge. Loaded when referenced by MEMORY.md or when context is needed from a prior session.
           </div>
         </div>
       </div>
@@ -515,7 +393,7 @@
         <p style="font-size:0.84rem;color:#666;margin-bottom:1.5rem;">How configuration files reference and depend on each other. Green = always loaded, blue = on-demand, purple = memory, gold = settings.</p>
 
         <div class="diagram-canvas">
-          <svg viewBox="0 0 860 620" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+          <svg viewBox="0 0 860 540" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
             <!-- Defs for arrowheads -->
             <defs>
               <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
@@ -537,111 +415,90 @@
             <text x="348" y="20" font-size="11" fill="#666">Settings</text>
 
             <!-- CLAUDE.md (root node) -->
-            <rect x="320" y="60" width="220" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
-            <text x="430" y="82" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">CLAUDE.md</text>
-            <text x="430" y="97" text-anchor="middle" font-size="10" fill="#666">Project directives (root)</text>
+            <rect x="320" y="55" width="220" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
+            <text x="430" y="77" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">CLAUDE.md</text>
+            <text x="430" y="92" text-anchor="middle" font-size="10" fill="#666">Project directives (root)</text>
 
             <!-- Arrows from CLAUDE.md to on-demand docs -->
-            <!-- Left column -->
-            <line x1="350" y1="110" x2="120" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="380" y1="110" x2="280" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="430" y1="110" x2="430" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="480" y1="110" x2="580" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="510" y1="110" x2="740" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="345" y1="105" x2="100" y2="165" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="375" y1="105" x2="270" y2="165" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="430" y1="105" x2="430" y2="165" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="485" y1="105" x2="590" y2="165" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="515" y1="105" x2="750" y2="165" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
 
             <!-- On-demand docs row 1 -->
-            <rect x="30" y="170" width="180" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="120" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/CREDENTIALS.md</text>
-            <text x="120" y="204" text-anchor="middle" font-size="9" fill="#666">Secrets &amp; access keys</text>
+            <rect x="20" y="165" width="175" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="107" y="185" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/CREDENTIALS.md</text>
+            <text x="107" y="199" text-anchor="middle" font-size="9" fill="#666">Secrets &amp; access keys</text>
 
-            <rect x="220" y="170" width="140" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="290" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/SCHEMA.md</text>
-            <text x="290" y="204" text-anchor="middle" font-size="9" fill="#666">Database tables</text>
+            <rect x="205" y="165" width="140" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="275" y="185" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/SCHEMA.md</text>
+            <text x="275" y="199" text-anchor="middle" font-size="9" fill="#666">Database tables</text>
 
-            <rect x="370" y="170" width="150" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="445" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/PATTERNS.md</text>
-            <text x="445" y="204" text-anchor="middle" font-size="9" fill="#666">UI conventions</text>
+            <rect x="355" y="165" width="150" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="430" y="185" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/PATTERNS.md</text>
+            <text x="430" y="199" text-anchor="middle" font-size="9" fill="#666">UI conventions</text>
 
-            <rect x="530" y="170" width="160" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="610" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/KEY-FILES.md</text>
-            <text x="610" y="204" text-anchor="middle" font-size="9" fill="#666">File directory</text>
+            <rect x="515" y="165" width="155" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="592" y="185" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/KEY-FILES.md</text>
+            <text x="592" y="199" text-anchor="middle" font-size="9" fill="#666">File directory</text>
 
-            <rect x="700" y="170" width="150" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="775" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/DEPLOY.md</text>
-            <text x="775" y="204" text-anchor="middle" font-size="9" fill="#666">Push workflow</text>
+            <rect x="680" y="165" width="150" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="755" y="185" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/DEPLOY.md</text>
+            <text x="755" y="199" text-anchor="middle" font-size="9" fill="#666">Push workflow</text>
 
             <!-- On-demand docs row 2 -->
-            <line x1="350" y1="110" x2="120" y2="260" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
-            <line x1="430" y1="110" x2="370" y2="260" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
-            <line x1="500" y1="110" x2="600" y2="260" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
+            <line x1="370" y1="105" x2="140" y2="255" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
+            <line x1="460" y1="105" x2="400" y2="255" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
 
-            <rect x="30" y="260" width="190" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="125" y="280" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/INTEGRATIONS.md</text>
-            <text x="125" y="294" text-anchor="middle" font-size="9" fill="#666">External APIs &amp; costs</text>
+            <rect x="40" y="255" width="190" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="135" y="275" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/INTEGRATIONS.md</text>
+            <text x="135" y="289" text-anchor="middle" font-size="9" fill="#666">External APIs</text>
 
-            <rect x="240" y="260" width="180" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="330" y="280" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/CHANGELOG.md</text>
-            <text x="330" y="294" text-anchor="middle" font-size="9" fill="#666">Recent changes log</text>
-
-            <rect x="510" y="260" width="190" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
-            <text x="605" y="280" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">PRODUCTDESIGN.md</text>
-            <text x="605" y="294" text-anchor="middle" font-size="9" fill="#666">Product decisions (40 KB)</text>
+            <rect x="260" y="255" width="180" height="45" rx="6" fill="#e8e8f0" stroke="#5a5a8e"/>
+            <text x="350" y="275" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">docs/CHANGELOG.md</text>
+            <text x="350" y="289" text-anchor="middle" font-size="9" fill="#666">Recent changes log</text>
 
             <!-- CLAUDE.local.md -->
-            <rect x="30" y="370" width="220" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
-            <text x="140" y="392" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">CLAUDE.local.md</text>
-            <text x="140" y="407" text-anchor="middle" font-size="10" fill="#666">Operator directives (private)</text>
+            <rect x="30" y="350" width="220" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
+            <text x="140" y="372" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">CLAUDE.local.md</text>
+            <text x="140" y="387" text-anchor="middle" font-size="10" fill="#666">Operator directives (private)</text>
 
             <!-- Arrow from CLAUDE.local.md to CREDENTIALS -->
-            <line x1="140" y1="370" x2="120" y2="215" stroke="#6b8e5a" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-green)"/>
+            <line x1="140" y1="350" x2="107" y2="210" stroke="#6b8e5a" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-green)"/>
 
             <!-- version.json -->
-            <rect x="280" y="370" width="180" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
-            <text x="370" y="392" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">version.json</text>
-            <text x="370" y="407" text-anchor="middle" font-size="10" fill="#666">CI release metadata</text>
+            <rect x="280" y="350" width="180" height="50" rx="8" fill="#e8f0e8" stroke="#6b8e5a" stroke-width="2"/>
+            <text x="370" y="372" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">version.json</text>
+            <text x="370" y="387" text-anchor="middle" font-size="10" fill="#666">CI release metadata</text>
 
             <!-- Arrow from CLAUDE.local.md to version.json -->
-            <line x1="250" y1="395" x2="280" y2="395" stroke="#6b8e5a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+            <line x1="250" y1="375" x2="280" y2="375" stroke="#6b8e5a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
 
             <!-- Settings files -->
-            <rect x="510" y="370" width="200" height="45" rx="6" fill="#f0ede8" stroke="#8e7a5a"/>
-            <text x="610" y="390" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">.claude/settings.json</text>
-            <text x="610" y="404" text-anchor="middle" font-size="9" fill="#666">LSP env var</text>
+            <rect x="520" y="340" width="200" height="45" rx="6" fill="#f0ede8" stroke="#8e7a5a"/>
+            <text x="620" y="360" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">.claude/settings.json</text>
+            <text x="620" y="374" text-anchor="middle" font-size="9" fill="#666">LSP env var</text>
 
-            <rect x="510" y="430" width="200" height="45" rx="6" fill="#f0ede8" stroke="#8e7a5a"/>
-            <text x="610" y="450" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">.claude/launch.json</text>
-            <text x="610" y="464" text-anchor="middle" font-size="9" fill="#666">Dev servers (8090, 8092, 3001)</text>
+            <rect x="520" y="400" width="200" height="45" rx="6" fill="#f0ede8" stroke="#8e7a5a"/>
+            <text x="620" y="420" text-anchor="middle" font-size="11" font-weight="600" fill="#1a1a1a">.claude/launch.json</text>
+            <text x="620" y="434" text-anchor="middle" font-size="9" fill="#666">Dev server configs</text>
 
             <!-- Memory section -->
-            <rect x="30" y="480" width="200" height="50" rx="8" fill="#f0e8f0" stroke="#8e5a8e" stroke-width="2"/>
-            <text x="130" y="502" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">MEMORY.md</text>
-            <text x="130" y="517" text-anchor="middle" font-size="10" fill="#666">Memory index (always loaded)</text>
+            <rect x="30" y="450" width="200" height="50" rx="8" fill="#f0e8f0" stroke="#8e5a8e" stroke-width="2"/>
+            <text x="130" y="472" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">MEMORY.md</text>
+            <text x="130" y="487" text-anchor="middle" font-size="10" fill="#666">Memory index (always loaded)</text>
 
             <!-- Memory sub-files -->
-            <line x1="130" y1="530" x2="80" y2="560" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="130" y1="530" x2="210" y2="560" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="130" y1="530" x2="340" y2="560" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <line x1="130" y1="530" x2="470" y2="560" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="230" y1="475" x2="310" y2="475" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-            <rect x="10" y="560" width="140" height="40" rx="6" fill="#f0e8f0" stroke="#8e5a8e"/>
-            <text x="80" y="580" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">sessions.md</text>
-            <text x="80" y="593" text-anchor="middle" font-size="9" fill="#666">Session summaries</text>
-
-            <rect x="160" y="560" width="140" height="40" rx="6" fill="#f0e8f0" stroke="#8e5a8e"/>
-            <text x="230" y="580" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">service-access.md</text>
-            <text x="230" y="593" text-anchor="middle" font-size="9" fill="#666">SSH/access details</text>
-
-            <rect x="310" y="560" width="140" height="40" rx="6" fill="#f0e8f0" stroke="#8e5a8e"/>
-            <text x="380" y="580" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">cloud-infra.md</text>
-            <text x="380" y="593" text-anchor="middle" font-size="9" fill="#666">Oracle Cloud details</text>
-
-            <rect x="460" y="560" width="150" height="40" rx="6" fill="#f0e8f0" stroke="#8e5a8e"/>
-            <text x="535" y="580" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">session-archive.md</text>
-            <text x="535" y="593" text-anchor="middle" font-size="9" fill="#666">Older session logs</text>
+            <rect x="310" y="455" width="160" height="40" rx="6" fill="#f0e8f0" stroke="#8e5a8e"/>
+            <text x="390" y="475" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">memory/*.md</text>
+            <text x="390" y="488" text-anchor="middle" font-size="9" fill="#666">Sessions, preferences, etc.</text>
 
             <!-- Cross-reference: DEPLOY.md references version.json -->
-            <line x1="775" y1="215" x2="460" y2="375" stroke="#999" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
-            <text x="630" y="300" font-size="9" fill="#999" transform="rotate(-30,630,300)">references</text>
+            <line x1="755" y1="210" x2="460" y2="355" stroke="#999" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+            <text x="620" y="288" font-size="9" fill="#999" transform="rotate(-28,620,288)">references</text>
           </svg>
         </div>
       </div>
