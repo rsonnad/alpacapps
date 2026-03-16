@@ -1,12 +1,12 @@
 {
-  "version": "v260315.03 2:33p",
-  "release": 795,
-  "sha": "abc6d26e4",
-  "fullSha": "abc6d26e4857f807da9ff990c4c6360ade166f24",
-  "actor": "rsonnad",
+  "version": "v260315.04 7:08p",
+  "release": 796,
+  "sha": "2c7e1fe0d",
+  "fullSha": "2c7e1fe0de2960aef45b8b0c8bef8c181b953b4e",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-15 19:33:32+00",
-  "commits": [{"sha":"fe4bf6ea7","message":"Fix nav overlap on clauded pages — add body padding-top: 52px","author":"Rahul"},{"sha":"abc6d26e4","message":"Merge branch 'amazing-yonath'","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-16 00:08:37+00",
+  "commits": [{"sha":"b30338a0d","message":"Add config-loader.js and feature-registry.js to fix broken admin pages","author":"Sonia Wendorff"},{"sha":"2c7e1fe0d","message":"Fix broken admin pages: config-loader import + Intranet link","author":"Sonia Wendorff"}]
 }
