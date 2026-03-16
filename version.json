@@ -1,12 +1,12 @@
 {
-  "version": "v260315.08 10:35p",
-  "release": 800,
-  "sha": "c800aaf88",
-  "fullSha": "c800aaf8865f119e6f3e7b139b56ba37720b2466",
+  "version": "v260315.09 10:44p",
+  "release": 801,
+  "sha": "1bbab3159",
+  "fullSha": "1bbab3159cf74374a67df4e3f69ac10ff98e95f1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-16 03:35:46+00",
-  "commits": [{"sha":"c800aaf88","message":"Fix accounts page: add missing Supabase client library script tag","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-16 03:44:04+00",
+  "commits": [{"sha":"1bbab3159","message":"Add cross-project secrets management guide","author":"Rahul"}]
 }
