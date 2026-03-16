@@ -1,12 +1,12 @@
 {
-  "version": "v260315.06 10:06p",
-  "release": 798,
-  "sha": "097e1efda",
-  "fullSha": "097e1efda3c4c08d16afc391d63c55278cbf3134",
+  "version": "v260315.07 10:29p",
+  "release": 799,
+  "sha": "ea3a1fc09",
+  "fullSha": "ea3a1fc092ee56c4cff69600b3c0609001dc77b1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0kj6c",
-  "pushedAt": "2026-03-16 03:06:44+00",
-  "commits": [{"sha":"097e1efda","message":"Add Accounts tab under Bookkeeping with family account registry","author":"Rahul"}]
+  "pushedAt": "2026-03-16 03:29:19+00",
+  "commits": [{"sha":"ea3a1fc09","message":"Fix accounts page: render immediately instead of waiting for auth","author":"Rahul"}]
 }
