@@ -1,0 +1,288 @@
+/* =============================================
+   Accounts Page Styles
+   ============================================= */
+
+/* Header */
+.accounts-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.accounts-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--aap-text, #1f1720);
+}
+.accounts-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* View toggle */
+.accounts-view-toggle {
+  display: flex;
+  border: 1px solid var(--aap-border, #e0dcd4);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem .65rem;
+  font-size: .8rem;
+  font-weight: 500;
+  border: none;
+  background: var(--aap-surface, #fff);
+  color: var(--aap-text-secondary, #5a5260);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.view-btn:hover { background: var(--aap-surface-hover, #f6f5f0); }
+.view-btn.active {
+  background: var(--aap-text, #1f1720);
+  color: #fff;
+}
+.view-btn + .view-btn { border-left: 1px solid var(--aap-border, #e0dcd4); }
+
+/* Select / search */
+.accounts-select {
+  padding: .35rem .5rem;
+  font-size: .8rem;
+  border: 1px solid var(--aap-border, #e0dcd4);
+  border-radius: 6px;
+  background: var(--aap-surface, #fff);
+  color: var(--aap-text, #1f1720);
+}
+.accounts-search {
+  padding: .35rem .6rem;
+  font-size: .8rem;
+  border: 1px solid var(--aap-border, #e0dcd4);
+  border-radius: 6px;
+  background: var(--aap-surface, #fff);
+  color: var(--aap-text, #1f1720);
+  min-width: 160px;
+}
+.accounts-search::placeholder { color: var(--aap-text-tertiary, #9e9a96); }
+
+/* =============================================
+   Grouped View
+   ============================================= */
+.accounts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1.5rem 2rem;
+}
+
+/* Group */
+.acct-group {
+  background: var(--aap-surface, #fff);
+  border: 1px solid var(--aap-border, #e0dcd4);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.acct-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  background: var(--aap-surface-hover, #f6f5f0);
+  border-bottom: 1px solid var(--aap-border, #e0dcd4);
+}
+.acct-group__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--aap-text, #1f1720);
+}
+.acct-group__meta {
+  display: flex;
+  gap: .5rem;
+  font-size: .75rem;
+  color: var(--aap-text-secondary, #5a5260);
+}
+.acct-group__inherited { color: #e65100; }
+.acct-group__dispersement { color: #c62828; }
+.acct-group__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: .75rem;
+  padding: .75rem 1rem;
+}
+
+/* Account Card */
+.acct-card {
+  border: 1px solid var(--aap-border, #e0dcd4);
+  border-radius: 8px;
+  padding: .75rem;
+  background: var(--aap-surface, #fff);
+  transition: box-shadow .15s;
+}
+.acct-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.acct-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+.acct-card__title {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.acct-card__type {
+  font-weight: 600;
+  font-size: .85rem;
+  color: var(--aap-text, #1f1720);
+}
+.acct-card__number {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: .78rem;
+  color: var(--aap-text-secondary, #5a5260);
+  letter-spacing: .5px;
+}
+.acct-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-bottom: .5rem;
+}
+.acct-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.acct-card__inst {
+  font-size: .75rem;
+  color: var(--aap-text-tertiary, #9e9a96);
+}
+.acct-card__notes {
+  margin-top: .4rem;
+  padding-top: .4rem;
+  border-top: 1px dashed var(--aap-border, #e0dcd4);
+  font-size: .72rem;
+  color: var(--aap-text-tertiary, #9e9a96);
+  font-style: italic;
+}
+
+/* =============================================
+   Badges
+   ============================================= */
+.acct-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .15rem .45rem;
+  font-size: .7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.acct-badge--inherited {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+.acct-badge--info {
+  background: #e8eaf6;
+  color: #283593;
+  border: 1px solid #9fa8da;
+}
+.acct-badge--warning {
+  background: #fff8e1;
+  color: #f57f17;
+  border: 1px solid #ffecb3;
+}
+.acct-badge--urgent {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+/* Institution dot */
+.acct-inst-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Statement link */
+.acct-stmt-link {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--aap-accent, #00a0df);
+  text-decoration: none;
+}
+.acct-stmt-link:hover { text-decoration: underline; }
+.acct-stmt-na {
+  font-size: .75rem;
+  color: var(--aap-text-tertiary, #9e9a96);
+}
+
+/* =============================================
+   Flat Table View
+   ============================================= */
+.accounts-table-wrap {
+  padding: 0 1.5rem 2rem;
+  overflow-x: auto;
+}
+.accounts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+.accounts-table th {
+  text-align: left;
+  padding: .6rem .75rem;
+  font-weight: 600;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--aap-text-secondary, #5a5260);
+  background: var(--aap-surface-hover, #f6f5f0);
+  border-bottom: 2px solid var(--aap-border, #e0dcd4);
+  white-space: nowrap;
+}
+.accounts-table td {
+  padding: .55rem .75rem;
+  border-bottom: 1px solid var(--aap-border, #e0dcd4);
+  color: var(--aap-text, #1f1720);
+  vertical-align: middle;
+}
+.accounts-table tbody tr:hover { background: var(--aap-surface-hover, #f6f5f0); }
+.acct-mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: .78rem;
+  letter-spacing: .5px;
+}
+
+/* Empty state */
+.acct-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--aap-text-tertiary, #9e9a96);
+  font-style: italic;
+}
+
+/* =============================================
+   Responsive
+   ============================================= */
+@media (max-width: 640px) {
+  .accounts-header { flex-direction: column; align-items: stretch; }
+  .accounts-controls { flex-direction: column; }
+  .acct-group__cards { grid-template-columns: 1fr; }
+  .accounts-grid { padding: 0 .75rem 1.5rem; }
+  .accounts-table-wrap { padding: 0 .75rem 1.5rem; }
+}
