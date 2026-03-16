@@ -1,12 +1,12 @@
 {
-  "version": "v260315.09 10:44p",
-  "release": 801,
-  "sha": "1bbab3159",
-  "fullSha": "1bbab3159cf74374a67df4e3f69ac10ff98e95f1",
+  "version": "v260315.10 11:19p",
+  "release": 802,
+  "sha": "6bb83d7fd",
+  "fullSha": "6bb83d7fd9840f67951d38d8fd6795810ee9bef9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-16 03:44:04+00",
-  "commits": [{"sha":"1bbab3159","message":"Add cross-project secrets management guide","author":"Rahul"}]
+  "machine": "runnervm0kj6c",
+  "pushedAt": "2026-03-16 04:19:20+00",
+  "commits": [{"sha":"eb87094ae","message":"Revert \"Fix accounts page: add missing Supabase client library script tag\"","author":"Rahul"},{"sha":"4ae2ffc36","message":"Revert \"Fix accounts page: render immediately instead of waiting for auth\"","author":"Rahul"},{"sha":"6bb83d7fd","message":"Revert \"Add Accounts tab under Bookkeeping with family account registry\"","author":"Rahul"}]
 }
