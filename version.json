@@ -1,12 +1,12 @@
 {
-  "version": "v260317.03 12:38a",
-  "release": 817,
-  "sha": "542d9c9f3",
-  "fullSha": "542d9c9f35b136cf9c13709031215e1fc0bba7e9",
+  "version": "v260317.04 1:54a",
+  "release": 818,
+  "sha": "0b46525c0",
+  "fullSha": "0b46525c07ca19f7030b071f10c59d6fff23852d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 05:38:54+00",
-  "commits": [{"sha":"542d9c9f3","message":"Add art screensaver overlay to kioskhall","author":"Rahul"}]
+  "pushedAt": "2026-03-17 06:54:54+00",
+  "commits": [{"sha":"0b46525c0","message":"Change art screensaver timing: 15s art / 15s GUI, tap for 2min pause","author":"Rahul"}]
 }
