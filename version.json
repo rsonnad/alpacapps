@@ -1,12 +1,12 @@
 {
-  "version": "v260317.36 4:04p",
-  "release": 850,
-  "sha": "c3db91df5",
-  "fullSha": "c3db91df55c4d56b8cc431702ea2d742486d0a16",
+  "version": "v260317.37 4:13p",
+  "release": 851,
+  "sha": "d88b344f8",
+  "fullSha": "d88b344f8a3d0e53bd2a5830dcec90ad7a905ec9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 21:04:52+00",
-  "commits": [{"sha":"446ffb1b8","message":"Redesign infra page: Claude Code leads, brand icons, Conductor switchover","author":"Rahul"},{"sha":"c3db91df5","message":"Add Conductor to step 3 guided items with macOS-only badge","author":"Rahul"}]
+  "pushedAt": "2026-03-17 21:13:50+00",
+  "commits": [{"sha":"d88b344f8","message":"Shorten setup prompt to one line — detail lives in llm-setup-instructions.md","author":"Rahul"}]
 }
