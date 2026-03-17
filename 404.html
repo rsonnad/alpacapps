@@ -56,6 +56,9 @@
       // Kiosk/display
       '/kioskhall': '/kioskhall/',
       '/kioskhall/': '/kioskhall/index.html',
+      // Claude sessions
+      '/sessions': '/rahulio/pages/claudesessions/',
+      '/sessions/': '/rahulio/pages/claudesessions/',
     };
 
     // Reserved top-level paths (existing directories/files — never treat as user slugs)
@@ -68,7 +71,7 @@
       'bug-reporter-extension', 'bug-reporter-firefox', 'bug-fixer',
       'feature-builder', 'camera-event-poller', 'image-gen',
       'lg-poller', 'tesla-poller', 'spirit-whisper-worker',
-      'migrations', '.well-known', 'alpacapps'
+      'migrations', '.well-known', 'alpacapps', 'sessions'
     ];
 
     // Check if it's a known path (preserve query params AND hash for OAuth callbacks)
