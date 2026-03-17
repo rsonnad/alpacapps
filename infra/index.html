@@ -477,6 +477,15 @@
       margin: 0;
     }
     .svc-expand a { color: var(--accent); }
+    .svc-expand ul {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding: 0.15rem 0.85rem 0.65rem 1.6rem;
+      margin: 0;
+    }
+    .svc-expand li { margin-bottom: 0.3rem; }
+    .svc-expand li:last-child { margin-bottom: 0; }
 
     .calc-tiers {
       display: grid;
@@ -796,7 +805,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">GitHub Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Free static site hosting from GitHub. Your HTML, CSS, and JavaScript are served directly from your repository. Every push to main deploys automatically. Supports custom domains.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Free static site hosting directly from your GitHub repository. Every <code>git push</code> to main deploys automatically &mdash; no build step, no CI config, no server to manage.</p>
+          <ul>
+            <li><strong>How it works:</strong> Your HTML, CSS, and JavaScript files are served as-is from the repo. GitHub handles SSL, CDN, and uptime.</li>
+            <li><strong>Limits:</strong> 1 GB repo size, 100 GB bandwidth/month (generous &mdash; most sites never hit this).</li>
+            <li><strong>Custom domains:</strong> Point any domain at GitHub Pages with free HTTPS via Let&rsquo;s Encrypt.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -806,7 +822,16 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Supabase</span><span class="calc-svc__desc">Database, storage, auth, edge functions</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Open-source Firebase alternative. PostgreSQL database, user authentication, file storage, and serverless edge functions. Free tier: 500 MB database, 1 GB storage, 50,000 monthly active users.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Open-source Firebase alternative that replaces an entire backend. One service gives you a PostgreSQL database, user authentication, file storage, and serverless edge functions.</p>
+          <ul>
+            <li><strong>Database:</strong> Full PostgreSQL with Row Level Security &mdash; your browser talks directly to the database, and RLS ensures users only see their own data.</li>
+            <li><strong>Auth:</strong> Built-in Google OAuth, magic links, and email/password. 50,000 monthly active users on the free tier.</li>
+            <li><strong>Storage:</strong> 1 GB free for photos, documents, and media with public/private access policies.</li>
+            <li><strong>Edge Functions:</strong> Serverless TypeScript functions for webhooks, API integrations, and anything that needs server-side logic (Stripe, Telnyx, etc.).</li>
+            <li><strong>Free tier:</strong> 500 MB database, 1 GB storage, 500,000 edge function calls/month.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -816,7 +841,15 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Mac app for running multiple Claude Code agents in parallel. Each task gets its own workspace with a dedicated agent and git branch. Build features, fix bugs, and run tests simultaneously. <a href="https://conductor.build" target="_blank">conductor.build</a></p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Mac app that manages multiple Claude Code agents running in parallel. Instead of one agent doing one thing at a time, Conductor lets you tackle several tasks simultaneously.</p>
+          <ul>
+            <li><strong>How it works:</strong> Create a workspace for each task (e.g., &ldquo;add payments page,&rdquo; &ldquo;fix login bug,&rdquo; &ldquo;write tests&rdquo;). Each gets its own Claude Code agent and git branch.</li>
+            <li><strong>Why it matters:</strong> Setup that takes 90 minutes sequentially can finish in 30 minutes with parallel workspaces. Ongoing development is faster too.</li>
+            <li><strong>No conflicts:</strong> Each workspace is isolated &mdash; agents never step on each other&rsquo;s code.</li>
+          </ul>
+          <p><a href="https://conductor.build" target="_blank">conductor.build</a></p>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -826,7 +859,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Claude Code</span><span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>AI developer that writes, tests, and deploys your code. Understands your project through CLAUDE.md and handles everything from database setup to UI changes. Runs inside Conductor. Free tier available; Pro ($20/mo) recommended for setup.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>AI-powered developer by Anthropic that writes, tests, and deploys your code. It reads your project&rsquo;s <code>CLAUDE.md</code> file to understand your codebase, conventions, and architecture.</p>
+          <ul>
+            <li><strong>What it does:</strong> Writes HTML/CSS/JS, creates database tables, deploys edge functions, configures services, commits and pushes to GitHub &mdash; all from natural language instructions.</li>
+            <li><strong>How you use it:</strong> Through Conductor. You describe what you want in plain English; Claude Code handles the implementation.</li>
+            <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -836,7 +876,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Google Sign-In</span><span class="calc-svc__desc">OAuth user login</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>&ldquo;Sign in with Google&rdquo; via Supabase Auth. Users authenticate with their Google account &mdash; no passwords to manage. Requires a Google Cloud project with OAuth credentials.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>&ldquo;Sign in with Google&rdquo; powered by Supabase Auth. Users authenticate with their Google account &mdash; no passwords to store or manage.</p>
+          <ul>
+            <li><strong>Setup:</strong> Create a Google Cloud project, get OAuth credentials, enable the Google provider in Supabase. The setup wizard handles the code.</li>
+            <li><strong>How it works:</strong> One-click Google login redirects through Supabase, which creates a user record and returns a session token. Your app checks the token to gate admin pages.</li>
+            <li><strong>Use cases:</strong> Admin dashboards, customer portals, any page that needs user accounts.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -846,7 +893,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Resend</span><span class="calc-svc__desc">Transactional email (3,000/mo free)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Transactional email API. Send welcome emails, notifications, and receipts. 3,000 emails/month free. Integrates via a Supabase edge function with webhook support for inbound email.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Modern transactional email API. Send welcome emails, booking confirmations, payment receipts, and custom notifications.</p>
+          <ul>
+            <li><strong>Free tier:</strong> 3,000 emails/month with a verified domain (or use <code>onboarding@resend.dev</code> for testing).</li>
+            <li><strong>How it integrates:</strong> A Supabase edge function (<code>send-email</code>) handles outbound mail. Your app calls the function with a template name and data.</li>
+            <li><strong>Inbound email:</strong> Webhook support lets you receive and process incoming emails (e.g., reply-to-ticket workflows).</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -856,7 +910,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Telnyx</span><span class="calc-svc__desc">SMS notifications</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>SMS messaging API. Send text notifications to users. ~$0.004/message plus ~$1/month for a phone number. Includes inbound webhook support for two-way messaging.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>SMS messaging API for sending text notifications to users &mdash; booking reminders, access codes, payment alerts.</p>
+          <ul>
+            <li><strong>Cost:</strong> ~$0.004/message outbound, ~$1/month for a dedicated phone number.</li>
+            <li><strong>Two-way messaging:</strong> Inbound webhook lets users reply to texts and trigger actions in your app.</li>
+            <li><strong>How it integrates:</strong> A Supabase edge function (<code>send-sms</code>) sends messages. Telnyx webhooks post inbound messages to another edge function.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -866,7 +927,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Square</span><span class="calc-svc__desc">Payment processing</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Payment processing with in-person and online support. 2.9% + 30&cent; per online transaction. Sandbox available for testing. Good for businesses that also have a physical location.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Payment processing with both online and in-person support. Good for businesses that also have a physical location with a Square terminal.</p>
+          <ul>
+            <li><strong>Pricing:</strong> 2.9% + 30&cent; per online transaction. No monthly fee.</li>
+            <li><strong>Sandbox:</strong> Full test environment with fake cards &mdash; build and test before going live.</li>
+            <li><strong>How it integrates:</strong> Square webhook posts payment events to a Supabase edge function. Your app creates payment links via the Square API.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -876,7 +944,15 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Stripe</span><span class="calc-svc__desc">ACH &amp; card payments, Connect payouts</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">0.8%&ndash;2.9%</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Payments with ACH bank transfers (0.8% capped at $5) and card processing (2.9% + 30&cent;). Supports Stripe Connect for marketplace-style payouts to multiple parties.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>The most popular payment platform, with excellent ACH bank transfer pricing and support for marketplace-style payouts.</p>
+          <ul>
+            <li><strong>ACH:</strong> 0.8% per transfer, capped at $5 &mdash; ideal for rent collection or high-value transactions.</li>
+            <li><strong>Cards:</strong> 2.9% + 30&cent; per charge.</li>
+            <li><strong>Stripe Connect:</strong> Split payments between multiple parties (e.g., property owner gets 90%, management fee is 10%).</li>
+            <li><strong>How it integrates:</strong> Stripe webhook posts events to a Supabase edge function. Your app creates checkout sessions and payment links via the Stripe API.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -886,7 +962,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">SignWell</span><span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Electronic signatures API. Send documents for signing, track status, and receive webhooks on completion. 3&ndash;25 documents/month free depending on plan.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Electronic signatures for leases, contracts, and agreements. Send documents for signing from your app and get notified when they&rsquo;re completed.</p>
+          <ul>
+            <li><strong>Free tier:</strong> 3&ndash;25 documents/month depending on plan.</li>
+            <li><strong>How it works:</strong> Your app sends a document via the SignWell API. The signer receives an email, signs in their browser, and a webhook notifies your app when it&rsquo;s done.</li>
+            <li><strong>Templates:</strong> Create reusable templates with placeholder fields that get filled automatically from your database.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -896,7 +979,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Google Gemini</span><span class="calc-svc__desc">AI-powered features</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>AI features powered by Google&rsquo;s Gemini API. Free tier: 1,000 requests/day. Used for chat, content generation, image analysis, and smart matching. Runs in Supabase edge functions.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Add AI-powered features to your app using Google&rsquo;s Gemini models. Chat assistants, content generation, image analysis, and smart matching.</p>
+          <ul>
+            <li><strong>Free tier:</strong> 1,000 requests/day &mdash; generous for most applications.</li>
+            <li><strong>How it integrates:</strong> Gemini API key is stored as a Supabase secret. Edge functions call Gemini for server-side AI tasks. Client-side JS can also call Gemini directly for chat interfaces.</li>
+            <li><strong>Use cases:</strong> AI chat assistant, auto-generate listing descriptions, analyze photos, match tenants to spaces, summarize documents.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -906,7 +996,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare R2</span><span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s row-level security.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>S3-compatible object storage with generous free tier and zero egress fees &mdash; you never pay for downloads.</p>
+          <ul>
+            <li><strong>Free tier:</strong> 10 GB storage, 1 million reads/month, 10 million writes/month.</li>
+            <li><strong>Zero egress:</strong> Unlike AWS S3, downloading files costs nothing. Ideal for serving media, PDFs, and documents.</li>
+            <li><strong>When to use:</strong> For files that don&rsquo;t need Supabase Storage&rsquo;s row-level security &mdash; public media, manuals, marketing assets. Use Supabase Storage for private/user-scoped files.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -916,7 +1013,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Serverless SQL database for archiving Claude Code session transcripts. Auto-saves your development history so you can search and reference past conversations.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Serverless SQL database from Cloudflare for archiving your Claude Code session transcripts.</p>
+          <ul>
+            <li><strong>What it stores:</strong> Every Claude Code conversation &mdash; what you asked, what was built, what files changed. Searchable development history.</li>
+            <li><strong>Why it&rsquo;s useful:</strong> Find &ldquo;how did we build the payments page?&rdquo; months later. Great for onboarding new team members or debugging past decisions.</li>
+            <li><strong>Free tier:</strong> 5 GB storage, 5 million reads/day. More than enough for session transcripts.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -926,7 +1030,15 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Open-source headless browser and Claude Code skills pack. Adds QA testing, code review, shipping workflows, and site dogfooding capabilities. Install once, use across all projects.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Open-source toolkit that supercharges Claude Code with a headless browser and pre-built skills for common workflows.</p>
+          <ul>
+            <li><strong>QA testing:</strong> <code>/qa</code> systematically tests your site, finds bugs, fixes them, and verifies the fixes &mdash; all automatically.</li>
+            <li><strong>Code review:</strong> <code>/review</code> analyzes your diff for SQL safety issues, trust boundary violations, and structural problems before you merge.</li>
+            <li><strong>Ship workflow:</strong> <code>/ship</code> runs tests, reviews the diff, bumps version, updates changelog, and creates a PR in one command.</li>
+            <li><strong>Headless browser:</strong> Navigate pages, click elements, take screenshots, verify deployments &mdash; ~100ms per command.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -936,7 +1048,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Cloud VM running automated tasks: bug fixer, device pollers, AI image generation. Runs on DigitalOcean ($12&ndash;32/mo) or Oracle Cloud (free ARM tier). Needed for smart home devices and always-on background processes.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Always-on cloud VM for background tasks that can&rsquo;t run in the browser or in serverless edge functions.</p>
+          <ul>
+            <li><strong>What runs here:</strong> Device pollers (Tesla, LG, cameras), automated bug fixer (Claude Code on a schedule), AI image generation, and webhook processors.</li>
+            <li><strong>Options:</strong> DigitalOcean ($12&ndash;32/mo) or Oracle Cloud (free ARM tier &mdash; always free, 4 vCPU, 24 GB RAM).</li>
+            <li><strong>When you need it:</strong> Only if you have smart home devices, vehicles, or other integrations that need continuous background polling. Most projects don&rsquo;t need this.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -946,7 +1065,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Custom Domain</span><span class="calc-svc__desc">Your own branded URL</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Your own branded URL (e.g., yoursite.com) instead of username.github.io. ~$10/year from any domain registrar, pointed at GitHub Pages with free HTTPS.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Use your own branded URL (e.g., <code>yoursite.com</code>) instead of <code>username.github.io</code>.</p>
+          <ul>
+            <li><strong>Cost:</strong> ~$10/year from any domain registrar (Cloudflare, Namecheap, Google Domains).</li>
+            <li><strong>Setup:</strong> Point your domain&rsquo;s DNS at GitHub Pages, add the domain in your repo settings, and GitHub provides free HTTPS automatically.</li>
+            <li><strong>When to get one:</strong> Before sharing your site publicly. You can always add a domain later without breaking anything.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -956,7 +1082,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">iOS via Capacitor + App Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Native iOS app using Capacitor 8. Same codebase as your web app wrapped in a native shell with push notifications, camera access, and App Store distribution. Requires Apple Developer Program ($99/yr).</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Native iOS app using Capacitor 8. Your existing web app runs inside a native shell with access to push notifications, camera, GPS, and more.</p>
+          <ul>
+            <li><strong>Same codebase:</strong> No Swift or Objective-C needed. Your HTML/CSS/JS runs in a WKWebView with native API bridges.</li>
+            <li><strong>OTA updates:</strong> After the initial App Store submission, code changes push live instantly via Capgo &mdash; no App Store review wait.</li>
+            <li><strong>Cost:</strong> Apple Developer Program ($99/yr). Requires a Mac with Xcode to build.</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -966,7 +1099,14 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Android via Capacitor + Play Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Native Android app using Capacitor 8. Same codebase as your web app with native features and Play Store distribution. Google Play Console is a $25 one-time fee.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Native Android app using Capacitor 8. Same codebase as your web app with native features and Play Store distribution.</p>
+          <ul>
+            <li><strong>Same codebase:</strong> No Kotlin or Java needed. Your web app runs in an Android WebView (Chromium engine) with native API bridges.</li>
+            <li><strong>Build anywhere:</strong> Android Studio runs on macOS, Windows, and Linux &mdash; no Mac required.</li>
+            <li><strong>Cost:</strong> Google Play Console is a $25 one-time fee (not annual).</li>
+          </ul>
+        </details>
       </div>
 
       <div class="svc-row">
@@ -976,7 +1116,15 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
           <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
         </label>
-        <details class="svc-expand"><summary>Learn more</summary><p>Dedicated Mac (used Mac Mini ~$150) for smart home control, camera streams via go2rtc, Sonos HTTP API, and device pollers. Stays on your local network and talks to Supabase.</p></details>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>A dedicated Mac on your local network that bridges LAN-only smart home devices to your cloud app.</p>
+          <ul>
+            <li><strong>What it runs:</strong> Sonos HTTP API (music control), go2rtc (camera streams), Home Assistant (device automation), Music Assistant, and device pollers.</li>
+            <li><strong>How it connects:</strong> Tailscale VPN links the Mac to your cloud services. A reverse proxy (Hostinger or similar) routes external requests to the Mac.</li>
+            <li><strong>Cost:</strong> A used Mac Mini runs ~$150 one-time. Low power draw (~10W idle).</li>
+            <li><strong>When you need it:</strong> Only for smart home features (Sonos, cameras, climate control). Not needed for standard web apps.</li>
+          </ul>
+        </details>
       </div>
 
     </div>
@@ -1012,6 +1160,200 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
       <div class="calc-result__scope" id="calc-scope"></div>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Architecture Diagram                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div id="architecture-diagram" style="margin-top:48px; background:#0F1117; border-radius:16px; padding:40px 24px 48px; position:relative; overflow:hidden;">
+    <!-- Subtle grid background -->
+    <div style="position:absolute;inset:0;background-image:linear-gradient(#2A2E3B 1px,transparent 1px),linear-gradient(90deg,#2A2E3B 1px,transparent 1px);background-size:60px 60px;opacity:0.12;pointer-events:none;"></div>
+
+    <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto;">
+      <!-- Section header -->
+      <h2 style="text-align:center;font-size:1.6rem;font-weight:700;color:#E8EAED;margin-bottom:6px;font-family:'DM Sans',system-ui,sans-serif;">
+        <span style="background:linear-gradient(135deg,#3ECF8E,#8B5CF6,#D97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">AlpacApps</span> Architecture
+      </h2>
+      <p style="text-align:center;color:#9BA1B0;font-size:1rem;margin-bottom:32px;font-family:'DM Sans',system-ui,sans-serif;">Five services, zero backend code</p>
+
+      <!-- Legend -->
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:36px;">
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#D97706;display:inline-block;"></span> Claude Code</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;"></span> Supabase</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#8B5CF6;display:inline-block;"></span> GitHub Pages</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#3B82F6;display:inline-block;"></span> Alpaca Mac</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;"></span> Hostinger</span>
+      </div>
+
+      <!-- SVG Diagram -->
+      <div style="width:100%;margin-bottom:40px;">
+        <svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+          <defs>
+            <marker id="ad-arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6" fill="none" stroke="#4B5563" stroke-width="1.5"/>
+            </marker>
+            <marker id="ad-arrowClaude" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6" fill="none" stroke="#D97706" stroke-width="1.5"/>
+            </marker>
+            <marker id="ad-arrowSupabase" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3ECF8E" stroke-width="1.5"/>
+            </marker>
+            <marker id="ad-arrowGithub" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6" fill="none" stroke="#8B5CF6" stroke-width="1.5"/>
+            </marker>
+            <marker id="ad-arrowMac" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6" fill="none" stroke="#3B82F6" stroke-width="1.5"/>
+            </marker>
+            <filter id="ad-glowClaude"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#D97706" flood-opacity="0.3"/></filter>
+            <filter id="ad-glowSupabase"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3ECF8E" flood-opacity="0.3"/></filter>
+            <filter id="ad-glowGithub"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#8B5CF6" flood-opacity="0.3"/></filter>
+            <filter id="ad-glowMac"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3B82F6" flood-opacity="0.3"/></filter>
+            <filter id="ad-glowHostinger"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#EF4444" flood-opacity="0.3"/></filter>
+          </defs>
+
+          <!-- Users -->
+          <rect x="350" y="10" width="300" height="50" rx="25" fill="#1E2230" stroke="#3A3F50" stroke-width="1.5"/>
+          <text x="500" y="40" text-anchor="middle" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="15">Residents / Admins / Public</text>
+
+          <line x1="500" y1="60" x2="500" y2="115" stroke="#8B5CF6" stroke-width="2" marker-end="url(#ad-arrowGithub)" opacity="0.7"/>
+          <text x="512" y="93" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">HTTPS</text>
+
+          <!-- GitHub Pages -->
+          <rect x="340" y="120" width="320" height="100" rx="16" fill="#181B24" stroke="#8B5CF6" stroke-width="2" filter="url(#ad-glowGithub)"/>
+          <circle cx="370" cy="148" r="14" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1"/>
+          <text x="370" y="153" text-anchor="middle" fill="#8B5CF6" font-size="14">GH</text>
+          <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">GitHub Pages</text>
+          <text x="362" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Static HTML/JS/CSS hosting</text>
+          <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">alpacaplayhouse.com</text>
+          <text x="362" y="207" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">/spaces/ /residents/ /admin/ /auth/</text>
+
+          <line x1="500" y1="220" x2="500" y2="285" stroke="#3ECF8E" stroke-width="2" marker-end="url(#ad-arrowSupabase)" opacity="0.7"/>
+          <text x="512" y="258" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">API calls</text>
+
+          <!-- Supabase -->
+          <rect x="280" y="290" width="440" height="130" rx="16" fill="#181B24" stroke="#3ECF8E" stroke-width="2" filter="url(#ad-glowSupabase)"/>
+          <circle cx="310" cy="320" r="14" fill="rgba(62,207,142,0.15)" stroke="#3ECF8E" stroke-width="1"/>
+          <text x="310" y="325" text-anchor="middle" fill="#3ECF8E" font-size="13">SB</text>
+          <text x="332" y="325" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Supabase</text>
+          <text x="302" y="348" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Backend-as-a-Service (database, auth, storage, edge functions)</text>
+
+          <rect x="300" y="362" width="95" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+          <text x="347" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">PostgreSQL</text>
+          <rect x="405" y="362" width="65" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+          <text x="437" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Auth</text>
+          <rect x="480" y="362" width="80" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+          <text x="520" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Storage</text>
+          <rect x="570" y="362" width="130" height="38" rx="8" fill="rgba(62,207,142,0.06)" stroke="rgba(62,207,142,0.2)" stroke-width="1"/>
+          <text x="635" y="385" text-anchor="middle" fill="#3ECF8E" font-family="JetBrains Mono, monospace" font-size="10">Edge Functions</text>
+
+          <!-- Claude Code -->
+          <rect x="20" y="120" width="260" height="100" rx="16" fill="#181B24" stroke="#D97706" stroke-width="2" filter="url(#ad-glowClaude)"/>
+          <circle cx="50" cy="148" r="14" fill="rgba(217,119,6,0.15)" stroke="#D97706" stroke-width="1"/>
+          <text x="50" y="153" text-anchor="middle" fill="#D97706" font-size="12">CC</text>
+          <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Claude Code</text>
+          <text x="42" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">AI dev agent: writes code,</text>
+          <text x="42" y="192" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">fixes bugs, deploys, runs SQL</text>
+          <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Oracle Cloud (free tier)</text>
+
+          <line x1="280" y1="155" x2="338" y2="155" stroke="#D97706" stroke-width="1.5" marker-end="url(#ad-arrowClaude)" opacity="0.6"/>
+          <text x="290" y="148" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">git push</text>
+          <path d="M 150 220 L 150 345 L 278 345" fill="none" stroke="#D97706" stroke-width="1.5" marker-end="url(#ad-arrowClaude)" opacity="0.5" class="ad-flow-line"/>
+          <text x="158" y="280" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">migrations</text>
+
+          <!-- Alpaca Mac -->
+          <rect x="20" y="470" width="280" height="130" rx="16" fill="#181B24" stroke="#3B82F6" stroke-width="2" filter="url(#ad-glowMac)"/>
+          <circle cx="50" cy="498" r="14" fill="rgba(59,130,246,0.15)" stroke="#3B82F6" stroke-width="1"/>
+          <text x="50" y="502" text-anchor="middle" fill="#3B82F6" font-size="11">Mac</text>
+          <text x="72" y="503" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Alpaca Mac</text>
+          <text x="42" y="525" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">On-prem home server. Bridges</text>
+          <text x="42" y="542" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">LAN-only smart home devices</text>
+          <rect x="40" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+          <text x="67" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">Sonos</text>
+          <rect x="103" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+          <text x="130" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">go2rtc</text>
+          <rect x="166" y="555" width="55" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+          <text x="193" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">HomeA</text>
+          <rect x="229" y="555" width="60" height="28" rx="6" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+          <text x="259" y="573" text-anchor="middle" fill="#3B82F6" font-family="JetBrains Mono, monospace" font-size="9">MusicA</text>
+
+          <path d="M 380 420 L 380 490 L 302 490" fill="none" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#ad-arrowMac)" opacity="0.6" class="ad-flow-line"/>
+          <text x="318" y="460" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">Tailscale VPN</text>
+
+          <!-- Hostinger -->
+          <rect x="700" y="470" width="280" height="130" rx="16" fill="#181B24" stroke="#EF4444" stroke-width="2" filter="url(#ad-glowHostinger)"/>
+          <circle cx="730" cy="498" r="14" fill="rgba(239,68,68,0.15)" stroke="#EF4444" stroke-width="1"/>
+          <text x="730" y="503" text-anchor="middle" fill="#EF4444" font-size="11">HG</text>
+          <text x="752" y="503" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Hostinger VPS</text>
+          <text x="722" y="525" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Reverse proxy + tunneling.</text>
+          <text x="722" y="542" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Routes cloud traffic to LAN</text>
+          <rect x="722" y="555" width="70" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          <text x="757" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">Caddy</text>
+          <rect x="800" y="555" width="80" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          <text x="840" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">Tailscale</text>
+          <rect x="888" y="555" width="78" height="28" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          <text x="927" y="573" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono, monospace" font-size="9">PAI-Claw</text>
+
+          <path d="M 620 420 L 620 490 L 698 490" fill="none" stroke="#EF4444" stroke-width="1.5" marker-end="url(#ad-arrowGray)" opacity="0.6" class="ad-flow-line"/>
+          <text x="628" y="460" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">Edge Fn proxy</text>
+          <line x1="700" y1="540" x2="302" y2="540" stroke="#4B5563" stroke-width="1.5" marker-end="url(#ad-arrowMac)" opacity="0.4" class="ad-flow-line"/>
+          <text x="480" y="534" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">Tailscale mesh</text>
+
+          <!-- External APIs -->
+          <rect x="770" y="290" width="210" height="130" rx="16" fill="#181B24" stroke="#EC4899" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="875" y="318" text-anchor="middle" fill="#EC4899" font-family="DM Sans, sans-serif" font-weight="600" font-size="13">External APIs</text>
+          <text x="790" y="342" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Stripe   Resend    Tesla</text>
+          <text x="790" y="358" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Telnyx   SignWell  Govee</text>
+          <text x="790" y="374" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Gemini   Vapi      Nest</text>
+          <text x="790" y="390" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Brave    LG ThinQ  Anova</text>
+          <text x="875" y="412" text-anchor="middle" fill="#4B5563" font-family="JetBrains Mono, monospace" font-size="9">webhooks + API calls</text>
+          <line x1="720" y1="355" x2="768" y2="355" stroke="#EC4899" stroke-width="1.5" marker-end="url(#ad-arrowGray)" opacity="0.5"/>
+
+          <!-- Zero Server callout -->
+          <rect x="770" y="140" width="210" height="60" rx="12" fill="rgba(62,207,142,0.05)" stroke="rgba(62,207,142,0.15)" stroke-width="1"/>
+          <text x="875" y="163" text-anchor="middle" fill="#3ECF8E" font-family="DM Sans, sans-serif" font-weight="600" font-size="11">ZERO SERVER ARCHITECTURE</text>
+          <text x="875" y="180" text-anchor="middle" fill="#6B7280" font-family="DM Sans, sans-serif" font-size="10">Browser talks directly to Supabase</text>
+          <text x="875" y="193" text-anchor="middle" fill="#6B7280" font-family="DM Sans, sans-serif" font-size="10">RLS enforces security at DB level</text>
+        </svg>
+      </div>
+
+      <!-- Data Flow Steps -->
+      <h3 style="font-size:1.15rem;font-weight:600;margin-bottom:18px;text-align:center;color:#E8EAED;font-family:'DM Sans',sans-serif;">How a request flows</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:24px;">
+        <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">01</div>
+          <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Browser</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">User loads page from GitHub Pages</div>
+        </div>
+        <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">02</div>
+          <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Supabase</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">JS calls Supabase API (auth + data)</div>
+        </div>
+        <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">03</div>
+          <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Edge Function</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">Sensitive ops run server-side</div>
+        </div>
+        <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">04</div>
+          <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Hostinger</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">Proxies to LAN via Tailscale</div>
+        </div>
+        <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">05</div>
+          <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Alpaca Mac</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">Controls Sonos, cameras, lights</div>
+        </div>
+      </div>
+
+      <p style="text-align:center;color:#4B5563;font-size:.8rem;font-family:'DM Sans',sans-serif;">
+        <a href="/docs/alpacappsinfra.html#architecture-diagram" style="color:#6B7280;text-decoration:none;">View in full setup guide &rarr;</a>
+      </p>
+    </div>
+  </div>
+  <style>
+    @keyframes ad-dash { to { stroke-dashoffset: -20; } }
+    .ad-flow-line { stroke-dasharray: 8 6; animation: ad-dash 1.5s linear infinite; }
+  </style>
 
   <!-- Stay Updated -->
   <div class="section" style="margin-top:3rem;">
