@@ -1,12 +1,12 @@
 {
-  "version": "v260317.29 9:50a",
-  "release": 843,
-  "sha": "120efcbbe",
-  "fullSha": "120efcbbec4e722abbdc4a2420cd1c5044fcbce9",
+  "version": "v260317.30 9:55a",
+  "release": 844,
+  "sha": "7927a8c1a",
+  "fullSha": "7927a8c1a827f7a957ec9820da39061529fb6efd",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 14:50:47+00",
-  "commits": [{"sha":"120efcbbe","message":"Relabel building plan documents as outhouse plans","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-17 14:55:53+00",
+  "commits": [{"sha":"7927a8c1a","message":"Make Est. Cost clickable on building permit page linking to cost breakdown PDF","author":"Jacqueline Giroux"}]
 }
