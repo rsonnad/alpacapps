@@ -70,7 +70,7 @@ function switchTab(tab) {
 
   if (!loadedTabs.has(tab)) {
     loadedTabs.add(tab);
-    const loaders = { overview: loadOverview, releases: loadReleases, sessions: loadSessions, tokens: loadTokens, context: loadContext, backups: loadBackups };
+    const loaders = { overview: loadOverview, releases: loadReleases, sessions: loadSessions, tokens: loadTokens, context: loadContext, backups: loadBackups, planlist: loadPlanList };
     loaders[tab]?.();
   }
 }
@@ -85,6 +85,7 @@ function loadOverview() {
     { tab: 'tokens', label: 'Tokens & Cost', desc: 'Token usage, costs, and session analytics', icon: '<path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>' },
     { tab: 'context', label: 'Context Window', desc: 'What files load into Claude\'s context and how much space they use', icon: '<path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>' },
     { tab: 'backups', label: 'Backups', desc: 'Database and file storage backup status', icon: '<path d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>' },
+    { tab: 'planlist', label: 'PlanList', desc: 'Implementation plans, remediation checklists, and project roadmaps', icon: '<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
   ];
 
   const panel = document.getElementById('dc-panel-overview');
@@ -753,6 +754,57 @@ async function loadBackups() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// PLANLIST TAB
+// ═══════════════════════════════════════════════════════════
+async function loadPlanList() {
+  const panel = document.getElementById('dc-panel-planlist');
+  panel.innerHTML = '<div class="dc-empty">Loading plans...</div>';
+
+  try {
+    const { data: plans, error } = await supabase
+      .from('dev_plans')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error && error.code === '42P01') {
+      // Table doesn't exist yet — show empty state
+      panel.innerHTML = `
+        <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">PlanList</h2>
+        <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Implementation plans, remediation checklists, and project roadmaps</p>
+        <div class="dc-empty">No plans recorded yet. Plans created during Claude Code sessions will appear here.</div>`;
+      return;
+    }
+    if (error) throw error;
+
+    const items = plans || [];
+    panel.innerHTML = `
+      <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">PlanList</h2>
+      <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Implementation plans, remediation checklists, and project roadmaps</p>
+      ${!items.length ? '<div class="dc-empty">No plans recorded yet. Plans created during Claude Code sessions will appear here.</div>' : `
+        <div class="dc-table-wrap">
+          <table class="dc-table">
+            <thead><tr><th>Plan</th><th>Status</th><th>Created</th><th>Updated</th></tr></thead>
+            <tbody>
+              ${items.map(p => `
+                <tr>
+                  <td><strong>${esc(p.title || 'Untitled')}</strong>${p.description ? `<br><span style="font-size:0.75rem;color:var(--text-muted,#888);">${esc(p.description)}</span>` : ''}</td>
+                  <td><span class="dc-pill ${p.status === 'complete' ? 'dc-pill-model' : p.status === 'in_progress' ? 'dc-pill-duration' : 'dc-pill-date'}">${esc(p.status || 'draft')}</span></td>
+                  <td style="white-space:nowrap">${fmtDate(p.created_at)}</td>
+                  <td style="white-space:nowrap">${fmtDate(p.updated_at)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`}`;
+  } catch (err) {
+    panel.innerHTML = `
+      <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">PlanList</h2>
+      <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Implementation plans, remediation checklists, and project roadmaps</p>
+      <div class="dc-empty">No plans recorded yet. Plans created during Claude Code sessions will appear here.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
@@ -774,6 +826,7 @@ function renderDevControlTabs() {
     { id: 'tokens', label: 'Tokens' },
     { id: 'context', label: 'Context' },
     { id: 'backups', label: 'Backups' },
+    { id: 'planlist', label: 'PlanList' },
   ];
   tabsContainer.innerHTML = subtabs.map(tab =>
     `<a href="#${tab.id === 'overview' ? '' : tab.id}" class="manage-tab dc-manage-tab" data-tab="${tab.id}">${tab.label}</a>`
