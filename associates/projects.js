@@ -368,9 +368,9 @@ async function ensureModalData() {
 
 async function openAddModal() {
   editingTaskId = null;
-  document.getElementById('modalTitle').textContent = 'New Project';
+  document.getElementById('modalTitle').textContent = 'New Project Task';
   document.getElementById('editTaskId').value = '';
-  document.getElementById('btnSubmitProject').textContent = 'Create Project';
+  document.getElementById('btnSubmitProject').textContent = 'Create Project Task';
   document.getElementById('statusGroup').classList.add('hidden');
 
   document.getElementById('newTitle').value = '';
@@ -392,7 +392,7 @@ async function openAddModal() {
 
 async function openEditModal(task) {
   editingTaskId = task.id;
-  document.getElementById('modalTitle').textContent = 'Edit Project';
+  document.getElementById('modalTitle').textContent = 'Edit Project Task';
   document.getElementById('editTaskId').value = task.id;
   document.getElementById('btnSubmitProject').textContent = 'Save Changes';
   document.getElementById('statusGroup').classList.remove('hidden');
@@ -485,11 +485,11 @@ async function handleSaveProject(e) {
     await loadTasks();
     await loadAssignees();
   } catch (err) {
-    console.error('Failed to save project:', err);
-    showToast('Failed to save project', 'error');
+    console.error('Failed to save project task:', err);
+    showToast('Failed to save project task', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = isEdit ? 'Save Changes' : 'Create Project';
+    btn.textContent = isEdit ? 'Save Changes' : 'Create Project Task';
   }
 }
 

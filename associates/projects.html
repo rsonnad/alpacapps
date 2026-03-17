@@ -297,12 +297,12 @@
         <div class="stat-chip in-progress"><span class="num" id="statInProgress">0</span> In Progress</div>
         <div class="stat-chip on-hold"><span class="num" id="statOnHold">0</span> On Hold</div>
         <div class="stat-chip done"><span class="num" id="statDone">0</span> Done</div>
-        <button class="btn-add-project" id="btnAddProject" title="Add New Project">+</button>
+        <button class="btn-add-project" id="btnAddProject" title="Add New Project Task">+</button>
       </div>
 
       <!-- Search -->
       <div class="filter-bar" style="margin-bottom:0.5rem">
-        <input type="text" id="searchInput" placeholder="Search projects..." style="flex:2">
+        <input type="text" id="searchInput" placeholder="Search project tasks..." style="flex:2">
       </div>
 
       <!-- Filters -->
@@ -335,11 +335,11 @@
     </div>
   </div>
 
-  <!-- Add/Edit Project Modal -->
+  <!-- Add/Edit Project Task Modal -->
   <div class="modal-overlay hidden" id="addProjectModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modalTitle">New Project</h3>
+        <h3 id="modalTitle">New Project Task</h3>
         <button class="modal-close" id="btnCloseModal">&times;</button>
       </div>
       <form id="addProjectForm">
@@ -410,7 +410,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn-cancel" id="btnCancelModal">Cancel</button>
-          <button type="submit" class="btn-submit" id="btnSubmitProject">Create Project</button>
+          <button type="submit" class="btn-submit" id="btnSubmitProject">Create Project Task</button>
         </div>
       </form>
     </div>
