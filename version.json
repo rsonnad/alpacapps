@@ -1,12 +1,12 @@
 {
-  "version": "v260317.05 2:19a",
-  "release": 819,
-  "sha": "6d533ef67",
-  "fullSha": "6d533ef671c2175f8d1761027daeae30057e073c",
+  "version": "v260317.08 3:54a",
+  "release": 822,
+  "sha": "2592df8c1",
+  "fullSha": "2592df8c1a1537dae35a68c96df2ad99ca485eca",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 07:19:43+00",
-  "commits": [{"sha":"6d533ef67","message":"Fix /sessions route: add 404 redirect to claudesessions page","author":"Rahul"}]
+  "pushedAt": "2026-03-17 08:54:17+00",
+  "commits": [{"sha":"2592df8c1","message":"Seed thermostat last-contact from DB updated_at on initial load","author":"Rahul"}]
 }
