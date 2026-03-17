@@ -1,12 +1,12 @@
 {
-  "version": "v260317.25 9:21a",
-  "release": 839,
-  "sha": "2862ca6c3",
-  "fullSha": "2862ca6c3495b97600756f4bc44846abc6accaf2",
+  "version": "v260317.26 9:31a",
+  "release": 840,
+  "sha": "dd2781470",
+  "fullSha": "dd2781470f993e9e24972f0d072a9a7b506815b5",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 14:21:19+00",
-  "commits": [{"sha":"ce5847485","message":"Add commercial building permit tracker page","author":"Jacqueline Giroux"},{"sha":"2862ca6c3","message":"Merge remote-tracking branch 'origin/claude/mystifying-cohen'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-17 14:31:08+00",
+  "commits": [{"sha":"dd2781470","message":"Make Est. Cost number a clickable link to cost-estimate-breakdown.pdf","author":"Jacqueline Giroux"}]
 }
