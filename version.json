@@ -1,12 +1,12 @@
 {
-  "version": "v260316.04 3:47p",
-  "release": 806,
-  "sha": "d03d83e53",
-  "fullSha": "d03d83e5346b9f3608ef08d38197dd8018675921",
+  "version": "v260316.05 9:45p",
+  "release": 807,
+  "sha": "e07224886",
+  "fullSha": "e0722488675ebb47198a6656987322af782b7151",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-16 20:47:30+00",
-  "commits": [{"sha":"d03d83e53","message":"Add gstack (open-source Claude Code skills) to alpacapps-infra","author":"Rahul"}]
+  "pushedAt": "2026-03-17 02:45:55+00",
+  "commits": [{"sha":"e07224886","message":"Hook up sensors page to live UP-Sense data via ptz-proxy","author":"Rahul"}]
 }
