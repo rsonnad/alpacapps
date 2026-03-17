@@ -509,3 +509,15 @@ Each external service was chosen for specific reasons. This section documents wh
 - **Future roadmap** (planned features, backlog ideas) -> see `FUTURE_PLANS.md`
 - **Multi-tenancy plan** (effort assessment, phasing) -> see `docs/MULTI_TENANCY_EFFORT_ASSESSMENT.md`
 - **Demo mode implementation** (role permissions, redaction logic) -> see `docs/DEMO_MODE_FEATURE_PLAN.md`
+
+---
+
+## Decisions
+
+### 2026-03-17: Email Template Compliance System
+
+**Decision:** Centralize all email branding/compliance rules into the shared brand wrapper layer rather than maintaining them per-template.
+
+**Why:** With 40+ email templates, maintaining consistent sender identity, signatures, footer images, and feedback mechanisms individually is error-prone. Centralizing in `email-brand-wrapper.ts` means a single change propagates to all emails. A weekly compliance audit cron catches drift.
+
+**7 rules enforced:** (1) Sender "PAI at the Alpaca Playhouse", (2) BIMI profile picture, (3) "Yours generatively, PAI" signature, (4) Two alpaca footer images, (5) Approval gate by default, (6) Payment methods ordered Zelle/Venmo first with card fee separation, (7) Feedback box with mailto CTA.

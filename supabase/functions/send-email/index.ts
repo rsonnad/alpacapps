@@ -125,7 +125,6 @@ function getTemplate(type: EmailType, data: Record<string, any>): EmailTemplate 
             <li>You'll receive an email once a decision is made</li>
           </ul>
           <p>If you have any questions, feel free to reply to this email.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Thank you for your application!
 
@@ -142,8 +141,9 @@ What's next?
 
 If you have any questions, feel free to reply to this email.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "application_approved": {
@@ -241,8 +241,9 @@ Reminder: Please don't give the address out to potential guests. Instead, send t
 
 We're thrilled to have you joining the Alpaca Playhouse community!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
     }
 
@@ -253,7 +254,6 @@ Alpaca Playhouse`
           <p>Hi ${data.first_name},</p>
           <p>We're sorry but we are not able to approve you to apply for housing at the Alpaca Playhouse at this time. This may be due to our gender balance goals, or it may be due to other reasons related to our assessment of community fit at this specific time.</p>
           <p>If you have questions, please contact a community manager.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Hi ${data.first_name},
 
@@ -261,8 +261,9 @@ We're sorry but we are not able to approve you to apply for housing at the Alpac
 
 If you have questions, please contact a community manager.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "lease_generated":
@@ -273,7 +274,6 @@ Alpaca Playhouse`
           <p>Hi ${data.first_name},</p>
           <p>Your lease agreement has been prepared and is ready for your review.</p>
           <p>Please take a moment to review the terms. We'll send you a signature request shortly.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Your Lease is Ready for Review
 
@@ -283,8 +283,9 @@ Your lease agreement has been prepared and is ready for your review.
 
 Please take a moment to review the terms. We'll send you a signature request shortly.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "lease_sent":
@@ -296,7 +297,6 @@ Alpaca Playhouse`
           <p>Your lease agreement has been sent for electronic signature.</p>
           <p>Please check your email from SignWell and complete the signing process at your earliest convenience.</p>
           <p><strong>Important:</strong> The lease must be signed before we can proceed with your move-in.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Please Sign Your Lease Agreement
 
@@ -308,8 +308,9 @@ Please check your email from SignWell and complete the signing process at your e
 
 Important: The lease must be signed before we can proceed with your move-in.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "lease_signed":
@@ -328,7 +329,6 @@ Alpaca Playhouse`
           `)}
           ${paymentMethodsBlock(data._payment_methods_raw, { heading: 'Pay with no fees', memoText: 'deposit' })}
           <p>Once deposits are received, we'll confirm your move-in date.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Lease Signing Complete!
 
@@ -344,8 +344,9 @@ ${paymentMethodsText(data._payment_methods_raw, { memoText: 'deposit' })}
 
 Once deposits are received, we'll confirm your move-in date.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "deposit_requested": {
@@ -370,7 +371,6 @@ Alpaca Playhouse`
               ? `<p style="margin:12px 0 0;"><a href="${data.id_upload_url}" style="display:inline-block;padding:10px 20px;background:#f9a825;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Upload Your ID</a></p>`
               : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
           `, 'warning') : ''}
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Deposit Payment Request
 
@@ -382,8 +382,9 @@ ${paymentMethodsText(data._payment_methods_raw, { memoText: 'deposit' })}
 ${data.pay_url ? `\nOr pay online (0.8% processing fee, max $5): ${data.pay_url}\n` : ''}
 ${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\nWe also need a copy of your government-issued photo ID.\n${data.id_upload_url ? `Upload here: ${data.id_upload_url}` : 'Please reply to this email with a photo of your ID.'}` : ''}
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
     }
 
@@ -396,7 +397,6 @@ Alpaca Playhouse`
           <p>We've received your deposit payment of <strong>$${data.amount}</strong>.</p>
           ${data.remaining_balance > 0 ? `<p><strong>Remaining Balance:</strong> $${data.remaining_balance}</p>` : '<p>All deposits have been received!</p>'}
           <p>Thank you!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Payment Received
 
@@ -407,8 +407,9 @@ ${data.remaining_balance > 0 ? `Remaining Balance: $${data.remaining_balance}` :
 
 Thank you!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "deposits_confirmed":
@@ -421,7 +422,6 @@ Alpaca Playhouse`
           <p><strong>Move-in Date:</strong> ${data.move_in_date}</p>
           <p>We'll be in touch with move-in details and key handoff arrangements.</p>
           <p>Welcome to Alpaca Playhouse!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `You're All Set!
 
@@ -435,8 +435,9 @@ We'll be in touch with move-in details and key handoff arrangements.
 
 Welcome to Alpaca Playhouse!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "move_in_confirmed": {
@@ -491,7 +492,6 @@ Alpaca Playhouse`
           ${calloutBox(`<p style="margin:0;color:${B.textMuted};font-size:12px;line-height:1.5;"><strong style="color:${B.text};">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>`, 'warning')}
 
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
-          <p style="color:${B.textMuted};font-size:14px;margin:0;">Best regards,<br><strong style="color:${B.text};">Alpaca Playhouse</strong></p>
         `,
         text: `Welcome to Alpaca Playhouse!
 
@@ -507,8 +507,9 @@ Please re-familiarize yourself with our operational guidelines: https://alpacapl
 
 Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
     }
 
@@ -529,7 +530,6 @@ Alpaca Playhouse`
               : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
           `, 'warning') : ''}
           <p>Thank you!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Friendly Rent Reminder
 
@@ -542,8 +542,9 @@ ${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\n${data.id_upload_url
 
 Thank you!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "payment_overdue":
@@ -567,7 +568,6 @@ Alpaca Playhouse`
               : `<p style="margin:8px 0 0;color:#555;">Please reply to this email with a photo of your ID.</p>`}
           `, 'warning') : ''}
           <p>If you're experiencing difficulties, please reach out to discuss options.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `RENT PAYMENT OVERDUE
 
@@ -583,8 +583,9 @@ ${data.needs_id_verification ? `\nID VERIFICATION REQUIRED\n${data.id_upload_url
 
 If you're experiencing difficulties, please reach out to discuss options.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "payment_received":
@@ -595,7 +596,6 @@ Alpaca Playhouse`
           <p>Hi ${data.first_name},</p>
           <p>We've received your payment of <strong>$${data.amount}</strong>${data.period ? ` for <strong>${data.period}</strong>` : ''}.</p>
           <p>Thank you for your prompt payment!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Payment Received
 
@@ -605,8 +605,9 @@ We've received your payment of $${data.amount}${data.period ? ` for ${data.perio
 
 Thank you for your prompt payment!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "payment_statement": {
@@ -663,7 +664,7 @@ Alpaca Playhouse`
 
               <p style="font-size:13px;color:#999;margin-top:16px;">Please include your name and &quot;rent&quot; in the payment memo so we can match your payment.</p>
               <p style="color:#555;font-size:15px;">If you have any questions about your statement, just reply to this email.</p>
-              <p style="color:#555;font-size:15px;">Best regards,<br><strong>Alpaca Playhouse</strong></p>
+              <p style="color:#7d6f74;font-size:15px;margin:16px 0 0;"><em>Yours generatively,</em><br><strong style="color:#2a1f23;">PAI</strong><br><span style="font-size:13px;">the Alpaca Playhouse property AI agent</span></p>
             </div>
             <div style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0;">
               <p style="margin:0;color:#bbb;font-size:11px;">AlpacApps &bull; Alpaca Playhouse</p>
@@ -687,8 +688,9 @@ Please include your name and "rent" in the payment memo.
 
 If you have any questions about your statement, just reply to this email.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
     }
 
@@ -708,7 +710,6 @@ Alpaca Playhouse`
           ${data.description ? `<p>${data.description}</p>` : ''}
           ${data.rsvp_link ? `<p><a href="${data.rsvp_link}" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">RSVP Now</a></p>` : ''}
           <p>We hope to see you there!</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `You're Invited!
 
@@ -726,8 +727,9 @@ ${data.rsvp_link ? `RSVP: ${data.rsvp_link}` : ''}
 
 We hope to see you there!
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "general_invitation":
@@ -737,7 +739,6 @@ Alpaca Playhouse`
           <p>Hi ${data.first_name},</p>
           ${data.message || '<p>You have been invited!</p>'}
           ${data.action_url ? `<p><a href="${data.action_url}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">${data.action_text || 'Learn More'}</a></p>` : ''}
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Hi ${data.first_name},
 
@@ -745,8 +746,9 @@ ${data.message_text || 'You have been invited!'}
 
 ${data.action_url ? `${data.action_text || 'Learn More'}: ${data.action_url}` : ''}
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "staff_invitation": {
@@ -863,7 +865,6 @@ Alpaca Playhouse • 160 Still Forest Dr, Cedar Creek, TX 78612`
             <li><a href="https://alpacaplayhouse.com/spaces/hostevent/">Host an event</a></li>
           </ul>
           <p>If you have any questions or would like to schedule a tour, just reply to this email.</p>
-          <p>Yours,<br>The Alpaca Playhouse Community Team</p>
         `,
         text: `Welcome${data.first_name ? ', ' + data.first_name : ''}!
 
@@ -883,8 +884,9 @@ When you're ready, you can also:
 
 If you have any questions or would like to schedule a tour, just reply to this email.
 
-Yours,
-The Alpaca Playhouse Community Team`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     // ===== RENTAL INVITE =====
@@ -899,7 +901,6 @@ The Alpaca Playhouse Community Team`
             <a href="${data.continue_url}" style="background:${B.accent}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
           </p>
           <p>We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
-          <p>Yours,<br>The Alpaca Playhouse Community Team</p>
         `,
         text: `Great news, ${data.first_name}!
 
@@ -911,8 +912,9 @@ Or complete your application here: ${data.continue_url}
 
 We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.
 
-Yours,
-The Alpaca Playhouse Community Team`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     // ===== ADMIN NOTIFICATIONS =====
@@ -1557,7 +1559,6 @@ Reply to this email to request changes or provide feedback — I'll pick up righ
             <li>Include the full card in the frame</li>
           </ul>
           <p>If you have any questions, feel free to reply to this email.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Identity Verification Required
 
@@ -1576,8 +1577,9 @@ Tips for a good photo:
 
 If you have any questions, feel free to reply to this email.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "dl_verified":
@@ -1589,7 +1591,6 @@ Alpaca Playhouse`
           <p>Your identity has been successfully verified. Thank you for completing this step!</p>
           <p>We'll continue processing your rental application and will be in touch with next steps soon.</p>
           <p>If you have any questions, feel free to reply to this email.</p>
-          <p>Best regards,<br>Alpaca Playhouse</p>
         `,
         text: `Identity Verified!
 
@@ -1601,8 +1602,9 @@ We'll continue processing your rental application and will be in touch with next
 
 If you have any questions, feel free to reply to this email.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     case "dl_mismatch":
@@ -1665,7 +1667,6 @@ Review in Admin: ${data.admin_url}`
 
           <p style="font-size:14px;color:#7d6f74;">This link will expire in 7 days. If you need a new link, please let us know.</p>
           <p>If you have any questions, feel free to reply to this email.</p>
-          <p>Best regards,<br><strong>Alpaca Playhouse</strong></p>
         `,
         text: `W-9 Tax Form Required
 
@@ -1686,8 +1687,9 @@ This link will expire in 7 days. If you need a new link, please let us know.
 
 If you have any questions, feel free to reply to this email.
 
-Best regards,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
 
     // ===== PAI EMAIL =====
@@ -1811,7 +1813,6 @@ Thank you for signing. If you have any questions, contact us at (737) 747-4737.`
             <a href="${workPageUrl}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Upload Photos</a>
           </div>
           <p style="color: #666; font-size: 0.9em;">This is just a friendly nudge — no photos are required if they aren't relevant to the task.</p>
-          <p>Thanks,<br>Alpaca Playhouse</p>
         `,
         text: `Work Photo Reminder
 
@@ -1825,8 +1826,9 @@ Upload photos: ${workPageUrl}
 
 This is just a friendly nudge — no photos are required if they aren't relevant to the task.
 
-Thanks,
-Alpaca Playhouse`
+Yours generatively,
+PAI
+the Alpaca Playhouse property AI agent`
       };
     }
 
@@ -2320,6 +2322,7 @@ serve(async (req) => {
       try {
         finalHtml = await wrapEmailHtml(rendered.html, {
           preheader: rendered.subject,
+          emailSubject: rendered.subject,
           extraImages: (rendered as any)._extraImages,
         });
       } catch (wrapErr) {

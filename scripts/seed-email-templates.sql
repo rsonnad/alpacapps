@@ -30,7 +30,7 @@ VALUES
   <li>You'll receive an email once a decision is made</li>
 </ul>
 <p>If you have any questions, feel free to reply to this email.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Thank you for your application!
 
@@ -78,7 +78,7 @@ Alpaca Playhouse$text$,
   <li>Submit required deposits</li>
 </ol>
 <p>We're excited to welcome you to Alpaca Playhouse!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Great news, {{first_name}}!
 
@@ -115,7 +115,7 @@ Alpaca Playhouse$text$,
 <p>Hi {{first_name}},</p>
 <p>We're sorry but we are not able to approve you to apply for housing at the Alpaca Playhouse at this time. This may be due to our gender balance goals, or it may be due to other reasons related to our assessment of community fit at this specific time.</p>
 <p>If you have questions, please contact a community manager.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Hi {{first_name}},
 
@@ -142,7 +142,7 @@ Alpaca Playhouse$text$,
 <p>Hi {{first_name}},</p>
 <p>Your lease agreement has been prepared and is ready for your review.</p>
 <p>Please take a moment to review the terms. We'll send you a signature request shortly.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Your Lease is Ready for Review
 
@@ -172,7 +172,7 @@ Alpaca Playhouse$text$,
 <p>Your lease agreement has been sent for electronic signature.</p>
 <p>Please check your email from SignWell and complete the signing process at your earliest convenience.</p>
 <p><strong>Important:</strong> The lease must be signed before we can proceed with your move-in.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Please Sign Your Lease Agreement
 
@@ -208,7 +208,7 @@ Alpaca Playhouse$text$,
   {{#if security_deposit}}<li>Submit your security deposit: <strong>${{security_deposit}}</strong></li>{{/if}}
 </ul>
 <p>Once deposits are received, we'll confirm your move-in date.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Lease Signing Complete!
 
@@ -252,7 +252,7 @@ Alpaca Playhouse$text$,
   <li>Zelle: alpacaplayhouse@gmail.com</li>
 </ul>
 <p>Please include your name in the payment memo.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Deposit Payment Request
 
@@ -291,7 +291,7 @@ Alpaca Playhouse$text$,
 <p>We've received your deposit payment of <strong>${{amount}}</strong>.</p>
 {{#if remaining_balance}}<p><strong>Remaining Balance:</strong> ${{remaining_balance}}</p>{{else}}<p>All deposits have been received!</p>{{/if}}
 <p>Thank you!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Payment Received
 
@@ -323,7 +323,7 @@ Alpaca Playhouse$text$,
 <p><strong>Move-in Date:</strong> {{move_in_date}}</p>
 <p>We'll be in touch with move-in details and key handoff arrangements.</p>
 <p>Welcome to Alpaca Playhouse!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$You're All Set!
 
@@ -368,7 +368,7 @@ Alpaca Playhouse$text$,
   <li>Zelle: alpacaplayhouse@gmail.com</li>
 </ul>
 <p>If you have any questions or need anything, don't hesitate to reach out!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Welcome to Alpaca Playhouse!
 
@@ -413,7 +413,7 @@ Alpaca Playhouse$text$,
 </ul>
 <p>Please include your name and "{{period}}" in the payment memo.</p>
 <p>Thank you!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Friendly Rent Reminder
 
@@ -455,7 +455,7 @@ Alpaca Playhouse$text$,
   <li>Zelle: alpacaplayhouse@gmail.com</li>
 </ul>
 <p>If you're experiencing difficulties, please reach out to discuss options.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$RENT PAYMENT OVERDUE
 
@@ -493,7 +493,7 @@ Alpaca Playhouse$text$,
 <p>Hi {{first_name}},</p>
 <p>We've received your payment of <strong>${{amount}}</strong>{{#if period}} for <strong>{{period}}</strong>{{/if}}.</p>
 <p>Thank you for your prompt payment!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Payment Received
 
@@ -529,7 +529,7 @@ Alpaca Playhouse$text$,
 {{#if description}}<p>{{description}}</p>{{/if}}
 {{#if rsvp_link}}<p><a href="{{rsvp_link}}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">RSVP Now</a></p>{{/if}}
 <p>We hope to see you there!</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$You're Invited!
 
@@ -565,7 +565,7 @@ Alpaca Playhouse$text$,
 <p>Hi {{first_name}},</p>
 {{#if message_html}}{{message_html}}{{else}}<p>You have been invited!</p>{{/if}}
 {{#if action_url}}<p><a href="{{action_url}}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">{{action_text}}</a></p>{{/if}}
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Hi {{first_name}},
 
@@ -642,7 +642,7 @@ GenAlpaca Team$text$,
   <a href="{{continue_url}}" style="background: #3b8132; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
 </p>
 <p>We are excited by the potential to have you join us at the Alpaca Playhouse. Where our mission is to let your Alpaca Dreams run free. Our goal is to redefine your idea of what an Alpaca Playhouse can be. When it comes to selecting an Alpaca Playhouse, we feel no one need settle.</p>
-<p>Yours,<br>The Alpaca Playhouse Community Team</p>
+
 $html$,
   $text$Great news, {{first_name}}!
 
@@ -1189,7 +1189,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
   <li>Include the full card in the frame</li>
 </ul>
 <p>If you have any questions, feel free to reply to this email.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Identity Verification Required
 
@@ -1228,7 +1228,7 @@ Alpaca Playhouse$text$,
 <p>Your identity has been successfully verified. Thank you for completing this step!</p>
 <p>We'll continue processing your rental application and will be in touch with next steps soon.</p>
 <p>If you have any questions, feel free to reply to this email.</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Identity Verified!
 
@@ -1401,7 +1401,7 @@ To reject: delete the branch on GitHub.$text$,
 
 <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
 <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Lease Signing Complete!
 
@@ -1493,7 +1493,7 @@ Alpaca Playhouse$text$,
 
 <p>Once we receive the cleaning deposit and rental fee, your event is confirmed!</p>
 <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Event Agreement Signed!
 
@@ -1564,7 +1564,7 @@ Alpaca Playhouse$text$,
 </div>
 
 <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Register Your Vehicle
 
@@ -1821,7 +1821,7 @@ An email was sent to payments@ but could not be parsed as a Zelle payment. It ha
 </ul>
 
 <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
-<p>Best regards,<br>Alpaca Playhouse</p>
+
 $html$,
   $text$Payment Reminder - Your Event is Coming Up!
 

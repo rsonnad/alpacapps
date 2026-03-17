@@ -99,7 +99,14 @@ export function paymentMethodsBlock(
 
   const items = methods && methods.length > 0 ? methods : DEFAULT_METHODS;
 
-  const rows = items.map((m) => {
+  // Card-type methods that get separated with a divider and fee disclosure
+  const CARD_TYPES = new Set(['stripe', 'square', 'bank_ach']);
+
+  // Split into free methods (top) and card methods (below divider)
+  const freeMethods = items.filter(m => !CARD_TYPES.has(m.method_type));
+  const cardMethods = items.filter(m => CARD_TYPES.has(m.method_type));
+
+  const renderRow = (m: PaymentMethod) => {
     const badge = PAYMENT_BADGES[m.method_type] || PAYMENT_BADGES.other;
     const id = m.account_identifier
       ? `<strong style="margin-left:8px;">${m.account_identifier}</strong>`
@@ -114,12 +121,24 @@ export function paymentMethodsBlock(
         ${id}${instr}
       </td>
     </tr>`;
-  }).join('\n');
+  };
+
+  const freeRows = freeMethods.map(renderRow).join('\n');
+
+  // Card section with divider and fee text
+  const cardSection = cardMethods.length > 0 ? `
+    <tr><td style="padding:8px 0 4px;border-bottom:none;">
+      <div style="border-top:1px dashed ${B.border};margin:4px 0;"></div>
+      <p style="margin:4px 0 2px;font-size:11px;color:${B.textMuted};text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Online Payment</p>
+    </td></tr>
+    ${cardMethods.map(renderRow).join('\n')}
+    <tr><td style="padding:4px 0 0;">
+      <p style="margin:0;font-size:12px;color:${B.textMuted};">${feeText}</p>
+    </td></tr>` : '';
 
   const payButton = payUrl
     ? `<div style="text-align:center;margin-top:12px;">
         <a href="${payUrl}" style="display:inline-block;background:${B.accent};color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:0.3px;">Pay Online</a>
-        <p style="margin:6px 0 0;font-size:12px;color:${B.textMuted};">${feeText}</p>
       </div>`
     : '';
 
@@ -129,7 +148,7 @@ export function paymentMethodsBlock(
 
   return `<div style="background:${B.bgMuted};border:1px solid ${B.border};border-radius:8px;padding:16px;margin:16px 0;">
     <p style="margin:0 0 8px;font-weight:600;color:${B.text};font-size:14px;">${heading}</p>
-    <table style="width:100%;border-collapse:collapse;font-size:14px;">${rows}</table>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">${freeRows}${cardSection}</table>
     ${payButton}
     ${memoReminder}
   </div>`;

@@ -118,13 +118,17 @@ async function loadGalleryImages(): Promise<string[]> {
         ?.map((r: any) => r.media)
         .filter((m: any) => m?.url && !m.is_archived) ?? [];
 
-      if (candidates.length > 0) {
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
-        return [pick.url];
+      if (candidates.length >= 2) {
+        // Pick 2 distinct random images
+        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+        return [shuffled[0].url, shuffled[1].url];
+      }
+      if (candidates.length === 1) {
+        return [candidates[0].url];
       }
     }
 
-    // Fallback: random mktg category image
+    // Fallback: random mktg category images
     const { data, error } = await sb
       .from("media")
       .select("url")
@@ -132,9 +136,12 @@ async function loadGalleryImages(): Promise<string[]> {
       .eq("is_archived", false)
       .limit(50);
 
-    if (data && !error && data.length > 0) {
-      const pick = data[Math.floor(Math.random() * data.length)];
-      return [pick.url];
+    if (data && !error && data.length >= 2) {
+      const shuffled = [...data].sort(() => Math.random() - 0.5);
+      return [shuffled[0].url, shuffled[1].url];
+    }
+    if (data && !error && data.length === 1) {
+      return [data[0].url];
     }
   } catch (e) {
     console.warn("Failed to load gallery images:", e);
@@ -150,6 +157,12 @@ export interface WrapOptions {
   showFooter?: boolean;
   /** Show the alpaca image gallery above footer (default: true) */
   showGallery?: boolean;
+  /** Show the PAI signature block (default: true) */
+  showSignature?: boolean;
+  /** Show the feedback/question CTA (default: true) */
+  showFeedback?: boolean;
+  /** Email subject for feedback mailto context */
+  emailSubject?: string;
   /** Custom preheader text (hidden preview text in email clients) */
   preheader?: string;
   /** Override accent color for the CTA button */
@@ -169,7 +182,7 @@ export async function wrapEmailHtml(
   innerHtml: string,
   options: WrapOptions = {}
 ): Promise<string> {
-  const { showHeader = true, showFooter = true, showGallery = true, preheader = '', accentColor, extraImages } = options;
+  const { showHeader = true, showFooter = true, showGallery = true, showSignature = true, showFeedback = true, emailSubject = '', preheader = '', accentColor, extraImages } = options;
   const [b, galleryImages] = await Promise.all([
     loadBrandConfig(),
     showGallery ? loadGalleryImages() : Promise.resolve([]),
@@ -214,6 +227,31 @@ export async function wrapEmailHtml(
       <td class="email-footer-td" style="background:${e.footer.background};padding:${e.footer.padding};text-align:center;border-top:${e.footer.border_top};">
         <p style="margin:0 0 6px;color:${e.footer.text_color};font-size:12px;line-height:18px;font-family:${fontFamily};">${brand.address || ''}</p>
         <p style="margin:0;color:${e.footer.text_color};font-size:11px;line-height:16px;font-family:${fontFamily};opacity:0.7;">${brand.platform_name} &bull; ${brand.tagline}</p>
+      </td>
+    </tr>` : '';
+
+  // Signature block — centralized so all emails get the same sign-off
+  const signatureHtml = showSignature ? `
+    <!-- Signature -->
+    <tr>
+      <td style="padding:16px ${e.body.padding} 0;font-family:${fontFamily};">
+        <p style="margin:0;color:${c.text_muted};font-size:15px;line-height:1.6;font-style:italic;">Yours generatively,</p>
+        <p style="margin:4px 0 0;color:${c.text};font-size:15px;line-height:1.6;font-weight:600;">PAI</p>
+        <p style="margin:2px 0 0;color:${c.text_muted};font-size:13px;line-height:1.4;">the Alpaca Playhouse property AI agent</p>
+      </td>
+    </tr>` : '';
+
+  // Feedback box — encourages replies/questions
+  const feedbackSubject = encodeURIComponent(emailSubject ? `Re: ${emailSubject}` : 'Question / Feedback');
+  const feedbackBoxHtml = showFeedback ? `
+    <!-- Feedback Box -->
+    <tr>
+      <td style="padding:20px ${e.body.padding} 8px;font-family:${fontFamily};">
+        <div style="background:${c.background_muted};border:1px solid ${c.border};border-radius:8px;padding:16px 20px;text-align:center;">
+          <p style="margin:0 0 10px;color:${c.text};font-size:14px;font-weight:600;">Any questions or feedback?</p>
+          <a href="mailto:pai@alpacaplayhouse.com?subject=${feedbackSubject}" style="display:inline-block;background:${accent};color:#ffffff;padding:10px 24px;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;font-family:${fontFamily};">Send PAI a Message</a>
+          <p style="margin:10px 0 0;color:${c.text_muted};font-size:12px;">Or just reply to this email</p>
+        </div>
       </td>
     </tr>` : '';
 
@@ -278,6 +316,8 @@ export async function wrapEmailHtml(
               ${innerHtml}
             </td>
           </tr>
+          ${signatureHtml}
+          ${feedbackBoxHtml}
           ${galleryHtml}
           ${footerHtml}
         </table>
