@@ -1,12 +1,12 @@
 {
-  "version": "v260316.05 9:45p",
-  "release": 807,
-  "sha": "e07224886",
-  "fullSha": "e0722488675ebb47198a6656987322af782b7151",
+  "version": "v260316.06 9:52p",
+  "release": 808,
+  "sha": "fd93476f3",
+  "fullSha": "fd93476f33a23e4e587c6d4dc9cd64e0bf648c65",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 02:45:55+00",
-  "commits": [{"sha":"e07224886","message":"Hook up sensors page to live UP-Sense data via ptz-proxy","author":"Rahul"}]
+  "pushedAt": "2026-03-17 02:52:49+00",
+  "commits": [{"sha":"fd93476f3","message":"Redesign sensors page as full-screen immersive dark dashboard","author":"Rahul"}]
 }
