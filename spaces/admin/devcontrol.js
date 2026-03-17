@@ -449,6 +449,96 @@ async function loadTokens() {
 // ═══════════════════════════════════════════════════════════
 // CONTEXT TAB
 // ═══════════════════════════════════════════════════════════
+
+function renderTokenHistoryChart(snapshots, currentAlways) {
+  if (snapshots.length === 0 && !currentAlways) return '';
+
+  const today = new Date().toISOString().split('T')[0];
+  const points = [...snapshots.filter((s) => s.snapshot_date !== today)];
+  if (currentAlways > 0) {
+    points.push({ snapshot_date: today, always_loaded_tokens: currentAlways, total_tokens: 0 });
+  }
+  if (points.length < 2) {
+    return `
+      <div style="border:1px solid var(--border,#e2e0db);border-radius:12px;padding:1.25rem;background:var(--bg-card,#fff);margin-bottom:1.5rem;">
+        <h3 class="dc-section-header" style="margin-bottom:0.25rem;">Always-Loaded Tokens — Last 90 Days</h3>
+        <p style="color:var(--text-muted,#aaa);font-size:0.75rem;">Not enough data yet. Check back tomorrow.</p>
+      </div>`;
+  }
+
+  points.sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date));
+  const values = points.map((p) => p.always_loaded_tokens);
+  const minVal = Math.min(...values) * 0.9;
+  const maxVal = Math.max(...values) * 1.1;
+  const range = maxVal - minVal || 1;
+
+  const W = 700, H = 180;
+  const PAD = { top: 20, right: 20, bottom: 30, left: 50 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const xScale = (i) => PAD.left + (i / (points.length - 1)) * plotW;
+  const yScale = (v) => PAD.top + plotH - ((v - minVal) / range) * plotH;
+
+  const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${xScale(i).toFixed(1)},${yScale(p.always_loaded_tokens).toFixed(1)}`).join(' ');
+  const area = `${line} L${xScale(points.length - 1).toFixed(1)},${(PAD.top + plotH).toFixed(1)} L${PAD.left},${(PAD.top + plotH).toFixed(1)} Z`;
+
+  const tickCount = 4;
+  const yTicks = Array.from({ length: tickCount }, (_, i) => minVal + (range * i) / (tickCount - 1));
+  const labelInterval = Math.max(1, Math.floor(points.length / 5));
+
+  function fmtTokShort(n) { return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toLocaleString(); }
+
+  const latest = values[values.length - 1];
+  const earliest = values[0];
+  const delta = latest - earliest;
+  const deltaPct = earliest > 0 ? ((delta / earliest) * 100).toFixed(1) : '0';
+  const deltaColor = delta > 0 ? '#ef4444' : delta < 0 ? '#10b981' : '#94a3b8';
+  const deltaSign = delta > 0 ? '+' : '';
+
+  let gridLines = '';
+  for (const v of yTicks) {
+    gridLines += `<line x1="${PAD.left}" x2="${W - PAD.right}" y1="${yScale(v).toFixed(1)}" y2="${yScale(v).toFixed(1)}" stroke="#e2e8f0" stroke-width="0.5"/>`;
+    gridLines += `<text x="${PAD.left - 6}" y="${(yScale(v) + 3).toFixed(1)}" text-anchor="end" fill="#94a3b8" font-size="9">${fmtTokShort(Math.round(v))}</text>`;
+  }
+
+  let dataDots = '';
+  const dotR = points.length > 30 ? 1.5 : 3;
+  for (let i = 0; i < points.length; i++) {
+    dataDots += `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(points[i].always_loaded_tokens).toFixed(1)}" r="${dotR}" fill="#6366f1"/>`;
+  }
+
+  let xLabels = '';
+  for (let i = 0; i < points.length; i++) {
+    if (i % labelInterval === 0 || i === points.length - 1) {
+      const d = new Date(points[i].snapshot_date + 'T00:00:00');
+      xLabels += `<text x="${xScale(i).toFixed(1)}" y="${H - 5}" text-anchor="middle" fill="#94a3b8" font-size="9">${d.getMonth() + 1}/${d.getDate()}</text>`;
+    }
+  }
+
+  return `
+    <div style="border:1px solid var(--border,#e2e0db);border-radius:12px;padding:1.25rem;background:var(--bg-card,#fff);margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <div>
+          <h3 style="font-size:0.875rem;font-weight:600;color:var(--text,#1e1e1e);margin:0;">Always-Loaded Tokens — Last 90 Days</h3>
+          <p style="color:var(--text-muted,#aaa);font-size:0.75rem;margin:0.125rem 0 0;">${points.length} data points</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.125rem;font-weight:700;color:var(--text,#1e1e1e);font-variant-numeric:tabular-nums;">${fmtTokShort(latest)}</div>
+          <div style="font-size:0.75rem;font-weight:500;color:${deltaColor};font-variant-numeric:tabular-nums;">${deltaSign}${fmtTokShort(delta)} (${deltaSign}${deltaPct}%)</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:200px;">
+        ${gridLines}
+        <defs><linearGradient id="ctxAreaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1" stop-opacity="0.15"/><stop offset="100%" stop-color="#6366f1" stop-opacity="0.02"/></linearGradient></defs>
+        <path d="${area}" fill="url(#ctxAreaGrad)"/>
+        <path d="${line}" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round"/>
+        ${dataDots}
+        ${xLabels}
+      </svg>
+    </div>`;
+}
+
 async function loadContext() {
   const panel = document.getElementById('dc-panel-context');
   panel.innerHTML = '<div class="dc-empty">Loading file sizes...</div>';
@@ -475,6 +565,19 @@ async function loadContext() {
     system: { label: 'System', bar: '#6b7280' },
   };
 
+  // Fetch last 90 days of snapshots
+  let snapshots = [];
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    const { data } = await supabase
+      .from('context_snapshots')
+      .select('snapshot_date, always_loaded_tokens, total_tokens')
+      .gte('snapshot_date', cutoff.toISOString().split('T')[0])
+      .order('snapshot_date');
+    if (data) snapshots = data;
+  } catch {}
+
   const items = await Promise.all(CONTEXT_FILES.map(async (f) => {
     if (f.category === 'system') return { ...f, tokens: SYSTEM_PROMPT_TOKENS };
     if (f.gh) {
@@ -494,6 +597,16 @@ async function loadContext() {
   const totalTokens = alwaysTokens + onDemandTokens;
   const alwaysPct = ((alwaysTokens / CONTEXT_WINDOW) * 100).toFixed(1);
   const totalPct = ((totalTokens / CONTEXT_WINDOW) * 100).toFixed(1);
+
+  // Record today's snapshot
+  try {
+    const breakdown = {};
+    for (const i of items) breakdown[i.category] = (breakdown[i.category] || 0) + i.tokens;
+    await supabase.from('context_snapshots').upsert(
+      { snapshot_date: new Date().toISOString().split('T')[0], always_loaded_tokens: alwaysTokens, total_tokens: totalTokens, breakdown },
+      { onConflict: 'snapshot_date' }
+    );
+  } catch {}
 
   const catTotals = {};
   for (const i of items) catTotals[i.category] = (catTotals[i.category] || 0) + i.tokens;
@@ -527,6 +640,8 @@ async function loadContext() {
   panel.innerHTML = `
     <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Context Window</h2>
     <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">${fmtTok(alwaysTokens)} tokens loaded on startup (${alwaysPct}% of ${fmtTok(CONTEXT_WINDOW)} window)</p>
+
+    ${renderTokenHistoryChart(snapshots, alwaysTokens)}
 
     <div class="dc-context-bar-wrap">
       <div class="dc-context-bar-header"><span>Context Window Usage</span><span>${fmtTok(CONTEXT_WINDOW)} total capacity</span></div>
