@@ -1,12 +1,12 @@
 {
-  "version": "v260316.12 11:42p",
-  "release": 814,
-  "sha": "cd3b86325",
-  "fullSha": "cd3b8632546133d2c67cc3e1be7e09c7d83f8a8f",
+  "version": "v260317.01 12:24a",
+  "release": 815,
+  "sha": "fe6399c7f",
+  "fullSha": "fe6399c7fb917c5797a2a840f57149f6fc82b99b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 04:42:51+00",
-  "commits": [{"sha":"0f875d385","message":"Skip garage greeting when music is playing, lower volume to 25","author":"Rahul"},{"sha":"cd3b86325","message":"Merge: skip greeting when music playing, lower volume","author":"Rahul"}]
+  "pushedAt": "2026-03-17 05:24:39+00",
+  "commits": [{"sha":"fe6399c7f","message":"Add 8 missing pronunciation clusters to Polish lesson guide (#43)","author":"Rahul"}]
 }
