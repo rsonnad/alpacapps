@@ -1,12 +1,12 @@
 {
-  "version": "v260317.19 7:34a",
-  "release": 833,
-  "sha": "8453f790c",
-  "fullSha": "8453f790c273ad7a51ac2a5280017f8ee4d55b2c",
+  "version": "v260317.20 7:52a",
+  "release": 834,
+  "sha": "53d0e6f02",
+  "fullSha": "53d0e6f02871d6fea7aab416c825e24c9cc4285a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 12:34:14+00",
-  "commits": [{"sha":"b1a1d1901","message":"Add AI-guided gardening with camera vision to Three Pillars","author":"Rahul"},{"sha":"8453f790c","message":"Merge pull request #49 from rsonnad/rahuliofam/find-polish-ai-page","author":"Rahul"}]
+  "pushedAt": "2026-03-17 12:52:42+00",
+  "commits": [{"sha":"680c7ebdd","message":"Add Conductor to alpacapps-infra tech stack as core service","author":"Rahul"},{"sha":"53d0e6f02","message":"Reframe Conductor as primary dev hub, minimize direct Claude Code usage","author":"Rahul"}]
 }
