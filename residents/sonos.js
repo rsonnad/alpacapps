@@ -367,30 +367,32 @@ function renderNowPanel() {
       : (group.groupState?.volume ?? 0);
 
     return `
-      <article class="rounded-aap-lg border border-white/60 bg-white/95 p-4 shadow-aap transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-aap-lg">
-        <div class="mb-3 flex items-start justify-between gap-2">
+      <article class="sonos-now-card">
+        <div class="sonos-now-card__header">
           <div>
-            <h3 class="text-base font-semibold text-aap-dark">${room}</h3>
-            <p class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${stateToneClass}">${displayState}${group.members.length > 1 ? ` · ${group.members.length} grouped` : ''}</p>
+            <h3 class="sonos-now-card__room">${room}</h3>
+            <span class="sonos-now-card__status sonos-now-card__status--${displayState.toLowerCase()}">${displayState}${group.members.length > 1 ? ` · ${group.members.length} grouped` : ''}</span>
           </div>
-          <span class="rounded-full bg-aap-cream px-2.5 py-1 text-xs font-semibold text-aap-dark">${mainVolume}%</span>
+          <span class="sonos-now-card__volume-badge">${mainVolume}%</span>
         </div>
-        <p class="truncate text-sm font-semibold text-aap-dark">${escapeHtml(title)}</p>
-        <p class="mb-4 truncate text-xs text-aap-text-muted">${escapeHtml(subtitle)}</p>
-        <div class="mb-3 flex items-center gap-2">
-          <button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1.5 text-xs font-medium text-aap-text-muted hover:bg-aap-cream" data-action="uxPrevious" data-room="${room}">Prev</button>
-          <button type="button" class="rounded-full bg-aap-dark px-4 py-1.5 text-xs font-semibold text-white hover:opacity-90" data-action="uxPlayPause" data-room="${room}">${isPlaying ? 'Pause' : 'Play'}</button>
-          <button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1.5 text-xs font-medium text-aap-text-muted hover:bg-aap-cream" data-action="uxNext" data-room="${room}">Next</button>
+        <div class="sonos-now-card__track">
+          <p class="sonos-now-card__title">${escapeHtml(title)}</p>
+          <p class="sonos-now-card__artist">${escapeHtml(subtitle)}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="text-[11px] font-semibold uppercase tracking-wide text-aap-text-muted">Volume</span>
-          <input type="range" min="0" max="100" value="${mainVolume}" class="w-full accent-aap-amber" data-action="uxVolume" data-room="${room}">
+        <div class="sonos-now-card__controls">
+          <button type="button" class="sonos-now-card__btn" data-action="uxPrevious" data-room="${room}">${PREV_SVG}</button>
+          <button type="button" class="sonos-now-card__btn sonos-now-card__btn--play" data-action="uxPlayPause" data-room="${room}">${isPlaying ? PAUSE_SVG : PLAY_SVG}</button>
+          <button type="button" class="sonos-now-card__btn" data-action="uxNext" data-room="${room}">${NEXT_SVG}</button>
+        </div>
+        <div class="sonos-now-card__slider">
+          <span class="sonos-now-card__slider-label">${VOL_SVG}</span>
+          <input type="range" min="0" max="100" value="${mainVolume}" data-action="uxVolume" data-room="${room}">
         </div>
       </article>
     `;
   }).join('');
 
-  panel.innerHTML = `<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">${cards}</div>`;
+  panel.innerHTML = `<div class="sonos-now-grid">${cards}</div>`;
 }
 
 function renderAmbientPanel() {
