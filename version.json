@@ -1,12 +1,12 @@
 {
-  "version": "v260317.02 12:37a",
-  "release": 816,
-  "sha": "8df0967fb",
-  "fullSha": "8df0967fbc15486d0336a6dff1c2ad24c99a376d",
+  "version": "v260317.03 12:38a",
+  "release": 817,
+  "sha": "542d9c9f3",
+  "fullSha": "542d9c9f35b136cf9c13709031215e1fc0bba7e9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 05:37:20+00",
-  "commits": [{"sha":"8df0967fb","message":"Fix Polish lesson: spelling, examples, phonetics, tutor visibility (#44)","author":"Rahul"}]
+  "pushedAt": "2026-03-17 05:38:54+00",
+  "commits": [{"sha":"542d9c9f3","message":"Add art screensaver overlay to kioskhall","author":"Rahul"}]
 }
