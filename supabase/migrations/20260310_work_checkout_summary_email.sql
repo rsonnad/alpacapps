@@ -58,6 +58,33 @@ VALUES (
 <p style="margin:0 0 20px;color:#2a1f23;">{{description}}</p>
 {{/if}}
 
+{{#if clock_out_lat}}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0 0;">
+  <tr>
+    <td style="padding:0;">
+      <p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Clock-out Location</p>
+      <a href="https://www.google.com/maps?q={{clock_out_lat}},{{clock_out_lng}}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+        <img src="https://staticmap.openstreetmap.de/staticmap.php?center={{clock_out_lat}},{{clock_out_lng}}&zoom=15&size=540x200&markers={{clock_out_lat}},{{clock_out_lng}},ol-marker" alt="Clock-out location map" width="540" style="display:block;width:100%;max-width:540px;height:auto;border-radius:8px;border:1px solid #e6e2d9;" />
+      </a>
+      <p style="margin:6px 0 0;font-size:12px;color:#7d6f74;">
+        <a href="https://www.google.com/maps?q={{clock_out_lat}},{{clock_out_lng}}" target="_blank" rel="noopener" style="color:#d4883a;text-decoration:none;">View on Google Maps ↗</a>
+      </p>
+    </td>
+  </tr>
+</table>
+{{else}}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0 0;">
+  <tr>
+    <td style="padding:12px 16px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:13px;color:#92400e;">📍 Location not available for this session.</p>
+      <p style="margin:0;font-size:12px;color:#92400e;">
+        <a href="{{location_settings_url}}" target="_blank" rel="noopener" style="color:#d4883a;font-weight:600;text-decoration:underline;">Enable location permissions</a> so we can track where you clock in and out.
+      </p>
+    </td>
+  </tr>
+</table>
+{{/if}}
+
 <p style="margin:16px 0 0;color:#7d6f74;font-size:13px;">This is an automated summary from Alpaca Playhouse work tracking.</p>
 $html$,
   $text$Work Session Complete
@@ -74,9 +101,14 @@ Duration: {{duration}}
 {{#if description}}
 Work Description: {{description}}
 {{/if}}
+{{#if clock_out_lat}}
+Clock-out Location: https://www.google.com/maps?q={{clock_out_lat}},{{clock_out_lng}}
+{{else}}
+Location not available — enable location permissions at: {{location_settings_url}}
+{{/if}}
 
 This is an automated summary from Alpaca Playhouse work tracking.$text$,
-  '[{"key":"first_name","required":true,"description":"Associate first name"},{"key":"date","required":true,"description":"Work date"},{"key":"clock_in_time","required":true,"description":"Clock in time"},{"key":"clock_out_time","required":true,"description":"Clock out time"},{"key":"duration","required":true,"description":"Session duration"},{"key":"space_name","required":false,"description":"Location/space name"},{"key":"task_name","required":false,"description":"Task name"},{"key":"description","required":false,"description":"Work description"},{"key":"hourly_rate","required":true,"description":"Hourly rate"},{"key":"earnings","required":true,"description":"Formatted earnings amount"},{"key":"photos","required":false,"description":"Array of work photos (rendered in hardcoded fallback only)"}]'::jsonb
+  '[{"key":"first_name","required":true,"description":"Associate first name"},{"key":"date","required":true,"description":"Work date"},{"key":"clock_in_time","required":true,"description":"Clock in time"},{"key":"clock_out_time","required":true,"description":"Clock out time"},{"key":"duration","required":true,"description":"Session duration"},{"key":"space_name","required":false,"description":"Location/space name"},{"key":"task_name","required":false,"description":"Task name"},{"key":"description","required":false,"description":"Work description"},{"key":"hourly_rate","required":true,"description":"Hourly rate"},{"key":"earnings","required":true,"description":"Formatted earnings amount"},{"key":"photos","required":false,"description":"Array of work photos (rendered in hardcoded fallback only)"},{"key":"clock_out_lat","required":false,"description":"Clock-out GPS latitude"},{"key":"clock_out_lng","required":false,"description":"Clock-out GPS longitude"},{"key":"location_settings_url","required":false,"description":"URL to enable location permissions"}]'::jsonb
 )
 ON CONFLICT (template_key, version) DO UPDATE SET
   html_template = EXCLUDED.html_template,

@@ -421,6 +421,9 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
       earnings: HoursService.formatCurrency(earnings),
       photos: photoData,
       cumulative,
+      clock_out_lat: entry.clock_out_lat || entry.clock_in_lat || null,
+      clock_out_lng: entry.clock_out_lng || entry.clock_in_lng || null,
+      location_settings_url: `${window.location.origin}/associates/worktracking.html#location-settings`,
     };
 
     await emailService.sendWorkCheckoutSummary(emailData);
