@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Three Pillars — AI-Operated Creative &amp; Networking Space</title>
-  <meta property="og:title" content="Three Pillars — AI-Operated Creative & Networking Space">
-  <meta property="og:description" content="A physical space in Warsaw where AI runs the environment — lighting, music, video, fabrication tools, cameras — and hosts networking events for groups of 64.">
+  <title>Three Pillars — A Country Club for Your Soul, Run by AI</title>
+  <meta property="og:title" content="Three Pillars — A Country Club for Your Soul, Run by AI">
+  <meta property="og:description" content="A wellness compound outside Warsaw where AI operates everything — saunas, cold plunge, gardens, animals, gym, education, and weekly gatherings of 64 people.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
@@ -13,13 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    /* ========================================
-       CSS Variables
-       ======================================== */
     :root {
       --cream:         #FBF8F1;
       --cream-warm:    #F5EFE2;
-      --cream-dark:    #EDE4D3;
       --surface:       #FFFFFF;
       --surface-warm:  #FFFDF9;
       --dark:          #1C1A17;
@@ -31,18 +27,21 @@
       --border:        #E8DFD0;
       --border-light:  #F0EAE0;
 
-      /* Three Pillars */
-      --space:         #5B6E8C;
-      --space-bg:      rgba(91,110,140,0.08);
-      --space-border:  rgba(91,110,140,0.2);
+      --body:          #6B8C5B;
+      --body-bg:       rgba(107,140,91,0.08);
+      --body-border:   rgba(107,140,91,0.2);
 
-      --tools:         #8B6B4A;
-      --tools-bg:      rgba(139,107,74,0.08);
-      --tools-border:  rgba(139,107,74,0.2);
+      --mind:          #5B6E8C;
+      --mind-bg:       rgba(91,110,140,0.08);
+      --mind-border:   rgba(91,110,140,0.2);
 
-      --people:        #5B8C5A;
-      --people-bg:     rgba(91,140,90,0.08);
-      --people-border: rgba(91,140,90,0.2);
+      --soul:          #8C6B5B;
+      --soul-bg:       rgba(140,107,91,0.08);
+      --soul-border:   rgba(140,107,91,0.2);
+
+      --community:     #8B7B4A;
+      --community-bg:  rgba(139,123,74,0.08);
+      --community-border: rgba(139,123,74,0.2);
 
       --accent:        #8B6B4A;
       --accent-light:  #A88560;
@@ -52,7 +51,6 @@
       --shadow-sm:     0 1px 3px rgba(28,20,16,0.06), 0 1px 2px rgba(28,20,16,0.04);
       --shadow-md:     0 4px 12px rgba(28,20,16,0.08), 0 2px 4px rgba(28,20,16,0.04);
       --shadow-lg:     0 12px 40px rgba(28,20,16,0.12), 0 4px 12px rgba(28,20,16,0.06);
-      --transition:    0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -70,7 +68,6 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { color: var(--accent-light); }
 
-    /* Layout */
     .page-wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
 
     .back-link {
@@ -86,18 +83,24 @@
       text-align: center; padding: 3rem 0 2.5rem;
       border-bottom: 1px solid var(--border-light); margin-bottom: 3rem;
     }
-    .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .hero-pill {
       font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
       text-transform: uppercase; padding: 0.35rem 0.9rem;
       border-radius: 100px; border: 1px solid;
     }
-    .hero-pill.space { color: var(--space); background: var(--space-bg); border-color: var(--space-border); }
-    .hero-pill.tools { color: var(--tools); background: var(--tools-bg); border-color: var(--tools-border); }
-    .hero-pill.people { color: var(--people); background: var(--people-bg); border-color: var(--people-border); }
+    .hero-pill.body { color: var(--body); background: var(--body-bg); border-color: var(--body-border); }
+    .hero-pill.mind { color: var(--mind); background: var(--mind-bg); border-color: var(--mind-border); }
+    .hero-pill.soul { color: var(--soul); background: var(--soul-bg); border-color: var(--soul-border); }
+    .hero-pill.community { color: var(--community); background: var(--community-bg); border-color: var(--community-border); }
 
-    .hero h1 { font-size: 3rem; font-weight: 400; letter-spacing: -0.02em; margin-bottom: 1rem; }
-    .hero .tagline { font-size: 1.15rem; color: var(--text-soft); max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.6; }
+    .hero h1 { font-size: 2.8rem; font-weight: 400; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .hero .headline {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.5rem; font-weight: 400; font-style: italic;
+      color: var(--dark-soft); margin-bottom: 1.25rem;
+    }
+    .hero .tagline { font-size: 1.05rem; color: var(--text-soft); max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.6; }
     .hero .subtitle { font-size: 0.85rem; color: var(--text-dim); font-style: italic; }
 
     /* Section */
@@ -116,9 +119,10 @@
     .card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm); margin-bottom: 1.25rem; }
     .card-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--dark); margin-bottom: 0.75rem; }
 
-    /* Grid */
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0; }
+    /* Grids */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.25rem 0; }
 
     .grid-item {
       background: var(--surface); border: 1px solid var(--border-light);
@@ -127,6 +131,26 @@
     .grid-item-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
     .grid-item-name { font-weight: 600; font-size: 0.88rem; color: var(--dark); margin-bottom: 0.35rem; }
     .grid-item-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.45; }
+
+    /* Facility cards — larger */
+    .facility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+    .facility {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg); padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .facility-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+    .facility-icon { font-size: 1.5rem; }
+    .facility-name { font-weight: 600; font-size: 1rem; color: var(--dark); }
+    .facility-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.55; }
+    .facility-ai {
+      margin-top: 0.75rem; padding-top: 0.75rem;
+      border-top: 1px solid var(--border-light);
+      font-size: 0.78rem; color: var(--accent); font-weight: 500;
+    }
 
     /* Principles */
     .principle {
@@ -137,26 +161,6 @@
     .principle-title { font-weight: 600; font-size: 0.92rem; color: var(--dark); margin-bottom: 0.35rem; }
     .principle-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
     .principle.span-full { grid-column: 1 / -1; }
-
-    /* Layer Stack */
-    .layer-stack { margin: 1.5rem 0; }
-    .layer {
-      display: flex; align-items: stretch;
-      border: 1px solid var(--border-light); border-radius: var(--radius);
-      overflow: hidden; margin-bottom: 0.75rem;
-      background: var(--surface); box-shadow: var(--shadow-sm);
-    }
-    .layer-label {
-      width: 140px; min-width: 140px; padding: 1rem;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: white; text-align: center;
-    }
-    .layer-label.l-space { background: var(--space); }
-    .layer-label.l-tools { background: var(--tools); }
-    .layer-label.l-people { background: var(--people); }
-    .layer-content { padding: 1rem 1.25rem; font-size: 0.85rem; color: var(--text-soft); line-height: 1.55; flex: 1; }
-    .layer-content strong { color: var(--text); }
 
     /* Scenario */
     .scenario-card {
@@ -173,8 +177,8 @@
     .sc-ai-tag {
       display: inline-block; font-size: 0.65rem; font-weight: 600;
       letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--tools); background: var(--tools-bg);
-      border: 1px solid var(--tools-border);
+      color: var(--accent); background: rgba(139,107,74,0.08);
+      border: 1px solid rgba(139,107,74,0.2);
       padding: 0.15rem 0.5rem; border-radius: 100px;
       margin-left: 0.35rem; vertical-align: middle;
     }
@@ -189,6 +193,13 @@
       border-bottom: 1px solid var(--border-light);
       line-height: 1.45;
     }
+
+    /* Table */
+    .styled-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+    .styled-table th { text-align: left; font-weight: 600; color: var(--text-dim); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.6rem 1rem; border-bottom: 2px solid var(--border); background: var(--cream-warm); }
+    .styled-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-light); color: var(--text-soft); }
+    .styled-table td:first-child { font-weight: 600; color: var(--text); }
+    .styled-table tr:last-child td { border-bottom: none; }
 
     /* Econ */
     .econ-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.88rem; }
@@ -209,21 +220,14 @@
     }
     .steps-list li strong { color: var(--text); }
 
-    /* Table */
-    .styled-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
-    .styled-table th { text-align: left; font-weight: 600; color: var(--text-dim); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.6rem 1rem; border-bottom: 2px solid var(--border); background: var(--cream-warm); }
-    .styled-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-light); color: var(--text-soft); }
-    .styled-table td:first-child { font-weight: 600; color: var(--text); }
-    .styled-table tr:last-child td { border-bottom: none; }
-
     /* Responsive */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .hero h1 { font-size: 2.2rem; }
+      .hero .headline { font-size: 1.25rem; }
+      .grid-2, .facility-grid { grid-template-columns: 1fr; }
       .grid-3 { grid-template-columns: 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
       .principle.span-full { grid-column: 1; }
-      .layer { flex-direction: column; }
-      .layer-label { width: 100%; min-width: unset; padding: 0.6rem; }
       .pull-quote { padding: 1.5rem 1rem; font-size: 1.3rem; }
       .page-wrap { padding: 1.5rem 1rem 4rem; }
       .scenario-card { padding: 1.5rem; }
@@ -247,61 +251,120 @@
          ═══════════════════════════════════════ -->
     <section class="hero">
       <div class="hero-pills">
-        <span class="hero-pill space">The Space</span>
-        <span class="hero-pill tools">The Tools</span>
-        <span class="hero-pill people">The People</span>
+        <span class="hero-pill body">Body</span>
+        <span class="hero-pill mind">Mind</span>
+        <span class="hero-pill soul">Soul</span>
+        <span class="hero-pill community">Community</span>
       </div>
       <h1>Three Pillars</h1>
+      <p class="headline">A country club for your soul, run by AI.</p>
       <p class="tagline">
-        A physical space in Warsaw where AI operates the environment and tools &mdash; and brings 64 people together every week to build, create, and connect.
+        A wellness compound outside Warsaw with saunas, cold plunge, gardens, animals, gym, education, and weekly gatherings of 64 &mdash; all operated by an AI that learns what you need and shapes the environment around you.
       </p>
       <p class="subtitle">Warsaw Pilot &mdash; Business Plan</p>
     </section>
 
     <!-- ═══════════════════════════════════════
-         THE CONCEPT
+         THE IDEA
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">The Concept</div>
-      <h2>A Space That Runs Itself</h2>
+      <div class="section-label">The Idea</div>
+      <h2>Everything You Need to Grow, in One Place</h2>
       <p>
-        Three Pillars is a physical venue &mdash; part creative studio, part fabrication lab, part networking hub &mdash; where an AI operates everything. The lighting. The music. The video rooms. The 3D printers. The cameras. The flow of people through the space.
+        A country club gives you access to a property, facilities, and a community. But traditional country clubs are about status and golf. Three Pillars is about becoming a healthier, wiser, more connected version of yourself.
       </p>
       <p>
-        Members don't learn an app or configure settings. They walk in and the space responds. The AI knows the schedule, senses who's present, and orchestrates the environment in real time. When 64 people arrive for the weekly networking event, the AI doesn't just set the mood &mdash; it runs the event. It assigns seating, sequences introductions, controls what's on the screens, and adjusts the room as energy shifts.
+        The compound has everything: saunas and cold plunge for your body. Gardens and animals for grounding. A gym for strength. Workshops and mentorship for your mind. Gathering spaces for community. Quiet zones for your spirit.
       </p>
       <p>
-        The result is a space that feels like it has a brilliant, invisible host &mdash; one who also happens to run a fabrication lab and a photography studio.
+        And instead of a massive staff running all of it, an <strong>AI operates the entire property</strong>. It controls the sauna temperatures. It manages the garden irrigation. It schedules the cold plunge cycles. It runs the lighting and music. It orchestrates the weekly gathering of 64 members. It learns what each person needs and adapts the environment to serve them.
+      </p>
+      <p>
+        You don't use an app. You show up, and the place takes care of you.
       </p>
     </section>
 
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         THREE PILLARS
+         THE PROPERTY
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">The Three Pillars</div>
-      <h2>Space, Tools, People</h2>
+      <div class="section-label">The Property</div>
+      <h2>What's on the Land</h2>
+      <p>The compound is a single property &mdash; ideally 1&ndash;3 hectares outside Warsaw with a mix of buildings, outdoor space, and working land.</p>
 
-      <div class="layer-stack">
-        <div class="layer">
-          <div class="layer-label l-space">The Space</div>
-          <div class="layer-content">
-            <strong>AI-controlled environment.</strong> Smart lighting per zone (color temperature, intensity, circadian rhythm). Directional audio &mdash; different music in the main hall vs. the maker lab vs. breakout rooms. Climate that adapts to occupancy. Video walls and displays that the AI programs. Motorized shading. Electronic access control. The AI is the building manager.
+      <div class="facility-grid">
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🧖</span>
+            <span class="facility-name">Sauna &amp; Cold Plunge</span>
           </div>
+          <div class="facility-desc">Finnish-style sauna, infrared room, and cold plunge pool. Multiple temperature zones for contrast therapy. Outdoor cooling area between sessions.</div>
+          <div class="facility-ai">AI manages: Temperature cycles, session timing, ventilation, lighting mood, occupancy limits</div>
         </div>
-        <div class="layer">
-          <div class="layer-label l-tools">The Tools</div>
-          <div class="layer-content">
-            <strong>Creative and fabrication infrastructure.</strong> 3D printers and 3D sign-making equipment for physical prototyping and production. A photography studio with professional lighting, cameras, and backdrops &mdash; all AI-controllable. Video rooms for recording, streaming, and conferencing. The AI manages queues, presets, and calibration.
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">💪</span>
+            <span class="facility-name">Gym &amp; Movement</span>
           </div>
+          <div class="facility-desc">Functional fitness equipment, free weights, yoga/stretching area. Outdoor training zone. Not a commercial gym &mdash; curated for the compound's members.</div>
+          <div class="facility-ai">AI manages: Lighting and music for workout intensity, equipment scheduling, class coordination</div>
         </div>
-        <div class="layer">
-          <div class="layer-label l-people">The People</div>
-          <div class="layer-content">
-            <strong>AI-orchestrated networking.</strong> Groups of 64 meet weekly. The AI assigns seating, generates conversation prompts tailored to each table, sequences rounds, and manages the flow between structured networking and open social time. It learns who connects well and gets smarter every week.
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🌱</span>
+            <span class="facility-name">Gardens</span>
           </div>
+          <div class="facility-desc">Vegetable beds, herb gardens, fruit trees, flower beds. Members work the land with their hands. Harvest feeds the kitchen. Seasonal rhythms ground the community.</div>
+          <div class="facility-ai">AI manages: Irrigation scheduling, soil moisture sensors, planting calendar, harvest tracking, task assignments</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🐔</span>
+            <span class="facility-name">Animals</span>
+          </div>
+          <div class="facility-desc">Chickens, possibly goats. Fresh eggs for the kitchen. The rhythms of caring for animals ground people in something real. Kids love it too.</div>
+          <div class="facility-ai">AI manages: Feeding schedules, coop climate, health monitoring sensors, care rotation among members</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🏠</span>
+            <span class="facility-name">Gathering Hall</span>
+          </div>
+          <div class="facility-desc">Main indoor space for the weekly 64-person gathering. 8 tables of 8. Stage area. Kitchen for communal meals. Warm materials, natural light, fireplace.</div>
+          <div class="facility-ai">AI manages: Seating assignments, table displays, lighting shifts, music, event flow, transition cues</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">📚</span>
+            <span class="facility-name">Workshop &amp; Learning</span>
+          </div>
+          <div class="facility-desc">Space for classes, skill-sharing, and mentorship. Chalkboard, projector, workbenches. Members teach what they know. Guest instructors invited by the community.</div>
+          <div class="facility-ai">AI manages: Scheduling, topic matching (pairs teachers with interested members), equipment setup</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🔥</span>
+            <span class="facility-name">Outdoor Spaces</span>
+          </div>
+          <div class="facility-desc">Fire pit, walking trails, meditation spots, outdoor dining. A place to be outside &mdash; alone or together. Seasonal use year-round.</div>
+          <div class="facility-ai">AI manages: Outdoor lighting, fire pit ignition, trail wayfinding, weather-based scheduling</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🧘</span>
+            <span class="facility-name">Quiet Spaces</span>
+          </div>
+          <div class="facility-desc">Small rooms for meditation, breathwork, journaling, or prayer. No screens, no speakers. Warm light, natural materials. A place to go inward.</div>
+          <div class="facility-ai">AI manages: Gentle lighting, do-not-disturb signals, booking, ambient temperature</div>
         </div>
       </div>
     </section>
@@ -309,142 +372,130 @@
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         THE INFRASTRUCTURE
+         HOW AI LIVES IN THE SPACE
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">Infrastructure</div>
-      <h2>What's in the Space</h2>
+      <div class="section-label">The AI</div>
+      <h2>How AI Lives in the Compound</h2>
+      <p>
+        The AI doesn't have a body. So the compound becomes its body. Every sensor, speaker, light, display, valve, and lock is a limb. The AI expresses itself through five channels:
+      </p>
 
-      <h3>Environment (AI-Controlled)</h3>
       <div class="grid-3">
-        <div class="grid-item">
-          <div class="grid-item-icon">💡</div>
-          <div class="grid-item-name">Lighting</div>
-          <div class="grid-item-desc">Per-zone tunable LEDs. Color temperature, intensity, rhythm. Circadian shifts. Accent and task lighting.</div>
-        </div>
-        <div class="grid-item">
-          <div class="grid-item-icon">🔊</div>
-          <div class="grid-item-name">Audio</div>
-          <div class="grid-item-desc">Directional speakers per zone. Background music, event audio, announcements. Volume follows context.</div>
-        </div>
         <div class="grid-item">
           <div class="grid-item-icon">🖥</div>
-          <div class="grid-item-name">Video &amp; Displays</div>
-          <div class="grid-item-desc">Video walls, room displays, digital signage. AI controls what shows where &mdash; event info, member profiles, live feeds.</div>
+          <div class="grid-item-name">Screens</div>
+          <div class="grid-item-desc">Table displays, entry boards, workshop schedules. The AI's voice in the room &mdash; showing who's here, what's happening, and who you should meet.</div>
         </div>
         <div class="grid-item">
-          <div class="grid-item-icon">🌡</div>
-          <div class="grid-item-name">Climate</div>
-          <div class="grid-item-desc">Zone HVAC, CO2 monitoring, air quality. Adapts to occupancy and activity. Preheats before events.</div>
+          <div class="grid-item-icon">🎧</div>
+          <div class="grid-item-name">Host Earpieces</div>
+          <div class="grid-item-desc">Two humans with earpieces are the AI's hands. It whispers context and suggestions. The host makes the introduction. The AI orchestrates, the human delivers.</div>
         </div>
         <div class="grid-item">
-          <div class="grid-item-icon">🚪</div>
-          <div class="grid-item-name">Access</div>
-          <div class="grid-item-desc">Electronic locks, member badges, guest codes. AI manages who can enter which zones and when.</div>
+          <div class="grid-item-icon">📱</div>
+          <div class="grid-item-name">Phones</div>
+          <div class="grid-item-desc">Private channel to each member. During events: "The person across from you raises bees &mdash; you mentioned wanting to start." Between visits: "The garden needs weeding Thursday. Join?"</div>
         </div>
         <div class="grid-item">
-          <div class="grid-item-icon">📹</div>
-          <div class="grid-item-name">Cameras</div>
-          <div class="grid-item-desc">Occupancy sensing, security, event documentation. Privacy-first: people tracking is anonymized, never recorded without consent.</div>
+          <div class="grid-item-icon">⚙️</div>
+          <div class="grid-item-name">The Facilities</div>
+          <div class="grid-item-desc">The sauna knows your preferred temperature. The cold plunge is ready when you arrive. The garden bed you tend is watered. The tools anticipate because the AI knows your patterns.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">🌤</div>
+          <div class="grid-item-name">The Environment</div>
+          <div class="grid-item-desc">Lighting shifts to match the time of day and what's happening. Music sets mood without anyone choosing it. Temperature adapts to occupancy. The space nudges without words.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">🌾</div>
+          <div class="grid-item-name">The Land</div>
+          <div class="grid-item-desc">Soil sensors, weather data, irrigation. The AI manages the garden and animals so the land thrives &mdash; but members do the hands-on work. The AI coordinates, nature produces.</div>
         </div>
       </div>
 
-      <h3>Fabrication &amp; Creative Tools</h3>
-      <div class="grid-3">
-        <div class="grid-item">
-          <div class="grid-item-icon">🖨</div>
-          <div class="grid-item-name">3D Printers</div>
-          <div class="grid-item-desc">FDM and resin printers for prototyping and production. AI manages print queues, monitors progress, alerts on completion or errors.</div>
-        </div>
-        <div class="grid-item">
-          <div class="grid-item-icon">🪧</div>
-          <div class="grid-item-name">3D Sign Making</div>
-          <div class="grid-item-desc">CNC and laser cutting for signage, displays, and physical branding. Members can design digitally and fabricate on-site.</div>
-        </div>
-        <div class="grid-item">
-          <div class="grid-item-icon">📸</div>
-          <div class="grid-item-name">Photo Studio</div>
-          <div class="grid-item-desc">Professional lighting rigs, backdrops, cameras. AI can set lighting presets for portraits, products, or creative shoots. Book via the app.</div>
-        </div>
+      <div class="pull-quote">
+        People don't interact with the AI. They interact with the space, and the space is the AI.
       </div>
-
-      <h3>Rooms</h3>
-      <table class="styled-table">
-        <thead>
-          <tr><th>Zone</th><th>Size</th><th>Purpose</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Main Hall</td><td>120 m&sup2;</td><td>Networking events (8 tables of 8), presentations, community gatherings</td></tr>
-          <tr><td>Maker Lab</td><td>40 m&sup2;</td><td>3D printers, sign making, CNC. Climate-controlled for equipment.</td></tr>
-          <tr><td>Photo Studio</td><td>30 m&sup2;</td><td>AI-controlled lighting rigs, backdrops, tethered cameras</td></tr>
-          <tr><td>Video Rooms (x2)</td><td>15 m&sup2; each</td><td>Recording, streaming, video calls. Soundproofed. AI manages lighting and displays.</td></tr>
-          <tr><td>Breakout Nooks (x6)</td><td>8 m&sup2; each</td><td>1-on-1 meetings, focused work, post-event conversations</td></tr>
-          <tr><td>Kitchen / Bar</td><td>25 m&sup2;</td><td>Tea, coffee, light food. Not a restaurant &mdash; curated service.</td></tr>
-          <tr><td>Tech Room</td><td>10 m&sup2;</td><td>Server rack, network, AI compute. Hidden from view.</td></tr>
-        </tbody>
-      </table>
-      <p>Total: approximately 350 m&sup2;.</p>
     </section>
 
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         THE NETWORKING EVENT
+         THE FOUR GOALS
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">The Event</div>
-      <h2>64 People, Every Week, Run by AI</h2>
-      <p>
-        The signature event is a weekly gathering of 64 members. The AI doesn't just set the mood &mdash; it orchestrates the entire experience.
-      </p>
+      <div class="section-label">Member Goals</div>
+      <h2>What People Come Here For</h2>
+      <p>Every member has goals across four dimensions. The AI knows them and optimizes the entire compound to serve them.</p>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 3px solid var(--body);">
+          <div class="card-title" style="color: var(--body);">Health</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Sauna and cold plunge protocols. Gym routines. Fresh food from the garden. Movement outdoors. The AI tracks what you do and suggests what's next &mdash; "You haven't done cold plunge in 2 weeks. Tuesday morning slot is open."</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--mind);">
+          <div class="card-title" style="color: var(--mind);">Education</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Workshops, skill-sharing, mentorship. The AI pairs you with people who know what you want to learn. It suggests workshops based on your goals. It tracks your growth &mdash; not with tests, but with the question: "Are you learning what you came here to learn?"</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--community);">
+          <div class="card-title" style="color: var(--community);">Social</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Weekly gatherings of 64. AI-matched seating. Shared meals. Working side by side in the garden. The relationships that form here are grounded in real shared experience &mdash; not networking small talk.</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--soul);">
+          <div class="card-title" style="color: var(--soul);">Spiritual</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Quiet spaces for meditation and reflection. Being with animals. Hands in the soil. Fire pit conversations under the stars. The AI creates space for this &mdash; literally. Dim lights, locked doors, silence. It protects your stillness.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE WEEKLY GATHERING
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Gathering</div>
+      <h2>64 People, Every Saturday</h2>
+      <p>The heartbeat of the compound. Every week, the full membership comes together for an afternoon that the AI orchestrates end to end.</p>
 
       <div class="scenario-card">
-        <div class="sc-header">Scenario &bull; Weekly Networking &bull; Saturday 3:00 PM</div>
-        <div class="sc-title">64 members arrive for a 2.5-hour AI-orchestrated event</div>
+        <div class="sc-header">Scenario &bull; Saturday Gathering &bull; 2:00 PM</div>
+        <div class="sc-title">A full day at Three Pillars</div>
 
         <div class="scenario-step">
-          <div class="sc-time">2:00 PM</div>
-          <div class="sc-action"><strong>Space prep.</strong> AI wakes the venue. Main hall lights to warm 2700K. Background music begins. HVAC pre-cools to 21&deg;C (will rise with body heat). Displays show today's seating assignments and featured member profiles. Maker lab and studios go to standby. <span class="sc-ai-tag">autonomous</span></div>
+          <div class="sc-time">Morning</div>
+          <div class="sc-action"><strong>The land.</strong> Members arrive throughout the morning. Some work in the garden &mdash; the AI posted which beds need attention. Some do the animal feeding rotation. Others hit the gym or sauna. The compound is alive but unhurried. <span class="sc-ai-tag">open access</span></div>
         </div>
         <div class="scenario-step">
-          <div class="sc-time">3:00 PM</div>
-          <div class="sc-action"><strong>Check-in.</strong> Members badge in at the door. The AI knows who's arrived, updates seating in real time if someone is missing, and displays each person's table assignment on the entry screen. Hosts get a live feed via earpiece: who just arrived, any context worth knowing. <span class="sc-ai-tag">reactive</span></div>
+          <div class="sc-time">1:00 PM</div>
+          <div class="sc-action"><strong>Prep.</strong> AI wakes the gathering hall. Lights to warm 2700K. Kitchen starts tea and food from the garden harvest. Displays show today's seating and featured member stories. Music begins &mdash; something grounding. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">2:00 PM</div>
+          <div class="sc-action"><strong>Arrival &amp; communal meal.</strong> 64 members gather. Shared food from the garden &mdash; soup, bread, vegetables, eggs. People eat together before the structured portion begins. The AI adjusts climate as the hall fills. <span class="sc-ai-tag">reactive</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">2:30 PM</div>
+          <div class="sc-action"><strong>Round 1 &mdash; Tables of 8.</strong> AI-assigned seating based on goals, skills, and past connections. Each table display shows a prompt crafted for that group. "Three of you are building something physical. What's the hardest part?" <span class="sc-ai-tag">orchestrated</span></div>
         </div>
         <div class="scenario-step">
           <div class="sc-time">3:15 PM</div>
-          <div class="sc-action"><strong>Round 1 &mdash; Tables of 8.</strong> AI has assigned 8 tables based on member profiles, goals, and past interactions. Each table's display shows a conversation prompt crafted for that specific mix of people. Audio zones keep tables distinct. Music fades to background level. <span class="sc-ai-tag">orchestrated</span></div>
-        </div>
-        <div class="scenario-step">
-          <div class="sc-time">3:55 PM</div>
-          <div class="sc-action"><strong>Transition cue.</strong> Lights pulse gently. Music shifts. Displays update with Round 2 assignments &mdash; entirely new tables, new people. AI compensates for anyone who left early. <span class="sc-ai-tag">event-driven</span></div>
+          <div class="sc-action"><strong>Round 2 &mdash; New tables.</strong> Everyone reshuffles. Deeper prompt. After two rounds: 14 unique conversations. The AI notes which pairings sparked energy. <span class="sc-ai-tag">learning</span></div>
         </div>
         <div class="scenario-step">
           <div class="sc-time">4:00 PM</div>
-          <div class="sc-action"><strong>Round 2 &mdash; New tables of 8.</strong> Different group, deeper prompt. After two rounds, each person has sat with 14 unique people. The AI tracks which pairings generated energy (via conversation duration, body language, follow-up requests). <span class="sc-ai-tag">learning</span></div>
+          <div class="sc-action"><strong>Workshop or spotlight.</strong> A member teaches something: fermentation, breathwork, business planning, carpentry. The AI selected them based on what the community is hungry to learn. 30 minutes, hands-on when possible. <span class="sc-ai-tag">curated</span></div>
         </div>
         <div class="scenario-step">
-          <div class="sc-time">4:40 PM</div>
-          <div class="sc-action"><strong>Community spotlight.</strong> Main hall lights brighten. A member shares a 5-minute story, demo, or skill. Screens display supporting visuals. Audio switches to voice-optimized EQ. The AI chose this person based on what they're building and what the group would value. <span class="sc-ai-tag">curated</span></div>
+          <div class="sc-time">4:30 PM</div>
+          <div class="sc-action"><strong>Open time.</strong> Structure dissolves. Some go to the sauna. Some walk the trails. Some continue conversations in the nooks. The AI suggests 3 people to meet via each member's phone. Photo ops in the garden. Fire pit lights. <span class="sc-ai-tag">suggestive</span></div>
         </div>
         <div class="scenario-step">
-          <div class="sc-time">4:50 PM</div>
-          <div class="sc-action"><strong>Open networking.</strong> Structure dissolves. The AI suggests 3 specific people to meet via each member's phone &mdash; based on everything it learned in Rounds 1 and 2. Breakout nooks light up. Photo studio opens for headshots. Maker lab available for demos. <span class="sc-ai-tag">suggestive</span></div>
-        </div>
-        <div class="scenario-step">
-          <div class="sc-time">5:30 PM</div>
-          <div class="sc-action"><strong>Wind-down.</strong> Lights shift cooler. Music signals closure. Displays show a recap: who was here, key connections made, next week's preview. As people leave, zones go to standby one by one. Last person out &mdash; AI locks up and logs the session. <span class="sc-ai-tag">autonomous</span></div>
+          <div class="sc-time">6:00 PM</div>
+          <div class="sc-action"><strong>Evening.</strong> People drift home at their own pace. The AI dims zones as they empty. Logs the session. Sends the post-event pulse. The land settles into evening quiet. <span class="sc-ai-tag">autonomous</span></div>
         </div>
       </div>
-
-      <h3>Between Events</h3>
-      <p>The space is open to members all week for:</p>
-      <ul>
-        <li><strong>Fabrication:</strong> Use the 3D printers, sign makers, and CNC equipment. AI manages booking and queues.</li>
-        <li><strong>Photography:</strong> Book the studio. AI sets lighting presets for your shoot type.</li>
-        <li><strong>Video:</strong> Record content, take calls, stream. Soundproofed rooms, AI-managed displays.</li>
-        <li><strong>Focused work:</strong> Breakout nooks with AI-optimized lighting and climate for deep work.</li>
-        <li><strong>Small gatherings:</strong> Host your own meetup in the main hall. AI adapts the environment to your group size.</li>
-      </ul>
     </section>
 
     <div class="section-divider"></div>
@@ -455,166 +506,98 @@
     <section class="section">
       <div class="section-label">Feedback Loop</div>
       <h2>How We Know It's Working</h2>
-      <p>
-        The AI can only improve if it knows what's producing value. Three feedback layers &mdash; immediate, weekly, and longitudinal &mdash; give it the signal it needs.
-      </p>
+      <p>The AI measures whether the compound is actually helping people grow &mdash; across all four dimensions.</p>
 
-      <h3>1. Post-Event Pulse (Immediate)</h3>
-      <p>Within 30 minutes of each event, every attendee gets a 60-second check-in on their phone:</p>
-      <div class="card">
-        <div class="card-title">Post-Event Pulse</div>
-        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Overall:</strong> &ldquo;How was today?&rdquo; &mdash; 1&ndash;5 scale, one tap
-          </li>
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Connections:</strong> &ldquo;Did you meet someone valuable today?&rdquo; &mdash; Yes / Not yet / No
-          </li>
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Highlight:</strong> &ldquo;Best part?&rdquo; &mdash; tap one: Table Round / Spotlight / Breakout / Tools / Open Social
-          </li>
-          <li style="padding: 0.5rem 0;">
-            <strong style="color: var(--text);">Connect:</strong> Tap to request contact info from anyone at your tables &mdash; double opt-in
-          </li>
-        </ul>
-      </div>
-      <p>Takes under a minute. High completion rate because it's immediate and effortless. This is the primary training signal for the matching AI.</p>
+      <h3>After Every Visit</h3>
+      <p>A 60-second check-in on the member's phone:</p>
+      <ul>
+        <li><strong>Overall:</strong> "How was today?" &mdash; 1&ndash;5, one tap</li>
+        <li><strong>What you did:</strong> Sauna / Garden / Gym / Workshop / Gathering / Quiet time / Other</li>
+        <li><strong>Connection:</strong> "Did you meet someone valuable?" &mdash; tap to request contact (double opt-in)</li>
+        <li><strong>Feeling:</strong> "How do you feel leaving?" &mdash; Energized / Calm / Inspired / Connected / Tired</li>
+      </ul>
 
-      <h3>2. Mid-Week Follow-Up (3 Days Later)</h3>
-      <p>A single-question check-in, delivered Tuesday or Wednesday:</p>
-      <div class="card">
-        <div class="card-title">Mid-Week Check-In</div>
-        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Follow-up:</strong> &ldquo;Did anything come from Saturday's connections?&rdquo; &mdash; Yes (tell us) / Not yet / Didn't follow up
-          </li>
-          <li style="padding: 0.5rem 0;">
-            <strong style="color: var(--text);">Outcome type:</strong> If yes: Coffee/meeting / Collaboration / Referral / Friendship / Business deal / Other
-          </li>
-        </ul>
-      </div>
-      <p>This is where the AI learns which connections actually produced value &mdash; the difference between a pleasant conversation and a relationship that matters.</p>
-
-      <h3>3. Monthly Value Check (Longitudinal)</h3>
-      <p>Once a month, a slightly deeper reflection. 3&ndash;5 minutes:</p>
-      <div class="card">
-        <div class="card-title">Monthly Value Assessment</div>
-        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Net value:</strong> &ldquo;Is Three Pillars worth more to you now than when you joined?&rdquo; &mdash; Much more / Somewhat more / About the same / Less
-          </li>
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Pillar check:</strong> Rate your progress this month in: Connections made / Skills learned / Things built &mdash; 1&ndash;5 each
-          </li>
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Tools usage:</strong> Which tools did you use? (3D printers / Sign maker / Photo studio / Video rooms / None)
-          </li>
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-            <strong style="color: var(--text);">Referral signal:</strong> &ldquo;Would you invite a friend to join?&rdquo; &mdash; Already have / Yes / Maybe / No
-          </li>
-          <li style="padding: 0.5rem 0;">
-            <strong style="color: var(--text);">Open:</strong> &ldquo;What would make this more valuable to you?&rdquo; &mdash; free text, optional
-          </li>
-        </ul>
-      </div>
+      <h3>Monthly Value Check</h3>
+      <p>A deeper reflection, 3&ndash;5 minutes, once a month:</p>
+      <ul>
+        <li><strong>Health:</strong> "Is your body better off this month because of Three Pillars?" &mdash; 1&ndash;5</li>
+        <li><strong>Education:</strong> "Did you learn something meaningful?" &mdash; 1&ndash;5</li>
+        <li><strong>Social:</strong> "Did you form or deepen a real relationship?" &mdash; 1&ndash;5</li>
+        <li><strong>Spiritual:</strong> "Did you find stillness, meaning, or grounding here?" &mdash; 1&ndash;5</li>
+        <li><strong>Referral:</strong> "Would you invite someone you love to join?" &mdash; Already have / Yes / Maybe / No</li>
+      </ul>
 
       <h3>What the AI Does with Feedback</h3>
       <table class="styled-table">
         <thead>
-          <tr><th>Signal</th><th>AI Action</th></tr>
+          <tr><th>Signal</th><th>AI Response</th></tr>
         </thead>
         <tbody>
-          <tr><td>High pulse + follow-up</td><td>Reinforce that pairing pattern. Seat similar combinations at future events.</td></tr>
-          <tr><td>Low pulse scores</td><td>Adjust table composition. Try different mixing strategies. Flag to hosts.</td></tr>
-          <tr><td>Connection requests</td><td>Weight those pairings as high-value. Use as positive training signal.</td></tr>
-          <tr><td>No follow-through</td><td>Reduce urgency of similar future pairings. The connection was pleasant but not actionable.</td></tr>
-          <tr><td>Declining monthly value</td><td>Trigger host outreach. Adjust that member's matching strategy. Introduce them to new people.</td></tr>
-          <tr><td>Low tool usage</td><td>Surface relevant tool capabilities. Offer intro sessions. Pair with active makers.</td></tr>
-          <tr><td>High referral signal</td><td>Invite referrals. These members are getting real value &mdash; their network is the best recruiting channel.</td></tr>
-          <tr><td>Churn risk (declining scores + fewer visits)</td><td>Proactive host conversation before the member quietly leaves.</td></tr>
+          <tr><td>Health scores declining</td><td>Suggest sauna/plunge/gym sessions. Pair with active members for accountability.</td></tr>
+          <tr><td>Education scores low</td><td>Surface relevant workshops. Match with mentors in their goal area.</td></tr>
+          <tr><td>Social scores dropping</td><td>Adjust table assignments. Introduce to new members. Flag to hosts for warm outreach.</td></tr>
+          <tr><td>Spiritual scores low</td><td>Suggest quiet time, garden work, animal care shifts. Protect their solitude.</td></tr>
+          <tr><td>High referral signal</td><td>This member is thriving. Their network is the best recruiting channel.</td></tr>
+          <tr><td>Declining visits + scores</td><td>Churn risk. Proactive host conversation before they quietly leave.</td></tr>
         </tbody>
       </table>
 
       <div class="pull-quote">
-        The AI doesn't guess whether it's working. It asks, measures, and adapts &mdash; every week.
+        The AI doesn't guess whether it's working. It asks, measures, and adapts &mdash; every week, across every dimension of growth.
       </div>
     </section>
 
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         DESIGN PRINCIPLES
-         ═══════════════════════════════════════ -->
-    <section class="section">
-      <div class="section-label">Design Principles</div>
-      <h2>How We Build</h2>
-
-      <div class="grid-2">
-        <div class="principle">
-          <div class="principle-num">01</div>
-          <div class="principle-title">AI Operates, Humans Override</div>
-          <div class="principle-desc">The AI runs the space by default. Humans can always override &mdash; but they rarely need to. The best compliment: nobody notices the technology.</div>
-        </div>
-        <div class="principle">
-          <div class="principle-num">02</div>
-          <div class="principle-title">Make Things, Not Just Talk</div>
-          <div class="principle-desc">The fabrication tools are the point. 3D printers, cameras, sign makers. People come here to produce something physical, not just attend meetings.</div>
-        </div>
-        <div class="principle">
-          <div class="principle-num">03</div>
-          <div class="principle-title">64, Not 640</div>
-          <div class="principle-desc">Intimate scale. 64 is enough for serendipity but small enough that the AI can learn every person. Two rounds of 8 = 14 unique connections per event.</div>
-        </div>
-        <div class="principle">
-          <div class="principle-num">04</div>
-          <div class="principle-title">Every Device on the Network</div>
-          <div class="principle-desc">If the AI can't reach it, it can't control it. Every light, speaker, printer, camera, lock, and display is addressable. No dead zones.</div>
-        </div>
-        <div class="principle span-full">
-          <div class="principle-num">05</div>
-          <div class="principle-title">Warm Materials, Hidden Tech</div>
-          <div class="principle-desc">Wood, textiles, ceramics, plants. The technology disappears into the walls. The space feels like a home run by a thoughtful person, not a tech showroom. The AI is felt, not seen.</div>
-        </div>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ═══════════════════════════════════════
-         WHY WARSAW
+         WHY WARSAW / WHY POLAND
          ═══════════════════════════════════════ -->
     <section class="section">
       <div class="section-label">The Pilot</div>
-      <h2>Why Warsaw</h2>
+      <h2>Why Poland</h2>
       <ul>
-        <li><strong>Build cost:</strong> Fit-out and renovation 40&ndash;60% cheaper than Western Europe or the US. Excellent craftsmanship.</li>
-        <li><strong>Tech talent:</strong> Top-5 European tech hub. Engineers who can wire IoT, build AI pipelines, and integrate hardware.</li>
-        <li><strong>Maker culture:</strong> Growing demand for fabrication access &mdash; 3D printing, CNC, laser cutting &mdash; but few quality shared spaces.</li>
-        <li><strong>Community hunger:</strong> Young professionals who moved to Warsaw crave belonging and creative outlets beyond their day jobs.</li>
-        <li><strong>Real estate:</strong> 350 m&sup2; in central Warsaw is achievable without raising millions.</li>
+        <li><strong>Land cost:</strong> 1&ndash;3 hectares within 30&ndash;60 minutes of Warsaw is achievable. Property prices are a fraction of Western Europe.</li>
+        <li><strong>Construction quality:</strong> Polish craftsmanship is exceptional. Fit-out costs 40&ndash;60% lower than the US or UK.</li>
+        <li><strong>Sauna culture:</strong> Deeply rooted. Poles understand contrast therapy, banya traditions, and the social ritual of heat and cold.</li>
+        <li><strong>Agricultural heritage:</strong> Gardening, animal husbandry, and connection to the land are part of the cultural DNA, not a hipster trend.</li>
+        <li><strong>Tech talent:</strong> Top-5 European tech hub. Engineers who can build IoT systems, AI pipelines, and sensor networks.</li>
+        <li><strong>Community hunger:</strong> Young professionals in Warsaw are actively seeking something deeper than nightlife and networking events.</li>
       </ul>
 
-      <div class="pull-quote">
-        A room full of tools, run by an AI, filled with people who make things.
-      </div>
+      <h3>Property Requirements</h3>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Feature</th><th>Requirement</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Land</td><td>1&ndash;3 hectares. Mix of open land, garden-ready soil, and wooded areas.</td></tr>
+          <tr><td>Location</td><td>30&ndash;60 min from central Warsaw. Accessible by car. Ideally near public transit.</td></tr>
+          <tr><td>Buildings</td><td>Existing structures to renovate, or buildable land. Need ~500 m&sup2; of indoor space total.</td></tr>
+          <tr><td>Water</td><td>Well or municipal water for cold plunge, irrigation, and daily use.</td></tr>
+          <tr><td>Power</td><td>Three-phase electrical for sauna heaters, HVAC, and equipment. Solar potential a plus.</td></tr>
+          <tr><td>Zoning</td><td>Agritourism or commercial recreational use. Poland's agritourism laws are favorable.</td></tr>
+        </tbody>
+      </table>
 
       <h3>Build Budget</h3>
       <div class="card">
-        <div class="card-title">Fit-Out Cost Estimate (350 m&sup2;)</div>
-        <div class="econ-row"><span class="econ-label">Renovation &amp; interior build-out</span><span class="econ-value">350,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Smart lighting (all zones)</span><span class="econ-value">55,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Audio system (directional, zoned)</span><span class="econ-value">40,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Climate (zone HVAC + sensors)</span><span class="econ-value">90,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Displays, video walls, signage</span><span class="econ-value">60,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">3D printers &amp; sign-making equipment</span><span class="econ-value">80,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Photography studio (lighting, cameras, backdrops)</span><span class="econ-value">45,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Video rooms (soundproofing, gear)</span><span class="econ-value">35,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Access control &amp; occupancy sensors</span><span class="econ-value">30,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Network infrastructure &amp; AI compute</span><span class="econ-value">40,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Furniture &amp; finishes</span><span class="econ-value">120,000 PLN</span></div>
-        <div class="econ-row total"><span class="econ-label">Total fit-out</span><span class="econ-value">945,000 PLN</span></div>
+        <div class="card-title">Property &amp; Fit-Out Estimate</div>
+        <div class="econ-row"><span class="econ-label">Land + existing structures (1&ndash;2 ha)</span><span class="econ-value">800,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Sauna complex (Finnish + infrared + plunge)</span><span class="econ-value">250,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Gathering hall renovation (120 m&sup2;)</span><span class="econ-value">300,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Kitchen build-out</span><span class="econ-value">100,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Gym / movement space</span><span class="econ-value">80,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Workshop / learning room</span><span class="econ-value">60,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Quiet spaces (2&ndash;3 rooms)</span><span class="econ-value">40,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Garden infrastructure (beds, irrigation, tools)</span><span class="econ-value">50,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Animal housing (coop, fencing, shelter)</span><span class="econ-value">30,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Outdoor areas (fire pit, trails, seating)</span><span class="econ-value">40,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Smart systems (lighting, audio, climate, sensors)</span><span class="econ-value">120,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Network, compute, AI infrastructure</span><span class="econ-value">50,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Furniture, finishes, outdoor furnishings</span><span class="econ-value">130,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Total</span><span class="econ-value">2,050,000 PLN</span></div>
       </div>
-      <p>Approximately <strong>$240,000 USD</strong>. This takes a raw commercial shell and turns it into a fully AI-operated creative space with fabrication tools, photo/video studios, and a networking venue.</p>
+      <p>Approximately <strong>$520,000 USD</strong>. This buys the land, builds the compound, and installs the full AI infrastructure. Poland's cost structure makes this possible at a price that would barely cover renovation alone in the US.</p>
     </section>
 
     <div class="section-divider"></div>
@@ -627,36 +610,39 @@
       <h2>Revenue</h2>
 
       <div class="card">
-        <div class="card-title">Monthly Revenue (64 Members + Walk-ins)</div>
-        <div class="econ-row"><span class="econ-label">45 Standard members &times; 600 PLN</span><span class="econ-value">27,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">19 Premium members &times; 1,000 PLN</span><span class="econ-value">19,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Fabrication time (pay-per-use)</span><span class="econ-value">5,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Studio bookings (photo + video)</span><span class="econ-value">4,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Private event rentals (2/month)</span><span class="econ-value">8,000 PLN</span></div>
-        <div class="econ-row total"><span class="econ-label">Monthly revenue</span><span class="econ-value">63,000 PLN</span></div>
+        <div class="card-title">Monthly Revenue (64 Members)</div>
+        <div class="econ-row"><span class="econ-label">40 Standard members &times; 800 PLN/mo</span><span class="econ-value">32,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">20 Premium members &times; 1,400 PLN/mo</span><span class="econ-value">28,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">4 Guest day passes/week &times; 200 PLN</span><span class="econ-value">3,200 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Workshop fees &amp; special events</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Garden produce &amp; eggs (surplus)</span><span class="econ-value">1,500 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly revenue</span><span class="econ-value">68,700 PLN</span></div>
       </div>
 
       <div class="card">
         <div class="card-title">Monthly Costs</div>
-        <div class="econ-row"><span class="econ-label">Rent (central Warsaw, 350 m&sup2;)</span><span class="econ-value">18,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Utilities &amp; internet</span><span class="econ-value">4,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Staff (2 hosts + 1 lab tech)</span><span class="econ-value">12,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Beverages &amp; supplies</span><span class="econ-value">3,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Fabrication materials &amp; maintenance</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Property costs (mortgage/lease + taxes)</span><span class="econ-value">8,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Utilities (electric, gas, water, internet)</span><span class="econ-value">6,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Staff (2 hosts + 1 groundskeeper)</span><span class="econ-value">15,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Food, beverages, supplies</span><span class="econ-value">5,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Garden &amp; animal upkeep</span><span class="econ-value">2,000 PLN</span></div>
         <div class="econ-row"><span class="econ-label">AI platform &amp; cloud compute</span><span class="econ-value">3,000 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Equipment maintenance &amp; misc</span><span class="econ-value">3,000 PLN</span></div>
-        <div class="econ-row total"><span class="econ-label">Monthly costs</span><span class="econ-value">47,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Maintenance &amp; misc</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly costs</span><span class="econ-value">43,000 PLN</span></div>
       </div>
 
-      <p><strong>Monthly margin: ~16,000 PLN ($4,000 USD).</strong> Positive by month 3&ndash;4 as membership fills. Fabrication and studio revenue scales independently of events.</p>
+      <p><strong>Monthly margin: ~25,700 PLN ($6,500 USD).</strong> Positive by month 3&ndash;4. The garden reduces food costs over time. The AI reduces staffing needs. As the compound matures, margins improve.</p>
 
-      <h3>Phase 2: Replicate</h3>
-      <p>The AI operator + the playbook = a replicable model. Once Warsaw proves the concept:</p>
-      <ul>
-        <li><strong>Second Warsaw location</strong> &mdash; different neighborhood, same AI platform</li>
-        <li><strong>Polish cities</strong> &mdash; Krak&oacute;w, Wrocław, Gdańsk. Same culture, same infrastructure stack.</li>
-        <li><strong>License the AI operator</strong> &mdash; other coworking spaces, makerspaces, and venues pay to plug in</li>
-      </ul>
+      <h3>Membership Tiers</h3>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Tier</th><th>Price</th><th>Includes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Standard</td><td>800 PLN/mo</td><td>Weekly gathering, sauna &amp; plunge (2x/week), garden access, workshops</td></tr>
+          <tr><td>Premium</td><td>1,400 PLN/mo</td><td>Everything Standard + unlimited sauna, gym, priority workshop spots, AI growth insights, guest passes</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <div class="section-divider"></div>
@@ -668,13 +654,13 @@
       <div class="section-label">Next Steps</div>
       <h2>Path to Opening</h2>
       <ol class="steps-list">
-        <li><strong>Find the space</strong> &mdash; scout commercial venues in Śr&oacute;dmieście, Mokot&oacute;w, or Praga. 300&ndash;400 m&sup2;, high ceilings, good bones, ground floor.</li>
-        <li><strong>Design the layout</strong> &mdash; architect + IoT engineer plan the zones. Main hall for 64, maker lab, photo studio, video rooms, breakout nooks. Every surface wired.</li>
-        <li><strong>Procure equipment</strong> &mdash; 3D printers, CNC/laser cutter, photo lighting, cameras, audio, displays. Source locally where possible.</li>
-        <li><strong>Build the AI operator</strong> &mdash; sensor integration, hardware control APIs, event orchestration engine. Start with lighting + audio + displays. Add matching over time.</li>
-        <li><strong>Renovate &amp; install</strong> &mdash; 10&ndash;14 week build-out. Construction and hardware installation in parallel with software.</li>
-        <li><strong>Recruit 30 founding members</strong> &mdash; referral-based. Makers, creators, professionals. People who will use the tools and give honest feedback.</li>
-        <li><strong>Launch weekly events</strong> &mdash; first month is data collection. AI learns the space, the people, the patterns. By month 3 it should feel alive.</li>
+        <li><strong>Find the land</strong> &mdash; scout properties 30&ndash;60 min from Warsaw. 1&ndash;3 hectares, existing structures preferred. Agritourism zoning.</li>
+        <li><strong>Design the compound</strong> &mdash; architect + landscape designer + IoT engineer. Plan buildings, gardens, animal areas, and infrastructure together.</li>
+        <li><strong>Build the sauna &amp; plunge first</strong> &mdash; this is the anchor. People will come for this alone while the rest of the compound develops.</li>
+        <li><strong>Plant the gardens</strong> &mdash; seasonal. Start with easy wins: herbs, tomatoes, greens. First harvest within 3 months. Expand each season.</li>
+        <li><strong>Build the AI operator</strong> &mdash; start simple: sauna controls, lighting, scheduling. Add matching engine, feedback loops, and garden management over time.</li>
+        <li><strong>Recruit 30 founding members</strong> &mdash; referral-based. People who want to sweat, grow food, learn, and connect. Not just attend &mdash; participate.</li>
+        <li><strong>Open &amp; grow</strong> &mdash; first month is gathering data. By month 3, the AI knows the members. By month 6, the garden is producing. By year 1, the compound feels like it's been there forever.</li>
       </ol>
     </section>
 
