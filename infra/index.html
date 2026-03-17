@@ -926,6 +926,7 @@
             <li><strong>Limits:</strong> 1 GB repo size, 100 GB bandwidth/month (generous &mdash; most sites never hit this).</li>
             <li><strong>Custom domains:</strong> Point any domain at GitHub Pages with free HTTPS via Let&rsquo;s Encrypt.</li>
           </ul>
+          <p><a href="https://pages.github.com" target="_blank">Go to GitHub Pages &rarr;</a></p>
         </details>
       </div>
 
@@ -946,6 +947,7 @@
             <li><strong>Edge Functions:</strong> Serverless TypeScript functions for webhooks, API integrations, and anything that needs server-side logic (Stripe, Telnyx, etc.).</li>
             <li><strong>Free tier:</strong> 500 MB database, 1 GB storage, 500,000 edge function calls/month.</li>
           </ul>
+          <p><a href="https://supabase.com" target="_blank">Go to Supabase &rarr;</a></p>
         </details>
       </div>
 
@@ -964,7 +966,7 @@
             <li><strong>Why it matters:</strong> Setup that takes 90 minutes sequentially can finish in 30 minutes with parallel workspaces. Ongoing development is faster too.</li>
             <li><strong>No conflicts:</strong> Each workspace is isolated &mdash; agents never step on each other&rsquo;s code.</li>
           </ul>
-          <p><a href="https://conductor.build" target="_blank">conductor.build</a></p>
+          <p><a href="https://conductor.build" target="_blank">Go to Conductor &rarr;</a></p>
         </details>
       </div>
 
@@ -983,6 +985,7 @@
             <li><strong>How you use it:</strong> Through Conductor. You describe what you want in plain English; Claude Code handles the implementation.</li>
             <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
           </ul>
+          <p><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Go to Claude Code &rarr;</a></p>
         </details>
       </div>
 
@@ -1001,6 +1004,7 @@
             <li><strong>How it works:</strong> One-click Google login redirects through Supabase, which creates a user record and returns a session token. Your app checks the token to gate admin pages.</li>
             <li><strong>Use cases:</strong> Admin dashboards, customer portals, any page that needs user accounts.</li>
           </ul>
+          <p><a href="https://console.cloud.google.com/apis/credentials" target="_blank">Go to Google Cloud Console &rarr;</a></p>
         </details>
       </div>
 
@@ -1019,6 +1023,7 @@
             <li><strong>How it integrates:</strong> A Supabase edge function (<code>send-email</code>) handles outbound mail. Your app calls the function with a template name and data.</li>
             <li><strong>Inbound email:</strong> Webhook support lets you receive and process incoming emails (e.g., reply-to-ticket workflows).</li>
           </ul>
+          <p><a href="https://resend.com/signup" target="_blank">Go to Resend &rarr;</a></p>
         </details>
       </div>
 
@@ -1038,6 +1043,7 @@
             <li><strong>Ship workflow:</strong> <code>/ship</code> runs tests, reviews the diff, bumps version, updates changelog, and creates a PR in one command.</li>
             <li><strong>Headless browser:</strong> Navigate pages, click elements, take screenshots, verify deployments &mdash; ~100ms per command.</li>
           </ul>
+          <p><a href="https://github.com/nichochar/gstack" target="_blank">Go to gstack &rarr;</a></p>
         </details>
       </div>
 
@@ -1056,6 +1062,7 @@
             <li><strong>Two-way messaging:</strong> Inbound webhook lets users reply to texts and trigger actions in your app.</li>
             <li><strong>How it integrates:</strong> A Supabase edge function (<code>send-sms</code>) sends messages. Telnyx webhooks post inbound messages to another edge function.</li>
           </ul>
+          <p><a href="https://telnyx.com/sign-up" target="_blank">Go to Telnyx &rarr;</a></p>
         </details>
       </div>
 
@@ -1074,6 +1081,7 @@
             <li><strong>Sandbox:</strong> Full test environment with fake cards &mdash; build and test before going live.</li>
             <li><strong>How it integrates:</strong> Square webhook posts payment events to a Supabase edge function. Your app creates payment links via the Square API.</li>
           </ul>
+          <p><a href="https://squareup.com/signup" target="_blank">Go to Square &rarr;</a></p>
         </details>
       </div>
 
@@ -1093,6 +1101,7 @@
             <li><strong>Stripe Connect:</strong> Split payments between multiple parties (e.g., property owner gets 90%, management fee is 10%).</li>
             <li><strong>How it integrates:</strong> Stripe webhook posts events to a Supabase edge function. Your app creates checkout sessions and payment links via the Stripe API.</li>
           </ul>
+          <p><a href="https://dashboard.stripe.com/register" target="_blank">Go to Stripe &rarr;</a></p>
         </details>
       </div>
 
@@ -1111,6 +1120,7 @@
             <li><strong>How it works:</strong> Your app sends a document via the SignWell API. The signer receives an email, signs in their browser, and a webhook notifies your app when it&rsquo;s done.</li>
             <li><strong>Templates:</strong> Create reusable templates with placeholder fields that get filled automatically from your database.</li>
           </ul>
+          <p><a href="https://www.signwell.com/signup" target="_blank">Go to SignWell &rarr;</a></p>
         </details>
       </div>
 
@@ -1129,6 +1139,7 @@
             <li><strong>How it integrates:</strong> Gemini API key is stored as a Supabase secret. Edge functions call Gemini for server-side AI tasks. Client-side JS can also call Gemini directly for chat interfaces.</li>
             <li><strong>Use cases:</strong> AI chat assistant, auto-generate listing descriptions, analyze photos, match tenants to spaces, summarize documents.</li>
           </ul>
+          <p><a href="https://aistudio.google.com/apikey" target="_blank">Go to Google AI Studio &rarr;</a></p>
         </details>
       </div>
 
@@ -1147,6 +1158,7 @@
             <li><strong>Zero egress:</strong> Unlike AWS S3, downloading files costs nothing. Ideal for serving media, PDFs, and documents.</li>
             <li><strong>When to use:</strong> For files that don&rsquo;t need Supabase Storage&rsquo;s row-level security &mdash; public media, manuals, marketing assets. Use Supabase Storage for private/user-scoped files.</li>
           </ul>
+          <p><a href="https://dash.cloudflare.com/sign-up" target="_blank">Go to Cloudflare &rarr;</a></p>
         </details>
       </div>
 
@@ -1165,6 +1177,7 @@
             <li><strong>Why it&rsquo;s useful:</strong> Find &ldquo;how did we build the payments page?&rdquo; months later. Great for onboarding new team members or debugging past decisions.</li>
             <li><strong>Free tier:</strong> 5 GB storage, 5 million reads/day. More than enough for session transcripts.</li>
           </ul>
+          <p><a href="https://dash.cloudflare.com/sign-up" target="_blank">Go to Cloudflare &rarr;</a></p>
         </details>
       </div>
 
@@ -1202,6 +1215,7 @@
             <li><strong>Options:</strong> DigitalOcean ($12&ndash;32/mo) or Oracle Cloud (free ARM tier &mdash; always free, 4 vCPU, 24 GB RAM).</li>
             <li><strong>When you need it:</strong> Only if you have smart home devices, vehicles, or other integrations that need continuous background polling. Most projects don&rsquo;t need this.</li>
           </ul>
+          <p><a href="https://www.digitalocean.com" target="_blank">Go to DigitalOcean &rarr;</a></p>
         </details>
       </div>
 
@@ -1220,6 +1234,7 @@
             <li><strong>Setup:</strong> Point your domain&rsquo;s DNS at GitHub Pages, add the domain in your repo settings, and GitHub provides free HTTPS automatically.</li>
             <li><strong>When to get one:</strong> Before sharing your site publicly. You can always add a domain later without breaking anything.</li>
           </ul>
+          <p><a href="https://www.cloudflare.com/products/registrar/" target="_blank">Go to Cloudflare Registrar &rarr;</a></p>
         </details>
       </div>
 
@@ -1238,6 +1253,7 @@
             <li><strong>OTA updates:</strong> After the initial App Store submission, code changes push live instantly via Capgo &mdash; no App Store review wait.</li>
             <li><strong>Cost:</strong> Apple Developer Program ($99/yr). Requires a Mac with Xcode to build.</li>
           </ul>
+          <p><a href="https://developer.apple.com/programs/" target="_blank">Go to Apple Developer &rarr;</a></p>
         </details>
       </div>
 
@@ -1256,6 +1272,7 @@
             <li><strong>Build anywhere:</strong> Android Studio runs on macOS, Windows, and Linux &mdash; no Mac required.</li>
             <li><strong>Cost:</strong> Google Play Console is a $25 one-time fee (not annual).</li>
           </ul>
+          <p><a href="https://play.google.com/console/signup" target="_blank">Go to Google Play Console &rarr;</a></p>
         </details>
       </div>
 
@@ -1275,6 +1292,7 @@
             <li><strong>Cost:</strong> A used Mac Mini runs ~$150 one-time. Low power draw (~10W idle).</li>
             <li><strong>When you need it:</strong> Only for smart home features (Sonos, cameras, climate control). Not needed for standard web apps.</li>
           </ul>
+          <p><a href="https://www.apple.com/shop/buy-mac/mac-mini" target="_blank">Go to Mac Mini &rarr;</a></p>
         </details>
       </div>
 
