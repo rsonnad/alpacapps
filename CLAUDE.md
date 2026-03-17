@@ -37,3 +37,4 @@
 - **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Capacitor 8
 - **Live:** https://alpacaplayhouse.com/
 - **Architecture:** Browser → GitHub Pages → Supabase (no server-side code)
+- **Conductor docs:** https://docs.conductor.build/
