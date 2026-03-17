@@ -1,12 +1,12 @@
 {
-  "version": "v260317.15 7:23a",
-  "release": 829,
-  "sha": "496d855a6",
-  "fullSha": "496d855a68eec0b1cab24100ef533bb9248b758f",
+  "version": "v260317.17 7:29a",
+  "release": 831,
+  "sha": "b95d53019",
+  "fullSha": "b95d53019baf15ac6a29a9caeb58cf9c2b8ab7a4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 12:23:56+00",
-  "commits": [{"sha":"5cc7806b6","message":"Rewrite Three Pillars page around AI-operable physical spaces","author":"Rahul"},{"sha":"d3d78f829","message":"Rewrite Three Pillars as AI-operated creative hub + networking space","author":"Rahul"},{"sha":"184680b07","message":"Add feedback loop section to Three Pillars page","author":"Rahul"},{"sha":"54a121e45","message":"Rewrite Three Pillars as AI-operated wellness compound","author":"Rahul"},{"sha":"046c35594","message":"Reframe Three Pillars as AI + real-world tech startup","author":"Rahul"},{"sha":"a5a2d7080","message":"Add culture of giving section to Three Pillars","author":"Rahul"},{"sha":"39f437e2e","message":"Ground giving culture in abundance philosophy","author":"Rahul"},{"sha":"7e27f14a1","message":"Flip feedback loop to measure giving impact, not receiving","author":"Rahul"},{"sha":"7bc21defc","message":"Update Three Pillars core components to venue-based model","author":"Rahul"},{"sha":"bc5857fbc","message":"Clean up remaining garden/land/compound references","author":"Rahul"},{"sha":"1bc9458c3","message":"Reframe Three Pillars as IRL social network tech startup","author":"Rahul"},{"sha":"e4f8763b3","message":"Add version switcher to Three Pillars — preserve all concept iterations","author":"Rahul"},{"sha":"496d855a6","message":"Merge pull request #46 from rsonnad/rahuliofam/find-polish-ai-page","author":"Rahul"}]
+  "pushedAt": "2026-03-17 12:29:33+00",
+  "commits": [{"sha":"b5a13142e","message":"Add gardens and animals back to Three Pillars IRL social network","author":"Rahul"},{"sha":"b95d53019","message":"Merge pull request #47 from rsonnad/rahuliofam/find-polish-ai-page","author":"Rahul"}]
 }
