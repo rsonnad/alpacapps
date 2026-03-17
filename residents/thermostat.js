@@ -126,15 +126,21 @@ async function loadThermostats() {
 
     if (error) throw error;
 
-    thermostats = (data || []).map(d => ({
-      id: d.id,
-      sdmDeviceId: d.sdm_device_id,
-      roomName: d.room_name,
-      displayOrder: d.display_order,
-      lanIp: d.lan_ip,
-      spaceId: d.space_id,
-      state: d.last_state || null,
-    }));
+    thermostats = (data || []).map(d => {
+      // Seed last contact from DB updated_at so timestamp shows before first API poll
+      if (d.updated_at && d.last_state) {
+        lastContactTimes[d.sdm_device_id] = new Date(d.updated_at);
+      }
+      return {
+        id: d.id,
+        sdmDeviceId: d.sdm_device_id,
+        roomName: d.room_name,
+        displayOrder: d.display_order,
+        lanIp: d.lan_ip,
+        spaceId: d.space_id,
+        state: d.last_state || null,
+      };
+    });
 
     if (deviceScope && !deviceScope.fullAccess) {
       thermostats = thermostats.filter((t) =>
