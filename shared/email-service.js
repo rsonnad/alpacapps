@@ -42,6 +42,8 @@ export const EMAIL_TYPES = {
   WORK_CHECKOUT_SUMMARY: 'work_checkout_summary',
   // Associate payout
   ASSOCIATE_PAYOUT_SENT: 'associate_payout_sent',
+  // Task assignment
+  TASK_ASSIGNED: 'task_assigned',
 };
 
 /**
@@ -446,6 +448,24 @@ export const emailService = {
    */
   async sendPayoutNotification(email, data) {
     return sendEmail(EMAIL_TYPES.ASSOCIATE_PAYOUT_SENT, email, data);
+  },
+
+  // ===== TASK ASSIGNMENT =====
+
+  /**
+   * Send task assignment notification with prioritized todo list
+   * @param {string} email - Associate email
+   * @param {object} data - Task and todo list data
+   * @param {string} data.first_name - Associate first name
+   * @param {string} data.task_title - Assigned task title
+   * @param {string} [data.task_notes] - Task notes/description
+   * @param {number} [data.task_priority] - Priority (1-4)
+   * @param {string} [data.task_location] - Space/location name
+   * @param {Array} data.todo_list - [{title, priority, location, is_new}]
+   */
+  async sendTaskAssigned(email, data) {
+    const recipients = [email, 'alpacaplayhouse@gmail.com'].filter(Boolean);
+    return sendEmail(EMAIL_TYPES.TASK_ASSIGNED, recipients, data);
   },
 
   /**

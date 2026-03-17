@@ -464,6 +464,48 @@
     }
     .entry-edit-btn:hover { text-decoration: underline; }
 
+    /* Tasks Tab */
+    .task-card {
+      background: #fff; border-radius: 10px; padding: 0.85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 0.5rem;
+      border-left: 4px solid #94a3b8; transition: border-color 0.15s;
+    }
+    .task-card.priority-1 { border-left-color: #dc2626; }
+    .task-card.priority-2 { border-left-color: #f59e0b; }
+    .task-card.priority-3 { border-left-color: #3b82f6; }
+    .task-card.priority-4 { border-left-color: #94a3b8; }
+    .task-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+    .task-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; flex: 1; }
+    .task-priority-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.5rem;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+    }
+    .task-priority-badge.p1 { color: #dc2626; background: #fef2f2; }
+    .task-priority-badge.p2 { color: #d97706; background: #fffbeb; }
+    .task-priority-badge.p3 { color: #2563eb; background: #eff6ff; }
+    .task-priority-badge.p4 { color: #64748b; background: #f8fafc; }
+    .task-meta { display: flex; gap: 0.75rem; margin-top: 0.35rem; font-size: 0.75rem; color: #64748b; }
+    .task-meta span { display: flex; align-items: center; gap: 0.2rem; }
+    .task-notes { font-size: 0.8rem; color: #4b5563; margin-top: 0.35rem; line-height: 1.4; }
+    .task-status-btn {
+      margin-top: 0.5rem; font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.75rem;
+      border-radius: 6px; border: 1px solid #d1d5db; background: #f9fafb;
+      color: #374151; cursor: pointer;
+    }
+    .task-status-btn:hover { background: #f0fdf4; border-color: #22c55e; color: #16a34a; }
+    .task-status-btn.in-progress { background: #eff6ff; border-color: #3b82f6; color: #2563eb; }
+
+    .tasks-empty { text-align: center; padding: 2rem 1rem; }
+    .tasks-empty .te-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .tasks-empty .te-text { color: var(--text-muted); font-size: 0.9rem; }
+    .tasks-empty .te-sub { color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem; }
+
+    .tasks-section-label {
+      font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;
+      letter-spacing: 0.04em; margin: 0.75rem 0 0.4rem; padding-bottom: 0.25rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
     @media (max-width: 768px) {
       .app-container { padding: 0.75rem; }
       .clock-btn { width: 150px; height: 150px; font-size: 1.2rem; }
@@ -559,14 +601,15 @@
 
       <!-- Tab Navigation -->
       <div class="tabs" id="workTabs">
-        <button class="active" data-tab="today">Today</button>
+        <button data-tab="today">Today</button>
+        <button class="active" data-tab="tasks">Tasks</button>
         <button data-tab="history">History</button>
         <button data-tab="coworkers">Coworkers</button>
         <button data-tab="payment">Payment</button>
       </div>
 
       <!-- Today Tab -->
-      <div class="tab-content active" id="tabToday">
+      <div class="tab-content" id="tabToday">
         <div class="today-card">
           <h3>Today's Work</h3>
           <div class="today-stats">
@@ -598,6 +641,11 @@
           </div>
           <div class="photo-grid" id="todayPhotos"></div>
         </div>
+      </div>
+
+      <!-- Tasks Tab -->
+      <div class="tab-content active" id="tabTasks">
+        <div id="tasksList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading tasks...</p></div>
       </div>
 
       <!-- History Tab -->

@@ -83,7 +83,8 @@ async function refreshAll() {
     refreshClockState(),
     refreshToday(),
     refreshTodayPhotos(),
-    refreshPaymentTab()
+    refreshPaymentTab(),
+    refreshTasksList()
   ]);
 }
 
@@ -272,6 +273,9 @@ async function handleClockIn() {
     showToast('Clocked in!', 'success');
     updateClockUI();
     await refreshToday();
+
+    // Auto-switch to Tasks tab so associate sees their prioritized todo list
+    switchToTab('tasks');
     // Schedule a one-shot photo reminder 15 min after clock-in
     if (activeEntry?.id) {
       const entryId = activeEntry.id;
@@ -1181,6 +1185,7 @@ function setupEventListeners() {
       },
       onSwitch: (btn) => {
         if (btn?.dataset?.tab === 'history') refreshHistory();
+        else if (btn?.dataset?.tab === 'tasks') refreshTasksList();
         else if (btn?.dataset?.tab === 'coworkers') refreshCoworkers();
         else if (btn?.dataset?.tab === 'payment') refreshPaymentTab();
       },
@@ -1693,6 +1698,124 @@ async function saveSchedule() {
 }
 
 // =============================================
+// TASKS TAB
+// =============================================
+const PRIORITY_LABELS = { 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'Low' };
+const PRIORITY_CLASSES = { 1: 'p1', 2: 'p2', 3: 'p3', 4: 'p4' };
+
+async function refreshTasksList() {
+  const container = document.getElementById('tasksList');
+  if (!container) return;
+
+  try {
+    const userId = authState?.appUser?.id;
+    // Fetch tasks assigned to this user + unassigned, sorted by priority
+    const tasks = userId
+      ? await projectService.getOpenTasksForUser(userId)
+      : [];
+
+    // Also fetch full task details (notes, priority, status) for a richer view
+    const { data: fullTasks } = await supabase
+      .from('tasks')
+      .select('id, title, notes, description, priority, status, location_label, assigned_name, space:space_id(id, name)')
+      .in('status', ['open', 'in_progress'])
+      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .order('priority', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+    const taskList = fullTasks || [];
+
+    if (taskList.length === 0) {
+      container.innerHTML = `
+        <div class="tasks-empty">
+          <div class="te-icon">✅</div>
+          <div class="te-text">No open tasks</div>
+          <div class="te-sub">You're all caught up!</div>
+        </div>`;
+      return;
+    }
+
+    // Split into assigned-to-me vs unassigned
+    const myTasks = taskList.filter(t => t.assigned_name);
+    const unassigned = taskList.filter(t => !t.assigned_name);
+
+    let html = '';
+
+    if (myTasks.length > 0) {
+      html += '<div class="tasks-section-label">Your Tasks</div>';
+      html += myTasks.map(t => renderTaskCard(t)).join('');
+    }
+
+    if (unassigned.length > 0) {
+      html += '<div class="tasks-section-label">Unassigned Tasks</div>';
+      html += unassigned.map(t => renderTaskCard(t)).join('');
+    }
+
+    container.innerHTML = html;
+
+    // Attach status toggle handlers
+    container.querySelectorAll('.task-status-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const taskId = btn.dataset.taskId;
+        const currentStatus = btn.dataset.status;
+        const newStatus = currentStatus === 'open' ? 'in_progress' : currentStatus === 'in_progress' ? 'done' : 'open';
+
+        btn.disabled = true;
+        btn.textContent = 'Updating...';
+        try {
+          const { data: updated, error: err } = await supabase
+            .from('tasks')
+            .update({ status: newStatus, updated_at: new Date().toISOString(), ...(newStatus === 'done' ? { completed_at: new Date().toISOString() } : { completed_at: null }) })
+            .eq('id', taskId)
+            .select()
+            .single();
+          if (err) throw err;
+
+          const statusLabels = { open: 'To Do', in_progress: 'In Progress', done: 'Done' };
+          showToast(`Task marked as ${statusLabels[newStatus] || newStatus}`, 'success');
+
+          // Refresh task selector and task list
+          await Promise.all([loadTasksForSelector(), refreshTasksList()]);
+        } catch (err) {
+          showToast('Failed to update task: ' + err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = currentStatus === 'open' ? 'Start' : currentStatus === 'in_progress' ? 'Complete' : 'Reopen';
+        }
+      });
+    });
+  } catch (err) {
+    console.error('Failed to load tasks:', err);
+    container.innerHTML = '<p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Failed to load tasks</p>';
+  }
+}
+
+function renderTaskCard(task) {
+  const priority = task.priority ? Number(task.priority) : null;
+  const pClass = priority ? (PRIORITY_CLASSES[priority] || '') : '';
+  const pLabel = priority ? (PRIORITY_LABELS[priority] || '') : '';
+  const location = task.space?.name || task.location_label || '';
+  const notes = task.notes || task.description || '';
+  const status = task.status || 'open';
+
+  const statusBtnLabel = status === 'open' ? 'Start' : status === 'in_progress' ? 'Complete' : 'Reopen';
+  const statusBtnClass = status === 'in_progress' ? ' in-progress' : '';
+
+  return `
+    <div class="task-card priority-${priority || 0}">
+      <div class="task-card-header">
+        <div class="task-title">${escapeHtml(task.title)}</div>
+        ${pLabel ? `<span class="task-priority-badge ${pClass}">${pLabel}</span>` : ''}
+      </div>
+      ${notes ? `<div class="task-notes">${escapeHtml(notes)}</div>` : ''}
+      <div class="task-meta">
+        ${location ? `<span>📍 ${escapeHtml(location)}</span>` : ''}
+        ${status === 'in_progress' ? '<span>🔄 In Progress</span>' : ''}
+      </div>
+      <button class="task-status-btn${statusBtnClass}" data-task-id="${task.id}" data-status="${status}">${statusBtnLabel}</button>
+    </div>`;
+}
+
+// =============================================
 // COWORKERS TAB
 // =============================================
 async function refreshCoworkers() {
@@ -1851,6 +1974,13 @@ function showToast(message, type = 'info', duration = 4000) {
 // =============================================
 // HELPERS
 // =============================================
+function switchToTab(tabName) {
+  const tabsContainer = document.getElementById('workTabs');
+  if (!tabsContainer) return;
+  const btn = tabsContainer.querySelector(`[data-tab="${tabName}"]`);
+  if (btn) btn.click();
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str || '';

@@ -81,6 +81,8 @@ type EmailType =
   | "work_checkout_summary"
   // Associate payout
   | "associate_payout_sent"
+  // Task assignment
+  | "task_assigned"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -1958,6 +1960,99 @@ ${data.description ? `\nWork Description: ${data.description}` : ''}
 ${hasPhotos ? `\nPhotos: ${photos.length} photo(s) uploaded (view in HTML email)` : '\nNo photos uploaded for this session.'}
 
 This is an automated summary from Alpaca Playhouse work tracking.`
+      };
+    }
+
+    case "task_assigned": {
+      const priorityLabels: Record<number, string> = { 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'Low' };
+      const priorityColors: Record<number, string> = { 1: '#dc2626', 2: '#f59e0b', 3: '#3b82f6', 4: '#94a3b8' };
+      const taskPriority = data.task_priority ? Number(data.task_priority) : null;
+      const priorityLabel = taskPriority ? (priorityLabels[taskPriority] || '') : '';
+      const priorityColor = taskPriority ? (priorityColors[taskPriority] || '#94a3b8') : '#94a3b8';
+      const taskLocation = data.task_location || '';
+
+      // Build the todo list rows
+      const todoTasks: Array<{ title: string; priority: number | null; location: string; is_new: boolean }> = data.todo_list || [];
+      const todoRows = todoTasks.map((t: any) => {
+        const pLabel = t.priority ? (priorityLabels[t.priority] || '') : '';
+        const pColor = t.priority ? (priorityColors[t.priority] || '#94a3b8') : '#94a3b8';
+        const highlight = t.is_new ? 'background:#fffbeb;' : '';
+        const newBadge = t.is_new ? ' <span style="font-size:10px;font-weight:700;color:#d4883a;background:#fef3c7;padding:1px 6px;border-radius:4px;margin-left:6px;">NEW</span>' : '';
+        return `
+          <tr style="${highlight}">
+            <td style="padding:10px 12px;border-bottom:1px solid #f0ede8;font-size:14px;color:#2a1f23;">
+              ${t.title}${newBadge}
+              ${t.location ? `<br><span style="font-size:12px;color:#7d6f74;">${t.location}</span>` : ''}
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #f0ede8;text-align:center;">
+              ${pLabel ? `<span style="display:inline-block;font-size:11px;font-weight:700;color:${pColor};background:${pColor}15;padding:2px 8px;border-radius:4px;">${pLabel}</span>` : ''}
+            </td>
+          </tr>`;
+      }).join('');
+
+      const todoSection = todoTasks.length > 0 ? `
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0 0;">
+          <tr>
+            <td>
+              <p style="margin:0 0 12px;font-weight:700;font-size:15px;color:#2a1f23;">Your Prioritized To-Do List</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e6e2d9;border-radius:8px;overflow:hidden;">
+                <tr style="background:#f7f6f1;">
+                  <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;">Task</td>
+                  <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#7d6f74;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">Priority</td>
+                </tr>
+                ${todoRows}
+              </table>
+            </td>
+          </tr>
+        </table>` : '';
+
+      const todoText = todoTasks.map((t: any, i: number) => {
+        const pLabel = t.priority ? (priorityLabels[t.priority] || '') : '';
+        const marker = t.is_new ? ' [NEW]' : '';
+        return `  ${i + 1}. ${t.title}${t.location ? ` (${t.location})` : ''} — ${pLabel}${marker}`;
+      }).join('\n');
+
+      return {
+        subject: `New Task Assigned: ${data.task_title} — Alpaca Playhouse`,
+        html: `
+          <h2 style="margin:0 0 4px;">New Task Assigned to You</h2>
+          <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">Hi ${data.first_name}, you've been assigned a new task.</p>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 4px;">
+            <tr>
+              <td style="padding:20px 24px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:0 0 10px;" colspan="2">
+                      <span style="font-size:18px;font-weight:700;color:#2a1f23;">${data.task_title}</span>
+                      ${priorityLabel ? `<span style="display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:${priorityColor};background:${priorityColor}15;padding:2px 10px;border-radius:4px;">${priorityLabel}</span>` : ''}
+                    </td>
+                  </tr>
+                  ${data.task_notes ? `<tr><td colspan="2" style="padding:0 0 10px;font-size:14px;color:#4a3f43;line-height:1.5;">${data.task_notes}</td></tr>` : ''}
+                  ${taskLocation ? `<tr><td style="padding:0 0 6px;font-size:13px;color:#7d6f74;"><strong>Location:</strong> ${taskLocation}</td></tr>` : ''}
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          ${todoSection}
+
+          <p style="margin:24px 0 0;font-size:13px;color:#7d6f74;">Clock in at <a href="https://alpacaplayhouse.com/associates/worktracking.html" style="color:#d4883a;">alpacaplayhouse.com</a> to get started. Your task list will be waiting for you.</p>
+        `,
+        text: `New Task Assigned to You
+
+Hi ${data.first_name}, you've been assigned a new task.
+
+Task: ${data.task_title}
+${priorityLabel ? `Priority: ${priorityLabel}` : ''}
+${data.task_notes ? `Notes: ${data.task_notes}` : ''}
+${taskLocation ? `Location: ${taskLocation}` : ''}
+
+${todoTasks.length > 0 ? `Your Prioritized To-Do List:\n${todoText}` : ''}
+
+Clock in at https://alpacaplayhouse.com/associates/worktracking.html to get started.
+
+— Alpaca Playhouse`
       };
     }
 
