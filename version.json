@@ -1,12 +1,12 @@
 {
-  "version": "v260317.31 10:12a",
-  "release": 845,
-  "sha": "80bfb7a59",
-  "fullSha": "80bfb7a59271d129f6e0af9cb5a61881fa33e59b",
+  "version": "v260317.32 10:16a",
+  "release": 846,
+  "sha": "a8e5caa65",
+  "fullSha": "a8e5caa6548646e976570390ccff922746bb116f",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 15:12:31+00",
-  "commits": [{"sha":"e03540162","message":"Make Est. Cost clickable on building permit page linking to cost breakdown PDF","author":"Jacqueline Giroux"},{"sha":"0a90204ec","message":"Add building permit cost breakdown PDF and unlink old PDF from dev permit","author":"Jacqueline Giroux"},{"sha":"80bfb7a59","message":"Merge remote-tracking branch 'origin/claude/elastic-ellis'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-17 15:16:08+00",
+  "commits": [{"sha":"a8e5caa65","message":"Add missing A2 scan PDF link to outhouse plans under task A4","author":"Jacqueline Giroux"}]
 }
