@@ -57,12 +57,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadUxTabPreference();
       setupEventListeners();
       setupSpotifySearch();
-      await loadZones();
-      renderZones();
-      await Promise.all([loadPlaylists(), loadFavorites(), loadPlaylistTags(), loadSchedules(), loadScenes()]);
+
+      // Load zone-independent DB data in parallel with zones (which may be slow)
+      const zonesReady = loadZones().then(() => {
+        renderZones();
+      });
+      const dbReady = Promise.all([loadPlaylistTags(), loadSchedules(), loadScenes()]).then(() => {
+        renderSchedules();
+        renderScenesSection();
+      });
+
+      // Wait for zones + DB data before loading zone-dependent data
+      await Promise.all([zonesReady, dbReady]);
+
+      // Load zone-dependent data (playlists/favorites need a coordinator room)
+      await Promise.all([loadPlaylists(), loadFavorites()]);
       renderMusicLibrary();
-      renderSchedules();
-      renderScenesSection();
       renderSceneBar();
       renderNowAmbient();
       startPolling();
@@ -78,6 +88,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =============================================
 // API WRAPPER
 // =============================================
+const SONOS_API_TIMEOUT_MS = 15000;
+
 async function sonosApi(action, params = {}) {
   let { data: { session } } = await supabase.auth.getSession();
   if (session) {
@@ -97,24 +109,37 @@ async function sonosApi(action, params = {}) {
     throw new Error('No auth token');
   }
 
-  const response = await fetch(SONOS_CONTROL_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'apikey': SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({ action, ...params }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SONOS_API_TIMEOUT_MS);
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: 'Request failed' }));
-    const msg = typeof err.error === 'string' ? err.error
-      : err.message || err.response || JSON.stringify(err.error || err);
-    throw new Error(msg);
+  try {
+    const response = await fetch(SONOS_CONTROL_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ action, ...params }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Request failed' }));
+      const msg = typeof err.error === 'string' ? err.error
+        : err.message || err.response || JSON.stringify(err.error || err);
+      throw new Error(msg);
+    }
+
+    return response.json();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`Sonos API timed out (${action})`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 // =============================================
