@@ -78,11 +78,11 @@ serve(async (_req) => {
     }
   }
 
-  // ─── Rule 4: Verify enough "email footer" tagged images exist ───
+  // ─── Rule 4: Verify enough "pai-email-art" tagged images exist ───
   const { data: tagRow } = await sb
     .from("media_tags")
     .select("id")
-    .ilike("name", "email footer")
+    .ilike("name", "pai-email-art")
     .limit(1)
     .maybeSingle();
 
@@ -90,7 +90,7 @@ serve(async (_req) => {
     violations.push({
       rule: 4,
       ruleName: "Footer Images",
-      details: 'No "email footer" tag exists in media_tags — footer images cannot be loaded.',
+      details: 'No "pai-email-art" tag exists in media_tags — footer images cannot be loaded.',
     });
   } else {
     const { data: taggedMedia } = await sb
@@ -106,7 +106,7 @@ serve(async (_req) => {
       violations.push({
         rule: 4,
         ruleName: "Footer Images",
-        details: `Only ${active.length} active image(s) tagged "email footer" — need at least 2 for two-image footer.`,
+        details: `Only ${active.length} active image(s) tagged "pai-email-art" — need at least 2 for two-image footer.`,
       });
     }
   }

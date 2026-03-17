@@ -99,11 +99,11 @@ async function loadGalleryImages(): Promise<string[]> {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // First: try images tagged "email footer"
+    // First: try images tagged "pai-email-art" (alpaca artwork for emails)
     const { data: tagRow } = await sb
       .from("media_tags")
       .select("id")
-      .ilike("name", "email footer")
+      .ilike("name", "pai-email-art")
       .limit(1)
       .single();
 
