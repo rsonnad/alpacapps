@@ -23,6 +23,7 @@ const NEST_OAUTH_REDIRECT_URI = 'https://alpacaplayhouse.com/residents/climate.h
 let thermostats = [];
 let poll = null;
 let lastPollTime = null;
+let lastContactTimes = {}; // { sdmDeviceId: Date } — last successful state fetch
 let currentUserRole = null;
 let deviceScope = null;
 
@@ -152,6 +153,7 @@ async function refreshAllStates() {
         const t = thermostats.find(th => th.sdmDeviceId === device.deviceId);
         if (t && device.state) {
           t.state = device.state;
+          lastContactTimes[t.sdmDeviceId] = new Date();
           updateThermostatUI(t.sdmDeviceId);
         }
       }
@@ -173,11 +175,25 @@ async function refreshDeviceState(sdmDeviceId) {
     const t = thermostats.find(th => th.sdmDeviceId === sdmDeviceId);
     if (t && state) {
       t.state = state;
+      lastContactTimes[sdmDeviceId] = new Date();
       updateThermostatUI(sdmDeviceId);
     }
   } catch (err) {
     console.warn(`State refresh failed for ${sdmDeviceId}:`, err.message);
   }
+}
+
+// =============================================
+// LAST CONTACT HELPERS
+// =============================================
+function formatLastContact(deviceId) {
+  const t = lastContactTimes[deviceId];
+  if (!t) return '';
+  const diff = Date.now() - t.getTime();
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return `${Math.round(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.round(diff / 3600000)}h ago`;
+  return t.toLocaleDateString();
 }
 
 // =============================================
@@ -245,6 +261,7 @@ function renderCard(t) {
       <div class="thermostat-card__header">
         <span class="thermostat-card__name">${escapeHtml(t.roomName)}</span>
         ${s.connectivity ? `<span class="status-dot ${isOnline ? 'status-live' : 'status-offline'}" title="${isOnline ? 'Online' : 'Offline'}"></span>` : ''}
+        ${lastContactTimes[t.sdmDeviceId] ? `<span class="thermostat-card__last-contact">${formatLastContact(t.sdmDeviceId)}</span>` : ''}
       </div>
 
       <div class="thermostat-card__current">

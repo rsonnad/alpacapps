@@ -4215,6 +4215,14 @@ span.sonos-library-item__star.starred {
   color: var(--text);
 }
 
+.thermostat-card__last-contact {
+  font-size: 0.7rem;
+  color: var(--text-muted, #999);
+  font-weight: 400;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 /* Current Temperature */
 .thermostat-card__current {
   display: flex;
